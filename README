@@ -1,0 +1,5 @@
+libcloud - a unified interface into the cloud
+
+The goal of this project is to create a basic yet functional standard library into various cloud providers.
+
+The included example shows how to list nodes across Amazon EC2 and an included Dummy provider. Update your EC2 credentials in example.py, and give it a shot!
