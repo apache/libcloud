@@ -1,8 +1,7 @@
 from libcloud.types import NodeState, Node
 import base64
 import httplib
-import struct
-import socket
+import hashlib
 from xml.etree import ElementTree as ET
 
 API_HOST = 'vps.net'
@@ -57,13 +56,16 @@ class VPSNetProvider(object):
     elif running:
       state = NodeState.RUNNING
 
-    n = Node(uuid = element.findtext('id'),
+    n = Node(uuid = self.get_uuid(element.findtext('id')),
              name = element.findtext('label'),
              state = state,
              ipaddress = None, #XXX:  they do not return this in the vps list!
              creds = self.creds,
              attrs = node_attrs)
     return n
+
+  def get_uuid(self, field):
+    return hashlib.sha1("%s:%d" % (field,self.creds.provider)).hexdigest()
 
   def list_nodes(self):
     res = self.api.virtual_machines()

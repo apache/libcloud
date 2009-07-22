@@ -3,16 +3,17 @@ import base64
 import httplib
 import struct
 import socket
+import hashlib
 from xml.etree import ElementTree as ET
 
-AUTH_HOST = 'api.slicehost.com'
+API_HOST = 'api.slicehost.com'
 
 class SlicehostConnection(object):
   def __init__(self, key):
 
     self.key = key
 
-    self.api = httplib.HTTPSConnection("%s:%d" % (AUTH_HOST, 443))
+    self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
   def _headers(self):
     return {'Authorization': 'Basic %s' % (base64.b64encode('%s:' % self.key)) }
@@ -21,7 +22,7 @@ class SlicehostConnection(object):
     self.api.request('GET', '%s' % (path), headers=self._headers())
     return self.api.getresponse()
 
-  def list_servers(self):
+  def slices(self):
     return Response(self.make_request('/slices.xml'))
 
 class Response(object):
@@ -81,7 +82,7 @@ class SlicehostProvider(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = element.findtext('id'),
+    n = Node(uuid = self.get_uuid(element.findtext('id')),
              name = element.findtext('name'),
              state = state,
              ipaddress = ipaddress,
@@ -89,6 +90,9 @@ class SlicehostProvider(object):
              attrs = node_attrs)
     return n
 
+  def get_uuid(self, field):
+    return hashlib.sha1("%s:%d" % (field,self.creds.provider)).hexdigest()
+
   def list_nodes(self):
-    res = self.api.list_servers()
+    res = self.api.slices()
     return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('slice') ]

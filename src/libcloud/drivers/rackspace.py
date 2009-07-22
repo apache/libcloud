@@ -1,6 +1,7 @@
 from libcloud.types import NodeState, Node
 import httplib
 import urlparse
+import hashlib
 from xml.etree import ElementTree as ET
 
 AUTH_HOST = 'auth.api.rackspacecloud.com'
@@ -76,6 +77,9 @@ class RackspaceProvider(object):
              creds = self.creds,
              attrs = node_attrs)
     return n
+
+  def get_uuid(self, field):
+    return hashlib.sha1("%s:%d" % (field,self.creds.provider)).hexdigest()
 
   def list_nodes(self):
     res = self.api.list_servers()
