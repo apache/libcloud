@@ -3,6 +3,7 @@ class Provider(object):
   DUMMY = 0 # Example provider
   EC2 = 1 # Amazon AWS
   RACKSPACE = 2 # Cloud Servers
+  SLICEHOST = 3 # Cloud Servers
 
 class NodeState(object):
   """ Standard states for a node """
