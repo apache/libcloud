@@ -52,24 +52,6 @@ class SlicehostProvider(object):
     return False
 
   def _to_node(self, element):
-    """
-      <slice>
-        <name>cloudkick5</name>
-        <image-id type="integer">8</image-id>
-        <addresses type="array">
-          <address>173.45.226.219</address>
-          <address>172.21.0.73</address>
-        </addresses>
-        <progress type="integer">0</progress>
-        <id type="integer">48925</id>
-        <bw-out type="float">0.47</bw-out>
-        <bw-in type="float">0.23</bw-in>
-        <flavor-id type="integer">4</flavor-id>
-        <status>active</status>
-        <ip-address>173.45.226.219</ip-address>
-      </slice>
-    </slices>
-    """
     states = { 'active': NodeState.RUNNING,
                'build': NodeState.PENDING,
                'terminated': NodeState.TERMINATED }
