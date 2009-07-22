@@ -4,6 +4,7 @@ class Provider(object):
   EC2 = 1 # Amazon AWS
   RACKSPACE = 2 # Cloud Servers
   SLICEHOST = 3 # Cloud Servers
+  VPSNET = 4 # VPS.net
 
 class NodeState(object):
   """ Standard states for a node """

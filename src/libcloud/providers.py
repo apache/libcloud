@@ -13,6 +13,9 @@ def get_provider(provider):
   elif provider == Provider.SLICEHOST:
     from libcloud.drivers.slicehost import SlicehostProvider
     return SlicehostProvider
+  elif provider == Provider.VPSNET:
+    from libcloud.drivers.vpsnet import VPSNetProvider
+    return VPSNetProvider
 
 def connect(provider, key, secret=None):
   creds = ProviderCreds(provider, key, secret)
