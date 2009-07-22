@@ -8,15 +8,14 @@ import urllib
 import hashlib
 from xml.etree import ElementTree as ET
 
-EC2_US_HOST = 'ec2.amazonaws.com'
-EC2_EU_HOST = 'eu-west.amazonaws.com'
+DEFAULT_HOST = 'ec2.amazonaws.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
 API_VERSION = '2008-02-01'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
 class AWSAuthConnection(object):
   def __init__(self, aws_access_key_id, aws_secret_access_key,
-         is_secure=True, server=EC2_US_HOST, port=None):
+         is_secure=True, server=DEFAULT_HOST, port=None):
 
     if not port:
       port = PORTS_BY_SECURITY[is_secure]
@@ -131,13 +130,3 @@ class EC2Provider(object):
   def list_nodes(self):
     res = self.api.describe_instances()
     return [ self._to_node(el) for el in ET.XML(res.http_xml).findall(self._fixxpath('reservationSet/item/instancesSet/item')) ]
-
-
-
-
-class EC2EUProvider(EC2Provider):
-
-  def __init__(self, creds):
-    self.creds = creds
-    self.api = AWSAuthConnection(creds.key, creds.secret, server=EC2_EU_HOST)
-
