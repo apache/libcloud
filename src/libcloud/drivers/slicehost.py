@@ -1,18 +1,11 @@
 from libcloud.types import NodeState, Node
 import base64
-import hmac
 import httplib
-import sha
-import time
-import urllib
-import hashlib
-import urlparse
 import struct
 import socket
 from xml.etree import ElementTree as ET
 
 AUTH_HOST = 'api.slicehost.com'
-NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 class SlicehostConnection(object):
   def __init__(self, key):
@@ -102,7 +95,7 @@ class SlicehostProvider(object):
           ipaddress = ip
           break
     try:
-      state = states[attribs['status']]
+      state = states[element.findtext('status')]
     except:
       state = NodeState.UNKNOWN
 
