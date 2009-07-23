@@ -1,0 +1,3 @@
+libcloud - a unified interface into the cloud
+
+The goal of this project is to create a basic yet functional standard library into various cloud providers.
