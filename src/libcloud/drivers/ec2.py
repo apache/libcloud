@@ -77,10 +77,31 @@ class AWSAuthConnection(object):
     params = self.pathlist("InstanceId", instanceIds)
     return Response(self.make_request("DescribeInstances", params))
 
+  def reboot_instances(self, instanceIds=[]):
+    params = self.pathlist("InstanceId", instanceIds)
+    return Response(self.make_request("RebootInstances", params))
+
 class Response(object):
   def __init__(self, http_response):
     self.http_response = http_response
-    self.http_xml = http_response.read()
+    self.xml = http_response.read()
+    self.http_xml = ET.XML(self.xml)
+
+  def is_error(self):
+    return self.http_response.status != 200
+
+  def get_error(self):
+    err_list = []
+    if self.is_error():
+      for err in self.http_xml.findall('Errors/Error'):
+        code, message = err.getchildren()
+        err_list.append("%s: %s" % (code.text, message.text))
+    else:
+      return None
+    return "\n".join(err_list)
+
+  def get_boolean(self):
+    return self.http_xml.getchildren()[0].text == "true"
 
 class EC2Provider(object):
 
@@ -130,8 +151,18 @@ class EC2Provider(object):
   
   def list_nodes(self):
     res = self.api.describe_instances()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall(self._fixxpath('reservationSet/item/instancesSet/item')) ]
+    return [ self._to_node(el) for el in res.http_xml.findall(self._fixxpath('reservationSet/item/instancesSet/item')) ]
 
+  def reboot_node(self, node):
+    """
+    Reboot the node by passing in the node object
+    """
+    res = self.api.reboot_instances([node.attrs['instanceId']])
+    if res.is_error():
+      raise Exception(res.get_error())
+    
+    import ipdb; ipdb.set_trace() ############################## Breakpoint ##############################
+    return res.get_boolean()
 
 
 
