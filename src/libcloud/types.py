@@ -2,6 +2,8 @@ class Provider(object):
   """ Defines for each of the supported providers """
   DUMMY = 0 # Example provider
   EC2 = 1 # Amazon AWS
+  EC2_EU = 2 # Amazon AWS EU
+  GOGRID = 3 # GoGrid 
 
 class NodeState(object):
   """ Standard states for a node """
