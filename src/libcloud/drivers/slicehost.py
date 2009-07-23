@@ -1,25 +1,19 @@
 from libcloud.types import NodeState, Node
 import base64
-import hmac
 import httplib
-import sha
-import time
-import urllib
-import hashlib
-import urlparse
 import struct
 import socket
+import hashlib
 from xml.etree import ElementTree as ET
 
-AUTH_HOST = 'api.slicehost.com'
-NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
+API_HOST = 'api.slicehost.com'
 
 class SlicehostConnection(object):
   def __init__(self, key):
 
     self.key = key
 
-    self.api = httplib.HTTPSConnection("%s:%d" % (AUTH_HOST, 443))
+    self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
   def _headers(self):
     return {'Authorization': 'Basic %s' % (base64.b64encode('%s:' % self.key)) }
@@ -28,7 +22,7 @@ class SlicehostConnection(object):
     self.api.request('GET', '%s' % (path), headers=self._headers())
     return self.api.getresponse()
 
-  def list_servers(self):
+  def slices(self):
     return Response(self.make_request('/slices.xml'))
 
 class Response(object):
@@ -59,24 +53,6 @@ class SlicehostProvider(object):
     return False
 
   def _to_node(self, element):
-    """
-      <slice>
-        <name>cloudkick5</name>
-        <image-id type="integer">8</image-id>
-        <addresses type="array">
-          <address>173.45.226.219</address>
-          <address>172.21.0.73</address>
-        </addresses>
-        <progress type="integer">0</progress>
-        <id type="integer">48925</id>
-        <bw-out type="float">0.47</bw-out>
-        <bw-in type="float">0.23</bw-in>
-        <flavor-id type="integer">4</flavor-id>
-        <status>active</status>
-        <ip-address>173.45.226.219</ip-address>
-      </slice>
-    </slices>
-    """
     states = { 'active': NodeState.RUNNING,
                'build': NodeState.PENDING,
                'terminated': NodeState.TERMINATED }
@@ -102,11 +78,11 @@ class SlicehostProvider(object):
           ipaddress = ip
           break
     try:
-      state = states[attribs['status']]
+      state = states[element.findtext('status')]
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = element.findtext('id'),
+    n = Node(uuid = self.get_uuid(element.findtext('id')),
              name = element.findtext('name'),
              state = state,
              ipaddress = ipaddress,
@@ -114,6 +90,9 @@ class SlicehostProvider(object):
              attrs = node_attrs)
     return n
 
+  def get_uuid(self, field):
+    return hashlib.sha1("%s:%d" % (field,self.creds.provider)).hexdigest()
+
   def list_nodes(self):
-    res = self.api.list_servers()
+    res = self.api.slices()
     return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('slice') ]

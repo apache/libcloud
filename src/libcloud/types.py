@@ -6,6 +6,7 @@ class Provider(object):
   RACKSPACE = 3 # Cloud Servers
   SLICEHOST = 4 # Cloud Servers
   GOGRID = 5 # GoGrid 
+  VPSNET = 6 # VPS.net
 
 class NodeState(object):
   """ Standard states for a node """
