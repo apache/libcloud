@@ -2,9 +2,10 @@ class Provider(object):
   """ Defines for each of the supported providers """
   DUMMY = 0 # Example provider
   EC2 = 1 # Amazon AWS
-  RACKSPACE = 2 # Cloud Servers
-  SLICEHOST = 3 # Cloud Servers
-  VPSNET = 4 # VPS.net
+  EC2_EU = 2 # Amazon AWS EU
+  RACKSPACE = 3 # Cloud Servers
+  SLICEHOST = 4 # Cloud Servers
+  GOGRID = 5 # GoGrid 
 
 class NodeState(object):
   """ Standard states for a node """
