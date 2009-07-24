@@ -7,10 +7,10 @@ def get_provider(provider):
   elif provider == Provider.EC2:
     from libcloud.drivers.ec2 import EC2Provider
     return EC2Provider
-  if provider == Provider.EC2_EU:
+  elif provider == Provider.EC2_EU:
     from libcloud.drivers.ec2 import EC2EUProvider
     return EC2EUProvider
-  if provider == Provider.GOGRID:
+  elif provider == Provider.GOGRID:
     from libcloud.drivers.gogrid import GoGridProvider
     return GoGridProvider
   elif provider == Provider.RACKSPACE:
