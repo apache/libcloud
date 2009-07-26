@@ -2,7 +2,7 @@ from libcloud.types import NodeState, Node
 import base64
 import hmac
 import httplib
-import sha
+from hashlib import sha256
 import time
 import urllib
 import hashlib
@@ -10,7 +10,7 @@ from xml.etree import ElementTree as ET
 
 EC2_US_HOST = 'ec2.amazonaws.com'
 EC2_EU_HOST = 'eu-west.amazonaws.com'
-API_VERSION = '2008-02-01'
+API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
 class AWSAuthConnection(object):
@@ -20,6 +20,7 @@ class AWSAuthConnection(object):
     self.verbose = False
     self.aws_access_key_id = aws_access_key_id
     self.aws_secret_access_key = aws_secret_access_key
+    self.server = server
     self.connection = httplib.HTTPSConnection("%s:%d" % (server, 443))
 
   def pathlist(self, key, arr):
@@ -36,35 +37,46 @@ class AWSAuthConnection(object):
     if self.verbose:
       print params
 
-    params["SignatureVersion"] = "1"
-    params["AWSAccessKeyId"] = self.aws_access_key_id
-    params["Version"] = API_VERSION
-    params["Timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    params['SignatureVersion'] = '2'
+    params['SignatureMethod'] = 'HmacSHA256'
+    params['AWSAccessKeyId'] = self.aws_access_key_id
+    params['Version'] = API_VERSION
+    params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 
-    params = zip(params.keys(), params.values())
-    params.sort(key=lambda x: str.lower(x[0]))
-    
     sig = self.get_aws_auth_param(params, self.aws_secret_access_key)
 
-    path = "?%s&Signature=%s" % (
-      "&".join(["=".join([param[0], urllib.quote_plus(param[1])]) for param in params]),
+    path = '?%s&Signature=%s' % (
+      '&'.join(['='.join([key, urllib.quote_plus(params[key])]) for key in params]),
       sig)
 
-    self.connection.request("GET", "/%s" % path, data)
+    self.connection.request('GET', '/%s' % path, data, headers={'Host': self.server})
     return self.connection.getresponse()
 
-  # computes the base64'ed hmac-sha hash of the canonical string and
-  # the secret access key, optionally urlencoding the result
-  def encode(self, aws_secret_access_key, str, urlencode=True):
-    b64_hmac = base64.encodestring(hmac.new(aws_secret_access_key, str, sha).digest()).strip()
-    if urlencode:
-      return urllib.quote_plus(b64_hmac)
-    else:
-      return b64_hmac
+  def get_aws_auth_param(self, params, aws_secret_access_key, path='/'):
+    """
+    creates the signature required for AWS, per:
 
-  def get_aws_auth_param(self, params, aws_secret_access_key):
-    canonical_string = "".join(["".join(param) for param in params])
-    return self.encode(aws_secret_access_key, canonical_string)
+    http://docs.amazonwebservices.com/AWSEC2/2009-04-04/DeveloperGuide/index.html?using-query-api.html#query-authentication
+
+    StringToSign = HTTPVerb + "\n" +
+                   ValueOfHostHeaderInLowercase + "\n" +
+                   HTTPRequestURI + "\n" +         
+                   CanonicalizedQueryString <from the preceding step>
+    """
+    keys = params.keys()
+    keys.sort()
+    pairs = []
+    for key in keys:
+      pairs.append(urllib.quote(key, safe='') + '=' + urllib.quote(params[key], safe='-_~'))
+
+    qs = '&'.join(pairs)
+    string_to_sign = '%s\n' \
+                     '%s\n' \
+                     '%s\n' \
+                     '%s' % ('GET', self.server, path, qs)
+                     
+    b64_hmac = base64.b64encode(hmac.new(aws_secret_access_key, string_to_sign, digestmod=sha256).digest())
+    return urllib.quote(b64_hmac)
 
   def describe_instances(self, instanceIds=[]):
     params = self.pathlist("InstanceId", instanceIds)
