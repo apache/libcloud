@@ -19,7 +19,7 @@ PROVIDERS = {
 
 def get_provider(provider):
   if provider in PROVIDERS:
-    mod_name, provider_name = providers[provider]
+    mod_name, provider_name = PROVIDERS[provider]
     _mod = __import__(mod_name, globals(), locals(), [provider_name])
     return getattr(_mod, provider_name)
 
