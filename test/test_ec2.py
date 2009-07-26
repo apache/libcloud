@@ -1,6 +1,5 @@
 import unittest
 
-from libcloud.drivers.ec2 import EC2Provider
 from libcloud.providers import connect
 from libcloud.types import Provider, Node
 

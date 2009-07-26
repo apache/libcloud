@@ -1,3 +1,6 @@
+from libcloud.interface import INodeDriver
+from zope.interface import implements
+
 class Provider(object):
   """ Defines for each of the supported providers """
   DUMMY = 0 # Example provider
@@ -46,3 +49,9 @@ class Node(object):
 
   def __repr__(self):
     return 'Node(uuid="%s", name="%s", state=%d, ipaddress="%s", creds="%s", attrs="%s")' % (self.uuid, self.name, self.state, self.ipaddress, self.creds, self.attrs)
+
+class InvalidCredsException(Exception):
+  def __init__(self, value='Invalid credentials with the provider'):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)

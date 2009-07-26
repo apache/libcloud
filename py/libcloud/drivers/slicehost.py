@@ -1,4 +1,6 @@
 from libcloud.types import NodeState, Node
+from libcloud.interface import INodeDriver
+from zope.interface import implements
 import base64
 import httplib
 import struct
@@ -30,7 +32,9 @@ class Response(object):
     self.http_response = http_response
     self.http_xml = http_response.read()
 
-class SlicehostProvider(object):
+class SlicehostNodeDriver(object):
+
+  implements(INodeDriver)
 
   def __init__(self, creds):
     self.creds = creds

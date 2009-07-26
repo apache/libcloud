@@ -1,4 +1,6 @@
-from libcloud.types import NodeState, Node
+from libcloud.types import NodeState, Node, InvalidCredsException
+from libcloud.interface import INodeDriver
+from zope.interface import implements
 import httplib
 import urlparse
 import hashlib
@@ -37,7 +39,9 @@ class Response(object):
     self.http_response = http_response
     self.http_xml = http_response.read()
 
-class RackspaceProvider(object):
+class RackspaceNodeDriver(object):
+
+  implements(INodeDriver)
 
   def __init__(self, creds):
     self.creds = creds

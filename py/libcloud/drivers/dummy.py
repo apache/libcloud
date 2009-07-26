@@ -1,8 +1,12 @@
 from libcloud.types import Node, NodeState
+from libcloud.interface import INodeDriver
+from zope.interface import implements
 
 import uuid
 
-class DummyProvider(object):
+class DummyNodeDriver(object):
+
+  implements(INodeDriver)
 
   def __init__(self, creds):
     self.creds = creds
@@ -19,3 +23,9 @@ class DummyProvider(object):
   def reboot_node(self, node):
     node.state = NodeState.REBOOTING
     return node
+
+  def destroy_node(self, node):
+    pass
+
+  def create_node(self, node):
+    pass

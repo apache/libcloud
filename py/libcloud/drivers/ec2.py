@@ -1,4 +1,6 @@
 from libcloud.types import NodeState, Node
+from libcloud.interface import INodeDriver
+from zope.interface import implements
 import base64
 import hmac
 import httplib
@@ -108,7 +110,9 @@ class Response(object):
   def get_boolean(self):
     return self.http_xml.getchildren()[0].text == "true"
 
-class EC2Provider(object):
+class EC2NodeDriver(object):
+
+  implements(INodeDriver)
 
   def __init__(self, creds):
     self.creds = creds
@@ -168,7 +172,7 @@ class EC2Provider(object):
     
     return res.get_boolean()
 
-class EC2EUProvider(EC2Provider):
+class EC2EUNodeDriver(EC2NodeDriver):
 
   def __init__(self, creds):
     self.creds = creds

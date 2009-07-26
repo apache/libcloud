@@ -1,4 +1,7 @@
 from libcloud.types import NodeState, Node
+from libcloud.interface import INodeDriver
+from zope.interface import implements
+
 import base64
 import httplib
 import hashlib
@@ -30,7 +33,9 @@ class Response(object):
     self.http_response = http_response
     self.http_xml = http_response.read()
 
-class VPSNetProvider(object):
+class VPSNetNodeDriver(object):
+
+  implements(INodeDriver)
 
   def __init__(self, creds):
     self.creds = creds

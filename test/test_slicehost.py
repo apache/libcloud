@@ -1,6 +1,5 @@
 import unittest
 
-from libcloud.drivers.slicehost import SlicehostProvider
 from libcloud.providers import connect
 from libcloud.types import Provider
 

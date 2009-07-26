@@ -1,6 +1,5 @@
 import unittest
 
-from libcloud.drivers.rackspace import RackspaceProvider
 from libcloud.providers import connect
 from libcloud.types import Provider
 

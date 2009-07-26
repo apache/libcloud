@@ -1,4 +1,6 @@
 from libcloud.types import NodeState, Node
+from libcloud.interface import INodeDriver
+from zope.interface import implements
 import base64
 import hmac
 import httplib
@@ -64,7 +66,9 @@ STATE = {
     "Started":NodeState.RUNNING,
   }
 
-class GoGridProvider(object):
+class GoGridNodeDriver(object):
+
+  implements(INodeDriver)
 
   def __init__(self, creds):
     self.creds = creds
