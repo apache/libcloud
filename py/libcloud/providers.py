@@ -1,27 +1,27 @@
 from libcloud.types import Provider, ProviderCreds
 
+PROVIDERS = {
+  Provider.DUMMY:
+    ('libcloud.drivers.dummy', 'DummyProvider'),
+  Provider.EC2:
+    ('libcloud.drivers.ec2', 'EC2Provider'),
+  Provider.EC2_EU:
+    ('libcloud.drivers.ec2', 'EC2EUProvider'),
+  Provider.GOGRID:
+    ('libcloud.drivers.gogrid', 'GoGridProvider'),
+  Provider.RACKSPACE:
+    ('libcloud.drivers.rackspace', 'RackspaceProvider'),
+  Provider.SLICEHOST:
+    ('libcloud.drivers.slicehost', 'SlicehostProvider'),
+  Provider.VPSNET:
+    ('libcloud.drivers.vpsnet', 'VPSNetProvider'),
+}
+
 def get_provider(provider):
-  if provider == Provider.DUMMY:
-    from libcloud.drivers.dummy import DummyProvider
-    return DummyProvider
-  elif provider == Provider.EC2:
-    from libcloud.drivers.ec2 import EC2Provider
-    return EC2Provider
-  if provider == Provider.EC2_EU:
-    from libcloud.drivers.ec2 import EC2EUProvider
-    return EC2EUProvider
-  if provider == Provider.GOGRID:
-    from libcloud.drivers.gogrid import GoGridProvider
-    return GoGridProvider
-  elif provider == Provider.RACKSPACE:
-    from libcloud.drivers.rackspace import RackspaceProvider
-    return RackspaceProvider
-  elif provider == Provider.SLICEHOST:
-    from libcloud.drivers.slicehost import SlicehostProvider
-    return SlicehostProvider
-  elif provider == Provider.VPSNET:
-    from libcloud.drivers.vpsnet import VPSNetProvider
-    return VPSNetProvider
+  if provider in PROVIDERS:
+    mod_name, provider_name = providers[provider]
+    _mod = __import__(mod_name, globals(), locals(), [provider_name])
+    return getattr(_mod, provider_name)
 
 def connect(provider, key, secret=None):
   creds = ProviderCreds(provider, key, secret)
