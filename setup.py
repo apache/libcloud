@@ -32,8 +32,8 @@ setup(name = 'libcloud',
     author = 'Alex Polvi',
     author_email = 'polvi@cloudkick.com',
     packages = ['libcloud', 'libcloud.drivers'],
-    package_dir = {'libcloud' : 'src/libcloud', 'libcloud.drivers': 'src/libcloud/drivers' },
-    license = 'BSD',
+    package_dir = {'libcloud' : 'py/libcloud', 'libcloud.drivers': 'py/libcloud/drivers' },
+    license = 'Apache License (2.0)',
     url = 'http://github.com/cloudkick/libcloud',
     cmdclass = { 'test': TestCommand }
 ) 
