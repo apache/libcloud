@@ -48,12 +48,10 @@ class AWSAuthConnection(object):
     sig = self.get_aws_auth_param(params, self.aws_secret_access_key)
 
     path = '?%s&Signature=%s' % (
-      '&'.join(['='.join((key, urllib.quote_plus(params[key])))
-                for key in params]),
+      '&'.join(['='.join([key, urllib.quote_plus(params[key])]) for key in params]),
       sig)
 
-    self.connection.request('GET', '/%s' % path, data,
-                            headers={'Host': self.server})
+    self.connection.request('GET', '/%s' % path, data, headers={'Host': self.server})
     return self.connection.getresponse()
 
   def get_aws_auth_param(self, params, aws_secret_access_key, path='/'):
@@ -71,15 +69,15 @@ class AWSAuthConnection(object):
     keys.sort()
     pairs = []
     for key in keys:
-      pairs.append(urllib.quote(key, safe='') + '=' +
-                   urllib.quote(params[key], safe='-_~'))
+      pairs.append(urllib.quote(key, safe='') + '=' + urllib.quote(params[key], safe='-_~'))
 
     qs = '&'.join(pairs)
-    string_to_sign = '\n'.join(('GET', self.server, path, qs))
+    string_to_sign = '%s\n' \
+                     '%s\n' \
+                     '%s\n' \
+                     '%s' % ('GET', self.server, path, qs)
                      
-    b64_hmac = base64.b64encode(hmac.new(aws_secret_access_key,
-                                         string_to_sign,
-                                         digestmod=sha256).digest())
+    b64_hmac = base64.b64encode(hmac.new(aws_secret_access_key, string_to_sign, digestmod=sha256).digest())
     return urllib.quote(b64_hmac)
 
   def describe_instances(self, instanceIds=[]):
@@ -139,11 +137,9 @@ class EC2NodeDriver(object):
           'shutting-down':NodeState.TERMINATED,
           'terminated':NodeState.TERMINATED }
 
-    attrs = [ 'dnsName', 'instanceId', 'imageId', 'privateDnsName',
-              'instanceState/name', 'amiLaunchIndex',
-              'productCodesSet/item/productCode', 'instanceType',
-              'launchTime', 'placement/availabilityZone', 'kernelId',
-              'ramdiskId' ]
+    attrs = [ 'dnsName', 'instanceId', 'imageId', 'privateDnsName', 'instanceState/name', 
+          'amiLaunchIndex', 'productCodesSet/item/productCode', 'instanceType', 
+          'launchTime', 'placement/availabilityZone', 'kernelId', 'ramdiskId' ]
 
     node_attrs = {}
     for attr in attrs:
@@ -154,12 +150,12 @@ class EC2NodeDriver(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid=self.get_uuid(self._findtext(element, "instanceId")),
-             name=self._findtext(element, "instanceId"),
-             state=state,
-             ipaddress=self._findtext(element, "dnsName"),
-             creds=self.creds,
-             attrs=node_attrs)
+    n = Node(uuid = self.get_uuid(self._findtext(element, "instanceId")),
+         name = self._findtext(element, "instanceId"),
+         state = state,
+         ipaddress = self._findtext(element, "dnsName"),
+         creds = self.creds,
+         attrs = node_attrs)
     return n
 
   def get_uuid(self, field):
@@ -167,10 +163,7 @@ class EC2NodeDriver(object):
   
   def list_nodes(self):
     res = self.api.describe_instances()
-    return [ self._to_node(el)
-             for el in res.http_xml.findall(
-               self._fixxpath('reservationSet/item/instancesSet/item')
-             ) ]
+    return [ self._to_node(el) for el in res.http_xml.findall(self._fixxpath('reservationSet/item/instancesSet/item')) ]
 
   def reboot_node(self, node):
     """

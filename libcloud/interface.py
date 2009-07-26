@@ -2,8 +2,7 @@ from zope.interface import Interface
 
 class INodeDriver(Interface):
   """
-  A driver which provides nodes, such as an Amazon EC2 instance,
-  or Slicehost slice
+  A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
   """
 
   def create_node(node):

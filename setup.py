@@ -4,9 +4,6 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 import os
-import sys
-
-sys.path.insert(0, 'py/')
 
 class TestCommand(Command):
   user_options = [ ]
@@ -35,7 +32,7 @@ setup(name = 'libcloud',
     author = 'Alex Polvi',
     author_email = 'polvi@cloudkick.com',
     packages = ['libcloud', 'libcloud.drivers'],
-    package_dir = {'libcloud' : 'py/libcloud', 'libcloud.drivers': 'py/libcloud/drivers' },
+    package_dir = {'libcloud' : 'libcloud', 'libcloud.drivers': 'libcloud/drivers' },
     license = 'Apache License (2.0)',
     url = 'http://github.com/cloudkick/libcloud',
     cmdclass = { 'test': TestCommand }
