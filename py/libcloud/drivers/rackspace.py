@@ -12,22 +12,34 @@ NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 class RackspaceConnection(object):
   def __init__(self, user, key):
-
     self.user = user
     self.key = key
+    self.token = None
+    self.endpoint = None
+
+  def _authenticate(self):
     self.auth = httplib.HTTPSConnection("%s:%d" % (AUTH_HOST, 443))
-    self.auth.request('GET', '/%s' % API_VERSION, headers={'X-Auth-User': user, 'X-Auth-Key': key})
+    self.auth.request('GET', '/%s' % API_VERSION, headers={'X-Auth-User': self.user, 'X-Auth-Key': self.key})
     ret = self.auth.getresponse()
     self.token = ret.getheader('x-auth-token')
     self.endpoint = ret.getheader('x-server-management-url')
+
+    if not self.token or not self.endpoint:
+      raise InvalidCredsException()
 
     (scheme, server, self.path, param, query, fragment) = urlparse.urlparse(self.endpoint)
     self.api = httplib.HTTPSConnection("%s:%d" % (server, 443))
 
   def _headers(self):
+    if not self.token:
+      self._authenticate()
+
     return {'X-Auth-Token': self.token, 'Accept': 'application/xml' }
 
   def make_request(self, path, data=''):
+    if not self.token or not self.endpoint:
+      self._authenticate()
+
     self.api.request('GET', '%s/%s' % (self.path, path), headers=self._headers())
     return self.api.getresponse()
 
