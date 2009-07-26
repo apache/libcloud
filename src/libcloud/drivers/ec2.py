@@ -10,24 +10,17 @@ from xml.etree import ElementTree as ET
 
 EC2_US_HOST = 'ec2.amazonaws.com'
 EC2_EU_HOST = 'eu-west.amazonaws.com'
-PORTS_BY_SECURITY = { True: 443, False: 80 }
 API_VERSION = '2008-02-01'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
 class AWSAuthConnection(object):
-  def __init__(self, aws_access_key_id, aws_secret_access_key,
-         is_secure=True, server=EC2_US_HOST, port=None):
-
-    if not port:
-      port = PORTS_BY_SECURITY[is_secure]
+  def __init__(self, aws_access_key_id, aws_secret_access_key, 
+                server=EC2_US_HOST):
 
     self.verbose = False
     self.aws_access_key_id = aws_access_key_id
     self.aws_secret_access_key = aws_secret_access_key
-    if (is_secure):
-      self.connection = httplib.HTTPSConnection("%s:%d" % (server, port))
-    else:
-      self.connection = httplib.HTTPConnection("%s:%d" % (server, port))
+    self.connection = httplib.HTTPSConnection("%s:%d" % (server, 443))
 
   def pathlist(self, key, arr):
     """Converts a key and an array of values into AWS query param format."""
@@ -161,14 +154,10 @@ class EC2Provider(object):
     if res.is_error():
       raise Exception(res.get_error())
     
-    import ipdb; ipdb.set_trace() ############################## Breakpoint ##############################
     return res.get_boolean()
-
-
 
 class EC2EUProvider(EC2Provider):
 
   def __init__(self, creds):
     self.creds = creds
     self.api = AWSAuthConnection(creds.key, creds.secret, server=EC2_EU_HOST)
-
