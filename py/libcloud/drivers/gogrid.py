@@ -14,7 +14,7 @@ API_VERSION = '1.1'
 
 class GoGridAuthConnection(object):
   def __init__(self, api_key, secret,
-         is_secure=True, server=HOST, port=None):
+               is_secure=True, server=HOST, port=None):
 
     if not port:
       port = PORTS_BY_SECURITY[is_secure]
@@ -40,7 +40,8 @@ class GoGridAuthConnection(object):
     params = zip(params.keys(), params.values())
     params.sort(key=lambda x: str.lower(x[0]))
 
-    path = "&".join(["=".join([param[0], urllib.quote_plus(param[1])]) for param in params])
+    path = "&".join(["=".join([param[0], urllib.quote_plus(param[1])])
+                     for param in params])
 
     self.connection.request("GET", "/api/%s?%s" % (action, path), data)
     return self.connection.getresponse()
@@ -149,4 +150,5 @@ class GoGridNodeDriver(object):
   
   def list_nodes(self):
     res = self.api.describe_servers()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('response/list/object') ]
+    return [ self._to_node(el)
+             for el in ET.XML(res.http_xml).findall('response/list/object') ]

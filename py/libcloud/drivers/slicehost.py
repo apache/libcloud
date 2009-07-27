@@ -18,7 +18,8 @@ class SlicehostConnection(object):
     self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
   def _headers(self):
-    return {'Authorization': 'Basic %s' % (base64.b64encode('%s:' % self.key)) }
+    return { 'Authorization': ('Basic %s'
+                               % (base64.b64encode('%s:' % self.key))) }
 
   def make_request(self, path, data=''):
     self.api.request('GET', '%s' % (path), headers=self._headers())
@@ -102,4 +103,5 @@ class SlicehostNodeDriver(object):
 
   def list_nodes(self):
     res = self.api.slices()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('slice') ]
+    return [ self._to_node(el)
+             for el in ET.XML(res.http_xml).findall('slice') ]

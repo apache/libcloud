@@ -16,8 +16,18 @@ class DummyNodeDriver(object):
     
   def list_nodes(self):
     return [
-      Node(uuid=self.get_uuid(), name='dummy-1', state=NodeState.RUNNING, ipaddress='127.0.0.1', creds=self.creds, attrs={'foo': 'bar'}),
-      Node(uuid=self.get_uuid(), name='dummy-2', state=NodeState.REBOOTING, ipaddress='127.0.0.2', creds=self.creds, attrs={'foo': 'bar'})
+      Node(uuid=self.get_uuid(),
+           name='dummy-1',
+           state=NodeState.RUNNING,
+           ipaddress='127.0.0.1',
+           creds=self.creds,
+           attrs={'foo': 'bar'}),
+      Node(uuid=self.get_uuid(),
+           name='dummy-2',
+           state=NodeState.REBOOTING,
+           ipaddress='127.0.0.2',
+           creds=self.creds,
+           attrs={'foo': 'bar'})
     ]
 
   def reboot_node(self, node):
