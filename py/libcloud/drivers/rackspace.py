@@ -90,12 +90,12 @@ class RackspaceNodeDriver(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = self.get_uuid(attribs['id']),
-             name = attribs['name'],
-             state = state,
-             ipaddress = self._findtext(element, 'metadata/addresses/public'),
-             creds = self.creds,
-             attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(attribs['id']),
+             name=attribs['name'],
+             state=state,
+             ipaddress=self._findtext(element, 'metadata/addresses/public'),
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):

@@ -64,8 +64,8 @@ class Response(object):
 
 
 STATE = {
-    "Started":NodeState.RUNNING,
-  }
+  "Started":NodeState.RUNNING,
+}
 
 class GoGridNodeDriver(object):
 
@@ -137,12 +137,12 @@ class GoGridNodeDriver(object):
       elif self.section_in(shard, deepattrs):
         self.get_deepattr(shard, node_attrs)
 
-    n = Node(uuid = self.get_uuid(node_attrs['id']),
-         name = node_attrs['name'],
-         state = state,
-         ipaddress = node_attrs['ip'],
-         creds = self.creds,
-         attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(node_attrs['id']),
+             name=node_attrs['name'],
+             state=state,
+             ipaddress=node_attrs['ip'],
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):

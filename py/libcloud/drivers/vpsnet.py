@@ -66,12 +66,12 @@ class VPSNetNodeDriver(object):
     elif running:
       state = NodeState.RUNNING
 
-    n = Node(uuid = self.get_uuid(element.findtext('id')),
-             name = element.findtext('label'),
-             state = state,
-             ipaddress = None, #XXX:  they do not return this in the vps list!
-             creds = self.creds,
-             attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(element.findtext('id')),
+             name=element.findtext('label'),
+             state=state,
+             ipaddress=None, #XXX:  they do not return this in the vps list!
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):

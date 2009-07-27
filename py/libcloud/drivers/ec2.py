@@ -157,12 +157,12 @@ class EC2NodeDriver(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = self.get_uuid(self._findtext(element, "instanceId")),
-         name = self._findtext(element, "instanceId"),
-         state = state,
-         ipaddress = self._findtext(element, "dnsName"),
-         creds = self.creds,
-         attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(self._findtext(element, "instanceId")),
+             name=self._findtext(element, "instanceId"),
+             state=state,
+             ipaddress=self._findtext(element, "dnsName"),
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):

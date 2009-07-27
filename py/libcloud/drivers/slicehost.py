@@ -90,12 +90,12 @@ class SlicehostNodeDriver(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = self.get_uuid(element.findtext('id')),
-             name = element.findtext('name'),
-             state = state,
-             ipaddress = ipaddress,
-             creds = self.creds,
-             attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(element.findtext('id')),
+             name=element.findtext('name'),
+             state=state,
+             ipaddress=ipaddress,
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):
