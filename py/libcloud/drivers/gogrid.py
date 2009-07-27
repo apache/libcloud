@@ -40,7 +40,7 @@ class GoGridAuthConnection(object):
     params = zip(params.keys(), params.values())
     params.sort(key=lambda x: str.lower(x[0]))
 
-    path = "&".join(["=".join([param[0], urllib.quote_plus(param[1])])
+    path = "&".join(["=".join((param[0], urllib.quote_plus(param[1])))
                      for param in params])
 
     self.connection.request("GET", "/api/%s?%s" % (action, path), data)

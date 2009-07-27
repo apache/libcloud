@@ -48,7 +48,7 @@ class AWSAuthConnection(object):
     sig = self.get_aws_auth_param(params, self.aws_secret_access_key)
 
     path = '?%s&Signature=%s' % (
-      '&'.join(['='.join([key, urllib.quote_plus(params[key])])
+      '&'.join(['='.join((key, urllib.quote_plus(params[key])))
                 for key in params]),
       sig)
 
@@ -75,10 +75,7 @@ class AWSAuthConnection(object):
                    urllib.quote(params[key], safe='-_~'))
 
     qs = '&'.join(pairs)
-    string_to_sign = '%s\n' \
-                     '%s\n' \
-                     '%s\n' \
-                     '%s' % ('GET', self.server, path, qs)
+    string_to_sign = '\n'.join(('GET', self.server, path, qs))
                      
     b64_hmac = base64.b64encode(hmac.new(aws_secret_access_key,
                                          string_to_sign,
