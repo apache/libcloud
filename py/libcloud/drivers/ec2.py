@@ -1,4 +1,4 @@
-from libcloud.types import NodeState, Node
+from libcloud.types import NodeState, Node, InvalidCredsException
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import base64
@@ -11,7 +11,7 @@ import hashlib
 from xml.etree import ElementTree as ET
 
 EC2_US_HOST = 'ec2.amazonaws.com'
-EC2_EU_HOST = 'eu-west.amazonaws.com'
+EC2_EU_HOST = 'eu-west-1.ec2.amazonaws.com'
 API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
@@ -90,6 +90,9 @@ class AWSAuthConnection(object):
 
 class Response(object):
   def __init__(self, http_response):
+    if int(http_response.status) == 403:
+      raise InvalidCredsException()
+
     self.http_response = http_response
     self.xml = http_response.read()
     self.http_xml = ET.XML(self.xml)

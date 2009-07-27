@@ -1,4 +1,4 @@
-from libcloud.types import NodeState, Node
+from libcloud.types import NodeState, Node, InvalidCredsException
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 
@@ -30,6 +30,8 @@ class VPSNetConnection(object):
 
 class Response(object):
   def __init__(self, http_response):
+    if int(http_response.status) == 401:
+      raise InvalidCredsException()
     self.http_response = http_response
     self.http_xml = http_response.read()
 

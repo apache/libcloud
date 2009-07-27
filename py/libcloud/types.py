@@ -1,6 +1,3 @@
-from libcloud.interface import INodeDriver
-from zope.interface import implements
-
 class Provider(object):
   """ Defines for each of the supported providers """
   DUMMY = 0 # Example provider
