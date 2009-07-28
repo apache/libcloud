@@ -7,9 +7,9 @@ from secrets import GOGRID_API_KEY, GOGRID_SECRET
 
 class GoGridTests(unittest.TestCase):
 
-  def setUp(self):
-    self.conn = connect(Provider.GOGRID, GOGRID_API_KEY, GOGRID_SECRET)
+    def setUp(self):
+        self.conn = connect(Provider.GOGRID, GOGRID_API_KEY, GOGRID_SECRET)
 
-  def test_list_nodes(self):
-    ret = self.conn.list_nodes()
-    print ret
+    def test_list_nodes(self):
+        ret = self.conn.list_nodes()
+        print ret

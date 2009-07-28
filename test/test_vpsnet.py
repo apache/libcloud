@@ -7,8 +7,8 @@ from secrets import VPSNET_USER, VPSNET_KEY
 
 class VPSNetTests(unittest.TestCase):
 
-  def setUp(self):
-    self.conn = connect(Provider.VPSNET, VPSNET_USER, VPSNET_KEY)
+    def setUp(self):
+        self.conn = connect(Provider.VPSNET, VPSNET_USER, VPSNET_KEY)
 
-  def test_list_nodes(self):
-    ret = self.conn.list_nodes()
+    def test_list_nodes(self):
+        ret = self.conn.list_nodes()
