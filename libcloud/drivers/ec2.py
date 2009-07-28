@@ -74,7 +74,7 @@ class AWSAuthConnection(object):
         pairs = []
         for key in keys:
             pairs.append(urllib.quote(key, safe='') + '=' +
-                             urllib.quote(params[key], safe='-_~'))
+                         urllib.quote(params[key], safe='-_~'))
 
         qs = '&'.join(pairs)
         string_to_sign = '\n'.join(('GET', self.server, path, qs))
@@ -136,10 +136,10 @@ class EC2NodeDriver(object):
         return element.findtext(self._fixxpath(xpath))
 
     def _to_node(self, element):
-        states = {'pending':NodeState.PENDING,
-                  'running':NodeState.RUNNING,
-                  'shutting-down':NodeState.TERMINATED,
-                  'terminated':NodeState.TERMINATED }
+        states = { 'pending': NodeState.PENDING,
+                   'running': NodeState.RUNNING,
+                   'shutting-down': NodeState.TERMINATED,
+                   'terminated': NodeState.TERMINATED }
 
         attrs = [ 'dnsName', 'instanceId', 'imageId', 'privateDnsName',
                   'instanceState/name', 'amiLaunchIndex',
@@ -171,9 +171,9 @@ class EC2NodeDriver(object):
     def list_nodes(self):
         res = self.api.describe_instances()
         return [ self._to_node(el)
-                   for el in res.http_xml.findall(
+                 for el in res.http_xml.findall(
                      self._fixxpath('reservationSet/item/instancesSet/item')
-                    ) ]
+                 ) ]
 
     def reboot_node(self, node):
         """

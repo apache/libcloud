@@ -106,4 +106,5 @@ class RackspaceNodeDriver(object):
     def list_nodes(self):
         res = self.api.list_servers()
         return [ self._to_node(el)
-         for el in ET.XML(res.http_xml).findall(self._fixxpath('server')) ]
+                 for el
+                 in ET.XML(res.http_xml).findall(self._fixxpath('server')) ]

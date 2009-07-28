@@ -40,9 +40,9 @@ class GoGridAuthConnection(object):
         params = zip(params.keys(), params.values())
         params.sort(key=lambda x: str.lower(x[0]))
 
-        path = "&".join(["=".join((param[0], urllib.quote_plus(param[1])))
-                                         for param in params])
-
+        path = "&".join([ "=".join((param[0], urllib.quote_plus(param[1])))
+                          for param in params ])
+        
         self.connection.request("GET", "/api/%s?%s" % (action, path), data)
         return self.connection.getresponse()
 
@@ -63,7 +63,7 @@ class Response(object):
 
 
 STATE = {
-    "Started":NodeState.RUNNING,
+    "Started": NodeState.RUNNING,
 }
 
 class GoGridNodeDriver(object):
@@ -137,11 +137,11 @@ class GoGridNodeDriver(object):
                 self.get_deepattr(shard, node_attrs)
 
         n = Node(uuid=self.get_uuid(node_attrs['id']),
-                         name=node_attrs['name'],
-                         state=state,
-                         ipaddress=node_attrs['ip'],
-                         creds=self.creds,
-                         attrs=node_attrs)
+                 name=node_attrs['name'],
+                 state=state,
+                 ipaddress=node_attrs['ip'],
+                 creds=self.creds,
+                 attrs=node_attrs)
         return n
 
     def get_uuid(self, field):
@@ -151,4 +151,5 @@ class GoGridNodeDriver(object):
     def list_nodes(self):
         res = self.api.describe_servers()
         return [ self._to_node(el)
-          for el in ET.XML(res.http_xml).findall('response/list/object') ]
+                 for el
+                 in ET.XML(res.http_xml).findall('response/list/object') ]

@@ -13,7 +13,6 @@ API_HOST = 'api.slicehost.com'
 class SlicehostConnection(object):
     def __init__(self, key):
         self.key = key
-
         self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
     def _headers(self, datalen=0):
@@ -22,7 +21,7 @@ class SlicehostConnection(object):
                               % (base64.b64encode('%s:' % self.key))),
             'Content-Length': str(datalen)
         }
-
+    
     def make_request(self, path, data='', method='GET'):
         self.api.request(method, path, 
                          headers=self._headers(datalen=len(data)))
@@ -58,8 +57,9 @@ class Response(object):
         if not self.is_error():
             return None
         else:
-            return "; ".join([err.text
-                      for err in ET.XML(self.http_xml).findall('error')])
+            return "; ".join([ err.text
+                               for err in
+                               ET.XML(self.http_xml).findall('error') ])
 
 class SlicehostNodeDriver(object):
 
@@ -80,7 +80,7 @@ class SlicehostNodeDriver(object):
             subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
             mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
 
-            if (ip&mask) == (subnet&mask):
+            if (ip & mask) == (subnet & mask):
                 return True
             
         return False
@@ -116,11 +116,11 @@ class SlicehostNodeDriver(object):
             state = NodeState.UNKNOWN
 
         n = Node(uuid=self.get_uuid(element.findtext('id')),
-                         name=element.findtext('name'),
-                         state=state,
-                         ipaddress=ipaddress,
-                         creds=self.creds,
-                         attrs=node_attrs)
+                 name=element.findtext('name'),
+                 state=state,
+                 ipaddress=ipaddress,
+                 creds=self.creds,
+                 attrs=node_attrs)
         return n
 
     def get_uuid(self, field):
@@ -151,11 +151,10 @@ class SlicehostNodeDriver(object):
         Requires 'Allow Slices to be deleted or rebuilt from the API' to be
         ticked at https://manage.slicehost.com/api, otherwise returns:
 
-            <errors>
-                <error>You must enable slice deletes in the SliceManager</error>
-                <error>Permission denied</error>
-            </errors>
-
+        <errors>
+          <error>You must enable slice deletes in the SliceManager</error>
+          <error>Permission denied</error>
+        </errors>
         """
 
         res = self.api.destroy(node.attrs['id'])
