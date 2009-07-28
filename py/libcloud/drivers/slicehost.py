@@ -31,6 +31,14 @@ class SlicehostConnection(object):
   def slices(self):
     return Response(self.make_request('/slices.xml'))
 
+  def reboot(self, slice_id):
+    uri = '/slices/%s/reboot.xml' % slice_id
+    return Response(self.make_request(uri, method='PUT'))
+
+  def hard_reboot(self, slice_id):
+    uri = '/slices/%s/hard_reboot.xml' % slice_id
+    return Response(self.make_request(uri, method='PUT'))
+
 class Response(object):
   def __init__(self, http_response):
     if int(http_response.status) == 401:
@@ -119,3 +127,16 @@ class SlicehostNodeDriver(object):
     res = self.api.slices()
     return [ self._to_node(el)
              for el in ET.XML(res.http_xml).findall('slice') ]
+
+  def reboot_node(self, node):
+    """Reboot the node by passing in the node object"""
+
+    # 'hard' could bubble up as kwarg depending on how reboot_node turns out
+    # Defaulting to soft reboot
+    hard = False
+    reboot = self.api.hard_reboot if hard else self.api.reboot
+
+    res = reboot(node.attrs['id'])
+    if res.is_error():
+      raise Exception(res.get_error())
+    return res
