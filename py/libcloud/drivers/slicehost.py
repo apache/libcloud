@@ -39,6 +39,17 @@ class Response(object):
     self.http_response = http_response
     self.http_xml = http_response.read()
 
+  def is_error(self):
+    return self.http_response.status != 200
+
+  def get_error(self):
+    if not self.is_error():
+      return None
+    else:
+      return "\n".join([err.text
+                        for err
+                        in ET.XML(self.http_xml).findall('error')])
+
 class SlicehostNodeDriver(object):
 
   implements(INodeDriver)
