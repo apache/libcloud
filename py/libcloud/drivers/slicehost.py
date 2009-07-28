@@ -17,12 +17,13 @@ class SlicehostConnection(object):
 
     self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
-  def _headers(self):
+  def _headers(self, datalen=0):
     return { 'Authorization': ('Basic %s'
-                               % (base64.b64encode('%s:' % self.key))) }
+                               % (base64.b64encode('%s:' % self.key))),
+             'Content-Length': str(datalen) }
 
   def make_request(self, path, data='', method='GET'):
-    self.api.request(method, path, headers=self._headers())
+    self.api.request(method, path, headers=self._headers(datalen=len(data)))
     return self.api.getresponse()
 
   def slices(self):
