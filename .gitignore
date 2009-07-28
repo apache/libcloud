@@ -1,6 +1,6 @@
 *.py[co]
 *.swp
-test/secrets.py*
+secrets.py
 *~
 _trial_temp
 build
