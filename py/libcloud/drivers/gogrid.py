@@ -2,7 +2,6 @@ from libcloud.types import NodeState, Node, InvalidCredsException
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import httplib
-import md5
 import time
 import urllib
 import hashlib
@@ -48,8 +47,7 @@ class GoGridAuthConnection(object):
 
   def get_signature(self, key, secret):
     """ create sig from md5 of key + secret + time """
-    m = md5.new(key + secret + str(int(time.time())))
-    return m.hexdigest()
+    return hashlib.md5(key + secret + str(int(time.time()))).hexdigest()
 
   def describe_servers(self):
     return Response(self.make_request("/grid/server/list", {}))
