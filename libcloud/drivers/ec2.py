@@ -115,7 +115,8 @@ class Response(object):
         return "\n".join(err_list)
 
     def get_boolean(self):
-        return self.http_xml.getchildren()[0].text == "true"
+        tag = "{%s}%s" % (NAMESPACE, 'return')
+        return self.http_xml.findtext(tag) == 'true'
 
 class EC2NodeDriver(object):
 
