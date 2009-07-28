@@ -21,8 +21,8 @@ class SlicehostConnection(object):
     return { 'Authorization': ('Basic %s'
                                % (base64.b64encode('%s:' % self.key))) }
 
-  def make_request(self, path, data=''):
-    self.api.request('GET', path, headers=self._headers())
+  def make_request(self, path, data='', method='GET'):
+    self.api.request(method, path, headers=self._headers())
     return self.api.getresponse()
 
   def slices(self):
