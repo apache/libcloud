@@ -54,7 +54,7 @@ class Response(object):
     if not self.is_error():
       return None
     else:
-      return "\n".join([err.text
+      return "; ".join([err.text
                         for err
                         in ET.XML(self.http_xml).findall('error')])
 
