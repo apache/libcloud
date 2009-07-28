@@ -139,11 +139,12 @@ class SlicehostNodeDriver(object):
     # Defaulting to soft reboot
     hard = False
     reboot = self.api.hard_reboot if hard else self.api.reboot
+    expected_status = 'hard_reboot' if hard else 'reboot'
 
     res = reboot(node.attrs['id'])
     if res.is_error():
       raise Exception(res.get_error())
-    return res
+    return ET.XML(res.http_xml).findtext('status') == expected_status
 
   def destroy_node(self, node):
     """Destroys the node
@@ -161,4 +162,4 @@ class SlicehostNodeDriver(object):
     res = self.api.destroy(node.attrs['id'])
     if res.is_error():
       raise Exception(res.get_error())
-    return res
+    return True
