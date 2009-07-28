@@ -92,6 +92,10 @@ class AWSAuthConnection(object):
         params = self.pathlist("InstanceId", instanceIds)
         return Response(self.make_request("RebootInstances", params))
 
+    def terminate_instances(self, instanceIds=[]):
+        params = self.pathlist("InstanceId", instanceIds)
+        return Response(self.make_request("TerminateInstances", params))
+
 class Response(object):
     def __init__(self, http_response):
         if int(http_response.status) == 403:
@@ -117,6 +121,11 @@ class Response(object):
     def get_boolean(self):
         tag = "{%s}%s" % (NAMESPACE, 'return')
         return self.http_xml.findtext(tag) == 'true'
+
+    def get_terminate_boolean(self):
+        status = self.http_xml.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
+        return any([ term_status == status for term_status
+                     in ('shutting-down', 'terminated') ])
 
 class EC2NodeDriver(object):
 
@@ -185,6 +194,16 @@ class EC2NodeDriver(object):
             raise Exception(res.get_error())
         
         return res.get_boolean()
+
+    def destroy_node(self, node):
+        """
+        Destroy node by passing in the node object
+        """
+        res = self.api.terminate_instances([node.attrs['instanceId']])
+        if res.is_error():
+            raise Exception(res.get_error())
+        
+        return res.get_terminate_boolean()
 
 class EC2EUNodeDriver(EC2NodeDriver):
 
