@@ -39,6 +39,10 @@ class SlicehostConnection(object):
     uri = '/slices/%s/hard_reboot.xml' % slice_id
     return Response(self.make_request(uri, method='PUT'))
 
+  def destroy(self, slice_id):
+    uri = '/slices/%s/destroy.xml' % slice_id
+    return Response(self.make_request(uri, method='PUT'))
+
 class Response(object):
   def __init__(self, http_response):
     if int(http_response.status) == 401:
@@ -137,6 +141,24 @@ class SlicehostNodeDriver(object):
     reboot = self.api.hard_reboot if hard else self.api.reboot
 
     res = reboot(node.attrs['id'])
+    if res.is_error():
+      raise Exception(res.get_error())
+    return res
+
+  def destroy_node(self, node):
+    """Destroys the node
+
+    Requires 'Allow Slices to be deleted or rebuilt from the API' to be
+    ticked at https://manage.slicehost.com/api, otherwise returns:
+
+      <errors>
+        <error>You must enable slice deletes in the SliceManager</error>
+        <error>Permission denied</error>
+      </errors>
+
+    """
+
+    res = self.api.destroy(node.attrs['id'])
     if res.is_error():
       raise Exception(res.get_error())
     return res
