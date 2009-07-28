@@ -12,7 +12,7 @@ class IDriver(Interface):
     connectionCls = Attribute("""A suitable provider-specific Connection class""")
     nodesCls = Attribute("""A suitable provider-specific NodeDriver class""")
     connection = Attribute("""A suitable provider-specific Connection instance""")
-    nodes = Attribute("""A suitable provider-specific NodeDriver instance""")
+    node = Attribute("""A suitable provider-specific NodeDriver instance""")
 
 
 class IDriverFactory(Interface):
