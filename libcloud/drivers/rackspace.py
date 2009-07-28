@@ -19,7 +19,9 @@ class RackspaceConnection(object):
 
   def _authenticate(self):
     self.auth = httplib.HTTPSConnection("%s:%d" % (AUTH_HOST, 443))
-    self.auth.request('GET', '/%s' % API_VERSION, headers={'X-Auth-User': self.user, 'X-Auth-Key': self.key})
+    self.auth.request('GET', '/%s' % API_VERSION,
+                      headers={'X-Auth-User': self.user,
+                               'X-Auth-Key': self.key})
     ret = self.auth.getresponse()
     self.token = ret.getheader('x-auth-token')
     self.endpoint = ret.getheader('x-server-management-url')
@@ -27,7 +29,8 @@ class RackspaceConnection(object):
     if not self.token or not self.endpoint:
       raise InvalidCredsException()
 
-    (scheme, server, self.path, param, query, fragment) = urlparse.urlparse(self.endpoint)
+    (scheme, server, self.path,
+     param, query, fragment) = urlparse.urlparse(self.endpoint)
     self.api = httplib.HTTPSConnection("%s:%d" % (server, 443))
 
   def _headers(self):
@@ -40,7 +43,8 @@ class RackspaceConnection(object):
     if not self.token or not self.endpoint:
       self._authenticate()
 
-    self.api.request('GET', '%s/%s' % (self.path, path), headers=self._headers())
+    self.api.request('GET', '%s/%s' % (self.path, path),
+                     headers=self._headers())
     return self.api.getresponse()
 
   def list_servers(self):
@@ -86,12 +90,12 @@ class RackspaceNodeDriver(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = self.get_uuid(attribs['id']),
-             name = attribs['name'],
-             state = state,
-             ipaddress = self._findtext(element, 'metadata/addresses/public'),
-             creds = self.creds,
-             attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(attribs['id']),
+             name=attribs['name'],
+             state=state,
+             ipaddress=self._findtext(element, 'metadata/addresses/public'),
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):
@@ -99,4 +103,5 @@ class RackspaceNodeDriver(object):
 
   def list_nodes(self):
     res = self.api.list_servers()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall(self._fixxpath('server')) ]
+    return [ self._to_node(el)
+             for el in ET.XML(res.http_xml).findall(self._fixxpath('server')) ]

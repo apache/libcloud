@@ -4,6 +4,9 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 import os
+import sys
+
+sys.path.insert(0, 'py/')
 
 class TestCommand(Command):
   user_options = [ ]

@@ -2,7 +2,6 @@ from libcloud.types import NodeState, Node, InvalidCredsException
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import httplib
-import md5
 import time
 import urllib
 import hashlib
@@ -14,7 +13,7 @@ API_VERSION = '1.1'
 
 class GoGridAuthConnection(object):
   def __init__(self, api_key, secret,
-         is_secure=True, server=HOST, port=None):
+               is_secure=True, server=HOST, port=None):
 
     if not port:
       port = PORTS_BY_SECURITY[is_secure]
@@ -40,15 +39,15 @@ class GoGridAuthConnection(object):
     params = zip(params.keys(), params.values())
     params.sort(key=lambda x: str.lower(x[0]))
 
-    path = "&".join(["=".join([param[0], urllib.quote_plus(param[1])]) for param in params])
+    path = "&".join(["=".join((param[0], urllib.quote_plus(param[1])))
+                     for param in params])
 
     self.connection.request("GET", "/api/%s?%s" % (action, path), data)
     return self.connection.getresponse()
 
   def get_signature(self, key, secret):
     """ create sig from md5 of key + secret + time """
-    m = md5.new(key + secret + str(int(time.time())))
-    return m.hexdigest()
+    return hashlib.md5(key + secret + str(int(time.time()))).hexdigest()
 
   def describe_servers(self):
     return Response(self.make_request("/grid/server/list", {}))
@@ -63,8 +62,8 @@ class Response(object):
 
 
 STATE = {
-    "Started":NodeState.RUNNING,
-  }
+  "Started":NodeState.RUNNING,
+}
 
 class GoGridNodeDriver(object):
 
@@ -136,12 +135,12 @@ class GoGridNodeDriver(object):
       elif self.section_in(shard, deepattrs):
         self.get_deepattr(shard, node_attrs)
 
-    n = Node(uuid = self.get_uuid(node_attrs['id']),
-         name = node_attrs['name'],
-         state = state,
-         ipaddress = node_attrs['ip'],
-         creds = self.creds,
-         attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(node_attrs['id']),
+             name=node_attrs['name'],
+             state=state,
+             ipaddress=node_attrs['ip'],
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):
@@ -149,4 +148,5 @@ class GoGridNodeDriver(object):
   
   def list_nodes(self):
     res = self.api.describe_servers()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('response/list/object') ]
+    return [ self._to_node(el)
+             for el in ET.XML(res.http_xml).findall('response/list/object') ]

@@ -17,15 +17,31 @@ class SlicehostConnection(object):
 
     self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
-  def _headers(self):
-    return {'Authorization': 'Basic %s' % (base64.b64encode('%s:' % self.key)) }
+  def _headers(self, datalen=0):
+    return {
+      'Authorization': ('Basic %s'
+                        % (base64.b64encode('%s:' % self.key))),
+      'Content-Length': str(datalen)
+    }
 
-  def make_request(self, path, data=''):
-    self.api.request('GET', '%s' % (path), headers=self._headers())
+  def make_request(self, path, data='', method='GET'):
+    self.api.request(method, path, headers=self._headers(datalen=len(data)))
     return self.api.getresponse()
 
   def slices(self):
     return Response(self.make_request('/slices.xml'))
+
+  def reboot(self, slice_id):
+    uri = '/slices/%s/reboot.xml' % slice_id
+    return Response(self.make_request(uri, method='PUT'))
+
+  def hard_reboot(self, slice_id):
+    uri = '/slices/%s/hard_reboot.xml' % slice_id
+    return Response(self.make_request(uri, method='PUT'))
+
+  def destroy(self, slice_id):
+    uri = '/slices/%s/destroy.xml' % slice_id
+    return Response(self.make_request(uri, method='PUT'))
 
 class Response(object):
   def __init__(self, http_response):
@@ -34,6 +50,17 @@ class Response(object):
 
     self.http_response = http_response
     self.http_xml = http_response.read()
+
+  def is_error(self):
+    return self.http_response.status != 200
+
+  def get_error(self):
+    if not self.is_error():
+      return None
+    else:
+      return "; ".join([err.text
+                        for err
+                        in ET.XML(self.http_xml).findall('error')])
 
 class SlicehostNodeDriver(object):
 
@@ -89,12 +116,12 @@ class SlicehostNodeDriver(object):
     except:
       state = NodeState.UNKNOWN
 
-    n = Node(uuid = self.get_uuid(element.findtext('id')),
-             name = element.findtext('name'),
-             state = state,
-             ipaddress = ipaddress,
-             creds = self.creds,
-             attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(element.findtext('id')),
+             name=element.findtext('name'),
+             state=state,
+             ipaddress=ipaddress,
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):
@@ -102,4 +129,37 @@ class SlicehostNodeDriver(object):
 
   def list_nodes(self):
     res = self.api.slices()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('slice') ]
+    return [ self._to_node(el)
+             for el in ET.XML(res.http_xml).findall('slice') ]
+
+  def reboot_node(self, node):
+    """Reboot the node by passing in the node object"""
+
+    # 'hard' could bubble up as kwarg depending on how reboot_node turns out
+    # Defaulting to soft reboot
+    hard = False
+    reboot = self.api.hard_reboot if hard else self.api.reboot
+    expected_status = 'hard_reboot' if hard else 'reboot'
+
+    res = reboot(node.attrs['id'])
+    if res.is_error():
+      raise Exception(res.get_error())
+    return ET.XML(res.http_xml).findtext('status') == expected_status
+
+  def destroy_node(self, node):
+    """Destroys the node
+
+    Requires 'Allow Slices to be deleted or rebuilt from the API' to be
+    ticked at https://manage.slicehost.com/api, otherwise returns:
+
+      <errors>
+        <error>You must enable slice deletes in the SliceManager</error>
+        <error>Permission denied</error>
+      </errors>
+
+    """
+
+    res = self.api.destroy(node.attrs['id'])
+    if res.is_error():
+      raise Exception(res.get_error())
+    return True

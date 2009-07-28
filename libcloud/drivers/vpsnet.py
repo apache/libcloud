@@ -18,8 +18,10 @@ class VPSNetConnection(object):
     self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
 
   def _headers(self):
-    return {'Authorization': 'Basic %s' % (base64.b64encode('%s:%s' % (self.user, self.key))),
-            'Host': API_HOST }
+    return { 'Authorization': ('Basic %s'
+                               % (base64.b64encode('%s:%s' % (self.user,
+                                                              self.key)))),
+             'Host': API_HOST }
 
   def make_request(self, path, data=''):
     self.api.request('GET', '%s' % (path), headers=self._headers())
@@ -45,8 +47,9 @@ class VPSNetNodeDriver(object):
 
   def _to_node(self, element):
     attrs = [ 'backups_enabled', 'cloud_id', 'consumer_id', 'created_at',
-              'domain_name', 'hostname', 'id', 'label', 'password', 'system_template_id',
-              'updated_at', 'running', 'power_action_pending', 'slices_count' ]
+              'domain_name', 'hostname', 'id', 'label', 'password',
+              'system_template_id', 'updated_at', 'running',
+              'power_action_pending', 'slices_count' ]
 
     node_attrs = {}
     for attr in attrs:
@@ -63,12 +66,12 @@ class VPSNetNodeDriver(object):
     elif running:
       state = NodeState.RUNNING
 
-    n = Node(uuid = self.get_uuid(element.findtext('id')),
-             name = element.findtext('label'),
-             state = state,
-             ipaddress = None, #XXX:  they do not return this in the vps list!
-             creds = self.creds,
-             attrs = node_attrs)
+    n = Node(uuid=self.get_uuid(element.findtext('id')),
+             name=element.findtext('label'),
+             state=state,
+             ipaddress=None, #XXX:  they do not return this in the vps list!
+             creds=self.creds,
+             attrs=node_attrs)
     return n
 
   def get_uuid(self, field):
@@ -76,4 +79,5 @@ class VPSNetNodeDriver(object):
 
   def list_nodes(self):
     res = self.api.virtual_machines()
-    return [ self._to_node(el) for el in ET.XML(res.http_xml).findall('virtual_machine') ]
+    return [ self._to_node(el)
+             for el in ET.XML(res.http_xml).findall('virtual_machine') ]

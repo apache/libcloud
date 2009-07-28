@@ -25,7 +25,8 @@ class ProviderCreds(object):
     self.name = name
 
   def __repr__(self):
-    return 'ProviderCreds(provider=%d, key="%s", secret="%s", name="%s"' % (self.provider, self.key, self.secret, self.name)
+    return ('ProviderCreds(provider=%d, key="%s", secret="%s", name="%s"'
+            % (self.provider, self.key, self.secret, self.name))
 
 class Node(object):
   """ An object for representing a standard node """
@@ -45,7 +46,10 @@ class Node(object):
     self.attrs = attrs
 
   def __repr__(self):
-    return 'Node(uuid="%s", name="%s", state=%d, ipaddress="%s", creds="%s", attrs="%s")' % (self.uuid, self.name, self.state, self.ipaddress, self.creds, self.attrs)
+    return (('Node(uuid="%s", name="%s", state=%d, '
+             'ipaddress="%s", creds="%s", attrs="%s")')
+            % (self.uuid, self.name, self.state,
+               self.ipaddress, self.creds, self.attrs))
 
 class InvalidCredsException(Exception):
   def __init__(self, value='Invalid credentials with the provider'):
