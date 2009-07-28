@@ -27,36 +27,65 @@ class IDriverFactory(Interface):
         """
 
 
+class INode(Interface):
+    """
+    A node (instance, etc)
+    """
+    uuid = Attribute("""Unique identifier""")
+    name = Attribute("""Hostname or similar identifier""")
+    state = Attribute("""A standard Node state as provided by L{NodeState}""")
+    ip = Attribute("""IP Address of the Node""")
+    driver = Attribute("""The NodeDriver for this Node""")
+
+    def destroy():
+        """
+        Call `self.driver.destroy(self)`. A convenience method.
+        """
+
+    def reboot():
+        """
+        Call `self.driver.reboot(self)`. A convenience method.
+        """
+
+
+class INodeFactory(Interface):
+    """
+    Create nodes
+    """
+    def __call__(uuid, name, state, ip, driver, **kwargs):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """
+
+
 class INodeDriver(Interface):
-  """
-  A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
-  """
-
-  def create(node):
     """
-    Creates a new node based on the given skeleton node
+    A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
     """
 
-  def destroy(node):
-    """
-    Destroys (shuts down) the given node
-    """
+    def create(node):
+        """
+        Creates a new node based on the given skeleton node
+        """
 
-  def list():
-    """
-    Returns a list of nodes for this provider
-    """
+    def destroy(node):
+        """
+        Destroys (shuts down) the given node
+        """
+
+    def list():
+        """
+        Returns a list of nodes for this provider
+        """
 
   def reboot(node):
-    """
-    Reboots the given node
-    """
+        """
+        Reboots the given node
+        """
 
 
 """
 Connection Interfaces / Factories.
-
-Usage:
 """
 class IConnection(Interface):
     """
@@ -121,7 +150,6 @@ class IConnectionKey(IConnection):
     IConnection which only depends on an API key for authentication.
     """
     key = Attribute("""API key, token, etc.""")
-
 
 
 class IConnectionUserAndKey(IConnectionKey):
