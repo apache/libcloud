@@ -1,14 +1,22 @@
-from libcloud.providers import connect
-from libcloud.types import Provider
+from libcloud.drivers import EC2, Slicehost, Rackspace
 
-ec2 = connect(Provider.EC2, 'access key id', 'secret key')
-slicehost = connect(Provider.SLICEHOST, 'api key')
-rackspace = connect(Provider.RACKSPACE, 'username', 'api key')
+ec2 = EC2('access key id', 'secret key')
+slicehost = Slicehost('api key')
+rackspace = Rackspace('username', 'api key')
 
-all_servers = []
+all_nodes = []
 for provider in [ ec2, slicehost, rackspace ]:
-  all_servers.extend(provider.list_nodes())
+  all_nodes.extend(provider.node.list())
 
-# all_servers now has a list of node objects 
-# from ec2, slicehost, and rackspace
-print all_servers
+print all_nodes
+"""
+[ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
+<Node: provider=Slicehost, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
+"""
+
+node = all_nodes[0]
+print node.destroy()
+# <Node: provider=Amazon, status=TERMINATED, name=bob, ip=1.2.3.4.5>,
+
+print slicehost.node.create(from=node)
+# <Node: provider=Slicehost, status=PENDING, name=bob, ip=None>,
