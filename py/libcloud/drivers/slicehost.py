@@ -22,7 +22,7 @@ class SlicehostConnection(object):
                                % (base64.b64encode('%s:' % self.key))) }
 
   def make_request(self, path, data=''):
-    self.api.request('GET', '%s' % (path), headers=self._headers())
+    self.api.request('GET', path, headers=self._headers())
     return self.api.getresponse()
 
   def slices(self):
