@@ -51,11 +51,27 @@ class RackspaceConnection(object):
 
     def list_servers(self):
         return Response(self.make_request('servers/detail'))
+    
+    def action(self, id, verb, params):
+        uri = 'servers/%s/action' % id
+        data = ('<%s xmlns="%s" %s/>'
+                % (verb, NAMESPACE,
+                   ' '.join(['%s="%s"' % item for item in params.items()])))
+        return Response(self.make_request(uri, data=data, method='POST'))
 
 class Response(object):
     def __init__(self, http_response):
         self.http_response = http_response
         self.http_xml = http_response.read()
+
+    def is_error(self):
+        return self.http_response.status != 202
+
+    def get_error(self):
+        tag = "{%s}message" % NAMESPACE;
+        return "; ".join([ err.text
+                           for err in
+                           ET.XML(self.http_xml).findall(tag) ])
 
 class RackspaceNodeDriver(object):
 
@@ -109,3 +125,19 @@ class RackspaceNodeDriver(object):
         return [ self._to_node(el)
                  for el
                  in ET.XML(res.http_xml).findall(self._fixxpath('server')) ]
+
+    def reboot_node(self, node):
+        """Reboot the node by passing in the node object"""
+
+        # 'hard' could bubble up as kwarg depending on how reboot_node 
+        # turns out. Defaulting to soft reboot.
+        hard = False
+        verb = 'reboot'
+        id = node.attrs['id']
+        params = {'type': 'HARD' if hard else 'SOFT'}
+
+        res = self.api.action(id, verb, params)
+        if res.is_error():
+            raise Exception(res.get_error())
+
+        return True
