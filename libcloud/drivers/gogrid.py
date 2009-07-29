@@ -28,7 +28,7 @@ class GoGridAuthConnection(object):
             self.connection = httplib.HTTPConnection(conn_str)
 
 
-    def make_request(self, action, params, data=''):
+    def make_request(self, action, params={}, data=''):
         if self.verbose:
             print params
 
@@ -51,7 +51,7 @@ class GoGridAuthConnection(object):
         return hashlib.md5(key + secret + str(int(time.time()))).hexdigest()
 
     def server_list(self):
-        return Response(self.make_request("/grid/server/list", {}))
+        return Response(self.make_request("/grid/server/list"))
 
 
 class Response(object):
