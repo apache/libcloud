@@ -50,7 +50,7 @@ class GoGridAuthConnection(object):
         """ create sig from md5 of key + secret + time """
         return hashlib.md5(key + secret + str(int(time.time()))).hexdigest()
 
-    def describe_servers(self):
+    def server_list(self):
         return Response(self.make_request("/grid/server/list", {}))
 
 
@@ -149,7 +149,7 @@ class GoGridNodeDriver(object):
         return hashlib.sha1(uuid_str).hexdigest()
     
     def list_nodes(self):
-        res = self.api.describe_servers()
+        res = self.api.server_list()
         return [ self._to_node(el)
                  for el
                  in ET.XML(res.http_xml).findall('response/list/object') ]
