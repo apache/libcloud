@@ -59,6 +59,10 @@ class RackspaceConnection(object):
                    ' '.join(['%s="%s"' % item for item in params.items()])))
         return Response(self.make_request(uri, data=data, method='POST'))
 
+    def delete(self, id):
+        uri = 'servers/%s' % id
+        return Response(self.make_request(uri, method='DELETE'))
+
 class Response(object):
     def __init__(self, http_response):
         self.http_response = http_response
@@ -68,10 +72,32 @@ class Response(object):
         return self.http_response.status != 202
 
     def get_error(self):
+        """Gets error in the following manner:
+
+        - Checks for <{NAMESPACE}message> elem in body
+        - Reads against response code
+        - Gives up
+        """
         tag = "{%s}message" % NAMESPACE;
-        return "; ".join([ err.text
-                           for err in
-                           ET.XML(self.http_xml).findall(tag) ])
+        info = [ err.text
+                 for err in
+                 ET.XML(self.http_xml).findall(tag) ]
+        if info:
+            return "; ".join([ err.text
+                               for err in
+                               ET.XML(self.http_xml).findall(tag) ])
+        else:
+            reasons = { 400: "cloudServersFault/badRequest",
+                        401: "unauthorized",
+                        500: "cloudServersFault",
+                        503: "serviceUnavailable",
+                        404: "itemNotFound",
+                        409: "buildInProgress",
+                        413: "overLimit" }
+            if self.http_response.status in reasons:
+                return reasons[self.http_response.status]
+            else:
+                return None
 
 class RackspaceNodeDriver(object):
 
@@ -137,6 +163,14 @@ class RackspaceNodeDriver(object):
         params = {'type': 'HARD' if hard else 'SOFT'}
 
         res = self.api.action(id, verb, params)
+        if res.is_error():
+            raise Exception(res.get_error())
+
+        return True
+
+    def destroy_node(self, node):
+        """Destroy node"""
+        res = self.api.delete(node.attrs['id'])
         if res.is_error():
             raise Exception(res.get_error())
 
