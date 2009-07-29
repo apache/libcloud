@@ -41,11 +41,11 @@ class RackspaceConnection(object):
         return { 'X-Auth-Token': self.token,
                  'Accept': 'application/xml' }
 
-    def make_request(self, path, data=''):
+    def make_request(self, path, data='', method='GET'):
         if not self.token or not self.endpoint:
             self._authenticate()
 
-        self.api.request('GET', '%s/%s' % (self.path, path),
+        self.api.request(method, '%s/%s' % (self.path, path),
                          headers=self._headers())
         return self.api.getresponse()
 
