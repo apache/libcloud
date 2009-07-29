@@ -58,6 +58,10 @@ class GoGridAuthConnection(object):
         params = {'id': id, 'power': power}
         return Response(self.make_request("/grid/server/power", params))
 
+    def server_delete(self, id):
+        params = {'id': id}
+        return Response(self.make_request("/grid/server/delete", params))
+
 class Response(object):
     def __init__(self, http_response):
         if int(http_response.status) == 403:
@@ -170,6 +174,15 @@ class GoGridNodeDriver(object):
         power = 'restart'
 
         res = self.api.server_power(id, power)
+        if res.is_error():
+            raise Exception(res.get_error())
+
+        return True
+
+    def destroy_node(self, node):
+        id = node.attrs['id']
+
+        res = self.api.server_delete(id)
         if res.is_error():
             raise Exception(res.get_error())
 
