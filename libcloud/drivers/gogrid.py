@@ -53,6 +53,10 @@ class GoGridAuthConnection(object):
     def server_list(self):
         return Response(self.make_request("/grid/server/list"))
 
+    def server_power(self, id, power):
+        # power in ['start', 'stop', 'restart']
+        params = {'id': id, 'power': power}
+        return Response(self.make_request("/grid/server/power", params))
 
 class Response(object):
     def __init__(self, http_response):
@@ -61,6 +65,13 @@ class Response(object):
         self.http_response = http_response
         self.http_xml = http_response.read()
 
+    def is_error(self):
+        root = ET.XML(self.http_xml)
+        return root.find('response').get('status') != 'success'
+
+    def get_error(self):
+        attrs = ET.XML(self.http_xml).findall('.//attribute')
+        return ': '.join([attr.text for attr in attrs])
 
 STATE = {
     "Started": NodeState.RUNNING,
@@ -153,3 +164,13 @@ class GoGridNodeDriver(object):
         return [ self._to_node(el)
                  for el
                  in ET.XML(res.http_xml).findall('response/list/object') ]
+
+    def reboot_node(self, node):
+        id = node.attrs['id']
+        power = 'restart'
+
+        res = self.api.server_power(id, power)
+        if res.is_error():
+            raise Exception(res.get_error())
+
+        return True
