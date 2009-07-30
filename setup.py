@@ -20,8 +20,6 @@ from os.path import splitext, basename, join as pjoin
 import os
 import sys
 
-sys.path.insert(0, 'py/')
-
 class TestCommand(Command):
     user_options = [ ]
 
@@ -34,14 +32,14 @@ class TestCommand(Command):
     def run(self):
         testfiles = [ ]
         for t in glob(pjoin(self._dir, 'test', 'test_*.py')):
-            if not t.endswith('__init__.py'):
-                testfiles.append('.'.join(
-                    ['test', splitext(basename(t))[0]])
-                )
+            testfiles.append('.'.join(
+                ['test', splitext(basename(t))[0]])
+            )
 
         tests = TestLoader().loadTestsFromNames(testfiles)
         t = TextTestRunner(verbosity = 1)
-        t.run(tests)
+        res = t.run(tests)
+        sys.exit(not res.wasSuccessful())
 
 setup(name = 'libcloud',
       version = '0.1.0',
