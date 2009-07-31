@@ -26,4 +26,3 @@ class GoGridTests(unittest.TestCase):
 
     def test_list_nodes(self):
         ret = self.conn.list_nodes()
-        print ret
