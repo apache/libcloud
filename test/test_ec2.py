@@ -27,7 +27,8 @@ class EC2Tests(unittest.TestCase):
     def test_list_nodes(self):
         ret = self.conn.list_nodes()
 
-    def test_reboot_nodes(self):
-        node = Node(None, None, None, None, None, 
-                    attrs={'instanceId':'i-e1615d88'})
-        ret = self.conn.reboot_node(node)
+# XXX: need to make this test based on a node that was created
+#    def test_reboot_nodes(self):
+#        node = Node(None, None, None, None, None, 
+#                    attrs={'instanceId':'i-e1615d88'})
+#        ret = self.conn.reboot_node(node)
