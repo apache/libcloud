@@ -1,30 +1,18 @@
+# Licensed to libcloud.org under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# libcloud.org licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from zope.interface import Interface, Attribute
-
-
-class IDriver(Interface):
-    """
-    TODO
-    
-    A Driver represents an interface to a provider Web Service. This is the
-    Interface which all base drivers (`EC2Driver`, `SliceDriver`, etc.) should
-    implement!
-    """
-    connectionCls = Attribute("""A suitable provider-specific Connection class""")
-    nodesCls = Attribute("""A suitable provider-specific NodeDriver class""")
-    connection = Attribute("""A suitable provider-specific Connection instance""")
-    node = Attribute("""A suitable provider-specific NodeDriver instance""")
-
-
-class IDriverFactory(Interface):
-    """
-    TODO
-
-    Creates IDrivers
-    """
-    def __call__():
-        """
-        Initialize `connection` and `nodes` 
-        """
 
 
 class INode(Interface):
@@ -39,12 +27,12 @@ class INode(Interface):
 
     def destroy():
         """
-        Call `self.driver.destroy(self)`. A convenience method.
+        Call `self.driver.destroy_node(self)`. A convenience method.
         """
 
     def reboot():
         """
-        Call `self.driver.reboot(self)`. A convenience method.
+        Call `self.driver.reboot_node(self)`. A convenience method.
         """
 
 
@@ -63,26 +51,26 @@ class INodeDriver(Interface):
     A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
     """
 
-    def create(node):
+    def create_node(node):
         """
         Creates a new node based on the given skeleton node
         """
 
-    def destroy(node):
+    def destroy_node(node):
         """
         Destroys (shuts down) the given node
         """
 
-    def list():
+    def list_nodes():
         """
         Returns a list of nodes for this provider
         """
 
-  def reboot(node):
+    def reboot_node(node):
         """
         Reboots the given node
         """
-
+    
 
 """
 Connection Interfaces / Factories.
@@ -159,6 +147,22 @@ class IConnectionUserAndKey(IConnectionKey):
     user_id = Attribute("""User identifier""")
 
 
+class IConnectionKeyFactory(Interface):
+    """
+    Create Connections which depend solely on an API key.
+    """
+    def __call__(key, secure=True):
+        """
+        Create a Connection.
+
+        The acceptance of only `key` provides support for APIs with only one
+        authentication bit.
+        
+        The `secure` argument indicates whether or not a secure connection
+        should be made. Not all providers support this, so it may be ignored.
+        """
+
+
 class IConnectionUserAndKeyFactory(Interface):
     """
     Create Connections which depends on both a user identifier and API key.
@@ -174,18 +178,3 @@ class IConnectionUserAndKeyFactory(Interface):
         should be made. Not all providers support this, so it may be ignored.
         """
 
-
-class IConnectionKeyFactory(Interface):
-    """
-    Create Connections which depend solely on an API key.
-    """
-    def __call__(key, secure=True):
-        """
-        Create a Connection.
-
-        The acceptance of only `key` provides support for APIs with only one
-        authentication bit.
-        
-        The `secure` argument indicates whether or not a secure connection
-        should be made. Not all providers support this, so it may be ignored.
-        """
