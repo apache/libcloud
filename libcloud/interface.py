@@ -62,7 +62,7 @@ class INodeDriver(Interface):
 
     def destroy_node(node):
         """
-        Destroys (shuts down) the given node
+        Destroys the given node
         """
 
     def list_nodes():
