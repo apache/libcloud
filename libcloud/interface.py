@@ -192,6 +192,9 @@ class IResponse(Interface):
     """
     A response as provided by a given HTTP Client.
     """
+    NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
+                              their standard type. This is a constant.""")
+
     tree = Attribute("""The processed response tree, e.g. via lxml""")
     body = Attribute("""Unparsed response body""")
     status_code = Attribute("""response status code""")
