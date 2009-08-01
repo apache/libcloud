@@ -51,9 +51,13 @@ class INodeDriver(Interface):
     A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
     """
 
-    def create_node(node):
+    def create_node(name, size, os, from=None):
         """
-        Creates a new node based on the given skeleton node
+        Creates a new node based on provided params.
+
+        `from` takes a node to base the new one off of.
+
+        FIXME: Parameters not finalized (no current drivers create nodes)
         """
 
     def destroy_node(node):
@@ -71,10 +75,15 @@ class INodeDriver(Interface):
         Reboots the given node
         """
     
+    def __transform_create_params(name, size, os):
+        """
+        Transform given create parameters into something the API will
+        understand.
 
-"""
-Connection Interfaces / Factories.
-"""
+        FIXME: Parameters not finalized (no current drivers create nodes)
+        """
+
+
 class IConnection(Interface):
     """
     A Connection represents an interface between a Client and a Provider's Web
@@ -176,5 +185,40 @@ class IConnectionUserAndKeyFactory(Interface):
         
         The `secure` argument indicates whether or not a secure connection
         should be made. Not all providers support this, so it may be ignored.
+        """
+
+
+class IResponse(Interface):
+    """
+    A response as provided by a given HTTP Client.
+    """
+    tree = Attribute("""The processed response tree, e.g. via lxml""")
+    body = Attribute("""Unparsed response body""")
+    status_code = Attribute("""response status code""")
+    error = Attribute("""Response error, L{None} if no error.""")
+
+    def parse_body():
+        """
+        Parse the response body (as XML, etc.)
+        """
+
+    def success():
+        """
+        Does the response indicate a successful request?
+        """
+
+    def to_node():
+        """
+        Convert the response to a node.
+        """
+
+
+class IResponseFactory(Interface):
+    """
+    Creates Responses.
+    """
+    def __call__(response):
+        """
+        Process the given response, setting ivars.
         """
 
