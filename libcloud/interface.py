@@ -197,7 +197,8 @@ class IResponse(Interface):
 
     tree = Attribute("""The processed response tree, e.g. via lxml""")
     body = Attribute("""Unparsed response body""")
-    status_code = Attribute("""response status code""")
+    status = Attribute("""Response status code""")
+    headers = Attribute("""Response headers""")
     error = Attribute("""Response error, L{None} if no error.""")
 
     def parse_body():
