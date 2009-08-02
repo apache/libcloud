@@ -80,7 +80,7 @@ class ConnectionKey(object):
         self.key = key
         self.secure = secure and 1 or 0
 
-    def connect(host=None, port=None):
+    def connect(self, host=None, port=None):
         """
         Establish a connection with the API server.
 
@@ -100,7 +100,7 @@ class ConnectionKey(object):
         connection = self.conn_classes[self.secure](uri, port)
         self.connection = connection
 
-    def request(action, params={}, data='', method='GET'):
+    def request(self, action, params={}, data='', method='GET'):
         """
         Request a given `action`.
         
