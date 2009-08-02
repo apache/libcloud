@@ -1,63 +1,89 @@
+# Licensed to libcloud.org under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# libcloud.org licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from zope.interface import Interface, Attribute
 
 
-class IDriver(Interface):
+class INode(Interface):
     """
-    TODO
-    
-    A Driver represents an interface to a provider Web Service. This is the
-    Interface which all base drivers (`EC2Driver`, `SliceDriver`, etc.) should
-    implement!
+    A node (instance, etc)
     """
-    connectionCls = Attribute("""A suitable provider-specific Connection class""")
-    nodesCls = Attribute("""A suitable provider-specific NodeDriver class""")
-    connection = Attribute("""A suitable provider-specific Connection instance""")
-    nodes = Attribute("""A suitable provider-specific NodeDriver instance""")
+    uuid = Attribute("""Unique identifier""")
+    name = Attribute("""Hostname or similar identifier""")
+    state = Attribute("""A standard Node state as provided by L{NodeState}""")
+    ip = Attribute("""IP Address of the Node""")
+    driver = Attribute("""The NodeDriver for this Node""")
 
-
-class IDriverFactory(Interface):
-    """
-    TODO
-
-    Creates IDrivers
-    """
-    def __call__():
+    def destroy():
         """
-        Initialize `connection` and `nodes` 
+        Call `self.driver.destroy_node(self)`. A convenience method.
+        """
+
+    def reboot():
+        """
+        Call `self.driver.reboot_node(self)`. A convenience method.
+        """
+
+
+class INodeFactory(Interface):
+    """
+    Create nodes
+    """
+    def __call__(uuid, name, state, ip, driver, **kwargs):
+        """
+        Set values for ivars, including any other requisite kwargs
         """
 
 
 class INodeDriver(Interface):
-  """
-  A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
-  """
-
-  def create(node):
     """
-    Creates a new node based on the given skeleton node
+    A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
     """
 
-  def destroy(node):
-    """
-    Destroys (shuts down) the given node
-    """
+    def create_node(name, size, os, from=None):
+        """
+        Creates a new node based on provided params.
 
-  def list():
-    """
-    Returns a list of nodes for this provider
-    """
+        `from` takes a node to base the new one off of.
 
-  def reboot(node):
-    """
-    Reboots the given node
-    """
+        FIXME: Parameters not finalized (no current drivers create nodes)
+        """
+
+    def destroy_node(node):
+        """
+        Destroys the given node
+        """
+
+    def list_nodes():
+        """
+        Returns a list of nodes for this provider
+        """
+
+    def reboot_node(node):
+        """
+        Reboots the given node
+        """
+    
+    def __transform_create_params(name, size, os):
+        """
+        Transform given create parameters into something the API will
+        understand.
+
+        FIXME: Parameters not finalized (no current drivers create nodes)
+        """
 
 
-"""
-Connection Interfaces / Factories.
-
-Usage:
-"""
 class IConnection(Interface):
     """
     A Connection represents an interface between a Client and a Provider's Web
@@ -123,12 +149,27 @@ class IConnectionKey(IConnection):
     key = Attribute("""API key, token, etc.""")
 
 
-
 class IConnectionUserAndKey(IConnectionKey):
     """
     IConnection which depends on a user identifier and an API for authentication.
     """
     user_id = Attribute("""User identifier""")
+
+
+class IConnectionKeyFactory(Interface):
+    """
+    Create Connections which depend solely on an API key.
+    """
+    def __call__(key, secure=True):
+        """
+        Create a Connection.
+
+        The acceptance of only `key` provides support for APIs with only one
+        authentication bit.
+        
+        The `secure` argument indicates whether or not a secure connection
+        should be made. Not all providers support this, so it may be ignored.
+        """
 
 
 class IConnectionUserAndKeyFactory(Interface):
@@ -147,17 +188,40 @@ class IConnectionUserAndKeyFactory(Interface):
         """
 
 
-class IConnectionKeyFactory(Interface):
+class IResponse(Interface):
     """
-    Create Connections which depend solely on an API key.
+    A response as provided by a given HTTP Client.
     """
-    def __call__(key, secure=True):
-        """
-        Create a Connection.
+    NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
+                              their standard type. This is a constant.""")
 
-        The acceptance of only `key` provides support for APIs with only one
-        authentication bit.
-        
-        The `secure` argument indicates whether or not a secure connection
-        should be made. Not all providers support this, so it may be ignored.
+    tree = Attribute("""The processed response tree, e.g. via lxml""")
+    body = Attribute("""Unparsed response body""")
+    status_code = Attribute("""response status code""")
+    error = Attribute("""Response error, L{None} if no error.""")
+
+    def parse_body():
         """
+        Parse the response body (as XML, etc.)
+        """
+
+    def success():
+        """
+        Does the response indicate a successful request?
+        """
+
+    def to_node():
+        """
+        Convert the response to a node.
+        """
+
+
+class IResponseFactory(Interface):
+    """
+    Creates Responses.
+    """
+    def __call__(response):
+        """
+        Process the given response, setting ivars.
+        """
+
