@@ -51,7 +51,7 @@ class INodeDriver(Interface):
     A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
     """
 
-    def create_node(name, size, os, from=None):
+    def create_node(name, size, os, based_on=None):
         """
         Creates a new node based on provided params.
 
@@ -122,11 +122,11 @@ class IConnection(Interface):
         Should return a response object (specific to a provider).
         """
 
-    def __append_default_params(query_params):
+    def default_params():
         """
-        Append default parameters (such as API key, version, etc.) to the query.
+        Return default parameters (such as API key, version, etc.) for the query.
 
-        Should return an extended dictionary.
+        Should return a dictionary.
         """
 
     def __encode_data(data):

@@ -32,5 +32,5 @@ node = all_nodes[0]
 print node.destroy()
 # <Node: provider=Amazon, status=TERMINATED, name=bob, ip=1.2.3.4.5>,
 
-print slicehost.create_node(from=node)
+print slicehost.create_node(based_on=node)
 # <Node: provider=Slicehost, status=PENDING, name=bob, ip=None>,
