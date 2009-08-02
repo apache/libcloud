@@ -12,7 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from libcloud.types import NodeState, Node, InvalidCredsException
+from libcloud.base import ConnectionKey, Response, NodeDriver
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import base64
@@ -22,87 +24,30 @@ import socket
 import hashlib
 from xml.etree import ElementTree as ET
 
-API_HOST = 'api.slicehost.com'
+class SlicehostResponse(Response):
 
-class SlicehostConnection(object):
-    def __init__(self, key):
-        self.key = key
-        self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
+    NODE_STATE_MAP = { 'active': NodeState.RUNNING,
+                       'build': NodeState.PENDING,
+                       'reboot': NodeState.REBOOTING,
+                       'hard_reboot': NodeState.REBOOTING,
+                       'terminated': NodeState.TERMINATED }
 
-    def _headers(self, datalen=0):
-        return {
-            'Authorization': ('Basic %s'
-                              % (base64.b64encode('%s:' % self.key))),
-            'Content-Length': str(datalen)
-        }
-    
-    def make_request(self, path, data='', method='GET'):
-        self.api.request(method, path, 
-                         headers=self._headers(datalen=len(data)))
-        return self.api.getresponse()
-
-    def slices(self):
-        return Response(self.make_request('/slices.xml'))
-
-    def reboot(self, slice_id):
-        uri = '/slices/%s/reboot.xml' % slice_id
-        return Response(self.make_request(uri, method='PUT'))
-
-    def hard_reboot(self, slice_id):
-        uri = '/slices/%s/hard_reboot.xml' % slice_id
-        return Response(self.make_request(uri, method='PUT'))
-
-    def destroy(self, slice_id):
-        uri = '/slices/%s/destroy.xml' % slice_id
-        return Response(self.make_request(uri, method='PUT'))
-
-class Response(object):
-    def __init__(self, http_response):
-        if int(http_response.status) == 401:
-            raise InvalidCredsException()
-
-        self.http_response = http_response
-        self.http_xml = http_response.read()
-
-    def is_error(self):
-        return self.http_response.status != 200
-
-    def get_error(self):
-        if not self.is_error():
+    def parse_body(self, body):
+        if not body:
             return None
-        else:
-            return "; ".join([ err.text
-                               for err in
-                               ET.XML(self.http_xml).findall('error') ])
+        return ET.XML(self.body)
 
-class SlicehostNodeDriver(object):
+    def get_uuid(self, field):
+        # XXX find way to define this as slice.id and Provider.SLICEHOST
+        return hashlib.sha1("%s:%d" % (field,3)).hexdigest()
 
-    implements(INodeDriver)
-
-    def __init__(self, creds):
-        self.creds = creds
-        self.api = SlicehostConnection(creds.key)
-
-    def _is_private_subnet(self, ip):
-        priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
-                         {'subnet': '172.16.0.0', 'mask': '172.16.0.0'},
-                         {'subnet': '192.168.0.0', 'mask': '192.168.0.0'} ]
-
-        ip = struct.unpack('I',socket.inet_aton(ip))[0]
-
-        for network in priv_subnets:
-            subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
-            mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
-
-            if (ip & mask) == (subnet & mask):
-                return True
-            
-        return False
+    def to_node(self):
+        if self.tree.tag == 'slice':
+          return self._to_node(self.tree)
+        node_elements = self.tree.findall('slice')
+        return [ self._to_node(el) for el in node_elements ]
 
     def _to_node(self, element):
-        states = { 'active': NodeState.RUNNING,
-                   'build': NodeState.PENDING,
-                   'terminated': NodeState.TERMINATED }
 
         attrs = [ 'name', 'image-id', 'progress', 'id', 'bw-out', 'bw-in', 
                   'flavor-id', 'status', 'ip-address' ]
@@ -125,7 +70,7 @@ class SlicehostNodeDriver(object):
                     ipaddress = ip
                     break
         try:
-            state = states[element.findtext('status')]
+            state = self.NODE_STATE_MAP[element.findtext('status')]
         except:
             state = NodeState.UNKNOWN
 
@@ -133,31 +78,63 @@ class SlicehostNodeDriver(object):
                  name=element.findtext('name'),
                  state=state,
                  ipaddress=ipaddress,
-                 creds=self.creds,
                  attrs=node_attrs)
         return n
 
-    def get_uuid(self, field):
-        return hashlib.sha1("%s:%d" % (field,self.creds.provider)).hexdigest()
+    def parse_error(self, body):
+        if self.success():
+          return None
+        return "; ".join([ err.text
+                           for err in
+                           ET.XML(body).findall('error') ])
+    
+    def _is_private_subnet(self, ip):
+        priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
+                         {'subnet': '172.16.0.0', 'mask': '172.16.0.0'},
+                         {'subnet': '192.168.0.0', 'mask': '192.168.0.0'} ]
+
+        ip = struct.unpack('I',socket.inet_aton(ip))[0]
+
+        for network in priv_subnets:
+            subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
+            mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
+
+            if (ip & mask) == (subnet & mask):
+                return True
+            
+        return False
+
+class SlicehostConnection(ConnectionKey):
+
+    host = 'api.slicehost.com'
+    responseCls = SlicehostResponse
+
+    @property
+    def default_headers(self):
+        return {
+            'Authorization': ('Basic %s'
+                              % (base64.b64encode('%s:' % self.key))),
+        }
+    
+class SlicehostNodeDriver(NodeDriver):
+
+    connectionCls = SlicehostConnection
 
     def list_nodes(self):
-        res = self.api.slices()
-        return [ self._to_node(el)
-                 for el in ET.XML(res.http_xml).findall('slice') ]
+        return self.connection.request('/slices.xml').to_node()
 
     def reboot_node(self, node):
         """Reboot the node by passing in the node object"""
 
         # 'hard' could bubble up as kwarg depending on how reboot_node 
         # turns out. Defaulting to soft reboot.
-        hard = False
-        reboot = self.api.hard_reboot if hard else self.api.reboot
-        expected_status = 'hard_reboot' if hard else 'reboot'
+        #hard = False
+        #reboot = self.api.hard_reboot if hard else self.api.reboot
+        #expected_status = 'hard_reboot' if hard else 'reboot'
 
-        res = reboot(node.attrs['id'])
-        if res.is_error():
-            raise Exception(res.get_error())
-        return ET.XML(res.http_xml).findtext('status') == expected_status
+        uri = '/slices/%s/reboot.xml' % (node.attrs['id'])
+        node = self.connection.request(uri, method='PUT').to_node()
+        return node.state == NodeState.REBOOTING
 
     def destroy_node(self, node):
         """Destroys the node
@@ -170,8 +147,6 @@ class SlicehostNodeDriver(object):
           <error>Permission denied</error>
         </errors>
         """
-
-        res = self.api.destroy(node.attrs['id'])
-        if res.is_error():
-            raise Exception(res.get_error())
+        uri = '/slices/%s/destroy.xml' % (node.attrs['id'])
+        ret = self.connection.request(uri, method='PUT')
         return True

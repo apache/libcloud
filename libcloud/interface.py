@@ -45,11 +45,21 @@ class INodeFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
+class INodeDriverFactory(Interface):
+    """
+    Create NodeDrivers
+    """
+    def __call__(connection):
+        """
+        Set of value for ivars
+        """
 
 class INodeDriver(Interface):
     """
     A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
     """
+
+    connection = Attribute("""Represents the IConnection for this driver""")
 
     def create_node(name, size, os, based_on=None):
         """

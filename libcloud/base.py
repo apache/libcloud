@@ -2,6 +2,7 @@ import httplib, urllib
 from zope import interface
 from libcloud.interface import IConnectionUserAndKey, IResponse
 from libcloud.interface import IConnectionUserAndKeyFactory, IResponseFactory
+from libcloud.interface import INodeDriverFactory, INodeDriver
 
 
 class Response(object):
@@ -19,12 +20,15 @@ class Response(object):
     headers = {}
     error = None
 
-    def __init__(response):
+    def __init__(self, response):
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
         self.tree = self.parse_body(self.body)
+
+        if not self.success():
+            raise Exception(self.parse_error(self.body))
 
     def parse_body(self, body):
         """
@@ -35,6 +39,18 @@ class Response(object):
         @type body: C{unicode}
         @param body: Response body.
         @return: Parsed body.
+        """
+        return body
+
+    def parse_error(self, body):
+        """
+        Parse the error messags.
+
+        Override in a provider's subclass.
+
+        @type body: C{unicode}
+        @param body: Response body.
+        @return: Parsed error.
         """
         return body
 
@@ -49,14 +65,14 @@ class Response(object):
         """
         return self.status == httplib.OK
 
+
     def to_node(self):
         """
         A method that knows how to convert a given response tree to a L{Node}.
 
         Override in a provider's subclass.
         """
-        raise NotImplemented
-
+        raise NotImplementedError, 'to_node not implemented for this response'
 
 class ConnectionKey(object):
     """
@@ -69,7 +85,7 @@ class ConnectionKey(object):
     responseCls = Response
     connection = None
     host = '127.0.0.1'
-    port = (8080, 8080)
+    port = (80, 443)
     secure = 1
 
     def __init__(self, key, secure=True):
@@ -94,13 +110,11 @@ class ConnectionKey(object):
         """
         host = host or self.host
         port = port or self.port[self.secure]
-        proto = self.secure and 'https://' or 'http://'
-        uri = proto + host
 
-        connection = self.conn_classes[self.secure](uri, port)
+        connection = self.conn_classes[self.secure](host, port)
         self.connection = connection
 
-    def request(self, action, params={}, data='', method='GET'):
+    def request(self, action, params={}, data='', headers={}, method='GET'):
         """
         Request a given `action`.
         
@@ -117,13 +131,21 @@ class ConnectionKey(object):
         @type data: C{unicode}
         @param data: A body of data to send with the request.
 
+        @type headers C{dict}
+        @param headers: Extra headers to add to the request
+            None, leave as an empty C{dict}.
+
         @type method: C{str}
         @param method: An HTTP method such as "GET" or "POST".
 
         @return: An instance of type I{responseCls}
         """
         # Extend default parameters
-        params = params.extend(self.default_params)
+        params.update(self.default_params)
+        # Extend default headers
+        headers.update(self.default_headers)
+        # We always send a content length header
+        headers.update({'Content-Length': len(data)})
         # Encode data if necessary
         if data != '':
             data = self.__encode_data(data)
@@ -136,6 +158,15 @@ class ConnectionKey(object):
     def default_params(self):
         """
         Return a dictionary of default parameters to add to query parameters.
+
+        Override in a provider's subclass.
+        """
+        return {}
+
+    @property
+    def default_headers(self):
+        """
+        Return a dictionary of default headers to add to request.
 
         Override in a provider's subclass.
         """
@@ -160,3 +191,22 @@ class ConnectionUserAndKey(ConnectionKey):
         super(ConnectionUserAndKey, self).__init__(key, secure)
         self.user_id = user_id
 
+class NodeDriver(object):
+    """
+    A base NodeDriver class to derive from
+    """
+    interface.implements(INodeDriver)
+    interface.classProvides(INodeDriverFactory)
+
+    connectionCls = None
+
+    def __init__(self, key, secret=None, secure=True):
+        self.key = key
+        self.secret = secret
+        self.secure = secure
+        if self.secret:
+          self.connection = self.connectionCls(key, secret, secure)
+        else:
+          self.connection = self.connectionCls(key, secure)
+
+        self.connection.connect()

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from libcloud.types import Provider, ProviderCreds
+from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
 
 DRIVERS = {
     Provider.DUMMY:
@@ -40,3 +41,4 @@ def get_driver(provider):
 def connect(provider, key, secret=None):
     creds = ProviderCreds(provider, key, secret)
     return get_driver(provider)(creds)
+

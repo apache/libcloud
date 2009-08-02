@@ -45,7 +45,7 @@ class ProviderCreds(object):
 
 class Node(object):
     """ An object for representing a standard node """
-    def __init__(self, uuid, name, state, ipaddress, creds, attrs={}):
+    def __init__(self, uuid, name, state, ipaddress, attrs={}):
         # every node should have a UUID, that is unique across the entire 
         # system this is created on a per provider implementation basis
         self.uuid = uuid
@@ -54,18 +54,15 @@ class Node(object):
         self.state = state
         self.ipaddress = ipaddress
         
-        # a reference to the ProviderCredentials object for this node
-        self.creds = creds
-
         # an extra object for containing anything you want saved 
         # from the provider
         self.attrs = attrs
 
     def __repr__(self):
         return (('Node(uuid="%s", name="%s", state=%d, '
-                 'ipaddress="%s", creds="%s", attrs="%s")')
+                 'ipaddress="%s", attrs="%s")')
                 % (self.uuid, self.name, self.state,
-                   self.ipaddress, self.creds, self.attrs))
+                   self.ipaddress, self.attrs))
 
 class InvalidCredsException(Exception):
     def __init__(self, value='Invalid credentials with the provider'):
