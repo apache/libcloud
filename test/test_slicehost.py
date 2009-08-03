@@ -15,7 +15,6 @@
 import unittest
 
 from libcloud.providers import Slicehost
-from libcloud.drivers.slicehost import SlicehostNodeDriver, SlicehostConnection
 from libcloud.types import Provider, NodeState, Node
 
 import httplib
@@ -25,7 +24,8 @@ from test import MockHttp
 class SlicehostTests(unittest.TestCase):
 
     def setUp(self):
-        self.driver = SlicehostNodeDriverTest('foo')
+        Slicehost.connectionCls.conn_classes = (None, SlicehostMockHttp)
+        self.driver = Slicehost('foo')
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
@@ -43,6 +43,7 @@ class SlicehostTests(unittest.TestCase):
         node = Node(None, None, None, None, attrs={'id': 1})
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
+
 
 class SlicehostMockHttp(MockHttp):
     def _slices_xml(self, method, url, body, headers):
@@ -86,12 +87,3 @@ class SlicehostMockHttp(MockHttp):
     def _slices_1_destroy_xml(self, method, url, body, headers):
         body = ''
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-class SlicehostConnectionTest(SlicehostConnection):
-
-    conn_classes = (SlicehostMockHttp, SlicehostMockHttp)
-
-class SlicehostNodeDriverTest(SlicehostNodeDriver):
-
-    connectionCls = SlicehostConnectionTest
-
