@@ -1,5 +1,5 @@
 *.py[co]
-*.swp
+*.sw[po]
 test/secrets.py*
 *~
 _trial_temp
