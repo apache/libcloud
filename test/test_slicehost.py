@@ -20,8 +20,9 @@ from libcloud.types import Provider, NodeState, Node
 import httplib
 
 from test import MockHttp
+from secrets import SLICEHOST_KEY
 
-class SlicehostTests(unittest.TestCase):
+class SlicehostTest(unittest.TestCase):
 
     def setUp(self):
         Slicehost.connectionCls.conn_classes = (None, SlicehostMockHttp)
@@ -43,6 +44,41 @@ class SlicehostTests(unittest.TestCase):
         node = Node(None, None, None, None, attrs={'id': 1})
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
+
+class SlicehostTestFail(unittest.TestCase):
+
+    def setUp(self):
+        Slicehost.connectionCls.conn_classes = (None, SlicehostFailMockHttp)
+        self.driver = Slicehost('foo')
+
+    def test_list_nodes(self):
+        try:
+            ret = self.driver.list_nodes()
+        except Exception, e:
+            self.assertEqual(e.message, 'HTTP Basic: Access denied.')
+        else:
+            self.fail('test should have thrown')
+
+
+    def test_reboot_node(self):
+        node = Node(None, None, None, None, attrs={'id': 1})
+        try:
+            ret = self.driver.reboot_node(node)
+        except Exception, e:
+            self.assertEqual(e.message, 'Permission denied')
+        else:
+            self.fail('test should have thrown')
+            
+
+    def test_destroy_node(self):
+        node = Node(None, None, None, None, attrs={'id': 1})
+        try:
+            ret = self.driver.destroy_node(node)
+        except Exception, e:
+            self.assertEqual(e.message, 
+                'You must enable slice deletes in the SliceManager; Permission denied')
+        else:
+            self.fail('test should have thrown')
 
 
 class SlicehostMockHttp(MockHttp):
@@ -87,3 +123,26 @@ class SlicehostMockHttp(MockHttp):
     def _slices_1_destroy_xml(self, method, url, body, headers):
         body = ''
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+class SlicehostFailMockHttp(MockHttp):
+    def _slices_xml(self, method, url, body, headers):
+        body = 'HTTP Basic: Access denied.'
+        return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.UNAUTHORIZED])
+
+    def _slices_1_reboot_xml(self, method, url, body, headers):
+        body = """<errors>
+  <error>Permission denied</error>
+</errors>"""
+        return (httplib.FORBIDDEN, body, {}, httplib.responses[httplib.FORBIDDEN])
+
+    def _slices_1_destroy_xml(self, method, url, body, headers):
+        """
+        Requires 'Allow Slices to be deleted or rebuilt from the API' to be
+        ticked at https://manage.slicehost.com/api, otherwise returns:
+        """
+
+        body = """<errors>
+  <error>You must enable slice deletes in the SliceManager</error>
+  <error>Permission denied</error>
+</errors>"""
+        return (httplib.FORBIDDEN, body, {}, httplib.responses[httplib.FORBIDDEN])
