@@ -23,6 +23,7 @@ import struct
 import socket
 import hashlib
 from xml.etree import ElementTree as ET
+from xml.parsers.expat import ExpatError
 
 class SlicehostResponse(Response):
 
@@ -82,11 +83,13 @@ class SlicehostResponse(Response):
         return n
 
     def parse_error(self, body):
-        if self.success():
-          return None
-        return "; ".join([ err.text
-                           for err in
-                           ET.XML(body).findall('error') ])
+        try:
+            tree = ET.XML(body)
+            return "; ".join([ err.text
+                               for err in
+                               tree.findall('error') ])
+        except ExpatError:
+            return body
     
     def _is_private_subnet(self, ip):
         priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},

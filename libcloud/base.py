@@ -25,10 +25,11 @@ class Response(object):
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
-        self.tree = self.parse_body(self.body)
 
         if not self.success():
             raise Exception(self.parse_error(self.body))
+
+        self.tree = self.parse_body(self.body)
 
     def parse_body(self, body):
         """
