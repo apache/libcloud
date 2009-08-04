@@ -40,12 +40,20 @@ class SlicehostTest(unittest.TestCase):
     def test_reboot_node(self):
         node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
+
+        ret = node.reboot()
+        self.assertTrue(ret is True)
+
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret is True)
 
     def test_destroy_node(self):
         node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
+
+        ret = node.destroy()
+        self.assertTrue(ret is True)
+
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
 

@@ -27,10 +27,10 @@ class Node(object):
         return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()
         
     def reboot(self):
-        self.driver.reboot(self)
+        return self.driver.reboot_node(self)
 
     def destroy(self):
-        self.driver.reboot(self)
+        return self.driver.destroy_node(self)
 
     def __repr__(self):
         return (('<Node: uuid=%s, name=%s, provider=%s ...>')
