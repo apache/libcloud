@@ -30,40 +30,6 @@ class NodeState(object):
     PENDING = 3
     UNKNOWN = 4
 
-class ProviderCreds(object):
-    """ An object for representing a standard provider """
-    def __init__(self, provider, key, secret=None, name=None):
-        self.provider = provider
-        self.key = key
-        self.secret = secret
-        self.name = name
-
-    def __repr__(self):
-        return (('ProviderCreds(provider=%d, key="%s", '
-                                  'secret="%s", name="%s"')
-                        % (self.provider, self.key, self.secret, self.name))
-
-class Node(object):
-    """ An object for representing a standard node """
-    def __init__(self, uuid, name, state, ipaddress, attrs={}):
-        # every node should have a UUID, that is unique across the entire 
-        # system this is created on a per provider implementation basis
-        self.uuid = uuid
-
-        self.name = name
-        self.state = state
-        self.ipaddress = ipaddress
-        
-        # an extra object for containing anything you want saved 
-        # from the provider
-        self.attrs = attrs
-
-    def __repr__(self):
-        return (('Node(uuid="%s", name="%s", state=%d, '
-                 'ipaddress="%s", attrs="%s")')
-                % (self.uuid, self.name, self.state,
-                   self.ipaddress, self.attrs))
-
 class InvalidCredsException(Exception):
     def __init__(self, value='Invalid credentials with the provider'):
         self.value = value

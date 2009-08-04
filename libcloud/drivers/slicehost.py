@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.types import NodeState, Node, InvalidCredsException
-from libcloud.base import ConnectionKey, Response, NodeDriver
+from libcloud.types import NodeState, InvalidCredsException, Provider
+from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import base64
@@ -33,18 +33,23 @@ class SlicehostResponse(Response):
                        'hard_reboot': NodeState.REBOOTING,
                        'terminated': NodeState.TERMINATED }
 
-    def parse_body(self, body):
-        if not body:
+    def parse_body(self):
+        if not self.body:
             return None
         return ET.XML(self.body)
 
-    def get_uuid(self, field):
-        # XXX find way to define this as slice.id and Provider.SLICEHOST
-        return hashlib.sha1("%s:%d" % (field,3)).hexdigest()
-
+    def parse_error(self):
+        try:
+            tree = ET.XML(self.body)
+            return "; ".join([ err.text
+                               for err in
+                               tree.findall('error') ])
+        except ExpatError:
+            return self.body
+    
     def to_node(self):
         if self.tree.tag == 'slice':
-          return self._to_node(self.tree)
+            return self._to_node(self.tree)
         node_elements = self.tree.findall('slice')
         return [ self._to_node(el) for el in node_elements ]
 
@@ -57,40 +62,35 @@ class SlicehostResponse(Response):
         for attr in attrs:
             node_attrs[attr] = element.findtext(attr)
 
-        ipaddress = element.findtext('ip-address')
-        if self._is_private_subnet(ipaddress):
-            # sometimes slicehost gives us a private address in ip-address
-            for addr in element.findall('addresses/address'):
-                ip = addr.text
-                try:
-                    socket.inet_aton(ip)
-                except socket.error:
-                    # not a valid ip
-                    continue
-                if not self._is_private_subnet(ip):
-                    ipaddress = ip
-                    break
+        # slicehost does not determine between public and private, so we 
+        # have to figure it out
+        public_ip = element.findtext('ip-address')
+        private_ip = None
+        for addr in element.findall('addresses/address'):
+            ip = addr.text
+            try:
+                socket.inet_aton(ip)
+            except socket.error:
+                # not a valid ip
+                continue
+            if self._is_private_subnet(ip):
+                private_ip = ip
+            else:
+                public_ip = ip
+                
         try:
             state = self.NODE_STATE_MAP[element.findtext('status')]
         except:
             state = NodeState.UNKNOWN
 
-        n = Node(uuid=self.get_uuid(element.findtext('id')),
+        n = Node(id=element.findtext('id'),
                  name=element.findtext('name'),
                  state=state,
-                 ipaddress=ipaddress,
-                 attrs=node_attrs)
+                 public_ip=public_ip,
+                 private_ip=private_ip,
+                 driver=self.connection.driver)
         return n
 
-    def parse_error(self, body):
-        try:
-            tree = ET.XML(body)
-            return "; ".join([ err.text
-                               for err in
-                               tree.findall('error') ])
-        except ExpatError:
-            return body
-    
     def _is_private_subnet(self, ip):
         priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
                          {'subnet': '172.16.0.0', 'mask': '172.16.0.0'},
@@ -112,7 +112,6 @@ class SlicehostConnection(ConnectionKey):
     host = 'api.slicehost.com'
     responseCls = SlicehostResponse
 
-    @property
     def default_headers(self):
         return {
             'Authorization': ('Basic %s'
@@ -122,6 +121,9 @@ class SlicehostConnection(ConnectionKey):
 class SlicehostNodeDriver(NodeDriver):
 
     connectionCls = SlicehostConnection
+
+    type = Provider.SLICEHOST
+    name = 'Slicehost'
 
     def list_nodes(self):
         return self.connection.request('/slices.xml').to_node()
@@ -135,7 +137,7 @@ class SlicehostNodeDriver(NodeDriver):
         #reboot = self.api.hard_reboot if hard else self.api.reboot
         #expected_status = 'hard_reboot' if hard else 'reboot'
 
-        uri = '/slices/%s/reboot.xml' % (node.attrs['id'])
+        uri = '/slices/%s/reboot.xml' % (node.id)
         node = self.connection.request(uri, method='PUT').to_node()
         return node.state == NodeState.REBOOTING
 
@@ -150,6 +152,6 @@ class SlicehostNodeDriver(NodeDriver):
           <error>Permission denied</error>
         </errors>
         """
-        uri = '/slices/%s/destroy.xml' % (node.attrs['id'])
+        uri = '/slices/%s/destroy.xml' % (node.id)
         ret = self.connection.request(uri, method='PUT')
         return True

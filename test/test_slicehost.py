@@ -15,7 +15,8 @@
 import unittest
 
 from libcloud.providers import Slicehost
-from libcloud.types import Provider, NodeState, Node
+from libcloud.types import Provider, NodeState
+from libcloud.base import Node
 
 import httplib
 
@@ -32,16 +33,19 @@ class SlicehostTest(unittest.TestCase):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
-        self.assertEqual(node.ipaddress, '174.143.212.229')
+        self.assertEqual(node.public_ip, '174.143.212.229')
+        self.assertEqual(node.private_ip, '10.176.164.199')
         self.assertEqual(node.state, NodeState.PENDING)
 
     def test_reboot_node(self):
-        node = Node(None, None, None, None, attrs={'id': 1})
+        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret is True)
 
     def test_destroy_node(self):
-        node = Node(None, None, None, None, attrs={'id': 1})
+        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
 
@@ -61,7 +65,8 @@ class SlicehostTestFail(unittest.TestCase):
 
 
     def test_reboot_node(self):
-        node = Node(None, None, None, None, attrs={'id': 1})
+        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
         try:
             ret = self.driver.reboot_node(node)
         except Exception, e:
@@ -71,7 +76,8 @@ class SlicehostTestFail(unittest.TestCase):
             
 
     def test_destroy_node(self):
-        node = Node(None, None, None, None, attrs={'id': 1})
+        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
         try:
             ret = self.driver.destroy_node(node)
         except Exception, e:

@@ -3,8 +3,38 @@ from zope import interface
 from libcloud.interface import IConnectionUserAndKey, IResponse
 from libcloud.interface import IConnectionUserAndKeyFactory, IResponseFactory
 from libcloud.interface import INodeDriverFactory, INodeDriver
+from libcloud.interface import INodeFactory, INode
+import hashlib
 
+class Node(object):
+    """
+    A Base Node class to derive from.
+    """
+    
+    interface.implements(INode)
+    interface.classProvides(INodeFactory)
 
+    def __init__(self, id, name, state, public_ip, private_ip, driver):
+        self.id = id
+        self.name = name
+        self.state = state
+        self.public_ip = public_ip
+        self.private_ip = private_ip
+        self.driver = driver
+        self.uuid = self.get_uuid()
+        
+    def get_uuid(self):
+        return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()
+        
+    def reboot(self):
+        self.driver.reboot(self)
+
+    def destroy(self):
+        self.driver.reboot(self)
+
+    def __repr__(self):
+        return (('<Node: uuid=%s, name=%s, provider=%s ...>')
+                % (self.uuid, self.name, self.driver.name))
 class Response(object):
     """
     A Base Response class to derive from.
@@ -16,9 +46,10 @@ class Response(object):
 
     tree = None
     body = None
-    status_code = httplib.OK
+    status_code = 200
     headers = {}
     error = None
+    connection = None
 
     def __init__(self, response):
         self.body = response.read()
@@ -27,33 +58,29 @@ class Response(object):
         self.error = response.reason
 
         if not self.success():
-            raise Exception(self.parse_error(self.body))
+            raise Exception(self.parse_error())
 
-        self.tree = self.parse_body(self.body)
+        self.tree = self.parse_body()
 
-    def parse_body(self, body):
+    def parse_body(self):
         """
         Parse response body.
 
         Override in a provider's subclass.
 
-        @type body: C{unicode}
-        @param body: Response body.
         @return: Parsed body.
         """
-        return body
+        return self.body
 
-    def parse_error(self, body):
+    def parse_error(self):
         """
         Parse the error messags.
 
         Override in a provider's subclass.
 
-        @type body: C{unicode}
-        @param body: Response body.
         @return: Parsed error.
         """
-        return body
+        return self.body
 
     def success(self):
         """
@@ -88,6 +115,7 @@ class ConnectionKey(object):
     host = '127.0.0.1'
     port = (80, 443)
     secure = 1
+    driver = None
 
     def __init__(self, key, secure=True):
         """
@@ -142,20 +170,22 @@ class ConnectionKey(object):
         @return: An instance of type I{responseCls}
         """
         # Extend default parameters
-        params.update(self.default_params)
+        params.update(self.default_params())
         # Extend default headers
-        headers.update(self.default_headers)
-        # We always send a content length header
+        headers.update(self.default_headers())
+        # We always send a content length and user-agent header
         headers.update({'Content-Length': len(data)})
+        headers.update({'User-Agent': 'libcloud/%s' % (self.driver.name)})
         # Encode data if necessary
         if data != '':
             data = self.__encode_data(data)
         url = '?'.join((action, urllib.urlencode(params)))
         self.connection.request(method=method, url=url, body=data,
                                 headers=headers)
-        return self.responseCls(self.connection.getresponse())
+        response = self.responseCls(self.connection.getresponse())
+        response.connection = self
+        return response
 
-    @property
     def default_params(self):
         """
         Return a dictionary of default parameters to add to query parameters.
@@ -164,7 +194,6 @@ class ConnectionKey(object):
         """
         return {}
 
-    @property
     def default_headers(self):
         """
         Return a dictionary of default headers to add to request.
@@ -211,3 +240,4 @@ class NodeDriver(object):
           self.connection = self.connectionCls(key, secure)
 
         self.connection.connect()
+        self.connection.driver = self

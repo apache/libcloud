@@ -20,11 +20,17 @@ class INode(Interface):
     A node (instance, etc)
     """
     uuid = Attribute("""Unique identifier""")
+    id = Attribute("""Unique ID provided by the provider (i-abcd1234, etc)""")
     name = Attribute("""Hostname or similar identifier""")
     state = Attribute("""A standard Node state as provided by L{NodeState}""")
-    ip = Attribute("""IP Address of the Node""")
-    driver = Attribute("""The NodeDriver for this Node""")
+    public_ip = Attribute("""Public ip (or hostname) of the Node""")
+    private_ip = Attribute("""Private ip (or hostname) of the Node""")
+    driver = Attribute("""The NodeDriver that belongs to this Node""")
 
+    def get_uuid():
+        """
+        Provides a system wide unique ID for the node
+        """
     def destroy():
         """
         Call `self.driver.destroy_node(self)`. A convenience method.
@@ -40,7 +46,7 @@ class INodeFactory(Interface):
     """
     Create nodes
     """
-    def __call__(uuid, name, state, ip, driver, **kwargs):
+    def __call__(id, name, state, public_ip, private_ip, driver):
         """
         Set values for ivars, including any other requisite kwargs
         """
@@ -60,6 +66,8 @@ class INodeDriver(Interface):
     """
 
     connection = Attribute("""Represents the IConnection for this driver""")
+    type = Attribute("""The type of this provider as defined by L{Provider}""")
+    name = Attribute("""A pretty name (Linode, etc) for this provider""")
 
     def create_node(name, size, os, based_on=None):
         """
@@ -113,6 +121,7 @@ class IConnection(Interface):
     secure = Attribute("""Indicates if this is a secure connection. If previous
                       recommendations were followed, it would be advantageous
                       for this to be in the form: 0=insecure, 1=secure""")
+    driver = Attribute("""The NodeDriver that belongs to this Node""")
 
     def connect(host=None, port=None):
         """
@@ -135,6 +144,13 @@ class IConnection(Interface):
     def default_params():
         """
         Return default parameters (such as API key, version, etc.) for the query.
+
+        Should return a dictionary.
+        """
+
+    def default_headers():
+        """
+        Return default headers (such as Authorization, X-Foo-Bar) for the query.
 
         Should return a dictionary.
         """
@@ -210,10 +226,16 @@ class IResponse(Interface):
     status = Attribute("""Response status code""")
     headers = Attribute("""Response headers""")
     error = Attribute("""Response error, L{None} if no error.""")
+    connection = Attribute("""Represents the IConnection for this response""")
 
     def parse_body():
         """
         Parse the response body (as XML, etc.)
+        """
+
+    def parse_error():
+        """
+        Parse the error that is contained in the response body (as XML, etc.)
         """
 
     def success():
@@ -223,7 +245,8 @@ class IResponse(Interface):
 
     def to_node():
         """
-        Convert the response to a node.
+        Convert the response to a node. If the response contains a list of 
+        nodes, return a list of nodes.
         """
 
 

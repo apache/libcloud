@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.types import Provider, ProviderCreds
+from libcloud.types import Provider
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
 
 DRIVERS = {
@@ -37,8 +37,3 @@ def get_driver(provider):
         mod_name, driver_name = DRIVERS[provider]
         _mod = __import__(mod_name, globals(), locals(), [driver_name])
         return getattr(_mod, driver_name)
-
-def connect(provider, key, secret=None):
-    creds = ProviderCreds(provider, key, secret)
-    return get_driver(provider)(creds)
-
