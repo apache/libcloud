@@ -16,7 +16,7 @@ class Response(object):
 
     tree = None
     body = None
-    status_code = 200
+    status_code = httplib.OK
     headers = {}
     error = None
 
