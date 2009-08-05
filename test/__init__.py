@@ -103,7 +103,7 @@ class MockHttp(object):
         path = urlparse.urlparse(url)[2]
         if path.endswith('/'):
             path = path[:-1]
-        meth = getattr(self, path.replace('/','_'))
+        meth = getattr(self, path.replace('/','_').replace('.', '_'))
         status, body, headers, reason = meth(method, url, body, headers)
         self.response = self.responseCls(status, body, headers, reason)
 
