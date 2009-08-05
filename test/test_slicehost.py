@@ -87,7 +87,7 @@ class SlicehostTest(unittest.TestCase):
 
 class SlicehostMockHttp(MockHttp):
 
-    @multipleresponse()
+    @multipleresponse
     def _slices_xml(self, method, url, body, headers):
         body = """<slices type="array">
   <slice>
@@ -211,7 +211,7 @@ class SlicehostMockHttp(MockHttp):
 </images>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    @multipleresponse()
+    @multipleresponse
     def _slices_1_reboot_xml(self, method, url, body, headers):
         body = """<slice>
   <name>libcloud-test</name>
@@ -236,7 +236,7 @@ class SlicehostMockHttp(MockHttp):
                 (httplib.FORBIDDEN, err_body, {}, 
                  httplib.responses[httplib.FORBIDDEN]))
 
-    @multipleresponse()
+    @multipleresponse
     def _slices_1_destroy_xml(self, method, url, body, headers):
         body = ''
         err_body = """<errors>
