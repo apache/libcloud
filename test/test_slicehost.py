@@ -20,7 +20,7 @@ from libcloud.base import Node
 
 import httplib
 
-from test import MockHttp
+from test import MockHttp, multipleresponse
 from secrets import SLICEHOST_KEY
 
 class SlicehostTest(unittest.TestCase):
@@ -37,6 +37,13 @@ class SlicehostTest(unittest.TestCase):
         self.assertEqual(node.public_ip, '174.143.212.229')
         self.assertEqual(node.private_ip, '10.176.164.199')
         self.assertEqual(node.state, NodeState.PENDING)
+
+        try:
+            ret = self.driver.list_nodes()
+        except Exception, e:
+            self.assertEqual(e.message, 'HTTP Basic: Access denied.')
+        else:
+            self.fail('test should have thrown')
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -61,6 +68,13 @@ class SlicehostTest(unittest.TestCase):
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret is True)
 
+        try:
+            ret = self.driver.reboot_node(node)
+        except Exception, e:
+            self.assertEqual(e.message, 'Permission denied')
+        else:
+            self.fail('test should have thrown')
+
     def test_destroy_node(self):
         node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
@@ -71,46 +85,9 @@ class SlicehostTest(unittest.TestCase):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
 
-
-class SlicehostTestFail(unittest.TestCase):
-
-    def setUp(self):
-        Slicehost.connectionCls.conn_classes = (None, SlicehostFailMockHttp)
-        self.driver = Slicehost('foo')
-
-    def test_list_nodes(self):
-        try:
-            ret = self.driver.list_nodes()
-        except Exception, e:
-            self.assertEqual(e.message, 'HTTP Basic: Access denied.')
-        else:
-            self.fail('test should have thrown')
-
-
-    def test_reboot_node(self):
-        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
-                    driver=self.driver)
-        try:
-            ret = self.driver.reboot_node(node)
-        except Exception, e:
-            self.assertEqual(e.message, 'Permission denied')
-        else:
-            self.fail('test should have thrown')
-            
-
-    def test_destroy_node(self):
-        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
-                    driver=self.driver)
-        try:
-            ret = self.driver.destroy_node(node)
-        except Exception, e:
-            self.assertEqual(e.message, 
-                'You must enable slice deletes in the SliceManager; Permission denied')
-        else:
-            self.fail('test should have thrown')
-
-
 class SlicehostMockHttp(MockHttp):
+
+    @multipleresponse()
     def _slices_xml(self, method, url, body, headers):
         body = """<slices type="array">
   <slice>
@@ -129,7 +106,11 @@ class SlicehostMockHttp(MockHttp):
     <ip-address>174.143.212.229</ip-address>
   </slice>
 </slices>"""
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        err_body = 'HTTP Basic: Access denied.'
+        
+        return ((httplib.OK, body, {}, httplib.responses[httplib.OK]),
+                (httplib.UNAUTHORIZED, err_body, {}, 
+                 httplib.responses[httplib.UNAUTHORIZED]))
 
     def _flavors_xml(self, method, url, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
@@ -230,6 +211,7 @@ class SlicehostMockHttp(MockHttp):
 </images>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    @multipleresponse()
     def _slices_1_reboot_xml(self, method, url, body, headers):
         body = """<slice>
   <name>libcloud-test</name>
@@ -246,31 +228,22 @@ class SlicehostMockHttp(MockHttp):
   <status>reboot</status>
   <ip-address>174.143.212.229</ip-address>
 </slice>"""
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _slices_1_destroy_xml(self, method, url, body, headers):
-        body = ''
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-class SlicehostFailMockHttp(MockHttp):
-    def _slices_xml(self, method, url, body, headers):
-        body = 'HTTP Basic: Access denied.'
-        return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.UNAUTHORIZED])
-
-    def _slices_1_reboot_xml(self, method, url, body, headers):
-        body = """<errors>
+        err_body = """<errors>
   <error>Permission denied</error>
 </errors>"""
-        return (httplib.FORBIDDEN, body, {}, httplib.responses[httplib.FORBIDDEN])
+        return ((httplib.OK, body, {}, httplib.responses[httplib.OK]),
+                (httplib.OK, body, {}, httplib.responses[httplib.OK]),
+                (httplib.FORBIDDEN, err_body, {}, 
+                 httplib.responses[httplib.FORBIDDEN]))
 
+    @multipleresponse()
     def _slices_1_destroy_xml(self, method, url, body, headers):
-        """
-        Requires 'Allow Slices to be deleted or rebuilt from the API' to be
-        ticked at https://manage.slicehost.com/api, otherwise returns:
-        """
-
-        body = """<errors>
+        body = ''
+        err_body = """<errors>
   <error>You must enable slice deletes in the SliceManager</error>
   <error>Permission denied</error>
 </errors>"""
-        return (httplib.FORBIDDEN, body, {}, httplib.responses[httplib.FORBIDDEN])
+        return ((httplib.OK, body, {}, httplib.responses[httplib.OK]),
+                (httplib.OK, body, {}, httplib.responses[httplib.OK]),
+                (httplib.FORBIDDEN, err_body, {}, 
+                 httplib.responses[httplib.FORBIDDEN]))

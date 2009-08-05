@@ -18,6 +18,9 @@ from urllib2 import urlparse
 
 
 class multipleresponse(object):
+    """
+    A decorator that allows MockHttp objects to return multi responses
+    """
     count = 0
 
     def __call__(self, func):
