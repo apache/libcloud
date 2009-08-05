@@ -17,6 +17,18 @@ from cStringIO import StringIO
 from urllib2 import urlparse
 
 
+class multipleresponse(object):
+    count = 0
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            ret = func(*args, **kwargs)
+            response = ret[self.count]
+            self.count = self.count + 1
+            return response
+        return wrapper
+
+
 class MockResponse(object):
     """
     A mock HTTPResponse
@@ -65,6 +77,14 @@ class MockHttp(object):
     200
     >>> response.getheaders()
     [('X-Foo', 'libcloud')]
+    >>> mock.request('GET', '/example/')
+    >>> response = mock.getresponse()
+    >>> response.body.read()
+    'Oh Noes!'
+    >>> response.status
+    403
+    >>> response.getheaders()
+    [('X-Foo', 'fail')]
 
     """
     responseCls = MockResponse
@@ -98,12 +118,16 @@ class MockHttp(object):
         pass
 
     # Mock request/response example
+    @multipleresponse()
     def _example(self, method, url, body, headers):
         """
         Return a simple message and header, regardless of input.
         """
-        return (httplib.OK, 'Hello World!', {'X-Foo': 'libcloud'},
-                httplib.responses[httplib.OK])
+        return ((httplib.OK, 'Hello World!', {'X-Foo': 'libcloud'},
+                httplib.responses[httplib.OK]),
+                (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
+                httplib.responses[httplib.FORBIDDEN]))
+
 
 
 if __name__ == "__main__":
