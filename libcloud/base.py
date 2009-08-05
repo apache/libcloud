@@ -77,7 +77,7 @@ class Response(object):
 
     NODE_STATE_MAP = {}
 
-    tree = None
+    object = None
     body = None
     status_code = 200
     headers = {}
@@ -93,7 +93,7 @@ class Response(object):
         if not self.success():
             raise Exception(self.parse_error())
 
-        self.tree = self.parse_body()
+        self.object = self.parse_body()
 
     def parse_body(self):
         """
@@ -127,29 +127,6 @@ class Response(object):
         return self.status == httplib.OK
 
 
-    def to_node(self):
-        """
-        A method that knows how to convert a given response tree to a L{Node}.
-
-        Override in a provider's subclass.
-        """
-        raise NotImplementedError, 'to_node not implemented for this response'
-
-    def to_size(self):
-        """
-        A method that knows how to convert a given response tree to a L{Size}.
-
-        Override in a provider's subclass.
-        """
-        raise NotImplementedError, 'to_size not implemented for this response'
-
-    def to_image(self):
-        """
-        A method that knows how to convert a given response tree to a L{Image}.
-
-        Override in a provider's subclass.
-        """
-        raise NotImplementedError, 'to_image not implemented for this response'
 
 class ConnectionKey(object):
     """
@@ -305,3 +282,27 @@ class NodeDriver(object):
 
     def list_sizes(self):
         raise NotImplementedError, 'list_sizes not implemented for this driver'
+
+    def to_nodes(self, object):
+        """
+        A method that knows how to convert a given response object to a L{Node}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_node not implemented for this driver'
+
+    def to_sizes(self, object):
+        """
+        A method that knows how to convert a given response object to a L{Size}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_size not implemented for this driver'
+
+    def to_images(self, object):
+        """
+        A method that knows how to convert a given response object to a L{Image}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_image not implemented for this driver'

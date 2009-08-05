@@ -27,12 +27,6 @@ from xml.parsers.expat import ExpatError
 
 class SlicehostResponse(Response):
 
-    NODE_STATE_MAP = { 'active': NodeState.RUNNING,
-                       'build': NodeState.PENDING,
-                       'reboot': NodeState.REBOOTING,
-                       'hard_reboot': NodeState.REBOOTING,
-                       'terminated': NodeState.TERMINATED }
-
     def parse_body(self):
         if not self.body:
             return None
@@ -40,17 +34,79 @@ class SlicehostResponse(Response):
 
     def parse_error(self):
         try:
-            tree = ET.XML(self.body)
+            object = ET.XML(self.body)
             return "; ".join([ err.text
                                for err in
-                               tree.findall('error') ])
+                               object.findall('error') ])
         except ExpatError:
             return self.body
     
-    def to_node(self):
-        if self.tree.tag == 'slice':
-            return self._to_node(self.tree)
-        node_elements = self.tree.findall('slice')
+
+class SlicehostConnection(ConnectionKey):
+
+    host = 'api.slicehost.com'
+    responseCls = SlicehostResponse
+
+    def default_headers(self):
+        return {
+            'Authorization': ('Basic %s'
+                              % (base64.b64encode('%s:' % self.key))),
+        }
+    
+class SlicehostNodeDriver(NodeDriver):
+
+    connectionCls = SlicehostConnection
+
+    type = Provider.SLICEHOST
+    name = 'Slicehost'
+
+    NODE_STATE_MAP = { 'active': NodeState.RUNNING,
+                       'build': NodeState.PENDING,
+                       'reboot': NodeState.REBOOTING,
+                       'hard_reboot': NodeState.REBOOTING,
+                       'terminated': NodeState.TERMINATED }
+
+    def list_nodes(self):
+        return self.to_nodes(self.connection.request('/slices.xml').object)
+
+    def list_sizes(self):
+        return self.to_sizes(self.connection.request('/flavors.xml').object)
+
+    def list_images(self):
+        return self.to_images(self.connection.request('/images.xml').object)
+
+    def reboot_node(self, node):
+        """Reboot the node by passing in the node object"""
+
+        # 'hard' could bubble up as kwarg depending on how reboot_node 
+        # turns out. Defaulting to soft reboot.
+        #hard = False
+        #reboot = self.api.hard_reboot if hard else self.api.reboot
+        #expected_status = 'hard_reboot' if hard else 'reboot'
+
+        uri = '/slices/%s/reboot.xml' % (node.id)
+        node = self.to_nodes(self.connection.request(uri, method='PUT').object)[0]
+        return node.state == NodeState.REBOOTING
+
+    def destroy_node(self, node):
+        """Destroys the node
+
+        Requires 'Allow Slices to be deleted or rebuilt from the API' to be
+        ticked at https://manage.slicehost.com/api, otherwise returns:
+
+        <errors>
+          <error>You must enable slice deletes in the SliceManager</error>
+          <error>Permission denied</error>
+        </errors>
+        """
+        uri = '/slices/%s/destroy.xml' % (node.id)
+        ret = self.connection.request(uri, method='PUT')
+        return True
+
+    def to_nodes(self, object):
+        if object.tag == 'slice':
+            return [ self._to_node(object) ]
+        node_elements = object.findall('slice')
         return [ self._to_node(el) for el in node_elements ]
 
     def _to_node(self, element):
@@ -91,10 +147,10 @@ class SlicehostResponse(Response):
                  driver=self.connection.driver)
         return n
 
-    def to_size(self):
-        if self.tree.tag == 'flavor':
-            return self._to_node(self.tree)
-        elements = self.tree.findall('flavor')
+    def to_sizes(self, object):
+        if object.tag == 'flavor':
+            return [ self._to_size(object) ]
+        elements = object.findall('flavor')
         return [ self._to_size(el) for el in elements ]
 
     def _to_size(self, element):
@@ -107,10 +163,10 @@ class SlicehostResponse(Response):
                      driver=self.connection.driver)
         return s
 
-    def to_image(self):
-        if self.tree.tag == 'image':
-            return self._to_node(self.tree)
-        elements = self.tree.findall('image')
+    def to_images(self, object):
+        if object.tag == 'image':
+            return [ self._to_image(object) ]
+        elements = object.findall('image')
         return [ self._to_image(el) for el in elements ]
 
     def _to_image(self, element):
@@ -135,58 +191,3 @@ class SlicehostResponse(Response):
                 return True
             
         return False
-
-class SlicehostConnection(ConnectionKey):
-
-    host = 'api.slicehost.com'
-    responseCls = SlicehostResponse
-
-    def default_headers(self):
-        return {
-            'Authorization': ('Basic %s'
-                              % (base64.b64encode('%s:' % self.key))),
-        }
-    
-class SlicehostNodeDriver(NodeDriver):
-
-    connectionCls = SlicehostConnection
-
-    type = Provider.SLICEHOST
-    name = 'Slicehost'
-
-    def list_nodes(self):
-        return self.connection.request('/slices.xml').to_node()
-
-    def list_sizes(self):
-        return self.connection.request('/flavors.xml').to_size()
-
-    def list_images(self):
-        return self.connection.request('/images.xml').to_image()
-
-    def reboot_node(self, node):
-        """Reboot the node by passing in the node object"""
-
-        # 'hard' could bubble up as kwarg depending on how reboot_node 
-        # turns out. Defaulting to soft reboot.
-        #hard = False
-        #reboot = self.api.hard_reboot if hard else self.api.reboot
-        #expected_status = 'hard_reboot' if hard else 'reboot'
-
-        uri = '/slices/%s/reboot.xml' % (node.id)
-        node = self.connection.request(uri, method='PUT').to_node()
-        return node.state == NodeState.REBOOTING
-
-    def destroy_node(self, node):
-        """Destroys the node
-
-        Requires 'Allow Slices to be deleted or rebuilt from the API' to be
-        ticked at https://manage.slicehost.com/api, otherwise returns:
-
-        <errors>
-          <error>You must enable slice deletes in the SliceManager</error>
-          <error>Permission denied</error>
-        </errors>
-        """
-        uri = '/slices/%s/destroy.xml' % (node.id)
-        ret = self.connection.request(uri, method='PUT')
-        return True

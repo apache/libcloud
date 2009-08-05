@@ -69,6 +69,9 @@ class INodeDriver(Interface):
     type = Attribute("""The type of this provider as defined by L{Provider}""")
     name = Attribute("""A pretty name (Linode, etc) for this provider""")
 
+    NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
+                              their standard type. This is a constant.""")
+
     def create_node(name, size, os, based_on=None):
         """
         Creates a new node based on provided params.
@@ -101,6 +104,21 @@ class INodeDriver(Interface):
     def reboot_node(node):
         """
         Reboots the given node
+        """
+
+    def to_nodes(object):
+        """
+        Convert the response object to a list of nodes
+        """
+
+    def to_sizes(object):
+        """
+        Convert the response object to a list of sizes
+        """
+
+    def to_images(object):
+        """
+        Convert the response object to a list of images
         """
     
     def __transform_create_params(name, size, os):
@@ -228,10 +246,7 @@ class IResponse(Interface):
     """
     A response as provided by a given HTTP Client.
     """
-    NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
-                              their standard type. This is a constant.""")
-
-    tree = Attribute("""The processed response tree, e.g. via lxml""")
+    object = Attribute("""The processed response object, e.g. via lxml or json""")
     body = Attribute("""Unparsed response body""")
     status = Attribute("""Response status code""")
     headers = Attribute("""Response headers""")
@@ -253,23 +268,6 @@ class IResponse(Interface):
         Does the response indicate a successful request?
         """
 
-    def to_node():
-        """
-        Convert the response to a node. If the response contains a list of 
-        nodes, return a list of nodes.
-        """
-
-    def to_size():
-        """
-        Convert the response to a size. If the response contains a list of 
-        sizes, return a list of sizes.
-        """
-
-    def to_image():
-        """
-        Convert the response to a image. If the response contains a list of 
-        images, return a list of images.
-        """
 
 
 class IResponseFactory(Interface):
