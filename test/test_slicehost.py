@@ -28,6 +28,7 @@ class SlicehostTest(unittest.TestCase):
     def setUp(self):
         Slicehost.connectionCls.conn_classes = (None, SlicehostMockHttp)
         self.driver = Slicehost('foo')
+        #self.driver = Slicehost(SLICEHOST_KEY)
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
@@ -36,6 +37,19 @@ class SlicehostTest(unittest.TestCase):
         self.assertEqual(node.public_ip, '174.143.212.229')
         self.assertEqual(node.private_ip, '10.176.164.199')
         self.assertEqual(node.state, NodeState.PENDING)
+
+    def test_list_sizes(self):
+        ret = self.driver.list_sizes()
+        self.assertEqual(len(ret), 7)
+        size = ret[0]
+        self.assertEqual(size.name, '256 slice')
+
+    def test_list_images(self):
+        ret = self.driver.list_images()
+        self.assertEqual(len(ret), 11)
+        image = ret[0]
+        self.assertEqual(image.name, 'CentOS 5.2')
+        self.assertEqual(image.id, 2)
 
     def test_reboot_node(self):
         node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
@@ -56,6 +70,7 @@ class SlicehostTest(unittest.TestCase):
 
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
+
 
 class SlicehostTestFail(unittest.TestCase):
 
@@ -114,6 +129,105 @@ class SlicehostMockHttp(MockHttp):
     <ip-address>174.143.212.229</ip-address>
   </slice>
 </slices>"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _flavors_xml(self, method, url, body, headers):
+        body = """<?xml version="1.0" encoding="UTF-8"?>
+<flavors type="array">
+  <flavor>
+    <id type="integer">1</id>
+    <name>256 slice</name>
+    <price type="integer">2000</price>
+    <ram type="integer">256</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">2</id>
+    <name>512 slice</name>
+    <price type="integer">3800</price>
+    <ram type="integer">512</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">3</id>
+    <name>1GB slice</name>
+    <price type="integer">7000</price>
+    <ram type="integer">1024</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">4</id>
+    <name>2GB slice</name>
+    <price type="integer">13000</price>
+    <ram type="integer">2048</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">5</id>
+    <name>4GB slice</name>
+    <price type="integer">25000</price>
+    <ram type="integer">4096</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">6</id>
+    <name>8GB slice</name>
+    <price type="integer">45000</price>
+    <ram type="integer">8192</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">7</id>
+    <name>15.5GB slice</name>
+    <price type="integer">80000</price>
+    <ram type="integer">15872</ram>
+  </flavor>
+</flavors>
+"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _images_xml(self, method, url, body, headers):
+        body = """<?xml version="1.0" encoding="UTF-8"?>
+<images type="array">
+  <image>
+    <name>CentOS 5.2</name>
+    <id type="integer">2</id>
+  </image>
+  <image>
+    <name>Gentoo 2008.0</name>
+    <id type="integer">3</id>
+  </image>
+  <image>
+    <name>Debian 5.0 (lenny)</name>
+    <id type="integer">4</id>
+  </image>
+  <image>
+    <name>Fedora 10 (Cambridge)</name>
+    <id type="integer">5</id>
+  </image>
+  <image>
+    <name>CentOS 5.3</name>
+    <id type="integer">7</id>
+  </image>
+  <image>
+    <name>Ubuntu 9.04 (jaunty)</name>
+    <id type="integer">8</id>
+  </image>
+  <image>
+    <name>Arch 2009.02</name>
+    <id type="integer">9</id>
+  </image>
+  <image>
+    <name>Ubuntu 8.04.2 LTS (hardy)</name>
+    <id type="integer">10</id>
+  </image>
+  <image>
+    <name>Ubuntu 8.10 (intrepid)</name>
+    <id type="integer">11</id>
+  </image>
+  <image>
+    <name>Red Hat EL 5.3</name>
+    <id type="integer">12</id>
+  </image>
+  <image>
+    <name>Fedora 11 (Leonidas)</name>
+    <id type="integer">13</id>
+  </image>
+</images>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _slices_1_reboot_xml(self, method, url, body, headers):

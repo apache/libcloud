@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from libcloud.types import NodeState, InvalidCredsException, Provider
-from libcloud.base import ConnectionKey, Response, NodeDriver, Node
+from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import base64
@@ -91,6 +91,35 @@ class SlicehostResponse(Response):
                  driver=self.connection.driver)
         return n
 
+    def to_size(self):
+        if self.tree.tag == 'flavor':
+            return self._to_node(self.tree)
+        elements = self.tree.findall('flavor')
+        return [ self._to_size(el) for el in elements ]
+
+    def _to_size(self, element):
+        s = NodeSize(id=int(element.findtext('id')),
+                     name=str(element.findtext('name')),
+                     ram=int(element.findtext('ram')),
+                     disk=None, # XXX: needs hardcode
+                     bandwidth=None, # XXX: needs hardcode
+                     price=float(element.findtext('price'))/(100*24*30),
+                     driver=self.connection.driver)
+        return s
+
+    def to_image(self):
+        if self.tree.tag == 'image':
+            return self._to_node(self.tree)
+        elements = self.tree.findall('image')
+        return [ self._to_image(el) for el in elements ]
+
+    def _to_image(self, element):
+        i = NodeImage(id=int(element.findtext('id')),
+                     name=str(element.findtext('name')),
+                     driver=self.connection.driver)
+        return i
+
+
     def _is_private_subnet(self, ip):
         priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
                          {'subnet': '172.16.0.0', 'mask': '172.16.0.0'},
@@ -127,6 +156,12 @@ class SlicehostNodeDriver(NodeDriver):
 
     def list_nodes(self):
         return self.connection.request('/slices.xml').to_node()
+
+    def list_sizes(self):
+        return self.connection.request('/flavors.xml').to_size()
+
+    def list_images(self):
+        return self.connection.request('/images.xml').to_image()
 
     def reboot_node(self, node):
         """Reboot the node by passing in the node object"""

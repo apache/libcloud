@@ -88,6 +88,16 @@ class INodeDriver(Interface):
         Returns a list of nodes for this provider
         """
 
+    def list_images():
+        """
+        Returns a list of images for this provider
+        """
+
+    def list_sizes():
+        """
+        Returns a list of sizes for this provider
+        """
+
     def reboot_node(node):
         """
         Reboots the given node
@@ -249,6 +259,18 @@ class IResponse(Interface):
         nodes, return a list of nodes.
         """
 
+    def to_size():
+        """
+        Convert the response to a size. If the response contains a list of 
+        sizes, return a list of sizes.
+        """
+
+    def to_image():
+        """
+        Convert the response to a image. If the response contains a list of 
+        images, return a list of images.
+        """
+
 
 class IResponseFactory(Interface):
     """
@@ -259,3 +281,40 @@ class IResponseFactory(Interface):
         Process the given response, setting ivars.
         """
 
+class INodeImage(Interface):
+    """
+    A machine image
+    """
+    id = Attribute("""Unique ID provided by the provider (ami-abcd1234, etc)""")
+    name = Attribute("""Name provided by the provider (Ubuntu 8.1)""")
+    driver = Attribute("""The NodeDriver that belongs to this Image""")
+
+class INodeImageFactory(Interface):
+    """
+    Create nodes
+    """
+    def __call__(id, name, driver):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """
+
+class INodeSize(Interface):
+    """
+    A machine image
+    """
+    id = Attribute("""Unique ID provided by the provider (m1.small, etc)""")
+    name = Attribute("""Name provided by the provider (Small CPU, etc)""")
+    ram = Attribute("""Amount of RAM provided in MB (256MB, 1740MB)""")
+    disk = Attribute("""Amount of disk provided in GB (200GB)""")
+    bandwidth = Attribute("""Amount of total transfer bandwidth in GB""")
+    price = Attribute("""Hourly price of this server in USD, estimated if monthly""")
+    driver = Attribute("""The NodeDriver that belongs to this Image""")
+
+class INodeSizeFactory(Interface):
+    """
+    Create nodes
+    """
+    def __call__(id, name, ram, disk, bandwidth, price, driver):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """

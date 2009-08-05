@@ -4,6 +4,8 @@ from libcloud.interface import IConnectionUserAndKey, IResponse
 from libcloud.interface import IConnectionUserAndKeyFactory, IResponseFactory
 from libcloud.interface import INodeDriverFactory, INodeDriver
 from libcloud.interface import INodeFactory, INode
+from libcloud.interface import INodeSizeFactory, INodeSize
+from libcloud.interface import INodeImageFactory, INodeImage
 import hashlib
 
 class Node(object):
@@ -35,6 +37,37 @@ class Node(object):
     def __repr__(self):
         return (('<Node: uuid=%s, name=%s, provider=%s ...>')
                 % (self.uuid, self.name, self.driver.name))
+
+class NodeSize(object):
+    """
+    A Base NodeSize class to derive from.
+    """
+    
+    interface.implements(INodeSize)
+    interface.classProvides(INodeSizeFactory)
+
+    def __init__(self, id, name, ram, disk, bandwidth, price, driver):
+        self.id = id
+        self.name = name
+        self.ram = ram
+        self.disk = disk
+        self.bandwidth = bandwidth
+        self.price = price
+        self.driver = driver
+
+class NodeImage(object):
+    """
+    A Base NodeSize class to derive from.
+    """
+    
+    interface.implements(INodeImage)
+    interface.classProvides(INodeImageFactory)
+
+    def __init__(self, id, name, driver):
+        self.id = id
+        self.name = name
+        self.driver = driver
+
 class Response(object):
     """
     A Base Response class to derive from.
@@ -101,6 +134,22 @@ class Response(object):
         Override in a provider's subclass.
         """
         raise NotImplementedError, 'to_node not implemented for this response'
+
+    def to_size(self):
+        """
+        A method that knows how to convert a given response tree to a L{Size}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_size not implemented for this response'
+
+    def to_image(self):
+        """
+        A method that knows how to convert a given response tree to a L{Image}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_image not implemented for this response'
 
 class ConnectionKey(object):
     """
@@ -241,3 +290,18 @@ class NodeDriver(object):
 
         self.connection.connect()
         self.connection.driver = self
+
+    def destroy_node(self, node):
+        raise NotImplementedError, 'destroy_node not implemented for this driver'
+
+    def reboot_node(self, node):
+        raise NotImplementedError, 'reboot_node not implemented for this driver'
+
+    def list_nodes(self):
+        raise NotImplementedError, 'list_nodes not implemented for this driver'
+
+    def list_images(self):
+        raise NotImplementedError, 'list_images not implemented for this driver'
+
+    def list_sizes(self):
+        raise NotImplementedError, 'list_sizes not implemented for this driver'
