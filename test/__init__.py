@@ -19,14 +19,16 @@ from urllib2 import urlparse
 
 class multipleresponse(object):
     count = 0
+    func = None
 
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            ret = func(*args, **kwargs)
-            response = ret[self.count]
-            self.count = self.count + 1
-            return response
-        return wrapper
+    def __init__(self, f):
+        self.func = f
+
+    def __call__(self, *args, **kwargs):
+        ret = self.func(self.func.__class__, *args, **kwargs)
+        response = ret[self.count]
+        self.count = self.count + 1
+        return response
 
 
 class MockResponse(object):
@@ -101,7 +103,7 @@ class MockHttp(object):
         path = urlparse.urlparse(url)[2]
         if path.endswith('/'):
             path = path[:-1]
-        meth = getattr(self, path.replace('/','_').replace('.', '_'))
+        meth = getattr(self, path.replace('/','_'))
         status, body, headers, reason = meth(method, url, body, headers)
         self.response = self.responseCls(status, body, headers, reason)
 
@@ -118,7 +120,7 @@ class MockHttp(object):
         pass
 
     # Mock request/response example
-    @multipleresponse()
+    @multipleresponse
     def _example(self, method, url, body, headers):
         """
         Return a simple message and header, regardless of input.
