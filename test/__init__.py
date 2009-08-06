@@ -82,6 +82,7 @@ class MockHttp(object):
     200
     >>> response.getheaders()
     [('X-Foo', 'libcloud')]
+    >>> MockHttp.type = 'fail'
     >>> mock.request('GET', '/example/')
     >>> response = mock.getresponse()
     >>> response.body.read()
@@ -97,6 +98,8 @@ class MockHttp(object):
     port = None
     response = None
 
+    type = None
+
     def __init__(self, host, port, *args, **kwargs):
         self.host = host
         self.port = port
@@ -106,7 +109,10 @@ class MockHttp(object):
         path = urlparse.urlparse(url)[2]
         if path.endswith('/'):
             path = path[:-1]
-        meth = getattr(self, path.replace('/','_').replace('.', '_'))
+        if self.type:
+            meth = getattr(self, '%s__%s' % (path.replace('/','_').replace('.', '_'), self.type) )
+        else:
+            meth = getattr(self, (path.replace('/','_').replace('.', '_')))
         status, body, headers, reason = meth(method, url, body, headers)
         self.response = self.responseCls(status, body, headers, reason)
 
@@ -123,15 +129,16 @@ class MockHttp(object):
         pass
 
     # Mock request/response example
-    @multipleresponse
     def _example(self, method, url, body, headers):
         """
         Return a simple message and header, regardless of input.
         """
-        return ((httplib.OK, 'Hello World!', {'X-Foo': 'libcloud'},
-                httplib.responses[httplib.OK]),
-                (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
-                httplib.responses[httplib.FORBIDDEN]))
+        return (httplib.OK, 'Hello World!', {'X-Foo': 'libcloud'},
+                httplib.responses[httplib.OK])
+
+    def _example__fail(self, method, url, body, headers):
+        return (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
+                httplib.responses[httplib.FORBIDDEN])
 
 
 

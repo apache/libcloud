@@ -51,11 +51,49 @@ class INodeFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
+class INodeSize(Interface):
+    """
+    A machine image
+    """
+    id = Attribute("""Unique ID provided by the provider (m1.small, etc)""")
+    name = Attribute("""Name provided by the provider (Small CPU, etc)""")
+    ram = Attribute("""Amount of RAM provided in MB (256MB, 1740MB)""")
+    disk = Attribute("""Amount of disk provided in GB (200GB)""")
+    bandwidth = Attribute("""Amount of total transfer bandwidth in GB""")
+    price = Attribute("""Hourly price of this server in USD, estimated if monthly""")
+    driver = Attribute("""The NodeDriver that belongs to this Image""")
+
+class INodeSizeFactory(Interface):
+    """
+    Create nodes
+    """
+    def __call__(id, name, ram, disk, bandwidth, price, driver):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """
+
+class INodeImage(Interface):
+    """
+    A machine image
+    """
+    id = Attribute("""Unique ID provided by the provider (ami-abcd1234, etc)""")
+    name = Attribute("""Name provided by the provider (Ubuntu 8.1)""")
+    driver = Attribute("""The NodeDriver that belongs to this Image""")
+
+class INodeImageFactory(Interface):
+    """
+    Create nodes
+    """
+    def __call__(id, name, driver):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """
+
 class INodeDriverFactory(Interface):
     """
     Create NodeDrivers
     """
-    def __call__(connection):
+    def __call__(key, secret=None, secure=True):
         """
         Set of value for ivars
         """
@@ -72,7 +110,7 @@ class INodeDriver(Interface):
     NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
                               their standard type. This is a constant.""")
 
-    def create_node(name, size, os, based_on=None):
+    def create_node(name, image, size):
         """
         Creates a new node based on provided params. Name is ignored on some providers.
 
@@ -121,15 +159,6 @@ class INodeDriver(Interface):
         Convert the response object to a list of images
         """
     
-    def __transform_create_params(name, size, os):
-        """
-        Transform given create parameters into something the API will
-        understand.
-
-        FIXME: Parameters not finalized (no current drivers create nodes)
-        """
-
-
 class IConnection(Interface):
     """
     A Connection represents an interface between a Client and a Provider's Web
@@ -183,18 +212,11 @@ class IConnection(Interface):
         Should return a dictionary.
         """
 
-    def __encode_data(data):
+    def encode_data(data):
         """
         Data may need to be encoded before sent in a request. If not, simply
         return the data.
         """
-
-    def __headers():
-        """
-        Return a set of necessary headers as a dictionary, to be added to the
-        request (or an empty dict).
-        """
-
 
 class IConnectionKey(IConnection):
     """
@@ -279,40 +301,3 @@ class IResponseFactory(Interface):
         Process the given response, setting ivars.
         """
 
-class INodeImage(Interface):
-    """
-    A machine image
-    """
-    id = Attribute("""Unique ID provided by the provider (ami-abcd1234, etc)""")
-    name = Attribute("""Name provided by the provider (Ubuntu 8.1)""")
-    driver = Attribute("""The NodeDriver that belongs to this Image""")
-
-class INodeImageFactory(Interface):
-    """
-    Create nodes
-    """
-    def __call__(id, name, driver):
-        """
-        Set values for ivars, including any other requisite kwargs
-        """
-
-class INodeSize(Interface):
-    """
-    A machine image
-    """
-    id = Attribute("""Unique ID provided by the provider (m1.small, etc)""")
-    name = Attribute("""Name provided by the provider (Small CPU, etc)""")
-    ram = Attribute("""Amount of RAM provided in MB (256MB, 1740MB)""")
-    disk = Attribute("""Amount of disk provided in GB (200GB)""")
-    bandwidth = Attribute("""Amount of total transfer bandwidth in GB""")
-    price = Attribute("""Hourly price of this server in USD, estimated if monthly""")
-    driver = Attribute("""The NodeDriver that belongs to this Image""")
-
-class INodeSizeFactory(Interface):
-    """
-    Create nodes
-    """
-    def __call__(id, name, ram, disk, bandwidth, price, driver):
-        """
-        Set values for ivars, including any other requisite kwargs
-        """

@@ -27,7 +27,9 @@ from xml.etree import ElementTree as ET
 class SlicehostTest(unittest.TestCase):
 
     def setUp(self):
+
         Slicehost.connectionCls.conn_classes = (None, SlicehostMockHttp)
+        SlicehostMockHttp.type = None
         self.driver = Slicehost('foo')
         #self.driver = Slicehost(SLICEHOST_KEY)
 
@@ -39,6 +41,7 @@ class SlicehostTest(unittest.TestCase):
         self.assertEqual(node.private_ip, '10.176.164.199')
         self.assertEqual(node.state, NodeState.PENDING)
 
+        SlicehostMockHttp.type = 'UNAUTHORIZED'
         try:
             ret = self.driver.list_nodes()
         except Exception, e:
@@ -69,6 +72,7 @@ class SlicehostTest(unittest.TestCase):
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret is True)
 
+        SlicehostMockHttp.type = 'FORBIDDEN'
         try:
             ret = self.driver.reboot_node(node)
         except Exception, e:
@@ -94,7 +98,6 @@ class SlicehostTest(unittest.TestCase):
 
 class SlicehostMockHttp(MockHttp):
 
-    @multipleresponse
     def _slices_xml(self, method, url, body, headers):
         if method == 'POST':
             tree = ET.XML(body)
@@ -112,7 +115,7 @@ class SlicehostMockHttp(MockHttp):
 <errors>
   <error>Slice parameters are not properly nested</error>
 </errors>"""
-              return ((httplib.UNPROCESSABLE_ENTITY, err_body, {}, ''),)
+              return (httplib.UNPROCESSABLE_ENTITY, err_body, {}, '')
 
             body = """<slice>
   <name>slicetest</name>
@@ -130,7 +133,7 @@ class SlicehostMockHttp(MockHttp):
   <status>build</status>
   <ip-address>10.176.168.15</ip-address>
 </slice>"""
-            return ((httplib.CREATED, body, {}, ''),)
+            return (httplib.CREATED, body, {}, '')
         else:
             body = """<slices type="array">
   <slice>
@@ -149,11 +152,13 @@ class SlicehostMockHttp(MockHttp):
     <ip-address>174.143.212.229</ip-address>
   </slice>
 </slices>"""
-        err_body = 'HTTP Basic: Access denied.'
         
-        return ((httplib.OK, body, {}, httplib.responses[httplib.OK]),
-                (httplib.UNAUTHORIZED, err_body, {}, 
-                 httplib.responses[httplib.UNAUTHORIZED]))
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _slices_xml__UNAUTHORIZED(self, method, url, body, headers):
+        err_body = 'HTTP Basic: Access denied.'
+        return (httplib.UNAUTHORIZED, err_body, {}, 
+                 httplib.responses[httplib.UNAUTHORIZED])
 
     def _flavors_xml(self, method, url, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
@@ -254,7 +259,6 @@ class SlicehostMockHttp(MockHttp):
 </images>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    @multipleresponse
     def _slices_1_reboot_xml(self, method, url, body, headers):
         body = """<slice>
   <name>libcloud-test</name>
@@ -271,22 +275,16 @@ class SlicehostMockHttp(MockHttp):
   <status>reboot</status>
   <ip-address>174.143.212.229</ip-address>
 </slice>"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+    def _slices_1_reboot_xml__FORBIDDEN(self, method, url, body, headers):
         err_body = """<errors>
   <error>Permission denied</error>
 </errors>"""
-        return ((httplib.OK, body, {}, httplib.responses[httplib.OK]),
-                (httplib.OK, body, {}, httplib.responses[httplib.OK]),
-                (httplib.FORBIDDEN, err_body, {}, 
-                 httplib.responses[httplib.FORBIDDEN]))
+        return (httplib.FORBIDDEN, err_body, {}, 
+                 httplib.responses[httplib.FORBIDDEN])
 
-    @multipleresponse
     def _slices_1_destroy_xml(self, method, url, body, headers):
         body = ''
-        err_body = """<errors>
-  <error>You must enable slice deletes in the SliceManager</error>
-  <error>Permission denied</error>
-</errors>"""
-        return ((httplib.OK, body, {}, httplib.responses[httplib.OK]),
-                (httplib.OK, body, {}, httplib.responses[httplib.OK]),
-                (httplib.FORBIDDEN, err_body, {}, 
-                 httplib.responses[httplib.FORBIDDEN]))
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])

@@ -204,7 +204,7 @@ class ConnectionKey(object):
         headers.update({'User-Agent': 'libcloud/%s' % (self.driver.name)})
         # Encode data if necessary
         if data != '':
-            data = self.__encode_data(data)
+            data = self.encode_data(data)
         url = '?'.join((action, urllib.urlencode(params)))
         self.connection.request(method=method, url=url, body=data,
                                 headers=headers)
@@ -228,7 +228,7 @@ class ConnectionKey(object):
         """
         return {}
 
-    def __encode_data(self, data):
+    def encode_data(self, data):
         """
         Encode body data.
 
@@ -254,7 +254,11 @@ class NodeDriver(object):
     interface.implements(INodeDriver)
     interface.classProvides(INodeDriverFactory)
 
-    connectionCls = None
+    connectionCls = ConnectionKey
+    name = None
+    type = None
+    
+    NODE_STATE_MAP = {}
 
     def __init__(self, key, secret=None, secure=True):
         self.key = key
