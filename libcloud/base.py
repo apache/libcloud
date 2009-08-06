@@ -196,9 +196,9 @@ class ConnectionKey(object):
         @return: An instance of type I{responseCls}
         """
         # Extend default parameters
-        params.update(self.default_params())
+        params = self.add_default_params(params)
         # Extend default headers
-        headers.update(self.default_headers())
+        headers = self.add_default_headers(headers)
         # We always send a content length and user-agent header
         headers.update({'Content-Length': len(data)})
         headers.update({'User-Agent': 'libcloud/%s' % (self.driver.name)})
@@ -212,21 +212,21 @@ class ConnectionKey(object):
         response.connection = self
         return response
 
-    def default_params(self):
+    def add_default_params(self, params):
         """
-        Return a dictionary of default parameters to add to query parameters.
+        Adds default parameters (such as API key, version, etc.) to the passed `params`
 
-        Override in a provider's subclass.
+        Should return a dictionary.
         """
-        return {}
+        return params
 
-    def default_headers(self):
+    def add_default_headers(self, headers):
         """
-        Return a dictionary of default headers to add to request.
+        Adds default headers (such as Authorization, X-Foo-Bar) to the passed `headers`
 
-        Override in a provider's subclass.
+        Should return a dictionary.
         """
-        return {}
+        return headers
 
     def encode_data(self, data):
         """

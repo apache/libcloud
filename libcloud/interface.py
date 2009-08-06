@@ -198,16 +198,16 @@ class IConnection(Interface):
         Should return a response object (specific to a provider).
         """
 
-    def default_params():
+    def add_default_params(params):
         """
-        Return default parameters (such as API key, version, etc.) for the query.
+        Adds default parameters (such as API key, version, etc.) to the passed `params`
 
         Should return a dictionary.
         """
 
-    def default_headers():
+    def add_default_headers(headers):
         """
-        Return default headers (such as Authorization, X-Foo-Bar) for the query.
+        Adds default headers (such as Authorization, X-Foo-Bar) to the passed `headers`
 
         Should return a dictionary.
         """
