@@ -132,7 +132,7 @@ class RackspaceNodeDriver(NodeDriver):
     def list_images(self):
         return self.to_images(self.connection.request('/images/detail').object)
 
-    def create_node(self, name, image, size):
+    def create_node(self, name, image, size, **kwargs):
         body = """<server   xmlns="%s"
                             name="%s"
                             imageId="%s"

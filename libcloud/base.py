@@ -272,7 +272,7 @@ class NodeDriver(object):
         self.connection.connect()
         self.connection.driver = self
 
-    def create_node(self, name, image, size):
+    def create_node(self, name, image, size, **kwargs):
         raise NotImplementedError, 'create_node not implemented for this driver'
 
     def destroy_node(self, node):

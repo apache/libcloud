@@ -51,6 +51,7 @@ class INodeFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
+
 class INodeSize(Interface):
     """
     A machine image
@@ -63,6 +64,7 @@ class INodeSize(Interface):
     price = Attribute("""Hourly price of this server in USD, estimated if monthly""")
     driver = Attribute("""The NodeDriver that belongs to this Image""")
 
+
 class INodeSizeFactory(Interface):
     """
     Create nodes
@@ -72,6 +74,7 @@ class INodeSizeFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
+
 class INodeImage(Interface):
     """
     A machine image
@@ -79,6 +82,7 @@ class INodeImage(Interface):
     id = Attribute("""Unique ID provided by the provider (ami-abcd1234, etc)""")
     name = Attribute("""Name provided by the provider (Ubuntu 8.1)""")
     driver = Attribute("""The NodeDriver that belongs to this Image""")
+
 
 class INodeImageFactory(Interface):
     """
@@ -89,6 +93,7 @@ class INodeImageFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
+
 class INodeDriverFactory(Interface):
     """
     Create NodeDrivers
@@ -97,6 +102,7 @@ class INodeDriverFactory(Interface):
         """
         Set of value for ivars
         """
+
 
 class INodeDriver(Interface):
     """
@@ -110,13 +116,11 @@ class INodeDriver(Interface):
     NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
                               their standard type. This is a constant.""")
 
-    def create_node(name, image, size):
+    def create_node(name, image, size, **kwargs):
         """
         Creates a new node based on provided params. Name is ignored on some providers.
 
-        `from` takes a node to base the new one off of.
-
-        FIXME: Parameters not finalized (no current drivers create nodes)
+        To specify provider-specific options, use keyword arguments.
         """
 
     def destroy_node(node):
@@ -159,6 +163,7 @@ class INodeDriver(Interface):
         Convert the response object to a list of images
         """
     
+
 class IConnection(Interface):
     """
     A Connection represents an interface between a Client and a Provider's Web
@@ -217,6 +222,7 @@ class IConnection(Interface):
         Data may need to be encoded before sent in a request. If not, simply
         return the data.
         """
+
 
 class IConnectionKey(IConnection):
     """
@@ -289,7 +295,6 @@ class IResponse(Interface):
         """
         Does the response indicate a successful request?
         """
-
 
 
 class IResponseFactory(Interface):
