@@ -155,7 +155,7 @@ class SlicehostMockHttp(MockHttp):
         
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _slices_xml__UNAUTHORIZED(self, method, url, body, headers):
+    def _slices_xml_UNAUTHORIZED(self, method, url, body, headers):
         err_body = 'HTTP Basic: Access denied.'
         return (httplib.UNAUTHORIZED, err_body, {}, 
                  httplib.responses[httplib.UNAUTHORIZED])
@@ -278,7 +278,7 @@ class SlicehostMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-    def _slices_1_reboot_xml__FORBIDDEN(self, method, url, body, headers):
+    def _slices_1_reboot_xml_FORBIDDEN(self, method, url, body, headers):
         err_body = """<errors>
   <error>Permission denied</error>
 </errors>"""

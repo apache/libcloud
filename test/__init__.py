@@ -110,7 +110,7 @@ class MockHttp(object):
         if path.endswith('/'):
             path = path[:-1]
         if self.type:
-            meth = getattr(self, '%s__%s' % (path.replace('/','_').replace('.', '_'), self.type) )
+            meth = getattr(self, '%s_%s' % (path.replace('/','_').replace('.', '_'), self.type) )
         else:
             meth = getattr(self, (path.replace('/','_').replace('.', '_')))
         status, body, headers, reason = meth(method, url, body, headers)
@@ -136,7 +136,7 @@ class MockHttp(object):
         return (httplib.OK, 'Hello World!', {'X-Foo': 'libcloud'},
                 httplib.responses[httplib.OK])
 
-    def _example__fail(self, method, url, body, headers):
+    def _example_fail(self, method, url, body, headers):
         return (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
                 httplib.responses[httplib.FORBIDDEN])
 
