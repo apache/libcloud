@@ -45,7 +45,7 @@ class TestCommand(Command):
         sys.exit(not res.wasSuccessful())
 
 setup(name = 'libcloud',
-      version = '0.1.0',
+      version = '0.1.1',
       description = 'A unified interface into many cloud server providers',
       author = 'Alex Polvi',
       author_email = 'polvi@cloudkick.com',
