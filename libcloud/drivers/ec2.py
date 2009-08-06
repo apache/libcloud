@@ -12,9 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.types import NodeState, Node, InvalidCredsException
-from libcloud.interface import INodeDriver
-from zope.interface import implements
+from libcloud.providers import Provider
+from libcloud.types import NodeState, InvalidCredsException
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
 import base64
 import hmac
 import httplib
@@ -29,50 +29,43 @@ EC2_EU_HOST = 'eu-west-1.ec2.amazonaws.com'
 API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
-class AWSAuthConnection(object):
-    def __init__(self, aws_access_key_id, aws_secret_access_key, 
-                 server=EC2_US_HOST):
+class EC2Response(Response):
 
-        self.verbose = False
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-        self.server = server
-        self.connection = httplib.HTTPSConnection("%s:%d" % (server, 443))
+    def parse_body(self):
+        if not self.body:
+            return None
+        return ET.XML(self.body)
 
-    def pathlist(self, key, arr):
-        """Converts a key and an array of values into AWS query param 
-           format."""
-        params = {}
-        i = 0
-        for value in arr:
-            i += 1
-            params["%s.%s" % (key, i)] = value
-        return params
+    def parse_error(self):
+        try:
+            err_list = []
+            for err in ET.XML(self.body).findall('Errors/Error'):
+                code, message = err.getchildren()
+                err_list.append("%s: %s" % (code.text, message.text))
+            return "\n".join(err_list)
+        except ExpatError:
+            return self.body
 
-    def make_request(self, action, params, data=''):
-        params["Action"] = action
-        if self.verbose:
-            print params
+class EC2Connection(ConnectionUserAndKey):
 
+    host = EC2_US_HOST
+    responseCls = EC2Response
+
+    def add_default_headers(self, headers):
+        headers['Host'] = self.host
+        return headers
+
+    def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.aws_access_key_id
+        params['AWSAccessKeyId'] = self.user_id
         params['Version'] = API_VERSION
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', 
                                             time.gmtime())
-
-        sig = self.get_aws_auth_param(params, self.aws_secret_access_key)
-
-        path = '?%s&Signature=%s' % (
-                  '&'.join(['='.join((key, urllib.quote_plus(params[key])))
-                       for key in params]),
-                   sig)
-
-        self.connection.request('GET', '/%s' % path, data,
-                                headers={'Host': self.server})
-        return self.connection.getresponse()
-
-    def get_aws_auth_param(self, params, aws_secret_access_key, path='/'):
+        params['Signature'] = self._get_aws_auth_param(params, self.key)
+        return params
+        
+    def _get_aws_auth_param(self, params, secret_key, path='/'):
         """
         creates the signature required for AWS, per:
 
@@ -91,63 +84,23 @@ class AWSAuthConnection(object):
                          urllib.quote(params[key], safe='-_~'))
 
         qs = '&'.join(pairs)
-        string_to_sign = '\n'.join(('GET', self.server, path, qs))
+        string_to_sign = '\n'.join(('GET', self.host, path, qs))
                                          
-        b64_hmac = base64.b64encode(hmac.new(aws_secret_access_key,
-                                                                                 string_to_sign,
-                                                                                 digestmod=sha256).digest())
-        return urllib.quote(b64_hmac)
+        b64_hmac = base64.b64encode(
+                        hmac.new(secret_key, string_to_sign, 
+                            digestmod=sha256).digest())
+        return b64_hmac
 
-    def describe_instances(self, instanceIds=[]):
-        params = self.pathlist("InstanceId", instanceIds)
-        return Response(self.make_request("DescribeInstances", params))
+class EC2NodeDriver(NodeDriver):
 
-    def reboot_instances(self, instanceIds=[]):
-        params = self.pathlist("InstanceId", instanceIds)
-        return Response(self.make_request("RebootInstances", params))
+    connectionCls = EC2Connection
+    type = Provider.EC2
+    name = 'Amazon EC2 (us-east-1)'
 
-    def terminate_instances(self, instanceIds=[]):
-        params = self.pathlist("InstanceId", instanceIds)
-        return Response(self.make_request("TerminateInstances", params))
-
-class Response(object):
-    def __init__(self, http_response):
-        if int(http_response.status) == 403:
-            raise InvalidCredsException()
-
-        self.http_response = http_response
-        self.xml = http_response.read()
-        self.http_xml = ET.XML(self.xml)
-
-    def is_error(self):
-        return self.http_response.status != 200
-
-    def get_error(self):
-        err_list = []
-        if self.is_error():
-            for err in self.http_xml.findall('Errors/Error'):
-                code, message = err.getchildren()
-                err_list.append("%s: %s" % (code.text, message.text))
-        else:
-            return None
-        return "\n".join(err_list)
-
-    def get_boolean(self):
-        tag = "{%s}%s" % (NAMESPACE, 'return')
-        return self.http_xml.findtext(tag) == 'true'
-
-    def get_terminate_boolean(self):
-        status = self.http_xml.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
-        return any([ term_status == status for term_status
-                     in ('shutting-down', 'terminated') ])
-
-class EC2NodeDriver(object):
-
-    implements(INodeDriver)
-
-    def __init__(self, creds):
-        self.creds = creds
-        self.api = AWSAuthConnection(creds.key, creds.secret)
+    NODE_STATE_MAP = { 'pending': NodeState.PENDING,
+                       'running': NodeState.RUNNING,
+                       'shutting-down': NodeState.TERMINATED,
+                       'terminated': NodeState.TERMINATED }
 
     def _findtext(self, element, xpath):
         return element.findtext(self._fixxpath(xpath))
@@ -159,69 +112,73 @@ class EC2NodeDriver(object):
     def _findattr(self, element, xpath):
         return element.findtext(self._fixxpath(xpath))
 
+    def _pathlist(self, key, arr):
+        """Converts a key and an array of values into AWS query param 
+           format."""
+        params = {}
+        i = 0
+        for value in arr:
+            i += 1
+            params["%s.%s" % (key, i)] = value
+        return params
+
+    def _get_boolean(self, element):
+        tag = "{%s}%s" % (NAMESPACE, 'return')
+        return element.findtext(tag) == 'true'
+
+    def _get_terminate_boolean(self, element):
+        status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
+        return any([ term_status == status for term_status
+                     in ('shutting-down', 'terminated') ])
+
+    def to_nodes(self, object):
+        return [ self._to_node(el) 
+                 for el in object.findall(
+                    self._fixxpath('reservationSet/item/instancesSet/item')) ]
+        
     def _to_node(self, element):
-        states = { 'pending': NodeState.PENDING,
-                   'running': NodeState.RUNNING,
-                   'shutting-down': NodeState.TERMINATED,
-                   'terminated': NodeState.TERMINATED }
-
-        attrs = [ 'dnsName', 'instanceId', 'imageId', 'privateDnsName',
-                  'instanceState/name', 'amiLaunchIndex',
-                  'productCodesSet/item/productCode', 'instanceType',
-                  'launchTime', 'placement/availabilityZone', 'kernelId',
-                  'ramdiskId' ]
-
-        node_attrs = {}
-        for attr in attrs:
-            node_attrs[attr] = self._findattr(element, attr)
-
         try:
-            state = states[self._findattr(element, "instanceState/name")]
-        except:
+            state = self.NODE_STATE_MAP[self._findattr(element, 
+                                        "instanceState/name")]
+        except KeyError:
             state = NodeState.UNKNOWN
 
-        n = Node(uuid=self.get_uuid(self._findtext(element, "instanceId")),
-                 name=self._findtext(element, "instanceId"),
+        n = Node(id=self._findtext(element, 'instanceId'),
+                 name=self._findtext(element, 'instanceId'),
                  state=state,
-                 ipaddress=self._findtext(element, "dnsName"),
-                 creds=self.creds,
-                 attrs=node_attrs)
+                 public_ip=self._findtext(element, 'dnsName'),
+                 private_ip=self._findtext(element, 'privateDnsName'),
+                 driver=self.connection.driver)
         return n
 
-    def get_uuid(self, field):
-        hash_str = "%s:%d" % (field, self.creds.provider)
-        return hashlib.sha1(hash_str).hexdigest()
-    
     def list_nodes(self):
-        res = self.api.describe_instances()
-        return [ self._to_node(el)
-                 for el in res.http_xml.findall(
-                     self._fixxpath('reservationSet/item/instancesSet/item')
-                 ) ]
+        params = {'Action': 'DescribeInstances' }
+        nodes = self.to_nodes(
+                    self.connection.request('/', params=params).object)
+        return nodes
 
     def reboot_node(self, node):
         """
         Reboot the node by passing in the node object
         """
-        res = self.api.reboot_instances([node.attrs['instanceId']])
-        if res.is_error():
-            raise Exception(res.get_error())
-        
-        return res.get_boolean()
+        params = {'Action': 'RebootInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request('/', params=params).object
+        return self._get_boolean(res)
 
     def destroy_node(self, node):
         """
         Destroy node by passing in the node object
         """
-        res = self.api.terminate_instances([node.attrs['instanceId']])
-        if res.is_error():
-            raise Exception(res.get_error())
-        
-        return res.get_terminate_boolean()
+        params = {'Action': 'TerminateInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request('/', params=params).object
+        return self._get_terminate_boolean(res)
+
+class EC2EUConnection(EC2Connection):
+
+    host = EC2_EU_HOST
 
 class EC2EUNodeDriver(EC2NodeDriver):
 
-    def __init__(self, creds):
-        self.creds = creds
-        self.api = AWSAuthConnection(creds.key, creds.secret, 
-                                     server=EC2_EU_HOST)
+    connectionCls = EC2EUConnection

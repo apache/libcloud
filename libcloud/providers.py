@@ -18,10 +18,10 @@ from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
 DRIVERS = {
 #    Provider.DUMMY:
 #        ('libcloud.drivers.dummy', 'DummyNodeDriver'),
-#    Provider.EC2:
-#        ('libcloud.drivers.ec2', 'EC2NodeDriver'),
-#    Provider.EC2_EU:
-#        ('libcloud.drivers.ec2', 'EC2EUNodeDriver'),
+    Provider.EC2:
+        ('libcloud.drivers.ec2', 'EC2NodeDriver'),
+    Provider.EC2_EU:
+        ('libcloud.drivers.ec2', 'EC2EUNodeDriver'),
 #    Provider.GOGRID:
 #        ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
 #    Provider.RACKSPACE:
