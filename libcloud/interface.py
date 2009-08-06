@@ -74,7 +74,7 @@ class INodeDriver(Interface):
 
     def create_node(name, size, os, based_on=None):
         """
-        Creates a new node based on provided params.
+        Creates a new node based on provided params. Name is ignored on some providers.
 
         `from` takes a node to base the new one off of.
 

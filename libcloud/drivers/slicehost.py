@@ -75,6 +75,25 @@ class SlicehostNodeDriver(NodeDriver):
     def list_images(self):
         return self.to_images(self.connection.request('/images.xml').object)
 
+    def create_node(self, name, image, size):
+        uri = '/slices.xml'
+
+        # create a slice obj
+        root = ET.Element('slice')
+        el_name = ET.SubElement(root, 'name')
+        el_name.text = name
+        flavor_id = ET.SubElement(root, 'flavor-id')
+        flavor_id.text = str(size.id)
+        image_id = ET.SubElement(root, 'image-id')
+        image_id.text = str(image.id)
+        xml = ET.tostring(root)
+
+        node = self.to_nodes(
+                  self.connection.request(uri, method='POST', 
+                            data=xml, headers={'Content-Type': 'application/xml'}
+                      ).object)[0]
+        return node
+
     def reboot_node(self, node):
         """Reboot the node by passing in the node object"""
 

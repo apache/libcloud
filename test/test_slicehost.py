@@ -16,12 +16,13 @@ import unittest
 
 from libcloud.providers import Slicehost
 from libcloud.types import Provider, NodeState
-from libcloud.base import Node
+from libcloud.base import Node, NodeImage, NodeSize
 
 import httplib
 
 from test import MockHttp, multipleresponse
 from secrets import SLICEHOST_KEY
+from xml.etree import ElementTree as ET
 
 class SlicehostTest(unittest.TestCase):
 
@@ -85,11 +86,53 @@ class SlicehostTest(unittest.TestCase):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret is True)
 
+    def test_create_node(self):
+        image = NodeImage(id=11, name='ubuntu 8.10', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node('slicetest', image, size)
+        self.assertEqual(node.name, 'slicetest')
+
 class SlicehostMockHttp(MockHttp):
 
     @multipleresponse
     def _slices_xml(self, method, url, body, headers):
-        body = """<slices type="array">
+        if method == 'POST':
+            tree = ET.XML(body)
+            name = tree.findtext('name')
+            image_id = int(tree.findtext('image-id'))
+            flavor_id = int(tree.findtext('flavor-id'))
+
+            # TODO: would be awesome to get the slicehost api developers to fill in the
+            # the correct validation logic
+            if not (name and image_id and flavor_id) \
+                or tree.tag != 'slice' \
+                or not headers.has_key('Content-Type')  \
+                or headers['Content-Type'] != 'application/xml':
+              err_body = """<?xml version="1.0" encoding="UTF-8"?>
+<errors>
+  <error>Slice parameters are not properly nested</error>
+</errors>"""
+              return ((httplib.UNPROCESSABLE_ENTITY, err_body, {}, ''),)
+
+            body = """<slice>
+  <name>slicetest</name>
+  <image-id type="integer">11</image-id>
+  <addresses type="array">
+    <address>10.176.168.15</address>
+    <address>67.23.20.114</address>
+  </addresses>
+  <root-password>fooadfa1231</root-password>
+  <progress type="integer">0</progress>
+  <id type="integer">71907</id>
+  <bw-out type="float">0.0</bw-out>
+  <bw-in type="float">0.0</bw-in>
+  <flavor-id type="integer">1</flavor-id>
+  <status>build</status>
+  <ip-address>10.176.168.15</ip-address>
+</slice>"""
+            return ((httplib.CREATED, body, {}, ''),)
+        else:
+            body = """<slices type="array">
   <slice>
     <name>libcloud-foo</name>
     <image-id type="integer">10</image-id>

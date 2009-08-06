@@ -124,7 +124,7 @@ class Response(object):
 
         @return: C{True} or C{False}
         """
-        return self.status == httplib.OK
+        return self.status == httplib.OK or self.status == httplib.CREATED
 
 
 
@@ -267,6 +267,9 @@ class NodeDriver(object):
 
         self.connection.connect()
         self.connection.driver = self
+
+    def create_node(self, name, image, size):
+        raise NotImplementedError, 'create_node not implemented for this driver'
 
     def destroy_node(self, node):
         raise NotImplementedError, 'destroy_node not implemented for this driver'
