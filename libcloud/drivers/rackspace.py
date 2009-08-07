@@ -27,6 +27,12 @@ NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 class RackspaceResponse(Response):
 
+    def success(self):
+        i = int(self.status)
+        #print i
+        #print self.body
+        return i >= 200 and i <= 299
+
     def parse_body(self):
         if not self.body:
             return None
@@ -53,9 +59,10 @@ class RackspaceConnection(ConnectionUserAndKey):
 
     responseCls = RackspaceResponse
 
-    def default_headers(self):
-        return {'X-Auth-Token': self.token,
-                 'Accept': 'application/xml' }
+    def add_default_headers(self, headers):
+        headers['X-Auth-Token'] = self.token;
+        headers['Accept'] = 'application/xml'
+        return headers
 
     def _authenticate(self):
         # TODO: Fixup for when our token expires (!!!)
@@ -92,7 +99,12 @@ class RackspaceConnection(ConnectionUserAndKey):
 
     def request(self, action, params={}, data='', method='GET'):
         action = self.path + action
-        return super(RackspaceConnection, self).request(action=action, params=params, data=data, method=method)
+        headers = {}
+        if method == "POST":
+            headers = {'Content-Type': 'application/xml; charset=UTF-8'}
+        return super(RackspaceConnection, self).request(action=action,
+                                                        params=params, data=data,
+                                                        method=method, headers=headers)
         
 class RackspaceNodeDriver(NodeDriver):
 
@@ -121,7 +133,14 @@ class RackspaceNodeDriver(NodeDriver):
         return self.to_images(self.connection.request('/images/detail').object)
 
     def create_node(self, name, image, size):
-        raise NotImplemented
+        body = """<server   xmlns="%s"
+                            name="%s"
+                            imageId="%s"
+                            flavorId="%s">
+                </server>
+                """ % (NAMESPACE, name, image.id, size.id)
+        resp = self.connection.request("/servers", method='POST', data=body, )
+        return self._to_node(resp.object)
 
     def reboot_node(self, node):
         # TODO: Hard Reboots should be supported too!
@@ -133,7 +152,7 @@ class RackspaceNodeDriver(NodeDriver):
             attr = ' '.join(['%s="%s"' % (item[0], item[1]) for item in body[1:]])
             body = '<%s xmlns="%s" %s/>' % (body[0], NAMESPACE, attr)
         uri = '/servers/%s/action' % (node.id)
-        resp = self.connection.request(uri, method='POST', body=body)
+        resp = self.connection.request(uri, method='POST', data=body)
         return resp
 
     def to_nodes(self, object):
@@ -149,7 +168,7 @@ class RackspaceNodeDriver(NodeDriver):
 
     def _to_node(self, el):
         def get_ips(el):
-            return [ip.get('addr') for ip in el.children()]
+            return [ip.get('addr') for ip in el]
         
         public_ip = get_ips(self._findall(el, 
                                           'addresses/public'))
