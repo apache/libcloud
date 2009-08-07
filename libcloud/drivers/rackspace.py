@@ -129,10 +129,6 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 202
 
     def _node_action(self, node, body):
-        ### consider this from old code:
-        #         data = ('<%s xmlns="%s" %s/>'
-        #        % (verb, NAMESPACE,
-        #           ' '.join(['%s="%s"' % item for item in params.items()])))
         if isinstance(body, list):
             attr = ' '.join(['%s="%s"' % (item[0], item[1]) for item in body[1:]])
             body = '<%s xmlns="%s" %s/>' % (body[0], NAMESPACE, attr)
