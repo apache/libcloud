@@ -12,180 +12,180 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.types import NodeState, Node, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsException, Provider
+from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node, NodeSize, NodeImage
 from libcloud.interface import INodeDriver
-from zope.interface import implements
-import httplib
-import urlparse
-import hashlib
-from xml.etree import ElementTree as ET
 
-AUTH_HOST = 'auth.api.rackspacecloud.com'
-API_VERSION = 'v1.0'
+from zope.interface import implements
+
+import urlparse
+
+from xml.etree import ElementTree as ET
+from xml.parsers.expat import ExpatError
+
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
-class RackspaceConnection(object):
-    def __init__(self, user, key):
-        self.user = user
-        self.key = key
-        self.token = None
-        self.endpoint = None
+class RackspaceResponse(Response):
+
+    def parse_body(self):
+        if not self.body:
+            return None
+        return ET.XML(self.body)
+
+    def parse_error(self):
+        # TODO: fixup, Rackspace only uses response codes really!
+        try:
+            object = ET.XML(self.body)
+            return "; ".join([ err.text
+                               for err in
+                               object.findall('error') ])
+        except ExpatError:
+            return self.body
+
+
+class RackspaceConnection(ConnectionUserAndKey):
+    api_version = 'v1.0'
+    host = 'auth.api.rackspacecloud.com'
+    auth_host = None
+    endpoint = None
+    path = None
+    token = None
+
+    responseCls = RackspaceResponse
+
+    def default_headers(self):
+        return {'X-Auth-Token': self.token,
+                 'Accept': 'application/xml' }
 
     def _authenticate(self):
-        self.auth = httplib.HTTPSConnection("%s:%d" % (AUTH_HOST, 443))
-        self.auth.request('GET', '/%s' % API_VERSION,
-                          headers={ 'X-Auth-User': self.user,
-                                    'X-Auth-Key': self.key })
-        ret = self.auth.getresponse()
-        self.token = ret.getheader('x-auth-token')
-        self.endpoint = ret.getheader('x-server-management-url')
+        # TODO: Fixup for when our token expires (!!!)
+        self.auth_host = self.host
 
+        self.connection.request(method='GET', url='/%s' % self.api_version,
+                                       headers={'X-Auth-User': self.user_id,
+                                                'X-Auth-Key': self.key})
+        resp = self.connection.getresponse()
+        headers = dict(resp.getheaders())
+        self.token = headers.get('x-auth-token')
+        self.endpoint = headers.get('x-server-management-url')
         if not self.token or not self.endpoint:
             raise InvalidCredsException()
 
         scheme, server, self.path, param, query, fragment = (
             urlparse.urlparse(self.endpoint)
         )
-        self.api = httplib.HTTPSConnection("%s:%d" % (server, 443))
 
-    def _headers(self):
-        if not self.token:
-            self._authenticate()
+        # Okay, this is evil.  We replace host here, and then re-run 
+        # super connect() to re-setup the connection classes with the 'correct'
+        # host.
+        self.host = server
 
-        return { 'X-Auth-Token': self.token,
-                 'Accept': 'application/xml' }
+        if scheme is "https" and self.secure is not 1:
+            # TODO: Custom exception (?)
+            raise InvalidCredsException()
+            
+        super(RackspaceConnection, self).connect()
 
-    def make_request(self, path, data='', method='GET'):
-        if not self.token or not self.endpoint:
-            self._authenticate()
+    def connect(self, host=None, port=None):
+        super(RackspaceConnection, self).connect()
+        self._authenticate()
 
-        self.api.request(method, '%s/%s' % (self.path, path),
-                         headers=self._headers())
-        return self.api.getresponse()
+    def request(self, action, params={}, data='', method='GET'):
+        action = self.path + action
+        return super(RackspaceConnection, self).request(action=action, params=params, data=data, method=method)
+        
+class RackspaceNodeDriver(NodeDriver):
 
-    def list_servers(self):
-        return Response(self.make_request('servers/detail'))
-    
-    def action(self, id, verb, params):
-        uri = 'servers/%s/action' % id
-        data = ('<%s xmlns="%s" %s/>'
-                % (verb, NAMESPACE,
-                   ' '.join(['%s="%s"' % item for item in params.items()])))
-        return Response(self.make_request(uri, data=data, method='POST'))
+    connectionCls = RackspaceConnection
+    type = Provider.RACKSPACE
+    name = 'Rackspace'
 
-    def delete(self, id):
-        uri = 'servers/%s' % id
-        return Response(self.make_request(uri, method='DELETE'))
+    NODE_STATE_MAP = {  'BUILD': NodeState.PENDING,
+                        'ACTIVE': NodeState.RUNNING,
+                        'SUSPENDED': NodeState.TERMINATED,
+                        'QUEUE_RESIZE': NodeState.PENDING,
+                        'PREP_RESIZE': NodeState.PENDING,
+                        'RESCUE': NodeState.PENDING,
+                        'REBUILD': NodeState.PENDING,
+                        'REBOOT': NodeState.REBOOTING,
+                        'HARD_REBOOT': NodeState.REBOOTING}
 
-class Response(object):
-    def __init__(self, http_response):
-        self.http_response = http_response
-        self.http_xml = http_response.read()
+    def list_nodes(self):
+        #print self.connection.request('/servers/detail').body
+        return self.to_nodes(self.connection.request('/servers/detail').object)
 
-    def is_error(self):
-        return self.http_response.status != 202
+    def list_sizes(self):
+        return self.to_sizes(self.connection.request('/flavors/detail').object)
 
-    def get_error(self):
-        """Gets error in the following manner:
+    def list_images(self):
+        return self.to_images(self.connection.request('/images/detail').object)
 
-        - Checks for <{NAMESPACE}message> elem in body
-        - Reads against response code
-        - Gives up
-        """
-        tag = "{%s}message" % NAMESPACE;
-        info = [ err.text
-                 for err in
-                 ET.XML(self.http_xml).findall(tag) ]
-        if info:
-            return "; ".join([ err.text
-                               for err in
-                               ET.XML(self.http_xml).findall(tag) ])
-        else:
-            reasons = { 400: "cloudServersFault/badRequest",
-                        401: "unauthorized",
-                        500: "cloudServersFault",
-                        503: "serviceUnavailable",
-                        404: "itemNotFound",
-                        409: "buildInProgress",
-                        413: "overLimit" }
-            if self.http_response.status in reasons:
-                return reasons[self.http_response.status]
-            else:
-                return None
+    def create_node(self, name, image, size):
+        raise NotImplemented
 
-class RackspaceNodeDriver(object):
+    def reboot_node(self, node):
+        # TODO: Hard Reboots should be supported too!
+        body = """<reboot xmlns="http://docs.rackspacecloud.com/servers/api/v1.0" type="SOFT"/>"""
+        resp = self._node_action(node, body)
+        return resp.status == 202
 
-    implements(INodeDriver)
+    def _node_action(self, node, body):
+        ### consider this from old code:
+        #         data = ('<%s xmlns="%s" %s/>'
+        #        % (verb, NAMESPACE,
+        #           ' '.join(['%s="%s"' % item for item in params.items()])))
 
-    def __init__(self, creds):
-        self.creds = creds
-        self.api = RackspaceConnection(creds.key, creds.secret)
+        uri = '/servers/%s/action' % (node.id)
+        resp = self.connection.request(uri, method='POST', body=body)
+        return resp
+
+    def to_nodes(self, object):
+        node_elements = self._findall(object, 'server')
+        return [ self._to_node(el) for el in node_elements ]
 
     def _fixxpath(self, xpath):
         # ElementTree wants namespaces in its xpaths, so here we add them.
         return "/".join(["{%s}%s" % (NAMESPACE, e) for e in xpath.split("/")])
 
-    def _findtext(self, element, xpath):
-        return element.findtext(self._fixxpath(xpath))
+    def _findall(self, element, xpath):
+        return element.findall(self._fixxpath(xpath))
 
-    def _to_node(self, element):
-        states = { 'BUILD': NodeState.PENDING,
-                   'ACTIVE': NodeState.RUNNING,
-                   'SUSPENDED': NodeState.TERMINATED,
-                   'QUEUE_RESIZE': NodeState.PENDING,
-                   'PREP_RESIZE': NodeState.PENDING,
-                   'RESCUE': NodeState.PENDING,
-                   'REBUILD': NodeState.PENDING,
-                   'REBOOT': NodeState.REBOOTING,
-                   'HARD_REBOOT': NodeState.REBOOTING }
-
-        attribs = element.attrib
-        node_attrs = attribs
-
-        try:
-            state = states[attribs['status']]
-        except:
-            state = NodeState.UNKNOWN
-
-        n = Node(uuid=self.get_uuid(attribs['id']),
-                 name=attribs['name'],
-                 state=state,
-                 ipaddress=self._findtext(element, 
-                                          'metadata/addresses/public'),
-                 creds=self.creds,
-                 attrs=node_attrs)
+    def _to_node(self, el):
+        def get_ips(el):
+            return [ip.get('addr') for ip in el.children()]
+        
+        public_ip = get_ips(self._findall(el, 
+                                          'addresses/public'))
+        private_ip = get_ips(self._findall(el, 
+                                          'addresses/private'))
+        n = Node(id=el.get('id'),
+                 name=el.get('name'),
+                 state=el.get('status'),
+                 public_ip=public_ip,
+                 private_ip=private_ip,
+                 driver=self.connection.driver)
         return n
 
-    def get_uuid(self, field):
-        hash_str = '%s:%d' % (field, self.creds.provider)
-        return hashlib.sha1(hash_str).hexdigest()
+    def to_sizes(self, object):
+        elements = self._findall(object, 'flavor')
+        return [ self._to_size(el) for el in elements ]
 
-    def list_nodes(self):
-        res = self.api.list_servers()
-        return [ self._to_node(el)
-                 for el
-                 in ET.XML(res.http_xml).findall(self._fixxpath('server')) ]
+    def _to_size(self, el):
+        s = NodeSize(id=el.get('id'),
+                     name=el.get('name'),
+                     ram=int(el.get('ram')),
+                     disk=int(el.get('disk')),
+                     bandwidth=None, # XXX: needs hardcode
+                     price=None, # XXX: needs hardcode,
+                     driver=self.connection.driver)
+        return s
 
-    def reboot_node(self, node):
-        """Reboot the node by passing in the node object"""
+    def to_images(self, object):
+        elements = self._findall(object, "image")
+        return [ self._to_image(el) for el in elements if el.get('status') == 'ACTIVE']
 
-        # 'hard' could bubble up as kwarg depending on how reboot_node 
-        # turns out. Defaulting to soft reboot.
-        hard = False
-        verb = 'reboot'
-        id = node.attrs['id']
-        params = {'type': 'HARD' if hard else 'SOFT'}
-
-        res = self.api.action(id, verb, params)
-        if res.is_error():
-            raise Exception(res.get_error())
-
-        return True
-
-    def destroy_node(self, node):
-        """Destroy node"""
-        res = self.api.delete(node.attrs['id'])
-        if res.is_error():
-            raise Exception(res.get_error())
-
-        return True
+    def _to_image(self, el):
+        i = NodeImage(id=el.get('id'),
+                     name=el.get('name'),
+                     driver=self.connection.driver)
+        return i;

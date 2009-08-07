@@ -14,6 +14,7 @@
 # limitations under the License.
 from libcloud.types import Provider
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
+from libcloud.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
 DRIVERS = {
 #    Provider.DUMMY:
@@ -24,8 +25,8 @@ DRIVERS = {
         ('libcloud.drivers.ec2', 'EC2EUNodeDriver'),
 #    Provider.GOGRID:
 #        ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
-#    Provider.RACKSPACE:
-#        ('libcloud.drivers.rackspace', 'RackspaceNodeDriver'),
+    Provider.RACKSPACE:
+        ('libcloud.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.SLICEHOST:
         ('libcloud.drivers.slicehost', 'SlicehostNodeDriver'),
 #    Provider.VPSNET:
