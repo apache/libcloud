@@ -1,6 +1,7 @@
 import httplib, urllib
 from zope import interface
 from libcloud.interface import IConnectionUserAndKey, IResponse
+from libcloud.interface import IConnectionKey, IConnectionKeyFactory
 from libcloud.interface import IConnectionUserAndKeyFactory, IResponseFactory
 from libcloud.interface import INodeDriverFactory, INodeDriver
 from libcloud.interface import INodeFactory, INode
@@ -38,6 +39,7 @@ class Node(object):
         return (('<Node: uuid=%s, name=%s, provider=%s ...>')
                 % (self.uuid, self.name, self.driver.name))
 
+
 class NodeSize(object):
     """
     A Base NodeSize class to derive from.
@@ -55,6 +57,7 @@ class NodeSize(object):
         self.price = price
         self.driver = driver
 
+
 class NodeImage(object):
     """
     A Base NodeSize class to derive from.
@@ -67,6 +70,7 @@ class NodeImage(object):
         self.id = id
         self.name = name
         self.driver = driver
+
 
 class Response(object):
     """
@@ -127,13 +131,12 @@ class Response(object):
         return self.status == httplib.OK or self.status == httplib.CREATED
 
 
-
 class ConnectionKey(object):
     """
     A Base Connection class to derive from.
     """
-    interface.implements(IConnectionUserAndKey)
-    interface.classProvides(IConnectionUserAndKeyFactory)
+    interface.implementsOnly(IConnectionKey)
+    interface.classProvides(IConnectionKeyFactory)
 
     conn_classes = (httplib.HTTPConnection, httplib.HTTPSConnection)
     responseCls = Response
@@ -241,11 +244,15 @@ class ConnectionUserAndKey(ConnectionKey):
     """
     Base connection which accepts a user_id and key
     """
+    interface.implementsOnly(IConnectionUserAndKey)
+    interface.classProvides(IConnectionUserAndKey)
+
     user_id = None
 
     def __init__(self, user_id, key, secure=True):
         super(ConnectionUserAndKey, self).__init__(key, secure)
         self.user_id = user_id
+
 
 class NodeDriver(object):
     """
