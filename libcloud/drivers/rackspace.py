@@ -125,8 +125,7 @@ class RackspaceNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         # TODO: Hard Reboots should be supported too!
-        body = """<reboot xmlns="http://docs.rackspacecloud.com/servers/api/v1.0" type="SOFT"/>"""
-        resp = self._node_action(node, body)
+        resp = self._node_action(node, ['reboot', ('type', 'SOFT')])
         return resp.status == 202
 
     def _node_action(self, node, body):
@@ -134,7 +133,9 @@ class RackspaceNodeDriver(NodeDriver):
         #         data = ('<%s xmlns="%s" %s/>'
         #        % (verb, NAMESPACE,
         #           ' '.join(['%s="%s"' % item for item in params.items()])))
-
+        if isinstance(body, list):
+            attr = ' '.join(['%s="%s"' % (item[0], item[1]) for item in body[1:]])
+            body = '<%s xmlns="%s" %s/>' % (body[0], NAMESPACE, attr)
         uri = '/servers/%s/action' % (node.id)
         resp = self.connection.request(uri, method='POST', body=body)
         return resp
