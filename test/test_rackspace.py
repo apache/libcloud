@@ -17,6 +17,7 @@ import unittest
 from libcloud.types import InvalidCredsException
 from libcloud.providers import Rackspace
 from libcloud.types import Provider
+from libcloud.base import Node, NodeImage, NodeSize
 
 from test import MockHttp
 from secrets import RACKSPACE_USER, RACKSPACE_KEY
@@ -43,6 +44,8 @@ class RackspaceTests(unittest.TestCase):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 0)
         RackspaceMockHttp.type = None
+        ret = self.driver.list_nodes()
+        self.assertEqual(len(ret), 1)
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -53,7 +56,24 @@ class RackspaceTests(unittest.TestCase):
     def test_list_images(self):
         ret = self.driver.list_images()
 
-        
+    def test_create_node(self):
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node('racktest', image, size)
+        self.assertEqual(node.name, 'racktest')
+
+    def test_reboot_node(self):
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
+        ret = node.reboot()
+        self.assertTrue(ret is True)
+
+    def test_destroy_node(self):
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
+        ret = node.destroy()
+        self.assertTrue(ret is True)
+
 class RackspaceMockHttp(MockHttp):
 
     # fake auth token response
@@ -72,6 +92,10 @@ class RackspaceMockHttp(MockHttp):
         body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><servers xmlns="http://docs.rackspacecloud.com/servers/api/v1.0"/>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _v1_0_slug_servers_detail(self, method, url, body, headers):
+        body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><servers xmlns="http://docs.rackspacecloud.com/servers/api/v1.0"><server status="ACTIVE" progress="100" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" id="72258" name="racktest"><metadata/><addresses><public><ip addr="67.23.21.33"/></public><private><ip addr="10.176.168.218"/></private></addresses></server></servers>"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _v1_0_slug_flavors_detail(self, method, url, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><flavors xmlns="http://docs.rackspacecloud.com/servers/api/v1.0"><flavor disk="10" ram="256" name="256 slice" id="1"/><flavor disk="20" ram="512" name="512 slice" id="2"/><flavor disk="40" ram="1024" name="1GB slice" id="3"/><flavor disk="80" ram="2048" name="2GB slice" id="4"/><flavor disk="160" ram="4096" name="4GB slice" id="5"/><flavor disk="320" ram="8192" name="8GB slice" id="6"/><flavor disk="620" ram="15872" name="15.5GB slice" id="7"/></flavors>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -80,3 +104,19 @@ class RackspaceMockHttp(MockHttp):
         body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><images xmlns="http://docs.rackspacecloud.com/servers/api/v1.0"><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="CentOS 5.2" id="2"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Gentoo 2008.0" id="3"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Debian 5.0 (lenny)" id="4"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Fedora 10 (Cambridge)" id="5"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="CentOS 5.3" id="7"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Ubuntu 9.04 (jaunty)" id="8"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Arch 2009.02" id="9"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Ubuntu 8.04.2 LTS (hardy)" id="10"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Ubuntu 8.10 (intrepid)" id="11"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Red Hat EL 5.3" id="12"/><image status="ACTIVE" created="2009-07-20T09:14:37-05:00" updated="2009-07-20T09:14:37-05:00" name="Fedora 11 (Leonidas)" id="13"/></images>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         
+    def _v1_0_slug_servers(self, method, url, body, headers):
+        body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><server xmlns="http://docs.rackspacecloud.com/servers/api/v1.0" status="BUILD" progress="0" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" adminPass="racktestvJq7d3" id="72258" name="racktest"><metadata/><addresses><public><ip addr="67.23.21.33"/></public><private><ip addr="10.176.168.218"/></private></addresses></server>"""
+        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_servers_72258_action(self, method, url, body, headers):
+        if method != "POST" or body[:8] != "<reboot ":
+            raise NotImplemented
+        # only used by reboot() right now, but we will need to parse body someday !!!!
+        return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_servers_72258(self, method, url, body, headers):
+        if method != "DELETE":
+            raise NotImplemented
+        # only used by destroy node()
+        return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
