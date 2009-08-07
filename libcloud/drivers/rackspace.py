@@ -139,12 +139,17 @@ class RackspaceNodeDriver(NodeDriver):
                             flavorId="%s">
                 </server>
                 """ % (NAMESPACE, name, image.id, size.id)
-        resp = self.connection.request("/servers", method='POST', data=body, )
+        resp = self.connection.request("/servers", method='POST', data=body)
         return self._to_node(resp.object)
 
     def reboot_node(self, node):
         # TODO: Hard Reboots should be supported too!
         resp = self._node_action(node, ['reboot', ('type', 'SOFT')])
+        return resp.status == 202
+
+    def destroy_node(self, node):
+        uri = '/servers/%s' % (node.id)
+        resp = self.connection.request(uri, method='DELETE')
         return resp.status == 202
 
     def _node_action(self, node, body):
