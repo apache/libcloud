@@ -131,7 +131,7 @@ class EC2NodeDriver(NodeDriver):
         return any([ term_status == status for term_status
                      in ('shutting-down', 'terminated') ])
 
-    def to_nodes(self, object):
+    def _to_nodes(self, object):
         return [ self._to_node(el) 
                  for el in object.findall(
                     self._fixxpath('reservationSet/item/instancesSet/item')) ]
@@ -153,7 +153,7 @@ class EC2NodeDriver(NodeDriver):
 
     def list_nodes(self):
         params = {'Action': 'DescribeInstances' }
-        nodes = self.to_nodes(
+        nodes = self._to_nodes(
                     self.connection.request('/', params=params).object)
         return nodes
 

@@ -148,22 +148,6 @@ class INodeDriver(Interface):
         Reboots the given node
         """
 
-    def to_nodes(object):
-        """
-        Convert the response object to a list of nodes
-        """
-
-    def to_sizes(object):
-        """
-        Convert the response object to a list of sizes
-        """
-
-    def to_images(object):
-        """
-        Convert the response object to a list of images
-        """
-    
-
 class IConnection(Interface):
     """
     A Connection represents an interface between a Client and a Provider's Web
