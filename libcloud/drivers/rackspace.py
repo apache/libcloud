@@ -122,13 +122,13 @@ class RackspaceNodeDriver(NodeDriver):
                         'HARD_REBOOT': NodeState.REBOOTING}
 
     def list_nodes(self):
-        return self.to_nodes(self.connection.request('/servers/detail').object)
+        return self._to_nodes(self.connection.request('/servers/detail').object)
 
     def list_sizes(self):
-        return self.to_sizes(self.connection.request('/flavors/detail').object)
+        return self._to_sizes(self.connection.request('/flavors/detail').object)
 
     def list_images(self):
-        return self.to_images(self.connection.request('/images/detail').object)
+        return self._to_images(self.connection.request('/images/detail').object)
 
     def create_node(self, name, image, size, **kwargs):
         body = """<server   xmlns="%s"
@@ -158,7 +158,7 @@ class RackspaceNodeDriver(NodeDriver):
         resp = self.connection.request(uri, method='POST', data=body)
         return resp
 
-    def to_nodes(self, object):
+    def _to_nodes(self, object):
         node_elements = self._findall(object, 'server')
         return [ self._to_node(el) for el in node_elements ]
 
@@ -185,7 +185,7 @@ class RackspaceNodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
-    def to_sizes(self, object):
+    def _to_sizes(self, object):
         elements = self._findall(object, 'flavor')
         return [ self._to_size(el) for el in elements ]
 
@@ -199,7 +199,7 @@ class RackspaceNodeDriver(NodeDriver):
                      driver=self.connection.driver)
         return s
 
-    def to_images(self, object):
+    def _to_images(self, object):
         elements = self._findall(object, "image")
         return [ self._to_image(el) for el in elements if el.get('status') == 'ACTIVE']
 

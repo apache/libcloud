@@ -67,13 +67,13 @@ class SlicehostNodeDriver(NodeDriver):
                        'terminated': NodeState.TERMINATED }
 
     def list_nodes(self):
-        return self.to_nodes(self.connection.request('/slices.xml').object)
+        return self._to_nodes(self.connection.request('/slices.xml').object)
 
     def list_sizes(self):
-        return self.to_sizes(self.connection.request('/flavors.xml').object)
+        return self._to_sizes(self.connection.request('/flavors.xml').object)
 
     def list_images(self):
-        return self.to_images(self.connection.request('/images.xml').object)
+        return self._to_images(self.connection.request('/images.xml').object)
 
     def create_node(self, name, image, size, **kwargs):
         uri = '/slices.xml'
@@ -88,7 +88,7 @@ class SlicehostNodeDriver(NodeDriver):
         image_id.text = str(image.id)
         xml = ET.tostring(root)
 
-        node = self.to_nodes(
+        node = self._to_nodes(
                   self.connection.request(uri, method='POST', 
                             data=xml, headers={'Content-Type': 'application/xml'}
                       ).object)[0]
@@ -104,7 +104,7 @@ class SlicehostNodeDriver(NodeDriver):
         #expected_status = 'hard_reboot' if hard else 'reboot'
 
         uri = '/slices/%s/reboot.xml' % (node.id)
-        node = self.to_nodes(self.connection.request(uri, method='PUT').object)[0]
+        node = self._to_nodes(self.connection.request(uri, method='PUT').object)[0]
         return node.state == NodeState.REBOOTING
 
     def destroy_node(self, node):
@@ -122,7 +122,7 @@ class SlicehostNodeDriver(NodeDriver):
         ret = self.connection.request(uri, method='PUT')
         return True
 
-    def to_nodes(self, object):
+    def _to_nodes(self, object):
         if object.tag == 'slice':
             return [ self._to_node(object) ]
         node_elements = object.findall('slice')
@@ -166,7 +166,7 @@ class SlicehostNodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
-    def to_sizes(self, object):
+    def _to_sizes(self, object):
         if object.tag == 'flavor':
             return [ self._to_size(object) ]
         elements = object.findall('flavor')
@@ -182,7 +182,7 @@ class SlicehostNodeDriver(NodeDriver):
                      driver=self.connection.driver)
         return s
 
-    def to_images(self, object):
+    def _to_images(self, object):
         if object.tag == 'image':
             return [ self._to_image(object) ]
         elements = object.findall('image')
