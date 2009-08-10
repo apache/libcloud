@@ -205,6 +205,7 @@ class ConnectionKey(object):
         # We always send a content length and user-agent header
         headers.update({'Content-Length': len(data)})
         headers.update({'User-Agent': 'libcloud/%s' % (self.driver.name)})
+        headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '':
             data = self.encode_data(data)

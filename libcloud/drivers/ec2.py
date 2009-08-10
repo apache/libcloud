@@ -51,10 +51,6 @@ class EC2Connection(ConnectionUserAndKey):
     host = EC2_US_HOST
     responseCls = EC2Response
 
-    def add_default_headers(self, headers):
-        headers['Host'] = self.host
-        return headers
-
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
