@@ -15,8 +15,6 @@
 
 from libcloud.types import NodeState, InvalidCredsException, Provider
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage
-from libcloud.interface import INodeDriver
-from zope.interface import implements
 import base64
 import httplib
 import struct
