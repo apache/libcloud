@@ -29,6 +29,8 @@ class RackspaceResponse(Response):
 
     def success(self):
         i = int(self.status)
+        #print i
+        #print self.body
         return i >= 200 and i <= 299
 
     def parse_body(self):
@@ -49,8 +51,9 @@ class RackspaceResponse(Response):
 
 class RackspaceConnection(ConnectionUserAndKey):
     api_version = 'v1.0'
-    auth_host = 'auth.api.rackspacecloud.com'
-    __host = None
+    host = 'auth.api.rackspacecloud.com'
+    auth_host = None
+    endpoint = None
     path = None
     token = None
 
@@ -61,44 +64,42 @@ class RackspaceConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/xml'
         return headers
 
-    @property
-    def host(self):
-        """
-        Rackspace uses a separate host for API calls which is only provided
-        after an initial authentication request. If we haven't made that
-        request yet, do it here. Otherwise, just return the management host.
+    def _authenticate(self):
+        # TODO: Fixup for when our token expires (!!!)
+        self.auth_host = self.host
 
-        TODO: Fixup for when our token expires (!!!)
-        """
-        if not self.__host:
-            # Initial connection used for authentication
-            self.connect(self.auth_host)
-            resp = self.request(method='GET', action='/%s' % self.api_version,
-                                           headers={'X-Auth-User': self.user_id,
-                                                    'X-Auth-Key': self.key})
-            try:
-                self.token = resp.headers['x-auth-token']
-                endpoint = resp.headers['x-server-management-url']
-            except KeyError:
-                raise InvalidCredsException()
+        self.connection.request(method='GET', url='/%s' % self.api_version,
+                                       headers={'X-Auth-User': self.user_id,
+                                                'X-Auth-Key': self.key})
+        resp = self.connection.getresponse()
+        headers = dict(resp.getheaders())
+        self.token = headers.get('x-auth-token')
+        self.endpoint = headers.get('x-server-management-url')
+        if not self.token or not self.endpoint:
+            raise InvalidCredsException()
 
-            scheme, server, self.path, param, query, fragment = (
-                urlparse.urlparse(endpoint)
-            )
-            if scheme is "https" and self.secure is not 1:
-                # TODO: Custom exception (?)
-                raise InvalidCredsException()
+        scheme, server, self.path, param, query, fragment = (
+            urlparse.urlparse(self.endpoint)
+        )
 
-            # Set host to where we want to make further requests to; close auth conn
-            self.__host = server
-            self.connection.close()
+        # Okay, this is evil.  We replace host here, and then re-run 
+        # super connect() to re-setup the connection classes with the 'correct'
+        # host.
+        self.host = server
 
-        return self.__host
+        if scheme is "https" and self.secure is not 1:
+            # TODO: Custom exception (?)
+            raise InvalidCredsException()
+            
+        super(RackspaceConnection, self).connect()
 
-    def request(self, action, params={}, data='', headers={}, method='GET'):
-        # Due to first-run authentication request, we may not have a path
-        if self.path:
-            action = self.path + action
+    def connect(self, host=None, port=None):
+        super(RackspaceConnection, self).connect()
+        self._authenticate()
+
+    def request(self, action, params={}, data='', method='GET'):
+        action = self.path + action
+        headers = {}
         if method == "POST":
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         return super(RackspaceConnection, self).request(action=action,
