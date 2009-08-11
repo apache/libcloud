@@ -21,7 +21,6 @@ class Provider(object):
     SLICEHOST = 4 # Cloud Servers
     GOGRID = 5 # GoGrid 
     VPSNET = 6 # VPS.net
-    LINODE = 7 # Linode.com
 
 class NodeState(object):
     """ Standard states for a node """

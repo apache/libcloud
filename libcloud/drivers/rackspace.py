@@ -29,8 +29,6 @@ class RackspaceResponse(Response):
 
     def success(self):
         i = int(self.status)
-        #print i
-        #print self.body
         return i >= 200 and i <= 299
 
     def parse_body(self):
@@ -51,9 +49,8 @@ class RackspaceResponse(Response):
 
 class RackspaceConnection(ConnectionUserAndKey):
     api_version = 'v1.0'
-    host = 'auth.api.rackspacecloud.com'
-    auth_host = None
-    endpoint = None
+    auth_host = 'auth.api.rackspacecloud.com'
+    __host = None
     path = None
     token = None
 
@@ -64,48 +61,53 @@ class RackspaceConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/xml'
         return headers
 
-    def _authenticate(self):
-        # TODO: Fixup for when our token expires (!!!)
-        self.auth_host = self.host
+    @property
+    def host(self):
+        """
+        Rackspace uses a separate host for API calls which is only provided
+        after an initial authentication request. If we haven't made that
+        request yet, do it here. Otherwise, just return the management host.
 
-        self.connection.request(method='GET', url='/%s' % self.api_version,
-                                       headers={'X-Auth-User': self.user_id,
-                                                'X-Auth-Key': self.key})
-        resp = self.connection.getresponse()
-        headers = dict(resp.getheaders())
-        self.token = headers.get('x-auth-token')
-        self.endpoint = headers.get('x-server-management-url')
-        if not self.token or not self.endpoint:
-            raise InvalidCredsException()
+        TODO: Fixup for when our token expires (!!!)
+        """
+        if not self.__host:
+            # Initial connection used for authentication
+            conn = self.conn_classes[self.secure](self.auth_host, self.port[self.secure])
+            conn.request(method='GET', url='/%s' % self.api_version,
+                                           headers={'X-Auth-User': self.user_id,
+                                                    'X-Auth-Key': self.key})
+            resp = conn.getresponse()
+            headers = dict(resp.getheaders())
+            try:
+                self.token = headers['x-auth-token']
+                endpoint = headers['x-server-management-url']
+            except KeyError:
+                raise InvalidCredsException()
 
-        scheme, server, self.path, param, query, fragment = (
-            urlparse.urlparse(self.endpoint)
-        )
+            scheme, server, self.path, param, query, fragment = (
+                urlparse.urlparse(endpoint)
+            )
+            if scheme is "https" and self.secure is not 1:
+                # TODO: Custom exception (?)
+                raise InvalidCredsException()
 
-        # Okay, this is evil.  We replace host here, and then re-run 
-        # super connect() to re-setup the connection classes with the 'correct'
-        # host.
-        self.host = server
+            # Set host to where we want to make further requests to; close auth conn
+            self.__host = server
+            conn.close()
 
-        if scheme is "https" and self.secure is not 1:
-            # TODO: Custom exception (?)
-            raise InvalidCredsException()
-            
-        super(RackspaceConnection, self).connect()
+        return self.__host
 
-    def connect(self, host=None, port=None):
-        super(RackspaceConnection, self).connect()
-        self._authenticate()
-
-    def request(self, action, params={}, data='', method='GET'):
-        action = self.path + action
-        headers = {}
+    def request(self, action, params={}, data='', headers={}, method='GET'):
+        # Due to first-run authentication request, we may not have a path
+        if self.path:
+            action = self.path + action
         if method == "POST":
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         return super(RackspaceConnection, self).request(action=action,
                                                         params=params, data=data,
                                                         method=method, headers=headers)
         
+
 class RackspaceNodeDriver(NodeDriver):
 
     connectionCls = RackspaceConnection
@@ -123,13 +125,13 @@ class RackspaceNodeDriver(NodeDriver):
                         'HARD_REBOOT': NodeState.REBOOTING}
 
     def list_nodes(self):
-        return self._to_nodes(self.connection.request('/servers/detail').object)
+        return self.to_nodes(self.connection.request('/servers/detail').object)
 
     def list_sizes(self):
-        return self._to_sizes(self.connection.request('/flavors/detail').object)
+        return self.to_sizes(self.connection.request('/flavors/detail').object)
 
     def list_images(self):
-        return self._to_images(self.connection.request('/images/detail').object)
+        return self.to_images(self.connection.request('/images/detail').object)
 
     def create_node(self, name, image, size, **kwargs):
         body = """<server   xmlns="%s"
@@ -159,7 +161,7 @@ class RackspaceNodeDriver(NodeDriver):
         resp = self.connection.request(uri, method='POST', data=body)
         return resp
 
-    def _to_nodes(self, object):
+    def to_nodes(self, object):
         node_elements = self._findall(object, 'server')
         return [ self._to_node(el) for el in node_elements ]
 
@@ -186,7 +188,7 @@ class RackspaceNodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
-    def _to_sizes(self, object):
+    def to_sizes(self, object):
         elements = self._findall(object, 'flavor')
         return [ self._to_size(el) for el in elements ]
 
@@ -200,7 +202,7 @@ class RackspaceNodeDriver(NodeDriver):
                      driver=self.connection.driver)
         return s
 
-    def _to_images(self, object):
+    def to_images(self, object):
         elements = self._findall(object, "image")
         return [ self._to_image(el) for el in elements if el.get('status') == 'ACTIVE']
 

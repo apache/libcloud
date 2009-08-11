@@ -205,7 +205,6 @@ class ConnectionKey(object):
         # We always send a content length and user-agent header
         headers.update({'Content-Length': len(data)})
         headers.update({'User-Agent': 'libcloud/%s' % (self.driver.name)})
-        headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '':
             data = self.encode_data(data)
@@ -297,3 +296,27 @@ class NodeDriver(object):
 
     def list_sizes(self):
         raise NotImplementedError, 'list_sizes not implemented for this driver'
+
+    def to_nodes(self, object):
+        """
+        A method that knows how to convert a given response object to a L{Node}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_node not implemented for this driver'
+
+    def to_sizes(self, object):
+        """
+        A method that knows how to convert a given response object to a L{Size}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_size not implemented for this driver'
+
+    def to_images(self, object):
+        """
+        A method that knows how to convert a given response object to a L{Image}.
+
+        Override in a provider's subclass.
+        """
+        raise NotImplementedError, 'to_image not implemented for this driver'
