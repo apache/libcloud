@@ -210,4 +210,4 @@ class RackspaceNodeDriver(NodeDriver):
         i = NodeImage(id=el.get('id'),
                      name=el.get('name'),
                      driver=self.connection.driver)
-        return i;
+        return i

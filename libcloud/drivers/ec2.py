@@ -51,10 +51,6 @@ class EC2Connection(ConnectionUserAndKey):
     host = EC2_US_HOST
     responseCls = EC2Response
 
-    def add_default_headers(self, headers):
-        headers['Host'] = self.host
-        return headers
-
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
@@ -131,7 +127,7 @@ class EC2NodeDriver(NodeDriver):
         return any([ term_status == status for term_status
                      in ('shutting-down', 'terminated') ])
 
-    def to_nodes(self, object):
+    def _to_nodes(self, object):
         return [ self._to_node(el) 
                  for el in object.findall(
                     self._fixxpath('reservationSet/item/instancesSet/item')) ]
@@ -153,7 +149,7 @@ class EC2NodeDriver(NodeDriver):
 
     def list_nodes(self):
         params = {'Action': 'DescribeInstances' }
-        nodes = self.to_nodes(
+        nodes = self._to_nodes(
                     self.connection.request('/', params=params).object)
         return nodes
 

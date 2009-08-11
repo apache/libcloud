@@ -15,7 +15,7 @@
 import httplib
 from cStringIO import StringIO
 from urllib2 import urlparse
-
+from cgi import parse_qs
 
 class multipleresponse(object):
     """
@@ -98,7 +98,8 @@ class MockHttp(object):
     port = None
     response = None
 
-    type = None
+    type = None 
+    use_param = None # will use this param to namespace the request function
 
     def __init__(self, host, port, *args, **kwargs):
         self.host = host
@@ -106,13 +107,18 @@ class MockHttp(object):
 
     def request(self, method, url, body=None, headers=None):
         # Find a method we can use for this request
-        path = urlparse.urlparse(url)[2]
+        parsed = urlparse.urlparse(url)
+        scheme, netloc, path, params, query, fragment = parsed
+        qs = parse_qs(query)
         if path.endswith('/'):
             path = path[:-1]
+        meth_name = path.replace('/','_').replace('.', '_')
         if self.type:
-            meth = getattr(self, '%s_%s' % (path.replace('/','_').replace('.', '_'), self.type) )
-        else:
-            meth = getattr(self, (path.replace('/','_').replace('.', '_')))
+            meth_name = '%s_%s' % (meth_name, self.type) 
+        if self.use_param:
+            param = qs[self.use_param][0].replace('.', '_')
+            meth_name = '%s_%s' % (meth_name, param)
+        meth = getattr(self, meth_name)
         status, body, headers, reason = meth(method, url, body, headers)
         self.response = self.responseCls(status, body, headers, reason)
 
