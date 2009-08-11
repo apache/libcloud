@@ -31,6 +31,8 @@ DRIVERS = {
         ('libcloud.drivers.slicehost', 'SlicehostNodeDriver'),
 #    Provider.VPSNET:
 #        ('libcloud.drivers.vpsnet', 'VPSNetNodeDriver'),
+    Provider.LINODE:
+        ('libcloud.drivers.linode', 'LinodeNodeDriver'),
 }
 
 def get_driver(provider):
