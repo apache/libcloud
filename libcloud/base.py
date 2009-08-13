@@ -111,7 +111,7 @@ class Response(object):
 
     def parse_error(self):
         """
-        Parse the error messags.
+        Parse the error messages.
 
         Override in a provider's subclass.
 
