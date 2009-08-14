@@ -172,7 +172,8 @@ class ConnectionKey(object):
         connection = self.conn_classes[self.secure](host, port)
         self.connection = connection
 
-    def request(self, action, params={}, data='', headers={}, method='GET'):
+    def request(self, action, params={}, data='', headers={}, method='GET',
+        recurse=False):
         """
         Request a given `action`.
         
@@ -210,11 +211,20 @@ class ConnectionKey(object):
         if data != '':
             data = self.encode_data(data)
         url = '?'.join((action, urllib.urlencode(params)))
-        self.connection.request(method=method, url=url, body=data,
-                                headers=headers)
-        response = self.responseCls(self.connection.getresponse())
-        response.connection = self
-        return response
+        try:
+            self.connection.request(method=method, url=url, body=data,
+                                    headers=headers)
+            response = self.responseCls(self.connection.getresponse())
+            response.connection = self
+            return response
+        except:
+            # Handle the case where the server does not allow keep-alive.
+            # FIXME: This is a bad hack to get Linode running, and needs love.
+            if recurse:
+                # We've already been by here once, re-raise the exception
+                raise
+            self.connect()
+            return self.request(action, params, data, headers, method, True)
 
     def add_default_params(self, params):
         """
