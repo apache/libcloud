@@ -146,6 +146,13 @@ class LinodeNodeDriver(NodeDriver):
         params = { "api_action": "linode.reboot", "LinodeID": node.id }
         self.connection.request(LINODE_ROOT, params=params)
     
+    def destroy_node(self, node):
+        # Destroy
+        # Terminates a Node.  With prejudice.
+        params = { "api_action": "linode.delete", "LinodeID": node.id,
+            "skipChecks": True }
+        self.connection.request(LINODE_ROOT, params=params)
+    
     def list_sizes(self):
         # List Sizes
         # Retrieve all available Linode plans.
