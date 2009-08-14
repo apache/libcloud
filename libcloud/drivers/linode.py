@@ -36,6 +36,8 @@ class LinodeException(BaseException):
     def __init__(self, code, message):
         self.code = code
         self.message = message
+    def __str__(self):
+        return "(%u) %s" % (self.code, self.message)
     def __repr__(self):
         return "<LinodeException code %u '%s'>" % (self.code, self.message)
 
@@ -115,7 +117,7 @@ class LinodeConnection(ConnectionKey):
 class LinodeNodeDriver(NodeDriver):
     # The meat of Linode operations; the Node Driver.
     type = Provider.LINODE
-    name = 'Linode'
+    name = "Linode"
     connectionCls = LinodeConnection
 
     # Converts Linode's state from DB to a NodeState constant.
@@ -133,9 +135,16 @@ class LinodeNodeDriver(NodeDriver):
     def list_nodes(self):
         # List
         # Provide a list of all nodes that this API key has access to.
-        params = {'api_action': 'linode.list'}
+        params = { "api_action": "linode.list" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         return [self._to_node(n) for n in data]
+    
+    def reboot_node(self, node):
+        # Reboot
+        # Execute a shutdown and boot job for the given Node.
+        params = { "api_action": "linode.reboot", "LinodeID": node.id }
+        self.connection.request(LINODE_ROOT, params=params)
+        
 
     def _to_node(self, obj):
         # Convert a returned Linode instance into a Node instance.
