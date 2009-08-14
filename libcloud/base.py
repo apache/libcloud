@@ -60,7 +60,7 @@ class NodeSize(object):
 
 class NodeImage(object):
     """
-    A Base NodeSize class to derive from.
+    A Base NodeImage class to derive from.
     """
     
     interface.implements(INodeImage)
