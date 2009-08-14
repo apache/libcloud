@@ -22,7 +22,7 @@
 #
 
 from libcloud.types import Provider, NodeState
-from libcloud.base import ConnectionKey, Response, NodeDriver, Node
+from libcloud.base import ConnectionKey, Response, NodeDriver, NodeSize, Node
 from copy import copy
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
@@ -144,7 +144,20 @@ class LinodeNodeDriver(NodeDriver):
         # Execute a shutdown and boot job for the given Node.
         params = { "api_action": "linode.reboot", "LinodeID": node.id }
         self.connection.request(LINODE_ROOT, params=params)
-        
+    
+    def list_sizes(self):
+        # List Sizes
+        # Retrieve all available Linode plans.
+        # FIXME: Prices get mangled due to 'float'.
+        params = { "api_action": "avail.linodeplans" }
+        data = self.connection.request(LINODE_ROOT, params=params).object
+        sizes = []
+        for obj in data:
+            n = NodeSize(id=obj["PLANID"], name=obj["LABEL"], ram=obj["RAM"],
+                    disk=obj["DISK"], bandwidth=obj["XFER"], price=obj["PRICE"],
+                    driver=self.connection.driver)
+            sizes.append(n)
+        return sizes
 
     def _to_node(self, obj):
         # Convert a returned Linode instance into a Node instance.
