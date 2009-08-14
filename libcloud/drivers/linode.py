@@ -23,6 +23,7 @@
 
 from libcloud.types import Provider, NodeState
 from libcloud.base import ConnectionKey, Response, NodeDriver, NodeSize, Node
+from libcloud.base import NodeImage
 from copy import copy
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
@@ -158,6 +159,18 @@ class LinodeNodeDriver(NodeDriver):
                     driver=self.connection.driver)
             sizes.append(n)
         return sizes
+    
+    def list_images(self):
+        # List Images
+        # Retrieve all available Linux distributions.
+        params = { "api_action": "avail.distributions" }
+        data = self.connection.request(LINODE_ROOT, params=params).object
+        distros = []
+        for obj in data:
+            i = NodeImage(id=obj["DISTRIBUTIONID"], name=obj["LABEL"],
+                driver=self.connection.driver)
+            distros.append(i)
+        return distros
 
     def _to_node(self, obj):
         # Convert a returned Linode instance into a Node instance.
