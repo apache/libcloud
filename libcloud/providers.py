@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from libcloud.types import Provider
+from libcloud.drivers.linode import LinodeNodeDriver as Linode
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
 from libcloud.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
