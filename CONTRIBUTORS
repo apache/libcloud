@@ -24,7 +24,7 @@ AMAZON EC2 EU <http://aws.amazon.com/ec2/>
    L:
 
 LINODE <http://www.linode.com>
-   S: List
+   S: List, Reboot, Images, Sizes
    M: Jed Smith <jsmith@linode.com>
    R: http://www.linode.com/api/autodoc.cfm
    L: LICENSE.MIT
