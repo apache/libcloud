@@ -36,10 +36,10 @@ class LinodeException(BaseException):
         return "<LinodeException code %u '%s'>" % (self.code, self.message)
 
 # For beta accounts, change this to "beta.linode.com".
-LINODE_API = "beta.linode.com"
+LINODE_API = "api.linode.com"
 
 # For beta accounts, change this to "/api/".
-LINODE_ROOT = "/api/"
+LINODE_ROOT = "/"
 
 
 class LinodeResponse(Response):
