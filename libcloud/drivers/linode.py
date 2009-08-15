@@ -36,10 +36,10 @@ class LinodeException(BaseException):
         return "<LinodeException code %u '%s'>" % (self.code, self.message)
 
 # For beta accounts, change this to "beta.linode.com".
-LINODE_API = "api.linode.com"
+LINODE_API = "beta.linode.com"
 
 # For beta accounts, change this to "/api/".
-LINODE_ROOT = "/"
+LINODE_ROOT = "/api/"
 
 
 class LinodeResponse(Response):
@@ -48,14 +48,21 @@ class LinodeResponse(Response):
     def __init__(self, response):
         # Given a response object, slurp the information from it.
         self.body = response.read()
+        print "body:", self.body
         self.status = response.status
+        print "status:", self.status
         self.headers = dict(response.getheaders())
+        print "headers:", self.headers
         self.error = response.reason
-        invalid = LinodeException(0xFF, "Invalid JSON received from server")
+        print "error:",2 self.error
+        self.invalid = LinodeException(0xFF, "Invalid JSON received from server")
         
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.action, self.object, self.errors = self.parse_body()
+        print "action:", self.action
+        print "object:", self.object
+        print "errors:", self.errors
         
         if not self.success():
             # Raise the first error, as there will usually only be one

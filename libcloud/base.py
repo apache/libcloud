@@ -199,6 +199,7 @@ class ConnectionKey(object):
 
         @return: An instance of type I{responseCls}
         """
+        print "--->", params["api_action"]
         # Extend default parameters
         params = self.add_default_params(params)
         # Extend default headers
@@ -215,11 +216,15 @@ class ConnectionKey(object):
             self.connection.request(method=method, url=url, body=data,
                                     headers=headers)
             response = self.responseCls(self.connection.getresponse())
+            print "<---", response.status_code
+            print response.body
+            print
             response.connection = self
             return response
         except:
             # Handle the case where the server does not allow keep-alive.
             # FIXME: This is a bad hack to get Linode running, and needs love.
+            raise
             if recurse:
                 # We've already been by here once, re-raise the exception
                 raise
