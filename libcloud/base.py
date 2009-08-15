@@ -172,8 +172,7 @@ class ConnectionKey(object):
         connection = self.conn_classes[self.secure](host, port)
         self.connection = connection
 
-    def request(self, action, params={}, data='', headers={}, method='GET',
-        recurse=False):
+    def request(self, action, params={}, data='', headers={}, method='GET'):
         """
         Request a given `action`.
         
@@ -199,8 +198,6 @@ class ConnectionKey(object):
 
         @return: An instance of type I{responseCls}
         """
-        print "--->", params["api_action"]
-        print params
         # Extend default parameters
         params = self.add_default_params(params)
         # Extend default headers
@@ -213,24 +210,15 @@ class ConnectionKey(object):
         if data != '':
             data = self.encode_data(data)
         url = '?'.join((action, urllib.urlencode(params)))
-        try:
-            self.connection.request(method=method, url=url, body=data,
-                                    headers=headers)
-            response = self.responseCls(self.connection.getresponse())
-            print "<---", response.status_code
-            print response.body
-            print
-            response.connection = self
-            return response
-        except:
-            # Handle the case where the server does not allow keep-alive.
-            # FIXME: This is a bad hack to get Linode running, and needs love.
-            raise
-            if recurse:
-                # We've already been by here once, re-raise the exception
-                raise
-            self.connect()
-            return self.request(action, params, data, headers, method, True)
+        
+        # Removed terrible hack...this a less-bad hack that doesn't execute a
+        # request twice, but it's still a hack.
+        self.connect()
+        self.connection.request(method=method, url=url, body=data,
+                                headers=headers)
+        response = self.responseCls(self.connection.getresponse())
+        response.connection = self
+        return response
 
     def add_default_params(self, params):
         """

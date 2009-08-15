@@ -48,22 +48,18 @@ class LinodeResponse(Response):
     def __init__(self, response):
         # Given a response object, slurp the information from it.
         self.body = response.read()
-        print "body:", self.body
         self.status = response.status
-        print "status:", self.status
         self.headers = dict(response.getheaders())
-        print "headers:", self.headers
         self.error = response.reason
-        print "error:",2 self.error
         self.invalid = LinodeException(0xFF, "Invalid JSON received from server")
         
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.action, self.object, self.errors = self.parse_body()
-        print "action:", self.action
-        print "object:", self.object
-        print "errors:", self.errors
         
+        if self.error == "Moved Temporarily":
+            raise LinodeException(0xFA, "Redirected to error page by API.  Bug?")
+
         if not self.success():
             # Raise the first error, as there will usually only be one
             raise self.errors[0]
@@ -238,6 +234,8 @@ class LinodeNodeDriver(NodeDriver):
         root = None if "root" not in kwargs else kwargs["root"]
         if not ssh and not root:
             raise LinodeException(0xFB, "Need SSH key or root password")
+        if len(root) < 6:
+            raise LinodeException(0xFB, "Root password is too short")
 
         # Swap size
         try: swap = 128 if "swap" not in kwargs else int(kwargs["swap"])
@@ -340,7 +338,7 @@ class LinodeNodeDriver(NodeDriver):
         # Make a node out of it and hand it back
         params = { "api_action": "linode.list", "LinodeID": linode["id"] }
         data = self.connection.request(LINODE_ROOT, params=params).object
-        return data[0]
+        return self._to_node(data[0])
 
     def list_sizes(self):
         # List Sizes
@@ -351,8 +349,8 @@ class LinodeNodeDriver(NodeDriver):
         sizes = []
         for obj in data:
             n = NodeSize(id=obj["PLANID"], name=obj["LABEL"], ram=obj["RAM"],
-                    disk=obj["DISK"], bandwidth=obj["XFER"], price=obj["PRICE"],
-                    driver=self.connection.driver)
+                    disk=(obj["DISK"] * 1024), bandwidth=obj["XFER"],
+                    price=obj["PRICE"], driver=self.connection.driver)
             sizes.append(n)
         return sizes
     
