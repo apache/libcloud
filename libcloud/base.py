@@ -200,6 +200,7 @@ class ConnectionKey(object):
         @return: An instance of type I{responseCls}
         """
         print "--->", params["api_action"]
+        print params
         # Extend default parameters
         params = self.add_default_params(params)
         # Extend default headers
