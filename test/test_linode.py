@@ -27,6 +27,7 @@ class LinodeTest(unittest.TestCase):
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
+        node = nodes[0]
         self.assertEqual(node.id, 8098)
         self.assertEqual(node.name, 'api-node3')
         self.assertEqual(node.public_ip, '75.127.96.245')
@@ -47,7 +48,7 @@ class LinodeTest(unittest.TestCase):
         size = self.driver.list_sizes()[0]
         distro = self.driver.list_images()[6]
         self.driver.linode_set_datacenter(2)
-        node = self.driver.create_node("Test", distro, size, root="test")
+        node = self.driver.create_node("Test", distro, size, root="test123")
     
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -79,6 +80,14 @@ class LinodeMockHttp(MockHttp):
     
     def _linode_disk_createfromdistribution(self, method, url, body, headers):
         body = '{"ERRORARRAY":[],"ACTION":"linode.disk.createFromDistribution","DATA":{"JobID":1298,"DiskID":55647}}'
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _linode_delete(self, method, url, body, headers):
+        body = '{"ERRORARRAY":[],"ACTION":"linode.delete","DATA":{"LinodeID":8098}}'
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _linode_reboot(self, method, url, body, headers):
+        body = '{"ERRORARRAY":[],"ACTION":"linode.reboot","DATA":{"JobID":1305}}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
     
     def _linode_disk_create(self, method, url, body, headers):
