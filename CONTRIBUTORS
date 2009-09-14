@@ -28,9 +28,8 @@ LINODE <http://www.linode.com>
 
 RACKSPACE CLOUD <http://www.rackspacecloud.com>
    S: List, Reboot, Create, Destroy, Images, Sizes
-   M: Adrian Cole?
+   M:               
 
 SLICEHOST <http://www.slicehost.com>
    S: List, Reboot, Create, Destroy, Images, Sizes
-   M: Jared Kuolt?
-
+   M:              
