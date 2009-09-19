@@ -46,6 +46,11 @@ class EC2Tests(unittest.TestCase):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 5)
+        self.assertEqual(sizes[0].id, 'm1.small')
+
 class EC2MockHttp(MockHttp):
     def _describe_instances(self, method, url, body, headers):
         body = """<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">

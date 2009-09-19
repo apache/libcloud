@@ -14,7 +14,7 @@
 # limitations under the License.
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize
 import base64
 import hmac
 import httplib
@@ -28,6 +28,39 @@ EC2_US_HOST = 'ec2.amazonaws.com'
 EC2_EU_HOST = 'eu-west-1.ec2.amazonaws.com'
 API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
+
+# Sizes must be hardcoded, because amazon doesn't provide an API to fetch them.
+# From http://aws.amazon.com/ec2/instance-types/
+EC2_INSTANCE_TYPES = [{'id': 'm1.small',
+                       'name': 'Small Instance',
+                       'ram': '1740MB',
+                       'disk': '160GB',
+                       'bandwidth': None,
+                       'price': '.1'},
+                      {'id': 'm1.large',
+                       'name': 'Large Instance',
+                       'ram': '7680MB',
+                       'disk': '850GB',
+                       'bandwidth': None,
+                       'price': '.4'},
+                      {'id': 'm1.xlarge',
+                       'name': 'Extra Large Instance',
+                       'ram': '15360MB',
+                       'disk': '1690GB',
+                       'bandwidth': None,
+                       'price': '.8'},
+                      {'id': 'c1.medium',
+                       'name': 'High-CPU Medium Instance',
+                       'ram': '1740MB',
+                       'disk': '350GB',
+                       'bandwidth': None,
+                       'price': '.2'},
+                      {'id': 'c1.xlarge',
+                       'name': 'High-CPU Extra Large Instance',
+                       'ram': '7680MB',
+                       'disk': '1690GB',
+                       'bandwidth': None,
+                       'price': '.8'}]
 
 class EC2Response(Response):
 
@@ -152,6 +185,10 @@ class EC2NodeDriver(NodeDriver):
         nodes = self._to_nodes(
                     self.connection.request('/', params=params).object)
         return nodes
+
+    def list_sizes(self):
+        return [ NodeSize(driver=self.connection.driver, **i) 
+                    for i in EC2_INSTANCE_TYPES ]
 
     def reboot_node(self, node):
         """
