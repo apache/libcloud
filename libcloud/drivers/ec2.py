@@ -207,6 +207,20 @@ class EC2NodeDriver(NodeDriver):
                     self.connection.request('/', params=params).object)
         return images
 
+    # name doesn't apply to EC2 nodes.
+    def create_node(self, name, image, size, **kwargs):
+        params = {'Action': 'RunInstances',
+                  'ImageId': image.id,
+                  'MinCount': '1',
+                  'MaxCount': '1',
+                  'InstanceType': size.id}
+
+        object = self.connection.request('/', params=params).object
+        node = self._to_node(
+                    object.findall(self._fixxpath('instancesSet/item'))[0])
+
+        return node
+
     def reboot_node(self, node):
         """
         Reboot the node by passing in the node object

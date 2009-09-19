@@ -18,7 +18,7 @@ Entries are in alphabetical order.
 
 AMAZON EC2 <http://aws.amazon.com/ec2/>
 AMAZON EC2 EU <http://aws.amazon.com/ec2/>
-   S: List, Reboot, Destroy, Images, Sizes
+   S: List, Reboot, Create, Destroy, Images, Sizes
    M:
 
 LINODE <http://www.linode.com>

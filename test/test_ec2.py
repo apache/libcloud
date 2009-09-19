@@ -15,7 +15,7 @@
 import unittest
 
 from libcloud.drivers.ec2 import EC2NodeDriver
-from libcloud.base import Node
+from libcloud.base import Node, NodeImage, NodeSize
 
 from test import MockHttp
 
@@ -28,6 +28,16 @@ class EC2Tests(unittest.TestCase):
     def setUp(self):
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         self.driver = EC2NodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+
+
+    def test_create_node(self):
+        EC2MockHttp.type = 'run_instances'
+        image = NodeImage(id='ami-be3adfd7', 
+                          name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node('foo', image, size)
+        self.assertEqual(node.id, 'i-2ba64342')
 
     def test_list_nodes(self):
         EC2MockHttp.type = 'describe_instances'
@@ -123,6 +133,40 @@ class EC2MockHttp(MockHttp):
                     </item>
                   </imagesSet>
                 </DescribeImagesResponse>"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _run_instances(self, method, url, body, headers):
+        body = """<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
+                      <reservationId>r-47a5402e</reservationId>
+                      <ownerId>AIDADH4IGTRXXKCD</ownerId>
+                      <groupSet>
+                        <item>
+                          <groupId>default</groupId>
+                        </item>
+                      </groupSet>
+                      <instancesSet>
+                        <item>
+                          <instanceId>i-2ba64342</instanceId>
+                          <imageId>ami-be3adfd7</imageId>
+                          <instanceState>
+                            <code>0</code>
+                            <name>pending</name>
+                          </instanceState>
+                          <privateDnsName></privateDnsName>
+                          <dnsName></dnsName>
+                          <keyName>example-key-name</keyName>
+                          <amiLaunchIndex>0</amiLaunchIndex>
+                          <instanceType>m1.small</instanceType>
+                          <launchTime>2007-08-07T11:51:50.000Z</launchTime>
+                          <placement>
+                            <availabilityZone>us-east-1b</availabilityZone>
+                          </placement>
+                          <monitoring>
+                            <enabled>true</enabled>
+                          </monitoring>
+                        </item>
+                      </instancesSet>
+                    </RunInstancesResponse>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _terminate_instances(self, method, url, body, headers):
