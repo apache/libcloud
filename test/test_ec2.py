@@ -51,6 +51,14 @@ class EC2Tests(unittest.TestCase):
         self.assertEqual(len(sizes), 5)
         self.assertEqual(sizes[0].id, 'm1.small')
 
+    def test_list_images(self):
+        EC2MockHttp.type = 'describe_images'
+        images = self.driver.list_images()
+        image = images[0]
+        self.assertEqual(len(images), 1)
+        self.assertEqual(image.name, 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
+        self.assertEqual(image.id, 'ami-be3adfd7')
+
 class EC2MockHttp(MockHttp):
     def _describe_instances(self, method, url, body, headers):
         body = """<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
@@ -97,6 +105,24 @@ class EC2MockHttp(MockHttp):
     <requestId>76dabb7a-fb39-4ed1-b5e0-31a4a0fdf5c0</requestId>
     <return>true</return>
 </RebootInstancesResponse>"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _describe_images(self, method, url, body, headers):
+        body = """<DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
+                  <imagesSet>
+                    <item>
+                      <imageId>ami-be3adfd7</imageId>
+                      <imageLocation>ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml</imageLocation>
+                      <imageState>available</imageState>
+                      <imageOwnerId>206029621532</imageOwnerId>
+                      <isPublic>false</isPublic>
+                      <architecture>i386</architecture>
+                      <imageType>machine</imageType>
+                      <kernelId>aki-4438dd2d</kernelId>
+                      <ramdiskId>ari-4538dd2c</ramdiskId>
+                    </item>
+                  </imagesSet>
+                </DescribeImagesResponse>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _terminate_instances(self, method, url, body, headers):

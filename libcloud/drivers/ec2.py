@@ -14,7 +14,7 @@
 # limitations under the License.
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
 import base64
 import hmac
 import httplib
@@ -180,6 +180,17 @@ class EC2NodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
+    def _to_images(self, object):
+        return [ self._to_image(el)
+                 for el in object.findall(
+                    self._fixxpath('imagesSet/item')) ]
+
+    def _to_image(self, element):
+        n = NodeImage(id=self._findtext(element, 'imageId'),
+                      name=self._findtext(element, 'imageLocation'),
+                      driver=self.connection.driver)
+        return n
+
     def list_nodes(self):
         params = {'Action': 'DescribeInstances' }
         nodes = self._to_nodes(
@@ -189,6 +200,12 @@ class EC2NodeDriver(NodeDriver):
     def list_sizes(self):
         return [ NodeSize(driver=self.connection.driver, **i) 
                     for i in EC2_INSTANCE_TYPES ]
+    
+    def list_images(self):
+        params = {'Action': 'DescribeImages'}
+        images = self._to_images(
+                    self.connection.request('/', params=params).object)
+        return images
 
     def reboot_node(self, node):
         """
