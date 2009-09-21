@@ -160,10 +160,10 @@ class EC2NodeDriver(NodeDriver):
         return any([ term_status == status for term_status
                      in ('shutting-down', 'terminated') ])
 
-    def _to_nodes(self, object):
+    def _to_nodes(self, object, xpath):
         return [ self._to_node(el) 
                  for el in object.findall(
-                    self._fixxpath('reservationSet/item/instancesSet/item')) ]
+                    self._fixxpath(xpath)) ]
         
     def _to_node(self, element):
         try:
@@ -194,7 +194,8 @@ class EC2NodeDriver(NodeDriver):
     def list_nodes(self):
         params = {'Action': 'DescribeInstances' }
         nodes = self._to_nodes(
-                    self.connection.request('/', params=params).object)
+                    self.connection.request('/', params=params).object,
+                    'reservationSet/item/instancesSet/item')
         return nodes
 
     def list_sizes(self):
@@ -211,15 +212,22 @@ class EC2NodeDriver(NodeDriver):
     def create_node(self, name, image, size, **kwargs):
         params = {'Action': 'RunInstances',
                   'ImageId': image.id,
-                  'MinCount': '1',
-                  'MaxCount': '1',
+                  'MinCount': kwargs.get('mincount','1'),
+                  'MaxCount': kwargs.get('maxcount','1'),
                   'InstanceType': size.id}
 
-        object = self.connection.request('/', params=params).object
-        node = self._to_node(
-                    object.findall(self._fixxpath('instancesSet/item'))[0])
+        try: params['SecurityGroup'] = kwargs['securitygroup']
+        except KeyError: pass
 
-        return node
+        try: params['KeyName'] = kwargs['keyname']
+        except KeyError: pass
+
+        object = self.connection.request('/', params=params).object
+        nodes = self._to_nodes(object, 'instancesSet/item')
+
+        if len(nodes) == 1:
+            return nodes[0]
+        else: return nodes
 
     def reboot_node(self, node):
         """
