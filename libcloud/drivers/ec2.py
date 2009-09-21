@@ -31,36 +31,47 @@ NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
 # Sizes must be hardcoded, because amazon doesn't provide an API to fetch them.
 # From http://aws.amazon.com/ec2/instance-types/
-EC2_INSTANCE_TYPES = [{'id': 'm1.small',
+EC2_INSTANCE_TYPES = {'m1.small': {'id': 'm1.small',
                        'name': 'Small Instance',
                        'ram': '1740MB',
                        'disk': '160GB',
-                       'bandwidth': None,
-                       'price': '.1'},
-                      {'id': 'm1.large',
+                       'bandwidth': None},
+                      'm1.large': {'id': 'm1.large',
                        'name': 'Large Instance',
                        'ram': '7680MB',
                        'disk': '850GB',
-                       'bandwidth': None,
-                       'price': '.4'},
-                      {'id': 'm1.xlarge',
+                       'bandwidth': None},
+                      'm1.xlarge': {'id': 'm1.xlarge',
                        'name': 'Extra Large Instance',
                        'ram': '15360MB',
                        'disk': '1690GB',
-                       'bandwidth': None,
-                       'price': '.8'},
-                      {'id': 'c1.medium',
+                       'bandwidth': None},
+                      'c1.medium': {'id': 'c1.medium',
                        'name': 'High-CPU Medium Instance',
                        'ram': '1740MB',
                        'disk': '350GB',
-                       'bandwidth': None,
-                       'price': '.2'},
-                      {'id': 'c1.xlarge',
+                       'bandwidth': None},
+                      'c1.xlarge': {'id': 'c1.xlarge',
                        'name': 'High-CPU Extra Large Instance',
                        'ram': '7680MB',
                        'disk': '1690GB',
-                       'bandwidth': None,
-                       'price': '.8'}]
+                       'bandwidth': None}}
+
+
+EC2_US_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_EU_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+
+EC2_US_INSTANCE_TYPES['m1.small']['price'] = '.1'
+EC2_US_INSTANCE_TYPES['m1.large']['price'] = '.4'
+EC2_US_INSTANCE_TYPES['m1.xlarge']['price'] = '.8'
+EC2_US_INSTANCE_TYPES['c1.medium']['price'] = '.2'
+EC2_US_INSTANCE_TYPES['c1.xlarge']['price'] = '.8'
+
+EC2_EU_INSTANCE_TYPES['m1.small']['price'] = '.11'
+EC2_EU_INSTANCE_TYPES['m1.large']['price'] = '.44'
+EC2_EU_INSTANCE_TYPES['m1.xlarge']['price'] = '.88'
+EC2_EU_INSTANCE_TYPES['c1.medium']['price'] = '.22'
+EC2_EU_INSTANCE_TYPES['c1.xlarge']['price'] = '.88'
 
 class EC2Response(Response):
 
@@ -125,6 +136,8 @@ class EC2NodeDriver(NodeDriver):
     connectionCls = EC2Connection
     type = Provider.EC2
     name = 'Amazon EC2 (us-east-1)'
+
+    _instance_types = EC2_US_INSTANCE_TYPES
 
     NODE_STATE_MAP = { 'pending': NodeState.PENDING,
                        'running': NodeState.RUNNING,
@@ -200,7 +213,7 @@ class EC2NodeDriver(NodeDriver):
 
     def list_sizes(self):
         return [ NodeSize(driver=self.connection.driver, **i) 
-                    for i in EC2_INSTANCE_TYPES ]
+                    for i in self._instance_types.values() ]
     
     def list_images(self):
         params = {'Action': 'DescribeImages'}
@@ -254,3 +267,4 @@ class EC2EUConnection(EC2Connection):
 class EC2EUNodeDriver(EC2NodeDriver):
 
     connectionCls = EC2EUConnection
+    _instance_types = EC2_EU_INSTANCE_TYPES
