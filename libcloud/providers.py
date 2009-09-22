@@ -30,8 +30,8 @@ DRIVERS = {
         ('libcloud.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.SLICEHOST:
         ('libcloud.drivers.slicehost', 'SlicehostNodeDriver'),
-    Provider.VPSNET:
-        ('libcloud.drivers.vpsnet', 'VPSNetNodeDriver'),
+#    Provider.VPSNET:
+#        ('libcloud.drivers.vpsnet', 'VPSNetNodeDriver'),
     Provider.LINODE:
         ('libcloud.drivers.linode', 'LinodeNodeDriver'),
 }

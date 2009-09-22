@@ -22,6 +22,7 @@ class Provider(object):
     GOGRID = 5 # GoGrid 
     VPSNET = 6 # VPS.net
     LINODE = 7 # Linode.com
+    VCLOUD = 8 # vCloud
 
 class NodeState(object):
     """ Standard states for a node """
