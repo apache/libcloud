@@ -12,77 +12,58 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.types import NodeState, Node, InvalidCredsException
-from libcloud.interface import INodeDriver
-from zope.interface import implements
+from libcloud.providers import Provider
+from libcloud.types import NodeState
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
 
 import base64
-import httplib
 import hashlib
-from xml.etree import ElementTree as ET
+
+# JSON is included in the standard library starting with Python 2.6.  For 2.5
+# and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
+try: import json
+except: import simplejson as json
 
 API_HOST = 'vps.net'
 
-class VPSNetConnection(object):
-    def __init__(self, user, key):
 
-        self.user = user
-        self.key = key
+class VPSNetResponse(Response):
+    
+    def parse_body(self):
+        js = json.loads(self.body)
+        return js
 
-        self.api = httplib.HTTPSConnection("%s:%d" % (API_HOST, 443))
+    def parse_error(self):
+        return self.body
 
-    def _headers(self):
-        user_b64 = base64.b64encode('%s:%s' % (self.user, self.key))
-        return { 'Authorization': 'Basic %s' % (user_b64),
-                 'Host': API_HOST }
+class VPSNetConnection(ConnectionUserAndKey):
 
-    def make_request(self, path, data=''):
-        self.api.request('GET', '%s' % (path), headers=self._headers())
-        return self.api.getresponse()
+    host = API_HOST
+    responseCls = VPSNetResponse
 
-    def virtual_machines(self):
-        return Response(self.make_request('/virtual_machines.xml'))
+    def add_default_headers(self, headers):
+        user_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        headers['Authorization'] = 'Basic %s' % (user_b64)
+        return headers
 
-class Response(object):
-    def __init__(self, http_response):
-        if int(http_response.status) == 401:
-            raise InvalidCredsException()
-        self.http_response = http_response
-        self.http_xml = http_response.read()
+class VPSNetNodeDriver(NodeDriver):
+    
+    type = Provider.VPSNET
+    name = "vps.net"
+    connectionCls = VPSNetConnection
 
-class VPSNetNodeDriver(object):
-
-    implements(INodeDriver)
-
-    def __init__(self, creds):
-        self.creds = creds
-        self.api = VPSNetConnection(creds.key, creds.secret)
-
-    def _to_node(self, element):
-        attrs = [ 'backups_enabled', 'cloud_id', 'consumer_id', 
-                  'created_at', 'domain_name', 'hostname', 'id', 'label', 
-                  'password', 'system_template_id', 'updated_at', 'running',
-                  'power_action_pending', 'slices_count' ]
-
-        node_attrs = {}
-        for attr in attrs:
-            node_attrs[attr] = element.findtext(attr)
-
-        ipaddress = element.findtext('ip-address')
-
-        state = NodeState.UNKNOWN
-        if element.findtext('power_action_pending') == 'true':
-            state = NodeState.PENDING
-        elif element.findtext('running') == 'true':
+    def _to_node(self, vm):
+        if vm['running']:
             state = NodeState.RUNNING
+        else:
+            state = NodeState.PENDING
 
-        n = Node(uuid=self.get_uuid(element.findtext('id')),
-                 name=element.findtext('label'),
+        n = Node(id=str(vm['id']),
+                 name=vm['label'],
                  state=state,
-                 #XXX:    they do not return this in the vps list!
-                 ipaddress=None, 
-                 creds=self.creds,
-                 attrs=node_attrs)
+                 public_ip=None,
+                 private_ip=None,
+                 driver=self.connection.driver)
         return n
 
     def get_uuid(self, field):
@@ -90,6 +71,5 @@ class VPSNetNodeDriver(object):
         return hashlib.sha1(hash_str).hexdigest()
 
     def list_nodes(self):
-        res = self.api.virtual_machines()
-        return [ self._to_node(el)
-                 for el in ET.XML(res.http_xml).findall('virtual_machine') ]
+        res = self.connection.request('/virtual_machines.api10json').object
+        return [self._to_node(i['virtual_machine']) for i in res] 
