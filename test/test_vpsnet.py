@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import unittest
+import exceptions
 
 from libcloud.drivers.vpsnet import VPSNetNodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
@@ -36,8 +37,24 @@ class EC2Tests(unittest.TestCase):
         self.assertEqual(node.id, '1384')
         self.assertEqual(node.state, NodeState.RUNNING)
 
+    def test_destroy_node(self):
+        VPSNetMockHttp.type = 'delete'
+        node = Node('2222', None, None, None, None, self.driver)
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+        VPSNetMockHttp.type = 'delete_fail'
+        node = Node('2223', None, None, None, None, self.driver)
+        self.assertRaises(exceptions.Exception, self.driver.destroy_node, node)
+
 
 class VPSNetMockHttp(MockHttp):
+
+    def _virtual_machines_2223_delete_fail(self, method, url, body, headers):
+        return (httplib.FORBIDDEN, '', {}, httplib.responses[httplib.FORBIDDEN])
+
+    def _virtual_machines_2222_delete(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
     def _virtual_machines_api10json_virtual_machines(self, method, url, body, headers):
         body = """     [{
               "virtual_machine": 

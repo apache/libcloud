@@ -17,7 +17,6 @@ from libcloud.types import NodeState
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
 
 import base64
-import hashlib
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -30,8 +29,11 @@ API_HOST = 'vps.net'
 class VPSNetResponse(Response):
     
     def parse_body(self):
-        js = json.loads(self.body)
-        return js
+        if self.body:
+            js = json.loads(self.body)
+            return js
+        else:
+            return ''
 
     def parse_error(self):
         return self.body
@@ -66,9 +68,10 @@ class VPSNetNodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
-    def get_uuid(self, field):
-        hash_str = "%s:%d" % (field, self.creds.provider)
-        return hashlib.sha1(hash_str).hexdigest()
+    def destroy_node(self, node):
+        res = self.connection.request('/virtual_machines/%s' % (node.id,),
+                                        method='DELETE')
+        return res.status == 200
 
     def list_nodes(self):
         res = self.connection.request('/virtual_machines.api10json').object
