@@ -30,14 +30,19 @@ API_VERSION = 'api10json'
 class VPSNetResponse(Response):
     
     def parse_body(self):
-        if self.body:
+        try:
             js = json.loads(self.body)
             return js
-        else:
-            return ''
+        except ValueError:
+            return self.body
 
     def parse_error(self):
-        return self.body
+        try:
+            errors = json.loads(self.body)['errors'][0]
+        except ValueError:
+            return self.body
+        else:
+            return "\n".join(errors)
 
 class VPSNetConnection(ConnectionUserAndKey):
 
@@ -69,15 +74,31 @@ class VPSNetNodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
-    def _to_image(self, image):
+    def _to_image(self, image, cloud):
         image = NodeImage(id=image['id'],
-                          name=image['label'],
+                          name="%s: %s" % (cloud, image['label']),
                           driver=self.connection.driver)
 
         return image
 
+    def create_node(self, name, image, size, **kwargs):
+        headers = {'Content-Type': 'application/json'}
+        request = {'virtual_machine':
+                        {'label': name,
+                         'fqdn': kwargs.get('fqdn', ''),
+                         'system_template_id': image.id,
+                         'backups_enabled': kwargs.get('backups_enabled', 0),
+                         'slices_required': size.id}}
+
+        res = self.connection.request('/virtual_machines.api10json',
+                                    data=json.dumps(request),
+                                    headers=headers,
+                                    method='POST')
+        node = self._to_node(res.object['virtual_machine'])
+        return node
+
     def destroy_node(self, node):
-        res = self.connection.request('/virtual_machines/%s' % (node.id,),
+        res = self.connection.request('/virtual_machines/%s.%s' % (node.id,API_VERSION),
                                         method='DELETE')
         return res.status == 200
 
@@ -87,5 +108,11 @@ class VPSNetNodeDriver(NodeDriver):
 
     def list_images(self):
         res = self.connection.request('/available_clouds.%s' % (API_VERSION,))
-        return [self._to_image(i)
-                    for i in res.object[0]['cloud']['system_templates']]
+
+        images = []
+        for i in res.object:
+            label = i['cloud']['label']
+            templates = i['cloud']['system_templates']
+            images.extend([self._to_image(j, label) for j in templates])
+
+        return images
