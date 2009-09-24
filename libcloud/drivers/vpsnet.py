@@ -24,6 +24,7 @@ try: import json
 except: import simplejson as json
 
 API_HOST = 'vps.net'
+API_VERSION = 'api10json'
 
 
 class VPSNetResponse(Response):
@@ -81,9 +82,10 @@ class VPSNetNodeDriver(NodeDriver):
         return res.status == 200
 
     def list_nodes(self):
-        res = self.connection.request('/virtual_machines.api10json').object
-        return [self._to_node(i['virtual_machine']) for i in res] 
+        res = self.connection.request('/virtual_machines.%s' % (API_VERSION,))
+        return [self._to_node(i['virtual_machine']) for i in res.object] 
 
     def list_images(self):
-        res = self.connection.request('/available_clouds.api10json').object
-        return [self._to_image(i) for i in res[0]['cloud']['system_templates']]
+        res = self.connection.request('/available_clouds.%s' % (API_VERSION,))
+        return [self._to_image(i)
+                    for i in res.object[0]['cloud']['system_templates']]
