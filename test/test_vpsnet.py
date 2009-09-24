@@ -44,6 +44,14 @@ class EC2Tests(unittest.TestCase):
         self.assertEqual(node.id, '1384')
         self.assertEqual(node.state, NodeState.RUNNING)
 
+    def test_reboot_node(self):
+        VPSNetMockHttp.type = 'virtual_machines'
+        node = self.driver.list_nodes()[0]
+
+        VPSNetMockHttp.type = 'reboot'
+        node = self.driver.reboot_node(node)
+        self.assertEqual(node.id, '1384')
+
     def test_destroy_node(self):
         VPSNetMockHttp.type = 'delete'
         node = Node('2222', None, None, None, None, self.driver)
@@ -68,6 +76,28 @@ class VPSNetMockHttp(MockHttp):
 
     def _virtual_machines_2222_api10json_delete(self, method, url, body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _virtual_machines_1384_reboot_api10json_reboot(self, method, url, body, headers):
+        body = """{
+              "virtual_machine": 
+                {
+                  "running": true, 
+                  "updated_at": "2009-05-15T06:55:02-04:00", 
+                  "power_action_pending": false, 
+                  "system_template_id": 41, 
+                  "id": 1384, 
+                  "cloud_id": 3, 
+                  "domain_name": "demodomain.com", 
+                  "hostname": "web01", 
+                  "consumer_id": 0, 
+                  "backups_enabled": false, 
+                  "password": "a8hjsjnbs91", 
+                  "label": "foo", 
+                  "slices_count": null, 
+                  "created_at": "2009-04-16T08:17:39-04:00"
+                }
+              }"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _virtual_machines_api10json_create(self, method, url, body, headers):
         body = """{

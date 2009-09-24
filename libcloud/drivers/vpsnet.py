@@ -97,8 +97,16 @@ class VPSNetNodeDriver(NodeDriver):
         node = self._to_node(res.object['virtual_machine'])
         return node
 
+    def reboot_node(self, node):
+        res = self.connection.request('/virtual_machines/%s/%s.%s' % 
+                                        (node.id, 'reboot', API_VERSION),
+                                        method="POST")
+        node = self._to_node(res.object['virtual_machine'])
+        return node
+        
+
     def destroy_node(self, node):
-        res = self.connection.request('/virtual_machines/%s.%s' % (node.id,API_VERSION),
+        res = self.connection.request('/virtual_machines/%s.%s' % (node.id, API_VERSION),
                                         method='DELETE')
         return res.status == 200
 
