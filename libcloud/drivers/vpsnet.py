@@ -68,6 +68,13 @@ class VPSNetNodeDriver(NodeDriver):
                  driver=self.connection.driver)
         return n
 
+    def _to_image(self, image):
+        image = NodeImage(id=image['id'],
+                          name=image['label'],
+                          driver=self.connection.driver)
+
+        return image
+
     def destroy_node(self, node):
         res = self.connection.request('/virtual_machines/%s' % (node.id,),
                                         method='DELETE')
@@ -76,3 +83,7 @@ class VPSNetNodeDriver(NodeDriver):
     def list_nodes(self):
         res = self.connection.request('/virtual_machines.api10json').object
         return [self._to_node(i['virtual_machine']) for i in res] 
+
+    def list_images(self):
+        res = self.connection.request('/available_clouds.api10json').object
+        return [self._to_image(i) for i in res[0]['cloud']['system_templates']]
