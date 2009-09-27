@@ -60,8 +60,7 @@ class VCloudConnection(ConnectionKey):
                 print
                 print body.strip()
                 print 
-                ET.XMLTreeBuilder().feed(body.strip())
-                print self.hostingid
+                print ET.XML(body)
             except KeyError:
                 raise InvalidCredsException()
             
