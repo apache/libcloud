@@ -90,7 +90,7 @@ class VPSNetNodeDriver(NodeDriver):
                          'backups_enabled': kwargs.get('backups_enabled', 0),
                          'slices_required': size.id}}
 
-        res = self.connection.request('/virtual_machines.api10json',
+        res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),
                                     data=json.dumps(request),
                                     headers=headers,
                                     method='POST')
@@ -118,9 +118,9 @@ class VPSNetNodeDriver(NodeDriver):
         res = self.connection.request('/available_clouds.%s' % (API_VERSION,))
 
         images = []
-        for i in res.object:
-            label = i['cloud']['label']
-            templates = i['cloud']['system_templates']
-            images.extend([self._to_image(j, label) for j in templates])
+        for cloud in res.object:
+            label = cloud['cloud']['label']
+            templates = cloud['cloud']['system_templates']
+            images.extend([self._to_image(image, label) for image in templates])
 
         return images
