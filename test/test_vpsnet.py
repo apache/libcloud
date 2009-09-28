@@ -41,7 +41,7 @@ class EC2Tests(unittest.TestCase):
     def test_list_nodes(self):
         VPSNetMockHttp.type = 'virtual_machines'
         node = self.driver.list_nodes()[0]
-        self.assertEqual(node.id, '1384')
+        self.assertEqual(node.id, 1384)
         self.assertEqual(node.state, NodeState.RUNNING)
 
     def test_reboot_node(self):
@@ -50,7 +50,7 @@ class EC2Tests(unittest.TestCase):
 
         VPSNetMockHttp.type = 'reboot'
         node = self.driver.reboot_node(node)
-        self.assertEqual(node.id, '1384')
+        self.assertEqual(node.id, 1384)
 
     def test_destroy_node(self):
         VPSNetMockHttp.type = 'delete'

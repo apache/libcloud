@@ -80,7 +80,7 @@ class VPSNetNodeDriver(NodeDriver):
         else:
             state = NodeState.PENDING
 
-        n = Node(id=str(vm['id']),
+        n = Node(id=vm['id'],
                  name=vm['label'],
                  state=state,
                  public_ip=None,
