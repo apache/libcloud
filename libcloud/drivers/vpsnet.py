@@ -80,7 +80,7 @@ class VPSNetNodeDriver(NodeDriver):
         else:
             state = NodeState.PENDING
 
-        n = Node(id=vm['id'],
+        n = Node(id=str(vm['id']),
                  name=vm['label'],
                  state=state,
                  public_ip=None,
@@ -115,25 +115,7 @@ class VPSNetNodeDriver(NodeDriver):
             if keys[i] <= num < keys[i+1]:
                 return PRICE_PER_NODE[keys[i]]
 
-    def _get_vps_nodes(self, vm=None):
-        """If vm=None this method will return all free nodes"""
-        res = self.connection.request('/nodes.%s' % (API_VERSION,))
-        vps_nodes = [size for size in res.object 
-                        if size['slice']["virtual_machine_id"] == vm]
-        return vps_nodes
-
-    def _add_nodes(self, num):
-        headers = {'Content-Type': 'application/json'}
-        request = {'quantity': num}
-
-        res = self.connection.request('/nodes.%s' % (API_VERSION,),
-                                      data=json.dumps(request),
-                                      headers=headers,
-                                      method='POST') 
-        return res.status == 200
-
     def create_node(self, name, image, size, **kwargs):
-        """This will create new "nodes" if the account does not have enough available."""
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':
                         {'label': name,
@@ -141,10 +123,6 @@ class VPSNetNodeDriver(NodeDriver):
                          'system_template_id': image.id,
                          'backups_enabled': kwargs.get('backups_enabled', 0),
                          'slices_required': size.id}}
-
-        available_nodes = len(self._get_vps_nodes())
-        if available_nodes < size.id:
-            self._add_nodes(size.id - available_nodes)
 
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),
                                     data=json.dumps(request),
@@ -161,7 +139,10 @@ class VPSNetNodeDriver(NodeDriver):
         return node
     
     def list_sizes(self):
-        sizes = [self._to_size(i) for i in range(1,61)]
+        res = self.connection.request('/nodes.%s' % (API_VERSION,))
+        available_nodes = len([size for size in res.object 
+                            if not size['slice']["virtual_machine_id"]])
+        sizes = [self._to_size(i) for i in range(1,available_nodes + 1)]
         return sizes
 
     def destroy_node(self, node):

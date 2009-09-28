@@ -41,7 +41,7 @@ class EC2Tests(unittest.TestCase):
     def test_list_nodes(self):
         VPSNetMockHttp.type = 'virtual_machines'
         node = self.driver.list_nodes()[0]
-        self.assertEqual(node.id, 1384)
+        self.assertEqual(node.id, '1384')
         self.assertEqual(node.state, NodeState.RUNNING)
 
     def test_reboot_node(self):
@@ -50,7 +50,7 @@ class EC2Tests(unittest.TestCase):
 
         VPSNetMockHttp.type = 'reboot'
         node = self.driver.reboot_node(node)
-        self.assertEqual(node.id, 1384)
+        self.assertEqual(node.id, '1384')
 
     def test_destroy_node(self):
         VPSNetMockHttp.type = 'delete'
@@ -70,7 +70,7 @@ class EC2Tests(unittest.TestCase):
     def test_list_sizes(self):
         VPSNetMockHttp.type = 'sizes'
         ret = self.driver.list_sizes()
-        self.assertEqual(len(ret), 60)
+        self.assertEqual(len(ret), 2)
         self.assertEqual(ret[1].id, 2)
         self.assertEqual(ret[1].name, '2 Node')
         
@@ -95,9 +95,6 @@ class VPSNetMockHttp(MockHttp):
         return (httplib.FORBIDDEN, '', {}, httplib.responses[httplib.FORBIDDEN])
 
     def _virtual_machines_2222_api10json_delete(self, method, url, body, headers):
-        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
-
-    def _nodes_api10json_delete(self, method, url, body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _virtual_machines_1384_reboot_api10json_reboot(self, method, url, body, headers):
