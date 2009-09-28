@@ -34,7 +34,7 @@ class EC2Tests(unittest.TestCase):
     def test_create_node(self):
         VPSNetMockHttp.type = 'create'
         image = self.driver.list_images()[0]
-        size = NodeSize(1, 'foo', None, None, None, None, driver=self.driver)
+        size = self.driver.list_sizes()[0]
         node = self.driver.create_node('foo', image, size)
         self.assertEqual(node.name, 'foo')
 
@@ -66,10 +66,30 @@ class EC2Tests(unittest.TestCase):
         ret = self.driver.list_images()
         self.assertEqual(ret[0].id, 9)
         self.assertEqual(ret[-1].id, 160)
+
+    def test_list_sizes(self):
+        VPSNetMockHttp.type = 'sizes'
+        ret = self.driver.list_sizes()
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[1].id, 2)
+        self.assertEqual(ret[1].name, '2 Node')
         
 
 
 class VPSNetMockHttp(MockHttp):
+
+
+    def _nodes_api10json_sizes(self, method, url, body, headers):
+        body = """[{"slice":{"virtual_machine_id":8592,"id":12256,"consumer_id":0}},
+                   {"slice":{"virtual_machine_id":null,"id":12258,"consumer_id":0}},
+                   {"slice":{"virtual_machine_id":null,"id":12434,"consumer_id":0}}]"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _nodes_api10json_create(self, method, url, body, headers):
+        body = """[{"slice":{"virtual_machine_id":8592,"id":12256,"consumer_id":0}},
+                   {"slice":{"virtual_machine_id":null,"id":12258,"consumer_id":0}},
+                   {"slice":{"virtual_machine_id":null,"id":12434,"consumer_id":0}}]"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _virtual_machines_2222_api10json_delete_fail(self, method, url, body, headers):
         return (httplib.FORBIDDEN, '', {}, httplib.responses[httplib.FORBIDDEN])
@@ -120,6 +140,7 @@ class VPSNetMockHttp(MockHttp):
                 }
               }"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _virtual_machines_api10json_virtual_machines(self, method, url, body, headers):
         body = """     [{
               "virtual_machine": 
