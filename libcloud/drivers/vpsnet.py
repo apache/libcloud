@@ -26,6 +26,20 @@ except: import simplejson as json
 API_HOST = 'vps.net'
 API_VERSION = 'api10json'
 
+RAM_PER_NODE = 256
+DISK_PER_NODE = 10
+BANDWIDTH_PER_NODE = 250
+PRICE_PER_NODE = {1: 20,
+                  2: 19,
+                  3: 18,
+                  4: 17,
+                  5: 16,
+                  6: 15,
+                  7: 14,
+                  15: 13,
+                  30: 12,
+                  60: 11,
+                  100: 10}
 
 class VPSNetResponse(Response):
     
@@ -66,7 +80,7 @@ class VPSNetNodeDriver(NodeDriver):
         else:
             state = NodeState.PENDING
 
-        n = Node(id=str(vm['id']),
+        n = Node(id=vm['id'],
                  name=vm['label'],
                  state=state,
                  public_ip=None,
@@ -81,6 +95,26 @@ class VPSNetNodeDriver(NodeDriver):
 
         return image
 
+    def _to_size(self, num):
+        size = NodeSize(id=num,
+                        name="%d Node" % (num,),
+                        ram="%dMB" % (RAM_PER_NODE * num,),
+                        disk="%dGB" % (DISK_PER_NODE * num,),
+                        bandwidth="%dGB" % (BANDWIDTH_PER_NODE * num,),
+                        price=self._get_price_per_node(num) * num,
+                        driver=self.connection.driver)
+        return size
+
+    def _get_price_per_node(self, num):
+        keys = sorted(PRICE_PER_NODE.keys())
+
+        if num >= max(keys):
+            return PRICE_PER_NODE[keys[-1]]
+
+        for i in range(0,len(keys)):
+            if keys[i] <= num < keys[i+1]:
+                return PRICE_PER_NODE[keys[i]]
+
     def create_node(self, name, image, size, **kwargs):
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':
@@ -90,7 +124,7 @@ class VPSNetNodeDriver(NodeDriver):
                          'backups_enabled': kwargs.get('backups_enabled', 0),
                          'slices_required': size.id}}
 
-        res = self.connection.request('/virtual_machines.api10json',
+        res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),
                                     data=json.dumps(request),
                                     headers=headers,
                                     method='POST')
@@ -103,7 +137,13 @@ class VPSNetNodeDriver(NodeDriver):
                                         method="POST")
         node = self._to_node(res.object['virtual_machine'])
         return node
-        
+    
+    def list_sizes(self):
+        res = self.connection.request('/nodes.%s' % (API_VERSION,))
+        available_nodes = len([size for size in res.object 
+                            if not size['slice']["virtual_machine_id"]])
+        sizes = [self._to_size(i) for i in range(1,available_nodes + 1)]
+        return sizes
 
     def destroy_node(self, node):
         res = self.connection.request('/virtual_machines/%s.%s' % (node.id, API_VERSION),
@@ -118,9 +158,9 @@ class VPSNetNodeDriver(NodeDriver):
         res = self.connection.request('/available_clouds.%s' % (API_VERSION,))
 
         images = []
-        for i in res.object:
-            label = i['cloud']['label']
-            templates = i['cloud']['system_templates']
-            images.extend([self._to_image(j, label) for j in templates])
+        for cloud in res.object:
+            label = cloud['cloud']['label']
+            templates = cloud['cloud']['system_templates']
+            images.extend([self._to_image(image, label) for image in templates])
 
         return images
