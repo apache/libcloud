@@ -15,13 +15,19 @@
 
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionKey, NodeDriver, NodeSize, NodeImage
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
 
 import base64
 from xml.etree import ElementTree as ET
 
 
 NAMESPACE = "http://www.vmware.com/vcloud1/vl"
+
+def fixxpath(xpath):
+    """ElementTree wants namespaces in its xpaths, so here we add them."""
+    fixed_xpath = "/".join(["{%s}%s" % (NAMESPACE, e) for e in xpath.split("/")])
+    return fixed_xpath
+
 
 class VCloudResponse(Response):
 
@@ -33,7 +39,7 @@ class VCloudResponse(Response):
     def parse_error(self):
         return self.body
 
-class VCloudConnection(ConnectionKey):
+class VCloudConnection(ConnectionUserAndKey):
     host = None
     responseCls = VCloudResponse
     token = None
@@ -44,23 +50,19 @@ class VCloudConnection(ConnectionKey):
     @property
     def host(self):
         if not self.__host:
-            headers = {'Authentication': base64.b64encode(self.key),
+            headers = {'Authentication': base64.b64encode('%s:%s' % (self.user_id, self.key)),
                        'Content-Length': 0} 
 
-            conn = self.conn_classes[self.secure](self.api_host, self.port[self.secure])
+            self.hostingid = self.user_id.split('@')[1]
+
+            conn = self.conn_classes[self.secure](self.api_host, 
+                                                  self.port[self.secure])
             conn.request(method='POST', url='/api/v0.8/login', headers=headers)
 
             resp = conn.getresponse()
             headers = dict(resp.getheaders())
-            body = resp.read()
-            print body
-
             try:
                 self.token = headers['set-cookie']
-                print
-                print body.strip()
-                print 
-                print ET.XML(body)
             except KeyError:
                 raise InvalidCredsException()
             
@@ -72,21 +74,32 @@ class VCloudConnection(ConnectionKey):
         headers['Cookie'] = self.token
         return headers
 
-class VCloudDriver(NodeDriver):
+class VCloudNodeDriver(NodeDriver):
     type = Provider.VCLOUD
+    name = "vCloud"
+    connectionCls = VCloudConnection
 
-    def _fixxpath(self, xpath):
-        # ElementTree wants namespaces in its xpaths, so here we add them.
-        return "/".join(["{%s}%s" % (NAMESPACE, e) for e in xpath.split("/")])
+    @property
+    def hostingid(self):
+        return self.connection.hostingid
+
+    def _to_image(self, image):
+        image = NodeImage(id=image.get('href'),
+                          name=image.get('name'),
+                          driver=self.connection.driver)
+        return image
+        
 
     def list_images(self):
-        headers = {'Content-Type': 'application/vnd.vmware.vcloud.catalog+xml'}
-        images = self.connection.request('/catalog/1', headers=headers).object
-        print images.getchildren()
-        print images.findall(self._fixxpath("CatalogItems/CatalogItem"))[0].attrib
+        images = self.connection.request('/vdc/%s' % self.hostingid).object
+        res_ents = images.findall(fixxpath("ResourceEntities/ResourceEntity"))
+        images = [self._to_image(i) 
+                    for i in res_ents 
+                        if i.get('type') == 'application/vnd.vmware.vcloud.vAppTemplate+xml']
+        return images
 
 class HostingComConnection(VCloudConnection):
     api_host = "vcloud.safesecureweb.com" 
 
-class HostingComDriver(VCloudDriver):
+class HostingComDriver(VCloudNodeDriver):
     connectionCls = HostingComConnection
