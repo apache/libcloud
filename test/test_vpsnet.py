@@ -25,7 +25,7 @@ import httplib
 
 from secrets import VPSNET_USER, VPSNET_KEY
 
-class EC2Tests(unittest.TestCase):
+class VPSNetTests(unittest.TestCase):
 
     def setUp(self):
         VPSNetNodeDriver.connectionCls.conn_classes = (None, VPSNetMockHttp)
