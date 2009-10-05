@@ -28,7 +28,6 @@ def fixxpath(xpath):
     fixed_xpath = "/".join(["{%s}%s" % (NAMESPACE, e) for e in xpath.split("/")])
     return fixed_xpath
 
-
 class VCloudResponse(Response):
 
     def parse_body(self):
@@ -40,22 +39,25 @@ class VCloudResponse(Response):
         return self.body
 
 class VCloudConnection(ConnectionUserAndKey):
-    host = None
+
     responseCls = VCloudResponse
     token = None
-    hostingid = None
-
-    __host = None
+    host = None
 
     @property
-    def host(self):
-        if not self.__host:
+    def hostingid(self):
+        return self.user_id.split('@')[1]
+
+    def request(self, *args, **kwargs):
+        self._get_auth_token()
+        return super(VCloudConnection, self).request(*args, **kwargs)
+
+    def _get_auth_token(self):
+        if not self.token:
             headers = {'Authentication': base64.b64encode('%s:%s' % (self.user_id, self.key)),
                        'Content-Length': 0} 
 
-            self.hostingid = self.user_id.split('@')[1]
-
-            conn = self.conn_classes[self.secure](self.api_host, 
+            conn = self.conn_classes[self.secure](self.host, 
                                                   self.port[self.secure])
             conn.request(method='POST', url='/api/v0.8/login', headers=headers)
 
@@ -65,10 +67,6 @@ class VCloudConnection(ConnectionUserAndKey):
                 self.token = headers['set-cookie']
             except KeyError:
                 raise InvalidCredsException()
-            
-            self.__host = True
-            
-        return self.api_host
 
     def add_default_headers(self, headers):
         headers['Cookie'] = self.token
@@ -99,7 +97,7 @@ class VCloudNodeDriver(NodeDriver):
         return images
 
 class HostingComConnection(VCloudConnection):
-    api_host = "vcloud.safesecureweb.com" 
+    host = "vcloud.safesecureweb.com" 
 
 class HostingComDriver(VCloudNodeDriver):
     connectionCls = HostingComConnection

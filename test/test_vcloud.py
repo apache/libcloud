@@ -29,11 +29,10 @@ from secrets import HOSTINGCOM_USER, HOSTINGCOM_SECRET
 class VCloudTests(unittest.TestCase):
 
     def setUp(self):
-       VCloudNodeDriver.connectionCls.api_host = "test"
+       VCloudNodeDriver.connectionCls.host = "test"
        VCloudNodeDriver.connectionCls.conn_classes = (None, VCloudMockHttp) 
        VCloudMockHttp.type = None
-       self.driver = VCloudNodeDriver(HOSTINGCOM_USER, HOSTINGCOM_SECRET)
-       self.driver.connection.hostingid = '111111'
+       self.driver = VCloudNodeDriver('test@111111', HOSTINGCOM_SECRET)
 
     def test_list_images(self):
         VCloudMockHttp.type = 'images'
@@ -45,7 +44,7 @@ class VCloudTests(unittest.TestCase):
 class VCloudMockHttp(MockHttp):
 
 
-    def _api_v0_8_login(self, method, url, body, headers):
+    def _api_v0_8_login_images(self, method, url, body, headers):
         body = """
         """
         headers = {'set-cookie': 'vcloud-token=testtoken'}
