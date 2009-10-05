@@ -46,6 +46,9 @@ class RackspaceTests(unittest.TestCase):
         RackspaceMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
+        node = ret[0]
+        self.assertTrue(node.public_ip[0])
+        self.assertTrue(node.private_ip[0])
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
