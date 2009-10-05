@@ -83,7 +83,7 @@ class VPSNetNodeDriver(NodeDriver):
         n = Node(id=vm['id'],
                  name=vm['label'],
                  state=state,
-                 public_ip=None,
+                 public_ip=vm.get('primary_ip_address', None),
                  private_ip=None,
                  driver=self.connection.driver)
         return n

@@ -177,9 +177,9 @@ class RackspaceNodeDriver(NodeDriver):
             return [ip.get('addr') for ip in el]
         
         public_ip = get_ips(self._findall(el, 
-                                          'addresses/public/ip'))
+                                          'addresses/public'))
         private_ip = get_ips(self._findall(el, 
-                                          'addresses/private/ip'))
+                                          'addresses/private'))
         n = Node(id=el.get('id'),
                  name=el.get('name'),
                  state=el.get('status'),
