@@ -20,12 +20,10 @@ from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, Node
 import base64
 from xml.etree import ElementTree as ET
 
-
-NAMESPACE = "http://www.vmware.com/vcloud1/vl"
-
-def fixxpath(xpath):
+def fixxpath(root, xpath):
     """ElementTree wants namespaces in its xpaths, so here we add them."""
-    fixed_xpath = "/".join(["{%s}%s" % (NAMESPACE, e) for e in xpath.split("/")])
+    namespace, root_tag = root.tag[1:].split("}", 1)
+    fixed_xpath = "/".join(["{%s}%s" % (namespace, e) for e in xpath.split("/")])
     return fixed_xpath
 
 class VCloudResponse(Response):
@@ -77,6 +75,12 @@ class VCloudNodeDriver(NodeDriver):
     name = "vCloud"
     connectionCls = VCloudConnection
 
+    NODE_STATE_MAP = {'0': NodeState.PENDING,
+                      '1': NodeState.PENDING,
+                      '2': NodeState.PENDING,
+                      '3': NodeState.PENDING,
+                      '4': NodeState.RUNNING}
+
     @property
     def hostingid(self):
         return self.connection.hostingid
@@ -86,11 +90,37 @@ class VCloudNodeDriver(NodeDriver):
                           name=image.get('name'),
                           driver=self.connection.driver)
         return image
-        
+
+    def _to_node(self, name, elm):
+        state = self.NODE_STATE_MAP[elm.get('status')]
+        public_ips = [ip.text for ip in elm.findall(fixxpath(elm, 'NetworkConnectionSection/NetworkConnection/IPAddress'))]
+
+        node = Node(id=name,
+                    name=name,
+                    state=state,
+                    public_ip=public_ips,
+                    private_ip=None,
+                    driver=self.connection.driver)
+
+        return node
+
+    def list_nodes(self):
+        res = self.connection.request('/vdc/%s' % self.hostingid) 
+        elms = res.object.findall(fixxpath(res.object, "ResourceEntities/ResourceEntity"))
+        vapps = [i.get('name') 
+                    for i in elms
+                        if i.get('type') == 'application/vnd.vmware.vcloud.vApp+xml' and 
+                           i.get('name')]
+        nodes = []
+        for vapp in vapps:
+            res = self.connection.request('/vApp/%s' % vapp)
+            nodes.append(self._to_node(vapp, res.object))
+
+        return nodes
 
     def list_images(self):
         images = self.connection.request('/vdc/%s' % self.hostingid).object
-        res_ents = images.findall(fixxpath("ResourceEntities/ResourceEntity"))
+        res_ents = images.findall(fixxpath(images, "ResourceEntities/ResourceEntity"))
         images = [self._to_image(i) 
                     for i in res_ents 
                         if i.get('type') == 'application/vnd.vmware.vcloud.vAppTemplate+xml']
