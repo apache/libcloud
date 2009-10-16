@@ -20,6 +20,7 @@ from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, Node
 import base64
 import httplib
 from xml.etree import ElementTree as ET
+from xml.parsers.expat import ExpatError
 
 def fixxpath(root, xpath):
     """ElementTree wants namespaces in its xpaths, so here we add them."""
@@ -108,6 +109,17 @@ class VCloudNodeDriver(NodeDriver):
                     driver=self.connection.driver)
 
         return node
+    
+    def destroy_node(self, node):
+        self.connection.request('/vapp/%s/power/action/poweroff' % node.id,
+                                method='POST') 
+        try:
+            res = self.connection.request('/vapp/%s/action/undeploy' % node.id,
+                                          method='POST')
+        except ExpatError: # the undeploy response is malformed XML atm. We can remove this whent he providers fix the problem.
+            return True
+
+        return res.status == 202
 
     def reboot_node(self, node):
         res = self.connection.request('/vapp/%s/power/action/reset' % node.id,

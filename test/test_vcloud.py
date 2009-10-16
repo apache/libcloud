@@ -47,8 +47,12 @@ class VCloudTests(unittest.TestCase):
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
         ret = self.driver.reboot_node(node)
-        return ret == 204
+        self.assertTrue(ret)
 
+    def test_destroy_node(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
 
 class VCloudMockHttp(MockHttp):
 
@@ -58,9 +62,25 @@ class VCloudMockHttp(MockHttp):
         headers = {'set-cookie': 'vcloud-token=testtoken'}
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
+    def _vapp_197833_power_action_poweroff(self, method, url, body, headers):
+        body = ''
+        return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
+
     def _vapp_197833_power_action_reset(self, method, url, body, headers):
         body = ''
         return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _vapp_197833_action_undeploy(self, method, url, body, headers):
+        body = """
+<?xml version="1.0" encoding="UTF-8"?>
+<task xmlns="http://www.vmware.com/vcloud/task"
+    xmlns:common="http://www.vmware.com/vcloud/common"    xsi:schemaLocation="http://www.vmware.com/vcloud/task
+        https://vcloud.safesecureweb.com/ns/vcloud/task-1.0.xsd        http://www.vmware.com/vcloud/common
+        https://vcloud.safesecureweb.com/ns/vcloud/common-1.0.xsd    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    status="success" startTime="10/16/2009 7:52:48 AM">
+  <common:link rel="taskList:cancel" href="https://vcloud.safesecureweb.com/task/59049/action/cancel" />  <common:link rel="self" href="https://vcloud.safesecureweb.com/task/59049" type="application/vnd.vmware.vcloud.task+xml" /></task>"""
+        return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
+
 
     def _vApp_197833(self, method, uri, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
