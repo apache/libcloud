@@ -18,6 +18,7 @@ from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
 
 import base64
+import httplib
 from xml.etree import ElementTree as ET
 
 def fixxpath(root, xpath):
@@ -35,6 +36,10 @@ class VCloudResponse(Response):
 
     def parse_error(self):
         return self.body
+
+    def success(self):
+        return self.status in (httplib.OK, httplib.CREATED, 
+                               httplib.NO_CONTENT, httplib.ACCEPTED)
 
 class VCloudConnection(ConnectionUserAndKey):
 
@@ -103,6 +108,11 @@ class VCloudNodeDriver(NodeDriver):
                     driver=self.connection.driver)
 
         return node
+
+    def reboot_node(self, node):
+        res = self.connection.request('/vapp/%s/power/action/reset' % node.id,
+                                      method='POST') 
+        return res.status == 204
 
     def list_nodes(self):
         res = self.connection.request('/vdc/%s' % self.hostingid) 

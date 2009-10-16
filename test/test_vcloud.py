@@ -35,37 +35,34 @@ class VCloudTests(unittest.TestCase):
        self.driver = VCloudNodeDriver('test@111111', HOSTINGCOM_SECRET)
 
     def test_list_images(self):
-        VCloudMockHttp.type = 'images'
         ret = self.driver.list_images()
         self.assertEqual(ret[0].id,'https://vcloud.safesecureweb.com/vAppTemplate/1')
         self.assertEqual(ret[-1].id,'https://vcloud.safesecureweb.com/vAppTemplate/4')
 
     def test_list_nodes(self):
-        VCloudMockHttp.type = 'list'
         ret = self.driver.list_nodes()
         self.assertEqual(ret[0].id, '197833')
         self.assertEqual(ret[0].state, NodeState.RUNNING)
+
+    def test_reboot_node(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.reboot_node(node)
+        return ret == 204
 
 
 class VCloudMockHttp(MockHttp):
 
 
-    def _api_v0_8_login_images(self, method, url, body, headers):
-        body = """
-        """
+    def _api_v0_8_login(self, method, url, body, headers):
+        body = ''
         headers = {'set-cookie': 'vcloud-token=testtoken'}
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _api_v0_8_login_list(self, method, url, body, headers):
-        body = """
-        """
-        headers = {'set-cookie': 'vcloud-token=testtoken'}
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+    def _vapp_197833_power_action_reset(self, method, url, body, headers):
+        body = ''
+        return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
 
-    def _vdc_111111_list(self, method, uri, body, headers):
-        return self._vdc_111111_images(method, uri, body, headers)
-
-    def _vApp_197833_list(self, method, uri, body, headers):
+    def _vApp_197833(self, method, uri, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
 <VApp href="https://vcloud.safesecureweb.com/vapp/197833"
     name="197833"
@@ -163,7 +160,7 @@ class VCloudMockHttp(MockHttp):
 </VApp>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vdc_111111_images(self, method, url, body, headers):
+    def _vdc_111111(self, method, url, body, headers):
     
         body = """<?xml version="1.0" encoding="UTF-8"?>
 <Vdc

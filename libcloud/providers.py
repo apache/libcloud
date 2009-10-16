@@ -34,8 +34,6 @@ DRIVERS = {
         ('libcloud.drivers.vpsnet', 'VPSNetNodeDriver'),
     Provider.LINODE:
         ('libcloud.drivers.linode', 'LinodeNodeDriver'),
-    Provider.RIMUHOSTING:
-        ('libcloud.drivers.rimuhosting', 'RimuHostingNodeDriver')
 }
 
 def get_driver(provider):
