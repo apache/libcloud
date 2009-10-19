@@ -25,7 +25,7 @@ try: import json
 except: import simplejson as json
 
 API_LOCATION = '/r'
-API_HOST = 'rimuhosting.com'
+API_HOST = 'api.rimuhosting.com'
 
 # Port tuple (http,https). Should be (80,443) for the production API. 
 API_PORT = (80,443)
