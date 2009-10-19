@@ -105,16 +105,18 @@ class RimuHostingNodeDriver(NodeDriver):
 
     def _order_uri(self, node,resource):
         # Returns the order uri with its resourse appended.
-        return "/orders/%s/%s" % (node.id,resource)
+        return "/orders/%s/%s" % (node.slug,resource)
    
     # TODO: Get the node state.
     def _to_node(self, order):
-        return Node(id=order['slug'],
+        n = Node(id=order['order_oid'],
                 name=order['domain_name'],
                 state=NodeState.RUNNING,
                 public_ip=order['allocated_ips']['primary_ip'],
                 private_ip=None,
                 driver=self.connection.driver)
+        n.slug = order['slug']
+        return n
 
     def _to_size(self,plan):
         return NodeSize(id=plan['pricing_plan_code'],
