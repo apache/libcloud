@@ -24,7 +24,7 @@ from copy import copy
 try: import json
 except: import simplejson as json
 
-API_LOCATION = '/r'
+API_CONTEXT = '/r'
 API_HOST = 'api.rimuhosting.com'
 
 # Port tuple (http,https). Should be (80,443) for the production API. 
@@ -65,6 +65,7 @@ class RimuHostingResponse(Response):
     
 class RimuHostingConnection(ConnectionKey):
     
+    api_context = API_CONTEXT
     host = API_HOST
     port = API_PORT
     responseCls = RimuHostingResponse
@@ -83,14 +84,27 @@ class RimuHostingConnection(ConnectionKey):
         headers['Authorization'] = 'rimuhosting apikey=%s' % (self.key)
         return headers;
 
+    def request(self, action, params={}, data='', headers={}, method='GET'):
+        return ConnectionKey.request(self, self.api_context + action, params, data, headers, method)
+
 class RimuHostingNodeDriver(NodeDriver):
     type = Provider.RIMUHOSTING
     name = 'RimuHosting'
     connectionCls = RimuHostingConnection
     
+    def __init__(self, key, host=API_HOST, port=API_PORT, api_context=API_CONTEXT, secure=True):
+        self.key = key
+        self.secure = secure
+        self.connection = self.connectionCls(key ,secure)
+	self.connection.host = host
+        self.connection.api_context = api_context
+	self.connection.port = port
+        self.connection.driver = self
+        self.connection.connect()
+
     def _order_uri(self, node,resource):
         # Returns the order uri with its resourse appended.
-        return "%s/orders/order-%s/%s" %(API_LOCATION,node.id,resource)
+        return "/orders/order-%s/%s" % (node.id,resource)
    
     # TODO: Get the node state.
     def _to_node(self, order):
@@ -105,11 +119,11 @@ class RimuHostingNodeDriver(NodeDriver):
         return NodeSize(id=plan['pricing_plan_code'],
             name=plan['pricing_plan_description'],
             ram=plan['minimum_memory_mb'],
-            disk=plan['minimum_disk_mb'],
+            disk=plan['minimum_disk_gb'],
             bandwidth=plan['minimum_data_transfer_allowance_gb'],
             price=plan['monthly_recurring_fee_usd'],
             driver=self.connection.driver)
-                            
+                
     def _to_image(self,image):
         return NodeImage(id=image['distro_code'],
             name=image['distro_description'],
@@ -118,19 +132,19 @@ class RimuHostingNodeDriver(NodeDriver):
     def list_sizes(self):
         # Returns a list of sizes (aka plans)
         # Get plans. Note this is really just for libcloud. We are happy with any size.
-        res = self.connection.request('%s/pricing-plans;server-type=VPS' % (API_LOCATION)).object
+        res = self.connection.request('/pricing-plans;server-type=VPS').object
         return map(lambda x : self._to_size(x), res['pricing_plan_infos'])
 
     def list_nodes(self):
         # Returns a list of Nodes
         # Will only include active ones.
-        res = self.connection.request(API_LOCATION+'/orders;include_inactive=N').object
+        res = self.connection.request('/orders;include_inactive=N').object
         return map(lambda x : self._to_node(x), res['about_orders'])
     
     def list_images(self):
         # Get all base images.
         # TODO: add other image sources. (Such as a backup of a VPS)
-        res = self.connection.request('%s/distributions' % (API_LOCATION)).object
+        res = self.connection.request('/distributions').object
         return map(lambda x : self._to_image(x), res['distro_infos'])
 
     def reboot_node(self, node):
@@ -221,5 +235,5 @@ class RimuHostingNodeDriver(NodeDriver):
             data['vps_parameters']['disk_space_2_mb'] = kwargs['disk_space_2_mb']
         
         
-        self.connection.request('%s/orders/new-vps' % (API_LOCATION), method='POST', data=json.dumps({"new-vps":data}))
+        self.connection.request('/orders/new-vps', method='POST', data=json.dumps({"new-vps":data}))
         
