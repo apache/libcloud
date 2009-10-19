@@ -238,5 +238,7 @@ class RimuHostingNodeDriver(NodeDriver):
             data['vps_parameters']['disk_space_2_mb'] = kwargs['disk_space_2_mb']
         
         
-        self.connection.request('/orders/new-vps', method='POST', data=json.dumps({"new-vps":data}))
+        res = self.connection.request('/orders/new-vps', method='POST', data=json.dumps({"new-vps":data})).object
+        return self._to_node(res['about_order'])
+    
         
