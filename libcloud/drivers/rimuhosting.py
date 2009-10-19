@@ -54,13 +54,14 @@ class RimuHostingResponse(Response):
     def parse_body(self):
         try:
             js = json.loads(self.body)
-            if js['jaxrs_response']['response_type'] == "ERROR":
-                raise RimuHostingException(js['jaxrs_response']['human_readable_message'])
+            if js[js.keys()[0]]['response_type'] == "ERROR":
+                raise RimuHostingException(js[js.keys()[0]]['human_readable_message'])
                
-            return js['jaxrs_response']
+            return js[js.keys()[0]]
         except ValueError:
-            raise RimuHostingException('Could not parse body')
-    
+            raise RimuHostingException('Could not parse body: %s' % (self.body))
+        except KeyError:
+            raise RimuHostingException('Could not parse body: %s' % (self.body))
     
 class RimuHostingConnection(ConnectionKey):
     
