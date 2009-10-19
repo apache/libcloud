@@ -36,8 +36,8 @@ class Node(object):
         return self.driver.destroy_node(self)
 
     def __repr__(self):
-        return (('<Node: uuid=%s, name=%s, provider=%s ...>')
-                % (self.uuid, self.name, self.driver.name))
+        return (('<Node: uuid=%s, name=%s, state=%s, public_ip=%s, provider=%s ...>')
+                % (self.uuid, self.name, self.state, self.public_ip, self.driver.name))
 
 
 class NodeSize(object):
@@ -56,6 +56,9 @@ class NodeSize(object):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+    def __repr__(self):
+        return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s price=%s driver=%s ...>')
+                % (self.id, self.name, self.ram, self.disk, self.bandwidth, self.price, self.driver.name))
 
 
 class NodeImage(object):
@@ -70,6 +73,9 @@ class NodeImage(object):
         self.id = id
         self.name = name
         self.driver = driver
+    def __repr__(self):
+        return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
+                % (self.id, self.name, self.driver.name))
 
 
 class Response(object):
