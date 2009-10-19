@@ -57,7 +57,7 @@ class RimuHostingResponse(Response):
             if js['jaxrs_response']['response_type'] == "ERROR":
                 raise RimuHostingException(js['jaxrs_response']['human_readable_message'])
                
-            return js['jaxrs_response']['payload']
+            return js['jaxrs_response']
         except ValueError:
             raise RimuHostingException('Could not parse body')
     
