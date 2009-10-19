@@ -85,6 +85,7 @@ class RimuHostingConnection(ConnectionKey):
         return headers;
 
     def request(self, action, params={}, data='', headers={}, method='GET'):
+        # Override this method to prepend the api_context
         return ConnectionKey.request(self, self.api_context + action, params, data, headers, method)
 
 class RimuHostingNodeDriver(NodeDriver):
@@ -104,11 +105,11 @@ class RimuHostingNodeDriver(NodeDriver):
 
     def _order_uri(self, node,resource):
         # Returns the order uri with its resourse appended.
-        return "/orders/order-%s/%s" % (node.id,resource)
+        return "/orders/%s/%s" % (node.id,resource)
    
     # TODO: Get the node state.
     def _to_node(self, order):
-        return Node(id=order['order_oid'],
+        return Node(id=order['slug'],
                 name=order['domain_name'],
                 state=NodeState.RUNNING,
                 public_ip=order['allocated_ips']['primary_ip'],
