@@ -56,7 +56,6 @@ class RimuHostingResponse(Response):
             js = json.loads(self.body)
             if js[js.keys()[0]]['response_type'] == "ERROR":
                 raise RimuHostingException(js[js.keys()[0]]['human_readable_message'])
-               
             return js[js.keys()[0]]
         except ValueError:
             raise RimuHostingException('Could not parse body: %s' % (self.body))
@@ -112,7 +111,7 @@ class RimuHostingNodeDriver(NodeDriver):
         n = Node(id=order['order_oid'],
                 name=order['domain_name'],
                 state=NodeState.RUNNING,
-                public_ip=order['allocated_ips']['primary_ip'],
+                public_ip=[order['allocated_ips']['primary_ip']]+order['allocated_ips']['secondary_ips'],
                 private_ip=None,
                 driver=self.connection.driver)
         n.slug = order['slug']

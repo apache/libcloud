@@ -112,7 +112,7 @@ class MockHttp(object):
         qs = parse_qs(query)
         if path.endswith('/'):
             path = path[:-1]
-        meth_name = path.replace('/','_').replace('.', '_')
+        meth_name = path.replace('/','_').replace('.', '_').replace('-','_')
         if self.type:
             meth_name = '%s_%s' % (meth_name, self.type) 
         if self.use_param:
