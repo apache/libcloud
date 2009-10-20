@@ -24,12 +24,10 @@ from copy import copy
 try: import json
 except: import simplejson as json
 
+# Defaults
 API_CONTEXT = '/r'
 API_HOST = 'api.rimuhosting.com'
-
-# Port tuple (http,https). Should be (80,443) for the production API. 
 API_PORT = (80,443)
-# Set to True to use SSL.
 API_SECURE = True
 
 class RimuHostingException(BaseException):
@@ -92,13 +90,14 @@ class RimuHostingNodeDriver(NodeDriver):
     name = 'RimuHosting'
     connectionCls = RimuHostingConnection
     
-    def __init__(self, key, host=API_HOST, port=API_PORT, api_context=API_CONTEXT, secure=True):
+    def __init__(self, key, host=API_HOST, port=API_PORT, api_context=API_CONTEXT, secure=API_SECURE):
+        # Pass in some extra vars so that
         self.key = key
         self.secure = secure
         self.connection = self.connectionCls(key ,secure)
-	self.connection.host = host
+        self.connection.host = host
         self.connection.api_context = api_context
-	self.connection.port = port
+        self.connection.port = port
         self.connection.driver = self
         self.connection.connect()
 
@@ -213,8 +212,7 @@ class RimuHostingNodeDriver(NodeDriver):
         
         if kwargs.has_key('num_ips') and int(kwargs['num_ips']) > 1:
             if not kwargs.has_key('extra_ip_reason'):
-                raise RimuHostingException('Need an reason for having an' \
-                                           ' extra IP')
+                raise RimuHostingException('Need an reason for having an extra IP')
             else:
                 if not data.has_key('ip_request'):
                     data['ip_request'] = {}
