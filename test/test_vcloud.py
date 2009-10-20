@@ -58,8 +58,22 @@ class VCloudMockHttp(MockHttp):
 
 
     def _api_v0_8_login(self, method, url, body, headers):
-        body = ''
-        headers = {'set-cookie': 'vcloud-token=testtoken'}
+        headers['set-cookie'] = 'vcloud-token=testtoken'
+        body = """
+        <OrgList xmlns="http://www.vmware.com/vcloud/v1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <Org href="https://services.vcloudexpress.terremark.com/api/v0.8/org/32" type="application/vnd.vmware.vcloud.org+xml" name="Org Name"/>
+        </OrgList>"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _api_v0_8_org_32(self, method, url, body, headers):
+        body = """
+        <Org href=" https://services.vcloudexpress.terremark.com/api/v0.8/org/32" name="Org Name" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <Link rel="down" href=" https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml" name="VDC Name"/>
+        <Link rel="down" href=" https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Catalog Name"/>
+        <Link rel="down" href=" https://services.vcloudexpress.terremark.com/api/v0.8/tasksList/1" type="application/vnd.vmware.vcloud.tasksList+xml" name="Tasks List"/>
+        </Org>"""
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _vapp_197833_power_action_poweroff(self, method, url, body, headers):
@@ -180,7 +194,7 @@ class VCloudMockHttp(MockHttp):
 </VApp>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vdc_111111(self, method, url, body, headers):
+    def _api_v0_8_vdc_111111(self, method, url, body, headers):
     
         body = """<?xml version="1.0" encoding="UTF-8"?>
 <Vdc
