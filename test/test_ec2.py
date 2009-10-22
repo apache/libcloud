@@ -17,13 +17,13 @@ import unittest
 from libcloud.drivers.ec2 import EC2NodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 
-from test import MockHttp
+from test import MockHttp, TestCaseMixin
 
 import httplib
 
 from secrets import EC2_ACCESS_ID, EC2_SECRET
 
-class EC2Tests(unittest.TestCase):
+class EC2Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)

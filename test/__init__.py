@@ -16,6 +16,9 @@ import httplib
 from cStringIO import StringIO
 from urllib2 import urlparse
 from cgi import parse_qs
+from libcloud.base import Node
+from libcloud.types import NodeState
+import unittest
 
 class multipleresponse(object):
     """
@@ -147,6 +150,40 @@ class MockHttp(object):
                 httplib.responses[httplib.FORBIDDEN])
 
 
+class TestCaseMixin(object):
+
+    def test_list_nodes_response(self):
+        nodes = self.driver.list_nodes()
+        self.assertTrue(isinstance(nodes, list))
+
+    def test_list_sizes_response(self):
+        sizes = self.driver.list_sizes()
+        self.assertTrue(isinstance(sizes, list))
+
+    def test_list_images_response(self):
+        images = self.driver.list_images()
+        self.assertTrue(isinstance(images, list))
+
+    def test_create_node_response(self):
+        # should return a node object
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node('node-name',image, size)
+        self.assertTrue(isinstance(node, Node))
+
+    def test_destroy_node_response(self):
+        # should return a node object
+        node = self.driver.list_nodes()[0]
+        ret_node = self.driver.destroy_node(node)
+        self.assertTrue(isinstance(ret_node, Node))
+        self.assertEqual(ret_node.state, NodeState.TERMINATED)
+
+    def test_reboot_node_response(self):
+        # should return a node object
+        node = self.driver.list_nodes()[0]
+        ret_node = self.driver.reboot_node(node)
+        self.assertTrue(isinstance(ret_node, Node))
+        self.assertEqual(ret_node.state, NodeState.REBOOTING)
 
 if __name__ == "__main__":
     import doctest

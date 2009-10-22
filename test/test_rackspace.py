@@ -19,11 +19,11 @@ from libcloud.providers import Rackspace
 from libcloud.types import Provider
 from libcloud.base import Node, NodeImage, NodeSize
 
-from test import MockHttp
+from test import MockHttp, TestCaseMixin
 from secrets import RACKSPACE_USER, RACKSPACE_KEY
 import httplib
 
-class RackspaceTests(unittest.TestCase):
+class RackspaceTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)

@@ -19,13 +19,13 @@ from libcloud.drivers.vpsnet import VPSNetNodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 from libcloud.types import NodeState
 
-from test import MockHttp
+from test import MockHttp, TestCaseMixin
 
 import httplib
 
 from secrets import VPSNET_USER, VPSNET_KEY
 
-class VPSNetTests(unittest.TestCase):
+class VPSNetTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VPSNetNodeDriver.connectionCls.conn_classes = (None, VPSNetMockHttp)

@@ -20,11 +20,11 @@ from libcloud.base import Node, NodeImage, NodeSize
 
 import httplib
 
-from test import MockHttp, multipleresponse
+from test import MockHttp, multipleresponse, TestCaseMixin
 from secrets import SLICEHOST_KEY
 from xml.etree import ElementTree as ET
 
-class SlicehostTest(unittest.TestCase):
+class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
 

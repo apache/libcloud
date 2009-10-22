@@ -11,12 +11,12 @@
 #
 
 from libcloud.drivers.linode import LinodeNodeDriver
-from test import MockHttp
+from test import MockHttp, TestCaseMixin
 
 import unittest
 import httplib
 
-class LinodeTest(unittest.TestCase):
+class LinodeTest(unittest.TestCase, TestCaseMixin):
     # The Linode test suite
     
     def setUp(self):
