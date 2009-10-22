@@ -174,16 +174,14 @@ class TestCaseMixin(object):
     def test_destroy_node_response(self):
         # should return a node object
         node = self.driver.list_nodes()[0]
-        ret_node = self.driver.destroy_node(node)
-        self.assertTrue(isinstance(ret_node, Node))
-        self.assertEqual(ret_node.state, NodeState.TERMINATED)
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(isinstance(ret, bool))
 
     def test_reboot_node_response(self):
         # should return a node object
         node = self.driver.list_nodes()[0]
-        ret_node = self.driver.reboot_node(node)
-        self.assertTrue(isinstance(ret_node, Node))
-        self.assertEqual(ret_node.state, NodeState.REBOOTING)
+        ret = self.driver.reboot_node(node)
+        self.assertTrue(isinstance(ret, bool))
 
 if __name__ == "__main__":
     import doctest
