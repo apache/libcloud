@@ -136,7 +136,7 @@ class VPSNetNodeDriver(NodeDriver):
                                         (node.id, 'reboot', API_VERSION),
                                         method="POST")
         node = self._to_node(res.object['virtual_machine'])
-        return node
+        return True
     
     def list_sizes(self):
         res = self.connection.request('/nodes.%s' % (API_VERSION,))
