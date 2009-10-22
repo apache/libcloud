@@ -125,7 +125,7 @@ class INodeDriver(Interface):
 
     def destroy_node(node):
         """
-        Destroys the given node
+        Returns True if the destroy was successful, otherwise False
         """
 
     def list_nodes():
@@ -145,7 +145,7 @@ class INodeDriver(Interface):
 
     def reboot_node(node):
         """
-        Reboots the given node
+        Returns True if the reboot was successful, otherwise False
         """
 
 class IConnection(Interface):
