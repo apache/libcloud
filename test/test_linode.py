@@ -11,6 +11,7 @@
 #
 
 from libcloud.drivers.linode import LinodeNodeDriver
+from libcloud.base import Node
 from test import MockHttp, TestCaseMixin
 
 import unittest
@@ -60,6 +61,14 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEqual(len(images), 22)
         
+    def test_create_node_response(self):
+        # should return a node object
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        kwargs = {'root': 'foobar'}
+        node = self.driver.create_node('node-name',image, size, **kwargs)
+        self.assertTrue(isinstance(node, Node))
+
         
 class LinodeMockHttp(MockHttp):
     def _avail_datacenters(self, method, url, body, headers):

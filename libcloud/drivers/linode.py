@@ -145,6 +145,7 @@ class LinodeNodeDriver(NodeDriver):
         # Execute a shutdown and boot job for the given Node.
         params = { "api_action": "linode.reboot", "LinodeID": node.id }
         self.connection.request(LINODE_ROOT, params=params)
+        return True
     
     def destroy_node(self, node):
         # Destroy
@@ -152,6 +153,7 @@ class LinodeNodeDriver(NodeDriver):
         params = { "api_action": "linode.delete", "LinodeID": node.id,
             "skipChecks": True }
         self.connection.request(LINODE_ROOT, params=params)
+        return True
 
     def create_node(self, name, image, size, **kwargs):
         # Create
