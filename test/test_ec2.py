@@ -27,11 +27,10 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2MockHttp.use_param = 'Action'
         self.driver = EC2NodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
-
     def test_create_node(self):
-        EC2MockHttp.type = 'run_instances'
         image = NodeImage(id='ami-be3adfd7', 
                           name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
                           driver=self.driver)
@@ -40,18 +39,15 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-2ba64342')
 
     def test_list_nodes(self):
-        EC2MockHttp.type = 'describe_instances'
         node = self.driver.list_nodes()[0]
         self.assertEqual(node.id, 'i-4382922a')
 
     def test_reboot_node(self):
-        EC2MockHttp.type = 'reboot_instances'
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
 
     def test_destroy_node(self):
-        EC2MockHttp.type = 'terminate_instances'
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
@@ -64,7 +60,6 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue('m1.xlarge' in [ s.id for s in sizes])
 
     def test_list_images(self):
-        EC2MockHttp.type = 'describe_images'
         images = self.driver.list_images()
         image = images[0]
         self.assertEqual(len(images), 1)
@@ -72,7 +67,7 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.id, 'ami-be3adfd7')
 
 class EC2MockHttp(MockHttp):
-    def _describe_instances(self, method, url, body, headers):
+    def _DescribeInstances(self, method, url, body, headers):
         body = """<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
     <requestId>56d0fffa-8819-4658-bdd7-548f143a86d2</requestId>
     <reservationSet>
@@ -112,14 +107,14 @@ class EC2MockHttp(MockHttp):
 </DescribeInstancesResponse>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _reboot_instances(self, method, url, body, headers):
+    def _RebootInstances(self, method, url, body, headers):
         body = """<RebootInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
     <requestId>76dabb7a-fb39-4ed1-b5e0-31a4a0fdf5c0</requestId>
     <return>true</return>
 </RebootInstancesResponse>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _describe_images(self, method, url, body, headers):
+    def _DescribeImages(self, method, url, body, headers):
         body = """<DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
                   <imagesSet>
                     <item>
@@ -137,7 +132,7 @@ class EC2MockHttp(MockHttp):
                 </DescribeImagesResponse>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _run_instances(self, method, url, body, headers):
+    def _RunInstances(self, method, url, body, headers):
         body = """<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
                       <reservationId>r-47a5402e</reservationId>
                       <ownerId>AIDADH4IGTRXXKCD</ownerId>
@@ -171,7 +166,7 @@ class EC2MockHttp(MockHttp):
                     </RunInstancesResponse>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _terminate_instances(self, method, url, body, headers):
+    def _TerminateInstances(self, method, url, body, headers):
         body = """<TerminateInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
     <requestId>fa63083d-e0f7-4933-b31a-f266643bdee8</requestId>
     <instancesSet>
