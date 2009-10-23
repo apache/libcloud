@@ -23,6 +23,7 @@ class Provider(object):
     VPSNET = 6 # VPS.net
     LINODE = 7 # Linode.com
     VCLOUD = 8 # vCloud
+    RIMUHOSTING = 9 #RimuHosting.com
 
 class NodeState(object):
     """ Standard states for a node """
