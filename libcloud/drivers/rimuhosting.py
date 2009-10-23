@@ -155,16 +155,14 @@ class RimuHostingNodeDriver(NodeDriver):
         data = {'reboot_request':{'running_state':'RESTARTING'}}
         uri = self._order_uri(node,'vps/running-state')
         self.connection.request(uri,data=json.dumps(data),method='PUT')
-        node.state = NodeState.REBOOTING
-        return node
+        return True
     
     def destroy_node(self, node):
         # Shutdown a VPS.
         uri = self._order_uri(node,'vps')
         self.connection.request(uri,method='DELETE')
-        node.state = NodeState.TERMINATED
-        return node
-    
+        return False
+
     def create_node(self, name, image, size, **kwargs):
         # Creates a RimuHosting instance
         #

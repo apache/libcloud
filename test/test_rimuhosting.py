@@ -16,11 +16,12 @@
 
 from libcloud.drivers.rimuhosting import RimuHostingNodeDriver
 from test import MockHttp
+from test import MockHttp, TestCaseMixin
 
 import unittest
 import httplib
 
-class RimuHostingTest(unittest.TestCase):
+class RimuHostingTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         RimuHostingNodeDriver.connectionCls.conn_classes = (None,
                                                             RimuHostingMockHttp)
