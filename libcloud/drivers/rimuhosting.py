@@ -161,7 +161,7 @@ class RimuHostingNodeDriver(NodeDriver):
         # Shutdown a VPS.
         uri = self._order_uri(node,'vps')
         self.connection.request(uri,method='DELETE')
-        return False
+        return True
 
     def create_node(self, name, image, size, **kwargs):
         # Creates a RimuHosting instance
