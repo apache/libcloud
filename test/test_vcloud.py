@@ -37,7 +37,7 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
     def test_list_images(self):
         ret = self.driver.list_images()
         self.assertEqual(ret[0].id,'https://vcloud.safesecureweb.com/vAppTemplate/1')
-        self.assertEqual(ret[-1].id,'https://vcloud.safesecureweb.com/vAppTemplate/4')
+        self.assertEqual(ret[-1].id,'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
@@ -70,9 +70,9 @@ class VCloudMockHttp(MockHttp):
     def _api_v0_8_org_32(self, method, url, body, headers):
         body = """
         <Org href=" https://services.vcloudexpress.terremark.com/api/v0.8/org/32" name="Org Name" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        <Link rel="down" href=" https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml" name="VDC Name"/>
-        <Link rel="down" href=" https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Catalog Name"/>
-        <Link rel="down" href=" https://services.vcloudexpress.terremark.com/api/v0.8/tasksList/1" type="application/vnd.vmware.vcloud.tasksList+xml" name="Tasks List"/>
+        <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml" name="VDC Name"/>
+        <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Catalog Name"/>
+        <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/tasksList/1" type="application/vnd.vmware.vcloud.tasksList+xml" name="Tasks List"/>
         </Org>"""
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
@@ -85,16 +85,31 @@ class VCloudMockHttp(MockHttp):
         return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
 
     def _vapp_197833_action_undeploy(self, method, url, body, headers):
-        body = """
-<?xml version="1.0" encoding="UTF-8"?>
+        body = """<?xml version="1.0" encoding="UTF-8"?>
 <task xmlns="http://www.vmware.com/vcloud/task"
     xmlns:common="http://www.vmware.com/vcloud/common"    xsi:schemaLocation="http://www.vmware.com/vcloud/task
         https://vcloud.safesecureweb.com/ns/vcloud/task-1.0.xsd        http://www.vmware.com/vcloud/common
-        https://vcloud.safesecureweb.com/ns/vcloud/common-1.0.xsd    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        https://vcloud.safesecureweb.com/ns/vcloud/common-1.0.xsd"    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     status="success" startTime="10/16/2009 7:52:48 AM">
   <common:link rel="taskList:cancel" href="https://vcloud.safesecureweb.com/task/59049/action/cancel" />  <common:link rel="self" href="https://vcloud.safesecureweb.com/task/59049" type="application/vnd.vmware.vcloud.task+xml" /></task>"""
-        return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
+    def _api_v0_8_vdc_1_catalog(self, method, uri, body, headers):
+        body = """<Catalog href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/155/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Miami Environment 1" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <CatalogItems>
+              <CatalogItem href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5" type="application/vnd.vmware.vcloud.catalogItem+xml" name="CentOS 5.3 (32-bit)"/>
+        </CatalogItems>
+        </Catalog>"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _api_v0_8_catalogItem_5(self, method, uri, body, headers):
+        body = """<CatalogItem href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5" type="application/vnd.vmware.vcloud.catalogItem+xml" name="CentOS 5.3 (32-bit)" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5/options/compute" type="application/xml" name="Compute Options"/>
+                  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5/options/customization" type="application/xml" name="Customization Options"/>
+                  <Entity href="https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5" type="application/vnd.vmware.vcloud.vAppTemplate+xml" name="CentOS 5.3 (32-bit)"/>
+                  <Property key="LicensingCost">0</Property>
+                </CatalogItem>"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _vApp_197833(self, method, uri, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
