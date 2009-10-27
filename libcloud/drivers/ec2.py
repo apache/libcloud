@@ -55,7 +55,18 @@ EC2_INSTANCE_TYPES = {'m1.small': {'id': 'm1.small',
                        'name': 'High-CPU Extra Large Instance',
                        'ram': '7680MB',
                        'disk': '1690GB',
-                       'bandwidth': None}}
+                       'bandwidth': None},
+                      'm2.2xlarge': {'id': 'm2.2xlarge',
+                       'name': 'High-Memory Double Extra Large Instance',
+                       'ram': '35021MB',
+                       'disk': '850GB',
+                       'bandwidth': None},
+                      'm2.4xlarge': {'id': 'm2.4xlarge',
+                       'name': 'High-Memory Quadruple Extra Large Instance',
+                       'ram': '70042MB',
+                       'disk': '1690GB',
+                       'bandwidth': None},
+                       }
 
 
 EC2_US_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
@@ -66,12 +77,16 @@ EC2_US_INSTANCE_TYPES['m1.large']['price'] = '.4'
 EC2_US_INSTANCE_TYPES['m1.xlarge']['price'] = '.8'
 EC2_US_INSTANCE_TYPES['c1.medium']['price'] = '.2'
 EC2_US_INSTANCE_TYPES['c1.xlarge']['price'] = '.8'
+EC2_US_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
+EC2_US_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
 
 EC2_EU_INSTANCE_TYPES['m1.small']['price'] = '.11'
 EC2_EU_INSTANCE_TYPES['m1.large']['price'] = '.44'
 EC2_EU_INSTANCE_TYPES['m1.xlarge']['price'] = '.88'
 EC2_EU_INSTANCE_TYPES['c1.medium']['price'] = '.22'
 EC2_EU_INSTANCE_TYPES['c1.xlarge']['price'] = '.88'
+EC2_EU_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
+EC2_EU_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 
 class EC2Response(Response):
 
