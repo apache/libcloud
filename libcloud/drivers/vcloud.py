@@ -173,6 +173,29 @@ class VCloudNodeDriver(NodeDriver):
 
         return nodes
 
+    def _get_catalogitems_hrefs(self, catalog):
+        """Given a catalog href returns contained catalog item hrefs"""
+        res = self.connection.request(
+            catalog,
+            headers={'Content-Type': 'application/vnd.vmware.vcloud.catalog+xml'}
+        ).object
+
+        cat_items = res.findall(fixxpath(res, "CatalogItems/CatalogItem"))
+        cat_item_hrefs = [i.get('href')
+                          for i in cat_items
+                          if i.get('type') == 'application/vnd.vmware.vcloud.catalogItem+xml']
+
+        return cat_item_hrefs
+
+    def _get_catalogitem(self, catalog_item):
+        """Given a catalog item href returns elementree"""
+        res = self.connection.request(
+            catalog_item,
+            headers={'Content-Type': 'application/vnd.vmware.vcloud.catalogItem+xml'}
+        ).object
+
+        return res
+        
     def list_images(self):
         images = []
         for vdc in self.vdcs:
@@ -183,21 +206,8 @@ class VCloudNodeDriver(NodeDriver):
                        if i.get('type') == 'application/vnd.vmware.vcloud.vAppTemplate+xml']
         
         for catalog in self._get_catalog_hrefs():
-            res = self.connection.request(
-                catalog,
-                headers={'Content-Type': 'application/vnd.vmware.vcloud.catalog+xml'}
-            ).object
-
-            cat_items = res.findall(fixxpath(res, "CatalogItems/CatalogItem"))
-            cat_item_hrefs = [i.get('href')
-                              for i in cat_items
-                              if i.get('type') == 'application/vnd.vmware.vcloud.catalogItem+xml']
-
-            for cat_item in cat_item_hrefs:
-                res = self.connection.request(
-                    cat_item,
-                    headers={'Content-Type': 'application/vnd.vmware.vcloud.catalogItem+xml'}
-                ).object
+            for cat_item in self._get_catalogitems_hrefs(catalog):
+                res = self._get_catalogitem(cat_item) 
                 res_ents = res.findall(fixxpath(res, 'Entity'))
                 images += [self._to_image(i)
                            for i in res_ents
