@@ -147,7 +147,6 @@ class VCloudNodeDriver(NodeDriver):
                                           method='POST')
         except ExpatError: # the undeploy response is malformed XML atm. We can remove this whent he providers fix the problem.
             return True
-
         return res.status == 202
 
     def reboot_node(self, node):
@@ -166,7 +165,10 @@ class VCloudNodeDriver(NodeDriver):
                                i.get('name')]
 
             for vapp_name, vapp_href in vapps:
-                res = self.connection.request(vapp_href)
+                res = self.connection.request(
+                    vapp_href,
+                    headers={'Content-Type': 'application/vnd.vmware.vcloud.vApp+xml'}
+                )
                 nodes.append(self._to_node(vapp_name, res.object))
 
         return nodes
@@ -181,14 +183,21 @@ class VCloudNodeDriver(NodeDriver):
                        if i.get('type') == 'application/vnd.vmware.vcloud.vAppTemplate+xml']
         
         for catalog in self._get_catalog_hrefs():
-            res = self.connection.request(catalog).object
+            res = self.connection.request(
+                catalog,
+                headers={'Content-Type': 'application/vnd.vmware.vcloud.catalog+xml'}
+            ).object
+
             cat_items = res.findall(fixxpath(res, "CatalogItems/CatalogItem"))
             cat_item_hrefs = [i.get('href')
                               for i in cat_items
                               if i.get('type') == 'application/vnd.vmware.vcloud.catalogItem+xml']
 
             for cat_item in cat_item_hrefs:
-                res = self.connection.request(cat_item).object
+                res = self.connection.request(
+                    cat_item,
+                    headers={'Content-Type': 'application/vnd.vmware.vcloud.catalogItem+xml'}
+                ).object
                 res_ents = res.findall(fixxpath(res, 'Entity'))
                 images += [self._to_image(i)
                            for i in res_ents
