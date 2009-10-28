@@ -43,7 +43,7 @@ class VCloudResponse(Response):
             raise Exception("%s: %s" % (e, self.parse_error()))
 
     def parse_error(self):
-        return self.body
+        return self.error
 
     def success(self):
         return self.status in (httplib.OK, httplib.CREATED, 
@@ -122,7 +122,7 @@ class VCloudNodeDriver(NodeDriver):
         state = self.NODE_STATE_MAP[elm.get('status')]
         public_ips = [ip.text for ip in elm.findall(fixxpath(elm, 'NetworkConnectionSection/NetworkConnection/IPAddress'))]
 
-        node = Node(id=name,
+        node = Node(id=elm.get('href'),
                     name=name,
                     state=state,
                     public_ip=public_ips,
@@ -140,17 +140,27 @@ class VCloudNodeDriver(NodeDriver):
         return catalogs
 
     def destroy_node(self, node):
-        self.connection.request('/vapp/%s/power/action/poweroff' % node.id,
-                                method='POST') 
+        node_path = get_url_path(node.id)
+        # blindly poweroff node, it will throw an exception if already off
         try:
-            res = self.connection.request('/vapp/%s/action/undeploy' % node.id,
+            self.connection.request('%s/power/action/poweroff' % node_path,
+                                    method='POST') 
+        except Exception, e: 
+            pass
+
+        try:
+            res = self.connection.request('%s/action/undeploy' % node_path,
                                           method='POST')
         except ExpatError: # the undeploy response is malformed XML atm. We can remove this whent he providers fix the problem.
-            return True
+            pass
+        except Exception, e: # some vendors don't implement undeploy at all yet, so catch this and move on.
+            pass
+
+        res = self.connection.request(node_path, method='DELETE')
         return res.status == 202
 
     def reboot_node(self, node):
-        res = self.connection.request('/vapp/%s/power/action/reset' % node.id,
+        res = self.connection.request('%s/power/action/reset' % get_url_path(node.id),
                                       method='POST') 
         return res.status == 204
 
