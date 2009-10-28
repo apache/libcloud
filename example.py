@@ -12,7 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.drivers import EC2, Slicehost, Rackspace
+from libcloud.types import Provider
+from libcloud.providers import get_driver
+
+EC2 = get_driver(Provider.EC2)
+Slicehost = get_driver(Provider.SLICEHOST)
 
 ec2 = EC2('access key id', 'secret key')
 slicehost = Slicehost('api key')
