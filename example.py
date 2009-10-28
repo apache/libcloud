@@ -26,16 +26,11 @@ drivers = [ EC2('access key id', 'secret key'),
 nodes = [ driver.list_nodes() for driver in drivers ]
 
 print nodes
-"""
-[ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
-<Node: provider=Slicehost, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
-"""
+# [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
+# <Node: provider=Slicehost, status=REBOOT, name=korine, ip=6.7.8.9.10>, ... ]
 
-# grab a node from the list
-node = nodes[0]
+# grab the node named "test"
+node = filter(lambda x: x.name == 'test', nodes)[0]
 
-# reboot the node
+# reboot "test"
 node.reboot()
-
-# destroy the node
-node.destroy()
