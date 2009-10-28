@@ -225,6 +225,113 @@ class VCloudNodeDriver(NodeDriver):
 
         return images
 
+    def create_node(self, name, image, size=None, **kwargs):
+        """vCloud doesn't support list_sizes yet, so it shouldn't be require here"""
+
+        instantiation_root = ET.Element(
+            "InstantiateVAppTemplateParams", 
+            {'name': name,
+             'xml:lang': 'en',
+             'xmlns': "http://www.vmware.com/vcloud/v1",
+             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+        )
+
+        ET.SubElement(
+            instantiation_root, 
+            "VAppTemplate",
+            {'href': image.id}
+        )
+
+        instantionation_params = ET.SubElement(instantiation_root, 
+                                               "InstantiationParams")
+        product_section = ET.SubElement(
+            instantionation_params,
+            "ProductSection",
+            {'xmlns:q1': "http://www.vmware.com/vcloud/v1",
+             'xmlns:ovf': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+        virtual_hardware = ET.SubElement(
+            instantionation_params,
+            "VirtualHardwareSection",
+            {'xmlns:q1': "http://www.vmware.com/vcloud/v1"}
+        )
+
+        cpu_item = ET.SubElement(
+            virtual_hardware,
+            "Item",
+            {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+
+        ET.SubElement(
+            cpu_item, 
+            "InstanceID",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        ).text = "1"
+
+        ET.SubElement(
+            cpu_item,
+            "ResourceType",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        ).text = "3"
+
+        ET.SubElement(
+            cpu_item,
+            "VirtualQuantity",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        ).text = "2"
+
+        memory_item = ET.SubElement(
+            virtual_hardware,
+            "Item",
+            {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+
+        ET.SubElement(
+            memory_item, 
+            "InstanceID",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        ).text = "2"
+
+        ET.SubElement(
+            memory_item,
+            "ResourceType",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        ).text = "4"
+
+        ET.SubElement(
+            memory_item,
+            "VirtualQuantity",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        ).text = "512"
+
+        network_config_section = ET.SubElement(instantionation_params,
+                                               "NetworkConfigSection")
+        network_config = ET.SubElement(network_config_section,
+                                       "NetworkConfig")
+
+        ET.SubElement(
+            network_config,
+            "NetworkAssociation",
+            {'href': 'https://services.vcloudexpress.terremark.com/api/v0.8/network/tester'}
+        )
+             
+        # Instantiate VM and get identifier.
+        res = self.connection.request('%s/action/instantiateVAppTemplate' % self.vdcs[0],
+                                      data=ET.tostring(instantiation_root),
+                                      method='POST',
+                                      headers={'Content-Type': 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml'})
+        vapp_name = res.object.get('name')
+
+        # Deploy the VM from the identifier.
+        res = self.connection.request('/vapp/%s/action/deploy' % vapp_name,
+                                      method='POST')
+
+        res = self.connection.request('/vApp/%s' % vapp_name)
+        node = self._to_node(vapp_name, res.object)
+
+        return node
+
+
 class HostingComConnection(VCloudConnection):
     host = "vcloud.safesecureweb.com" 
     
