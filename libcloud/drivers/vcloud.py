@@ -32,6 +32,128 @@ def fixxpath(root, xpath):
     fixed_xpath = "/".join(["{%s}%s" % (namespace, e) for e in xpath.split("/")])
     return fixed_xpath
 
+class InstantiateVAppXML(object):
+    
+    def __init__(self, name, template, net_href):
+        self.name = name
+        self.template = template
+        self.net_href = net_href
+
+        self._build_xmltree()
+
+    def tostring(self):
+        return ET.tostring(self.root)
+    
+    def _build_xmltree(self):
+        self.root = self._make_instantiation_root()
+
+        self._add_vapp_template(self.root)
+        instantionation_params = ET.SubElement(self.root, 
+                                               "InstantiationParams")
+
+        product = self._make_product_section(instantionation_params)
+        virtual_hardware = self._make_virtual_hardware(instantionation_params)
+        network_config_section = ET.SubElement(instantionation_params,
+                                               "NetworkConfigSection")
+
+        network_config = ET.SubElement(network_config_section,
+                                       "NetworkConfig")
+        self._add_network_association(network_config)
+
+    def _make_instantiation_root(self):
+        return ET.Element(
+            "InstantiateVAppTemplateParams", 
+            {'name': self.name,
+             'xml:lang': 'en',
+             'xmlns': "http://www.vmware.com/vcloud/v1",
+             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+        )
+
+    def _add_vapp_template(self, parent):
+        return ET.SubElement(
+            parent, 
+            "VAppTemplate",
+            {'href': self.template}
+        )
+
+    def _make_product_section(self, parent):
+        return ET.SubElement(
+            parent,
+            "ProductSection",
+            {'xmlns:q1': "http://www.vmware.com/vcloud/v1",
+             'xmlns:ovf': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+    
+    def _make_virtual_hardware(self, parent):
+        vh = ET.SubElement(
+            parent,
+            "VirtualHardwareSection",
+            {'xmlns:q1': "http://www.vmware.com/vcloud/v1"}
+        )
+
+        self._add_cpu(vh)
+        self._add_memory(vh)
+
+        return vh
+
+    def _add_cpu(self, parent):
+        cpu_item = ET.SubElement(
+            parent,
+            "Item",
+            {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+        self._add_instance_id(cpu_item, '1')
+        self._add_resource_type(cpu_item, '3')
+        self._add_virtual_quantity(cpu_item, '2')
+
+        return cpu_item
+
+    def _add_memory(self, parent):
+        mem_item = ET.SubElement(
+            parent,
+            "Item",
+            {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+        self._add_instance_id(mem_item, '2')
+        self._add_resource_type(mem_item, '4')
+        self._add_virtual_quantity(mem_item, '512')
+
+        return mem_item
+
+    def _add_instance_id(self, parent, id):
+        elm = ET.SubElement(
+            parent, 
+            "InstanceID",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        )
+        elm.text = id
+        return elm
+
+    def _add_resource_type(self, parent, type):
+        elm = ET.SubElement(
+            parent,
+            "ResourceType",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        )
+        elm.text = type
+        return elm
+
+    def _add_virtual_quantity(self, parent, amount):
+       elm = ET.SubElement(
+            parent,
+            "VirtualQuantity",
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+        )
+       elm.text = amount
+       return elm
+
+    def _add_network_association(self, parent):
+        return ET.SubElement(
+            parent,
+            "NetworkAssociation",
+            {'href': self.net_href}
+        )
+
 class VCloudResponse(Response):
 
     def parse_body(self):
@@ -228,105 +350,25 @@ class VCloudNodeDriver(NodeDriver):
     def create_node(self, name, image, size=None, **kwargs):
         """vCloud doesn't support list_sizes yet, so it shouldn't be require here"""
 
-        instantiation_root = ET.Element(
-            "InstantiateVAppTemplateParams", 
-            {'name': name,
-             'xml:lang': 'en',
-             'xmlns': "http://www.vmware.com/vcloud/v1",
-             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+        instantiate_xml = InstantiateVAppXML(
+            name, 
+            image.id, 
+            'https://services.vcloudexpress.terremark.com/api/v0.8/network/tester'
         )
 
-        ET.SubElement(
-            instantiation_root, 
-            "VAppTemplate",
-            {'href': image.id}
-        )
-
-        instantionation_params = ET.SubElement(instantiation_root, 
-                                               "InstantiationParams")
-        product_section = ET.SubElement(
-            instantionation_params,
-            "ProductSection",
-            {'xmlns:q1': "http://www.vmware.com/vcloud/v1",
-             'xmlns:ovf': "http://schemas.dmtf.org/ovf/envelope/1"}
-        )
-        virtual_hardware = ET.SubElement(
-            instantionation_params,
-            "VirtualHardwareSection",
-            {'xmlns:q1': "http://www.vmware.com/vcloud/v1"}
-        )
-
-        cpu_item = ET.SubElement(
-            virtual_hardware,
-            "Item",
-            {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
-        )
-
-        ET.SubElement(
-            cpu_item, 
-            "InstanceID",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        ).text = "1"
-
-        ET.SubElement(
-            cpu_item,
-            "ResourceType",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        ).text = "3"
-
-        ET.SubElement(
-            cpu_item,
-            "VirtualQuantity",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        ).text = "2"
-
-        memory_item = ET.SubElement(
-            virtual_hardware,
-            "Item",
-            {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
-        )
-
-        ET.SubElement(
-            memory_item, 
-            "InstanceID",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        ).text = "2"
-
-        ET.SubElement(
-            memory_item,
-            "ResourceType",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        ).text = "4"
-
-        ET.SubElement(
-            memory_item,
-            "VirtualQuantity",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        ).text = "512"
-
-        network_config_section = ET.SubElement(instantionation_params,
-                                               "NetworkConfigSection")
-        network_config = ET.SubElement(network_config_section,
-                                       "NetworkConfig")
-
-        ET.SubElement(
-            network_config,
-            "NetworkAssociation",
-            {'href': 'https://services.vcloudexpress.terremark.com/api/v0.8/network/tester'}
-        )
-             
         # Instantiate VM and get identifier.
         res = self.connection.request('%s/action/instantiateVAppTemplate' % self.vdcs[0],
-                                      data=ET.tostring(instantiation_root),
+                                      data=instantiate_xml.tostring(),
                                       method='POST',
                                       headers={'Content-Type': 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml'})
         vapp_name = res.object.get('name')
+        vapp_href = get_url_path(res.object.get('href'))
 
         # Deploy the VM from the identifier.
-        res = self.connection.request('/vapp/%s/action/deploy' % vapp_name,
+        res = self.connection.request('%s/action/deploy' % vapp_href,
                                       method='POST')
 
-        res = self.connection.request('/vApp/%s' % vapp_name)
+        res = self.connection.request(vapp_href)
         node = self._to_node(vapp_name, res.object)
 
         return node
