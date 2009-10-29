@@ -44,6 +44,10 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[0].id, 'https://vcloud.safesecureweb.com/vapp/197833')
         self.assertEqual(ret[0].state, NodeState.RUNNING)
 
+    def test_list_sizes(self):
+        ret = self.driver.list_sizes()
+        self.assertEqual(ret[0].ram, 512)
+
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
         ret = self.driver.reboot_node(node)
@@ -56,13 +60,14 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
 
     def test_create_node(self):
         image = self.driver.list_images()[0]
+        size = self.driver.list_sizes()[0]
         node = self.driver.create_node(
             name='testerpart2', 
             image=image, 
+            size=size,
             vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111',
             network='https://services.vcloudexpress.terremark.com/api/v0.8/network/518', 
-            cpus=2, 
-            memory=1024
+            cpus=2,
         )
         self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833')
         self.assertEqual(node.name, 'testerpart2')

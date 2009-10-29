@@ -23,6 +23,9 @@ from urlparse import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
+#From vcloud api "The VirtualQuantity element defines the number of MB of memory. This should be either 512 or a multiple of 1024 (1 GB)."
+VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1,9)] 
+
 def get_url_path(url):
     return urlparse(url.strip()).path
 
@@ -330,6 +333,23 @@ class VCloudNodeDriver(NodeDriver):
 
         return nodes
 
+    def _to_size(self, ram):
+        ns = NodeSize(
+            id=None,
+            name="%s Ram" % ram,
+            ram=ram,
+            disk=None,
+            bandwidth=None,
+            price=None,
+            driver=self.connection.driver
+        )
+
+        return ns
+        
+    def list_sizes(self):
+        sizes = [self._to_size(i) for i in VIRTUAL_MEMORY_VALS]
+        return sizes
+
     def _get_catalogitems_hrefs(self, catalog):
         """Given a catalog href returns contained catalog item hrefs"""
         res = self.connection.request(
@@ -372,13 +392,12 @@ class VCloudNodeDriver(NodeDriver):
 
         return images
 
-    def create_node(self, name, image, size=None, **kwargs):
+    def create_node(self, name, image, size, **kwargs):
         """Creates and returns node.
 
            Non-standard required keyword arguments:
            network -- link to a "Network" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
            cpus -- number of virtual cpus (limit depends on provider)
-           memory -- amount of memory in megabytes e.g, '512' (limit depends on provider) 
            vdc -- link to a "VDC" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
 
            Non-standard optional keyword arguments:
@@ -392,7 +411,7 @@ class VCloudNodeDriver(NodeDriver):
             template=image.id, 
             net_href=kwargs['network'],
             cpus=str(kwargs['cpus']),
-            memory=str(kwargs['memory']),
+            memory=str(size.ram),
             password=kwargs.get('password', None),
             row=kwargs.get('row', None),
             group=kwargs.get('group', None)
