@@ -34,10 +34,15 @@ def fixxpath(root, xpath):
 
 class InstantiateVAppXML(object):
     
-    def __init__(self, name, template, net_href):
+    def __init__(self, name, template, net_href, cpus, memory, password=None, row=None, group=None):
         self.name = name
         self.template = template
         self.net_href = net_href
+        self.cpus = cpus
+        self.memory = memory
+        self.password = password
+        self.row = row
+        self.group = group
 
         self._build_xmltree()
 
@@ -77,11 +82,31 @@ class InstantiateVAppXML(object):
         )
 
     def _make_product_section(self, parent):
-        return ET.SubElement(
+        prod_section = ET.SubElement(
             parent,
             "ProductSection",
             {'xmlns:q1': "http://www.vmware.com/vcloud/v1",
              'xmlns:ovf': "http://schemas.dmtf.org/ovf/envelope/1"}
+        )
+
+        if self.password:
+            self._add_property(prod_section, 'password', self.password)
+
+        if self.row:
+            self._add_property(prod_section, 'row', self.row)
+
+        if self.group:
+            self._add_property(prod_section, 'group', self.group)
+
+        return prod_section
+
+    def _add_property(self, parent, ovfkey, ovfvalue):
+        return ET.SubElement(
+            parent, 
+            "Property",
+            {'xmlns': 'http://schemas.dmtf.org/ovf/envelope/1',
+             'ovf:key': ovfkey,
+             'ovf:value': ovfvalue}
         )
     
     def _make_virtual_hardware(self, parent):
@@ -104,7 +129,7 @@ class InstantiateVAppXML(object):
         )
         self._add_instance_id(cpu_item, '1')
         self._add_resource_type(cpu_item, '3')
-        self._add_virtual_quantity(cpu_item, '2')
+        self._add_virtual_quantity(cpu_item, self.cpus)
 
         return cpu_item
 
@@ -116,7 +141,7 @@ class InstantiateVAppXML(object):
         )
         self._add_instance_id(mem_item, '2')
         self._add_resource_type(mem_item, '4')
-        self._add_virtual_quantity(mem_item, '512')
+        self._add_virtual_quantity(mem_item, self.memory)
 
         return mem_item
 
@@ -348,16 +373,33 @@ class VCloudNodeDriver(NodeDriver):
         return images
 
     def create_node(self, name, image, size=None, **kwargs):
-        """vCloud doesn't support list_sizes yet, so it shouldn't be require here"""
+        """Creates and returns node.
+
+           Non-standard required keyword arguments:
+           network -- link to a "Network" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
+           cpus -- number of virtual cpus (limit depends on provider)
+           memory -- amount of memory in megabytes e.g, '512' (limit depends on provider) 
+           vdc -- link to a "VDC" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
+
+           Non-standard optional keyword arguments:
+           password
+           row
+           group 
+        """
 
         instantiate_xml = InstantiateVAppXML(
-            name, 
-            image.id, 
-            'https://services.vcloudexpress.terremark.com/api/v0.8/network/tester'
+            name=name, 
+            template=image.id, 
+            net_href=kwargs['network'],
+            cpus=str(kwargs['cpus']),
+            memory=str(kwargs['memory']),
+            password=kwargs.get('password', None),
+            row=kwargs.get('row', None),
+            group=kwargs.get('group', None)
         )
 
         # Instantiate VM and get identifier.
-        res = self.connection.request('%s/action/instantiateVAppTemplate' % self.vdcs[0],
+        res = self.connection.request('%s/action/instantiateVAppTemplate' % kwargs['vdc'],
                                       data=instantiate_xml.tostring(),
                                       method='POST',
                                       headers={'Content-Type': 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml'})
@@ -372,7 +414,6 @@ class VCloudNodeDriver(NodeDriver):
         node = self._to_node(vapp_name, res.object)
 
         return node
-
 
 class HostingComConnection(VCloudConnection):
     host = "vcloud.safesecureweb.com" 

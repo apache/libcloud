@@ -54,6 +54,19 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
+    def test_create_node(self):
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(
+            name='testerpart2', 
+            image=image, 
+            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111',
+            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/518', 
+            cpus=2, 
+            memory=1024
+        )
+        self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833')
+        self.assertEqual(node.name, 'testerpart2')
+
 class VCloudMockHttp(MockHttp):
 
 
@@ -83,6 +96,26 @@ class VCloudMockHttp(MockHttp):
     def _vapp_197833_power_action_reset(self, method, url, body, headers):
         body = ''
         return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _api_v0_8_vapp_197833(self, method, url, body, headers):
+        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="0" size="10485760" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/155" type="application/vnd.vmware.vcloud.vdc+xml"/>
+</VApp>"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+        
+
+    def _api_v0_8_vdc_111111_action_instantiateVAppTemplate(self, method, url, body, headers):
+        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="0" size="10" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml"/>
+          </VApp> """
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _api_v0_8_vapp_197833_action_deploy(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/9124" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-10-29T23:41:52.15Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _vapp_197833_action_undeploy(self, method, url, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
