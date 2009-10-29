@@ -72,6 +72,19 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833')
         self.assertEqual(node.name, 'testerpart2')
 
+    def test_create_node_response(self):
+        # should return a node object
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        node = self.driver.create_node(
+            'node-name',
+            image, 
+            size,
+            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111',
+            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/518'
+            )
+        self.assertTrue(isinstance(node, Node))
+
 class VCloudMockHttp(MockHttp):
 
 

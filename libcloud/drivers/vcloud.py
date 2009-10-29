@@ -397,10 +397,10 @@ class VCloudNodeDriver(NodeDriver):
 
            Non-standard required keyword arguments:
            network -- link to a "Network" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
-           cpus -- number of virtual cpus (limit depends on provider)
            vdc -- link to a "VDC" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
 
            Non-standard optional keyword arguments:
+           cpus -- number of virtual cpus (limit depends on provider)
            password
            row
            group 
@@ -410,7 +410,7 @@ class VCloudNodeDriver(NodeDriver):
             name=name, 
             template=image.id, 
             net_href=kwargs['network'],
-            cpus=str(kwargs['cpus']),
+            cpus=str(kwargs.get('cpus', 1)),
             memory=str(size.ram),
             password=kwargs.get('password', None),
             row=kwargs.get('row', None),
