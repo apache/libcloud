@@ -262,6 +262,17 @@ class VCloudNodeDriver(NodeDriver):
             
         return self._vdcs
 
+    @property
+    def networks(self):
+        networks = []
+        for vdc in self.vdcs:
+            res = self.connection.request(vdc).object
+            networks.extend(
+                [network for network in res.findall(fixxpath(res, "AvailableNetworks/Network"))]
+            )
+
+        return networks
+
     def _to_image(self, image):
         image = NodeImage(id=image.get('href'),
                           name=image.get('name'),
@@ -395,21 +406,24 @@ class VCloudNodeDriver(NodeDriver):
     def create_node(self, name, image, size, **kwargs):
         """Creates and returns node.
 
-           Non-standard required keyword arguments:
+           Non-standard optional keyword arguments:
            network -- link to a "Network" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
            vdc -- link to a "VDC" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
-
-           Non-standard optional keyword arguments:
            cpus -- number of virtual cpus (limit depends on provider)
            password
            row
            group 
         """
+        # Some providers don't require a network link
+        try:
+            network = kwargs.get('network', self.networks[0].get('href'))
+        except IndexError:
+            network = ''
 
         instantiate_xml = InstantiateVAppXML(
             name=name, 
             template=image.id, 
-            net_href=kwargs['network'],
+            net_href=network,
             cpus=str(kwargs.get('cpus', 1)),
             memory=str(size.ram),
             password=kwargs.get('password', None),
@@ -418,7 +432,7 @@ class VCloudNodeDriver(NodeDriver):
         )
 
         # Instantiate VM and get identifier.
-        res = self.connection.request('%s/action/instantiateVAppTemplate' % kwargs['vdc'],
+        res = self.connection.request('%s/action/instantiateVAppTemplate' % kwargs.get('vdc', self.vdcs[0]),
                                       data=instantiate_xml.tostring(),
                                       method='POST',
                                       headers={'Content-Type': 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml'})

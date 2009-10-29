@@ -331,5 +331,8 @@ class VCloudMockHttp(MockHttp):
         type="application/vnd.vmware.vcloud.vApp+xml"
         name="197833"/>
   </ResourceEntities>
+  <AvailableNetworks>
+  <Network href="https://services.vcloudexpress.terremark.com/api/v0.8/network/7" type="application/vnd.vmware.vcloud.network+xml" name="172.16.20.0/28"/>
+  </AvailableNetworks>
 </Vdc>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
