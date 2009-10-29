@@ -41,7 +41,7 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
-        self.assertEqual(ret[0].id, '197833')
+        self.assertEqual(ret[0].id, 'https://vcloud.safesecureweb.com/vapp/197833')
         self.assertEqual(ret[0].state, NodeState.RUNNING)
 
     def test_reboot_node(self):
@@ -110,6 +110,14 @@ class VCloudMockHttp(MockHttp):
                   <Property key="LicensingCost">0</Property>
                 </CatalogItem>"""
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _vapp_197833(self, method, url, body, headers):
+        """This is called by DELETE vapp"""
+        body = """<Task href="https://vcloud.example.com/task/432" startTime="2009-12-27T09:00:02Z" expiryTime="2009-12-27T09:00:02Z" status="running"
+        xsi:schemaLocation="http://www.vmware.com/vcloud/v0.8 task.xsd" xmlns="http://www.vmware.com/vcloud/v0.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <Owner href="https://vcloud.example.com/vApp/833" type="application/vnd.vmware.vcloud.vApp+xml" name="Linux FTP Server"/>
+        </Task>"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _vApp_197833(self, method, uri, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8"?>
