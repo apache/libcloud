@@ -459,3 +459,9 @@ class HostingComConnection(VCloudConnection):
 
 class HostingComDriver(VCloudNodeDriver):
     connectionCls = HostingComConnection
+
+class TerremarkConnection(VCloudConnection):
+    host = "services.vcloudexpress.terremark.com"
+
+class TerremarkDriver(VCloudNodeDriver):
+    connectionCls = TerremarkConnection
