@@ -17,7 +17,7 @@ class Node(object):
     interface.implements(INode)
     interface.classProvides(INodeFactory)
 
-    def __init__(self, id, name, state, public_ip, private_ip, driver):
+    def __init__(self, id, name, state, public_ip, private_ip, driver, extra=None):
         self.id = id
         self.name = name
         self.state = state
@@ -25,6 +25,10 @@ class Node(object):
         self.private_ip = private_ip
         self.driver = driver
         self.uuid = self.get_uuid()
+        if not extra:
+            self.extra = {}
+        else:
+            self.extra = extra
         
     def get_uuid(self):
         return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()

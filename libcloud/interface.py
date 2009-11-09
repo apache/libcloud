@@ -26,6 +26,7 @@ class INode(Interface):
     public_ip = Attribute("""Public ip (or hostname) of the Node""")
     private_ip = Attribute("""Private ip (or hostname) of the Node""")
     driver = Attribute("""The NodeDriver that belongs to this Node""")
+    extra = Attribute("""Dict containing provider specific data""")
 
     def get_uuid():
         """
