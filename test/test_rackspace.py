@@ -49,6 +49,8 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         node = ret[0]
         self.assertTrue(node.public_ip[0])
         self.assertTrue(node.private_ip[0])
+        self.assertEqual(node.extra.get('flavorId'), '1')
+        self.assertEqual(node.extra.get('imageId'), '11')
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -64,6 +66,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node('racktest', image, size)
         self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
     def test_reboot_node(self):
         node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,

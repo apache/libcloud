@@ -109,7 +109,14 @@ class RackspaceConnection(ConnectionUserAndKey):
         
 
 class RackspaceNodeDriver(NodeDriver):
-
+    """Rackspace node driver.
+    
+        Extra node attributes:
+            password: root password, available after create.
+            hostId: represents the host your cloud server runs on
+            imageId: id of image
+            flavorId: id of flavor
+    """
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
     name = 'Rackspace'
@@ -185,7 +192,13 @@ class RackspaceNodeDriver(NodeDriver):
                  state=el.get('status'),
                  public_ip=public_ip,
                  private_ip=private_ip,
-                 driver=self.connection.driver)
+                 driver=self.connection.driver,
+                 extra={
+                    'password': el.get('adminPass'),
+                    'hostId': el.get('hostId'),
+                    'imageId': el.get('imageId'),
+                    'flavorId': el.get('flavorId'),
+                 })
         return n
 
     def to_sizes(self, object):
