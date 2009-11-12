@@ -112,8 +112,7 @@ class RimuHostingNodeDriver(NodeDriver):
                 state=NodeState.RUNNING,
                 public_ip=[order['allocated_ips']['primary_ip']]+order['allocated_ips']['secondary_ips'],
                 private_ip=None,
-                driver=self.connection.driver
-                )
+                driver=self.connection.driver)
         n.slug = order['slug']
         return n
 
@@ -241,8 +240,6 @@ class RimuHostingNodeDriver(NodeDriver):
         
         
         res = self.connection.request('/orders/new-vps', method='POST', data=json.dumps({"new-vps":data})).object
-        node =  self._to_node(res['about_order'])
-        node.extra['password'] = res['new_order_request']['instantiation_options']['password']
-        return node
+        return self._to_node(res['about_order'])
     
         
