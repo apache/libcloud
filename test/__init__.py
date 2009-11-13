@@ -158,7 +158,13 @@ class TestCaseMixin(object):
 
     def test_list_sizes_response(self):
         sizes = self.driver.list_sizes()
+        size = sizes[0]
         self.assertTrue(isinstance(sizes, list))
+        # Check that size values are ints or None
+        self.assertTrue(size.ram is None or isinstance(size.ram, int))
+        self.assertTrue(size.disk is None or isinstance(size.disk, int))
+        self.assertTrue(size.bandwidth is None or
+                            isinstance(size.bandwidth, int))
 
     def test_list_images_response(self):
         images = self.driver.list_images()
