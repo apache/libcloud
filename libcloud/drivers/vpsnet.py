@@ -98,9 +98,9 @@ class VPSNetNodeDriver(NodeDriver):
     def _to_size(self, num):
         size = NodeSize(id=num,
                         name="%d Node" % (num,),
-                        ram="%dMB" % (RAM_PER_NODE * num,),
-                        disk="%dGB" % (DISK_PER_NODE * num,),
-                        bandwidth="%dGB" % (BANDWIDTH_PER_NODE * num,),
+                        ram=RAM_PER_NODE * num,
+                        disk=DISK_PER_NODE,
+                        bandwidth=BANDWIDTH_PER_NODE * num,
                         price=self._get_price_per_node(num) * num,
                         driver=self.connection.driver)
         return size
