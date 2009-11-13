@@ -242,7 +242,7 @@ class RimuHostingNodeDriver(NodeDriver):
         
         res = self.connection.request('/orders/new-vps', method='POST', data=json.dumps({"new-vps":data})).object
         node =  self._to_node(res['about_order'])
-        node.extra = {'password':res['new_order_request']['instantiation_options']['password']}
+        node.extra['password'] = res['new_order_request']['instantiation_options']['password']
         return node
     
         
