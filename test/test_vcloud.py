@@ -29,9 +29,9 @@ from secrets import TERREMARK_USER, TERREMARK_SECRET
 class TerremarkTests(unittest.TestCase):
 
     def setUp(self):
-        #VCloudNodeDriver.connectionCls.host = "test"
-        #VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp) 
-        #TerremarkMockHttp.type = None
+        VCloudNodeDriver.connectionCls.host = "test"
+        VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp) 
+        TerremarkMockHttp.type = None
         self.driver = TerremarkDriver(TERREMARK_USER, TERREMARK_SECRET)
 
     def test_list_images(self):
