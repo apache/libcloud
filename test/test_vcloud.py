@@ -26,7 +26,7 @@ import httplib
 
 from secrets import TERREMARK_USER, TERREMARK_SECRET
 
-class TerremarkTests(unittest.TestCase):
+class TerremarkTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = "test"
