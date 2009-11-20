@@ -25,7 +25,9 @@ from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
 #From vcloud api "The VirtualQuantity element defines the number of MB of memory. This should be either 512 or a multiple of 1024 (1 GB)."
-VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1,9)] 
+VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1,9)]
+
+DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
 def get_url_path(url):
     return urlparse(url.strip()).path
@@ -314,11 +316,17 @@ class VCloudNodeDriver(NodeDriver):
 
         return catalogs
       
-    def _wait_for_task_completion(self, task_href):
+    def _wait_for_task_completion(self, task_href, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
+        start_time = time.time()
         res = self.connection.request(task_href)
         status = res.object.get('status')
         while status != 'success':
-          # TODO: fail if status is error or cancelled
+          if status == 'error':
+              raise Exception("Error status returned by task %s." % task_href)
+          if status == 'canceled':
+              raise Exception("Canceled status returned by task %s." % task_href)
+          if (time.time() - start_time >= timeout):
+              raise Exception("Timeout while waiting for task %s." % task_href)
           time.sleep(5)
           res = self.connection.request(task_href)
           status = res.object.get('status')
