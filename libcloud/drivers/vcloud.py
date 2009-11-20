@@ -19,6 +19,7 @@ from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, Node
 
 import base64
 import httplib
+import time
 from urlparse import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
@@ -283,11 +284,24 @@ class VCloudNodeDriver(NodeDriver):
         state = self.NODE_STATE_MAP[elm.get('status')]
         public_ips = [ip.text for ip in elm.findall(fixxpath(elm, 'NetworkConnectionSection/NetworkConnection/IPAddress'))]
 
+        # Following code to find private IPs works for Terremark
+        sections = elm.findall('{http://schemas.dmtf.org/ovf/envelope/1}Section')
+        network_connection_section = None
+        for section in sections:
+          section_type = section.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+          if section_type == 'q1:NetworkConnectionSectionType':
+            network_connection_section = section
+        
+        if network_connection_section:
+          private_ips = [ip.text for ip in network_connection_section.findall(fixxpath(elm, 'NetworkConnection/IpAddress'))]
+        else:
+          private_ips = []
+
         node = Node(id=elm.get('href'),
                     name=name,
                     state=state,
                     public_ip=public_ips,
-                    private_ip=None,
+                    private_ip=private_ips,
                     driver=self.connection.driver)
 
         return node
@@ -323,7 +337,7 @@ class VCloudNodeDriver(NodeDriver):
     def reboot_node(self, node):
         res = self.connection.request('%s/power/action/reset' % get_url_path(node.id),
                                       method='POST') 
-        return res.status == 204
+        return res.status == 202 or res.status == 204
 
     def list_nodes(self):
         nodes = []
@@ -441,6 +455,19 @@ class VCloudNodeDriver(NodeDriver):
 
         # Deploy the VM from the identifier.
         res = self.connection.request('%s/action/deploy' % vapp_href,
+                                      method='POST')
+        
+        deploy_task_href = get_url_path(res.object.get('href'))
+        res = self.connection.request(deploy_task_href)
+        status = res.object.get('status')
+        while status != 'success':
+          # TODO: fail if status is error or cancelled
+          time.sleep(5)
+          res = self.connection.request(deploy_task_href)
+          status = res.object.get('status')
+        
+        # Power on the VM.
+        res = self.connection.request('%s/power/action/powerOn' % vapp_href,
                                       method='POST')
 
         res = self.connection.request(vapp_href)

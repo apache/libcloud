@@ -15,6 +15,7 @@
 import unittest
 import exceptions
 
+from libcloud.drivers.vcloud import TerremarkDriver
 from libcloud.drivers.vcloud import VCloudNodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 from libcloud.types import NodeState
@@ -23,41 +24,24 @@ from test import MockHttp, TestCaseMixin
 
 import httplib
 
-from secrets import HOSTINGCOM_USER, HOSTINGCOM_SECRET
+from secrets import TERREMARK_USER, TERREMARK_SECRET
 
-
-class VCloudTests(unittest.TestCase, TestCaseMixin):
+class TerremarkTests(unittest.TestCase):
 
     def setUp(self):
-       VCloudNodeDriver.connectionCls.host = "test"
-       VCloudNodeDriver.connectionCls.conn_classes = (None, VCloudMockHttp) 
-       VCloudMockHttp.type = None
-       self.driver = VCloudNodeDriver('test@111111', HOSTINGCOM_SECRET)
+        VCloudNodeDriver.connectionCls.host = "test"
+        VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp) 
+        TerremarkMockHttp.type = None
+        self.driver = TerremarkDriver(TERREMARK_USER, TERREMARK_SECRET)
 
     def test_list_images(self):
         ret = self.driver.list_images()
-        self.assertEqual(ret[0].id,'https://vcloud.safesecureweb.com/vAppTemplate/1')
-        self.assertEqual(ret[-1].id,'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
-
-    def test_list_nodes(self):
-        ret = self.driver.list_nodes()
-        self.assertEqual(ret[0].id, 'https://vcloud.safesecureweb.com/vapp/197833')
-        self.assertEqual(ret[0].state, NodeState.RUNNING)
+        self.assertEqual(ret[0].id,'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
         self.assertEqual(ret[0].ram, 512)
-
-    def test_reboot_node(self):
-        node = self.driver.list_nodes()[0]
-        ret = self.driver.reboot_node(node)
-        self.assertTrue(ret)
-
-    def test_destroy_node(self):
-        node = self.driver.list_nodes()[0]
-        ret = self.driver.destroy_node(node)
-        self.assertTrue(ret)
-
+        
     def test_create_node(self):
         image = self.driver.list_images()[0]
         size = self.driver.list_sizes()[0]
@@ -65,274 +49,271 @@ class VCloudTests(unittest.TestCase, TestCaseMixin):
             name='testerpart2', 
             image=image, 
             size=size,
-            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111',
-            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/518', 
+            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
+            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725', 
             cpus=2,
         )
-        self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833')
-        self.assertEqual(node.name, 'testerpart2')
-
-    def test_create_node_response(self):
-        # should return a node object
-        size = self.driver.list_sizes()[0]
-        image = self.driver.list_images()[0]
-        node = self.driver.create_node(
-            'node-name',
-            image, 
-            size,
-            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111',
-            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/518'
-            )
         self.assertTrue(isinstance(node, Node))
+        self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
+        self.assertEqual(node.name, 'testerpart2')
+        
+    def test_list_nodes(self):
+        ret = self.driver.list_nodes()
+        node = ret[0]
+        self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
+        self.assertEqual(node.name, 'testerpart2')
+        self.assertEqual(node.state, NodeState.RUNNING)
+        self.assertEqual(node.public_ip, [])
+        self.assertEqual(node.private_ip, ['10.112.78.69'])
+        
+    def test_reboot_node(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.reboot_node(node)
+        self.assertTrue(ret)
+        
+    def test_destroy_node(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
 
-class VCloudMockHttp(MockHttp):
-
+        
+class TerremarkMockHttp(MockHttp):
 
     def _api_v0_8_login(self, method, url, body, headers):
         headers['set-cookie'] = 'vcloud-token=testtoken'
-        body = """
-        <OrgList xmlns="http://www.vmware.com/vcloud/v1"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        <Org href="https://services.vcloudexpress.terremark.com/api/v0.8/org/32" type="application/vnd.vmware.vcloud.org+xml" name="Org Name"/>
-        </OrgList>"""
+        body = """<OrgList xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Org href="https://services.vcloudexpress.terremark.com/api/v0.8/org/240" type="application/vnd.vmware.vcloud.org+xml" name="a@example.com"/>
+</OrgList>
+"""
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _api_v0_8_org_32(self, method, url, body, headers):
-        body = """
-        <Org href=" https://services.vcloudexpress.terremark.com/api/v0.8/org/32" name="Org Name" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml" name="VDC Name"/>
-        <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Catalog Name"/>
-        <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/tasksList/1" type="application/vnd.vmware.vcloud.tasksList+xml" name="Tasks List"/>
-        </Org>"""
+    def _api_v0_8_org_240(self, method, url, body, headers):
+        body = """<Org href="https://services.vcloudexpress.terremark.com/api/v0.8/org/240" name="a@example.com" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Miami Environment 1 Catalog"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/tasksList/224" type="application/vnd.vmware.vcloud.tasksList+xml" name="Miami Environment 1 Tasks List"/>
+</Org>
+"""
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _vapp_197833_power_action_poweroff(self, method, url, body, headers):
-        body = ''
-        return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
-
-    def _vapp_197833_power_action_reset(self, method, url, body, headers):
-        body = ''
-        return (httplib.NO_CONTENT, body, headers, httplib.responses[httplib.NO_CONTENT])
-
-    def _api_v0_8_vapp_197833(self, method, url, body, headers):
-        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="0" size="10485760" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/155" type="application/vnd.vmware.vcloud.vdc+xml"/>
-</VApp>"""
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-        
-
-    def _api_v0_8_vdc_111111_action_instantiateVAppTemplate(self, method, url, body, headers):
-        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="0" size="10" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-          <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml"/>
-          </VApp> """
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _api_v0_8_vapp_197833_action_deploy(self, method, url, body, headers):
-        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/9124" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-10-29T23:41:52.15Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/111111" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
-  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/197833" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
-</Task>"""
-        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-
-    def _vapp_197833_action_undeploy(self, method, url, body, headers):
-        body = """<?xml version="1.0" encoding="UTF-8"?>
-<task xmlns="http://www.vmware.com/vcloud/task"
-    xmlns:common="http://www.vmware.com/vcloud/common"    xsi:schemaLocation="http://www.vmware.com/vcloud/task
-        https://vcloud.safesecureweb.com/ns/vcloud/task-1.0.xsd        http://www.vmware.com/vcloud/common
-        https://vcloud.safesecureweb.com/ns/vcloud/common-1.0.xsd"    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    status="success" startTime="10/16/2009 7:52:48 AM">
-  <common:link rel="taskList:cancel" href="https://vcloud.safesecureweb.com/task/59049/action/cancel" />  <common:link rel="self" href="https://vcloud.safesecureweb.com/task/59049" type="application/vnd.vmware.vcloud.task+xml" /></task>"""
-        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-
-    def _api_v0_8_vdc_1_catalog(self, method, uri, body, headers):
-        body = """<Catalog href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/155/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Miami Environment 1" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-          <CatalogItems>
-              <CatalogItem href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5" type="application/vnd.vmware.vcloud.catalogItem+xml" name="CentOS 5.3 (32-bit)"/>
-        </CatalogItems>
-        </Catalog>"""
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _api_v0_8_catalogItem_5(self, method, uri, body, headers):
-        body = """<CatalogItem href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5" type="application/vnd.vmware.vcloud.catalogItem+xml" name="CentOS 5.3 (32-bit)" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5/options/compute" type="application/xml" name="Compute Options"/>
-                  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5/options/customization" type="application/xml" name="Customization Options"/>
-                  <Entity href="https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5" type="application/vnd.vmware.vcloud.vAppTemplate+xml" name="CentOS 5.3 (32-bit)"/>
-                  <Property key="LicensingCost">0</Property>
-                </CatalogItem>"""
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _vapp_197833(self, method, url, body, headers):
-        """This is called by DELETE vapp"""
-        body = """<Task href="https://vcloud.example.com/task/432" startTime="2009-12-27T09:00:02Z" expiryTime="2009-12-27T09:00:02Z" status="running"
-        xsi:schemaLocation="http://www.vmware.com/vcloud/v0.8 task.xsd" xmlns="http://www.vmware.com/vcloud/v0.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <Owner href="https://vcloud.example.com/vApp/833" type="application/vnd.vmware.vcloud.vApp+xml" name="Linux FTP Server"/>
-        </Task>"""
-        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-
-    def _vApp_197833(self, method, uri, body, headers):
-        body = """<?xml version="1.0" encoding="UTF-8"?>
-<VApp href="https://vcloud.safesecureweb.com/vapp/197833"
-    name="197833"
-    status="4"
-    xsi:schemaLocation="http://www.vmware.com/vcloud/v0.8/vapp.xsd"
-    xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
-    xmlns="http://www.vmware.com/vcloud/v0.8"
-    xmlns:vmw="http://www.vmware.com/schema/ovf"
-    xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"
-    xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-
-  <NetworkSection>
-    <ovf:Info>The list of logical networks</ovf:Info>
-    <Network ovf:name="eth0" network="VLAN 2163" />
-  </NetworkSection>
-
-  <NetworkConfigSection href="https://vcloud.safesecureweb.com/api/v0.8/networkConfigSection/1">
-    <NetworkConfig name="eth0">
-      <Features>
-        <vmw:FenceMode>bridged</vmw:FenceMode>
-        <vmw:Dhcp>false</vmw:Dhcp>
-      </Features>
-      <vmw:NetworkAssociation href="https://vcloud.safesecureweb.com/api/v0.8/network" type="application/vnd.vmware.vcloud.network+xml" name="eth0"/>
-    </NetworkConfig>
-  </NetworkConfigSection>
-
-  <NetworkConnectionSection>
-    <NetworkConnection name="eth0">
-      <IPAddress></IPAddress>
-      <VMWareNetwork>VLAN 2163</VMWareNetwork>
-    </NetworkConnection>
-  </NetworkConnectionSection>
-
-  <ovf:OperatingSystemSection ovf:id="" vmw:osType="">
-    <!-- Configuration links. -->
-    <ovf:Info>The kind of installed guest operating system</ovf:Info>
-    <Description></Description>
-  </ovf:OperatingSystemSection>
-
-  <ovf:VirtualHardwareSection ovf:transport="iso">
-    <!-- Configuration links -->
-    <ovf:Info>Virtual hardware</ovf:Info>
-    <System>
-      <rasd:ElementName>Virtual Hardware Family</rasd:ElementName>
-      <rasd:InstanceID>0</rasd:InstanceID>
-      <rasd:VirtualSystemIdentifier>SimpleVM</rasd:VirtualSystemIdentifier>
-      <rasd:VirtualSystemType>vmx-04</rasd:VirtualSystemType>
-    </System>
-    <Item>
-      <rasd:AllocationUnits>hertz * 10^6</rasd:AllocationUnits>
-      <rasd:Description>Number of Virtual CPUs</rasd:Description>
-      <rasd:ElementName>1 virtual CPU(s)</rasd:ElementName>
-      <rasd:InstanceID>1</rasd:InstanceID>
-      <rasd:ResourceType>3</rasd:ResourceType>
-      <rasd:VirtualQuantity>1</rasd:VirtualQuantity>
-      <rasd:VirtualQuantityUnits>count</rasd:VirtualQuantityUnits>
-    </Item>
-    <Item>
-      <rasd:AllocationUnits>byte * 2^20</rasd:AllocationUnits>
-      <rasd:Description>Memory Size</rasd:Description>
-      <rasd:ElementName>512MB of memory</rasd:ElementName>
-      <rasd:InstanceID>2</rasd:InstanceID>
-      <rasd:ResourceType>4</rasd:ResourceType>
-      <rasd:VirtualQuantity>512</rasd:VirtualQuantity>
-      <rasd:VirtualQuantityUnits>byte * 2^20</rasd:VirtualQuantityUnits>
-    </Item>
-    <Item>
-      <rasd:Address>0</rasd:Address>
-      <rasd:Description>SCSI Controller</rasd:Description>
-      <rasd:ElementName>SCSI Controller 0</rasd:ElementName>
-      <rasd:InstanceID>3</rasd:InstanceID>
-      <rasd:ResourceSubType>lsilogic</rasd:ResourceSubType>
-      <rasd:ResourceType>6</rasd:ResourceType>
-    </Item>
-    <Item>
-      <rasd:AddressOnParent>7</rasd:AddressOnParent>
-      <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
-      <rasd:Connection connected="true">eth0</rasd:Connection>
-      <rasd:Description>PCNet32 ethernet adapter on "VLAN 2163" network</rasd:Description>
-      <rasd:ElementName>Network Adapter 1</rasd:ElementName>
-      <rasd:InstanceID>8</rasd:InstanceID>
-      <rasd:ResourceSubType>PCNet32</rasd:ResourceSubType>
-      <rasd:ResourceType>10</rasd:ResourceType>
-    </Item>
-    <Item>
-      <rasd:AddressOnParent>0</rasd:AddressOnParent>
-      <rasd:ElementName>Hard Disk 1</rasd:ElementName>
-      <rasd:HostResource capacity="20971520"/>
-      <rasd:InstanceID>9</rasd:InstanceID>
-      <rasd:Parent>3</rasd:Parent>
-      <rasd:ResourceType>1</rasd:ResourceType>
-    </Item>
-  </ovf:VirtualHardwareSection>
-</VApp>"""
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _api_v0_8_vdc_111111(self, method, url, body, headers):
-    
-        body = """<?xml version="1.0" encoding="UTF-8"?>
-<Vdc
- href="https://vcloud.safesecureweb.com/vdc/196852"
- name="vDC Name"
- xsi:schemaLocation="http://www.vmware.com/vcloud/v0.8/vdc.xsd"
- xmlns="http://www.vmware.com/vcloud1/vl"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-
-  <Link rel="add"
-    href="https://vcloud.safesecureweb.com/vdc/196852/vApps"
-    type="application/vnd.vmware.vcloud.vApp+xml" />
-  <Link rel="add"
-    href="https://vcloud.safesecureweb.com/vdc/196852/vAppTemplates"
-    type="application/vnd.vmware.vcloud.catalogItem+xml" />
-  <Link rel="add"
-    href="https://vcloud.safesecureweb.com/vdc/196852/media"
-    type="application/vnd.vmware.vcloud.media+xml" />
-  <Description>vDC Name</Description>
-  <Type>Primary vDC for 196852</Type>
-  <StorageCapacity>
-    <Units>bytes * 10^9</Units> <!-- GB -->
-    <Allocated>0</Allocated>
-    <Used>0</Used>
-  </StorageCapacity>
-  <ComputeCapacity>
-    <Cpu>
-      <Units>hz * 10^6</Units> <!-- MHz -->
-      <Allocated>0</Allocated>
-      <Used>0</Used>
-    </Cpu>
-    <Memory>
-      <Units>bytes * 10^9</Units> <!-- GB -->
-      <Allocated>0</Allocated>
-      <Used>0</Used>
-    </Memory>
-    <InstantiatedVmsQuota>
-      <Limit>0</Limit>
-      <Used>0</Used>
-    </InstantiatedVmsQuota>
-    <DeployedVmsQuota>
-      <Limit>0</Limit>
-      <Used>0</Used>
-    </DeployedVmsQuota>
-  </ComputeCapacity>
+    def _api_v0_8_vdc_224(self, method, url, body, headers):
+        body = """<Vdc href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Miami Environment 1"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224/publicIps" type="application/xml" name="Public IPs"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224/internetServices" type="application/xml" name="Internet Services"/>
+  <Description/>
   <ResourceEntities>
-    <ResourceEntity href="https://vcloud.safesecureweb.com/vAppTemplate/1"
-        type="application/vnd.vmware.vcloud.vAppTemplate+xml"
-        name="Plesk (Linux) 64-bit Template" />
-    <ResourceEntity href="https://vcloud.safesecureweb.com/vAppTemplate/2"
-        type="application/vnd.vmware.vcloud.vAppTemplate+xml"
-        name="Windows 2008 Datacenter 64 Bit Template" />
-    <ResourceEntity href="https://vcloud.safesecureweb.com/vAppTemplate/3"
-        type="application/vnd.vmware.vcloud.vAppTemplate+xml"
-        name="Cent OS 64 Bit Template" />
-    <ResourceEntity href="https://vcloud.safesecureweb.com/vAppTemplate/4"
-        type="application/vnd.vmware.vcloud.vAppTemplate+xml"
-        name="cPanel (Linux) 64 Bit Template" />
-    <ResourceEntity href="https://vcloud.safesecureweb.com/vApp/197833"
-        type="application/vnd.vmware.vcloud.vApp+xml"
-        name="197833"/>
+    <ResourceEntity href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
   </ResourceEntities>
   <AvailableNetworks>
-  <Network href="https://services.vcloudexpress.terremark.com/api/v0.8/network/7" type="application/vnd.vmware.vcloud.network+xml" name="172.16.20.0/28"/>
+    <Network href="https://services.vcloudexpress.terremark.com/api/v0.8/network/725" type="application/vnd.vmware.vcloud.network+xml" name="10.112.78.64/26"/>
   </AvailableNetworks>
-</Vdc>"""
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+</Vdc>
+"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _api_v0_8_vdc_224_catalog(self, method, url, body, headers):
+        body = """<Catalog href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224/catalog" type="application/vnd.vmware.vcloud.catalog+xml" name="Miami Environment 1" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CatalogItems>
+    <CatalogItem href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5" type="application/vnd.vmware.vcloud.catalogItem+xml" name="CentOS 5.3 (32-bit)"/>
+  </CatalogItems>
+</Catalog>
+"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _api_v0_8_catalogItem_5(self, method, url, body, headers):
+        body = """<CatalogItem href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5" type="application/vnd.vmware.vcloud.catalogItem+xml" name="CentOS 5.3 (32-bit)" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5/options/compute" type="application/xml" name="Compute Options"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/catalogItem/5/options/customization" type="application/xml" name="Customization Options"/>
+  <Entity href="https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5" type="application/vnd.vmware.vcloud.vAppTemplate+xml" name="CentOS 5.3 (32-bit)"/>
+  <Property key="LicensingCost">0</Property>
+</CatalogItem>
+"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+      
+    def _api_v0_8_vdc_224_action_instantiateVAppTemplate(self, method, url, body, headers):
+        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="0" size="10" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml"/>
+</VApp>
+"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+      
+    def _api_v0_8_vapp_14031_action_deploy(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/10496" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-11-13T23:58:22.893Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+      
+    def _api_v0_8_task_10496(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/10496" type="application/vnd.vmware.vcloud.task+xml" status="success" startTime="2009-11-13T23:58:22.893Z" endTime="2009-11-14T00:01:02.507Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+      
+    def _api_v0_8_vapp_14031_power_action_powerOn(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/10499" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-11-14T00:01:05.227Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>
+
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+      
+    def _api_v0_8_vapp_14031(self, method, url, body, headers):
+        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="4" size="10485760" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031/options/compute" type="application/xml" name="Compute Options"/>
+  <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031/options/customization" type="application/xml" name="Customization Options"/>
+  <Section xsi:type="q1:NetworkConnectionSectionType" xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:q1="http://www.vmware.com/vcloud/v1">
+    <q1:NetworkConnection Network="Internal">
+      <q1:IpAddress>10.112.78.69</q1:IpAddress>
+    </q1:NetworkConnection>
+  </Section>
+  <OperatingSystemSection d2p1:id="25" xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:d2p1="http://schemas.dmtf.org/ovf/envelope/1">
+    <Info>The kind of installed guest operating system</Info>
+    <Description>Red Hat Enterprise Linux 5 (32-bit)</Description>
+  </OperatingSystemSection>
+  <Section xsi:type="q2:VirtualHardwareSection_Type" xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:q2="http://www.vmware.com/vcloud/v1">
+    <Info>Virtual Hardware</Info>
+    <q2:System>
+      <AutomaticRecoveryAction xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <AutomaticShutdownAction xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <AutomaticStartupAction xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <AutomaticStartupActionDelay xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <AutomaticStartupActionSequenceNumber xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <Caption xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <ConfigurationDataRoot xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <ConfigurationFile xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <ConfigurationID xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <CreationTime xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <Description xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <ElementName xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">Virtual Hardware Family</ElementName>
+      <InstanceID xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">0</InstanceID>
+      <LogDataRoot xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <RecoveryFile xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <SnapshotDataRoot xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <SuspendDataRoot xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <SwapFileDataRoot xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"/>
+      <VirtualSystemIdentifier xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">testerpart2</VirtualSystemIdentifier>
+      <VirtualSystemType xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">vmx-07</VirtualSystemType>
+    </q2:System>
+    <q2:Item>
+      <Address xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AddressOnParent xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AllocationUnits xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">hertz * 10^6</AllocationUnits>
+      <AutomaticAllocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AutomaticDeallocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Caption xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ConsumerVisibility xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Description xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">Number of Virtual CPUs</Description>
+      <ElementName xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">2 virtual CPU(s)</ElementName>
+      <InstanceID xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">1</InstanceID>
+      <Limit xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <MappingBehavior xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <OtherResourceType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Parent xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <PoolID xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Reservation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceSubType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceType xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">3</ResourceType>
+      <VirtualQuantity xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">2</VirtualQuantity>
+      <VirtualQuantityUnits xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">count</VirtualQuantityUnits>
+      <Weight xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+    </q2:Item>
+    <q2:Item>
+      <Address xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AddressOnParent xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AllocationUnits xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">byte * 2^20</AllocationUnits>
+      <AutomaticAllocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AutomaticDeallocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Caption xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ConsumerVisibility xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Description xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">Memory Size</Description>
+      <ElementName xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">512MB of memory</ElementName>
+      <InstanceID xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">2</InstanceID>
+      <Limit xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <MappingBehavior xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <OtherResourceType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Parent xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <PoolID xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Reservation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceSubType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceType xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">4</ResourceType>
+      <VirtualQuantity xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">512</VirtualQuantity>
+      <VirtualQuantityUnits xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">byte * 2^20</VirtualQuantityUnits>
+      <Weight xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+    </q2:Item>
+    <q2:Item>
+      <Address xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">0</Address>
+      <AddressOnParent xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AllocationUnits xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AutomaticAllocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AutomaticDeallocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Caption xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ConsumerVisibility xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Description xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">SCSI Controller</Description>
+      <ElementName xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">SCSI Controller 0</ElementName>
+      <InstanceID xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">3</InstanceID>
+      <Limit xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <MappingBehavior xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <OtherResourceType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Parent xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <PoolID xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Reservation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceSubType xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">lsilogic</ResourceSubType>
+      <ResourceType xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">6</ResourceType>
+      <VirtualQuantity xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <VirtualQuantityUnits xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Weight xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+    </q2:Item>
+    <q2:Item>
+      <Address xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AddressOnParent xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">0</AddressOnParent>
+      <AllocationUnits xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AutomaticAllocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <AutomaticDeallocation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Caption xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ConsumerVisibility xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Description xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ElementName xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">Hard Disk 1</ElementName>
+      <HostResource xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">10485760</HostResource>
+      <InstanceID xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">9</InstanceID>
+      <Limit xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <MappingBehavior xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <OtherResourceType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Parent xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">3</Parent>
+      <PoolID xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Reservation xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceSubType xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <ResourceType xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">17</ResourceType>
+      <VirtualQuantity xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData">10485760</VirtualQuantity>
+      <VirtualQuantityUnits xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+      <Weight xsi:nil="true" xmlns="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"/>
+    </q2:Item>
+  </Section>
+</VApp>
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
+    def _api_v0_8_vapp_14031_power_action_reset(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/10555" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-11-14T00:54:50.417Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
+    def _api_v0_8_vapp_14031_power_action_poweroff(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/10556" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-11-14T01:01:19.52Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
+
+
+      
