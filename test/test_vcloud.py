@@ -29,9 +29,9 @@ from secrets import TERREMARK_USER, TERREMARK_SECRET
 class TerremarkTests(unittest.TestCase):
 
     def setUp(self):
-        VCloudNodeDriver.connectionCls.host = "test"
-        VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp) 
-        TerremarkMockHttp.type = None
+        #VCloudNodeDriver.connectionCls.host = "test"
+        #VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp) 
+        #TerremarkMockHttp.type = None
         self.driver = TerremarkDriver(TERREMARK_USER, TERREMARK_SECRET)
 
     def test_list_images(self):
@@ -164,7 +164,8 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
       
     def _api_v0_8_vapp_14031(self, method, url, body, headers):
-        body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="4" size="10485760" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        if method == 'GET':
+            body = """<VApp href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2" status="4" size="10485760" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Link rel="up" href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml"/>
   <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031/options/compute" type="application/xml" name="Compute Options"/>
   <Link rel="down" href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031/options/customization" type="application/xml" name="Customization Options"/>
@@ -297,6 +298,8 @@ class TerremarkMockHttp(MockHttp):
   </Section>
 </VApp>
 """
+        elif method == 'DELETE':
+            body = ''
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _api_v0_8_vapp_14031_power_action_reset(self, method, url, body, headers):
@@ -308,12 +311,19 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _api_v0_8_vapp_14031_power_action_poweroff(self, method, url, body, headers):
-        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/10556" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-11-14T01:01:19.52Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/11001" type="application/vnd.vmware.vcloud.task+xml" status="queued" startTime="2009-11-16T18:18:02.82Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
   <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
 </Task>
 """
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
+    def _api_v0_8_task_11001(self, method, url, body, headers):
+        body = """<Task href="https://services.vcloudexpress.terremark.com/api/v0.8/task/11001" type="application/vnd.vmware.vcloud.task+xml" status="success" startTime="2009-11-16T18:18:02.82Z" endTime="2009-11-16T18:18:17.567Z" xmlns="http://www.vmware.com/vcloud/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Owner href="https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224" type="application/vnd.vmware.vcloud.vdc+xml" name="Miami Environment 1"/>
+  <Result href="https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031" type="application/vnd.vmware.vcloud.vApp+xml" name="testerpart2"/>
+</Task>
+"""
+        return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
       

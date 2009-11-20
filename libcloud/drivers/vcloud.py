@@ -313,19 +313,30 @@ class VCloudNodeDriver(NodeDriver):
                     if i.get('type') == 'application/vnd.vmware.vcloud.catalog+xml']
 
         return catalogs
-
+      
+    def _wait_for_task_completion(self, task_href):
+        res = self.connection.request(task_href)
+        status = res.object.get('status')
+        while status != 'success':
+          # TODO: fail if status is error or cancelled
+          time.sleep(5)
+          res = self.connection.request(task_href)
+          status = res.object.get('status')
+      
     def destroy_node(self, node):
         node_path = get_url_path(node.id)
         # blindly poweroff node, it will throw an exception if already off
         try:
-            self.connection.request('%s/power/action/poweroff' % node_path,
-                                    method='POST') 
+            res = self.connection.request('%s/power/action/poweroff' % node_path,
+                                    method='POST')
+            self._wait_for_task_completion(res.object.get('href'))
         except Exception, e: 
             pass
 
         try:
             res = self.connection.request('%s/action/undeploy' % node_path,
                                           method='POST')
+            self._wait_for_task_completion(res.object.get('href'))
         except ExpatError: # the undeploy response is malformed XML atm. We can remove this whent he providers fix the problem.
             pass
         except Exception, e: # some vendors don't implement undeploy at all yet, so catch this and move on.
@@ -457,14 +468,7 @@ class VCloudNodeDriver(NodeDriver):
         res = self.connection.request('%s/action/deploy' % vapp_href,
                                       method='POST')
         
-        deploy_task_href = get_url_path(res.object.get('href'))
-        res = self.connection.request(deploy_task_href)
-        status = res.object.get('status')
-        while status != 'success':
-          # TODO: fail if status is error or cancelled
-          time.sleep(5)
-          res = self.connection.request(deploy_task_href)
-          status = res.object.get('status')
+        self._wait_for_task_completion(res.object.get('href'))
         
         # Power on the VM.
         res = self.connection.request('%s/power/action/powerOn' % vapp_href,
