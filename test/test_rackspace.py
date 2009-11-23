@@ -47,8 +47,8 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
-        self.assertTrue(node.public_ip[0])
-        self.assertTrue(node.private_ip[0])
+        self.assertEqual('67.23.21.33', node.public_ip[0])
+        self.assertEqual('10.176.168.218', node.private_ip[0])
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
 
