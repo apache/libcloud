@@ -68,6 +68,17 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
+    def test_create_node_with_metadata(self):
+        RackspaceMockHttp.type = 'METADATA'
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        metadata = { 'a': 'b', 'c': 'd' }
+        files = { '/file1': 'content1', '/file2': 'content2' }
+        node = self.driver.create_node('racktest', image, size, metadata=metadata, files=files)
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
+        self.assertEqual(node.extra.get('metadata'), metadata)
+
     def test_reboot_node(self):
         node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
@@ -112,6 +123,10 @@ class RackspaceMockHttp(MockHttp):
         
     def _v1_0_slug_servers(self, method, url, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><server xmlns="http://docs.rackspacecloud.com/servers/api/v1.0" status="BUILD" progress="0" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" adminPass="racktestvJq7d3" id="72258" name="racktest"><metadata/><addresses><public><ip addr="67.23.21.33"/></public><private><ip addr="10.176.168.218"/></private></addresses></server>"""
+        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_servers_METADATA(self, method, url, body, headers):
+        body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><server xmlns="http://docs.rackspacecloud.com/servers/api/v1.0" status="BUILD" progress="0" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" adminPass="racktestvJq7d3" id="72258" name="racktest"><metadata><meta key="a">b</meta><meta key="c">d</meta></metadata><addresses><public><ip addr="67.23.21.33"/></public><private><ip addr="10.176.168.218"/></private></addresses></server>"""
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_72258_action(self, method, url, body, headers):

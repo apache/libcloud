@@ -18,6 +18,7 @@ from libcloud.interface import INodeDriver
 
 from zope.interface import implements
 
+import base64
 import urlparse
 
 from xml.etree import ElementTree as ET
@@ -145,10 +146,34 @@ class RackspaceNodeDriver(NodeDriver):
                             name="%s"
                             imageId="%s"
                             flavorId="%s">
+                %s
+                %s
                 </server>
-                """ % (NAMESPACE, name, image.id, size.id)
+                """ % (NAMESPACE, name, image.id, size.id,
+                       self._metadata_to_xml(kwargs.get("metadata", {})),
+                       self._files_to_xml(kwargs.get("files", {})))
         resp = self.connection.request("/servers", method='POST', data=body)
         return self._to_node(resp.object)
+      
+    def _metadata_to_xml(self, metadata):
+        if len(metadata) == 0:
+            return ""
+        return """
+      <metadata>
+    %s
+      </metadata>
+      """ % "\n".join(['    <meta key="%s">%s</meta>' % (k, v)
+                       for k, v in metadata.items()])
+  
+    def _files_to_xml(self, files):
+        if len(files) == 0:
+            return ""
+        return """
+      <personality>
+    %s
+      </personality>
+      """ % "\n".join(['    <file path="%s">%s</file>' % (k, base64.b64encode(v))
+                       for k, v in files.items()])
 
     def reboot_node(self, node):
         # TODO: Hard Reboots should be supported too!
@@ -182,11 +207,19 @@ class RackspaceNodeDriver(NodeDriver):
     def _to_node(self, el):
         def get_ips(el):
             return [ip.get('addr') for ip in el]
+          
+        def get_meta_dict(el):
+            d = {}
+            for meta in el:
+                d[meta.get('key')] =  meta.text
+            return d
         
         public_ip = get_ips(self._findall(el, 
                                           'addresses/public/ip'))
         private_ip = get_ips(self._findall(el, 
                                           'addresses/private/ip'))
+        metadata = get_meta_dict(self._findall(el, 'metadata/meta'))
+        
         n = Node(id=el.get('id'),
                  name=el.get('name'),
                  state=el.get('status'),
@@ -198,6 +231,7 @@ class RackspaceNodeDriver(NodeDriver):
                     'hostId': el.get('hostId'),
                     'imageId': el.get('imageId'),
                     'flavorId': el.get('flavorId'),
+                    'metadata': metadata,
                  })
         return n
 
