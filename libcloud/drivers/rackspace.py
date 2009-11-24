@@ -142,38 +142,48 @@ class RackspaceNodeDriver(NodeDriver):
         return self.to_images(self.connection.request('/images/detail').object)
 
     def create_node(self, name, image, size, **kwargs):
-        body = """<server   xmlns="%s"
-                            name="%s"
-                            imageId="%s"
-                            flavorId="%s">
-                %s
-                %s
-                </server>
-                """ % (NAMESPACE, name, image.id, size.id,
-                       self._metadata_to_xml(kwargs.get("metadata", {})),
-                       self._files_to_xml(kwargs.get("files", {})))
-        resp = self.connection.request("/servers", method='POST', data=body)
+        server_elm = ET.Element(
+            'server',
+            {'xmlns': NAMESPACE,
+             'name': name,
+             'imageId': str(image.id),
+             'flavorId': str(size.id)}
+        )
+
+        metadata_elm = self._metadata_to_xml(kwargs.get("metadata", {}))
+        if metadata_elm:
+            server_elm.append(metadata_elm)
+
+        files_elm = self._files_to_xml(kwargs.get("files", {}))
+        if files_elm:
+            server_elm.append(files_elm)
+
+        resp = self.connection.request("/servers", 
+                                       method='POST', 
+                                       data=ET.tostring(server_elm))
         return self._to_node(resp.object)
       
     def _metadata_to_xml(self, metadata):
         if len(metadata) == 0:
-            return ""
-        return """
-      <metadata>
-    %s
-      </metadata>
-      """ % "\n".join(['    <meta key="%s">%s</meta>' % (k, v)
-                       for k, v in metadata.items()])
+            return None
+
+        metadata_elm = ET.Element('metadata')
+        for k, v in metadata.items():
+            meta_elm = ET.SubElement(metadata_elm, 'meta', {'key': str(k) })
+            meta_elm.text = str(v)
+
+        return metadata_elm
   
     def _files_to_xml(self, files):
         if len(files) == 0:
-            return ""
-        return """
-      <personality>
-    %s
-      </personality>
-      """ % "\n".join(['    <file path="%s">%s</file>' % (k, base64.b64encode(v))
-                       for k, v in files.items()])
+            return None
+
+        personality_elm = ET.Element('personality')
+        for k, v in files.items():
+            file_elm = ET.SubElement(personality_elm, 'file', {'path': str(k) })
+            file_elm.text = base64.b64encode(v)
+
+        return personality_elm
 
     def reboot_node(self, node):
         # TODO: Hard Reboots should be supported too!
