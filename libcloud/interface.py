@@ -83,6 +83,7 @@ class INodeImage(Interface):
     id = Attribute("""Unique ID provided by the provider (ami-abcd1234, etc)""")
     name = Attribute("""Name provided by the provider (Ubuntu 8.1)""")
     driver = Attribute("""The NodeDriver that belongs to this Image""")
+    extra = Attribute("""Dict containing provider specific data""")
 
 
 class INodeImageFactory(Interface):

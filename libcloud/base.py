@@ -73,10 +73,14 @@ class NodeImage(object):
     interface.implements(INodeImage)
     interface.classProvides(INodeImageFactory)
 
-    def __init__(self, id, name, driver):
+    def __init__(self, id, name, driver, extra=None):
         self.id = id
         self.name = name
         self.driver = driver
+        if not extra:
+            self.extra = {}
+        else:
+            self.extra = extra
     def __repr__(self):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
                 % (self.id, self.name, self.driver.name))
