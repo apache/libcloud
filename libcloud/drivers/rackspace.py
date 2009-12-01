@@ -267,5 +267,5 @@ class RackspaceNodeDriver(NodeDriver):
         i = NodeImage(id=el.get('id'),
                      name=el.get('name'),
                      driver=self.connection.driver,
-                     extra = { 'serverId' : el.get('serverId') })
+                     extra={'serverId': el.get('serverId')})
         return i
