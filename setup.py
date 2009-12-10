@@ -47,12 +47,12 @@ class TestCommand(Command):
 setup(name = 'libcloud',
       version = '0.1.1',
       description = 'A unified interface into many cloud server providers',
-      author = 'Alex Polvi',
-      author_email = 'polvi@cloudkick.com',
+      author = 'Apache Software Foundation',
+      author_email = 'libcloud@incubator.apache.org',
       packages = ['libcloud', 'libcloud.drivers'],
       package_dir = {'libcloud' : 'libcloud', 'libcloud.drivers': 'libcloud/drivers' },
       license = 'Apache License (2.0)',
-      url = 'http://github.com/cloudkick/libcloud',
+      url = 'http://incubator.apache.org/libcloud/',
       cmdclass = { 'test': TestCommand }
 ) 
 
