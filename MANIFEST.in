@@ -1,0 +1,4 @@
+include LICENSE
+include NOTICE
+include example.py
+include CONTRIBUTORS
