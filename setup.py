@@ -53,6 +53,15 @@ setup(name = 'libcloud',
       package_dir = {'libcloud' : 'libcloud', 'libcloud.drivers': 'libcloud/drivers' },
       license = 'Apache License (2.0)',
       url = 'http://incubator.apache.org/libcloud/',
-      cmdclass = { 'test': TestCommand }
+      cmdclass = { 'test': TestCommand },
+      classifiers = [
+	        'Development Status :: 4 - Beta',
+	        'Environment :: Console',
+	        'Intended Audience :: System Administrators',
+	        'License :: OSI Approved :: Apache Software License',
+	        'Operating System :: OS Independent',
+	        'Programming Language :: Python',
+	        'Topic :: Software Development :: Libraries :: Python Modules'
+	    ],       
 ) 
 
