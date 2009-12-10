@@ -44,7 +44,7 @@ class TestCommand(Command):
         res = t.run(tests)
         sys.exit(not res.wasSuccessful())
 
-setup(name = 'libcloud',
+setup(name = 'apache-libcloud',
       version = '0.1.1',
       description = 'A unified interface into many cloud server providers',
       author = 'Apache Software Foundation',
