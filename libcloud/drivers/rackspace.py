@@ -41,11 +41,13 @@ class RackspaceResponse(Response):
         # TODO: fixup, Rackspace only uses response codes really!
         try:
             object = ET.XML(self.body)
-            return "; ".join([ err.text
+            text = "; ".join([ err.text or ''
                                for err in
-                               object.findall('error') ])
+                               object.getiterator()
+                               if err.text])
         except ExpatError:
-            return self.body
+            text = self.body
+        return '%s %s %s' % (self.status, self.error, text)
 
 
 class RackspaceConnection(ConnectionUserAndKey):
