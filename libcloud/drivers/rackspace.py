@@ -18,6 +18,10 @@ from libcloud.interface import INodeDriver
 
 from zope.interface import implements
 
+import os
+from zlib import crc32
+
+import time
 import base64
 import urlparse
 
@@ -106,6 +110,8 @@ class RackspaceConnection(ConnectionUserAndKey):
             action = self.path + action
         if method == "POST":
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
+        if method == "GET":
+          params['cache-busting'] = hex(crc32(os.urandom(16)))
         return super(RackspaceConnection, self).request(action=action,
                                                         params=params, data=data,
                                                         method=method, headers=headers)
