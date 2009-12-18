@@ -23,6 +23,7 @@ from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
 import hashlib
+from pipes import quote as pquote
 
 class Node(object):
     """
@@ -159,6 +160,29 @@ class Response(object):
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
 
+#TODO: Move this to a better location/package
+class LoggingHTTPSConnection(httplib.HTTPSConnection):
+  logfile = "/tmp/libcloud.log"
+
+  def _to_curl(self, method, url, body, headers):
+    cmd = ["curl", "--compressed"]
+
+    cmd.extend(["-X", pquote(method)])
+
+    for h in headers:
+      cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
+
+    if body is not None and len(body) > 0:
+      cmd.extend(["--data-binary", pquote(body)])
+    
+    cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
+    return " ".join(cmd)
+
+  def request(self, method, url, body=None, headers=None):
+    fp = open(self.logfile, 'a')
+    fp.write(self._to_curl(method, url, body, headers) + "\n")
+    fp.close()
+    return httplib.HTTPSConnection.request(self, method, url, body, headers)
 
 class ConnectionKey(object):
     """
@@ -167,7 +191,9 @@ class ConnectionKey(object):
     interface.implementsOnly(IConnectionKey)
     interface.classProvides(IConnectionKeyFactory)
 
+    #conn_classes = (httplib.HTTPConnection, LoggingHTTPSConnection)
     conn_classes = (httplib.HTTPConnection, httplib.HTTPSConnection)
+
     responseCls = Response
     connection = None
     host = '127.0.0.1'
