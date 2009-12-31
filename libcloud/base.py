@@ -129,7 +129,7 @@ class NodeOptions(object):
         self.size = size
         self.driver = driver
     def __repr__(self):
-        return (('<NodeOptions: location=%s, image=%s, country=%s, driver=%s>')
+        return (('<NodeOptions: location=%s, image=%s, size=%s, driver=%s>')
                 % (self.location, self.image, self.size, self.driver.name))
 
 class Response(object):
