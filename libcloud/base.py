@@ -22,6 +22,7 @@ from libcloud.interface import INodeDriverFactory, INodeDriver
 from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
+from libcloud.interface import INodeOptionsFactory, INodeOptions
 import hashlib
 from pipes import quote as pquote
 
@@ -101,7 +102,6 @@ class NodeImage(object):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
                 % (self.id, self.name, self.driver.name))
 
-
 class NodeLocation(object):
     """
     A base NodeLocation class to derive from.
@@ -116,6 +116,21 @@ class NodeLocation(object):
     def __repr__(self):
         return (('<NodeLocation: id=%s, name=%s, country=%s, driver=%s>')
                 % (self.id, self.name, self.country, self.driver.name))
+
+class NodeOptions(object):
+    """
+    A base NodeLocation class to derive from.
+    """
+    interface.implements(INodeOptions)
+    interface.classProvides(INodeOptionsFactory)
+    def __init__(self, location, image, size, driver):
+        self.location = location
+        self.image = image
+        self.size = size
+        self.driver = driver
+    def __repr__(self):
+        return (('<NodeOptions: location=%s, image=%s, country=%s, driver=%s>')
+                % (self.location, self.image, self.size, self.driver.name))
 
 class Response(object):
     """
@@ -354,7 +369,7 @@ class NodeDriver(object):
         self.connection.driver = self
         self.connection.connect()
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, name, options, **kwargs):
         raise NotImplementedError, 'create_node not implemented for this driver'
 
     def destroy_node(self, node):
