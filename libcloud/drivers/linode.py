@@ -25,7 +25,7 @@ from libcloud.types import Provider, NodeState
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.base import NodeImage
+from libcloud.base import NodeImage, Features
 from copy import copy
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
@@ -419,3 +419,13 @@ class LinodeNodeDriver(NodeDriver):
             private_ip=private_ip, driver=self.connection.driver)
         n.extra = copy(obj)
         return n
+
+    _features = {
+        Features.AUTH_SSH_KEY: True,
+        Features.AUTH_PASSWORD: True,
+        }
+    def has_feature(self, feature):
+        try:
+            return self._features[feature]
+        except:
+            return False
