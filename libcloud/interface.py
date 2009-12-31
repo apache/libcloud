@@ -94,7 +94,7 @@ class INodeImageFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
-class INodeLocation(Interface)
+class INodeLocation(Interface):
     """
     Physical Location of a node
     """
