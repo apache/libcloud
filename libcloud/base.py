@@ -123,14 +123,27 @@ class NodeOptions(object):
     """
     interface.implements(INodeOptions)
     interface.classProvides(INodeOptionsFactory)
-    def __init__(self, location, image, size, driver):
+    def __init__(self, location=None, image=None, size=None, auth=None, driver=None):
         self.location = location
         self.image = image
         self.size = size
+        self.auth = auth
         self.driver = driver
     def __repr__(self):
         return (('<NodeOptions: location=%s, image=%s, size=%s, driver=%s>')
                 % (self.location, self.image, self.size, self.driver.name))
+
+class NodeAuthSSHKey(object):
+    def __init__(self, pubkey):
+        self.pubkey = pubkey
+    def __repr__(self):
+        return '<NodeAuthSSHKey>'
+
+class NodeAuthPassword(object):
+    def __init__(self, password):
+        self.password = password
+    def __repr__(self):
+        return '<NodeAuthPassword>'
 
 class Response(object):
     """
