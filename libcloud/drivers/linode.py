@@ -22,7 +22,9 @@
 #
 
 from libcloud.types import Provider, NodeState
-from libcloud.base import ConnectionKey, Response, NodeDriver, NodeSize, Node, NodeLocation
+from libcloud.base import ConnectionKey, Response
+from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
+from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.base import NodeImage
 from copy import copy
 
@@ -162,7 +164,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(LINODE_ROOT, params=params)
         return True
 
-    def create_node(self, options, **kwargs):
+    def create_node(self, name, options, **kwargs):
         # Create
         #
         # Creates a Linode instance.
@@ -220,9 +222,14 @@ class LinodeNodeDriver(NodeDriver):
         if payment not in ["1", "12", "24"]:
             raise LinodeException(0xFB, "Invalid subscription (1, 12, 24)")
 
+        ssh = None
+        root = None
         # SSH key and/or root password
-        ssh = None if "ssh" not in kwargs else kwargs["ssh"]
-        root = None if "root" not in kwargs else kwargs["root"]
+        if isinstance(options.auth, NodeAuthSSHKey):
+            ssh = options.auth.pubkey
+        elif isinstance(options.auth, NodeAuthPassword):
+            root = options.auth.password
+
         if not ssh and not root:
             raise LinodeException(0xFB, "Need SSH key or root password")
         if len(root) < 6:
