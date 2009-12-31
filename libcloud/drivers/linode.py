@@ -162,7 +162,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(LINODE_ROOT, params=params)
         return True
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, options, **kwargs):
         # Create
         #
         # Creates a Linode instance.
@@ -202,27 +202,9 @@ class LinodeNodeDriver(NodeDriver):
         #
         # Please note that for safety, only 5 Linodes can be created per hour.
 
-        # Step -1: Do the datacenter logic
-        fail = LinodeException(0xFC,
-            "Can't pick DC; choose a datacenter with linode_set_datacenter()")
-        if not self.datacenter:
-            # Okay, one has not been chosen.  We need to determine.
-            nodes = self.list_nodes()
-            num = len(nodes)
-            if num == 0:
-                # Won't assume where to deploy the first one.
-                # FIXME: Maybe we should?
-                raise fail
-            else:
-                # One or more nodes, so create the next one there.
-                chosen = nodes[0].extra["DATACENTERID"]
-                for node in nodes[1:]:
-                    # Check to make sure they're all the same
-                    if chosen != node.extra["DATACENTERID"]:
-                        raise fail
-        else:
-            # linode_set_datacenter() was used, cool.
-            chosen = self.datacenter
+        chosen = options.location.id
+        image = options.image
+        size = options.size
 
         # Step 0: Parameter validation before we purchase
         # We're especially careful here so we don't fail after purchase, rather
