@@ -102,6 +102,20 @@ class NodeImage(object):
                 % (self.id, self.name, self.driver.name))
 
 
+class NodeLocation(object):
+    """
+    A base NodeLocation class to derive from.
+    """
+    interface.implements(INodeImage)
+    interface.classProvides(INodeImageFactory)
+    def __init__(self, id, name, country):
+        self.id = id
+        self.name = name
+        self.country = country
+    def __repr__(self):
+        return (('<NodeLocation: id=%s, name=%s, driver=%s>')
+                % (self.id, self.name, self.driver.name))
+
 class Response(object):
     """
     A Base Response class to derive from.
@@ -356,3 +370,6 @@ class NodeDriver(object):
 
     def list_sizes(self):
         raise NotImplementedError, 'list_sizes not implemented for this driver'
+
+    def list_locations(self):
+        raise NotImplementedError, 'list_locations not implemented for this driver'

@@ -85,12 +85,30 @@ class INodeImage(Interface):
     driver = Attribute("""The NodeDriver that belongs to this Image""")
     extra = Attribute("""Dict containing provider specific data""")
 
-
 class INodeImageFactory(Interface):
     """
     Create nodes
     """
     def __call__(id, name, driver):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """
+
+class INodeLocation(Interface)
+    """
+    Physical Location of a node
+    """
+    id = Attribute("""Unique ID provided by the provider for a physical datacenter""")
+    name = Attribute("""Name provided by the provider ('Austin Texas DC 1')""")
+    country = Attribute("""ISO 3166 country code of the physical location of the data center
+                          <http://www.iso.org/iso/english_country_names_and_code_elements>""")
+    driver = Attribute("""The NodeDriver that belongs to this Location""")
+
+class INodeLocationFactory(Interface):
+    """
+    Create nodes location
+    """
+    def __call__(id, name, country, driver):
         """
         Set values for ivars, including any other requisite kwargs
         """
@@ -143,6 +161,11 @@ class INodeDriver(Interface):
     def list_sizes():
         """
         Returns a list of sizes for this provider
+        """
+
+    def list_locations():
+        """
+        Returns a list of locations for this prodiver
         """
 
     def reboot_node(node):
