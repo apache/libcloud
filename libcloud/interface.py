@@ -113,6 +113,20 @@ class INodeLocationFactory(Interface):
         Set values for ivars, including any other requisite kwargs
         """
 
+class INodeOptions(Interface):
+    driver = Attribute("""The NodeDriver that belongs to these options""")
+    location = Attribute("Location of the node")
+    image = Attribute("Image of the node")
+    size = Attribute("Size of the node")
+
+class INodeOptionsFactory(Interface):
+    """
+    Create nodes location
+    """
+    def __call__(id, location, image, size, driver):
+        """
+        Set values for ivars, including any other requisite kwargs
+        """
 
 class INodeDriverFactory(Interface):
     """
