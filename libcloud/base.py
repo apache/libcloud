@@ -108,13 +108,14 @@ class NodeLocation(object):
     """
     interface.implements(INodeImage)
     interface.classProvides(INodeImageFactory)
-    def __init__(self, id, name, country):
+    def __init__(self, id, name, country, driver):
         self.id = id
         self.name = name
         self.country = country
+        self.driver = driver
     def __repr__(self):
-        return (('<NodeLocation: id=%s, name=%s, driver=%s>')
-                % (self.id, self.name, self.driver.name))
+        return (('<NodeLocation: id=%s, name=%s, country=%s, driver=%s>')
+                % (self.id, self.name, self.country, self.driver.name))
 
 class Response(object):
     """
