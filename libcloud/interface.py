@@ -150,7 +150,7 @@ class INodeDriver(Interface):
     NODE_STATE_MAP = Attribute("""A mapping of states found in the response to
                               their standard type. This is a constant.""")
 
-    def create_node(name, image, size, **kwargs):
+    def create_node(name, options, **kwargs):
         """
         Creates a new node based on provided params. Name is ignored on some providers.
 
