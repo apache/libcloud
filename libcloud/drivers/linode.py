@@ -22,7 +22,7 @@
 #
 
 from libcloud.types import Provider, NodeState
-from libcloud.base import ConnectionKey, Response, NodeDriver, NodeSize, Node
+from libcloud.base import ConnectionKey, Response, NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeImage
 from copy import copy
 
@@ -374,6 +374,22 @@ class LinodeNodeDriver(NodeDriver):
                 driver=self.connection.driver)
             distros.append(i)
         return distros
+
+    def list_locations(self):
+        params = { "api_action": "avail.datacenters" }
+        data = self.connection.request(LINODE_ROOT, params=params).object
+        nl = []
+        for dc in data:
+            country = None
+            #TODO: this is a hack!
+            if dc["LOCATION"][-3:] == "USA":
+                country = "US"
+            elif dc["LOCATION"][-2:] == "UK":
+                country = "GB"
+            else:
+                raise LinodeException(0xFD, "Unable to convert data center location to country: '%s'" % dc["LOCATION"])
+            nl.append(NodeLocation(dc["DATACENTERID"], dc["LOCATION"], country, self))
+        return nl
 
     def linode_set_datacenter(self, did):
         # Set the datacenter for create requests.
