@@ -26,10 +26,6 @@ from libcloud.interface import INodeOptionsFactory, INodeOptions
 import hashlib
 from pipes import quote as pquote
 
-class Features(object):
-    AUTH_SSH_KEY = 1
-    AUTH_PASSWORD = 2
-
 class Node(object):
     """
     A Base Node class to derive from.
