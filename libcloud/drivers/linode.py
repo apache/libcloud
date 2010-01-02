@@ -420,12 +420,4 @@ class LinodeNodeDriver(NodeDriver):
         n.extra = copy(obj)
         return n
 
-    _features = {
-        Features.AUTH_SSH_KEY: True,
-        Features.AUTH_PASSWORD: True,
-        }
-    def has_feature(self, feature):
-        try:
-            return self._features[feature]
-        except:
-            return False
+    features = {"create_node": ["ssh_key", "password"]}
