@@ -371,7 +371,7 @@ class NodeDriver(object):
     connectionCls = ConnectionKey
     name = None
     type = None
-    
+    features = {"create_node": []}
     NODE_STATE_MAP = {}
 
     def __init__(self, key, secret=None, secure=True):
@@ -406,6 +406,3 @@ class NodeDriver(object):
 
     def list_locations(self):
         raise NotImplementedError, 'list_locations not implemented for this driver'
-
-    def has_feature(self, feature):
-        return False
