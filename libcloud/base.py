@@ -117,22 +117,6 @@ class NodeLocation(object):
         return (('<NodeLocation: id=%s, name=%s, country=%s, driver=%s>')
                 % (self.id, self.name, self.country, self.driver.name))
 
-class NodeOptions(object):
-    """
-    A base NodeLocation class to derive from.
-    """
-    interface.implements(INodeOptions)
-    interface.classProvides(INodeOptionsFactory)
-    def __init__(self, location=None, image=None, size=None, auth=None, driver=None):
-        self.location = location
-        self.image = image
-        self.size = size
-        self.auth = auth
-        self.driver = driver
-    def __repr__(self):
-        return (('<NodeOptions: location=%s, image=%s, size=%s, driver=%s>')
-                % (self.location, self.image, self.size, self.driver.name))
-
 class NodeAuthSSHKey(object):
     def __init__(self, pubkey):
         self.pubkey = pubkey
@@ -368,9 +352,27 @@ class NodeDriver(object):
     name = None
     type = None
     features = {"create_node": []}
+    """List of available features for a driver.
+        - L{create_node}
+            - ssh_key: Supports L{NodeAuthSSHKey} as an authentication method
+              for nodes.
+            - password: Supports L{NodeAuthPassword} as an authentication method
+              for nodes.
+    """
     NODE_STATE_MAP = {}
 
     def __init__(self, key, secret=None, secure=True):
+        """
+        @keyword    key:    API key or username to used
+        @type       key:    str
+
+        @keyword    secret: Secret password to be used
+        @type       secret: str
+
+        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers 
+                            only support HTTPS, and it is on by default.
+        @type       secure: bool
+        """
         self.key = key
         self.secret = secret
         self.secure = secure
@@ -382,7 +384,27 @@ class NodeDriver(object):
         self.connection.driver = self
         self.connection.connect()
 
-    def create_node(self, name, options, **kwargs):
+    def create_node(self, **kwargs):
+        """Create a new node instance.
+
+        @keyword    name:   String with a name for this new node (required)
+        @type       name:   str
+
+        @keyword    size:   The size of resources allocated to this node. (required)
+        @type       size:   L{NodeSize}
+
+        @keyword    image:  OS Image to boot on node. (required)
+        @type       image:  L{NodeImage}
+
+        @keyword    location: Which data center to create a node in. If empty,
+                              undefined behavoir will be selected. (optional)
+        @type       location: L{NodeLocation}
+
+        @keyword    auth:   Initial authentication information for the node (optional)
+        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+
+        @return: The newly created L{Node}.
+        """
         raise NotImplementedError, 'create_node not implemented for this driver'
 
     def destroy_node(self, node):

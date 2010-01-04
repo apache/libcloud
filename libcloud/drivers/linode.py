@@ -161,7 +161,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(LINODE_ROOT, params=params)
         return True
 
-    def create_node(self, name, options, **kwargs):
+    def create_node(self, **kwargs):
         # Create
         #
         # Creates a Linode instance.
@@ -201,9 +201,11 @@ class LinodeNodeDriver(NodeDriver):
         #
         # Please note that for safety, only 5 Linodes can be created per hour.
 
-        chosen = options.location.id
-        image = options.image
-        size = options.size
+        name = kwargs["name"]
+        chosen = kwargs["location"].id
+        image = kwargs["image"]
+        size = kwargs["size"]
+        auth = kwargs["auth"]
 
         # Step 0: Parameter validation before we purchase
         # We're especially careful here so we don't fail after purchase, rather
@@ -222,10 +224,10 @@ class LinodeNodeDriver(NodeDriver):
         ssh = None
         root = None
         # SSH key and/or root password
-        if isinstance(options.auth, NodeAuthSSHKey):
-            ssh = options.auth.pubkey
-        elif isinstance(options.auth, NodeAuthPassword):
-            root = options.auth.password
+        if isinstance(auth, NodeAuthSSHKey):
+            ssh = auth.pubkey
+        elif isinstance(auth, NodeAuthPassword):
+            root = auth.password
 
         if not ssh and not root:
             raise LinodeException(0xFB, "Need SSH key or root password")
