@@ -35,14 +35,11 @@ except: import simplejson as json
 
 
 # Base exception for problems arising from this driver
-class LinodeException(BaseException):
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
+class LinodeException(Exception):
     def __str__(self):
-        return "(%u) %s" % (self.code, self.message)
+        return "(%u) %s" % (self.args[0], self.args[1])
     def __repr__(self):
-        return "<LinodeException code %u '%s'>" % (self.code, self.message)
+        return "<LinodeException code %u '%s'>" % (self.args[0], self.args[1])
 
 # For beta accounts, change this to "beta.linode.com".
 LINODE_API = "api.linode.com"
