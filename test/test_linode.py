@@ -18,7 +18,7 @@
 #
 
 from libcloud.drivers.linode import LinodeNodeDriver
-from libcloud.base import Node
+from libcloud.base import Node, NodeOptions, NodeAuthPassword
 from test import MockHttp, TestCaseMixin
 
 import unittest
@@ -53,10 +53,11 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
     
     def test_create_node(self):
         # Will exception on failure
-        size = self.driver.list_sizes()[0]
-        distro = self.driver.list_images()[6]
-        self.driver.linode_set_datacenter(2)
-        node = self.driver.create_node("Test", distro, size, root="test123")
+        no = NodeOptions(location=self.driver.list_locations()[0],
+                         size=self.driver.list_sizes()[0],
+                         image=self.driver.list_images()[6],
+                         auth=NodeAuthPassword("test123"), driver=self.driver)
+        node = self.driver.create_node("Test", no)
     
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -70,10 +71,11 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         
     def test_create_node_response(self):
         # should return a node object
-        size = self.driver.list_sizes()[0]
-        image = self.driver.list_images()[0]
-        kwargs = {'root': 'foobar'}
-        node = self.driver.create_node('node-name',image, size, **kwargs)
+        no = NodeOptions(location=self.driver.list_locations()[0],
+                         size=self.driver.list_sizes()[0],
+                         image=self.driver.list_images()[0],
+                         auth=NodeAuthPassword("foobar"), driver=self.driver)
+        node = self.driver.create_node("node-name", no)
         self.assertTrue(isinstance(node, Node))
 
         
