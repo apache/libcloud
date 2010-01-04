@@ -44,6 +44,19 @@ class TestCommand(Command):
         res = t.run(tests)
         sys.exit(not res.wasSuccessful())
 
+class ApiDocsCommand(Command):
+    user_options = [ ]
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        os.system('pydoctor --add-package=libcloud --project-name=libcloud --make-html    --project-url="http://incubator.apache.org/libcloud/"')
+
+
 setup(name = 'apache-libcloud',
       version = '0.1.1',
       description = 'A unified interface into many cloud server providers',
@@ -53,7 +66,7 @@ setup(name = 'apache-libcloud',
       package_dir = {'libcloud' : 'libcloud', 'libcloud.drivers': 'libcloud/drivers' },
       license = 'Apache License (2.0)',
       url = 'http://incubator.apache.org/libcloud/',
-      cmdclass = { 'test': TestCommand },
+      cmdclass = { 'test': TestCommand, 'apidocs': ApiDocsCommand },
       classifiers = [
 	        'Development Status :: 4 - Beta',
 	        'Environment :: Console',
