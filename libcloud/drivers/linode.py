@@ -25,7 +25,7 @@ from libcloud.types import Provider, NodeState
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
-from libcloud.base import NodeImage, Features
+from libcloud.base import NodeImage
 from copy import copy
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
