@@ -45,7 +45,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         try:
             ret = self.driver.list_nodes()
         except Exception, e:
-            self.assertEqual(e.message, 'HTTP Basic: Access denied.')
+            self.assertEqual(e.args[0], 'HTTP Basic: Access denied.')
         else:
             self.fail('test should have thrown')
 
@@ -76,7 +76,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         try:
             ret = self.driver.reboot_node(node)
         except Exception, e:
-            self.assertEqual(e.message, 'Permission denied')
+            self.assertEqual(e.args[0], 'Permission denied')
         else:
             self.fail('test should have thrown')
 
