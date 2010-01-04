@@ -174,7 +174,9 @@ class TestCaseMixin(object):
         # should return a node object
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        node = self.driver.create_node('node-name',image, size)
+        node = self.driver.create_node(name='node-name',
+                                     image=image,
+                                     size=size)
         self.assertTrue(isinstance(node, Node))
 
     def test_destroy_node_response(self):

@@ -35,7 +35,7 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
                           name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
                           driver=self.driver)
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
-        node = self.driver.create_node('foo', image, size)
+        node = self.driver.create_node(name='foo', image=image, size=size)
         self.assertEqual(node.id, 'i-2ba64342')
 
     def test_list_nodes(self):
