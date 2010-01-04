@@ -30,15 +30,12 @@ API_HOST = 'api.rimuhosting.com'
 API_PORT = (80,443)
 API_SECURE = True
 
-class RimuHostingException(BaseException):
-    def __init__(self, error):
-        self.error = error
-        
+class RimuHostingException(Exception):
     def __str__(self):
-        return self.error
+        return self.args[0]
 
     def __repr__(self):
-        return "<RimuHostingException '%s'>" % (self.error)
+        return "<RimuHostingException '%s'>" % (self.args[0])
 
 class RimuHostingResponse(Response):
     def __init__(self, response):
