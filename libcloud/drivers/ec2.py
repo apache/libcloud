@@ -237,7 +237,10 @@ class EC2NodeDriver(NodeDriver):
         return images
 
     # name doesn't apply to EC2 nodes.
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, **kwargs):
+        name = kwargs["name"]
+        image = kwargs["image"]
+        size = kwargs["size"]
         params = {'Action': 'RunInstances',
                   'ImageId': image.id,
                   'MinCount': kwargs.get('mincount','1'),
