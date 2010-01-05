@@ -112,12 +112,11 @@ class SlicehostNodeDriver(NodeDriver):
         """Destroys the node
 
         Requires 'Allow Slices to be deleted or rebuilt from the API' to be
-        ticked at https://manage.slicehost.com/api, otherwise returns:
-
-        <errors>
-          <error>You must enable slice deletes in the SliceManager</error>
-          <error>Permission denied</error>
-        </errors>
+        ticked at https://manage.slicehost.com/api, otherwise returns::
+            <errors>
+              <error>You must enable slice deletes in the SliceManager</error>
+              <error>Permission denied</error>
+            </errors>
         """
         uri = '/slices/%s/destroy.xml' % (node.id)
         ret = self.connection.request(uri, method='PUT')
