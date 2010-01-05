@@ -148,7 +148,10 @@ class RackspaceNodeDriver(NodeDriver):
     def list_images(self):
         return self.to_images(self.connection.request('/images/detail').object)
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, **kwargs):
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
         server_elm = ET.Element(
             'server',
             {'xmlns': NAMESPACE,
