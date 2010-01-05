@@ -408,19 +408,46 @@ class NodeDriver(object):
         raise NotImplementedError, 'create_node not implemented for this driver'
 
     def destroy_node(self, node):
+        """Destroy a node.
+
+        Depending upon the provider, this may destroy all data associated with
+        the node, including backups.
+
+        @return: C{bool} True if the destroy was successful, otherwise False
+        """
         raise NotImplementedError, 'destroy_node not implemented for this driver'
 
     def reboot_node(self, node):
+        """
+        Reboot a node.
+        @return: C{bool} True if the destroy was successful, otherwise False
+        """
         raise NotImplementedError, 'reboot_node not implemented for this driver'
 
     def list_nodes(self):
+        """
+        List all nodes
+        @return: C{list} of L{Node} objects
+        """
         raise NotImplementedError, 'list_nodes not implemented for this driver'
 
     def list_images(self):
+        """
+        List images on a provider
+        @return: C{list} of L{NodeImage} objects
+        """
         raise NotImplementedError, 'list_images not implemented for this driver'
 
     def list_sizes(self):
+        """
+        List sizes on a provider
+        @return: C{list} of L{NodeSize} objects
+        """
         raise NotImplementedError, 'list_sizes not implemented for this driver'
 
     def list_locations(self):
+        """
+        List data centers for a provider
+        @return: C{list} of L{NodeLocation} objects
+        """
         raise NotImplementedError, 'list_locations not implemented for this driver'
