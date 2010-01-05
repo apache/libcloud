@@ -17,6 +17,7 @@
 Provides base classes for working with drivers
 """
 import httplib, urllib
+import libcloud
 from zope import interface
 from libcloud.interface import IConnectionUserAndKey, IResponse
 from libcloud.interface import IConnectionKey, IConnectionKeyFactory
@@ -289,7 +290,7 @@ class ConnectionKey(object):
         headers = self.add_default_headers(headers)
         # We always send a content length and user-agent header
         headers.update({'Content-Length': len(data)})
-        headers.update({'User-Agent': 'libcloud/%s' % (self.driver.name)})
+        headers.update({'User-Agent': 'libcloud/%s (%s)' % (libcloud.__version__, self.driver.name)})
         headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '':
