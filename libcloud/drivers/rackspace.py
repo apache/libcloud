@@ -153,7 +153,7 @@ class RackspaceNodeDriver(NodeDriver):
         return self.to_images(self.connection.request('/images/detail').object)
 
     def list_locations(self):
-        return [NodeLocation(0, "Rackspace DFW1", 'us', self)]
+        return [NodeLocation(0, "Rackspace DFW1", 'US', self)]
 
     def create_node(self, **kwargs):
         """Create a new rackspace node
