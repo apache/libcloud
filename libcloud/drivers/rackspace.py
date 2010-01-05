@@ -117,13 +117,14 @@ class RackspaceConnection(ConnectionUserAndKey):
         
 
 class RackspaceNodeDriver(NodeDriver):
-    """Rackspace node driver.
+    """
+    Rackspace node driver.
     
-        Extra node attributes:
-            password: root password, available after create.
-            hostId: represents the host your cloud server runs on
-            imageId: id of image
-            flavorId: id of flavor
+    Extra node attributes:
+        - password: root password, available after create.
+        - hostId: represents the host your cloud server runs on
+        - imageId: id of image
+        - flavorId: id of flavor
     """
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
@@ -149,6 +150,15 @@ class RackspaceNodeDriver(NodeDriver):
         return self.to_images(self.connection.request('/images/detail').object)
 
     def create_node(self, **kwargs):
+        """Create a new rackspace node
+
+        See L{NodeDriver.create_node} for more keyword args.
+        @keyword    metadata: Key/Value metadata to associate with a node
+        @type       metadata: C{dict}
+
+        @keyword    file:   File Path => File contents to create on the node
+        @type       file:   C{dict}
+        """
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
