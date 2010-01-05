@@ -17,7 +17,7 @@ GoGrid driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver, NodeSize, NodeImage
+from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver, NodeSize, NodeImage, NodeLocation
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import httplib
@@ -207,6 +207,9 @@ class GoGridNodeDriver(NodeDriver):
     def list_sizes(self):
         return [ NodeSize(driver=self.connection.driver, **i) 
                     for i in self._instance_types.values() ]
+
+    def list_locations(self):
+        return [NodeLocation(0, "GoGrid Los Angeles", 'us', self)]
 
     def create_node(self, **kwargs):
         name = kwargs['name']
