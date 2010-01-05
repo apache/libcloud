@@ -39,6 +39,10 @@ DRIVERS = {
 }
 
 def get_driver(provider):
+    """ Gets a driver
+    @param provider: Id of provider to get driver
+    @type provider: L{libcloud.types.Provider}
+    """
     if provider in DRIVERS:
         mod_name, driver_name = DRIVERS[provider]
         _mod = __import__(mod_name, globals(), locals(), [driver_name])
