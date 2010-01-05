@@ -16,7 +16,7 @@ import httplib
 from cStringIO import StringIO
 from urllib2 import urlparse
 from cgi import parse_qs
-from libcloud.base import Node
+from libcloud.base import Node, NodeImage, NodeSize
 from libcloud.types import NodeState
 import unittest
 
@@ -155,6 +155,8 @@ class TestCaseMixin(object):
     def test_list_nodes_response(self):
         nodes = self.driver.list_nodes()
         self.assertTrue(isinstance(nodes, list))
+        for node in nodes:
+            self.assertTrue(isinstance(node, Node))
 
     def test_list_sizes_response(self):
         sizes = self.driver.list_sizes()
@@ -169,6 +171,8 @@ class TestCaseMixin(object):
     def test_list_images_response(self):
         images = self.driver.list_images()
         self.assertTrue(isinstance(images, list))
+        for image in images:
+            self.assertTrue(isinstance(image, NodeImage))
 
     def test_create_node_response(self):
         # should return a node object
