@@ -66,7 +66,7 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         # Raises exception on failure
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        self.driver.create_node("api.ivan.net.nz",image, size)
+        self.driver.create_node(name="api.ivan.net.nz", image=image, size=size)
 
 class RimuHostingMockHttp(MockHttp):
     def _r_orders(self,method,url,body,headers):
