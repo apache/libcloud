@@ -12,192 +12,211 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.types import NodeState, Node, InvalidCredsException
+from libcloud.providers import Provider
+from libcloud.types import NodeState, InvalidCredsException
+from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver, NodeSize, NodeImage
 from libcloud.interface import INodeDriver
 from zope.interface import implements
 import httplib
 import time
 import urllib
-import hashlib
-from xml.etree import ElementTree as ET
+import md5, hashlib
+try:
+    import simplejson as json
+except:
+    import json
 
 HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
-API_VERSION = '1.1'
-
-class GoGridAuthConnection(object):
-    def __init__(self, api_key, secret,
-                 is_secure=True, server=HOST, port=None):
-
-        if not port:
-            port = PORTS_BY_SECURITY[is_secure]
-
-        self.verbose = False
-        self.api_key = api_key
-        self.secret = secret
-        conn_str = "%s:%d" % (server, port)
-        if (is_secure):
-            self.connection = httplib.HTTPSConnection(conn_str)
-        else:
-            self.connection = httplib.HTTPConnection(conn_str)
-
-
-    def make_request(self, action, params={}, data=''):
-        if self.verbose:
-            print params
-
-        params["api_key"] = self.api_key 
-        params["v"] = API_VERSION
-        params["format"] = 'xml'
-        params["sig"] = self.get_signature(self.api_key, self.secret)
-
-        params = zip(params.keys(), params.values())
-        params.sort(key=lambda x: str.lower(x[0]))
-
-        path = "&".join([ "=".join((param[0], urllib.quote_plus(param[1])))
-                          for param in params ])
-        
-        self.connection.request("GET", "/api/%s?%s" % (action, path), data)
-        return self.connection.getresponse()
-
-    def get_signature(self, key, secret):
-        """ create sig from md5 of key + secret + time """
-        return hashlib.md5(key + secret + str(int(time.time()))).hexdigest()
-
-    def server_list(self):
-        return Response(self.make_request("/grid/server/list"))
-
-    def server_power(self, id, power):
-        # power in ['start', 'stop', 'restart']
-        params = {'id': id, 'power': power}
-        return Response(self.make_request("/grid/server/power", params))
-
-    def server_delete(self, id):
-        params = {'id': id}
-        return Response(self.make_request("/grid/server/delete", params))
-
-class Response(object):
-    def __init__(self, http_response):
-        if int(http_response.status) == 403:
-            raise InvalidCredsException()
-        self.http_response = http_response
-        self.http_xml = http_response.read()
-
-    def is_error(self):
-        root = ET.XML(self.http_xml)
-        return root.find('response').get('status') != 'success'
-
-    def get_error(self):
-        attrs = ET.XML(self.http_xml).findall('.//attribute')
-        return ': '.join([attr.text for attr in attrs])
+API_VERSION = '1.3'
 
 STATE = {
-    "Started": NodeState.RUNNING,
+    "Starting": NodeState.PENDING,
+    "On": NodeState.RUNNING,
+    "Off": NodeState.PENDING,
+    "Restarting": NodeState.REBOOTING,
+    "Saving": NodeState.PENDING,
+    "Restoring": NodeState.PENDING,
 }
 
-class GoGridNodeDriver(object):
+GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
+                       'name': '512MB',
+                       'ram': 512,
+                       'disk': 30,
+                       'bandwidth': None,
+                       'price':0.095},
+        '1GB': {'id': '1GB',
+                       'name': '1GB',
+                       'ram': 1024,
+                       'disk': 60,
+                       'bandwidth': None,
+                       'price':0.19},
+        '2GB': {'id': '2GB',
+                       'name': '2GB',
+                       'ram': 2048,
+                       'disk': 120,
+                       'bandwidth': None,
+                       'price':0.38},
+        '4GB': {'id': '4GB',
+                       'name': '4GB',
+                       'ram': 4096,
+                       'disk': 240,
+                       'bandwidth': None,
+                       'price':0.76},
+        '8GB': {'id': '8GB',
+                       'name': '8GB',
+                       'ram': 8192,
+                       'disk': 480,
+                       'bandwidth': None,
+                       'price':1.52}}
 
-    implements(INodeDriver)
 
-    def __init__(self, creds):
-        self.creds = creds
-        self.api = GoGridAuthConnection(creds.key, creds.secret)
+class GoGridResponse(Response):
+    def success(self):
+        if not self.body:
+            return None
+        return json.loads(self.body)['status'] == 'success'
 
-    def _findtext(self, element, xpath):
-        return element.findtext(xpath)
+    def parse_body(self):
+        if not self.body:
+            return None
+        return json.loads(self.body)
 
-    def _findattr(self, element, xpath):
-        return element.findtext(xpath)
+    def parse_error(self):
+        if not self.object:
+            return None
+        return self.object['message']
+
+class GoGridConnection(ConnectionUserAndKey):
+
+    host = HOST
+    responseCls = GoGridResponse
+
+    def add_default_params(self, params):
+        params["api_key"] = self.user_id
+        params["v"] = API_VERSION
+        params["format"] = 'json'
+        params["sig"] = self.get_signature(self.user_id, self.key)
+
+        return params
+        
+    def get_signature(self, key, secret):
+        """ create sig from md5 of key + secret + time """
+        m = md5.new(key+secret+str(int(time.time())))
+        return m.hexdigest()
+
+class GoGridNode(Node):
+    # Generating uuid based on public ip to get around missing id on create_node in gogrid api
+    # Used public ip since it is not mutable and specified at create time, so uuid of node should not change after add is completed
+    def get_uuid(self):
+        return hashlib.sha1("%s:%d" % (self.public_ip,self.driver.type)).hexdigest()
+
+class GoGridNodeDriver(NodeDriver):
+
+    connectionCls = GoGridConnection
+    type = Provider.GOGRID
+    name = 'GoGrid API'
+
+    _instance_types = GOGRID_INSTANCE_TYPES
 
     def get_state(self, element):
         try:
-            for stanza in element.findall("object/attribute"):
-                if stanza.get('name') == "name":
-                    return STATE[stanza.get('name')]
+            return STATE[element['state']['name']]
         except:
             pass
         return NodeState.UNKNOWN
 
-    def section(self, element, name):
-        return element.get('name') == name
-
-    def section_in(self, element, names):
-        return element.get('name') in names
-
     def get_ip(self, element):
-        for stanza in element.getchildren():
-            for ips in stanza.getchildren():
-                if ips.get('name') == "ip":
-                    return ips.text
-        raise Exception("No ipaddress found!")
+        return element['ip']['ip']
 
-    def get_deepattr(self, element, node_attrs):
-        if len(element.getchildren()) > 1:
-            i = 0
-            for obj in element.getchildren():
-                name = "%s_%d" %(element.get('name'), i)
-                for attr in obj.getchildren():
-                    node_attrs[name+"_"+attr.get("name")] = attr.text
-                i += 1
-        else:
-            for obj in element.getchildren():
-                name = element.get('name')
-                for attr in obj.getchildren():
-                    node_attrs[name+"_"+attr.get("name")] = attr.text
-            
-
+    def get_id(self,element):
+        return element.get('id',None)
 
     def _to_node(self, element):
-        attrs = ['id', 'name', 'description', ]
-        deepattrs = ['ram', 'image', 'type', 'os']
-        node_attrs = {}
-        for shard in element.findall('attribute'):
-
-            if self.section(shard, 'state'):
-                state = self.get_state(shard)
-
-            elif self.section(shard, 'ip'):
-                node_attrs['ip'] = self.get_ip(shard)
-
-            elif self.section_in(shard, attrs):
-                node_attrs[shard.get('name')] = shard.text
-
-            elif self.section_in(shard, deepattrs):
-                self.get_deepattr(shard, node_attrs)
-
-        n = Node(uuid=self.get_uuid(node_attrs['id']),
-                 name=node_attrs['name'],
+        state = self.get_state(element)
+        ip = self.get_ip(element)
+        id = self.get_id(element)
+        n = GoGridNode(id=id,
+                 name=element['name'],
                  state=state,
-                 ipaddress=node_attrs['ip'],
-                 creds=self.creds,
-                 attrs=node_attrs)
+                 public_ip=ip,
+                 private_ip=ip,
+                 driver=self.connection.driver)
         return n
 
+    def _to_image(self, element):
+        n = NodeImage(id=element['id'],
+                      name=element['friendlyName'],
+                      driver=self.connection.driver)
+        return n
+
+    def _to_images(self, object):
+        return [ self._to_image(el)
+                 for el in object['list'] ]
+
+    def list_images(self):
+        images = self._to_images(
+                    self.connection.request('/api/grid/image/list').object)
+        return images
+
     def get_uuid(self, field):
-        uuid_str = "%s:%d" % (field,self.creds.provider)
+        uuid_str = "%s:%s" % (field,self.connection.user_id)
         return hashlib.sha1(uuid_str).hexdigest()
-    
+
     def list_nodes(self):
-        res = self.api.server_list()
+        res = self.server_list()
         return [ self._to_node(el)
                  for el
-                 in ET.XML(res.http_xml).findall('response/list/object') ]
+                 in res['list'] ]
 
     def reboot_node(self, node):
-        id = node.attrs['id']
+        id = node.id
         power = 'restart'
-
-        res = self.api.server_power(id, power)
-        if res.is_error():
-            raise Exception(res.get_error())
-
+        res = self.server_power(id, power)
+        if not res.success():
+            raise Exception(res.parse_error())
         return True
 
     def destroy_node(self, node):
         id = node.attrs['id']
-
-        res = self.api.server_delete(id)
-        if res.is_error():
-            raise Exception(res.get_error())
-
+        res = self.server_delete(id)
+        if not res.success():
+            raise Exception(res.parse_error())
         return True
+
+    def server_list(self):
+        return self.connection.request('/api/grid/server/list').object
+
+    def server_power(self, id, power):
+        # power in ['start', 'stop', 'restart']
+        params = {'id': id, 'power': power}
+        return self.connection.request("/api/grid/server/power", params)
+
+    def server_delete(self, id):
+        params = {'id': id}
+        return self.connection.request("/api/grid/server/delete", params).object
+
+    def get_first_ip(self):
+        params = {'ip.state': 'Unassigned', 'ip.type':'public'}
+        object = self.connection.request("/api/grid/ip/list", params).object
+        return object['list'][0]['ip']
+
+    def list_sizes(self):
+        return [ NodeSize(driver=self.connection.driver, **i) 
+                    for i in self._instance_types.values() ]
+
+    def create_node(self, **kwargs):
+        name = kwargs['name']
+        image = kwargs['iamge']
+        size = kwargs['size']
+        first_ip = self.get_first_ip()
+        params = {'name': name,
+                  'image': image.id,
+                  'description': kwargs.get('description',''),
+                  'server.ram': size.id,
+                  'ip':first_ip}
+
+        object = self.connection.request('/api/grid/server/add', params=params).object
+        node = self._to_node(object['list'][0])
+
+        return node
