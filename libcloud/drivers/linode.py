@@ -162,27 +162,25 @@ class LinodeNodeDriver(NodeDriver):
         return True
 
     def create_node(self, **kwargs):
-        # Create
-        #
-        # Creates a Linode instance.
-        #
-        #       name     Used for a lot of things; be cautious with charset
-        #       image    NodeImage from list_images
-        #       size     NodeSize from list_sizes
-        #
-        # Keyword arguments supported:
-        #
-        #    One of the following is REQUIRED, but both can be given:
-        #       ssh      The SSH key to deploy for root (None).
-        #       root     Password to set for root (Random).
-        #
-        #    These are all optional:
-        #       swap     Size of the swap partition in MB (128).
-        #       rsize    Size of the root partition (plan size - swap).
-        #       kernel   A kernel ID from avail.kernels (Latest 2.6).
-        #       comment  Comments to store with the config (None).
-        #       payment  One of 1, 12, or 24; subscription length (1).
-        #
+        """Create a new linode instance
+
+        See L{NodeDriver.create_node} for more keyword args.
+
+        @keyword    swap: Size of the swap partition in MB (128).
+        @type       swap: C{number}
+
+        @keyword    rsize: Size of the root partition (plan size - swap).
+        @type       rsize: C{number}
+
+        @keyword    kernel: A kernel ID from avail.kernels (Latest 2.6).
+        @type       kernel: C{number}
+
+        @keyword    payment: One of 1, 12, or 24; subscription length (1)
+        @type       payment: C{number}
+
+        @keyword    comment: Comments to store with the config
+        @type       comment: C{str}
+        """
         #    Labels to override what's generated (default on right):
         #       lconfig      [%name] Instance
         #       lrecovery    [%name] Finnix Recovery Configuration
