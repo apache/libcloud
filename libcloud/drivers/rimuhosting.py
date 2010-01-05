@@ -17,7 +17,7 @@
 RimuHosting Driver
 """
 from libcloud.types import Provider, NodeState
-from libcloud.base import ConnectionKey, Response, NodeAuthPassword, NodeDriver, NodeSize, Node
+from libcloud.base import ConnectionKey, Response, NodeAuthPassword, NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeImage
 from copy import copy
 
@@ -250,5 +250,8 @@ class RimuHostingNodeDriver(NodeDriver):
         node.extra['password'] = res['new_order_request']['instantiation_options']['password']
         return node
     
+    def list_locations(self):
+        return [NodeLocation(0, "RimuHosting DFW", 'us', self)]
+
     features = {"create_node": ["password"]}
         
