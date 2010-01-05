@@ -16,7 +16,7 @@
 Slicehost Driver
 """
 from libcloud.types import NodeState, InvalidCredsException, Provider
-from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage
+from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage, NodeLocation
 import base64
 import httplib
 import struct
@@ -74,6 +74,10 @@ class SlicehostNodeDriver(NodeDriver):
 
     def list_images(self):
         return self._to_images(self.connection.request('/images.xml').object)
+
+    def list_locations(self):
+        # TODO: This isn't accurate. Some Slices are in Dallas, some are in St Louis (?)
+        return [NodeLocation(0, "Slicehost Central US", 'us', self)]
 
     def create_node(self, **kwargs):
         name = kwargs['name']
