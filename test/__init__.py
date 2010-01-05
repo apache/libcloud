@@ -174,6 +174,13 @@ class TestCaseMixin(object):
         for image in images:
             self.assertTrue(isinstance(image, NodeImage))
 
+
+    def test_list_images_response(self):
+        locations = self.driver.list_locations()
+        self.assertTrue(isinstance(locations, list))
+        for dc in locations:
+            self.assertTrue(isinstance(dc, NodeLocation))
+
     def test_create_node_response(self):
         # should return a node object
         size = self.driver.list_sizes()[0]
