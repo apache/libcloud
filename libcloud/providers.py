@@ -12,10 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Provider related utilities
+"""
+
 from libcloud.types import Provider
 from libcloud.drivers.linode import LinodeNodeDriver as Linode
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
 from libcloud.drivers.rackspace import RackspaceNodeDriver as Rackspace
+
 
 DRIVERS = {
 #    Provider.DUMMY:
@@ -39,7 +44,7 @@ DRIVERS = {
 }
 
 def get_driver(provider):
-    """ Gets a driver
+    """Gets a driver
     @param provider: Id of provider to get driver
     @type provider: L{libcloud.types.Provider}
     """
