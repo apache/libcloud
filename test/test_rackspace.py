@@ -66,7 +66,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
-        node = self.driver.create_node('racktest', image, size)
+        node = self.driver.create_node(name='racktest', image=image, size=size)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
@@ -76,7 +76,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
         metadata = { 'a': 'b', 'c': 'd' }
         files = { '/file1': 'content1', '/file2': 'content2' }
-        node = self.driver.create_node('racktest', image, size, metadata=metadata, files=files)
+        node = self.driver.create_node(name='racktest', image=image, size=size, metadata=metadata, files=files)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
         self.assertEqual(node.extra.get('metadata'), metadata)
