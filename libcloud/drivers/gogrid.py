@@ -209,7 +209,7 @@ class GoGridNodeDriver(NodeDriver):
                     for i in self._instance_types.values() ]
 
     def list_locations(self):
-        return [NodeLocation(0, "GoGrid Los Angeles", 'us', self)]
+        return [NodeLocation(0, "GoGrid Los Angeles", 'US', self)]
 
     def create_node(self, **kwargs):
         name = kwargs['name']

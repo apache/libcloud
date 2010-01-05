@@ -251,7 +251,7 @@ class RimuHostingNodeDriver(NodeDriver):
         return node
     
     def list_locations(self):
-        return [NodeLocation(0, "RimuHosting DFW", 'us', self)]
+        return [NodeLocation(0, "RimuHosting DFW", 'US', self)]
 
     features = {"create_node": ["password"]}
         

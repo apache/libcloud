@@ -169,4 +169,4 @@ class VPSNetNodeDriver(NodeDriver):
         return images
 
     def list_locations(self):
-        return [NodeLocation(0, "VPS.net Western US", 'us', self)]
+        return [NodeLocation(0, "VPS.net Western US", 'US', self)]

@@ -521,4 +521,4 @@ class TerremarkConnection(VCloudConnection):
 class TerremarkDriver(VCloudNodeDriver):
     connectionCls = TerremarkConnection
     def list_locations(self):
-        return [NodeLocation(0, "Terremark Texas", 'us', self)]
+        return [NodeLocation(0, "Terremark Texas", 'US', self)]
