@@ -77,7 +77,7 @@ class SlicehostNodeDriver(NodeDriver):
 
     def list_locations(self):
         # TODO: This isn't accurate. Some Slices are in Dallas, some are in St Louis (?)
-        return [NodeLocation(0, "Slicehost Central US", 'us', self)]
+        return [NodeLocation(0, "Slicehost Central US", 'US', self)]
 
     def create_node(self, **kwargs):
         name = kwargs['name']
