@@ -17,7 +17,7 @@ vmware VCloud driver.
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeAuthPassword
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeAuthPassword, NodeLocation
 
 import base64
 import httplib
@@ -520,3 +520,5 @@ class TerremarkConnection(VCloudConnection):
 
 class TerremarkDriver(VCloudNodeDriver):
     connectionCls = TerremarkConnection
+    def list_locations(self):
+        return [NodeLocation(0, "Terremark Texas", 'us', self)]
