@@ -15,7 +15,7 @@
 # Copyright 2009 RedRata Ltd
 
 from libcloud.types import Provider, NodeState
-from libcloud.base import ConnectionKey, Response, NodeDriver, NodeSize, Node
+from libcloud.base import ConnectionKey, Response, NodeAuthPassword, NodeDriver, NodeSize, Node
 from libcloud.base import NodeImage
 from copy import copy
 
@@ -250,4 +250,5 @@ class RimuHostingNodeDriver(NodeDriver):
         node.extra['password'] = res['new_order_request']['instantiation_options']['password']
         return node
     
+    features = {"create_node": ["password"]}
         
