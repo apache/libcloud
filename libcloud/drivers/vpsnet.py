@@ -17,7 +17,7 @@ VPS.net driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
 
 import base64
 
@@ -167,3 +167,6 @@ class VPSNetNodeDriver(NodeDriver):
             images.extend([self._to_image(image, label) for image in templates])
 
         return images
+
+    def list_locations(self):
+        return [NodeLocation(0, "VPS.net Western US", 'us', self)]
