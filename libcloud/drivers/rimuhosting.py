@@ -163,7 +163,7 @@ class RimuHostingNodeDriver(NodeDriver):
         # XXX check that the response was actually successful
         return True
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, **kwargs):
         # Creates a RimuHosting instance
         #
         #   name    Must be a FQDN. e.g example.com.
@@ -186,10 +186,13 @@ class RimuHostingNodeDriver(NodeDriver):
         #   pricing_plan_code       Plan from list_sizes
         #   
         #   control_panel       Control panel to install on the VPS.
-        #   password            Password to set on the VPS.
         #
         #
         # Note we don't do much error checking in this because we the API to error out if there is a problem.  
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
+
         data = {
             'instantiation_options':{'domain_name': name, 'distro': image.id},
             'pricing_plan_code': size.id,
@@ -199,7 +202,12 @@ class RimuHostingNodeDriver(NodeDriver):
             data['instantiation_options']['control_panel'] = kwargs['control_panel']
         
 
-        if kwargs.has_key('password'):
+        if kwargs.has_key('auth'):
+            auth = kwargs['auth']
+            if isinstance(auth, NodeAuthPassword):
+                password = auth.password
+            else:
+                raise ValueError('auth must be of NodeAuthPassword type')
             data['instantiation_options']['password'] = kwargs['password']
         
         if kwargs.has_key('billing_oid'):
