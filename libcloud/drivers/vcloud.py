@@ -436,7 +436,7 @@ class VCloudNodeDriver(NodeDriver):
 
         return images
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, **kwargs):
         """Creates and returns node.
 
            Non-standard optional keyword arguments:
@@ -447,6 +447,10 @@ class VCloudNodeDriver(NodeDriver):
            row
            group 
         """
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
+
         # Some providers don't require a network link
         try:
             network = kwargs.get('network', self.networks[0].get('href'))
