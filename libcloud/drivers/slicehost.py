@@ -12,7 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""
+Slicehost Driver
+"""
 from libcloud.types import NodeState, InvalidCredsException, Provider
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage
 import base64

@@ -12,6 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Dummy Driver
+
+@note: This driver is out of date
+"""
 from libcloud.types import Node, NodeState
 from libcloud.interface import INodeDriver
 from zope.interface import implements

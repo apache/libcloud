@@ -20,7 +20,9 @@
 # A beta account that incurs no financial charge may be arranged for.  Please
 # contact Jed Smith <jsmith@linode.com> for your request.
 #
-
+"""
+Linode driver
+"""
 from libcloud.types import Provider, NodeState
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation

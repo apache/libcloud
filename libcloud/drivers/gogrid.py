@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+GoGrid driver
+"""
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver, NodeSize, NodeImage

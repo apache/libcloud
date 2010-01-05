@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # Copyright 2009 RedRata Ltd
-
+"""
+RimuHosting Driver
+"""
 from libcloud.types import Provider, NodeState
 from libcloud.base import ConnectionKey, Response, NodeAuthPassword, NodeDriver, NodeSize, Node
 from libcloud.base import NodeImage

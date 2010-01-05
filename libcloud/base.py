@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Provides base classes for working with drivers
+"""
 import httplib, urllib
 from zope import interface
 from libcloud.interface import IConnectionUserAndKey, IResponse
