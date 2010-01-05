@@ -16,7 +16,7 @@
 Rackspace driver
 """
 from libcloud.types import NodeState, InvalidCredsException, Provider
-from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node, NodeSize, NodeImage
+from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node, NodeSize, NodeImage, NodeLocation
 from libcloud.interface import INodeDriver
 
 from zope.interface import implements
@@ -153,7 +153,7 @@ class RackspaceNodeDriver(NodeDriver):
         return self.to_images(self.connection.request('/images/detail').object)
 
     def list_locations(self):
-        return [NodeLocation(0, "Rackspace DFW1", 'us', self.driver)]
+        return [NodeLocation(0, "Rackspace DFW1", 'us', self)]
 
     def create_node(self, **kwargs):
         """Create a new rackspace node
