@@ -54,7 +54,7 @@ class ApiDocsCommand(Command):
         pass
 
     def run(self):
-        os.system('pydoctor --add-package=libcloud --project-name=libcloud --make-html    --project-url="http://incubator.apache.org/libcloud/"')
+        os.system('pydoctor --add-package=libcloud --project-name=libcloud --make-html   --html-viewsource-base=https://svn.apache.org/viewvc/incubator/libcloud/trunk  --project-base-dir=`pwd` --project-url="http://incubator.apache.org/libcloud/"')
 
 
 setup(name = 'apache-libcloud',
