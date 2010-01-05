@@ -264,14 +264,14 @@ class ConnectionKey(object):
         @type action: C{str}
         @param action: A path
 
-        @type params C{dict}
+        @type params: C{dict}
         @param params: Optional mapping of additional parameters to send. If
             None, leave as an empty C{dict}.
 
         @type data: C{unicode}
         @param data: A body of data to send with the request.
 
-        @type headers C{dict}
+        @type headers: C{dict}
         @param headers: Extra headers to add to the request
             None, leave as an empty C{dict}.
 
