@@ -93,7 +93,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
     def test_create_node(self):
         image = NodeImage(id=11, name='ubuntu 8.10', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
-        node = self.driver.create_node('slicetest', image, size)
+        node = self.driver.create_node(name='slicetest', image=image, size=size)
         self.assertEqual(node.name, 'slicetest')
 
 class SlicehostMockHttp(MockHttp):

@@ -73,7 +73,10 @@ class SlicehostNodeDriver(NodeDriver):
     def list_images(self):
         return self._to_images(self.connection.request('/images.xml').object)
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, **kwargs):
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
         uri = '/slices.xml'
 
         # create a slice obj
