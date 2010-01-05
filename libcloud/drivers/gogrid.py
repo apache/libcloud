@@ -24,10 +24,11 @@ import httplib
 import time
 import urllib
 import md5, hashlib
-try:
-    import simplejson as json
-except:
-    import json
+
+# JSON is included in the standard library starting with Python 2.6.  For 2.5
+# and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
+try: import json
+except: import simplejson as json
 
 HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
