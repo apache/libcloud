@@ -27,6 +27,7 @@ from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
 import hashlib
+import StringIO
 from pipes import quote as pquote
 
 class Node(object):
@@ -192,33 +193,74 @@ class Response(object):
 
 #TODO: Move this to a better location/package
 class LoggingHTTPSConnection(httplib.HTTPSConnection):
-  """
-  Debug class to log all HTTP(s) requests as they could be made
-  with the C{curl} command.
+    """
+    Debug class to log all HTTP(s) requests as they could be made
+    with the C{curl} command.
 
-  @cvar logfile: Path to logfile used to log curl commands
-  """
-  logfile = "/tmp/libcloud.log"
+    @cvar log: file-like object that logs entries are written to.
+    """
+    log = None
 
-  def _to_curl(self, method, url, body, headers):
-    cmd = ["curl", "--compressed"]
+    def _log_response(self, r):
+        rv = "# -------- begin %d response ----------\n" % (id(r))
+        ht = ""
+        v = r.version
+        if r.version == 10:
+            v = "HTTP/1.0"
+        if r.version == 11:
+            v = "HTTP/1.1"
+        ht += "%s %s %s\r\n" % (v, r.status, r.reason)
+        body = r.read()
+        for h in r.getheaders():
+            ht += "%s: %s\r\n" % (h[0].title(), h[1])
+        ht += "\r\n"
+        # this is evil. laugh with me. ha arharhrhahahaha
+        class fakesock:
+            def __init__(self, s):
+                self.s = s
+            def makefile(self, mode, foo):
+                return StringIO.StringIO(self.s)
+        rr = r
+        if r.chunked:
+            ht += "%x\r\n" % (len(body))
+            ht += body
+            ht += "\r\n0\r\n"
+        else:
+            ht += body
+        rr = httplib.HTTPResponse(fakesock(ht),
+                                    method=r._method,
+                                    debuglevel=r.debuglevel)
+        rr.begin()
+        rv += ht
+        rv += "# -------- end %d response ----------\n" % (id(r))
+        return (rr, rv)
 
-    cmd.extend(["-X", pquote(method)])
+    def getresponse(self):
+        r = httplib.HTTPSConnection.getresponse(self)
+        if self.log is not None:
+            r, rv = self._log_response(r)
+            self.log.write(rv + "\n")
+        return r
 
-    for h in headers:
-      cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
+    def _log_curl(self, method, url, body, headers):
+        cmd = ["curl", "-i"]
 
-    if body is not None and len(body) > 0:
-      cmd.extend(["--data-binary", pquote(body)])
-    
-    cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
-    return " ".join(cmd)
+        cmd.extend(["-X", pquote(method)])
 
-  def request(self, method, url, body=None, headers=None):
-    fp = open(self.logfile, 'a')
-    fp.write(self._to_curl(method, url, body, headers) + "\n")
-    fp.close()
-    return httplib.HTTPSConnection.request(self, method, url, body, headers)
+        for h in headers:
+          cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
+
+        # TODO: in python 2.6, body can be a file-like object.
+        if body is not None and len(body) > 0:
+          cmd.extend(["--data-binary", pquote(body)])
+
+        cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
+        return " ".join(cmd)
+
+    def request(self, method, url, body=None, headers=None):
+        if self.log is not None:
+            self.log.write(self._log_curl(method, url, body, headers) + "\n")
+        return httplib.HTTPSConnection.request(self, method, url, body, headers)
 
 class ConnectionKey(object):
     """
