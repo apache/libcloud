@@ -16,7 +16,7 @@ import httplib
 from cStringIO import StringIO
 from urllib2 import urlparse
 from cgi import parse_qs
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.types import NodeState
 import unittest
 
