@@ -18,7 +18,7 @@ Amazon EC2 driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
 import hmac
 import httplib
@@ -282,6 +282,9 @@ class EC2NodeDriver(NodeDriver):
         res = self.connection.request('/', params=params).object
         return self._get_terminate_boolean(res)
 
+    def list_locations(self):
+        return [NodeLocation(0, "Amazon US East", 'US', self)]
+
 class EC2EUConnection(EC2Connection):
 
     host = EC2_EU_HOST
@@ -290,3 +293,5 @@ class EC2EUNodeDriver(EC2NodeDriver):
 
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_INSTANCE_TYPES
+    def list_locations(self):
+        return [NodeLocation(0, "Amazon Europe", 'IE', self)]
