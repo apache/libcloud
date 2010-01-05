@@ -15,6 +15,8 @@
 
 """
 libcloud provides a unified interface to the cloud computing resources.
+
+@var __version__: Current version of libcloud
 """
 
 __version__ = "0.1.1-dev"
