@@ -15,7 +15,7 @@
 
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeAuthPassword
 
 import base64
 import httplib
@@ -457,13 +457,21 @@ class VCloudNodeDriver(NodeDriver):
         except IndexError:
             network = ''
 
+        password = None
+        if kwargs.has_key('auth'):
+            auth = kwargs['auth']
+            if isinstance(auth, NodeAuthPassword):
+                password = auth.password
+            else:
+                raise ValueError('auth must be of NodeAuthPassword type')
+
         instantiate_xml = InstantiateVAppXML(
             name=name, 
             template=image.id, 
             net_href=network,
             cpus=str(kwargs.get('cpus', 1)),
             memory=str(size.ram),
-            password=kwargs.get('password', None),
+            password=password,
             row=kwargs.get('row', None),
             group=kwargs.get('group', None)
         )
@@ -490,6 +498,8 @@ class VCloudNodeDriver(NodeDriver):
         node = self._to_node(vapp_name, res.object)
 
         return node
+
+    features = {"create_node": ["password"]}
 
 class HostingComConnection(VCloudConnection):
     host = "vcloud.safesecureweb.com" 
