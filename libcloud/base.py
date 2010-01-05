@@ -192,6 +192,12 @@ class Response(object):
 
 #TODO: Move this to a better location/package
 class LoggingHTTPSConnection(httplib.HTTPSConnection):
+  """
+  Debug class to log all HTTP(s) requests as they could be made
+  with the C{curl} command.
+
+  @cvar logfile: Path to logfile used to log curl commands
+  """
   logfile = "/tmp/libcloud.log"
 
   def _to_curl(self, method, url, body, headers):
