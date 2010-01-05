@@ -26,7 +26,6 @@ from libcloud.interface import INodeDriverFactory, INodeDriver
 from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
-from libcloud.interface import INodeOptionsFactory, INodeOptions
 import hashlib
 from pipes import quote as pquote
 
