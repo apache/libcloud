@@ -19,4 +19,30 @@ libcloud provides a unified interface to the cloud computing resources.
 @var __version__: Current version of libcloud
 """
 
+__all__ = ["__version__", "enable_debug"]
+
 __version__ = "0.1.1-dev"
+
+
+def enable_debug(fo):
+    """
+    Enable library wide debugging to a file-like object.
+
+    @param fo: Where to append debugging information
+    @type fo: File like object, only write operations are used.
+    """
+    import httplib
+    from libcloud.base import ConnectionKey,LoggingHTTPSConnection
+    LoggingHTTPSConnection.log = fo
+    ConnectionKey.conn_classes = (httplib.HTTPConnection, LoggingHTTPSConnection)
+
+def _init_once():
+    import os
+    d = os.getenv("LIBCLOUD_DEBUG")
+    if d:
+        if d.isdigit():
+            d = "/tmp/libcloud_debug.log"
+        fo = open(d, "a")
+        enable_debug(fo)
+
+_init_once()
