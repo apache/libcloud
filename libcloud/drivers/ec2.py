@@ -123,13 +123,13 @@ class EC2Connection(ConnectionUserAndKey):
     def _get_aws_auth_param(self, params, secret_key, path='/'):
         """
         creates the signature required for AWS, per:
-
         http://docs.amazonwebservices.com/AWSEC2/2009-04-04/DeveloperGuide/index.html?using-query-api.html#query-authentication
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +                 
-                       CanonicalizedQueryString <from the preceding step>
+        """
+        """
+            StringToSign = HTTPVerb + "\n" +
+                           ValueOfHostHeaderInLowercase + "\n" +
+                           HTTPRequestURI + "\n" +
+                           CanonicalizedQueryString <from the preceding step>
         """
         keys = params.keys()
         keys.sort()
