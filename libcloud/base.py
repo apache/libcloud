@@ -305,7 +305,7 @@ class ConnectionKey(object):
         connection = self.conn_classes[self.secure](host, port)
         self.connection = connection
 
-    def request(self, action, params={}, data='', headers={}, method='GET'):
+    def request(self, action, params=None, data='', headers=None, method='GET'):
         """
         Request a given `action`.
         
@@ -331,6 +331,10 @@ class ConnectionKey(object):
 
         @return: An instance of type I{responseCls}
         """
+        if params is None:
+          params = {}
+        if headers is None:
+          headers = {}
         # Extend default parameters
         params = self.add_default_params(params)
         # Extend default headers
