@@ -232,7 +232,7 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
                                     debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
-        rv += "# -------- end %d response ----------\n" % (id(r))
+        rv += "\n# -------- end %d response ----------\n" % (id(r))
         return (rr, rv)
 
     def getresponse(self):
