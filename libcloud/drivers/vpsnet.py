@@ -26,7 +26,7 @@ import base64
 try: import json
 except: import simplejson as json
 
-API_HOST = 'vps.net'
+API_HOST = 'www.vps.net'
 API_VERSION = 'api10json'
 
 RAM_PER_NODE = 256
