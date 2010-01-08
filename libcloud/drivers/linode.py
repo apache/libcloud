@@ -409,11 +409,13 @@ class LinodeNodeDriver(NodeDriver):
         if not req.success() or len(req.object) == 0:
             return None
         
-        # TODO: Multiple IP support.  How do we handle that case?
-        public_ip = private_ip = None
+        public_ip = []
+        private_ip = []
         for ip in req.object:
-            if ip["ISPUBLIC"]: public_ip = ip["IPADDRESS"]
-            else: private_ip = ip["IPADDRESS"]
+            if ip["ISPUBLIC"]:
+              public_ip.append(ip["IPADDRESS"])
+            else:
+              private_ip.append(ip["IPADDRESS"])
 
         n = Node(id=lid, name=obj["LABEL"],
             state=self.LINODE_STATES[obj["STATUS"]], public_ip=public_ip,
