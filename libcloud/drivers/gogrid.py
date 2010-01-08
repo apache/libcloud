@@ -182,7 +182,7 @@ class GoGridNodeDriver(NodeDriver):
         return True
 
     def destroy_node(self, node):
-        id = node.attrs['id']
+        id = node.id
         res = self.server_delete(id)
         if not res.success():
             raise Exception(res.parse_error())
