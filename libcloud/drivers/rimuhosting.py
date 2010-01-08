@@ -110,7 +110,7 @@ class RimuHostingNodeDriver(NodeDriver):
                 name=order['domain_name'],
                 state=NodeState.RUNNING,
                 public_ip=[order['allocated_ips']['primary_ip']]+order['allocated_ips']['secondary_ips'],
-                private_ip=None,
+                private_ip=[],
                 driver=self.connection.driver
                 )
         n.slug = order['slug']
