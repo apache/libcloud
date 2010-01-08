@@ -207,8 +207,8 @@ class EC2NodeDriver(NodeDriver):
         n = Node(id=self._findtext(element, 'instanceId'),
                  name=self._findtext(element, 'instanceId'),
                  state=state,
-                 public_ip=self._findtext(element, 'dnsName'),
-                 private_ip=self._findtext(element, 'privateDnsName'),
+                 public_ip=[self._findtext(element, 'dnsName')],
+                 private_ip=[self._findtext(element, 'privateDnsName')],
                  driver=self.connection.driver)
         return n
 
