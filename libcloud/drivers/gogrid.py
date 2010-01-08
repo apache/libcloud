@@ -23,7 +23,7 @@ from zope.interface import implements
 import httplib
 import time
 import urllib
-import md5, hashlib
+import hashlib
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -106,7 +106,7 @@ class GoGridConnection(ConnectionUserAndKey):
         
     def get_signature(self, key, secret):
         """ create sig from md5 of key + secret + time """
-        m = md5.new(key+secret+str(int(time.time())))
+        m = hashlib.md5(key+secret+str(int(time.time())))
         return m.hexdigest()
 
 class GoGridNode(Node):
