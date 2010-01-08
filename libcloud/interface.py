@@ -27,8 +27,8 @@ class INode(Interface):
     id = Attribute("""Unique ID provided by the provider (i-abcd1234, etc)""")
     name = Attribute("""Hostname or similar identifier""")
     state = Attribute("""A standard Node state as provided by L{NodeState}""")
-    public_ip = Attribute("""Public ip (or hostname) of the Node""")
-    private_ip = Attribute("""Private ip (or hostname) of the Node""")
+    public_ip = Attribute("""List of Public IPs of the Node""")
+    private_ip = Attribute("""List of Private IPs of the Node""")
     driver = Attribute("""The NodeDriver that belongs to this Node""")
     extra = Attribute("""Dict containing provider specific data""")
 
