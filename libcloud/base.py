@@ -240,6 +240,7 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
         if self.log is not None:
             r, rv = self._log_response(r)
             self.log.write(rv + "\n")
+            self.log.flush()
         return r
 
     def _log_curl(self, method, url, body, headers):
@@ -260,6 +261,7 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         if self.log is not None:
             self.log.write(self._log_curl(method, url, body, headers) + "\n")
+            self.log.flush()
         return httplib.HTTPSConnection.request(self, method, url, body, headers)
 
 class ConnectionKey(object):
