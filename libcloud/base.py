@@ -144,7 +144,7 @@ class Response(object):
 
     object = None
     body = None
-    status_code = httplib.OK
+    status = httplib.OK
     headers = {}
     error = None
     connection = None
