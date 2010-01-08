@@ -16,7 +16,7 @@
 VPS.net driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState
+from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
 
 import base64
@@ -52,6 +52,12 @@ class VPSNetResponse(Response):
             return js
         except ValueError:
             return self.body
+
+    def success(self):
+        # vps.net wrongly uses 406 for invalid auth creds
+        if self.status == 406 or self.status == 403:
+          raise InvalidCredsException()
+        return True
 
     def parse_error(self):
         try:
