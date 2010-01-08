@@ -37,8 +37,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
-        self.assertEqual(node.public_ip, '174.143.212.229')
-        self.assertEqual(node.private_ip, '10.176.164.199')
+        self.assertTrue('174.143.212.229' in node.public_ip)
+        self.assertTrue('10.176.164.199' in node.private_ip)
         self.assertEqual(node.state, NodeState.PENDING)
 
         SlicehostMockHttp.type = 'UNAUTHORIZED'

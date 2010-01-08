@@ -145,8 +145,8 @@ class GoGridNodeDriver(NodeDriver):
         n = GoGridNode(id=id,
                  name=element['name'],
                  state=state,
-                 public_ip=ip,
-                 private_ip=ip,
+                 public_ip=[ip],
+                 private_ip=[],
                  driver=self.connection.driver)
         return n
 

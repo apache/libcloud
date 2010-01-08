@@ -167,8 +167,8 @@ class SlicehostNodeDriver(NodeDriver):
         n = Node(id=element.findtext('id'),
                  name=element.findtext('name'),
                  state=state,
-                 public_ip=public_ip,
-                 private_ip=private_ip,
+                 public_ip=[public_ip],
+                 private_ip=[private_ip],
                  driver=self.connection.driver)
         return n
 
