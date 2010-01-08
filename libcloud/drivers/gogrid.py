@@ -77,6 +77,8 @@ GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
 
 class GoGridResponse(Response):
     def success(self):
+        if self.status == 403:
+          raise InvalidCredsException()
         if not self.body:
             return None
         return json.loads(self.body)['status'] == 'success'
