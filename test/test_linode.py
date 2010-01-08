@@ -38,8 +38,8 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
         self.assertEqual(node.id, 8098)
         self.assertEqual(node.name, 'api-node3')
-        self.assertEqual(node.public_ip, '75.127.96.245')
-        self.assertEqual(node.private_ip, None)
+        self.assertTrue('75.127.96.245' in node.public_ip)
+        self.assertEqual(node.private_ip, [])
     
     def test_reboot_node(self):
         # An exception would indicate failure
