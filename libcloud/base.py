@@ -288,6 +288,7 @@ class ConnectionKey(object):
         """
         self.key = key
         self.secure = secure and 1 or 0
+        self.ua = []
 
     def connect(self, host=None, port=None):
         """
@@ -306,6 +307,15 @@ class ConnectionKey(object):
 
         connection = self.conn_classes[self.secure](host, port)
         self.connection = connection
+
+    def _user_agent(self):
+      return 'libcloud/%s (%s)%s' % (
+                libcloud.__version__,
+                self.driver.name,
+                "".join([" (%s)" % x for x in self.ua]))
+
+    def user_agent_append(self, s):
+      self.ua.append(s)
 
     def request(self, action, params=None, data='', headers=None, method='GET'):
         """
@@ -343,7 +353,7 @@ class ConnectionKey(object):
         headers = self.add_default_headers(headers)
         # We always send a content length and user-agent header
         headers.update({'Content-Length': len(data)})
-        headers.update({'User-Agent': 'libcloud/%s (%s)' % (libcloud.__version__, self.driver.name)})
+        headers.update({'User-Agent': self._user_agent()})
         headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '':
