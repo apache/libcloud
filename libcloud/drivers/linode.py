@@ -23,7 +23,7 @@
 """
 Linode driver
 """
-from libcloud.types import Provider, NodeState
+from libcloud.types import Provider, NodeState, InvalidCredsException
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
@@ -105,6 +105,8 @@ class LinodeResponse(Response):
         # Make an exception from an entry in ERRORARRAY.
         if "ERRORCODE" not in error or "ERRORMESSAGE" not in error:
             return None
+        if error["ERRORCODE"] ==  4:
+          return InvalidCredsException(error["ERRORMESSAGE"])
         return LinodeException(error["ERRORCODE"], error["ERRORMESSAGE"])
         
 
