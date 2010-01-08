@@ -198,7 +198,7 @@ class GoGridNodeDriver(NodeDriver):
 
     def server_delete(self, id):
         params = {'id': id}
-        return self.connection.request("/api/grid/server/delete", params).object
+        return self.connection.request("/api/grid/server/delete", params)
 
     def get_first_ip(self):
         params = {'ip.state': 'Unassigned', 'ip.type':'public'}
