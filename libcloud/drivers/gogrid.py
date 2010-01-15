@@ -216,7 +216,7 @@ class GoGridNodeDriver(NodeDriver):
 
     def create_node(self, **kwargs):
         name = kwargs['name']
-        image = kwargs['iamge']
+        image = kwargs['image']
         size = kwargs['size']
         first_ip = self.get_first_ip()
         params = {'name': name,
