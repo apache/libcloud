@@ -16,7 +16,7 @@
 """
 RimuHosting Driver
 """
-from libcloud.types import Provider, NodeState
+from libcloud.types import Provider, NodeState, InvalidCredsException
 from libcloud.base import ConnectionKey, Response, NodeAuthPassword, NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeImage
 from copy import copy
@@ -46,8 +46,13 @@ class RimuHostingResponse(Response):
         self.headers = dict(response.getheaders())
         self.error = response.reason
 
-        self.object = self.parse_body()
+        if self.success():
+          self.object = self.parse_body()
 
+    def success(self):
+        if self.status == 403:
+          raise InvalidCredsException()
+        return True
     def parse_body(self):
         try:
             js = json.loads(self.body)
