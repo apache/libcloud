@@ -42,7 +42,7 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(size.ram,950)
         self.assertEqual(size.disk,20)
         self.assertEqual(size.bandwidth,75)
-        self.assertEqual(size.price,89.95)
+        self.assertEqual(size.price,32.54)
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -109,7 +109,10 @@ class RimuHostingMockHttp(MockHttp):
               , "pricing_plan_infos" : 
                   [{ "pricing_plan_code" : "MiroVPSLowContention"
                     , "pricing_plan_description" : "MiroVPS Semi-Dedicated Server (Dallas)"
-                    , "monthly_recurring_fee_usd" : 89.95
+                    , "monthly_recurring_fee" : 32.54
+                    , "monthly_recurring_amt" : { "amt" : 35.0
+                    , "currency" : "CUR_AUD"
+                    ,"amt_usd" : 32.54}
                     , "minimum_memory_mb" : 950
                     , "minimum_disk_gb" : 20
                     , "minimum_data_transfer_allowance_gb" : 75
