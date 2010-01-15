@@ -127,7 +127,7 @@ class RimuHostingNodeDriver(NodeDriver):
             ram=plan['minimum_memory_mb'],
             disk=plan['minimum_disk_gb'],
             bandwidth=plan['minimum_data_transfer_allowance_gb'],
-            price=plan['monthly_recurring_fee_usd'],
+            price=plan['monthly_recurring_amt']['amt_usd'],
             driver=self.connection.driver)
                 
     def _to_image(self,image):
