@@ -76,6 +76,7 @@ EC2_INSTANCE_TYPES = {'m1.small': {'id': 'm1.small',
 
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.085'
@@ -85,6 +86,14 @@ EC2_US_EAST_INSTANCE_TYPES['c1.medium']['price'] = '.17'
 EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.68'
 EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
 EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
+
+EC2_US_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
+EC2_US_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
+EC2_US_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
+EC2_US_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
+EC2_US_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
+EC2_US_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
+EC2_US_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 
 EC2_EU_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
 EC2_EU_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
@@ -285,7 +294,7 @@ class EC2NodeDriver(NodeDriver):
         return self._get_terminate_boolean(res)
 
     def list_locations(self):
-        return [NodeLocation(0, "Amazon US East", 'US', self)]
+        return [NodeLocation(0, "Amazon US N. Virginia", 'US', self)]
 
 class EC2EUConnection(EC2Connection):
 
@@ -296,4 +305,15 @@ class EC2EUNodeDriver(EC2NodeDriver):
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_WEST_INSTANCE_TYPES
     def list_locations(self):
-        return [NodeLocation(0, "Amazon Europe", 'IE', self)]
+        return [NodeLocation(0, "Amazon Europe Ireland", 'IE', self)]
+
+class EC2USConnection(EC2Connection):
+
+    host = EC2_US_WEST_HOST
+
+class EC2EUNodeDriver(EC2NodeDriver):
+
+    connectionCls = EC2USConnection
+    _instance_types = EC2_US_WEST_INSTANCE_TYPES
+    def list_locations(self):
+        return [NodeLocation(0, "Amazon US N. California", 'US', self)]
