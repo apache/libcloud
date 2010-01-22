@@ -25,10 +25,12 @@ from libcloud.drivers.rackspace import RackspaceNodeDriver as Rackspace
 DRIVERS = {
 #    Provider.DUMMY:
 #        ('libcloud.drivers.dummy', 'DummyNodeDriver'),
-    Provider.EC2:
+    Provider.EC2_US_EAST:
         ('libcloud.drivers.ec2', 'EC2NodeDriver'),
-    Provider.EC2_EU:
+    Provider.EC2_EU_WEST:
         ('libcloud.drivers.ec2', 'EC2EUNodeDriver'),
+    Provider.EC2_US_WEST:
+        ('libcloud.drivers.ec2', 'EC2USWestNodeDriver'),
     Provider.GOGRID:
         ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
