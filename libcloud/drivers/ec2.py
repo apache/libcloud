@@ -28,8 +28,10 @@ import urllib
 import hashlib
 from xml.etree import ElementTree as ET
 
-EC2_US_EAST_HOST = 'ec2.amazonaws.com'
-EC2_EU_WEST_HOST = 'eu-west-1.ec2.amazonaws.com'
+EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
+EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
+EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
+
 API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
