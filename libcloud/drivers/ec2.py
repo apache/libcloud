@@ -78,19 +78,19 @@ EC2_INSTANCE_TYPES = {'m1.small': {'id': 'm1.small',
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
-EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.1'
-EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.4'
-EC2_US_EAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.8'
-EC2_US_EAST_INSTANCE_TYPES['c1.medium']['price'] = '.2'
-EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.8'
+EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.085'
+EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.34'
+EC2_US_EAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.68'
+EC2_US_EAST_INSTANCE_TYPES['c1.medium']['price'] = '.17'
+EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.68'
 EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
 EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
 
-EC2_EU_WEST_INSTANCE_TYPES['m1.small']['price'] = '.11'
-EC2_EU_WEST_INSTANCE_TYPES['m1.large']['price'] = '.44'
-EC2_EU_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.88'
-EC2_EU_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.22'
-EC2_EU_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.88'
+EC2_EU_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
+EC2_EU_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
+EC2_EU_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
+EC2_EU_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
+EC2_EU_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
 EC2_EU_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
 EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 
