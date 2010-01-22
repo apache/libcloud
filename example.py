@@ -15,7 +15,7 @@
 from libcloud.types import Provider
 from libcloud.providers import get_driver
 
-EC2 = get_driver(Provider.EC2)
+EC2 = get_driver(Provider.EC2_US_EAST)
 Slicehost = get_driver(Provider.SLICEHOST)
 Rackspace = get_driver(Provider.RACKSPACE)
 
