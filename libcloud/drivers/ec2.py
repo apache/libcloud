@@ -307,13 +307,13 @@ class EC2EUNodeDriver(EC2NodeDriver):
     def list_locations(self):
         return [NodeLocation(0, "Amazon Europe Ireland", 'IE', self)]
 
-class EC2USConnection(EC2Connection):
+class EC2USWestConnection(EC2Connection):
 
     host = EC2_US_WEST_HOST
 
-class EC2EUNodeDriver(EC2NodeDriver):
+class EC2USWestNodeDriver(EC2NodeDriver):
 
-    connectionCls = EC2USConnection
+    connectionCls = EC2USWestConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
     def list_locations(self):
         return [NodeLocation(0, "Amazon US N. California", 'US', self)]
