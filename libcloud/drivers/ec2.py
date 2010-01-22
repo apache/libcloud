@@ -28,7 +28,7 @@ import urllib
 import hashlib
 from xml.etree import ElementTree as ET
 
-EC2_US_HOST = 'ec2.amazonaws.com'
+EC2_US_EAST_HOST = 'ec2.amazonaws.com'
 EC2_EU_HOST = 'eu-west-1.ec2.amazonaws.com'
 API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
@@ -73,16 +73,16 @@ EC2_INSTANCE_TYPES = {'m1.small': {'id': 'm1.small',
                        }
 
 
-EC2_US_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
-EC2_US_INSTANCE_TYPES['m1.small']['price'] = '.1'
-EC2_US_INSTANCE_TYPES['m1.large']['price'] = '.4'
-EC2_US_INSTANCE_TYPES['m1.xlarge']['price'] = '.8'
-EC2_US_INSTANCE_TYPES['c1.medium']['price'] = '.2'
-EC2_US_INSTANCE_TYPES['c1.xlarge']['price'] = '.8'
-EC2_US_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
-EC2_US_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
+EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.1'
+EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.4'
+EC2_US_EAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.8'
+EC2_US_EAST_INSTANCE_TYPES['c1.medium']['price'] = '.2'
+EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.8'
+EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
+EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
 
 EC2_EU_INSTANCE_TYPES['m1.small']['price'] = '.11'
 EC2_EU_INSTANCE_TYPES['m1.large']['price'] = '.44'
@@ -111,7 +111,7 @@ class EC2Response(Response):
 
 class EC2Connection(ConnectionUserAndKey):
 
-    host = EC2_US_HOST
+    host = EC2_US_EAST_HOST
     responseCls = EC2Response
 
     def add_default_params(self, params):
@@ -156,7 +156,7 @@ class EC2NodeDriver(NodeDriver):
     type = Provider.EC2
     name = 'Amazon EC2 (us-east-1)'
 
-    _instance_types = EC2_US_INSTANCE_TYPES
+    _instance_types = EC2_US_EAST_INSTANCE_TYPES
 
     NODE_STATE_MAP = { 'pending': NodeState.PENDING,
                        'running': NodeState.RUNNING,
