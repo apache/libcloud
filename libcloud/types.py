@@ -21,8 +21,9 @@ class Provider(object):
     Defines for each of the supported providers
 
     @cvar DUMMY: Example provider
-    @cvar EC2: Amazon AWS
-    @cvar EC2_EU: Amazon AWS EU
+    @cvar EC2_US_EAST: Amazon AWS US N. Virgina
+    @cvar EC2_US_WEST: Amazon AWS US N. California
+    @cvar EC2_EU_WEST: Amazon AWS EU Ireland
     @cvar RACKSPACE: Rackspace Cloud Servers
     @cvar SLICEHOST: Slicehost.com
     @cvar GOGRID: GoGrid
@@ -32,8 +33,10 @@ class Provider(object):
     @cvar RIMUHOSTING: RimuHosting.com
     """
     DUMMY = 0
-    EC2 = 1
-    EC2_EU = 2
+    EC2 = 1  # deprecated name
+    EC2_US_EAST = 1
+    EC2_EU = 2 # deprecated name
+    EC2_EU_WEST = 2
     RACKSPACE = 3
     SLICEHOST = 4
     GOGRID = 5
@@ -41,6 +44,7 @@ class Provider(object):
     LINODE = 7
     VCLOUD = 8
     RIMUHOSTING = 9
+    EC2_US_WEST = 10
 
 class NodeState(object):
     """
