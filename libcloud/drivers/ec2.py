@@ -184,6 +184,9 @@ class EC2NodeDriver(NodeDriver):
     def _findattr(self, element, xpath):
         return element.findtext(self._fixxpath(xpath))
 
+    def _findall(self, element, xpath):
+        return element.findall(self._fixxpath(xpath))
+
     def _pathlist(self, key, arr):
         """Converts a key and an array of values into AWS query param 
            format."""
@@ -220,7 +223,22 @@ class EC2NodeDriver(NodeDriver):
                  state=state,
                  public_ip=[self._findtext(element, 'dnsName')],
                  private_ip=[self._findtext(element, 'privateDnsName')],
-                 driver=self.connection.driver)
+                 driver=self.connection.driver,
+                 extra = {
+                  'dns_name': self._findattr(element, "dnsName"),
+                  'instanceId': self._findattr(element, "instanceId"),
+                  'imageId': self._findattr(element, "imageId"),
+                  'private_dns': self._findattr(element, "privateDnsName"),
+                  'status': self._findattr(element, "instanceState/name"),
+                  'keyname': self._findattr(element, "keyName"),
+                  'launchindex': self._findattr(element, "amiLaunchIndex"),
+                  'productcode': [p.text for p in self._findall(element, "productCodesSet/item/productCode")],
+                  'instancetype': self._findattr(element, "instanceType"),
+                  'launchdatetime': self._findattr(element, "launchTime"),
+                  'availability': self._findattr(element, "placement/availabilityZone"),
+                  'kernelid': self._findattr(element, "kernelId"),
+                  'ramdiskid': self._findattr(element, "ramdiskId")
+                 })
         return n
 
     def _to_images(self, object):
