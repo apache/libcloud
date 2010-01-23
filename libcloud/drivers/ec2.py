@@ -111,14 +111,15 @@ class EC2Response(Response):
         return ET.XML(self.body)
 
     def parse_error(self):
-        try:
-            err_list = []
-            for err in ET.XML(self.body).findall('Errors/Error'):
-                code, message = err.getchildren()
-                err_list.append("%s: %s" % (code.text, message.text))
-            return "\n".join(err_list)
-        except ExpatError:
-            return self.body
+        err_list = []
+        for err in ET.XML(self.body).findall('Errors/Error'):
+            code, message = err.getchildren()
+            err_list.append("%s: %s" % (code.text, message.text))
+            if code.text == "InvalidClientTokenId":
+                raise InvalidCredsException(message.text)
+            if code.text == "SignatureDoesNotMatch":
+                raise InvalidCredsException(message.text)
+        return "\n".join(err_list)
 
 class EC2Connection(ConnectionUserAndKey):
 
