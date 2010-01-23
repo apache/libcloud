@@ -116,9 +116,9 @@ class EC2Response(Response):
             code, message = err.getchildren()
             err_list.append("%s: %s" % (code.text, message.text))
             if code.text == "InvalidClientTokenId":
-                raise InvalidCredsException(message.text)
+                raise InvalidCredsException(err_list[-1])
             if code.text == "SignatureDoesNotMatch":
-                raise InvalidCredsException(message.text)
+                raise InvalidCredsException(err_list[-1])
         return "\n".join(err_list)
 
 class EC2Connection(ConnectionUserAndKey):
