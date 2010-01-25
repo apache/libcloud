@@ -270,6 +270,42 @@ class EC2NodeDriver(NodeDriver):
                     self.connection.request('/', params=params).object)
         return images
 
+    def create_security_group(self, name, description):
+        params = {'Action': 'CreateSecurityGroup',
+                  'GroupName': name,
+                  'GroupDescription': description}
+        return self.connection.request('/', params=params).object
+
+    def authorize_security_group_permissive(self, name):
+        results = []
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupName': name,
+                  'IpProtocol': 'tcp',
+                  'FromPort': '0',
+                  'ToPort': '65535',
+                  'CidrIp': '0.0.0.0/0'}
+        try:
+            results.append(self.connection.request('/', params=params.copy()).object)
+        except Exception, e:
+            if e.args[0].find("InvalidPermission.Duplicate") == -1:
+                raise e
+        params['IpProtocol'] = 'udp'
+
+        try:
+            results.append(self.connection.request('/', params=params.copy()).object)
+        except Exception, e:
+            if e.args[0].find("InvalidPermission.Duplicate") == -1:
+                raise e
+
+        params.update({'IpProtocol': 'icmp', 'FromPort': '-1', 'ToPort': '-1'})
+
+        try:
+            results.append(self.connection.request('/', params=params.copy()).object)
+        except Exception, e:
+            if e.args[0].find("InvalidPermission.Duplicate") == -1:
+                raise e
+        return results
+
     # name doesn't apply to EC2 nodes.
     def create_node(self, **kwargs):
         name = kwargs["name"]
