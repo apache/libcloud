@@ -323,6 +323,9 @@ class EC2NodeDriver(NodeDriver):
         try: params['KeyName'] = kwargs['keyname']
         except KeyError: pass
 
+        try: params['UserData'] = base64.b64encode(kwargs['userdata'])
+        except KeyError: pass
+
         object = self.connection.request('/', params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
