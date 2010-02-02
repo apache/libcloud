@@ -59,11 +59,13 @@ class RackspaceResponse(Response):
 class RackspaceConnection(ConnectionUserAndKey):
     api_version = 'v1.0'
     auth_host = 'auth.api.rackspacecloud.com'
-    __host = None
-    path = None
-    token = None
-
     responseCls = RackspaceResponse
+
+    def __init__(self, user_id, key, secure=True):
+        self.__host = None
+        self.path = None
+        self.token = None
+        super(RackspaceConnection, self).__init__(user_id, key, secure)
 
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.token;
