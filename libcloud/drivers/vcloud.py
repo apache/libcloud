@@ -78,7 +78,7 @@ class InstantiateVAppXML(object):
             "InstantiateVAppTemplateParams", 
             {'name': self.name,
              'xml:lang': 'en',
-             'xmlns': "http://www.vmware.com/vcloud/v1",
+             'xmlns': "http://www.vmware.com/vcloud/v0.8",
              'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
         )
 
@@ -93,7 +93,7 @@ class InstantiateVAppXML(object):
         prod_section = ET.SubElement(
             parent,
             "ProductSection",
-            {'xmlns:q1': "http://www.vmware.com/vcloud/v1",
+            {'xmlns:q1': "http://www.vmware.com/vcloud/v0.8",
              'xmlns:ovf': "http://schemas.dmtf.org/ovf/envelope/1"}
         )
 
@@ -121,7 +121,7 @@ class InstantiateVAppXML(object):
         vh = ET.SubElement(
             parent,
             "VirtualHardwareSection",
-            {'xmlns:q1': "http://www.vmware.com/vcloud/v1"}
+            {'xmlns:q1': "http://www.vmware.com/vcloud/v0.8"}
         )
 
         self._add_cpu(vh)
@@ -286,20 +286,17 @@ class VCloudNodeDriver(NodeDriver):
 
     def _to_node(self, name, elm):
         state = self.NODE_STATE_MAP[elm.get('status')]
-        public_ips = [ip.text for ip in elm.findall(fixxpath(elm, 'NetworkConnectionSection/NetworkConnection/IPAddress'))]
+        public_ips = []
+        private_ips = []
 
         # Following code to find private IPs works for Terremark
-        sections = elm.findall('{http://schemas.dmtf.org/ovf/envelope/1}Section')
-        network_connection_section = None
-        for section in sections:
-          section_type = section.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-          if section_type == 'q1:NetworkConnectionSectionType':
-            network_connection_section = section
-        
-        if network_connection_section:
-          private_ips = [ip.text for ip in network_connection_section.findall(fixxpath(elm, 'NetworkConnection/IpAddress'))]
-        else:
-          private_ips = []
+        connections = elm.findall('{http://schemas.dmtf.org/ovf/envelope/1}NetworkConnectionSection/{http://www.vmware.com/vcloud/v0.8}NetworkConnection')
+        for connection in connections:
+          ips = [ip.text for ip in connection.findall(fixxpath(elm, "IpAddress"))]
+          if connection.get('Network') == 'Internal':
+            private_ips.extend(ips)
+          else:
+            public_ips.extend(ips)
 
         node = Node(id=elm.get('href'),
                     name=name,
