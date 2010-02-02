@@ -202,7 +202,7 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
     log = None
 
     def _log_response(self, r):
-        rv = "# -------- begin %d response ----------\n" % (id(r))
+        rv = "# -------- begin %d:%d response ----------\n" % (id(self), id(r))
         ht = ""
         v = r.version
         if r.version == 10:
@@ -232,7 +232,7 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
                                     debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
-        rv += "\n# -------- end %d response ----------\n" % (id(r))
+        rv += "\n# -------- end %d:%d response ----------\n" % (id(self), id(r))
         return (rr, rv)
 
     def getresponse(self):
@@ -260,7 +260,8 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
 
     def request(self, method, url, body=None, headers=None):
         if self.log is not None:
-            self.log.write(self._log_curl(method, url, body, headers) + "\n")
+            pre = "# -------- begin %d request ----------\n"  % id(self)
+            self.log.write(pre + self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return httplib.HTTPSConnection.request(self, method, url, body, headers)
 
