@@ -17,44 +17,90 @@ Dummy Driver
 
 @note: This driver is out of date
 """
-from libcloud.types import Node, NodeState
 from libcloud.interface import INodeDriver
+from libcloud.base import ConnectionKey, NodeDriver, NodeSize, NodeLocation
+from libcloud.base import NodeImage, Node
+from libcloud.types import Provider,NodeState
 from zope.interface import implements
 
 import uuid
 
-class DummyNodeDriver(object):
+class DummyConnection(ConnectionKey):
+
+  def connect(self, host=None, port=None):
+    pass
+
+class DummyNodeDriver(NodeDriver):
+
+    name = "Dummy Node Provider"
+    type = Provider.DUMMY
 
     implements(INodeDriver)
 
     def __init__(self, creds):
         self.creds = creds
+        self.nl = [
+            Node(id=1,
+                 name='dummy-1',
+                 state=NodeState.RUNNING,
+                 public_ip=['127.0.0.1'],
+                 private_ip=[],
+                 driver=self,
+                 extra={'foo': 'bar'}),
+            Node(id=2,
+                 name='dummy-2',
+                 state=NodeState.RUNNING,
+                 public_ip=['127.0.0.1'],
+                 private_ip=[],
+                 driver=self,
+                 extra={'foo': 'bar'}),
+        ]
 
     def get_uuid(self, unique_field=None):
         return str(uuid.uuid4())
-        
+
     def list_nodes(self):
-        return [
-            Node(uuid=self.get_uuid(),
-                 name='dummy-1',
-                 state=NodeState.RUNNING,
-                 ipaddress=['127.0.0.1'],
-                 creds=self.creds,
-                 attrs={'foo': 'bar'}),
-            Node(uuid=self.get_uuid(),
-                 name='dummy-2',
-                 state=NodeState.REBOOTING,
-                 ipaddress=['127.0.0.2'],
-                 creds=self.creds,
-                 attrs={'foo': 'bar'})
-        ]
+        return self.nl
 
     def reboot_node(self, node):
         node.state = NodeState.REBOOTING
-        return node
+        return True
 
     def destroy_node(self, node):
-        pass
+        node.state = NodeState.TERMINATED
+        self.nl.remove(node)
+        return True
 
-    def create_node(self, node):
-        pass
+    def list_images(self):
+        return [
+            NodeImage(id=1, name="Ubuntu 9.10", driver=self),
+            NodeImage(id=2, name="Ubuntu 9.04", driver=self),
+            NodeImage(id=3, name="Slackware 4", driver=self),
+        ]
+
+    def list_sizes(self):
+        return [
+            NodeSize(id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self),
+            NodeSize(id=2, name="Medium", ram=512, disk=16, bandwidth=1500, price=8, driver=self),
+            NodeSize(id=3, name="Big", ram=4096, disk=32, bandwidth=2500, price=32, driver=self),
+            NodeSize(id=4, name="XXL Big", ram=4096*2, disk=32*4, bandwidth=2500*3, price=32*2, driver=self),
+        ]
+
+    def list_locations(self):
+        return [
+            NodeLocation(id=1, name="Paul's Room", country='US', driver=self),
+            NodeLocation(id=1, name="London Loft", country='GB', driver=self),
+            NodeLocation(id=1, name="Island Datacenter", country='FJ', driver=self),
+        ]
+
+    def create_node(self, **kwargs):
+        l = len(self.nl) + 1
+        n = Node(id=l,
+                 name='dummy-%d' % l,
+                 state=NodeState.RUNNING,
+                 public_ip=['127.0.0.%d' % l],
+                 private_ip=[],
+                 driver=self,
+                 extra={'foo': 'bar'})
+        self.nl.append(n)
+        return n

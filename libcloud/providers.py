@@ -23,8 +23,8 @@ from libcloud.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
 
 DRIVERS = {
-#    Provider.DUMMY:
-#        ('libcloud.drivers.dummy', 'DummyNodeDriver'),
+    Provider.DUMMY:
+        ('libcloud.drivers.dummy', 'DummyNodeDriver'),
     Provider.EC2_US_EAST:
         ('libcloud.drivers.ec2', 'EC2NodeDriver'),
     Provider.EC2_EU_WEST:
