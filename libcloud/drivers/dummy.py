@@ -55,6 +55,7 @@ class DummyNodeDriver(NodeDriver):
                  driver=self,
                  extra={'foo': 'bar'}),
         ]
+        self.connection = DummyConnection(self.creds)
 
     def get_uuid(self, unique_field=None):
         return str(uuid.uuid4())
