@@ -66,7 +66,8 @@ class INodeSize(Interface):
     ram = Attribute("""Amount of RAM provided in MB (256MB, 1740MB)""")
     disk = Attribute("""Amount of disk provided in GB (200GB)""")
     bandwidth = Attribute("""Amount of total transfer bandwidth in GB""")
-    price = Attribute("""Hourly price of this server in USD, estimated if monthly""")
+    price = Attribute("""Hourly price of this server in USD, estimated if
+                         monthly""")
     driver = Attribute("""The NodeDriver that belongs to this Image""")
 
 
@@ -84,7 +85,7 @@ class INodeImage(Interface):
     """
     A machine image
     """
-    id = Attribute("""Unique ID provided by the provider (ami-abcd1234, etc)""")
+    id = Attribute("""Unique ID provided by the provider (ami-abcd1234)""")
     name = Attribute("""Name provided by the provider (Ubuntu 8.1)""")
     driver = Attribute("""The NodeDriver that belongs to this Image""")
     extra = Attribute("""Dict containing provider specific data""")
@@ -102,10 +103,11 @@ class INodeLocation(Interface):
     """
     Physical Location of a node
     """
-    id = Attribute("""Unique ID provided by the provider for a physical datacenter""")
+    id = Attribute("""Unique ID provided by the provider for a physical
+                      datacenter""")
     name = Attribute("""Name provided by the provider ('Austin Texas DC 1')""")
-    country = Attribute("""ISO 3166 country code of the physical location of the data center
-                          <http://www.iso.org/iso/english_country_names_and_code_elements>""")
+    country = Attribute("""ISO 3166 country code of the physical location of
+                           the data center <http://bit.ly/pKie5> (iso.org)""")
     driver = Attribute("""The NodeDriver that belongs to this Location""")
 
 class INodeLocationFactory(Interface):
@@ -129,7 +131,8 @@ class INodeDriverFactory(Interface):
 
 class INodeDriver(Interface):
     """
-    A driver which provides nodes, such as an Amazon EC2 instance, or Slicehost slice
+    A driver which provides nodes, such as an Amazon EC2 instance,
+    or Slicehost slice
     """
 
     connection = Attribute("""Represents the IConnection for this driver""")
@@ -141,7 +144,8 @@ class INodeDriver(Interface):
 
     def create_node(**kwargs):
         """
-        Creates a new node based on provided params. Name is ignored on some providers.
+        Creates a new node based on provided params. Name is ignored on
+        some providers.
 
         To specify provider-specific options, use keyword arguments.
         """
@@ -217,22 +221,24 @@ class IConnection(Interface):
 
     def add_default_params(params):
         """
-        Adds default parameters (such as API key, version, etc.) to the passed `params`
+        Adds default parameters (such as API key, version, etc.)
+        to the passed `params`
 
         Should return a dictionary.
         """
 
     def add_default_headers(headers):
         """
-        Adds default headers (such as Authorization, X-Foo-Bar) to the passed `headers`
+        Adds default headers (such as Authorization, X-Foo-Bar)
+        to the passed `headers`
 
         Should return a dictionary.
         """
 
     def encode_data(data):
         """
-        Data may need to be encoded before sent in a request. If not, simply
-        return the data.
+        Data may need to be encoded before sent in a request.
+        If not, simply return the data.
         """
 
 
@@ -245,7 +251,8 @@ class IConnectionKey(IConnection):
 
 class IConnectionUserAndKey(IConnectionKey):
     """
-    IConnection which depends on a user identifier and an API for authentication.
+    IConnection which depends on a user identifier and an API
+    for authentication.
     """
     user_id = Attribute("""User identifier""")
 
@@ -286,7 +293,8 @@ class IResponse(Interface):
     """
     A response as provided by a given HTTP Client.
     """
-    object = Attribute("""The processed response object, e.g. via lxml or json""")
+    object = Attribute("""The processed response object,
+                          e.g. via lxml or json""")
     body = Attribute("""Unparsed response body""")
     status = Attribute("""Response status code""")
     headers = Attribute("""Response headers""")
