@@ -81,17 +81,50 @@ class DummyNodeDriver(NodeDriver):
 
     def list_sizes(self):
         return [
-            NodeSize(id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self),
-            NodeSize(id=2, name="Medium", ram=512, disk=16, bandwidth=1500, price=8, driver=self),
-            NodeSize(id=3, name="Big", ram=4096, disk=32, bandwidth=2500, price=32, driver=self),
-            NodeSize(id=4, name="XXL Big", ram=4096*2, disk=32*4, bandwidth=2500*3, price=32*2, driver=self),
+          NodeSize(id=1,
+                   name="Small",
+                   ram=128,
+                   disk=4,
+                   bandwidth=500,
+                   price=4,
+                   driver=self),
+          NodeSize(id=2,
+                   name="Medium",
+                   ram=512,
+                   disk=16,
+                   bandwidth=1500,
+                   price=8,
+                   driver=self),
+          NodeSize(id=3,
+                   name="Big",
+                   ram=4096,
+                   disk=32,
+                   bandwidth=2500,
+                   price=32,
+                   driver=self),
+          NodeSize(id=4,
+                   name="XXL Big",
+                   ram=4096*2,
+                   disk=32*4,
+                   bandwidth=2500*3,
+                   price=32*2,
+                   driver=self),
         ]
 
     def list_locations(self):
         return [
-            NodeLocation(id=1, name="Paul's Room", country='US', driver=self),
-            NodeLocation(id=1, name="London Loft", country='GB', driver=self),
-            NodeLocation(id=1, name="Island Datacenter", country='FJ', driver=self),
+          NodeLocation(id=1,
+                       name="Paul's Room",
+                       country='US',
+                       driver=self),
+          NodeLocation(id=1,
+                       name="London Loft",
+                       country='GB',
+                       driver=self),
+          NodeLocation(id=1,
+                       name="Island Datacenter",
+                       country='FJ',
+                       driver=self),
         ]
 
     def create_node(self, **kwargs):
