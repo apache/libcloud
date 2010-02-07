@@ -20,6 +20,9 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 
+HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/incubator/libcloud/trunk'
+PROJECT_BASE_DIR = 'http://incubator.apache.org/libcloud/'
+
 class TestCommand(Command):
     user_options = []
 
@@ -59,9 +62,10 @@ class ApiDocsCommand(Command):
             ' --add-package=libcloud'
             ' --project-name=libcloud'
             ' --make-html'
-            ' --html-viewsource-base=https://svn.apache.org/viewvc/incubator/libcloud/trunk'
+            ' --html-viewsource-base="%s"'
             ' --project-base-dir=`pwd`'
-            ' --project-url="http://incubator.apache.org/libcloud/"'
+            ' --project-url="%s"'
+            % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR)
         )
 
 setup(
