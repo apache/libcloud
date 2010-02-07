@@ -38,7 +38,8 @@ class Node(object):
     interface.implements(INode)
     interface.classProvides(INodeFactory)
 
-    def __init__(self, id, name, state, public_ip, private_ip, driver, extra=None):
+    def __init__(self, id, name, state, public_ip, private_ip,
+                 driver, extra=None):
         self.id = id
         self.name = name
         self.state = state
@@ -61,8 +62,10 @@ class Node(object):
         return self.driver.destroy_node(self)
 
     def __repr__(self):
-        return (('<Node: uuid=%s, name=%s, state=%s, public_ip=%s, provider=%s ...>')
-                % (self.uuid, self.name, self.state, self.public_ip, self.driver.name))
+        return (('<Node: uuid=%s, name=%s, state=%s, public_ip=%s, '
+                 'provider=%s ...>')
+                % (self.uuid, self.name, self.state, self.public_ip,
+                   self.driver.name))
 
 
 class NodeSize(object):
@@ -82,8 +85,10 @@ class NodeSize(object):
         self.price = price
         self.driver = driver
     def __repr__(self):
-        return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s price=%s driver=%s ...>')
-                % (self.id, self.name, self.ram, self.disk, self.bandwidth, self.price, self.driver.name))
+        return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
+                 'price=%s driver=%s ...>')
+                % (self.id, self.name, self.ram, self.disk, self.bandwidth,
+                   self.price, self.driver.name))
 
 
 class NodeImage(object):
@@ -228,11 +233,12 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
         else:
             ht += body
         rr = httplib.HTTPResponse(fakesock(ht),
-                                    method=r._method,
-                                    debuglevel=r.debuglevel)
+                                  method=r._method,
+                                  debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
-        rv += "\n# -------- end %d:%d response ----------\n" % (id(self), id(r))
+        rv += ("\n# -------- end %d:%d response ----------\n"
+               % (id(self), id(r)))
         return (rr, rv)
 
     def getresponse(self):
@@ -261,9 +267,11 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         if self.log is not None:
             pre = "# -------- begin %d request ----------\n"  % id(self)
-            self.log.write(pre + self._log_curl(method, url, body, headers) + "\n")
+            self.log.write(pre +
+                           self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
-        return httplib.HTTPSConnection.request(self, method, url, body, headers)
+        return httplib.HTTPSConnection.request(self, method, url,
+                                               body, headers)
 
 class ConnectionKey(object):
     """
@@ -318,7 +326,12 @@ class ConnectionKey(object):
     def user_agent_append(self, s):
       self.ua.append(s)
 
-    def request(self, action, params=None, data='', headers=None, method='GET'):
+    def request(self,
+                action,
+                params=None,
+                data='',
+                headers=None,
+                method='GET'):
         """
         Request a given `action`.
         
@@ -372,7 +385,8 @@ class ConnectionKey(object):
 
     def add_default_params(self, params):
         """
-        Adds default parameters (such as API key, version, etc.) to the passed `params`
+        Adds default parameters (such as API key, version, etc.)
+        to the passed `params`
 
         Should return a dictionary.
         """
@@ -380,7 +394,8 @@ class ConnectionKey(object):
 
     def add_default_headers(self, headers):
         """
-        Adds default headers (such as Authorization, X-Foo-Bar) to the passed `headers`
+        Adds default headers (such as Authorization, X-Foo-Bar)
+        to the passed `headers`
 
         Should return a dictionary.
         """
@@ -420,12 +435,13 @@ class NodeDriver(object):
     name = None
     type = None
     features = {"create_node": []}
-    """List of available features for a driver.
+    """
+    List of available features for a driver.
         - L{create_node}
             - ssh_key: Supports L{NodeAuthSSHKey} as an authentication method
               for nodes.
-            - password: Supports L{NodeAuthPassword} as an authentication method
-              for nodes.
+            - password: Supports L{NodeAuthPassword} as an authentication
+              method for nodes.
     """
     NODE_STATE_MAP = {}
 
@@ -458,7 +474,8 @@ class NodeDriver(object):
         @keyword    name:   String with a name for this new node (required)
         @type       name:   str
 
-        @keyword    size:   The size of resources allocated to this node. (required)
+        @keyword    size:   The size of resources allocated to this node.
+                            (required)
         @type       size:   L{NodeSize}
 
         @keyword    image:  OS Image to boot on node. (required)
@@ -468,12 +485,14 @@ class NodeDriver(object):
                               undefined behavoir will be selected. (optional)
         @type       location: L{NodeLocation}
 
-        @keyword    auth:   Initial authentication information for the node (optional)
+        @keyword    auth:   Initial authentication information for the node
+                            (optional)
         @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
 
         @return: The newly created L{Node}.
         """
-        raise NotImplementedError, 'create_node not implemented for this driver'
+        raise NotImplementedError, \
+            'create_node not implemented for this driver'
 
     def destroy_node(self, node):
         """Destroy a node.
@@ -483,39 +502,45 @@ class NodeDriver(object):
 
         @return: C{bool} True if the destroy was successful, otherwise False
         """
-        raise NotImplementedError, 'destroy_node not implemented for this driver'
+        raise NotImplementedError, \
+            'destroy_node not implemented for this driver'
 
     def reboot_node(self, node):
         """
         Reboot a node.
         @return: C{bool} True if the destroy was successful, otherwise False
         """
-        raise NotImplementedError, 'reboot_node not implemented for this driver'
+        raise NotImplementedError, \
+            'reboot_node not implemented for this driver'
 
     def list_nodes(self):
         """
         List all nodes
         @return: C{list} of L{Node} objects
         """
-        raise NotImplementedError, 'list_nodes not implemented for this driver'
+        raise NotImplementedError, \
+            'list_nodes not implemented for this driver'
 
     def list_images(self):
         """
         List images on a provider
         @return: C{list} of L{NodeImage} objects
         """
-        raise NotImplementedError, 'list_images not implemented for this driver'
+        raise NotImplementedError, \
+            'list_images not implemented for this driver'
 
     def list_sizes(self):
         """
         List sizes on a provider
         @return: C{list} of L{NodeSize} objects
         """
-        raise NotImplementedError, 'list_sizes not implemented for this driver'
+        raise NotImplementedError, \
+            'list_sizes not implemented for this driver'
 
     def list_locations(self):
         """
         List data centers for a provider
         @return: C{list} of L{NodeLocation} objects
         """
-        raise NotImplementedError, 'list_locations not implemented for this driver'
+        raise NotImplementedError, \
+            'list_locations not implemented for this driver'
