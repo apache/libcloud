@@ -21,7 +21,7 @@ from glob import glob
 from os.path import splitext, basename, join as pjoin
 
 class TestCommand(Command):
-    user_options = [ ]
+    user_options = []
 
     def initialize_options(self):
         THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
@@ -33,7 +33,7 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        testfiles = [ ]
+        testfiles = []
         for t in glob(pjoin(self._dir, 'test', 'test_*.py')):
             testfiles.append('.'.join(
                 ['test', splitext(basename(t))[0]])
@@ -45,7 +45,7 @@ class TestCommand(Command):
         sys.exit(not res.wasSuccessful())
 
 class ApiDocsCommand(Command):
-    user_options = [ ]
+    user_options = []
 
     def initialize_options(self):
         pass
@@ -54,27 +54,43 @@ class ApiDocsCommand(Command):
         pass
 
     def run(self):
-        os.system('pydoctor --add-package=libcloud --project-name=libcloud --make-html   --html-viewsource-base=https://svn.apache.org/viewvc/incubator/libcloud/trunk  --project-base-dir=`pwd` --project-url="http://incubator.apache.org/libcloud/"')
+        os.system(
+            'pydoctor'
+            ' --add-package=libcloud'
+            ' --project-name=libcloud'
+            ' --make-html'
+            ' --html-viewsource-base=https://svn.apache.org/viewvc/incubator/libcloud/trunk'
+            ' --project-base-dir=`pwd`'
+            ' --project-url="http://incubator.apache.org/libcloud/"'
+        )
 
-
-setup(name = 'apache-libcloud',
-      version = '0.1.1',
-      description = 'A unified interface into many cloud server providers',
-      author = 'Apache Software Foundation',
-      author_email = 'libcloud@incubator.apache.org',
-      packages = ['libcloud', 'libcloud.drivers'],
-      package_dir = {'libcloud' : 'libcloud', 'libcloud.drivers': 'libcloud/drivers' },
-      license = 'Apache License (2.0)',
-      url = 'http://incubator.apache.org/libcloud/',
-      cmdclass = { 'test': TestCommand, 'apidocs': ApiDocsCommand },
-      classifiers = [
-	        'Development Status :: 4 - Beta',
-	        'Environment :: Console',
-	        'Intended Audience :: System Administrators',
-	        'License :: OSI Approved :: Apache Software License',
-	        'Operating System :: OS Independent',
-	        'Programming Language :: Python',
-	        'Topic :: Software Development :: Libraries :: Python Modules'
-	    ],       
-) 
-
+setup(
+    name='apache-libcloud',
+    version='0.1.1',
+    description='A unified interface into many cloud server providers',
+    author='Apache Software Foundation',
+    author_email='libcloud@incubator.apache.org',
+    packages=[
+        'libcloud',
+        'libcloud.drivers'
+    ],
+    package_dir={
+        'libcloud': 'libcloud',
+        'libcloud.drivers': 'libcloud/drivers'
+    },
+    license='Apache License (2.0)',
+    url='http://incubator.apache.org/libcloud/',
+    cmdclass={
+        'test': TestCommand,
+        'apidocs': ApiDocsCommand
+    },
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Libraries :: Python Modules'
+    ],
+)
