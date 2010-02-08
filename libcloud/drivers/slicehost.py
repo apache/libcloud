@@ -15,13 +15,11 @@
 """
 Slicehost Driver
 """
-from libcloud.types import NodeState, InvalidCredsException, Provider
+from libcloud.types import NodeState, Provider
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage, NodeLocation
 import base64
-import httplib
 import struct
 import socket
-import hashlib
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
