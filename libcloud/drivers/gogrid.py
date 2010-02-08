@@ -18,11 +18,7 @@ GoGrid driver
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver, NodeSize, NodeImage, NodeLocation
-from libcloud.interface import INodeDriver
-from zope.interface import implements
-import httplib
 import time
-import urllib
 import hashlib
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
