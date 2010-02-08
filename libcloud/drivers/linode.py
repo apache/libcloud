@@ -29,6 +29,7 @@ from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.base import NodeImage
 from copy import copy
+import os
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -285,9 +286,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            # Generate a random root password
-            randomness = "!(#%&" + str(Random().random()) + "sup dawg?"
-            root = sha512(randomness).hexdigest()
+            root = os.urandom(16).encode('hex')
         params = {
             "api_action":       "linode.disk.createfromdistribution",
             "LinodeID":         linode["id"],
