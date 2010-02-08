@@ -17,13 +17,8 @@ Rackspace driver
 """
 from libcloud.types import NodeState, InvalidCredsException, Provider
 from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node, NodeSize, NodeImage, NodeLocation
-from libcloud.interface import INodeDriver
-
-from zope.interface import implements
-
 import os
 
-import time
 import base64
 import urlparse
 
