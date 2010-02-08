@@ -415,7 +415,7 @@ class ConnectionUserAndKey(ConnectionKey):
     Base connection which accepts a user_id and key
     """
     interface.implementsOnly(IConnectionUserAndKey)
-    interface.classProvides(IConnectionUserAndKey)
+    interface.classProvides(IConnectionUserAndKeyFactory)
 
     user_id = None
 
