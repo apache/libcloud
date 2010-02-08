@@ -21,11 +21,9 @@ from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
 import hmac
-import httplib
 from hashlib import sha256
 import time
 import urllib
-import hashlib
 from xml.etree import ElementTree as ET
 
 EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
