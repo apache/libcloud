@@ -14,7 +14,7 @@
 # limitations under the License.
 import unittest
 
-from libcloud.providers import Slicehost
+from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
 from libcloud.types import Provider, NodeState
 from libcloud.base import Node, NodeImage, NodeSize
 
