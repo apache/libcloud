@@ -19,7 +19,6 @@ RimuHosting Driver
 from libcloud.types import Provider, NodeState, InvalidCredsException
 from libcloud.base import ConnectionKey, Response, NodeAuthPassword, NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeImage
-from copy import copy
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
