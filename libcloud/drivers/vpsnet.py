@@ -17,7 +17,8 @@ VPS.net driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
+from libcloud.base import NodeSize, NodeImage, NodeLocation
 
 import base64
 
@@ -155,8 +156,9 @@ class VPSNetNodeDriver(NodeDriver):
         return sizes
 
     def destroy_node(self, node):
-        res = self.connection.request('/virtual_machines/%s.%s' % (node.id, API_VERSION),
-                                        method='DELETE')
+        res = self.connection.request('/virtual_machines/%s.%s'
+                                      % (node.id, API_VERSION),
+                                      method='DELETE')
         return res.status == 200
 
     def list_nodes(self):
@@ -170,7 +172,8 @@ class VPSNetNodeDriver(NodeDriver):
         for cloud in res.object:
             label = cloud['cloud']['label']
             templates = cloud['cloud']['system_templates']
-            images.extend([self._to_image(image, label) for image in templates])
+            images.extend([self._to_image(image, label)
+                           for image in templates])
 
         return images
 
