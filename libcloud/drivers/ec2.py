@@ -18,7 +18,8 @@ Amazon EC2 driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
+from libcloud.base import Node, Response, ConnectionUserAndKey
+from libcloud.base import NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
 import hmac
 from hashlib import sha256
@@ -33,45 +34,61 @@ EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 API_VERSION = '2009-04-04'
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
-# Sizes must be hardcoded, because amazon doesn't provide an API to fetch them.
-# From http://aws.amazon.com/ec2/instance-types/
-EC2_INSTANCE_TYPES = {'m1.small': {'id': 'm1.small',
-                       'name': 'Small Instance',
-                       'ram': 1740,
-                       'disk': 160,
-                       'bandwidth': None},
-                      'm1.large': {'id': 'm1.large',
-                       'name': 'Large Instance',
-                       'ram': 7680,
-                       'disk': 850,
-                       'bandwidth': None},
-                      'm1.xlarge': {'id': 'm1.xlarge',
-                       'name': 'Extra Large Instance',
-                       'ram': 15360,
-                       'disk': 1690,
-                       'bandwidth': None},
-                      'c1.medium': {'id': 'c1.medium',
-                       'name': 'High-CPU Medium Instance',
-                       'ram': 1740,
-                       'disk': 350,
-                       'bandwidth': None},
-                      'c1.xlarge': {'id': 'c1.xlarge',
-                       'name': 'High-CPU Extra Large Instance',
-                       'ram': 7680,
-                       'disk': 1690,
-                       'bandwidth': None},
-                      'm2.2xlarge': {'id': 'm2.2xlarge',
-                       'name': 'High-Memory Double Extra Large Instance',
-                       'ram': 35021,
-                       'disk': 850,
-                       'bandwidth': None},
-                      'm2.4xlarge': {'id': 'm2.4xlarge',
-                       'name': 'High-Memory Quadruple Extra Large Instance',
-                       'ram': 70042,
-                       'disk': 1690,
-                       'bandwidth': None},
-                       }
-
+"""
+Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
+From http://aws.amazon.com/ec2/instance-types/
+"""
+EC2_INSTANCE_TYPES = {
+    'm1.small': {
+        'id': 'm1.small',
+        'name': 'Small Instance',
+        'ram': 1740,
+        'disk': 160,
+        'bandwidth': None
+    },
+    'm1.large': {
+        'id': 'm1.large',
+        'name': 'Large Instance',
+        'ram': 7680,
+        'disk': 850,
+        'bandwidth': None
+    },
+    'm1.xlarge': {
+        'id': 'm1.xlarge',
+        'name': 'Extra Large Instance',
+        'ram': 15360,
+        'disk': 1690,
+        'bandwidth': None
+    },
+    'c1.medium': {
+        'id': 'c1.medium',
+        'name': 'High-CPU Medium Instance',
+        'ram': 1740,
+        'disk': 350,
+        'bandwidth': None
+    },
+    'c1.xlarge': {
+        'id': 'c1.xlarge',
+        'name': 'High-CPU Extra Large Instance',
+        'ram': 7680,
+        'disk': 1690,
+        'bandwidth': None
+    },
+    'm2.2xlarge': {
+        'id': 'm2.2xlarge',
+        'name': 'High-Memory Double Extra Large Instance',
+        'ram': 35021,
+        'disk': 850,
+        'bandwidth': None
+    },
+    'm2.4xlarge': {
+        'id': 'm2.4xlarge',
+        'name': 'High-Memory Quadruple Extra Large Instance',
+        'ram': 70042,
+        'disk': 1690,
+        'bandwidth': None
+    },
+}
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
@@ -136,14 +153,13 @@ class EC2Connection(ConnectionUserAndKey):
         
     def _get_aws_auth_param(self, params, secret_key, path='/'):
         """
-        creates the signature required for AWS, per:
-        http://docs.amazonwebservices.com/AWSEC2/2009-04-04/DeveloperGuide/index.html?using-query-api.html#query-authentication
-        """
-        """
-            StringToSign = HTTPVerb + "\n" +
-                           ValueOfHostHeaderInLowercase + "\n" +
-                           HTTPRequestURI + "\n" +
-                           CanonicalizedQueryString <from the preceding step>
+        Creates the signature required for AWS, per
+        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
+
+        StringToSign = HTTPVerb + "\n" +
+                       ValueOfHostHeaderInLowercase + "\n" +
+                       HTTPRequestURI + "\n" +
+                       CanonicalizedQueryString <from the preceding step>
         """
         keys = params.keys()
         keys.sort()
@@ -156,8 +172,8 @@ class EC2Connection(ConnectionUserAndKey):
         string_to_sign = '\n'.join(('GET', self.host, path, qs))
                                          
         b64_hmac = base64.b64encode(
-                        hmac.new(secret_key, string_to_sign, 
-                            digestmod=sha256).digest())
+            hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
+        )
         return b64_hmac
 
 class EC2NodeDriver(NodeDriver):
@@ -168,10 +184,12 @@ class EC2NodeDriver(NodeDriver):
 
     _instance_types = EC2_US_EAST_INSTANCE_TYPES
 
-    NODE_STATE_MAP = { 'pending': NodeState.PENDING,
-                       'running': NodeState.RUNNING,
-                       'shutting-down': NodeState.TERMINATED,
-                       'terminated': NodeState.TERMINATED }
+    NODE_STATE_MAP = {
+        'pending': NodeState.PENDING,
+        'running': NodeState.RUNNING,
+        'shutting-down': NodeState.TERMINATED,
+        'terminated': NodeState.TERMINATED
+    }
 
     def _findtext(self, element, xpath):
         return element.findtext(self._fixxpath(xpath))
@@ -187,8 +205,9 @@ class EC2NodeDriver(NodeDriver):
         return element.findall(self._fixxpath(xpath))
 
     def _pathlist(self, key, arr):
-        """Converts a key and an array of values into AWS query param 
-           format."""
+        """
+        Converts a key and an array of values into AWS query param format.
+        """
         params = {}
         i = 0
         for value in arr:
@@ -202,48 +221,56 @@ class EC2NodeDriver(NodeDriver):
 
     def _get_terminate_boolean(self, element):
         status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
-        return any([ term_status == status for term_status
+        return any([ term_status == status
+                     for term_status
                      in ('shutting-down', 'terminated') ])
 
     def _to_nodes(self, object, xpath):
         return [ self._to_node(el) 
-                 for el in object.findall(
-                    self._fixxpath(xpath)) ]
+                 for el in object.findall(self._fixxpath(xpath)) ]
         
     def _to_node(self, element):
         try:
-            state = self.NODE_STATE_MAP[self._findattr(element, 
-                                        "instanceState/name")]
+            state = self.NODE_STATE_MAP[
+                self._findattr(element, "instanceState/name")
+            ]
         except KeyError:
             state = NodeState.UNKNOWN
 
-        n = Node(id=self._findtext(element, 'instanceId'),
-                 name=self._findtext(element, 'instanceId'),
-                 state=state,
-                 public_ip=[self._findtext(element, 'dnsName')],
-                 private_ip=[self._findtext(element, 'privateDnsName')],
-                 driver=self.connection.driver,
-                 extra = {
-                  'dns_name': self._findattr(element, "dnsName"),
-                  'instanceId': self._findattr(element, "instanceId"),
-                  'imageId': self._findattr(element, "imageId"),
-                  'private_dns': self._findattr(element, "privateDnsName"),
-                  'status': self._findattr(element, "instanceState/name"),
-                  'keyname': self._findattr(element, "keyName"),
-                  'launchindex': self._findattr(element, "amiLaunchIndex"),
-                  'productcode': [p.text for p in self._findall(element, "productCodesSet/item/productCode")],
-                  'instancetype': self._findattr(element, "instanceType"),
-                  'launchdatetime': self._findattr(element, "launchTime"),
-                  'availability': self._findattr(element, "placement/availabilityZone"),
-                  'kernelid': self._findattr(element, "kernelId"),
-                  'ramdiskid': self._findattr(element, "ramdiskId")
-                 })
+        n = Node(
+            id=self._findtext(element, 'instanceId'),
+            name=self._findtext(element, 'instanceId'),
+            state=state,
+            public_ip=[self._findtext(element, 'dnsName')],
+            private_ip=[self._findtext(element, 'privateDnsName')],
+            driver=self.connection.driver,
+            extra={
+                'dns_name': self._findattr(element, "dnsName"),
+                'instanceId': self._findattr(element, "instanceId"),
+                'imageId': self._findattr(element, "imageId"),
+                'private_dns': self._findattr(element, "privateDnsName"),
+                'status': self._findattr(element, "instanceState/name"),
+                'keyname': self._findattr(element, "keyName"),
+                'launchindex': self._findattr(element, "amiLaunchIndex"),
+                'productcode':
+                    [p.text for p in self._findall(
+                        element, "productCodesSet/item/productCode"
+                     )],
+                'instancetype': self._findattr(element, "instanceType"),
+                'launchdatetime': self._findattr(element, "launchTime"),
+                'availability': self._findattr(element,
+                                               "placement/availabilityZone"),
+                'kernelid': self._findattr(element, "kernelId"),
+                'ramdiskid': self._findattr(element, "ramdiskId")
+            }
+        )
         return n
 
     def _to_images(self, object):
         return [ self._to_image(el)
                  for el in object.findall(
-                    self._fixxpath('imagesSet/item')) ]
+                    self._fixxpath('imagesSet/item')
+                 ) ]
 
     def _to_image(self, element):
         n = NodeImage(id=self._findtext(element, 'imageId'),
@@ -265,7 +292,8 @@ class EC2NodeDriver(NodeDriver):
     def list_images(self):
         params = {'Action': 'DescribeImages'}
         images = self._to_images(
-                    self.connection.request('/', params=params).object)
+            self.connection.request('/', params=params).object
+        )
         return images
 
     def create_security_group(self, name, description):
@@ -283,14 +311,18 @@ class EC2NodeDriver(NodeDriver):
                   'ToPort': '65535',
                   'CidrIp': '0.0.0.0/0'}
         try:
-            results.append(self.connection.request('/', params=params.copy()).object)
+            results.append(
+                self.connection.request('/', params=params.copy()).object
+            )
         except Exception, e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params['IpProtocol'] = 'udp'
 
         try:
-            results.append(self.connection.request('/', params=params.copy()).object)
+            results.append(
+                self.connection.request('/', params=params.copy()).object
+            )
         except Exception, e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
@@ -298,7 +330,9 @@ class EC2NodeDriver(NodeDriver):
         params.update({'IpProtocol': 'icmp', 'FromPort': '-1', 'ToPort': '-1'})
 
         try:
-            results.append(self.connection.request('/', params=params.copy()).object)
+            results.append(
+                self.connection.request('/', params=params.copy()).object
+            )
         except Exception, e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
@@ -350,7 +384,7 @@ class EC2NodeDriver(NodeDriver):
         return self._get_terminate_boolean(res)
 
     def list_locations(self):
-        return [NodeLocation(0, "Amazon US N. Virginia", 'US', self)]
+        return [NodeLocation(0, 'Amazon US N. Virginia', 'US', self)]
 
 class EC2EUConnection(EC2Connection):
 
@@ -361,7 +395,7 @@ class EC2EUNodeDriver(EC2NodeDriver):
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_WEST_INSTANCE_TYPES
     def list_locations(self):
-        return [NodeLocation(0, "Amazon Europe Ireland", 'IE', self)]
+        return [NodeLocation(0, 'Amazon Europe Ireland', 'IE', self)]
 
 class EC2USWestConnection(EC2Connection):
 
@@ -372,4 +406,4 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     connectionCls = EC2USWestConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
     def list_locations(self):
-        return [NodeLocation(0, "Amazon US N. California", 'US', self)]
+        return [NodeLocation(0, 'Amazon US N. California', 'US', self)]
