@@ -16,7 +16,8 @@
 Rackspace driver
 """
 from libcloud.types import NodeState, InvalidCredsException, Provider
-from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node, NodeSize, NodeImage, NodeLocation
+from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node
+from libcloud.base import NodeSize, NodeImage, NodeLocation
 import os
 
 import base64
@@ -79,9 +80,14 @@ class RackspaceConnection(ConnectionUserAndKey):
         if not self.__host:
             # Initial connection used for authentication
             conn = self.conn_classes[self.secure](self.auth_host, self.port[self.secure])
-            conn.request(method='GET', url='/%s' % self.api_version,
-                                           headers={'X-Auth-User': self.user_id,
-                                                    'X-Auth-Key': self.key})
+            conn.request(
+                method='GET',
+                url='/%s' % self.api_version,
+                headers={
+                    'X-Auth-User': self.user_id,
+                    'X-Auth-Key': self.key
+                }
+            )
             resp = conn.getresponse()
             headers = dict(resp.getheaders())
             try:
@@ -97,7 +103,8 @@ class RackspaceConnection(ConnectionUserAndKey):
                 # TODO: Custom exception (?)
                 raise InvalidCredsException()
 
-            # Set host to where we want to make further requests to; close auth conn
+            # Set host to where we want to make further requests to;
+            # close auth conn
             self.__host = server
             conn.close()
 
@@ -111,10 +118,12 @@ class RackspaceConnection(ConnectionUserAndKey):
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
           params['cache-busting'] = os.urandom(8).encode('hex')
-        return super(RackspaceConnection, self).request(action=action,
-                                                        params=params, data=data,
-                                                        method=method, headers=headers)
-        
+        return super(RackspaceConnection, self).request(
+            action=action,
+            params=params, data=data,
+            method=method, headers=headers
+        )
+
 
 class RackspaceNodeDriver(NodeDriver):
     """
@@ -130,15 +139,15 @@ class RackspaceNodeDriver(NodeDriver):
     type = Provider.RACKSPACE
     name = 'Rackspace'
 
-    NODE_STATE_MAP = {  'BUILD': NodeState.PENDING,
-                        'ACTIVE': NodeState.RUNNING,
-                        'SUSPENDED': NodeState.TERMINATED,
-                        'QUEUE_RESIZE': NodeState.PENDING,
-                        'PREP_RESIZE': NodeState.PENDING,
-                        'RESCUE': NodeState.PENDING,
-                        'REBUILD': NodeState.PENDING,
-                        'REBOOT': NodeState.REBOOTING,
-                        'HARD_REBOOT': NodeState.REBOOTING}
+    NODE_STATE_MAP = { 'BUILD': NodeState.PENDING,
+                       'ACTIVE': NodeState.RUNNING,
+                       'SUSPENDED': NodeState.TERMINATED,
+                       'QUEUE_RESIZE': NodeState.PENDING,
+                       'PREP_RESIZE': NodeState.PENDING,
+                       'RESCUE': NodeState.PENDING,
+                       'REBUILD': NodeState.PENDING,
+                       'REBOOT': NodeState.REBOOTING,
+                       'HARD_REBOOT': NodeState.REBOOTING}
 
     def list_nodes(self):
         return self.to_nodes(self.connection.request('/servers/detail').object)
@@ -203,7 +212,9 @@ class RackspaceNodeDriver(NodeDriver):
 
         personality_elm = ET.Element('personality')
         for k, v in files.items():
-            file_elm = ET.SubElement(personality_elm, 'file', {'path': str(k) })
+            file_elm = ET.SubElement(personality_elm,
+                                     'file',
+                                     {'path': str(k)})
             file_elm.text = base64.b64encode(v)
 
         return personality_elm
@@ -220,7 +231,8 @@ class RackspaceNodeDriver(NodeDriver):
 
     def _node_action(self, node, body):
         if isinstance(body, list):
-            attr = ' '.join(['%s="%s"' % (item[0], item[1]) for item in body[1:]])
+            attr = ' '.join(['%s="%s"' % (item[0], item[1])
+                             for item in body[1:]])
             body = '<%s xmlns="%s" %s/>' % (body[0], NAMESPACE, attr)
         uri = '/servers/%s/action' % (node.id)
         resp = self.connection.request(uri, method='POST', data=body)
@@ -284,7 +296,9 @@ class RackspaceNodeDriver(NodeDriver):
 
     def to_images(self, object):
         elements = self._findall(object, "image")
-        return [ self._to_image(el) for el in elements if el.get('status') == 'ACTIVE']
+        return [ self._to_image(el)
+                 for el in elements
+                 if el.get('status') == 'ACTIVE' ]
 
     def _to_image(self, el):
         i = NodeImage(id=el.get('id'),
