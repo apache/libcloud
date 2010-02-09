@@ -16,7 +16,7 @@
 Slicehost Driver
 """
 from libcloud.types import NodeState, Provider
-from libcloud.base import ConnectionKey, Response, NodeDriver, Node,
+from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import base64
 import struct
