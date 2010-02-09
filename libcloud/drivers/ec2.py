@@ -338,16 +338,40 @@ class EC2NodeDriver(NodeDriver):
                 raise e
         return results
 
-    # name doesn't apply to EC2 nodes.
     def create_node(self, **kwargs):
+        """Create a new EC2 node
+
+        See L{NodeDriver.create_node} for more keyword args.
+        Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
+
+        @keyword    name: Name (unused by EC2)
+        @type       name: C{str}
+
+        @keyword    mincount: Minimum number of instances to launch
+        @type       mincount: C{int}
+
+        @keyword    maxcount: Maximum number of instances to launch
+        @type       maxcount: C{int}
+
+        @keyword    securitygroup: Name of security group
+        @type       securitygroup: C{str}
+
+        @keyword    keyname: The name of the key pair
+        @type       keyname: C{str}
+
+        @keyword    userdata: User data
+        @type       userdata: C{str}
+        """
         name = kwargs["name"]
         image = kwargs["image"]
         size = kwargs["size"]
-        params = {'Action': 'RunInstances',
-                  'ImageId': image.id,
-                  'MinCount': kwargs.get('mincount','1'),
-                  'MaxCount': kwargs.get('maxcount','1'),
-                  'InstanceType': size.id}
+        params = {
+            'Action': 'RunInstances',
+            'ImageId': image.id,
+            'MinCount': kwargs.get('mincount','1'),
+            'MaxCount': kwargs.get('maxcount','1'),
+            'InstanceType': size.id
+        }
 
         if 'securitygroup' in kwargs:
             params['SecurityGroup'] = kwargs['securitygroup']
@@ -363,7 +387,8 @@ class EC2NodeDriver(NodeDriver):
 
         if len(nodes) == 1:
             return nodes[0]
-        else: return nodes
+        else:
+            return nodes
 
     def reboot_node(self, node):
         """
