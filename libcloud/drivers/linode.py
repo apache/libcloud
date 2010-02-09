@@ -60,14 +60,16 @@ class LinodeResponse(Response):
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
-        self.invalid = LinodeException(0xFF, "Invalid JSON received from server")
+        self.invalid = LinodeException(0xFF,
+                                       "Invalid JSON received from server")
         
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.action, self.object, self.errors = self.parse_body()
         
         if self.error == "Moved Temporarily":
-            raise LinodeException(0xFA, "Redirected to error page by API.  Bug?")
+            raise LinodeException(0xFA,
+                                  "Redirected to error page by API.  Bug?")
 
         if not self.success():
             # Raise the first error, as there will usually only be one
@@ -79,7 +81,10 @@ class LinodeResponse(Response):
         #    (action, data, errorarray)
         try:
             js = json.loads(self.body)
-            if "DATA" not in js or "ERRORARRAY" not in js or "ACTION" not in js:
+            if ("DATA" not in js
+                or "ERRORARRAY" not in js
+                or "ACTION" not in js):
+
                 return (None, None, [self.invalid])
             errs = [self._make_excp(e) for e in js["ERRORARRAY"]]
             return (js["ACTION"], js["DATA"], errs)
@@ -250,7 +255,8 @@ class LinodeNodeDriver(NodeDriver):
         # Distribution ID
         distros = self.list_images()
         if image.id not in [d.id for d in distros]:
-            raise LinodeException(0xFB, "Invalid distro -- avail.distributions")
+            raise LinodeException(0xFB,
+                                  "Invalid distro -- avail.distributions")
 
         # Kernel
         kernel = 60 if "kernel" not in kwargs else kwargs["kernel"]
@@ -376,17 +382,25 @@ class LinodeNodeDriver(NodeDriver):
             elif dc["LOCATION"][-2:] == "UK":
                 country = "GB"
             else:
-                raise LinodeException(0xFD, "Unable to convert data center location to country: '%s'" % dc["LOCATION"])
-            nl.append(NodeLocation(dc["DATACENTERID"], dc["LOCATION"], country, self))
+                raise LinodeException(
+                    0xFD,
+                    "Unable to convert data center location to country: '%s'"
+                    % dc["LOCATION"]
+                )
+            nl.append(NodeLocation(dc["DATACENTERID"],
+                                   dc["LOCATION"],
+                                   country,
+                                   self))
         return nl
 
     def linode_set_datacenter(self, did):
         # Set the datacenter for create requests.
         #
-        # Create will try to guess, based on where all of the API key's Linodes
-        # are located; if they are all in one location, Create will make a new
-        # node there.  If there are NO Linodes on the account or Linodes are in
-        # multiple locations, it is imperative to set this or creates will fail.
+        # Create will try to guess, based on where all of the API key's
+        # Linodes are located; if they are all in one location, Create will
+        # make a new node there.  If there are NO Linodes on the account or
+        # Linodes are in multiple locations, it is imperative to set this or
+        # creates will fail.
         params = { "api_action": "avail.datacenters" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         for dc in data:
