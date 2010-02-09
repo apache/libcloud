@@ -16,7 +16,8 @@
 Slicehost Driver
 """
 from libcloud.types import NodeState, Provider
-from libcloud.base import ConnectionKey, Response, NodeDriver, Node, NodeSize, NodeImage, NodeLocation
+from libcloud.base import ConnectionKey, Response, NodeDriver, Node,
+from libcloud.base import NodeSize, NodeImage, NodeLocation
 import base64
 import struct
 import socket
@@ -94,9 +95,13 @@ class SlicehostNodeDriver(NodeDriver):
         xml = ET.tostring(root)
 
         node = self._to_nodes(
-                  self.connection.request(uri, method='POST', 
-                            data=xml, headers={'Content-Type': 'application/xml'}
-                      ).object)[0]
+            self.connection.request(
+                uri,
+                method='POST',
+                data=xml,
+                headers={'Content-Type': 'application/xml'}
+            ).object
+        )[0]
         return node
 
     def reboot_node(self, node):
@@ -109,7 +114,9 @@ class SlicehostNodeDriver(NodeDriver):
         #expected_status = 'hard_reboot' if hard else 'reboot'
 
         uri = '/slices/%s/reboot.xml' % (node.id)
-        node = self._to_nodes(self.connection.request(uri, method='PUT').object)[0]
+        node = self._to_nodes(
+            self.connection.request(uri, method='PUT').object
+        )[0]
         return node.state == NodeState.REBOOTING
 
     def destroy_node(self, node):
