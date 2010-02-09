@@ -17,7 +17,8 @@ GoGrid driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver, NodeSize, NodeImage, NodeLocation
+from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver
+from libcloud.base import NodeSize, NodeImage, NodeLocation
 import time
 import hashlib
 
@@ -108,10 +109,15 @@ class GoGridConnection(ConnectionUserAndKey):
         return m.hexdigest()
 
 class GoGridNode(Node):
-    # Generating uuid based on public ip to get around missing id on create_node in gogrid api
-    # Used public ip since it is not mutable and specified at create time, so uuid of node should not change after add is completed
+    # Generating uuid based on public ip to get around missing id on
+    # create_node in gogrid api
+    #
+    # Used public ip since it is not mutable and specified at create time,
+    # so uuid of node should not change after add is completed
     def get_uuid(self):
-        return hashlib.sha1("%s:%d" % (self.public_ip,self.driver.type)).hexdigest()
+        return hashlib.sha1(
+            "%s:%d" % (self.public_ip,self.driver.type)
+        ).hexdigest()
 
 class GoGridNodeDriver(NodeDriver):
 
@@ -221,7 +227,8 @@ class GoGridNodeDriver(NodeDriver):
                   'server.ram': size.id,
                   'ip':first_ip}
 
-        object = self.connection.request('/api/grid/server/add', params=params).object
+        object = self.connection.request('/api/grid/server/add',
+                                         params=params).object
         node = self._to_node(object['list'][0])
 
         return node
