@@ -75,8 +75,11 @@ class SlicehostNodeDriver(NodeDriver):
         return self._to_images(self.connection.request('/images.xml').object)
 
     def list_locations(self):
-        # TODO: This isn't accurate. Some Slices are in Dallas, some are in St Louis (?)
-        return [NodeLocation(0, "Slicehost Central US", 'US', self)]
+        return [
+            NodeLocation(0, 'St. Louis (STL-A)', 'US', self),
+            NodeLocation(0, 'St. Louis (STL-B)', 'US', self),
+            NodeLocation(0, 'Dallas-Fort Worth (DFW-1)', 'US', self)
+        ]
 
     def create_node(self, **kwargs):
         name = kwargs['name']
