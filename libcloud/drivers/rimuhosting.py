@@ -265,8 +265,7 @@ class RimuHostingNodeDriver(NodeDriver):
         if kwargs.has_key('disk_space_2_mb'):
             if not data.has_key('vps_parameters'):
                 data['vps_parameters'] = {}
-            data['vps_parameters']['disk_space_2_mb'] =
-                kwargs['disk_space_2_mb']
+            data['vps_parameters']['disk_space_2_mb'] = kwargs['disk_space_2_mb']
         
         res = self.connection.request(
             '/orders/new-vps',
@@ -274,8 +273,7 @@ class RimuHostingNodeDriver(NodeDriver):
             data=json.dumps({"new-vps":data})
         ).object
         node = self._to_node(res['about_order'])
-        node.extra['password'] =
-            res['new_order_request']['instantiation_options']['password']
+        node.extra['password'] = res['new_order_request']['instantiation_options']['password']
         return node
     
     def list_locations(self):
