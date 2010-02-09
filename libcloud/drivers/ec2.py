@@ -349,14 +349,14 @@ class EC2NodeDriver(NodeDriver):
                   'MaxCount': kwargs.get('maxcount','1'),
                   'InstanceType': size.id}
 
-        try: params['SecurityGroup'] = kwargs['securitygroup']
-        except KeyError: pass
+        if 'securitygroup' in kwargs:
+            params['SecurityGroup'] = kwargs['securitygroup']
 
-        try: params['KeyName'] = kwargs['keyname']
-        except KeyError: pass
+        if 'keyname' in kwargs:
+            params['KeyName'] = kwargs['keyname']
 
-        try: params['UserData'] = base64.b64encode(kwargs['userdata'])
-        except KeyError: pass
+        if 'userdata' in kwargs:
+            params['UserData'] = base64.b64encode(kwargs['userdata'])
 
         object = self.connection.request('/', params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
