@@ -225,8 +225,8 @@ class RimuHostingNodeDriver(NodeDriver):
         }
         
         if kwargs.has_key('control_panel'):
-            data['instantiation_options']['control_panel'] =
-                kwargs['control_panel']
+            (data['instantiation_options']['control_panel']
+             = kwargs['control_panel'])
 
         if kwargs.has_key('auth'):
             auth = kwargs['auth']
