@@ -250,8 +250,7 @@ class RimuHostingNodeDriver(NodeDriver):
                 if not data.has_key('ip_request'):
                     data['ip_request'] = {}
                 data['ip_request']['num_ips'] = int(kwargs['num_ips'])
-                data['ip_request']['extra_ip_reason'] =
-                    kwargs['extra_ip_reason']
+                data['ip_request']['extra_ip_reason'] = kwargs['extra_ip_reason']
         
         if kwargs.has_key('memory_mb'):
             if not data.has_key('vps_parameters'):
