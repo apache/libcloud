@@ -508,7 +508,7 @@ class NodeDriver(object):
     def reboot_node(self, node):
         """
         Reboot a node.
-        @return: C{bool} True if the destroy was successful, otherwise False
+        @return: C{bool} True if the reboot was successful, otherwise False
         """
         raise NotImplementedError, \
             'reboot_node not implemented for this driver'
