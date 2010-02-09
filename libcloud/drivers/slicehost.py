@@ -76,9 +76,9 @@ class SlicehostNodeDriver(NodeDriver):
 
     def list_locations(self):
         return [
-            NodeLocation(0, 'St. Louis (STL-A)', 'US', self),
-            NodeLocation(0, 'St. Louis (STL-B)', 'US', self),
-            NodeLocation(0, 'Dallas-Fort Worth (DFW-1)', 'US', self)
+            NodeLocation(0, 'Slicehost St. Louis (STL-A)', 'US', self),
+            NodeLocation(0, 'Slicehost St. Louis (STL-B)', 'US', self),
+            NodeLocation(0, 'Slicehost Dallas-Fort Worth (DFW-1)', 'US', self)
         ]
 
     def create_node(self, **kwargs):
