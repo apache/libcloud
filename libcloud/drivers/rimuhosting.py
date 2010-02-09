@@ -17,7 +17,7 @@
 RimuHosting Driver
 """
 from libcloud.types import Provider, NodeState, InvalidCredsException
-from libcloud.base import ConnectionKey, Response, NodeAuthPassword,
+from libcloud.base import ConnectionKey, Response, NodeAuthPassword
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeImage
 
