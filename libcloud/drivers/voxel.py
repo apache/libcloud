@@ -46,7 +46,11 @@ class VoxelResponse(Response):
         if not self.parsed:
             self.parsed = ET.XML(self.body)
         for err in self.parsed.findall('err'):
-            err_list.append("(%s) %s" % (err.get('code'), err.get('msg')))
+            code = err.get('code')
+            err_list.append("(%s) %s" % (code, err.get('msg')))
+            if code == "1":
+                # sucks, but only way to detect bad authentication tokens so far
+                raise InvalidCredsException(err_list[-1])
         return "\n".join(err_list)
 
     def success(self):
