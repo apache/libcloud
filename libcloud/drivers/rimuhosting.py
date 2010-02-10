@@ -145,11 +145,16 @@ class RimuHostingNodeDriver(NodeDriver):
             name=image['distro_description'],
             driver=self.connection.driver)
         
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         # Returns a list of sizes (aka plans)
         # Get plans. Note this is really just for libcloud.
         # We are happy with any size.
-        res = self.connection.request('/pricing-plans;server-type=VPS').object
+        if location == None:
+            location = '';
+        else:
+            location = ";dc_location=%s" % (location.id)
+
+        res = self.connection.request('/pricing-plans;server-type=VPS%s' % (location)).object
         return map(lambda x : self._to_size(x), res['pricing_plan_infos'])
 
     def list_nodes(self):
@@ -158,9 +163,10 @@ class RimuHostingNodeDriver(NodeDriver):
         res = self.connection.request('/orders;include_inactive=N').object
         return map(lambda x : self._to_node(x), res['about_orders'])
     
-    def list_images(self):
+    def list_images(self, location=None):
         # Get all base images.
         # TODO: add other image sources. (Such as a backup of a VPS)
+        # All Images are available for use at all locations
         res = self.connection.request('/distributions').object
         return map(lambda x : self._to_image(x), res['distro_infos'])
 

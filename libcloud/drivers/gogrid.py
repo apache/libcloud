@@ -162,7 +162,7 @@ class GoGridNodeDriver(NodeDriver):
         return [ self._to_image(el)
                  for el in object['list'] ]
 
-    def list_images(self):
+    def list_images(self, location=None):
         images = self._to_images(
                     self.connection.request('/api/grid/image/list').object)
         return images
@@ -209,7 +209,7 @@ class GoGridNodeDriver(NodeDriver):
         object = self.connection.request("/api/grid/ip/list", params).object
         return object['list'][0]['ip']
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i) 
                     for i in self._instance_types.values() ]
 

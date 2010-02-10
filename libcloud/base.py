@@ -521,7 +521,7 @@ class NodeDriver(object):
         raise NotImplementedError, \
             'list_nodes not implemented for this driver'
 
-    def list_images(self):
+    def list_images(self, location=None):
         """
         List images on a provider
         @return: C{list} of L{NodeImage} objects
@@ -529,7 +529,7 @@ class NodeDriver(object):
         raise NotImplementedError, \
             'list_images not implemented for this driver'
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         """
         List sizes on a provider
         @return: C{list} of L{NodeSize} objects
