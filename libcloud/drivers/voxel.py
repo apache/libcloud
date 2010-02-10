@@ -48,7 +48,10 @@ class VoxelResponse(Response):
         for err in self.parsed.findall('err'):
             code = err.get('code')
             err_list.append("(%s) %s" % (code, err.get('msg')))
-            if code == "1":
+            # From voxel docs:
+            # 1: Invalid login or password
+            # 9: Permission denied: user lacks access rights for this method
+            if code == "1" or code = "9":
                 # sucks, but only way to detect bad authentication tokens so far
                 raise InvalidCredsException(err_list[-1])
         return "\n".join(err_list)
