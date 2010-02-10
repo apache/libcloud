@@ -19,14 +19,7 @@ Voxel VoxCloud driver
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
-import urllib2
 import datetime
-import base64
-import hmac
-import httplib
-from hashlib import sha256
-import time
-import urllib
 import hashlib
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
