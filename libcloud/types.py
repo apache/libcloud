@@ -45,6 +45,7 @@ class Provider(object):
     VCLOUD = 8
     RIMUHOSTING = 9
     EC2_US_WEST = 10
+    VOXEL = 11
 
 class NodeState(object):
     """
