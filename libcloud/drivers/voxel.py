@@ -48,18 +48,18 @@ class VoxelConnection(ConnectionUserAndKey):
 
    host = VOXEL_API_HOST
    responseCls = VoxelResponse
- 
+
    def add_default_params(self, params):
        params["key"] = self.user_id
        params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
-       
+
        for param in params.keys():
          if params[param] is None:
            del params[param]
 
        keys = params.keys()
        keys.sort()
-       
+
        md5 = hashlib.md5()
        md5.update(self.key)
        for key in keys:
@@ -94,14 +94,14 @@ class VoxelNodeDriver(NodeDriver):
            id = "%dcpu" % cpus
            ram = cpus * RAM_PER_CPU
 
-           VOXEL_INSTANCE_TYPES[id]= { 
+           VOXEL_INSTANCE_TYPES[id]= {
                         'id': id,
                         'name': name,
                         'ram': ram,
                         'disk': None,
                         'bandwidth': None,
                         'price': None}
-   
+
    features = {"create_node": [],
                "list_sizes":  ["variable_disk"]}
 
@@ -109,7 +109,7 @@ class VoxelNodeDriver(NodeDriver):
 
    def list_nodes(self):
        params = {"method": "voxel.devices.list"}
-       result = self.connection.request('', params=params).object        
+       result = self.connection.request('', params=params).object
        return self._to_nodes(result)
 
    def list_sizes(self, location=None):
@@ -169,7 +169,7 @@ class VoxelNodeDriver(NodeDriver):
 
    def list_locations(self):
        params = {"method": "voxel.voxcloud.facilities.list"}
-       result = self.connection.request('', params=params).object        
+       result = self.connection.request('', params=params).object
        nodes = self._to_locations(result)
        return nodes
 
