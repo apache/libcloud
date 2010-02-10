@@ -121,28 +121,6 @@ class VoxelNodeDriver(NodeDriver):
        result = self.connection.request('', params=params).object
        return self._to_images(result)
 
-       name = kwargs["name"]
-       image = kwargs["image"]
-       size = kwargs["size"]
-       params = {'Action': 'RunInstances',
-                 'ImageId': image.id,
-                 'MinCount': kwargs.get('mincount','1'),
-                 'MaxCount': kwargs.get('maxcount','1'),
-                 'InstanceType': size.id}
-
-       try: params['SecurityGroup'] = kwargs['securitygroup']
-       except KeyError: pass
-
-       try: params['KeyName'] = kwargs['keyname']
-       except KeyError: pass
-
-       object = self.connection.request('/', params=params).object
-       nodes = self._to_nodes(object, 'instancesSet/item')
-
-       if len(nodes) == 1:
-           return nodes[0]
-       else: return nodes
-
    def create_node(self, **kwargs):
        size = kwargs["size"]
        cores = size.ram / RAM_PER_CPU
