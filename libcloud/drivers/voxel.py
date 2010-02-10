@@ -180,7 +180,7 @@ class VoxelNodeDriver(NodeDriver):
        params = {'method': 'voxel.devices.power',
                  'device_id': node.id,
                  'power_action': 'reboot'}
-       return _getstatus(self.connection.request('', params=params).object)
+       return self._getstatus(self.connection.request('', params=params).object)
 
    def destroy_node(self, node):
        """
@@ -188,7 +188,7 @@ class VoxelNodeDriver(NodeDriver):
        """
        params = {'method': 'voxel.voxcloud.delete',
                  'device_id': node.id}
-       return _getstatus(self.connection.request('', params=params).object)
+       return self._getstatus(self.connection.request('', params=params).object)
 
    def list_locations(self):
        params = {"method": "voxel.voxcloud.facilities.list"}
