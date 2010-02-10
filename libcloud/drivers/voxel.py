@@ -28,21 +28,34 @@ VOXEL_API_HOST = "api.voxel.net"
 
 class VoxelResponse(Response):
 
-   def parse_body(self):
-       if not self.body:
-           return None
-       return ET.XML(self.body)
+    def __init__(self, response):
+      self.parsed = None
+      super(VoxelResponse, self).__init__(response)
 
-   def parse_error(self):
-       try:
-           err_list = []
-           for err in ET.XML(self.body).findall('err'):
-               code = err.attrib["code"]
-               message = err.attrib["msg"]
-               err_list.append("%s: %s" % (code.text, message.text))
-           return "\n".join(err_list)
-       except ExpatError:
-           return self.body
+    def parse_body(self):
+        if not self.body:
+            return None
+        if not self.parsed:
+            self.parsed = ET.XML(self.body)
+        return self.parsed
+
+    def parse_error(self):
+        err_list = []
+        if not self.body:
+            return None
+        if not self.parsed:
+            self.parsed = ET.XML(self.body)
+        for err in self.parsed.findall('err'):
+            err_list.append("(%s) %s" % (err.get('code'), err.get('msg')))
+        return "\n".join(err_list)
+
+    def success(self):
+        if not self.parsed:
+            self.parsed = ET.XML(self.body)
+        stat = self.parsed.get('stat')
+        if stat != "ok":
+            return False
+        return True
 
 class VoxelConnection(ConnectionUserAndKey):
 
