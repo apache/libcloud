@@ -1,5 +1,7 @@
-libcloud - a unified interface into the cloud
+Apache libcloud - a unified interface into the cloud
 
-The goal of this project is to create a basic yet functional standard library into various cloud providers.
+The goal of this project is to create a basic yet functional standard library 
+into various cloud providers.
 
-NOTE: libcloud is currently under heavy development, this is not production ready software!
+Apache libcloud is an incubator project at the Apache Software Foundation, see
+<http://incubator.apache.org/libcloud> for more information.
