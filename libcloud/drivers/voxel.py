@@ -51,7 +51,7 @@ class VoxelResponse(Response):
             # From voxel docs:
             # 1: Invalid login or password
             # 9: Permission denied: user lacks access rights for this method
-            if code == "1" or code = "9":
+            if code == "1" or code == "9":
                 # sucks, but only way to detect bad authentication tokens so far
                 raise InvalidCredsException(err_list[-1])
         return "\n".join(err_list)
