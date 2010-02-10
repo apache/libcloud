@@ -130,7 +130,7 @@ class VoxelNodeDriver(NodeDriver):
 
    def list_nodes(self):
        params = {"method": "voxel.devices.list"}
-       result = self.connection.request('', params=params).object
+       result = self.connection.request('/', params=params).object
        return self._to_nodes(result)
 
    def list_sizes(self, location=None):
@@ -139,7 +139,7 @@ class VoxelNodeDriver(NodeDriver):
 
    def list_images(self, location=None):
        params = {"method": "voxel.images.list"}
-       result = self.connection.request('', params=params).object
+       result = self.connection.request('/', params=params).object
        return self._to_images(result)
 
    def create_node(self, **kwargs):
@@ -159,7 +159,7 @@ class VoxelNodeDriver(NodeDriver):
                  'ssh_password':     kwargs.get("sshpass", None),
                  'voxel_access':     kwargs.get("voxel_access", None)}
 
-       object = self.connection.request('', params=params).object
+       object = self.connection.request('/', params=params).object
 
        if self._getstatus(object):
            return Node(
@@ -180,7 +180,7 @@ class VoxelNodeDriver(NodeDriver):
        params = {'method': 'voxel.devices.power',
                  'device_id': node.id,
                  'power_action': 'reboot'}
-       return self._getstatus(self.connection.request('', params=params).object)
+       return self._getstatus(self.connection.request('/', params=params).object)
 
    def destroy_node(self, node):
        """
@@ -188,11 +188,11 @@ class VoxelNodeDriver(NodeDriver):
        """
        params = {'method': 'voxel.voxcloud.delete',
                  'device_id': node.id}
-       return self._getstatus(self.connection.request('', params=params).object)
+       return self._getstatus(self.connection.request('/', params=params).object)
 
    def list_locations(self):
        params = {"method": "voxel.voxcloud.facilities.list"}
-       result = self.connection.request('', params=params).object
+       result = self.connection.request('/', params=params).object
        nodes = self._to_locations(result)
        return nodes
 
