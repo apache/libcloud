@@ -285,11 +285,11 @@ class EC2NodeDriver(NodeDriver):
                     'reservationSet/item/instancesSet/item')
         return nodes
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i) 
                     for i in self._instance_types.values() ]
     
-    def list_images(self):
+    def list_images(self, location=None):
         params = {'Action': 'DescribeImages'}
         images = self._to_images(
             self.connection.request('/', params=params).object

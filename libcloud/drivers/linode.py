@@ -344,7 +344,7 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(LINODE_ROOT, params=params).object
         return self._to_node(data[0])
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         # List Sizes
         # Retrieve all available Linode plans.
         # FIXME: Prices get mangled due to 'float'.
@@ -358,7 +358,7 @@ class LinodeNodeDriver(NodeDriver):
             sizes.append(n)
         return sizes
     
-    def list_images(self):
+    def list_images(self, location=None):
         # List Images
         # Retrieve all available Linux distributions.
         params = { "api_action": "avail.distributions" }

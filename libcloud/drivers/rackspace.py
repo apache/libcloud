@@ -152,10 +152,10 @@ class RackspaceNodeDriver(NodeDriver):
     def list_nodes(self):
         return self.to_nodes(self.connection.request('/servers/detail').object)
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         return self.to_sizes(self.connection.request('/flavors/detail').object)
 
-    def list_images(self):
+    def list_images(self, location=None):
         return self.to_images(self.connection.request('/images/detail').object)
 
     def list_locations(self):

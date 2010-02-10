@@ -160,12 +160,12 @@ class INodeDriver(Interface):
         Returns a list of nodes for this provider
         """
 
-    def list_images():
+    def list_images(location=None):
         """
         Returns a list of images for this provider
         """
 
-    def list_sizes():
+    def list_sizes(location=None):
         """
         Returns a list of sizes for this provider
         """

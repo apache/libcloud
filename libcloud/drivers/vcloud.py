@@ -430,7 +430,7 @@ class VCloudNodeDriver(NodeDriver):
         )
         return ns
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         sizes = [self._to_size(i) for i in VIRTUAL_MEMORY_VALS]
         return sizes
 
@@ -464,7 +464,7 @@ class VCloudNodeDriver(NodeDriver):
 
         return res
 
-    def list_images(self):
+    def list_images(self, location=None):
         images = []
         for vdc in self.vdcs:
             res = self.connection.request(vdc).object

@@ -148,7 +148,7 @@ class VPSNetNodeDriver(NodeDriver):
         node = self._to_node(res.object['virtual_machine'])
         return True
     
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         res = self.connection.request('/nodes.%s' % (API_VERSION,))
         available_nodes = len([size for size in res.object 
                             if not size['slice']["virtual_machine_id"]])
@@ -165,7 +165,7 @@ class VPSNetNodeDriver(NodeDriver):
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,))
         return [self._to_node(i['virtual_machine']) for i in res.object] 
 
-    def list_images(self):
+    def list_images(self, location=None):
         res = self.connection.request('/available_clouds.%s' % (API_VERSION,))
 
         images = []
