@@ -22,7 +22,6 @@ from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, Node
 import datetime
 import hashlib
 from xml.etree import ElementTree as ET
-from xml.parsers.expat import ExpatError
 
 VOXEL_API_HOST = "api.voxel.net"
 
