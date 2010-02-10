@@ -38,7 +38,9 @@ DRIVERS = {
     Provider.LINODE:
         ('libcloud.drivers.linode', 'LinodeNodeDriver'),
     Provider.RIMUHOSTING:
-        ('libcloud.drivers.rimuhosting', 'RimuHostingNodeDriver')
+        ('libcloud.drivers.rimuhosting', 'RimuHostingNodeDriver'),
+    Provider.VOXEL:
+        ('libcloud.drivers.voxel', 'VoxelNodeDriver'),	
 }
 
 def get_driver(provider):
