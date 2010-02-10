@@ -18,7 +18,8 @@ Voxel VoxCloud driver
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
-from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver, NodeSize, NodeImage, NodeLocation
+from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
+from libcloud.base import NodeSize, NodeImage, NodeLocation
 import datetime
 import hashlib
 from xml.etree import ElementTree as ET
@@ -51,7 +52,8 @@ class VoxelResponse(Response):
             # 1: Invalid login or password
             # 9: Permission denied: user lacks access rights for this method
             if code == "1" or code == "9":
-                # sucks, but only way to detect bad authentication tokens so far
+                # sucks, but only way to detect
+                # bad authentication tokens so far
                 raise InvalidCredsException(err_list[-1])
         return "\n".join(err_list)
 
@@ -94,9 +96,9 @@ VOXEL_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 
 NODE_STATE_MAP = { 'IN_PROGRESS': NodeState.PENDING,
-                  'SUCCEEDED': NodeState.RUNNING,
-                  'shutting-down': NodeState.TERMINATED,
-                  'terminated': NodeState.TERMINATED }
+                   'SUCCEEDED': NodeState.RUNNING,
+                   'shutting-down': NodeState.TERMINATED,
+                   'terminated': NodeState.TERMINATED }
 
 class VoxelNodeDriver(NodeDriver):
 
@@ -160,12 +162,14 @@ class VoxelNodeDriver(NodeDriver):
        object = self.connection.request('', params=params).object
 
        if self._getstatus(object):
-           return Node(id = object.findtext("device/id"),
-                       name = kwargs["name"],
-                       state = NODE_STATE_MAP[object.findtext("devices/status")],
-                       public_ip = public_ip,
-                       private_ip = private_ip,
-                       driver = self.connection.driver)
+           return Node(
+               id = object.findtext("device/id"),
+               name = kwargs["name"],
+               state = NODE_STATE_MAP[object.findtext("devices/status")],
+               public_ip = public_ip,
+               private_ip = private_ip,
+               driver = self.connection.driver
+           )
        else:
          return None
 
@@ -201,7 +205,8 @@ class VoxelNodeDriver(NodeDriver):
        return [NodeLocation(element.attrib["label"],
                             element.findtext("description"),
                             element.findtext("description"),
-                            self) for element in object.findall('facilities/facility')]
+                            self)
+               for element in object.findall('facilities/facility')]
 
    def _to_nodes(self, object):
        nodes = []
