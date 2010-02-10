@@ -112,11 +112,11 @@ class VoxelNodeDriver(NodeDriver):
        result = self.connection.request('', params=params).object        
        return self._to_nodes(result)
 
-   def list_sizes(self):
+   def list_sizes(self, location=None):
        return [ NodeSize(driver=self.connection.driver, **i) 
                    for i in VOXEL_INSTANCE_TYPES.values() ]
 
-   def list_images(self):
+   def list_images(self, location=None):
        params = {"method": "voxel.images.list"}
        result = self.connection.request('', params=params).object
        return self._to_images(result)
