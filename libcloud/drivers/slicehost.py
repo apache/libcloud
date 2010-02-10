@@ -68,10 +68,10 @@ class SlicehostNodeDriver(NodeDriver):
     def list_nodes(self):
         return self._to_nodes(self.connection.request('/slices.xml').object)
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         return self._to_sizes(self.connection.request('/flavors.xml').object)
 
-    def list_images(self):
+    def list_images(self, location=None):
         return self._to_images(self.connection.request('/images.xml').object)
 
     def list_locations(self):

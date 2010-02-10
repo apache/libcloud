@@ -72,14 +72,14 @@ class DummyNodeDriver(NodeDriver):
         self.nl.remove(node)
         return True
 
-    def list_images(self):
+    def list_images(self, location=None):
         return [
             NodeImage(id=1, name="Ubuntu 9.10", driver=self),
             NodeImage(id=2, name="Ubuntu 9.04", driver=self),
             NodeImage(id=3, name="Slackware 4", driver=self),
         ]
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         return [
           NodeSize(id=1,
                    name="Small",
