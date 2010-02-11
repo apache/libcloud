@@ -17,6 +17,7 @@
 # Based upon code written by Alex Polvi <polvi@cloudkick.com>
 #
 
+import sys
 from libcloud.drivers.linode import LinodeNodeDriver
 from libcloud.base import Node, NodeAuthPassword
 from test import MockHttp, TestCaseMixin
@@ -131,3 +132,6 @@ class LinodeMockHttp(MockHttp):
     def _linode_ip_list(self, method, url, body, headers):
         body = '{"ACTION": "linode.ip.list", "DATA": [{"RDNS_NAME": "li22-54.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.54", "IPADDRESSID": 5384, "LINODEID": 8098}, {"RDNS_NAME": "li22-245.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.245", "IPADDRESSID": 5575, "LINODEID": 8098}], "ERRORARRAY": []}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

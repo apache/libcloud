@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import unittest
 
 from libcloud.drivers.voxel import VoxelNodeDriver as Voxel
@@ -48,3 +49,6 @@ class VoxelMockHttp(MockHttp):
 <rsp stat="fail"><err code="1" msg="Invalid login or password"/><method>voxel.devices.list</method><parameters><param name="timestamp">2010-02-10T23:39:25.808107+0000</param><param name="key">authshouldfail</param><param name="api_sig">ae069bb835e998622caaddaeff8c98e0</param></parameters><string_to_sign>YOUR_SECRETtimestamp2010-02-10T23:39:25.808107+0000methodvoxel.devices.listkeyauthshouldfail</string_to_sign></rsp>
 """
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())
