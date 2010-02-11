@@ -14,6 +14,7 @@
 # limitations under the License.
 # Copyright 2009 RedRata Ltd
 
+import sys
 from libcloud.drivers.rimuhosting import RimuHostingNodeDriver
 from test import MockHttp
 from test import MockHttp, TestCaseMixin
@@ -283,3 +284,6 @@ class RimuHostingMockHttp(MockHttp):
         """
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import unittest
 
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
@@ -288,3 +289,6 @@ class SlicehostMockHttp(MockHttp):
     def _slices_1_destroy_xml(self, method, url, body, headers):
         body = ''
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

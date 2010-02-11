@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import unittest
 import exceptions
 
@@ -203,3 +204,6 @@ class VPSNetMockHttp(MockHttp):
     def _available_clouds_api10json_create(self, method, url, body, headers):
         body = """[{"cloud":{"system_templates":[{"id":9,"label":"Ubuntu 8.04 x64"}],"id":2,"label":"USA VPS Cloud"}}]"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

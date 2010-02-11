@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import unittest
 import exceptions
 
@@ -327,3 +328,6 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
       
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())
