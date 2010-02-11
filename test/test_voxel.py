@@ -21,7 +21,7 @@ from libcloud.base import Node, NodeImage, NodeSize
 import httplib
 
 from test import MockHttp, multipleresponse, TestCaseMixin
-from secrets import VOXEL_USER, VOXEL_SECRET
+from secrets import VOXEL_KEY, VOXEL_SECRET
 from xml.etree import ElementTree as ET
 
 class VoxelTest(unittest.TestCase):
