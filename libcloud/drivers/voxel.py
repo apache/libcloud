@@ -143,6 +143,8 @@ class VoxelNodeDriver(NodeDriver):
         return self._to_images(result)
 
     def create_node(self, **kwargs):
+        raise NotImplementedError, \
+            'create_node not finished for voxel yet'
         size = kwargs["size"]
         cores = size.ram / RAM_PER_CPU
         params = {'method':           'voxel.voxcloud.create',
