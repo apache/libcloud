@@ -168,8 +168,8 @@ class VoxelNodeDriver(NodeDriver):
                 id = object.findtext("device/id"),
                 name = kwargs["name"],
                 state = NODE_STATE_MAP[object.findtext("devices/status")],
-                public_ip = public_ip,
-                private_ip = private_ip,
+                public_ip = kwargs.get("public_ip", None),
+                private_ip = kwargs.get("private_ip", None),
                 driver = self.connection.driver
             )
         else:
