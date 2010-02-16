@@ -1,0 +1,31 @@
+
+General Information
+ * URL: http://incubator.apache.org/libcloud/devinfo.html
+
+Git Repositories
+ * Official Git Mirror:  git://git.apache.org/libcloud.git
+ * Github Mirror:        git://github.com/apache/libcloud.git
+
+Using The Git-SVN Bridge (For Committers)
+
+ $ git clone git://git.apache.org/libcloud libcloud
+ $ cd libcloud
+
+ $ curl http://git.apache.org/authors.txt > .git/authors.txt
+ $ git config svn.authorsfile ".git/authors.txt"
+
+ # Optionally, set your Apache commiter info, if different from global
+ $ git config user.name "Your Name"
+ $ git config user.email "you@example.org"
+
+ $ git svn init \
+       --prefix=origin/ \
+       --tags=tags \
+       --trunk=trunk \
+       --branches=branches \
+       https://svn.apache.org/repos/asf/incubator/libcloud
+
+ $ git svn rebase
+
+ To push commits back to SVN:
+ $ git svn dcommit
