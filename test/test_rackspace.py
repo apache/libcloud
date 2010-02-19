@@ -51,6 +51,14 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual('10.176.168.218', node.private_ip[0])
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
+        self.assertEqual(type(node.extra.get('metadata')), type(dict()))
+        RackspaceMockHttp.type = 'METADATA'
+        ret = self.driver.list_nodes()
+        self.assertEqual(len(ret), 1)
+        node = ret[0]
+        self.assertEqual(type(node.extra.get('metadata')), type(dict()))
+        self.assertEqual(node.extra.get('metadata').get('somekey'), 'somevalue')
+        RackspaceMockHttp.type = None
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -113,6 +121,10 @@ class RackspaceMockHttp(MockHttp):
 
     def _v1_0_slug_servers_detail(self, method, url, body, headers):
         body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><servers xmlns="http://docs.rackspacecloud.com/servers/api/v1.0"><server status="ACTIVE" progress="100" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" id="72258" name="racktest"><metadata/><addresses><public><ip addr="67.23.21.33"/></public><private><ip addr="10.176.168.218"/></private></addresses></server></servers>"""
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_METADATA(self, method, url, body, headers):
+        body = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?><servers xmlns="http://docs.rackspacecloud.com/servers/api/v1.0"><server status="ACTIVE" progress="100" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" id="72258" name="racktest"><metadata><meta key="somekey">somevalue</meta></metadata><addresses><public><ip addr="67.23.21.33"/></public><private><ip addr="10.176.168.218"/></private></addresses></server></servers>"""
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_0_slug_flavors_detail(self, method, url, body, headers):
