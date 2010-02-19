@@ -134,6 +134,8 @@ class EC2Response(Response):
                 raise InvalidCredsException(err_list[-1])
             if code.text == "SignatureDoesNotMatch":
                 raise InvalidCredsException(err_list[-1])
+            if code.text == "AuthFailure":
+                raise InvalidCredsException(err_list[-1])
         return "\n".join(err_list)
 
 class EC2Connection(ConnectionUserAndKey):
