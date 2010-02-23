@@ -32,9 +32,10 @@ def enable_debug(fo):
     @type fo: File like object, only write operations are used.
     """
     import httplib
-    from libcloud.base import ConnectionKey,LoggingHTTPSConnection
+    from libcloud.base import ConnectionKey, LoggingHTTPConnection, LoggingHTTPSConnection
     LoggingHTTPSConnection.log = fo
-    ConnectionKey.conn_classes = (httplib.HTTPConnection, LoggingHTTPSConnection)
+    LoggingHTTPConnection.log = fo
+    ConnectionKey.conn_classes = (LoggingHTTPConnection, LoggingHTTPSConnection)
 
 def _init_once():
     import os
