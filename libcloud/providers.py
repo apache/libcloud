@@ -40,7 +40,9 @@ DRIVERS = {
     Provider.RIMUHOSTING:
         ('libcloud.drivers.rimuhosting', 'RimuHostingNodeDriver'),
     Provider.VOXEL:
-        ('libcloud.drivers.voxel', 'VoxelNodeDriver'),	
+        ('libcloud.drivers.voxel', 'VoxelNodeDriver'),
+    Provider.SOFTLAYER:
+        ('libcloud.drivers.softlayer', 'SoftLayerNodeDriver'),
 }
 
 def get_driver(provider):
