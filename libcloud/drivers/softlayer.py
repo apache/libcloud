@@ -27,16 +27,9 @@ API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
 
 class SoftLayerTransport(xmlrpclib.Transport):
     user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
-#   def request(self, host, handler, request_body, verbose=0):
-#        print request_body
-#        xmlrpclib.Transport.request(self, host, handler, request_body, verbose)
-
- #   def _parse_response(self, file, sock):
- #       print file.read()
- #       xmlrpclib.Transport.request(self, file, sock)
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
-    def __init__(self, service, verbose=1):
+    def __init__(self, service, verbose=0):
         xmlrpclib.ServerProxy.__init__(
             self,
             uri="%s/%s" % (API_PREFIX, service),
@@ -52,7 +45,7 @@ class SoftLayerConnection(object):
         self.key = key 
 
     def request(self, service, method, *args):
-        sl = SoftLayerProxy(service, 1)
+        sl = SoftLayerProxy(service)
         params = [self._get_auth_param(service)] + list(args)
         return getattr(sl, method)(*params)
 
