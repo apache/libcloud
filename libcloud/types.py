@@ -46,6 +46,7 @@ class Provider(object):
     RIMUHOSTING = 9
     EC2_US_WEST = 10
     VOXEL = 11
+    SOFTLAYER = 12
 
 class NodeState(object):
     """

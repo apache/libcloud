@@ -25,29 +25,38 @@ from libcloud.base import NodeSize, NodeImage, NodeLocation
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
 
+class SoftLayerException(Exception):
+    pass
+
 class SoftLayerTransport(xmlrpclib.Transport):
     user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
+    transportCls = SoftLayerTransport
+
     def __init__(self, service, verbose=0):
         xmlrpclib.ServerProxy.__init__(
             self,
             uri="%s/%s" % (API_PREFIX, service),
-            transport=SoftLayerTransport(use_datetime=0),
+            transport=self.transportCls(use_datetime=0),
             verbose=verbose
         )
 
 class SoftLayerConnection(object):
+    proxyCls = SoftLayerProxy
     driver = None
 
     def __init__(self, user, key):
         self.user = user
         self.key = key 
 
-    def request(self, service, method, *args):
-        sl = SoftLayerProxy(service)
-        params = [self._get_auth_param(service)] + list(args)
-        return getattr(sl, method)(*params)
+    def request(self, service, method, *args, **init_params):
+        sl = self.proxyCls(service)
+        params = [self._get_auth_param(service, init_params)] + list(args)
+        try:
+            return getattr(sl, method)(*params)
+        except xmlrpclib.Fault, e:
+            raise SoftLayerException(e)
 
     def _get_auth_param(self, service, init_params=None):
         if not init_params:
@@ -65,9 +74,38 @@ class SoftLayerConnection(object):
 
 class SoftLayerNodeDriver(NodeDriver):
     connectionCls = SoftLayerConnection
+    name = 'SoftLayer'
+    type = Provider.SOFTLAYER
 
-    def __init__(self, user, key=None, secure=False):
+    def __init__(self, key, secret=None, secure=False):
         self.key = key
         self.secret = secret
-        self.connection = connectionCls(user, key)
+        self.connection = self.connectionCls(key, secret)
         self.connection.driver = self
+
+    def _to_node(self, host):
+        return Node(
+            id=host['id'],
+            name=host['hostname'],
+            state=host['statusId'],
+            public_ip=host['primaryIpAddress'],
+            private_ip=host['primaryBackendIpAddress'],
+            driver=self
+        )
+    
+    def _to_nodes(self, hosts):
+        return [self._to_node(h) for h in hosts]
+
+    def list_nodes(self):
+        nodes = self._to_nodes(
+            self.connection.request("SoftLayer_Account","getVirtualGuests")
+        )
+        return nodes
+
+    def reboot_node(self, node):
+        res = self.connection.request(
+            "SoftLayer_Virtual_Guest", 
+            "rebootHard", 
+            id=node.id
+        )
+        return res
