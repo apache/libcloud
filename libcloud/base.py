@@ -197,7 +197,7 @@ class Response(object):
         return self.status == httplib.OK or self.status == httplib.CREATED
 
 #TODO: Move this to a better location/package
-class LoggingHTTPSConnection(httplib.HTTPSConnection):
+class LoggingConnection():
     """
     Debug class to log all HTTP(s) requests as they could be made
     with the C{curl} command.
@@ -241,14 +241,6 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
                % (id(self), id(r)))
         return (rr, rv)
 
-    def getresponse(self):
-        r = httplib.HTTPSConnection.getresponse(self)
-        if self.log is not None:
-            r, rv = self._log_response(r)
-            self.log.write(rv + "\n")
-            self.log.flush()
-        return r
-
     def _log_curl(self, method, url, body, headers):
         cmd = ["curl", "-i"]
 
@@ -264,13 +256,44 @@ class LoggingHTTPSConnection(httplib.HTTPSConnection):
         cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
         return " ".join(cmd)
 
+class LoggingHTTPSConnection(LoggingConnection, httplib.HTTPSConnection):
+
+    def getresponse(self):
+        r = httplib.HTTPSConnection.getresponse(self)
+        if self.log is not None:
+            r, rv = self._log_response(r)
+            self.log.write(rv + "\n")
+            self.log.flush()
+        return r
+
     def request(self, method, url, body=None, headers=None):
+        headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
             pre = "# -------- begin %d request ----------\n"  % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return httplib.HTTPSConnection.request(self, method, url,
+                                               body, headers)
+
+class LoggingHTTPConnection(LoggingConnection, httplib.HTTPConnection):
+
+    def getresponse(self):
+        r = httplib.HTTPConnection.getresponse(self)
+        if self.log is not None:
+            r, rv = self._log_response(r)
+            self.log.write(rv + "\n")
+            self.log.flush()
+        return r
+
+    def request(self, method, url, body=None, headers=None):
+        headers.update({'X-LC-Request-ID': str(id(self))})
+        if self.log is not None:
+            pre = "# -------- begin %d request ----------\n"  % id(self)
+            self.log.write(pre +
+                           self._log_curl(method, url, body, headers) + "\n")
+            self.log.flush()
+        return httplib.HTTPConnection.request(self, method, url,
                                                body, headers)
 
 class ConnectionKey(object):
@@ -280,7 +303,7 @@ class ConnectionKey(object):
     interface.implementsOnly(IConnectionKey)
     interface.classProvides(IConnectionKeyFactory)
 
-    #conn_classes = (httplib.HTTPConnection, LoggingHTTPSConnection)
+    #conn_classes = (httplib.LoggingHTTPConnection, LoggingHTTPSConnection)
     conn_classes = (httplib.HTTPConnection, httplib.HTTPSConnection)
 
     responseCls = Response
@@ -315,6 +338,12 @@ class ConnectionKey(object):
         port = port or self.port[self.secure]
 
         connection = self.conn_classes[self.secure](host, port)
+        # You can uncoment this line, if you setup a reverse proxy server
+        # which proxies to your endpoint, and lets you easily capture
+        # connections in cleartext when you setup the proxy to do SSL
+        # for you
+        #connection = self.conn_classes[False]("127.0.0.1", 8080)
+
         self.connection = connection
 
     def _user_agent(self):
