@@ -110,14 +110,18 @@ class RackspaceConnection(ConnectionUserAndKey):
 
         return self.__host
 
-    def request(self, action, params={}, data='', headers={}, method='GET'):
+    def request(self, action, params=None, data='', headers=None, method='GET'):
+        if not headers:
+            headers = {}
+        if not params:
+            params = {}
         # Due to first-run authentication request, we may not have a path
         if self.path:
             action = self.path + action
         if method == "POST":
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
-          params['cache-busting'] = os.urandom(8).encode('hex')
+            params['cache-busting'] = os.urandom(8).encode('hex')
         return super(RackspaceConnection, self).request(
             action=action,
             params=params, data=data,
