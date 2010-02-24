@@ -89,7 +89,11 @@ class RimuHostingConnection(ConnectionKey):
         headers['Authorization'] = 'rimuhosting apikey=%s' % (self.key)
         return headers;
 
-    def request(self, action, params={}, data='', headers={}, method='GET'):
+    def request(self, action, params=None, data='', headers=None, method='GET'):
+        if not headers:
+            headers = {}
+        if not params:
+            params = {}
         # Override this method to prepend the api_context
         return ConnectionKey.request(self, self.api_context + action,
                                      params, data, headers, method)
