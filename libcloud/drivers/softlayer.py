@@ -96,6 +96,23 @@ class SoftLayerNodeDriver(NodeDriver):
     def _to_nodes(self, hosts):
         return [self._to_node(h) for h in hosts]
 
+    def destroy_node(self, node):
+        billing_item = self.connection.request(
+            "SoftLayer_Virtual_Guest",
+            "getBillingItem",
+            id=node.id
+        )
+
+        if billing_item:
+            res = self.connection.request(
+                "SoftLayer_Billing_Item",
+                "cancelService",
+                id=billing_item['id']
+            )
+            return res
+        else:
+            return False
+
     def list_nodes(self):
         nodes = self._to_nodes(
             self.connection.request("SoftLayer_Account","getVirtualGuests")
