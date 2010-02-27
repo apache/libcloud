@@ -143,6 +143,8 @@ class RackspaceNodeDriver(NodeDriver):
     type = Provider.RACKSPACE
     name = 'Rackspace'
 
+    features = {"create_node": ["generates_password"]}
+
     NODE_STATE_MAP = { 'BUILD': NodeState.PENDING,
                        'ACTIVE': NodeState.RUNNING,
                        'SUSPENDED': NodeState.TERMINATED,
@@ -271,7 +273,7 @@ class RackspaceNodeDriver(NodeDriver):
         
         n = Node(id=el.get('id'),
                  name=el.get('name'),
-                 state=el.get('status'),
+                 state=self.NODE_STATE_MAP.get(el.get('status')),
                  public_ip=public_ip,
                  private_ip=private_ip,
                  driver=self.connection.driver,
