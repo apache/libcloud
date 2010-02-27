@@ -26,9 +26,21 @@ from libcloud.interface import INodeDriverFactory, INodeDriver
 from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
+from libcloud.types import NodeState
+import time
 import hashlib
 import StringIO
+import os
 from pipes import quote as pquote
+
+have_paramiko = False
+
+try:
+    import paramiko
+    import socket
+    have_paramiko = True
+except ImportError:
+    pass
 
 class Node(object):
     """
@@ -573,3 +585,74 @@ class NodeDriver(object):
         """
         raise NotImplementedError, \
             'list_locations not implemented for this driver'
+
+    def deploy_node(self, **kwargs):
+        # TODO: support ssh keys
+        if not have_paramiko:
+            raise NotImplementedError, \
+                'deploy_node requires paramiko to be installed.'
+
+        password = None
+
+        if 'generates_password' not in self.features["create_node"]:
+            if 'password' not in self.features["create_node"]:
+                raise NotImplementedError, \
+                    'deploy_node not implemented for this driver'
+
+            if not kwargs.has_key('auth'):
+                kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
+
+            password = kwargs['auth'].password
+        node = self.create_node(**kwargs)
+        if 'generates_password' in self.features["create_node"]:
+            password = node.extra.get('password')
+        start = time.time()
+        end = start + (60 * 15)
+        while time.time() < end:
+            # need to wait until we get a public IP address.
+            # TODO: there must be a better way of doing this
+            time.sleep(10)
+            nodes = self.list_nodes()
+            nodes = filter(lambda n: n.uuid == node.uuid, nodes)
+            if len(nodes) == 0:
+                raise Exception("Booted node[%s] is missing form list_nodes.", node)
+            if len(nodes) > 1:
+                raise Exception("Booted single node[%s], but multiple nodes have same UUID", node)
+
+            node = nodes[0]
+
+            if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
+                break
+
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        #print 'connecting to '+ node.public_ip[0]
+        conp = {
+                'hostname': node.public_ip[0],
+                'port': 22,
+                'username': 'root',
+                'password': password,
+                'allow_agent': False,
+                'look_for_keys': False,
+                }
+
+        laste = None
+        while time.time() < end:
+            laste = None
+            try:
+                client.connect(**conp)
+                break
+            except socket.error, e:
+                laste = e
+            time.sleep(10)
+        if laste is not None:
+            raise e
+        #print "connected!"
+        sftp = client.open_sftp()
+        sftp.mkdir(".ssh")
+        sftp.chdir(".ssh")
+        ak = sftp.file("authorized_keys",  mode='w')
+        ak.write(kwargs['pubkey'])
+        ak.close()
+        sftp.close()
+        return node
