@@ -27,20 +27,14 @@ from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
 from libcloud.types import NodeState
+from libcloud.ssh import SSHClient
 import time
 import hashlib
 import StringIO
 import os
+import socket
 from pipes import quote as pquote
 
-have_paramiko = False
-
-try:
-    import paramiko
-    import socket
-    have_paramiko = True
-except ImportError:
-    pass
 
 class Node(object):
     """
@@ -588,10 +582,6 @@ class NodeDriver(object):
 
     def deploy_node(self, **kwargs):
         # TODO: support ssh keys
-        if not have_paramiko:
-            raise NotImplementedError, \
-                'deploy_node requires paramiko to be installed.'
-
         password = None
 
         if 'generates_password' not in self.features["create_node"]:
@@ -624,24 +614,17 @@ class NodeDriver(object):
             if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
                 break
 
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        #print 'connecting to '+ node.public_ip[0]
-        conp = {
-                'hostname': node.public_ip[0],
-                'port': 22,
-                'username': 'root',
-                'password': password,
-                'allow_agent': False,
-                'look_for_keys': False,
-                }
-
+        client = SSHClient(hostname=node.public_ip[0],
+                            port=22, username='root',
+                            password=password)
         laste = None
         while time.time() < end:
             laste = None
             try:
-                client.connect(**conp)
+                client.connect()
                 break
+            except IOError, e:
+                laste = e
             except socket.error, e:
                 laste = e
             time.sleep(10)
