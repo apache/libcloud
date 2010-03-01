@@ -2,6 +2,16 @@
 
 Changes with Apache Libcloud 0.3.0
 
+    *) Added new deployment and bootstrap API.
+
+    *) Fixed bug in Rackspace and Rimuhosting when using multiple threads.
+
+    *) Improved debugging and logging of HTTP requests.
+
+    *) Added Softlayer Driver.
+
+    *) Improved Voxel Driver.
+
 
 Changes with Apache Libcloud 0.2.0 [Tagged February 2, 2010]
 
