@@ -1,0 +1,117 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# libcloud.org licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Wraps multiple ways to communicate over SSH
+"""
+have_paramiko = False
+
+try:
+    import paramiko
+    import socket
+    have_paramiko = True
+except ImportError:
+    pass
+
+from os.path import split as psplit
+
+class BaseSSHClient(object):
+    def __init__(self, hostname, port=22, username='root', password=None, key=None):
+        self.hostname = hostname
+        self.port = port
+        self.username = username
+        self.password = password
+        self.key = key
+
+    def connect(self):
+        raise NotImplementedError, \
+            'connect not implemented for this ssh client'
+
+    def put(self, path, contents=None, chmod=None):
+        raise NotImplementedError, \
+            'put not implemented for this ssh client'
+
+    def delete(self, path):
+        raise NotImplementedError, \
+            'delete not implemented for this ssh client'
+
+    def run(self, cmd):
+        raise NotImplementedError, \
+            'run not implemented for this ssh client'
+
+    def close(self):
+        raise NotImplementedError, \
+            'close not implemented for this ssh client'
+
+class ParamikoSSHClient(BaseSSHClient):
+    def __init__(self, hostname, port=22, username='root', password=None, key=None):
+        super(ParamikoSSHClient, self).__init__(hostname, port, username, password, key)
+        self.client = paramiko.SSHClient()
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    def connect(self):
+        conninfo = {'hostname': self.hostname,
+                    'port': self.port,
+                    'username': self.username,
+                    'password': self.password,
+                    'allow_agent': False,
+                    'look_for_keys': False}
+        self.client.connect(**conninfo)
+        return True
+
+    def put(self, path, contents=None, chmod=None):
+        sftp = self.client.open_sftp()
+        # less than ideal, but we need to mkdir stuff otherwise file() fails
+        head, tail = psplit(path)
+        if path[0] == "/":
+            sftp.chdir("/")
+        for part in head.split("/"):
+            if part != "":
+                try:
+                    sftp.mkdir(part)
+                except IOError, e:
+                    # so, there doens't seem to be a way to 
+                    # catch EEXIST consistently *sigh*
+                    pass
+                sftp.chdir(part)
+        ak = sftp.file(tail,  mode='w')
+        ak.write(contents)
+        if chmod is not None:
+            ak.chmod(chmod)
+        ak.close()
+        sftp.close()
+
+    def delete(self, path):
+        sftp = self.client.open_sftp()
+        sftp.unlink(path)
+        sftp.close()
+
+    def run(self, cmd):
+        stdin, stdout, stderr = self.client.exec_command(cmd)
+        stdin.close()
+        so = stdout.read()
+        se = stderr.read()
+        return [so, se]
+
+    def close(self):
+        self.client.close()
+
+class ShellOutSSHClient(BaseSSHClient):
+    # TODO: write this one
+    pass
+
+SSHClient = ParamikoSSHClient
+if not have_paramiko:
+    SSHClient = ShellOutSSHClient
