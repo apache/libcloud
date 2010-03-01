@@ -20,7 +20,6 @@ have_paramiko = False
 
 try:
     import paramiko
-    import socket
     have_paramiko = True
 except ImportError:
     pass
