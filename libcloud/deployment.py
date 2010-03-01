@@ -19,51 +19,32 @@ Provides generic deployment steps for machines post boot.
 import os
 
 class Deployment(object):
-  pass
+    pass
 
 class SSHKeyDeployment(Deployment):
-  def __init__(self, key):
-    self.key = key
+    def __init__(self, key):
+        self.key = key
   
-  def run(self, node, client):
-    sftp = client.open_sftp()
-    sftp.mkdir(".ssh")
-    sftp.chdir(".ssh")
-    ak = sftp.file("authorized_keys",  mode='w')
-    ak.write(self.key)
-    ak.close()
-    sftp.close()
-    return node
+    def run(self, node, client):
+        client.put(".ssh/authorized_keys", contents=self.key)
+        return node
 
 class ScriptDeployment(Deployment):
-  def __init__(self, script, name=None, delete=False):
-    self.script = script
-    self.stdout = None
-    self.stderr = None
-    self.delete = delete
-    self.name = name
-    if self.name is None:
-      self.name = "/root/deployment_%s.sh" % (os.urandom(4).encode('hex'))
+    def __init__(self, script, name=None, delete=False):
+        self.script = script
+        self.stdout = None
+        self.stderr = None
+        self.delete = delete
+        self.name = name
+        if self.name is None:
+            self.name = "/root/deployment_%s.sh" % (os.urandom(4).encode('hex'))
 
-  def run(self, node, client):
-    sftp = client.open_sftp()
-    ak = sftp.file(self.name,  mode='w')
-    ak.write(self.script)
-    ak.chmod(755)
-    ak.close()
-    sftp.close()
-
-    stdin, stdout, stderr = client.exec_command(self.name)
-    stdin.close()
-    self.stdout = stdout.read()
-    self.stderr = stderr.read()
-
-    if self.delete:
-      sftp = client.open_sftp()
-      sftp.unlink(self.name)
-      sftp.close()
-
-    return node
+    def run(self, node, client):
+        client.put(path=self.name, chmod=755, contents=self.script)
+        self.stdout, self.stderr = client.run(self.name)
+        if self.delete:
+            client.delete(self.name)
+        return node
 
 class MultiStepDeployment(Deployment):
   def __init__(self, add = None):
