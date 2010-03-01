@@ -31,7 +31,6 @@ def enable_debug(fo):
     @param fo: Where to append debugging information
     @type fo: File like object, only write operations are used.
     """
-    import httplib
     from libcloud.base import ConnectionKey, LoggingHTTPConnection, LoggingHTTPSConnection
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
