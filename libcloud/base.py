@@ -647,12 +647,5 @@ class NodeDriver(object):
             time.sleep(10)
         if laste is not None:
             raise e
-        #print "connected!"
-        sftp = client.open_sftp()
-        sftp.mkdir(".ssh")
-        sftp.chdir(".ssh")
-        ak = sftp.file("authorized_keys",  mode='w')
-        ak.write(kwargs['pubkey'])
-        ak.close()
-        sftp.close()
-        return node
+            
+        return kwargs["deploy"](node, client)
