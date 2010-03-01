@@ -648,4 +648,6 @@ class NodeDriver(object):
         if laste is not None:
             raise e
             
-        return kwargs["deploy"](node, client)
+        n = kwargs["deploy"].run(node, client)
+        client.close()
+        return n
