@@ -146,14 +146,21 @@ class RackspaceNodeDriver(NodeDriver):
     features = {"create_node": ["generates_password"]}
 
     NODE_STATE_MAP = { 'BUILD': NodeState.PENDING,
+                       'REBUILD': NodeState.PENDING,
                        'ACTIVE': NodeState.RUNNING,
                        'SUSPENDED': NodeState.TERMINATED,
                        'QUEUE_RESIZE': NodeState.PENDING,
                        'PREP_RESIZE': NodeState.PENDING,
+                       'VERIFY_RESIZE': NodeState.RUNNING,
+                       'PASSWORD': NodeState.PENDING,
                        'RESCUE': NodeState.PENDING,
                        'REBUILD': NodeState.PENDING,
                        'REBOOT': NodeState.REBOOTING,
-                       'HARD_REBOOT': NodeState.REBOOTING}
+                       'HARD_REBOOT': NodeState.REBOOTING,
+                       'SHARE_IP': NodeState.PENDING,
+                       'SHARE_IP_NO_CONFIG': NodeState.PENDING,
+                       'DELETE_IP': NodeState.PENDING,
+                       'UNKNOWN': NodeState.UNKNOWN}
 
     def list_nodes(self):
         return self.to_nodes(self.connection.request('/servers/detail').object)
@@ -273,7 +280,7 @@ class RackspaceNodeDriver(NodeDriver):
         
         n = Node(id=el.get('id'),
                  name=el.get('name'),
-                 state=self.NODE_STATE_MAP.get(el.get('status')),
+                 state=self.NODE_STATE_MAP.get(el.get('status'), NodeState.UNKNOWN),
                  public_ip=public_ip,
                  private_ip=private_ip,
                  driver=self.connection.driver,
