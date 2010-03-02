@@ -582,6 +582,7 @@ class NodeDriver(object):
 
     def deploy_node(self, **kwargs):
         # TODO: support ssh keys
+        WAIT_PERIOD=3
         password = None
 
         if 'generates_password' not in self.features["create_node"]:
@@ -601,7 +602,7 @@ class NodeDriver(object):
         while time.time() < end:
             # need to wait until we get a public IP address.
             # TODO: there must be a better way of doing this
-            time.sleep(10)
+            time.sleep(WAIT_PERIOD)
             nodes = self.list_nodes()
             nodes = filter(lambda n: n.uuid == node.uuid, nodes)
             if len(nodes) == 0:
@@ -627,10 +628,10 @@ class NodeDriver(object):
                 laste = e
             except socket.error, e:
                 laste = e
-            time.sleep(10)
+            time.sleep(WAIT_PERIOD)
         if laste is not None:
             raise e
-            
+
         n = kwargs["deploy"].run(node, client)
         client.close()
         return n
