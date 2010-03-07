@@ -19,9 +19,8 @@ Softlayer driver
 import xmlrpclib
 
 import libcloud
-from libcloud.types import NodeState, InvalidCredsException, Provider
-from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node
-from libcloud.base import NodeSize, NodeImage, NodeLocation
+from libcloud.types import Provider
+from libcloud.base import NodeDriver, Node
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
 
