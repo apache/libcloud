@@ -19,6 +19,7 @@ from libcloud.drivers.ec2 import EC2NodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 
 from test import MockHttp, TestCaseMixin
+from test.file_fixtures import FileFixtures
 
 import httplib
 
@@ -69,122 +70,27 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.id, 'ami-be3adfd7')
 
 class EC2MockHttp(MockHttp):
+
+    fixtures = FileFixtures('ec2')
+
     def _DescribeInstances(self, method, url, body, headers):
-        body = """<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
-    <requestId>56d0fffa-8819-4658-bdd7-548f143a86d2</requestId>
-    <reservationSet>
-        <item>
-            <reservationId>r-07adf66e</reservationId>
-            <ownerId>822272953071</ownerId>
-            <groupSet>
-                <item>
-                    <groupId>default</groupId>
-                </item>
-            </groupSet>
-            <instancesSet>
-                <item>
-                    <instanceId>i-4382922a</instanceId>
-                    <imageId>ami-0d57b264</imageId>
-                    <instanceState>
-                        <code>0</code>
-                        <name>pending</name>
-                    </instanceState>
-                    <privateDnsName/>
-                    <dnsName/>
-                    <reason/>
-                    <amiLaunchIndex>0</amiLaunchIndex>
-                    <productCodes/>
-                    <instanceType>m1.small</instanceType>
-                    <launchTime>2009-08-07T05:47:04.000Z</launchTime>
-                    <placement>
-                        <availabilityZone>us-east-1a</availabilityZone>
-                    </placement>
-                    <monitoring>
-                        <state>disabled</state>
-                    </monitoring>
-                </item>
-            </instancesSet>
-        </item>
-    </reservationSet>
-</DescribeInstancesResponse>"""
+        body = self.fixtures.load('describe_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RebootInstances(self, method, url, body, headers):
-        body = """<RebootInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
-    <requestId>76dabb7a-fb39-4ed1-b5e0-31a4a0fdf5c0</requestId>
-    <return>true</return>
-</RebootInstancesResponse>"""
+        body = self.fixtures.load('reboot_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeImages(self, method, url, body, headers):
-        body = """<DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
-                  <imagesSet>
-                    <item>
-                      <imageId>ami-be3adfd7</imageId>
-                      <imageLocation>ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml</imageLocation>
-                      <imageState>available</imageState>
-                      <imageOwnerId>206029621532</imageOwnerId>
-                      <isPublic>false</isPublic>
-                      <architecture>i386</architecture>
-                      <imageType>machine</imageType>
-                      <kernelId>aki-4438dd2d</kernelId>
-                      <ramdiskId>ari-4538dd2c</ramdiskId>
-                    </item>
-                  </imagesSet>
-                </DescribeImagesResponse>"""
+        body = self.fixtures.load('describe_images.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RunInstances(self, method, url, body, headers):
-        body = """<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
-                      <reservationId>r-47a5402e</reservationId>
-                      <ownerId>AIDADH4IGTRXXKCD</ownerId>
-                      <groupSet>
-                        <item>
-                          <groupId>default</groupId>
-                        </item>
-                      </groupSet>
-                      <instancesSet>
-                        <item>
-                          <instanceId>i-2ba64342</instanceId>
-                          <imageId>ami-be3adfd7</imageId>
-                          <instanceState>
-                            <code>0</code>
-                            <name>pending</name>
-                          </instanceState>
-                          <privateDnsName></privateDnsName>
-                          <dnsName></dnsName>
-                          <keyName>example-key-name</keyName>
-                          <amiLaunchIndex>0</amiLaunchIndex>
-                          <instanceType>m1.small</instanceType>
-                          <launchTime>2007-08-07T11:51:50.000Z</launchTime>
-                          <placement>
-                            <availabilityZone>us-east-1b</availabilityZone>
-                          </placement>
-                          <monitoring>
-                            <enabled>true</enabled>
-                          </monitoring>
-                        </item>
-                      </instancesSet>
-                    </RunInstancesResponse>"""
+        body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _TerminateInstances(self, method, url, body, headers):
-        body = """<TerminateInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
-    <requestId>fa63083d-e0f7-4933-b31a-f266643bdee8</requestId>
-    <instancesSet>
-        <item>
-            <instanceId>i-4382922a</instanceId>
-            <shutdownState>
-                <code>32</code>
-                <name>shutting-down</name>
-            </shutdownState>
-            <previousState>
-                <code>16</code>
-                <name>running</name>
-            </previousState>
-        </item>
-    </instancesSet>
-</TerminateInstancesResponse>"""
+        body = self.fixtures.load('terminate_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
