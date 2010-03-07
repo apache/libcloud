@@ -17,11 +17,12 @@
 
 import os
 
-FILE_FIXTURE_ROOT = 'test/fixtures'
+FIXTURES_ROOT = 'fixtures'
 
 class FileFixtures:
-    def __init__(self, root):
-        self.root = os.path.join(FILE_FIXTURE_ROOT, root)
+    def __init__(self, sub_dir=''):
+        script_dir = os.path.abspath(os.path.split(__file__)[0])
+        self.root = os.path.join(script_dir, FIXTURES_ROOT, sub_dir)
 
     def load(self, file):
         path = os.path.join(self.root, file)
