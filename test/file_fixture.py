@@ -17,7 +17,7 @@
 
 import os
 
-FILE_FIXTURE_ROOT = 'fixtures'
+FILE_FIXTURE_ROOT = 'test/fixtures'
 
 class FileFixture:
     def __init__(self, root):
