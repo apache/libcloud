@@ -1,12 +1,15 @@
 
 General Information
+===================
  * URL: http://incubator.apache.org/libcloud/devinfo.html
 
 Git Repositories
+===================
  * Official Git Mirror:  git://git.apache.org/libcloud.git
  * Github Mirror:        git://github.com/apache/libcloud.git
 
 Using The Git-SVN Bridge (For Committers)
+=========================================
 
  $ git clone git://git.apache.org/libcloud libcloud
  $ cd libcloud
@@ -29,3 +32,25 @@ Using The Git-SVN Bridge (For Committers)
 
  To push commits back to SVN:
  $ git svn dcommit
+
+Testing
+=======
+
+ To run all suites:
+
+  libcloud$ python setup.py test
+  running test
+  ................................................................................................
+  ----------------------------------------------------------------------
+  Ran 96 tests in 0.182s
+
+  OK
+
+ To run specific tests:
+
+  libcloud$ PYTHONPATH=. python test/test_base.py
+  .......
+  ----------------------------------------------------------------------
+  Ran 7 tests in 0.001s
+
+  OK
