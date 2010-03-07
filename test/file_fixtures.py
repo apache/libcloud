@@ -19,7 +19,7 @@ import os
 
 FILE_FIXTURE_ROOT = 'test/fixtures'
 
-class FileFixture:
+class FileFixtures:
     def __init__(self, root):
         self.root = os.path.join(FILE_FIXTURE_ROOT, root)
 
