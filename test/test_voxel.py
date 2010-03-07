@@ -22,6 +22,8 @@ from libcloud.base import Node, NodeImage, NodeSize
 import httplib
 
 from test import MockHttp, multipleresponse, TestCaseMixin
+from test.file_fixtures import FileFixtures
+
 from secrets import VOXEL_KEY, VOXEL_SECRET
 from xml.etree import ElementTree as ET
 
@@ -44,10 +46,10 @@ class VoxelTest(unittest.TestCase):
 
 class VoxelMockHttp(MockHttp):
 
+    fixtures = FileFixtures('voxel')
+
     def _UNAUTHORIZED(self, method, url, body, headers):
-        body = """<?xml version="1.0"?>
-<rsp stat="fail"><err code="1" msg="Invalid login or password"/><method>voxel.devices.list</method><parameters><param name="timestamp">2010-02-10T23:39:25.808107+0000</param><param name="key">authshouldfail</param><param name="api_sig">ae069bb835e998622caaddaeff8c98e0</param></parameters><string_to_sign>YOUR_SECRETtimestamp2010-02-10T23:39:25.808107+0000methodvoxel.devices.listkeyauthshouldfail</string_to_sign></rsp>
-"""
+        body = self.fixtures.load('unauthorized.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
