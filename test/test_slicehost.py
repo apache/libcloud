@@ -22,6 +22,7 @@ from libcloud.base import Node, NodeImage, NodeSize
 import httplib
 
 from test import MockHttp, multipleresponse, TestCaseMixin
+from test.file_fixtures import FileFixtures
 from secrets import SLICEHOST_KEY
 from xml.etree import ElementTree as ET
 
@@ -99,6 +100,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
 class SlicehostMockHttp(MockHttp):
 
+    fixtures = FileFixtures('slicehost')
+
     def _slices_xml(self, method, url, body, headers):
         if method == 'POST':
             tree = ET.XML(body)
@@ -112,179 +115,36 @@ class SlicehostMockHttp(MockHttp):
                 or tree.tag != 'slice' \
                 or not headers.has_key('Content-Type')  \
                 or headers['Content-Type'] != 'application/xml':
-              err_body = """<?xml version="1.0" encoding="UTF-8"?>
-<errors>
-  <error>Slice parameters are not properly nested</error>
-</errors>"""
-              return (httplib.UNPROCESSABLE_ENTITY, err_body, {}, '')
 
-            body = """<slice>
-  <name>slicetest</name>
-  <image-id type="integer">11</image-id>
-  <addresses type="array">
-    <address>10.176.168.15</address>
-    <address>67.23.20.114</address>
-  </addresses>
-  <root-password>fooadfa1231</root-password>
-  <progress type="integer">0</progress>
-  <id type="integer">71907</id>
-  <bw-out type="float">0.0</bw-out>
-  <bw-in type="float">0.0</bw-in>
-  <flavor-id type="integer">1</flavor-id>
-  <status>build</status>
-  <ip-address>10.176.168.15</ip-address>
-</slice>"""
+                err_body = self.fixtures.load('slices_error.xml')
+                return (httplib.UNPROCESSABLE_ENTITY, err_body, {}, '')
+
+            body = self.fixtures.load('slices_post.xml')
             return (httplib.CREATED, body, {}, '')
         else:
-            body = """<slices type="array">
-  <slice>
-    <name>libcloud-foo</name>
-    <image-id type="integer">10</image-id>
-    <addresses type="array">
-      <address>174.143.212.229</address>
-      <address>10.176.164.199</address>
-    </addresses>
-    <progress type="integer">0</progress>
-    <id type="integer">1</id>
-    <bw-out type="float">0.0</bw-out>
-    <bw-in type="float">0.0</bw-in>
-    <flavor-id type="integer">1</flavor-id>
-    <status>build</status>
-    <ip-address>174.143.212.229</ip-address>
-  </slice>
-</slices>"""
-        
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+            body = self.fixtures.load('slices_get.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _slices_xml_UNAUTHORIZED(self, method, url, body, headers):
         err_body = 'HTTP Basic: Access denied.'
-        return (httplib.UNAUTHORIZED, err_body, {}, 
-                 httplib.responses[httplib.UNAUTHORIZED])
+        return (httplib.UNAUTHORIZED, err_body, {},
+                httplib.responses[httplib.UNAUTHORIZED])
 
     def _flavors_xml(self, method, url, body, headers):
-        body = """<?xml version="1.0" encoding="UTF-8"?>
-<flavors type="array">
-  <flavor>
-    <id type="integer">1</id>
-    <name>256 slice</name>
-    <price type="integer">2000</price>
-    <ram type="integer">256</ram>
-  </flavor>
-  <flavor>
-    <id type="integer">2</id>
-    <name>512 slice</name>
-    <price type="integer">3800</price>
-    <ram type="integer">512</ram>
-  </flavor>
-  <flavor>
-    <id type="integer">3</id>
-    <name>1GB slice</name>
-    <price type="integer">7000</price>
-    <ram type="integer">1024</ram>
-  </flavor>
-  <flavor>
-    <id type="integer">4</id>
-    <name>2GB slice</name>
-    <price type="integer">13000</price>
-    <ram type="integer">2048</ram>
-  </flavor>
-  <flavor>
-    <id type="integer">5</id>
-    <name>4GB slice</name>
-    <price type="integer">25000</price>
-    <ram type="integer">4096</ram>
-  </flavor>
-  <flavor>
-    <id type="integer">6</id>
-    <name>8GB slice</name>
-    <price type="integer">45000</price>
-    <ram type="integer">8192</ram>
-  </flavor>
-  <flavor>
-    <id type="integer">7</id>
-    <name>15.5GB slice</name>
-    <price type="integer">80000</price>
-    <ram type="integer">15872</ram>
-  </flavor>
-</flavors>
-"""
+        body = self.fixtures.load('flavors.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _images_xml(self, method, url, body, headers):
-        body = """<?xml version="1.0" encoding="UTF-8"?>
-<images type="array">
-  <image>
-    <name>CentOS 5.2</name>
-    <id type="integer">2</id>
-  </image>
-  <image>
-    <name>Gentoo 2008.0</name>
-    <id type="integer">3</id>
-  </image>
-  <image>
-    <name>Debian 5.0 (lenny)</name>
-    <id type="integer">4</id>
-  </image>
-  <image>
-    <name>Fedora 10 (Cambridge)</name>
-    <id type="integer">5</id>
-  </image>
-  <image>
-    <name>CentOS 5.3</name>
-    <id type="integer">7</id>
-  </image>
-  <image>
-    <name>Ubuntu 9.04 (jaunty)</name>
-    <id type="integer">8</id>
-  </image>
-  <image>
-    <name>Arch 2009.02</name>
-    <id type="integer">9</id>
-  </image>
-  <image>
-    <name>Ubuntu 8.04.2 LTS (hardy)</name>
-    <id type="integer">10</id>
-  </image>
-  <image>
-    <name>Ubuntu 8.10 (intrepid)</name>
-    <id type="integer">11</id>
-  </image>
-  <image>
-    <name>Red Hat EL 5.3</name>
-    <id type="integer">12</id>
-  </image>
-  <image>
-    <name>Fedora 11 (Leonidas)</name>
-    <id type="integer">13</id>
-  </image>
-</images>"""
+        body = self.fixtures.load('images.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _slices_1_reboot_xml(self, method, url, body, headers):
-        body = """<slice>
-  <name>libcloud-test</name>
-  <image-id type="integer">10</image-id>
-  <addresses type="array">
-    <address>174.143.212.229</address>
-    <address>10.176.164.199</address>
-  </addresses>
-  <progress type="integer">100</progress>
-  <id type="integer">70507</id>
-  <bw-out type="float">0.0</bw-out>
-  <bw-in type="float">0.0</bw-in>
-  <flavor-id type="integer">1</flavor-id>
-  <status>reboot</status>
-  <ip-address>174.143.212.229</ip-address>
-</slice>"""
+        body = self.fixtures.load('slices_1_reboot.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-
     def _slices_1_reboot_xml_FORBIDDEN(self, method, url, body, headers):
-        err_body = """<errors>
-  <error>Permission denied</error>
-</errors>"""
-        return (httplib.FORBIDDEN, err_body, {}, 
-                 httplib.responses[httplib.FORBIDDEN])
+        body = self.fixtures.load('slices_1_reboot_forbidden.xml')
+        return (httplib.FORBIDDEN, body, {}, httplib.responses[httplib.FORBIDDEN])
 
     def _slices_1_destroy_xml(self, method, url, body, headers):
         body = ''
