@@ -47,16 +47,16 @@ class ScriptDeployment(Deployment):
         return node
 
 class MultiStepDeployment(Deployment):
-  def __init__(self, add = None):
-    self.steps = []
-    self.add(add)
+    def __init__(self, add = None):
+        self.steps = []
+        self.add(add)
 
-  def add(self, add):
-    if add is not None:
-      add = add if isinstance(add, (list, tuple)) else [add]
-      self.steps.extend(add)
+    def add(self, add):
+        if add is not None:
+            add = add if isinstance(add, (list, tuple)) else [add]
+            self.steps.extend(add)
 
-  def run(self, node, client):
-    for s in self.steps:
-      node = s.run(node, client)
-    return node
+    def run(self, node, client):
+        for s in self.steps:
+            node = s.run(node, client)
+        return node
