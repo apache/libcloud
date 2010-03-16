@@ -20,9 +20,11 @@ import xmlrpclib
 
 import libcloud
 from libcloud.types import Provider
-from libcloud.base import NodeDriver, Node
+from libcloud.base import NodeDriver, Node, NodeLocation
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
+
+DATACENTERS = ['sea01', 'wdc01', 'dal01']
 
 class SoftLayerException(Exception):
     pass
@@ -111,6 +113,64 @@ class SoftLayerNodeDriver(NodeDriver):
             return res
         else:
             return False
+
+    def create_node(self, **kwargs):
+        """
+        Right now the best way to create a new node in softlayer is by 
+        cloning an already created node, so size and image do not apply.
+
+        @keyword    node:   A Node which will serve as the template for the new node
+        @type       node:   L{Node}
+
+        @keyword    domain:   e.g. libcloud.org
+        @type       domain:   str
+        """
+        name = kwargs['name']
+        location = kwargs['location']
+        node = kwargs['node']
+        domain = kwargs['domain']
+
+        res = self.connection.request(
+            "SoftLayer_Virtual_Guest",
+            "getOrderTemplate",
+            "HOURLY",
+            id=node.id
+        )
+
+        res['location'] = location.id
+        res['complexType'] = 'SoftLayer_Container_Product_Order_Virtual_Guest'
+        res['quantity'] = 1
+        res['virtualGuests'] = [
+            {
+                'hostname': name,
+                'domain': domain
+            }
+        ]
+
+        res = self.connection.request(
+            "SoftLayer_Product_Order",
+            "placeOrder",
+            res
+        )
+
+        return None # the instance won't be available for a while.
+
+    def _to_loc(self, loc):
+        return NodeLocation(
+            id=loc['id'],
+            name=loc['name'],
+            country="",    # country data not available
+            driver=self
+        )
+
+    def list_locations(self):
+        res = self.connection.request(
+            "SoftLayer_Location_Datacenter",
+            "getDatacenters"
+        ) 
+
+        # checking "in DATACENTERS", because some of the locations returned by getDatacenters are not useable.
+        return [self._to_loc(l) for l in res if l['name'] in DATACENTERS]     
 
     def list_nodes(self):
         nodes = self._to_nodes(
