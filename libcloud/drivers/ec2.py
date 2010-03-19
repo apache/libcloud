@@ -31,7 +31,8 @@ EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 
-API_VERSION = '2009-04-04'
+API_VERSION = '2009-11-30'
+
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
 """
@@ -376,7 +377,10 @@ class EC2NodeDriver(NodeDriver):
         }
 
         if 'securitygroup' in kwargs:
-            params['SecurityGroup'] = kwargs['securitygroup']
+            if not isinstance(kwargs['securitygroup'], list):
+              kwargs['securitygroup'] = [kwargs['securitygroup']]
+            for sig in range(len(kwargs['securitygroup'])):
+              params['SecurityGroup.%d' % (sig+1,)]  = kwargs['securitygroup'][sig]
 
         if 'keyname' in kwargs:
             params['KeyName'] = kwargs['keyname']
