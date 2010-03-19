@@ -1,4 +1,4 @@
-<TerminateInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
+<TerminateInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2009-11-30/">
   <requestId>fa63083d-e0f7-4933-b31a-f266643bdee8</requestId>
   <instancesSet>
     <item>

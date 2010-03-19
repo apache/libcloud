@@ -1,4 +1,4 @@
-<DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2009-04-04/">
+<DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2009-11-30/">
   <imagesSet>
     <item>
       <imageId>ami-be3adfd7</imageId>
