@@ -2,6 +2,10 @@
 
 Changes with Apache Libcloud 0.3.0
 
+    *) Imrpvoed test coverage for all drivers.
+
+    *) Add support for multiple security groups in EC2.
+
     *) Added new deployment and bootstrap API.
 
     *) Fixed bug in Rackspace and Rimuhosting when using multiple threads.
