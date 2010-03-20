@@ -24,7 +24,11 @@ from libcloud.base import NodeDriver, Node, NodeLocation
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
 
-DATACENTERS = ['sea01', 'wdc01', 'dal01']
+DATACENTERS = {
+    'sea01': {'country': 'US'},
+    'wdc01': {'country': 'US'},
+    'dal01': {'country': 'US'}
+}
 
 class SoftLayerException(Exception):
     pass
@@ -159,7 +163,7 @@ class SoftLayerNodeDriver(NodeDriver):
         return NodeLocation(
             id=loc['id'],
             name=loc['name'],
-            country="",    # country data not available
+            country=DATACENTERS[loc['name']]['country'],
             driver=self
         )
 
