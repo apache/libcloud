@@ -48,11 +48,21 @@ class SoftLayerTests(unittest.TestCase):
         node = self.driver.list_nodes()[0]
         self.assertEqual(node.name, 'test')
 
+    def test_list_locations(self):
+        locations = self.driver.list_locations()
+        seattle = (l for l in locations if l.name == 'sea01').next()
+        self.assertEqual(seattle.country, 'US')
+        self.assertEqual(seattle.id, 18171)
+
 class SoftLayerMockHttp(MockHttp):
     fixtures = FileFixtures('softlayer')
 
     def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(self, method, url, body, headers):
         body = self.fixtures.load('v3_SoftLayer_Account_getVirtualGuests.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(self, method, url, body, headers):
+        body = self.fixtures.load('v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
