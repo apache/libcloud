@@ -1,6 +1,7 @@
 *.py[co]
 *.sw[po]
 test/secrets.py
+demos/secrets.py
 *~
 _trial_temp
 build
