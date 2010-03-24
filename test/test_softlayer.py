@@ -41,7 +41,7 @@ class MockSoftLayerTransport(xmlrpclib.Transport):
 class SoftLayerTests(unittest.TestCase):
 
     def setUp(self):
-        SoftLayer.connectionCls.proxyCls.transportCls = MockSoftLayerTransport
+        SoftLayer.connectionCls.proxyCls.transportCls = [MockSoftLayerTransport, MockSoftLayerTransport]
         self.driver = SoftLayer(SOFTLAYER_USER, SOFTLAYER_APIKEY)
 
     def test_list_nodes(self):
