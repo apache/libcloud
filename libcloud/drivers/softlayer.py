@@ -22,8 +22,6 @@ import libcloud
 from libcloud.types import Provider, InvalidCredsException
 from libcloud.base import NodeDriver, Node, NodeLocation
 
-API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
-
 DATACENTERS = {
     'sea01': {'country': 'US'},
     'wdc01': {'country': 'US'},
@@ -41,16 +39,17 @@ class SoftLayerTransport(xmlrpclib.Transport):
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
     transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
+    API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
 
     def __init__(self, service, user_agent, verbose=0):
         cls = self.transportCls[0]
-        if API_PREFIX[:8] == "https://":
+        if SoftLayerProxy.API_PREFIX[:8] == "https://":
           cls = self.transportCls[1]
         t = cls(use_datetime=0)
         t.user_agent = user_agent
         xmlrpclib.ServerProxy.__init__(
             self,
-            uri="%s/%s" % (API_PREFIX, service),
+            uri="%s/%s" % (SoftLayerProxy.API_PREFIX, service),
             transport=t,
             verbose=verbose
         )
