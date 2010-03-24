@@ -19,7 +19,7 @@ Softlayer driver
 import xmlrpclib
 
 import libcloud
-from libcloud.types import Provider, InvalidCredsException
+from libcloud.types import Provider, InvalidCredsException, NodeState
 from libcloud.base import NodeDriver, Node, NodeLocation
 
 DATACENTERS = {
@@ -111,7 +111,8 @@ class SoftLayerNodeDriver(NodeDriver):
         return Node(
             id=host['id'],
             name=host['hostname'],
-            state=host['statusId'],
+            # TODO: figure out how to get the correct power state
+            state=NodeState.UNKNOWN,
             public_ip=host['primaryIpAddress'],
             private_ip=host['primaryBackendIpAddress'],
             driver=self
