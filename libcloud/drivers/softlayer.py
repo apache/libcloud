@@ -44,7 +44,7 @@ class SoftLayerProxy(xmlrpclib.ServerProxy):
     def __init__(self, service, user_agent, verbose=0):
         cls = self.transportCls[0]
         if SoftLayerProxy.API_PREFIX[:8] == "https://":
-          cls = self.transportCls[1]
+            cls = self.transportCls[1]
         t = cls(use_datetime=0)
         t.user_agent = user_agent
         xmlrpclib.ServerProxy.__init__(
