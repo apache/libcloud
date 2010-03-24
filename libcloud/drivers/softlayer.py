@@ -19,7 +19,7 @@ Softlayer driver
 import xmlrpclib
 
 import libcloud
-from libcloud.types import Provider
+from libcloud.types import Provider, InvalidCredsException
 from libcloud.base import NodeDriver, Node, NodeLocation
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
@@ -33,7 +33,7 @@ DATACENTERS = {
 class SoftLayerException(Exception):
     pass
 
-class SoftLayerTransport(xmlrpclib.Transport):
+class SoftLayerTransport(xmlrpclib.SafeTransport):
     user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
@@ -61,6 +61,8 @@ class SoftLayerConnection(object):
         try:
             return getattr(sl, method)(*params)
         except xmlrpclib.Fault, e:
+            if e.faultCode == "SoftLayer_Account":
+                raise InvalidCredsException(e.faultString)
             raise SoftLayerException(e)
 
     def _get_auth_param(self, service, init_params=None):
