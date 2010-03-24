@@ -23,7 +23,6 @@ from libcloud.types import Provider, InvalidCredsException
 from libcloud.base import NodeDriver, Node, NodeLocation
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
-API_PREFIX = "https://slprxy0.cloudkick.com/xmlrpc/v3"
 
 DATACENTERS = {
     'sea01': {'country': 'US'},
@@ -35,22 +34,24 @@ class SoftLayerException(Exception):
     pass
 
 class SoftLayerSafeTransport(xmlrpclib.SafeTransport):
-    user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
+    pass
 
 class SoftLayerTransport(xmlrpclib.Transport):
-    user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
+    pass
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
     transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
 
-    def __init__(self, service, verbose=0):
+    def __init__(self, service, user_agent, verbose=0):
         cls = self.transportCls[0]
         if API_PREFIX[:8] == "https://":
           cls = self.transportCls[1]
+        t = cls(use_datetime=0)
+        t.user_agent = user_agent
         xmlrpclib.ServerProxy.__init__(
             self,
             uri="%s/%s" % (API_PREFIX, service),
-            transport=cls(use_datetime=0),
+            transport=t,
             verbose=verbose
         )
 
@@ -61,9 +62,10 @@ class SoftLayerConnection(object):
     def __init__(self, user, key):
         self.user = user
         self.key = key 
+        self.ua = []
 
     def request(self, service, method, *args, **init_params):
-        sl = self.proxyCls(service)
+        sl = self.proxyCls(service, self._user_agent())
         params = [self._get_auth_param(service, init_params)] + list(args)
         try:
             return getattr(sl, method)(*params)
@@ -71,6 +73,15 @@ class SoftLayerConnection(object):
             if e.faultCode == "SoftLayer_Account":
                 raise InvalidCredsException(e.faultString)
             raise SoftLayerException(e)
+
+    def _user_agent(self):
+        return 'libcloud/%s (%s)%s' % (
+                libcloud.__version__,
+                self.driver.name,
+                "".join([" (%s)" % x for x in self.ua]))
+
+    def user_agent_append(self, s):
+        self.ua.append(s)
 
     def _get_auth_param(self, service, init_params=None):
         if not init_params:
