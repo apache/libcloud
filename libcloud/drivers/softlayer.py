@@ -23,6 +23,7 @@ from libcloud.types import Provider, InvalidCredsException
 from libcloud.base import NodeDriver, Node, NodeLocation
 
 API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
+API_PREFIX = "https://slprxy0.cloudkick.com/xmlrpc/v3"
 
 DATACENTERS = {
     'sea01': {'country': 'US'},
@@ -33,17 +34,23 @@ DATACENTERS = {
 class SoftLayerException(Exception):
     pass
 
-class SoftLayerTransport(xmlrpclib.SafeTransport):
+class SoftLayerSafeTransport(xmlrpclib.SafeTransport):
+    user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
+
+class SoftLayerTransport(xmlrpclib.Transport):
     user_agent = "libcloud/%s (SoftLayer)" % libcloud.__version__
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
-    transportCls = SoftLayerTransport
+    transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
 
     def __init__(self, service, verbose=0):
+        cls = self.transportCls[0]
+        if API_PREFIX[:8] == "https://":
+          cls = self.transportCls[1]
         xmlrpclib.ServerProxy.__init__(
             self,
             uri="%s/%s" % (API_PREFIX, service),
-            transport=self.transportCls(use_datetime=0),
+            transport=cls(use_datetime=0),
             verbose=verbose
         )
 
