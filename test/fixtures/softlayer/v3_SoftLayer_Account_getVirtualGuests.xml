@@ -15,13 +15,13 @@
       <member>
        <name>id</name>
        <value>
-        <int>0</int>
+        <int>1111</int>
        </value>
       </member>
       <member>
        <name>accountId</name>
        <value>
-        <int>0</int>
+        <int>11111</int>
        </value>
       </member>
       <member>
@@ -33,13 +33,13 @@
       <member>
        <name>uuid</name>
        <value>
-        <string>ea11b502-8e2d-d8d0-1111-611111111111</string>
+        <string>11111111-8121-d110-c111-6fh1e165hh9c</string>
        </value>
       </member>
       <member>
        <name>hostname</name>
        <value>
-        <string>test</string>
+        <string>test01</string>
        </value>
       </member>
       <member>
@@ -81,13 +81,13 @@
       <member>
        <name>modifyDate</name>
        <value>
-        <string>2010-03-17T19:23:59-05:00</string>
+        <string>2010-03-24T18:54:01-05:00</string>
        </value>
       </member>
       <member>
        <name>metricPollDate</name>
        <value>
-        <string>2010-03-17T19:23:00-05:00</string>
+        <string>2010-03-24T18:53:00-05:00</string>
        </value>
       </member>
       <member>
@@ -97,15 +97,159 @@
        </value>
       </member>
       <member>
+       <name>powerState</name>
+       <value>
+        <struct>
+         <member>
+          <name>name</name>
+          <value>
+           <string>Running</string>
+          </value>
+         </member>
+         <member>
+          <name>keyName</name>
+          <value>
+           <string>RUNNING</string>
+          </value>
+         </member>
+        </struct>
+       </value>
+      </member>
+      <member>
        <name>primaryIpAddress</name>
        <value>
-        <string>62.233.333.333</string>
+        <string>67.255.155.255</string>
        </value>
       </member>
       <member>
        <name>primaryBackendIpAddress</name>
        <value>
-        <string>10.20.172.130</string>
+        <string>10.20.255.255</string>
+       </value>
+      </member>
+     </struct>
+    </value>
+    <value>
+     <struct>
+      <member>
+       <name>privateNetworkOnlyFlag</name>
+       <value>
+        <boolean>0</boolean>
+       </value>
+      </member>
+      <member>
+       <name>id</name>
+       <value>
+        <int>11111</int>
+       </value>
+      </member>
+      <member>
+       <name>accountId</name>
+       <value>
+        <int>11111</int>
+       </value>
+      </member>
+      <member>
+       <name>statusId</name>
+       <value>
+        <int>1001</int>
+       </value>
+      </member>
+      <member>
+       <name>uuid</name>
+       <value>
+        <string>21a11114-4111-4141-19f3-51111610dd86</string>
+       </value>
+      </member>
+      <member>
+       <name>hostname</name>
+       <value>
+        <string>test02</string>
+       </value>
+      </member>
+      <member>
+       <name>domain</name>
+       <value>
+        <string>libcloud.org</string>
+       </value>
+      </member>
+      <member>
+       <name>maxCpu</name>
+       <value>
+        <int>1</int>
+       </value>
+      </member>
+      <member>
+       <name>maxCpuUnits</name>
+       <value>
+        <string>CORE</string>
+       </value>
+      </member>
+      <member>
+       <name>maxMemory</name>
+       <value>
+        <int>1024</int>
+       </value>
+      </member>
+      <member>
+       <name>startCpus</name>
+       <value>
+        <int>1</int>
+       </value>
+      </member>
+      <member>
+       <name>createDate</name>
+       <value>
+        <string>2010-03-23T17:06:13-05:00</string>
+       </value>
+      </member>
+      <member>
+       <name>modifyDate</name>
+       <value>
+        <string>2010-03-24T18:58:48-05:00</string>
+       </value>
+      </member>
+      <member>
+       <name>metricPollDate</name>
+       <value>
+        <string>2010-03-24T18:58:00-05:00</string>
+       </value>
+      </member>
+      <member>
+       <name>dedicatedAccountHostOnlyFlag</name>
+       <value>
+        <boolean>0</boolean>
+       </value>
+      </member>
+      <member>
+       <name>powerState</name>
+       <value>
+        <struct>
+         <member>
+          <name>name</name>
+          <value>
+           <string>Running</string>
+          </value>
+         </member>
+         <member>
+          <name>keyName</name>
+          <value>
+           <string>RUNNING</string>
+          </value>
+         </member>
+        </struct>
+       </value>
+      </member>
+      <member>
+       <name>primaryIpAddress</name>
+       <value>
+        <string>174.255.255.244</string>
+       </value>
+      </member>
+      <member>
+       <name>primaryBackendIpAddress</name>
+       <value>
+        <string>10.255.255.255</string>
        </value>
       </member>
      </struct>
