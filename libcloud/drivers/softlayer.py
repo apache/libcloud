@@ -30,7 +30,8 @@ DATACENTERS = {
 
 NODE_STATE_MAP = {
     'RUNNING': NodeState.RUNNING,
-    'HALTED': NodeState.TERMINATED
+    'HALTED': NodeState.TERMINATED,
+    'PAUSED': NodeState.TERMINATED,
 }
 
 class SoftLayerException(Exception):
