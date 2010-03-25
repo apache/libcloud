@@ -28,6 +28,11 @@ DATACENTERS = {
     'dal01': {'country': 'US'}
 }
 
+NODE_STATE_MAP = {
+    'RUNNING': NodeState.RUNNING,
+    'HALTED': NodeState.TERMINATED
+}
+
 class SoftLayerException(Exception):
     pass
 
@@ -63,9 +68,15 @@ class SoftLayerConnection(object):
         self.key = key 
         self.ua = []
 
-    def request(self, service, method, *args, **init_params):
+    def request(self, service, method, *args, **kwargs):
         sl = self.proxyCls(service, self._user_agent())
-        params = [self._get_auth_param(service, init_params)] + list(args)
+
+        headers = {}
+        headers.update(self._get_auth_headers())
+        headers.update(self._get_init_params(service, kwargs.get('id')))
+        headers.update(self._get_object_mask(service, kwargs.get('object_mask')))
+        params = [{'headers': headers}] + list(args)
+
         try:
             return getattr(sl, method)(*params)
         except xmlrpclib.Fault, e:
@@ -82,19 +93,29 @@ class SoftLayerConnection(object):
     def user_agent_append(self, s):
         self.ua.append(s)
 
-    def _get_auth_param(self, service, init_params=None):
-        if not init_params:
-            init_params = {}
-
+    def _get_auth_headers(self):
         return {
-            'headers': {
-                'authenticate': {
-                    'username': self.user,
-                    'apiKey': self.key
-                },
-                '%sInitParameters' % service: init_params
+            'authenticate': {
+                'username': self.user,
+                'apiKey': self.key
             }
         }
+
+    def _get_init_params(self, service, id):
+        if id is not None:
+            return {
+                '%sInitParameters' % service: {'id': id}
+            }
+        else:
+            return {}
+
+    def _get_object_mask(self, service, mask):
+        if mask is not None:
+            return {
+                '%sObjectMask' % service: {'mask': mask}
+            }
+        else:
+            return {}
 
 class SoftLayerNodeDriver(NodeDriver):
     connectionCls = SoftLayerConnection
@@ -111,8 +132,10 @@ class SoftLayerNodeDriver(NodeDriver):
         return Node(
             id=host['id'],
             name=host['hostname'],
-            # TODO: figure out how to get the correct power state
-            state=NodeState.UNKNOWN,
+            state=NODE_STATE_MAP.get(
+                host['powerState']['keyName'],
+                NodeState.UNKNOWN
+            ),
             public_ip=host['primaryIpAddress'],
             private_ip=host['primaryBackendIpAddress'],
             driver=self
@@ -197,9 +220,15 @@ class SoftLayerNodeDriver(NodeDriver):
         return [self._to_loc(l) for l in res if l['name'] in DATACENTERS]     
 
     def list_nodes(self):
-        nodes = self._to_nodes(
-            self.connection.request("SoftLayer_Account","getVirtualGuests")
+        mask = {
+            'virtualGuests': {'powerState': ''}
+        }
+        res = self.connection.request(
+            "SoftLayer_Account",
+            "getVirtualGuests",
+            object_mask=mask
         )
+        nodes = self._to_nodes(res)
         return nodes
 
     def reboot_node(self, node):

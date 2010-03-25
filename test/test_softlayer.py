@@ -21,6 +21,7 @@ import xmlrpclib
 
 from libcloud.drivers.softlayer import SoftLayerProxy, SoftLayerNodeDriver as SoftLayer
 from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.types import NodeState
 
 from test import MockHttp, TestCaseMixin
 from test.file_fixtures import FileFixtures
@@ -46,7 +47,8 @@ class SoftLayerTests(unittest.TestCase):
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
-        self.assertEqual(node.name, 'test')
+        self.assertEqual(node.name, 'test01')
+        self.assertEqual(node.state, NodeState.RUNNING)
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
