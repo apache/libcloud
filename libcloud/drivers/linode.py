@@ -259,7 +259,13 @@ class LinodeNodeDriver(NodeDriver):
                                   "Invalid distro -- avail.distributions")
 
         # Kernel
-        kernel = 60 if "kernel" not in kwargs else kwargs["kernel"]
+        if "kernel" in kwargs:
+            kernel = kwargs["kernel"]
+        else:
+            if image.extra['64bit']:
+                kernel = 111 if image.extra['pvops'] else 107
+            else:
+                kernel = 110 if image.extra['pvops'] else 60
         params = { "api_action": "avail.kernels" }
         kernels = self.connection.request(LINODE_ROOT, params=params).object
         if kernel not in [z["KERNELID"] for z in kernels]:
@@ -365,8 +371,11 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(LINODE_ROOT, params=params).object
         distros = []
         for obj in data:
-            i = NodeImage(id=obj["DISTRIBUTIONID"], name=obj["LABEL"],
-                driver=self.connection.driver)
+            i = NodeImage(id=obj["DISTRIBUTIONID"],
+                          name=obj["LABEL"],
+                          driver=self.connection.driver,
+                          extra={'pvops': obj['REQUIRESPVOPSKERNEL'],
+                                 '64bit': obj['IS64BIT']})
             distros.append(i)
         return distros
 
