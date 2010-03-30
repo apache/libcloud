@@ -97,6 +97,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='slicetest', image=image, size=size)
         self.assertEqual(node.name, 'slicetest')
+        self.assertEqual(node.extra.get('password'), 'fooadfa1231')
 
 class SlicehostMockHttp(MockHttp):
 
