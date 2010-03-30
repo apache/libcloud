@@ -59,6 +59,8 @@ class SlicehostNodeDriver(NodeDriver):
     type = Provider.SLICEHOST
     name = 'Slicehost'
 
+    features = {"create_node": ["generates_password"]}
+
     NODE_STATE_MAP = { 'active': NodeState.RUNNING,
                        'build': NodeState.PENDING,
                        'reboot': NodeState.REBOOTING,
@@ -145,7 +147,7 @@ class SlicehostNodeDriver(NodeDriver):
     def _to_node(self, element):
 
         attrs = [ 'name', 'image-id', 'progress', 'id', 'bw-out', 'bw-in', 
-                  'flavor-id', 'status', 'ip-address' ]
+                  'flavor-id', 'status', 'ip-address', 'root-password' ]
 
         node_attrs = {}
         for attr in attrs:
@@ -177,7 +179,10 @@ class SlicehostNodeDriver(NodeDriver):
                  state=state,
                  public_ip=[public_ip],
                  private_ip=[private_ip],
-                 driver=self.connection.driver)
+                 driver=self.connection.driver,
+                 extra={
+                     'password': element.findtext('root-password'),
+                 })
         return n
 
     def _to_sizes(self, object):
