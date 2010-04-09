@@ -56,6 +56,16 @@ class SoftLayerTests(unittest.TestCase):
         self.assertEqual(seattle.country, 'US')
         self.assertEqual(seattle.id, 18171)
 
+    def test_list_images(self):
+        images = self.driver.list_images()
+        image = images[0]
+        self.assertEqual(image.id, 1684)
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 2)
+        self.assertEqual(sizes[0].id, 'sl1')
+
 class SoftLayerMockHttp(MockHttp):
     fixtures = FileFixtures('softlayer')
 
