@@ -20,7 +20,7 @@ import xmlrpclib
 
 import libcloud
 from libcloud.types import Provider, InvalidCredsException, NodeState
-from libcloud.base import NodeDriver, Node, NodeLocation
+from libcloud.base import NodeDriver, Node, NodeLocation, NodeSize, NodeImage
 
 DATACENTERS = {
     'sea01': {'country': 'US'},
@@ -32,6 +32,89 @@ NODE_STATE_MAP = {
     'RUNNING': NodeState.RUNNING,
     'HALTED': NodeState.TERMINATED,
     'PAUSED': NodeState.TERMINATED,
+}
+
+DEFAULT_PACKAGE = 46
+
+SL_IMAGES = [
+    {'id': 1684, 'name': 'CentOS 5 - Minimal Install (32 bit)'},
+    {'id': 1685, 'name': 'CentOS 5 - Minimal Install (64 bit)'},
+    {'id': 1686, 'name': 'CentOS 5 - LAMP Install (32 bit)'},
+    {'id': 1687, 'name': 'CentOS 5 - LAMP Install (64 bit)'},
+    {'id': 1688, 'name': 'Red Hat Enterprise Linux 5 - Minimal Install (32 bit)'},
+    {'id': 1689, 'name': 'Red Hat Enterprise Linux 5 - Minimal Install (64 bit)'},
+    {'id': 1690, 'name': 'Red Hat Enterprise Linux 5 - LAMP Install (32 bit)'},
+    {'id': 1691, 'name': 'Red Hat Enterprise Linux 5 - LAMP Install (64 bit)'},
+    {'id': 1692, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (32 bit)'},
+    {'id': 1693, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (64 bit)'},
+    {'id': 1694, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (32 bit)'},
+    {'id': 1695, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (64 bit)'},
+    {'id': 1696, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (32 bit)'},
+    {'id': 1697, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (64 bit)'},
+    {'id': 1698, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (32 bit)'},
+    {'id': 1699, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (64 bit)'},
+    {'id': 1700, 'name': 'Windows Server 2003 Standard SP2 with R2 (32 bit)'},
+    {'id': 1701, 'name': 'Windows Server 2003 Standard SP2 with R2 (64 bit)'},
+    {'id': 1703, 'name': 'Windows Server 2003 Enterprise SP2 with R2 (64 bit)'},
+    {'id': 1705, 'name': 'Windows Server 2008 Standard Edition (64bit)'},
+    {'id': 1715, 'name': 'Windows Server 2003 Datacenter SP2 (64 bit)'},
+    {'id': 1716, 'name': 'Windows Server 2003 Datacenter SP2 (32 bit)'},
+    {'id': 1742, 'name': 'Windows Server 2008 Standard Edition SP2 (32bit)'},
+    {'id': 1752, 'name': 'Windows Server 2008 Standard Edition SP2 (64bit)'},
+    {'id': 1756, 'name': 'Windows Server 2008 Enterprise Edition SP2 (32bit)'},
+    {'id': 1761, 'name': 'Windows Server 2008 Enterprise Edition SP2 (64bit)'},
+    {'id': 1766, 'name': 'Windows Server 2008 Datacenter Edition SP2 (32bit)'},
+    {'id': 1770, 'name': 'Windows Server 2008 Datacenter Edition SP2 (64bit)'},
+    {'id': 1857, 'name': 'Windows Server 2008 R2 Standard Edition (64bit)'},
+    {'id': 1860, 'name': 'Windows Server 2008 R2 Enterprise Edition (64bit)'},
+    {'id': 1863, 'name': 'Windows Server 2008 R2 Datacenter Edition (64bit)'},
+]
+
+SL_TEMPLATES = {
+    'sl1': {
+        'imagedata': {
+            'name': '2 x 2.0 GHz, 1GB ram, 100GB',
+            'ram': 1024,
+            'disk': 100,
+            'bandwidth': None
+        },
+        'prices': [
+            {'id': 1644}, # 1 GB
+            {'id': 1639}, # 100 GB (SAN)
+            {'id': 1963}, # Private 2 x 2.0 GHz Cores
+            {'id': 21}, # 1 IP Address
+            {'id': 55}, # Host Ping
+            {'id': 58}, # Automated Notification
+            {'id': 1800}, # 0 GB Bandwidth
+            {'id': 57}, # Email and Ticket
+            {'id': 274}, # 1000 Mbps Public & Private Networks
+            {'id': 905}, # Reboot / Remote Console
+            {'id': 418}, # Nessus Vulnerability Assessment & Reporting
+            {'id': 420}, # Unlimited SSL VPN Users & 1 PPTP VPN User per account
+        ],
+    },
+    'sl2': {
+        'imagedata': {
+            'name': '2 x 2.0 GHz, 4GB ram, 250GB',
+            'ram': 4096,
+            'disk': 250,
+            'bandwidth': None
+        },
+        'prices': [
+            {'id': 1646}, # 4 GB
+            {'id': 1638}, # 250 GB (SAN)
+            {'id': 1963}, # Private 2 x 2.0 GHz Cores
+            {'id': 21}, # 1 IP Address
+            {'id': 55}, # Host Ping
+            {'id': 58}, # Automated Notification
+            {'id': 1800}, # 0 GB Bandwidth
+            {'id': 57}, # Email and Ticket
+            {'id': 274}, # 1000 Mbps Public & Private Networks
+            {'id': 905}, # Reboot / Remote Console
+            {'id': 418}, # Nessus Vulnerability Assessment & Reporting
+            {'id': 420}, # Unlimited SSL VPN Users & 1 PPTP VPN User per account
+        ],
+    }
 }
 
 class SoftLayerException(Exception):
@@ -164,30 +247,22 @@ class SoftLayerNodeDriver(NodeDriver):
 
     def create_node(self, **kwargs):
         """
-        Right now the best way to create a new node in softlayer is by 
-        cloning an already created node, so size and image do not apply.
-
-        @keyword    node:   A Node which will serve as the template for the new node
-        @type       node:   L{Node}
-
         @keyword    domain:   e.g. libcloud.org
         @type       domain:   str
         """
         name = kwargs['name']
-        location = kwargs['location']
-        node = kwargs['node']
+        image = kwargs['image']
+        size = kwargs['size']
         domain = kwargs['domain']
+        location = kwargs['location']
 
-        res = self.connection.request(
-            "SoftLayer_Virtual_Guest",
-            "getOrderTemplate",
-            "HOURLY",
-            id=node.id
-        )
-
+        res = {'prices': SL_TEMPLATES[size.id]['prices']}
+        res['packageId'] = DEFAULT_PACKAGE
+        res['prices'].append({'id': image.id})  # Add OS to order
         res['location'] = location.id
         res['complexType'] = 'SoftLayer_Container_Product_Order_Virtual_Guest'
         res['quantity'] = 1
+        res['useHourlyPricing'] = True
         res['virtualGuests'] = [
             {
                 'hostname': name,
@@ -201,7 +276,40 @@ class SoftLayerNodeDriver(NodeDriver):
             res
         )
 
-        return None # the instance won't be available for a while.
+        # Softlayer's create node doesn't really tell us anything.
+        return Node(
+            id=None,
+            name=res['orderDetails']['virtualGuests'][0]['hostname'],
+            state=NodeState.PENDING,
+            public_ip=None,
+            private_ip=None,
+            driver=self.connection.driver
+        )
+
+
+    def _to_image(self, img):
+        return NodeImage(
+            id=img['id'],
+            name=img['name'],
+            driver=self.connection.driver
+        )
+
+    def list_images(self):
+        return [self._to_image(i) for i in SL_IMAGES]
+
+    def _to_size(self, id, size):
+        return NodeSize(
+            id=id,
+            name=size['name'],
+            ram=size['ram'],
+            disk=size['disk'],
+            bandwidth=size['bandwidth'],
+            price=None,
+            driver=self.connection.driver,
+        )
+
+    def list_sizes(self):
+        return [self._to_size(id, s['imagedata']) for id, s in SL_TEMPLATES.iteritems()]
 
     def _to_loc(self, loc):
         return NodeLocation(
