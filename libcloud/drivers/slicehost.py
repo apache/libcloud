@@ -27,7 +27,9 @@ from xml.parsers.expat import ExpatError
 class SlicehostResponse(Response):
 
     def parse_body(self):
-        if not self.body:
+        # length of 1 can't be valid XML, but on destroy node, slicehost returns
+        # a 1 byte response with a "Content-Type: application/xml" header. booya.
+        if not self.body or len(self.body) <= 1:
             return None
         return ET.XML(self.body)
 
