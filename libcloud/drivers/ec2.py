@@ -230,11 +230,11 @@ class EC2NodeDriver(NodeDriver):
                      for term_status
                      in ('shutting-down', 'terminated') ])
 
-    def _to_nodes(self, object, xpath):
-        return [ self._to_node(el) 
+    def _to_nodes(self, object, xpath, groups=None):
+        return [ self._to_node(el, groups=groups)
                  for el in object.findall(self._fixxpath(xpath)) ]
         
-    def _to_node(self, element):
+    def _to_node(self, element, groups=None):
         try:
             state = self.NODE_STATE_MAP[
                 self._findattr(element, "instanceState/name")
@@ -266,7 +266,8 @@ class EC2NodeDriver(NodeDriver):
                 'availability': self._findattr(element,
                                                "placement/availabilityZone"),
                 'kernelid': self._findattr(element, "kernelId"),
-                'ramdiskid': self._findattr(element, "ramdiskId")
+                'ramdiskid': self._findattr(element, "ramdiskId"),
+                'groups': groups
             }
         )
         return n
@@ -285,9 +286,12 @@ class EC2NodeDriver(NodeDriver):
 
     def list_nodes(self):
         params = {'Action': 'DescribeInstances' }
-        nodes = self._to_nodes(
-                    self.connection.request('/', params=params).object,
-                    'reservationSet/item/instancesSet/item')
+        elem=self.connection.request('/', params=params).object
+        nodes=[]
+        for rs in self._findall(elem, 'reservationSet/item'):
+            groups=[g.findtext('')
+                        for g in self._findall(rs, 'groupSet/item/groupId')]
+            nodes += self._to_nodes(rs, 'instancesSet/item', groups)
         return nodes
 
     def list_sizes(self, location=None):
