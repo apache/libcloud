@@ -176,13 +176,17 @@ class SlicehostNodeDriver(NodeDriver):
 
         # for consistency with other drivers, we put this in two places.
         node_attrs['password'] = node_attrs['root-password']
+        extra = {}
+        for k in node_attrs.keys():
+          ek = k.replace("-", "_")
+          extra[ek] = node_attrs[k]
         n = Node(id=element.findtext('id'),
                  name=element.findtext('name'),
                  state=state,
                  public_ip=[public_ip],
                  private_ip=[private_ip],
                  driver=self.connection.driver,
-                 extra=node_attrs)
+                 extra=extra)
         return n
 
     def _to_sizes(self, object):
