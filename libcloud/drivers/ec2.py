@@ -153,7 +153,7 @@ class EC2Connection(ConnectionUserAndKey):
         params['Version'] = API_VERSION
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', 
                                             time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key)
+        params['Signature'] = self._get_aws_auth_param(params, self.key, self.action)
         return params
         
     def _get_aws_auth_param(self, params, secret_key, path='/'):
@@ -186,6 +186,7 @@ class EC2NodeDriver(NodeDriver):
     connectionCls = EC2Connection
     type = Provider.EC2
     name = 'Amazon EC2 (us-east-1)'
+    path = '/'
 
     _instance_types = EC2_US_EAST_INSTANCE_TYPES
 
@@ -286,7 +287,7 @@ class EC2NodeDriver(NodeDriver):
 
     def list_nodes(self):
         params = {'Action': 'DescribeInstances' }
-        elem=self.connection.request('/', params=params).object
+        elem=self.connection.request(self.path, params=params).object
         nodes=[]
         for rs in self._findall(elem, 'reservationSet/item'):
             groups=[g.findtext('')
@@ -301,7 +302,7 @@ class EC2NodeDriver(NodeDriver):
     def list_images(self, location=None):
         params = {'Action': 'DescribeImages'}
         images = self._to_images(
-            self.connection.request('/', params=params).object
+            self.connection.request(self.path, params=params).object
         )
         return images
 
@@ -309,7 +310,7 @@ class EC2NodeDriver(NodeDriver):
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
                   'GroupDescription': description}
-        return self.connection.request('/', params=params).object
+        return self.connection.request(self.path, params=params).object
 
     def authorize_security_group_permissive(self, name):
         results = []
@@ -321,7 +322,7 @@ class EC2NodeDriver(NodeDriver):
                   'CidrIp': '0.0.0.0/0'}
         try:
             results.append(
-                self.connection.request('/', params=params.copy()).object
+                self.connection.request(self.path, params=params.copy()).object
             )
         except Exception, e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
@@ -330,7 +331,7 @@ class EC2NodeDriver(NodeDriver):
 
         try:
             results.append(
-                self.connection.request('/', params=params.copy()).object
+                self.connection.request(self.path, params=params.copy()).object
             )
         except Exception, e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
@@ -340,7 +341,7 @@ class EC2NodeDriver(NodeDriver):
 
         try:
             results.append(
-                self.connection.request('/', params=params.copy()).object
+                self.connection.request(self.path, params=params.copy()).object
             )
         except Exception, e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
@@ -394,7 +395,7 @@ class EC2NodeDriver(NodeDriver):
         if 'userdata' in kwargs:
             params['UserData'] = base64.b64encode(kwargs['userdata'])
 
-        object = self.connection.request('/', params=params).object
+        object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         if len(nodes) == 1:
@@ -408,7 +409,7 @@ class EC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'RebootInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
-        res = self.connection.request('/', params=params).object
+        res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
 
     def destroy_node(self, node):
@@ -417,7 +418,7 @@ class EC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'TerminateInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
-        res = self.connection.request('/', params=params).object
+        res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
 
     def list_locations(self):
@@ -453,6 +454,12 @@ class EucNodeDriver(EC2NodeDriver):
 
     connectionCls = EucConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
+
+    def __init__(self, key, secret=None, secure=True, host=None, path=None):
+      super(EucNodeDriver, self).__init__(key, secret, secure, host)
+      if path:
+        self.path = path
+
     def list_locations(self):
         raise NotImplementedError, \
             'list_locations not implemented for this driver'
