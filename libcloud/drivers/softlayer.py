@@ -16,6 +16,7 @@
 Softlayer driver
 """
 
+import time
 import xmlrpclib
 
 import libcloud
@@ -202,9 +203,17 @@ class SoftLayerConnection(object):
             return {}
 
 class SoftLayerNodeDriver(NodeDriver):
+    """
+    SoftLayer node driver
+
+    Extra node attributes:
+        - password: root password
+    """
     connectionCls = SoftLayerConnection
     name = 'SoftLayer'
     type = Provider.SOFTLAYER
+
+    features = {"create_node": ["generates_password"]}
 
     def __init__(self, key, secret=None, secure=False):
         self.key = key
@@ -213,6 +222,11 @@ class SoftLayerNodeDriver(NodeDriver):
         self.connection.driver = self
 
     def _to_node(self, host):
+        try:
+            password = host['softwareComponents'][0]['passwords'][0]['password']
+        except IndexError, KeyError:
+            password = None
+
         return Node(
             id=host['id'],
             name=host['hostname'],
@@ -222,7 +236,10 @@ class SoftLayerNodeDriver(NodeDriver):
             ),
             public_ip=host['primaryIpAddress'],
             private_ip=host['primaryBackendIpAddress'],
-            driver=self
+            driver=self,
+            extra={
+                'password': password
+            }
         )
     
     def _to_nodes(self, hosts):
@@ -244,6 +261,39 @@ class SoftLayerNodeDriver(NodeDriver):
             return res
         else:
             return False
+
+    def _get_order_information(self, order_id, timeout=1200, check_interval=5):
+        mask = {
+            'orderTopLevelItems': {
+                'billingItem':  {
+                    'resource': {
+                        'softwareComponents': {
+                            'passwords': ''
+                        },
+                        'powerState': '',
+                    }
+                },
+            }
+         }
+
+        for i in range(0, timeout, check_interval):
+            try:
+                res = self.connection.request(
+                    "SoftLayer_Billing_Order",
+                    "getObject",
+                    id=order_id,
+                    object_mask=mask
+                )
+                item = res['orderTopLevelItems'][0]['billingItem']['resource']
+                if item['softwareComponents'][0]['passwords']:
+                    return item
+
+            except KeyError, IndexError:
+                pass
+
+            time.sleep(check_interval)
+
+        return None
 
     def create_node(self, **kwargs):
         """
@@ -276,16 +326,10 @@ class SoftLayerNodeDriver(NodeDriver):
             res
         )
 
-        # Softlayer's create node doesn't really tell us anything.
-        return Node(
-            id=None,
-            name=res['orderDetails']['virtualGuests'][0]['hostname'],
-            state=NodeState.PENDING,
-            public_ip=None,
-            private_ip=None,
-            driver=self.connection.driver
-        )
+        order_id = res['orderId']
+        raw_node = self._get_order_information(order_id)
 
+        return self._to_node(raw_node)
 
     def _to_image(self, img):
         return NodeImage(
@@ -330,7 +374,12 @@ class SoftLayerNodeDriver(NodeDriver):
 
     def list_nodes(self):
         mask = {
-            'virtualGuests': {'powerState': ''}
+            'virtualGuests': {
+                'powerState': '',
+                'softwareComponents': {
+                    'passwords': ''
+                }
+            }
         }
         res = self.connection.request(
             "SoftLayer_Account",
