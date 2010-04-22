@@ -318,6 +318,7 @@ class ConnectionKey(object):
     port = (80, 443)
     secure = 1
     driver = None
+    action = None
 
     def __init__(self, key, secure=True, host=None):
         """
@@ -398,6 +399,8 @@ class ConnectionKey(object):
           params = {}
         if headers is None:
           headers = {}
+
+        self.action = action
         # Extend default parameters
         params = self.add_default_params(params)
         # Extend default headers
