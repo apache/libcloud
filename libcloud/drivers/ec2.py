@@ -444,3 +444,15 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
     def list_locations(self):
         return [NodeLocation(0, 'Amazon US N. California', 'US', self)]
+
+class EucConnection(EC2Connection):
+
+    host = None
+
+class EucNodeDriver(EC2NodeDriver):
+
+    connectionCls = EucConnection
+    _instance_types = EC2_US_WEST_INSTANCE_TYPES
+    def list_locations(self):
+        raise NotImplementedError, \
+            'list_locations not implemented for this driver'
