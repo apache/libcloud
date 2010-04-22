@@ -320,7 +320,7 @@ class ConnectionKey(object):
     driver = None
     action = None
 
-    def __init__(self, key, secure=True, host=None):
+    def __init__(self, key, secure=True, host=None, force_port=None):
         """
         Initialize `user_id` and `key`; set `secure` to an C{int} based on
         passed value.
@@ -330,6 +330,9 @@ class ConnectionKey(object):
         self.ua = []
         if host:
           self.host = host
+
+        if force_port:
+          self.port = (force_port, force_port)
 
     def connect(self, host=None, port=None):
         """
@@ -459,8 +462,8 @@ class ConnectionUserAndKey(ConnectionKey):
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True, host=None):
-        super(ConnectionUserAndKey, self).__init__(key, secure, host)
+    def __init__(self, user_id, key, secure=True, host=None, port=None):
+        super(ConnectionUserAndKey, self).__init__(key, secure, host, port)
         self.user_id = user_id
 
 
@@ -474,6 +477,7 @@ class NodeDriver(object):
     connectionCls = ConnectionKey
     name = None
     type = None
+    port = None
     features = {"create_node": []}
     """
     List of available features for a driver.
@@ -485,7 +489,7 @@ class NodeDriver(object):
     """
     NODE_STATE_MAP = {}
 
-    def __init__(self, key, secret=None, secure=True, host=None):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
         """
         @keyword    key:    API key or username to used
         @type       key:    str
@@ -509,6 +513,9 @@ class NodeDriver(object):
 
         if host:
           args.append(host)
+
+        if port:
+          args.append(port)
 
         self.connection = self.connectionCls(*args)
 
