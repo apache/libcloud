@@ -466,8 +466,9 @@ class EucNodeDriver(EC2NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, path=None, port=None):
       super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
-      if path:
-        self.path = path
+      if path is None:
+        path = "/services/Eucalyptus"
+      self.path = path
 
     def list_locations(self):
         raise NotImplementedError, \
