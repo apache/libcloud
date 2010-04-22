@@ -47,6 +47,7 @@ class Provider(object):
     EC2_US_WEST = 10
     VOXEL = 11
     SOFTLAYER = 12
+    EUCALYPTUS = 13
 
 class NodeState(object):
     """
