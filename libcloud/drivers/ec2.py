@@ -128,6 +128,12 @@ class EC2Response(Response):
 
     def parse_error(self):
         err_list = []
+        # Okay, so for Eucalyptus, you can get a 403, with no body,
+        # if you are using the wrong user/password.
+        msg = "Failure: 403 Forbidden"
+        if self.status == 403 and self.body[:len(msg)] == msg:
+          raise InvalidCredsException(msg)
+
         for err in ET.XML(self.body).findall('Errors/Error'):
             code, message = err.getchildren()
             err_list.append("%s: %s" % (code.text, message.text))
