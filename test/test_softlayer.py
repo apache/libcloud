@@ -47,8 +47,9 @@ class SoftLayerTests(unittest.TestCase):
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
-        self.assertEqual(node.name, 'test01')
+        self.assertEqual(node.name, 'test1')
         self.assertEqual(node.state, NodeState.RUNNING)
+        self.assertEqual(node.extra['password'], 'TEST')
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
