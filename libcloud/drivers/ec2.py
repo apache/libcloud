@@ -436,6 +436,7 @@ class EC2EUConnection(EC2Connection):
 
 class EC2EUNodeDriver(EC2NodeDriver):
 
+    name = 'Amazon EC2 (eu-east-1)'
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_WEST_INSTANCE_TYPES
     def list_locations(self):
@@ -447,6 +448,7 @@ class EC2USWestConnection(EC2Connection):
 
 class EC2USWestNodeDriver(EC2NodeDriver):
 
+    name = 'Amazon EC2 (us-west-1)'
     connectionCls = EC2USWestConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
     def list_locations(self):
@@ -458,6 +460,7 @@ class EucConnection(EC2Connection):
 
 class EucNodeDriver(EC2NodeDriver):
 
+    name = 'Eucalyptus'
     connectionCls = EucConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
