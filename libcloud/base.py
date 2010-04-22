@@ -319,7 +319,7 @@ class ConnectionKey(object):
     secure = 1
     driver = None
 
-    def __init__(self, key, secure=True):
+    def __init__(self, key, secure=True, host=None):
         """
         Initialize `user_id` and `key`; set `secure` to an C{int} based on
         passed value.
@@ -327,6 +327,8 @@ class ConnectionKey(object):
         self.key = key
         self.secure = secure and 1 or 0
         self.ua = []
+        if host:
+          self.host = host
 
     def connect(self, host=None, port=None):
         """
@@ -454,8 +456,8 @@ class ConnectionUserAndKey(ConnectionKey):
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True):
-        super(ConnectionUserAndKey, self).__init__(key, secure)
+    def __init__(self, user_id, key, secure=True, host=None):
+        super(ConnectionUserAndKey, self).__init__(key, secure, host)
         self.user_id = user_id
 
 
@@ -480,7 +482,7 @@ class NodeDriver(object):
     """
     NODE_STATE_MAP = {}
 
-    def __init__(self, key, secret=None, secure=True):
+    def __init__(self, key, secret=None, secure=True, host=None):
         """
         @keyword    key:    API key or username to used
         @type       key:    str
@@ -495,10 +497,17 @@ class NodeDriver(object):
         self.key = key
         self.secret = secret
         self.secure = secure
+        args = [self.key]
+
         if self.secret:
-          self.connection = self.connectionCls(key, secret, secure)
-        else:
-          self.connection = self.connectionCls(key, secure)
+          args.append(self.secret)
+
+        args.append(secure)
+
+        if host:
+          args.append(host)
+
+        self.connection = self.connectionCls(*args)
 
         self.connection.driver = self
         self.connection.connect()

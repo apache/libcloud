@@ -43,6 +43,8 @@ DRIVERS = {
         ('libcloud.drivers.voxel', 'VoxelNodeDriver'),
     Provider.SOFTLAYER:
         ('libcloud.drivers.softlayer', 'SoftLayerNodeDriver'),
+    Provider.EUCALYPTUS:
+        ('libcloud.drivers.ec2', 'EucNodeDriver'),
 }
 
 def get_driver(provider):
