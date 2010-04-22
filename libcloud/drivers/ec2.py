@@ -464,8 +464,8 @@ class EucNodeDriver(EC2NodeDriver):
     connectionCls = EucConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
-    def __init__(self, key, secret=None, secure=True, host=None, path=None):
-      super(EucNodeDriver, self).__init__(key, secret, secure, host)
+    def __init__(self, key, secret=None, secure=True, host=None, path=None, port=None):
+      super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
       if path:
         self.path = path
 
