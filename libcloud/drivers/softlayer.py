@@ -288,7 +288,7 @@ class SoftLayerNodeDriver(NodeDriver):
                 if item['softwareComponents'][0]['passwords']:
                     return item
 
-            except KeyError, IndexError:
+            except (KeyError, IndexError):
                 pass
 
             time.sleep(check_interval)
