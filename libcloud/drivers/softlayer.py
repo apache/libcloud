@@ -346,7 +346,7 @@ class SoftLayerNodeDriver(NodeDriver):
             driver=self.connection.driver
         )
 
-    def list_images(self):
+    def list_images(self, location=None):
         return [self._to_image(i) for i in SL_IMAGES]
 
     def _to_size(self, id, size):
@@ -360,7 +360,7 @@ class SoftLayerNodeDriver(NodeDriver):
             driver=self.connection.driver,
         )
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         return [self._to_size(id, s['imagedata']) for id, s in SL_TEMPLATES.iteritems()]
 
     def _to_loc(self, loc):
