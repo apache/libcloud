@@ -71,6 +71,19 @@ SL_IMAGES = [
     {'id': 1863, 'name': 'Windows Server 2008 R2 Datacenter Edition (64bit)'},
 ]
 
+"""
+The following code snippet will print out all available "prices"
+    mask = { 'items': '' }
+    res = self.connection.request(
+        "SoftLayer_Product_Package",
+        "getObject",
+        res,
+        id=46,
+        object_mask=mask
+    )
+
+    from pprint import pprint; pprint(res)
+"""
 SL_TEMPLATES = {
     'sl1': {
         'imagedata': {
@@ -96,13 +109,14 @@ SL_TEMPLATES = {
     },
     'sl2': {
         'imagedata': {
-            'name': '2 x 2.0 GHz, 4GB ram, 250GB',
+            'name': '2 x 2.0 GHz, 4GB ram, 350GB',
             'ram': 4096,
-            'disk': 250,
+            'disk': 350,
             'bandwidth': None
         },
         'prices': [
             {'id': 1646}, # 4 GB
+            {'id': 1639}, # 100 GB (SAN) - This is the only available "First Disk"
             {'id': 1638}, # 250 GB (SAN)
             {'id': 1963}, # Private 2 x 2.0 GHz Cores
             {'id': 21}, # 1 IP Address
@@ -234,8 +248,8 @@ class SoftLayerNodeDriver(NodeDriver):
                 host['powerState']['keyName'],
                 NodeState.UNKNOWN
             ),
-            public_ip=[host['primaryIpAddress']],
-            private_ip=[host['primaryBackendIpAddress']],
+            public_ip=[host.get('primaryIpAddress')],
+            private_ip=[host.get('primaryBackendIpAddress')],
             driver=self,
             extra={
                 'password': password
