@@ -234,8 +234,8 @@ class SoftLayerNodeDriver(NodeDriver):
                 host['powerState']['keyName'],
                 NodeState.UNKNOWN
             ),
-            public_ip=host['primaryIpAddress'],
-            private_ip=host['primaryBackendIpAddress'],
+            public_ip=[host['primaryIpAddress']],
+            private_ip=[host['primaryBackendIpAddress']],
             driver=self,
             extra={
                 'password': password
