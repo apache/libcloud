@@ -643,9 +643,7 @@ class NodeDriver(object):
             try:
                 client.connect()
                 break
-            except IOError, e:
-                laste = e
-            except socket.error, e:
+            except (IOError, socket.gaierror, socket.error), e:
                 laste = e
             time.sleep(WAIT_PERIOD)
         if laste is not None:
