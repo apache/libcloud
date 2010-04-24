@@ -224,7 +224,7 @@ class SoftLayerNodeDriver(NodeDriver):
     def _to_node(self, host):
         try:
             password = host['softwareComponents'][0]['passwords'][0]['password']
-        except IndexError, KeyError:
+        except (IndexError, KeyError):
             password = None
 
         return Node(
@@ -303,8 +303,16 @@ class SoftLayerNodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        domain = kwargs['domain']
+        domain = kwargs.get('domain')
         location = kwargs['location']
+        if domain == None:
+            if name.find(".") != -1:
+                domain = name[name.find('.')+1:]
+
+        if domain == None:
+            # TODO: domain is a required argument for the Sofylayer API, but it
+            # it shouldn't be.
+            domain = "exmaple.com"
 
         res = {'prices': SL_TEMPLATES[size.id]['prices']}
         res['packageId'] = DEFAULT_PACKAGE
