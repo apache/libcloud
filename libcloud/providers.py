@@ -27,6 +27,8 @@ DRIVERS = {
         ('libcloud.drivers.ec2', 'EC2EUNodeDriver'),
     Provider.EC2_US_WEST:
         ('libcloud.drivers.ec2', 'EC2USWestNodeDriver'),
+    Provider.ECP:
+        ('libcloud.drivers.ecp', 'ECPNodeDriver'),
     Provider.GOGRID:
         ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
