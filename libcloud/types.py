@@ -31,6 +31,7 @@ class Provider(object):
     @cvar LINODE: Linode.com
     @cvar VCLOUD: vmware vCloud
     @cvar RIMUHOSTING: RimuHosting.com
+    @cvar ECP: Enomaly
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -48,6 +49,7 @@ class Provider(object):
     VOXEL = 11
     SOFTLAYER = 12
     EUCALYPTUS = 13
+    ECP = 14
 
 class NodeState(object):
     """
