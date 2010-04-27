@@ -225,8 +225,8 @@ class SlicehostNodeDriver(NodeDriver):
 
     def _is_private_subnet(self, ip):
         priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
-                         {'subnet': '172.16.0.0', 'mask': '172.16.0.0'},
-                         {'subnet': '192.168.0.0', 'mask': '192.168.0.0'} ]
+                         {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
+                         {'subnet': '192.168.0.0', 'mask': '255.255.0.0'} ]
 
         ip = struct.unpack('I',socket.inet_aton(ip))[0]
 
