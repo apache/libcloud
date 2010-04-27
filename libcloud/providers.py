@@ -47,6 +47,8 @@ DRIVERS = {
         ('libcloud.drivers.softlayer', 'SoftLayerNodeDriver'),
     Provider.EUCALYPTUS:
         ('libcloud.drivers.ec2', 'EucNodeDriver'),
+    Provider.IBM:
+        ('libcloud.drivers.ibm', 'IBMNodeDriver'),
 }
 
 def get_driver(provider):
