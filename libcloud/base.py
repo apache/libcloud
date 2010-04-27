@@ -409,12 +409,12 @@ class ConnectionKey(object):
         # Extend default headers
         headers = self.add_default_headers(headers)
         # We always send a content length and user-agent header
-        headers.update({'Content-Length': len(data)})
         headers.update({'User-Agent': self._user_agent()})
         headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '':
             data = self.encode_data(data)
+        headers.update({'Content-Length': len(data)})
         url = '?'.join((action, urllib.urlencode(params)))
         
         # Removed terrible hack...this a less-bad hack that doesn't execute a
