@@ -2,19 +2,23 @@
 
 Changes with Apache Libcloud 0.3.0
 
+    *) New Drivers for:
+      - Eucalyptus
+      - Enomaly ECP
+      - IBM Developer Cloud
+      - Softlayer
+
+    *) Added new deployment and bootstrap API.
+
+    *) Improved Voxel Driver.
+
     *) Imrpvoed test coverage for all drivers.
 
     *) Add support for multiple security groups in EC2.
 
-    *) Added new deployment and bootstrap API.
-
     *) Fixed bug in Rackspace and Rimuhosting when using multiple threads.
 
     *) Improved debugging and logging of HTTP requests.
-
-    *) Added Softlayer Driver.
-
-    *) Improved Voxel Driver.
 
 
 Changes with Apache Libcloud 0.2.0 [Tagged February 2, 2010]
