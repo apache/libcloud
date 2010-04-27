@@ -175,7 +175,7 @@ class TestCaseMixin(object):
             self.assertTrue(isinstance(image, NodeImage))
 
 
-    def test_list_images_response(self):
+    def test_list_locations_response(self):
         locations = self.driver.list_locations()
         self.assertTrue(isinstance(locations, list))
         for dc in locations:
