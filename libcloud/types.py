@@ -50,6 +50,7 @@ class Provider(object):
     SOFTLAYER = 12
     EUCALYPTUS = 13
     ECP = 14
+    IBM = 15
 
 class NodeState(object):
     """
