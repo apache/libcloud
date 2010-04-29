@@ -23,9 +23,12 @@ from libcloud.base import Response, ConnectionUserAndKey
 from libcloud.types import Provider, NodeState, InvalidCredsException
 from zope.interface import implements
 
-import uuid
 import time
 import base64
+import httplib
+import socket
+import struct
+import os
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -35,16 +38,33 @@ except: import simplejson as json
 #Defaults
 API_HOST = ''
 API_PORT = (80,443)
-API_SECURE = True
 
 class ECPResponse(Response):
 
-    #Interpret the json responses
+    def success(self):
+        if self.status == httplib.OK or self.status == httplib.CREATED:
+            try:
+                j_body = json.loads(self.body)
+            except ValueError:
+                self.error = "JSON response cannot be decoded."
+                return False
+            if j_body['errno'] == 0:
+                return True
+            else:
+                self.error = "ECP error: %s" % j_body['message']
+                return False
+        elif self.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsException()
+        else:
+            self.error = "HTTP Error Code: %s" % self.status
+        return False
+
+    def parse_error(self):
+        return self.error
+
+    #Interpret the json responses - no error checking required
     def parse_body(self):
-        try:
-            return json.loads(self.body)
-        except ValueError, e:
-            raise Exception("%s: %s" % (e, self.error))
+        return json.loads(self.body)
             
     def getheaders(self):
         return self.headers
@@ -54,10 +74,6 @@ class ECPConnection(ConnectionUserAndKey):
     responseCls = ECPResponse
     host = API_HOST
     port = API_PORT
-    secure = API_SECURE
-
-    def request(self, *args, **kwargs):
-        return super(ECPConnection, self).request(*args, **kwargs)
         
     def add_default_headers(self, headers):
         #Authentication
@@ -71,18 +87,24 @@ class ECPConnection(ConnectionUserAndKey):
         return headers
         
     def _encode_multipart_formdata(self, fields):
-        BOUNDARY = '----------ThIs_Is_tHe_bouNdaRY_$'
-        CRLF = '\r\n'
+        """
+        Based on Wade Leftwich's function:
+        http://code.activestate.com/recipes/146306/
+        """
+        #use a random boundary that does not appear in the fields
+        boundary = ''
+        while boundary in ''.join(fields):
+            boundary = os.urandom(16).encode('hex')
         L = []
-        for i in fields.keys():
-            L.append('--' + BOUNDARY)
+        for i in fields:
+            L.append('--' + boundary)
             L.append('Content-Disposition: form-data; name="%s"' % i)
             L.append('')
             L.append(fields[i])
-        L.append('--' + BOUNDARY + '--')
+        L.append('--' + boundary + '--')
         L.append('')
-        body = CRLF.join(L)
-        content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+        body = '\r\n'.join(L)
+        content_type = 'multipart/form-data; boundary=%s' % boundary
         header = {'Content-Type':content_type}
         return header, body
 
@@ -91,18 +113,8 @@ class ECPNodeDriver(NodeDriver):
 
     name = "Enomaly Elastic Computing Platform"
     type = Provider.ECP
-
+    connectionCls = ECPConnection
     implements(INodeDriver)
-
-    def __init__(self, user_name, password):
-        """
-        Sets the username and password on creation. Also creates the connection 
-        object
-        """
-        self.user_name = user_name
-        self.password = password
-        self.connection = ECPConnection(self.user_name, self.password)
-        self.connection.driver = self
 
     def list_nodes(self):
         """
@@ -111,10 +123,6 @@ class ECPNodeDriver(NodeDriver):
         
         #Make the call
         res = self.connection.request('/rest/hosting/vm/list').parse_body()
-        
-        #Check for application level error
-        if not res['errno'] == 0:
-            raise Exception('Cannot retrieve nodes list.')
         
         #Put together a list of node objects
         nodes=[]
@@ -140,13 +148,26 @@ class ECPNodeDriver(NodeDriver):
         #IPs
         iplist = [interface['ip'] for interface in vm['interfaces']  if interface['ip'] != '127.0.0.1']
         
+        public_ips = []
+        private_ips = []
+        for ip in iplist:
+            try:
+                socket.inet_aton(ip)
+            except socket.error:
+                # not a valid ip
+                continue
+            if self._is_private_subnet(ip):
+                private_ips.append(ip)
+            else:
+                public_ips.append(ip)
+                
         #Create the node object
         n = Node(
           id=vm['uuid'],
           name=vm['name'],
           state=NodeState.RUNNING,
-          public_ip=iplist,
-          private_ip=iplist,
+          public_ip=public_ips,
+          private_ip=private_ips,
           driver=self,
         )
         
@@ -154,64 +175,54 @@ class ECPNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         """
-        This works by black magic.
+        Shuts down a VM and then starts it again.
         """
         
         #Turn the VM off
         #Black magic to make the POST requests work
         d = self.connection._encode_multipart_formdata({'action':'stop'})
-        response = self.connection.request(
+        self.connection.request(
                    '/rest/hosting/vm/%s' % node.id, 
                    method='POST', 
                    headers=d[0], 
                    data=d[1]
         ).parse_body()
         
-        #Check for application level error
-        if response['errno'] == 0:
-            node.state = NodeState.REBOOTING
-            #Wait for it to turn off and then continue (to turn it on again)
-            while node.state == NodeState.REBOOTING:
-              #Check if it's off.
-              response = self.connection.request(
-                         '/rest/hosting/vm/%s' % node.id
-                         ).parse_body()
-              if response['vm']['state'] == 'off':
+        node.state = NodeState.REBOOTING
+        #Wait for it to turn off and then continue (to turn it on again)
+        while node.state == NodeState.REBOOTING:
+            #Check if it's off.
+            response = self.connection.request(
+                     '/rest/hosting/vm/%s' % node.id
+                     ).parse_body()
+            if response['vm']['state'] == 'off':
                 node.state = NodeState.TERMINATED
-              else:
+            else:
                 time.sleep(5)
-        else:
-            raise Exception('Node reboot failed due to ECP error: %s' % \
-                            response['message'])
         
         
         #Turn the VM back on.
         #Black magic to make the POST requests work
         d = self.connection._encode_multipart_formdata({'action':'start'})
-        response = self.connection.request(
+        self.connection.request(
             '/rest/hosting/vm/%s' % node.id,
             method='POST', 
             headers=d[0], 
             data=d[1]
         ).parse_body()
         
-        #Check for application level error
-        if response['errno'] == 0:
-            node.state = NodeState.RUNNING
-            return True
-        else:
-            raise Exception('Node reboot failed due to ECP error: %s' % \
-                            response['message'])
+        node.state = NodeState.RUNNING
+        return True
 
     def destroy_node(self, node):
         """
-        Shuts down and deletes a VM. Also black magic.
+        Shuts down and deletes a VM.
         """
         
         #Shut down first
         #Black magic to make the POST requests work
         d = self.connection._encode_multipart_formdata({'action':'stop'})
-        response = self.connection.request(
+        self.connection.request(
             '/rest/hosting/vm/%s' % node.id,
             method = 'POST', 
             headers=d[0], 
@@ -219,38 +230,29 @@ class ECPNodeDriver(NodeDriver):
         ).parse_body()
         
         #Ensure there was no applicationl level error
-        if response['errno'] == 0:
-            node.state = NodeState.PENDING
-            #Wait for the VM to turn off before continuing
-            while node.state == NodeState.PENDING:
-              #Check if it's off.
-              response = self.connection.request(
-                         '/rest/hosting/vm/%s' % node.id
-                         ).parse_body()
-              if response['vm']['state'] == 'off':
+        node.state = NodeState.PENDING
+        #Wait for the VM to turn off before continuing
+        while node.state == NodeState.PENDING:
+            #Check if it's off.
+            response = self.connection.request(
+                       '/rest/hosting/vm/%s' % node.id
+                       ).parse_body()
+            if response['vm']['state'] == 'off':
                 node.state = NodeState.TERMINATED
-              else:
+            else:
                 time.sleep(5)
-        else:
-            raise Exception('Node destroy failed due to ECP error: %s' % \
-                            response['message'])
         
         #Delete the VM
         #Black magic to make the POST requests work
         d = self.connection._encode_multipart_formdata({'action':'delete'})
-        response = self.connection.request(
+        self.connection.request(
             '/rest/hosting/vm/%s' % (node.id), 
             method='POST', 
             headers=d[0], 
             data=d[1]
         ).parse_body()
         
-        #Ensure there was no applicaiton level error
-        if response['errno'] == 0:
-            return True
-        else:
-            raise Exception('Node destroy failed due to ECP error: %s' % \
-                            response['message'])
+        return True
 
     def list_images(self, location=None):
         """
@@ -261,18 +263,13 @@ class ECPNodeDriver(NodeDriver):
         response = self.connection.request(
             '/rest/hosting/ptemplate/list').parse_body()
         
-        #Ensure there was no applicaiton level error
-        if not response['errno'] == 0:
-            raise Exception('Cannot get images list. Error: %s' % \
-                  response['message'])
-        
         #Turn the response into an array of NodeImage objects
         images = []
         for ptemplate in response['packages']:
             images.append(NodeImage(
-                id=ptemplate['uuid'],
-                name='%s: %s' % (ptemplate['name'], ptemplate['description']),
-                driver=self,
+                id = ptemplate['uuid'],
+                name= '%s: %s' % (ptemplate['name'], ptemplate['description']),
+                driver = self,
                 ))
                 
         return images
@@ -286,11 +283,6 @@ class ECPNodeDriver(NodeDriver):
         #Make the call
         response = self.connection.request(
             '/rest/hosting/htemplate/list').parse_body()
-        
-        #Ensure there was no application level error
-        if not response['errno'] == 0:
-            raise Exception('Cannot get sizes list. Error: %s' % \
-                            response['message'])
         
         #Turn the response into an array of NodeSize objects
         sizes = []
@@ -327,9 +319,6 @@ class ECPNodeDriver(NodeDriver):
         
         #Find out what network to put the VM on.
         res = self.connection.request('/rest/hosting/network/list').parse_body()
-        if not res['errno'] == 0:
-            raise Exception('Cannot get network list. Error: %s' % \
-                            res['message'])
                             
         #Use the first / default network because there is no way to specific 
         #which one
@@ -353,19 +342,32 @@ class ECPNodeDriver(NodeDriver):
             data=d[1]
         ).parse_body()
         
-        #Check of application level error
-        if not response['errno'] == 0:
-            raise Exception('Cannot create Node. Error: %s' % \
-                            response['message'])
-        
         #Create a node object and return it.
         n = Node(
             id=response['machine_id'],
             name=data['name'],
-            state=NodeState.RUNNING,
+            state=NodeState.PENDING,
             public_ip=[],
             private_ip=[],
             driver=self,
         )
         
         return n
+ 
+
+    #Copied from slicehost driver
+    def _is_private_subnet(self, ip):
+        priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
+                         {'subnet': '172.16.0.0', 'mask': '172.16.0.0'},
+                         {'subnet': '192.168.0.0', 'mask': '192.168.0.0'} ]
+
+        ip = struct.unpack('I',socket.inet_aton(ip))[0]
+
+        for network in priv_subnets:
+            subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
+            mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
+
+            if (ip & mask) == (subnet & mask):
+                return True
+ 
+        return False
