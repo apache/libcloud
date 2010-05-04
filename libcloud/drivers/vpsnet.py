@@ -46,7 +46,7 @@ PRICE_PER_NODE = {1: 20,
                   100: 10}
 
 class VPSNetResponse(Response):
-    
+
     def parse_body(self):
         try:
             js = json.loads(self.body)
@@ -79,7 +79,10 @@ class VPSNetConnection(ConnectionUserAndKey):
         return headers
 
 class VPSNetNodeDriver(NodeDriver):
-    
+    """
+    VPS.net node driver
+    """
+
     type = Provider.VPSNET
     name = "vps.net"
     connectionCls = VPSNetConnection
@@ -126,12 +129,21 @@ class VPSNetNodeDriver(NodeDriver):
                 return PRICE_PER_NODE[keys[i]]
 
     def create_node(self, name, image, size, **kwargs):
+        """Create a new VPS.net node
+
+        See L{NodeDriver.create_node} for more keyword args.
+        @keyword    ex_backups_enabled: Enable automatic backups
+        @type       ex_backups_enabled: C{bool}
+
+        @keyword    ex_fqdn:   Fully Qualified domain of the node
+        @type       ex_fqdn:   C{string}
+        """
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':
                         {'label': name,
-                         'fqdn': kwargs.get('fqdn', ''),
+                         'fqdn': kwargs.get('ex_fqdn', ''),
                          'system_template_id': image.id,
-                         'backups_enabled': kwargs.get('backups_enabled', 0),
+                         'backups_enabled': kwargs.get('ex_backups_enabled', 0),
                          'slices_required': size.id}}
 
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),
