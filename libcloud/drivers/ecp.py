@@ -28,7 +28,6 @@ import time
 import base64
 import httplib
 import socket
-import struct
 import os
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5

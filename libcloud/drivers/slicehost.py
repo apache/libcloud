@@ -20,7 +20,6 @@ from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 from libcloud.base import is_private_subnet
 import base64
-import struct
 import socket
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
