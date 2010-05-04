@@ -32,6 +32,7 @@ class Provider(object):
     @cvar VCLOUD: vmware vCloud
     @cvar RIMUHOSTING: RimuHosting.com
     @cvar ECP: Enomaly
+    @cvar IBM: IBM Developer Cloud
     @cvar OPENNEBULA: OpenNebula.org
     """
     DUMMY = 0
