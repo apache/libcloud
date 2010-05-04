@@ -50,7 +50,7 @@ class SSHKeyDeployment(Deployment):
         @keyword key: Contents of the public key write
         """
         self.key = key
-  
+
     def run(self, node, client):
         """
         Installs SSH key into C{.ssh/authorized_keys}
