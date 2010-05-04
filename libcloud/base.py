@@ -506,15 +506,15 @@ class NodeDriver(object):
         self.secure = secure
         args = [self.key]
 
-        if self.secret:
+        if self.secret != None:
           args.append(self.secret)
 
         args.append(secure)
 
-        if host:
+        if host != None:
           args.append(host)
 
-        if port:
+        if port != None:
           args.append(port)
 
         self.connection = self.connectionCls(*args)
