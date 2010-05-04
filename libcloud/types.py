@@ -32,6 +32,7 @@ class Provider(object):
     @cvar VCLOUD: vmware vCloud
     @cvar RIMUHOSTING: RimuHosting.com
     @cvar ECP: Enomaly
+    @cvar OPENNEBULA: OpenNebula.org
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -51,6 +52,7 @@ class Provider(object):
     EUCALYPTUS = 13
     ECP = 14
     IBM = 15
+    OPENNEBULA = 16
 
 class NodeState(object):
     """
