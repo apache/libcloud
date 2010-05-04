@@ -86,12 +86,12 @@ class IBMNodeDriver(NodeDriver):
         
         See L{NodeDriver.create_node} for more keyword args.
 
-        @keyword    configurationData: Image-specific configuration parameters.
+        @keyword    ex_configurationData: Image-specific configuration parameters.
                                        Configuration parameters are defined in
                                        the parameters.xml file.  The URL to
                                        this file is defined in the NodeImage
                                        at extra[parametersURL].
-        @type       configurationData: C{dict}
+        @type       ex_configurationData: C{dict}
         """
 
         # Compose headers for message body
@@ -105,8 +105,8 @@ class IBMNodeDriver(NodeDriver):
             data.update({'location': '1'})
         if 'auth' in kwargs and isinstance(kwargs['auth'], NodeAuthSSHKey):
             data.update({'publicKey': kwargs['auth'].pubkey})
-        if 'configurationData' in kwargs:
-            configurationData = kwargs['configurationData']
+        if 'ex_configurationData' in kwargs:
+            configurationData = kwargs['ex_configurationData']
             for key in configurationData.keys():
                 data.update({key: configurationData.get(key)})
         
