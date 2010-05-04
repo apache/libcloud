@@ -49,6 +49,8 @@ DRIVERS = {
         ('libcloud.drivers.ec2', 'EucNodeDriver'),
     Provider.IBM:
         ('libcloud.drivers.ibm', 'IBMNodeDriver'),
+    Provider.OPENNEBULA:
+        ('libcloud.drivers.opennebula', 'OpenNebulaNodeDriver'),
 }
 
 def get_driver(provider):
