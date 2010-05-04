@@ -11,6 +11,8 @@ Changes with Apache Libcloud 0.3.0
     *) Added new deployment and bootstrap API.
 
     *) Improved Voxel Driver.
+    
+    *) Added support for Amazon EC2  Asia Pacific (Singapore) Region.
 
     *) Imrpvoed test coverage for all drivers.
 
