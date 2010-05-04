@@ -267,7 +267,7 @@ class IConnectionKeyFactory(Interface):
 
         The acceptance of only `key` provides support for APIs with only one
         authentication bit.
-        
+
         The `secure` argument indicates whether or not a secure connection
         should be made. Not all providers support this, so it may be ignored.
         """
@@ -283,7 +283,7 @@ class IConnectionUserAndKeyFactory(Interface):
 
         The first two arguments provide the initial values for `user_id` and
         `key`, respectively, which should be used for authentication.
-        
+
         The `secure` argument indicates whether or not a secure connection
         should be made. Not all providers support this, so it may be ignored.
         """
@@ -325,4 +325,3 @@ class IResponseFactory(Interface):
         """
         Process the given response, setting ivars.
         """
-

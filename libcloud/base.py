@@ -41,7 +41,7 @@ class Node(object):
     """
     A Base Node class to derive from.
     """
-    
+
     interface.implements(INode)
     interface.classProvides(INodeFactory)
 
@@ -58,13 +58,13 @@ class Node(object):
             self.extra = {}
         else:
             self.extra = extra
-        
+
     def get_uuid(self):
         """Unique hash for this node
         @return: C{string}
         """
         return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()
-        
+
     def reboot(self):
         """Reboot this node
         @return: C{bool}
@@ -88,7 +88,7 @@ class NodeSize(object):
     """
     A Base NodeSize class to derive from.
     """
-    
+
     interface.implements(INodeSize)
     interface.classProvides(INodeSizeFactory)
 
@@ -111,7 +111,7 @@ class NodeImage(object):
     """
     A Base NodeImage class to derive from.
     """
-    
+
     interface.implements(INodeImage)
     interface.classProvides(INodeImageFactory)
 
@@ -263,11 +263,11 @@ class LoggingConnection():
         cmd.extend(["-X", pquote(method)])
 
         for h in headers:
-          cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
+            cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
 
         # TODO: in python 2.6, body can be a file-like object.
         if body is not None and len(body) > 0:
-          cmd.extend(["--data-binary", pquote(body)])
+            cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
         return " ".join(cmd)
@@ -345,10 +345,10 @@ class ConnectionKey(object):
         self.secure = secure and 1 or 0
         self.ua = []
         if host:
-          self.host = host
+            self.host = host
 
         if force_port:
-          self.port = (force_port, force_port)
+            self.port = (force_port, force_port)
 
     def connect(self, host=None, port=None):
         """
@@ -375,22 +375,22 @@ class ConnectionKey(object):
         self.connection = connection
 
     def _user_agent(self):
-      return 'libcloud/%s (%s)%s' % (
-                libcloud.__version__,
-                self.driver.name,
-                "".join([" (%s)" % x for x in self.ua]))
+        return 'libcloud/%s (%s)%s' % (
+                  libcloud.__version__,
+                  self.driver.name,
+                  "".join([" (%s)" % x for x in self.ua]))
 
     def user_agent_append(self, token):
-      """
-      Append a token to a user agent string.
+        """
+        Append a token to a user agent string.
 
-      Users of the library should call this to uniquely identify thier requests
-      to a provider.
+        Users of the library should call this to uniquely identify thier requests
+        to a provider.
 
-      @type token: C{str}
-      @param token: Token to add to the user agent.
-      """
-      self.ua.append(token)
+        @type token: C{str}
+        @param token: Token to add to the user agent.
+        """
+        self.ua.append(token)
 
     def request(self,
                 action,
@@ -400,7 +400,7 @@ class ConnectionKey(object):
                 method='GET'):
         """
         Request a given `action`.
-        
+
         Basically a wrapper around the connection
         object's `request` that does some helpful pre-processing.
 
@@ -424,9 +424,9 @@ class ConnectionKey(object):
         @return: An instance of type I{responseCls}
         """
         if params is None:
-          params = {}
+            params = {}
         if headers is None:
-          headers = {}
+            headers = {}
 
         self.action = action
         # Extend default parameters
@@ -441,7 +441,7 @@ class ConnectionKey(object):
             data = self.encode_data(data)
         headers.update({'Content-Length': len(data)})
         url = '?'.join((action, urllib.urlencode(params)))
-        
+
         # Removed terrible hack...this a less-bad hack that doesn't execute a
         # request twice, but it's still a hack.
         self.connect()
@@ -525,7 +525,7 @@ class NodeDriver(object):
         @keyword    secret: Secret password to be used
         @type       secret: str
 
-        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers 
+        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
         @type       secure: bool
 
@@ -541,15 +541,15 @@ class NodeDriver(object):
         args = [self.key]
 
         if self.secret != None:
-          args.append(self.secret)
+            args.append(self.secret)
 
         args.append(secure)
 
         if host != None:
-          args.append(host)
+            args.append(host)
 
         if port != None:
-          args.append(port)
+            args.append(port)
 
         self.connection = self.connectionCls(*args)
 
@@ -637,7 +637,7 @@ class NodeDriver(object):
         """
         Create a new node, and start deployment.
 
-        Depends on a Provider Driver supporting either using a specific password 
+        Depends on a Provider Driver supporting either using a specific password
         or returning a generated password.
 
         @keyword    deploy: Deployment to run once machine is online and availble to SSH.
