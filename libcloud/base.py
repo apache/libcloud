@@ -60,12 +60,21 @@ class Node(object):
             self.extra = extra
         
     def get_uuid(self):
+        """Unique hash for this node
+        @return: C{string}
+        """
         return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()
         
     def reboot(self):
+        """Reboot this node
+        @return: C{bool}
+        """
         return self.driver.reboot_node(self)
 
     def destroy(self):
+        """Destroy this node
+        @return: C{bool}
+        """
         return self.driver.destroy_node(self)
 
     def __repr__(self):
@@ -264,6 +273,9 @@ class LoggingConnection():
         return " ".join(cmd)
 
 class LoggingHTTPSConnection(LoggingConnection, httplib.HTTPSConnection):
+    """
+    Utility Class for logging HTTPS connections
+    """
 
     def getresponse(self):
         r = httplib.HTTPSConnection.getresponse(self)
@@ -284,6 +296,9 @@ class LoggingHTTPSConnection(LoggingConnection, httplib.HTTPSConnection):
                                                body, headers)
 
 class LoggingHTTPConnection(LoggingConnection, httplib.HTTPConnection):
+    """
+    Utility Class for logging HTTP connections
+    """
 
     def getresponse(self):
         r = httplib.HTTPConnection.getresponse(self)
@@ -365,8 +380,17 @@ class ConnectionKey(object):
                 self.driver.name,
                 "".join([" (%s)" % x for x in self.ua]))
 
-    def user_agent_append(self, s):
-      self.ua.append(s)
+    def user_agent_append(self, token):
+      """
+      Append a token to a user agent string.
+
+      Users of the library should call this to uniquely identify thier requests
+      to a provider.
+
+      @type token: C{str}
+      @param token: Token to add to the user agent.
+      """
+      self.ua.append(token)
 
     def request(self,
                 action,
@@ -487,7 +511,10 @@ class NodeDriver(object):
               for nodes.
             - password: Supports L{NodeAuthPassword} as an authentication
               method for nodes.
+            - generates_password: Returns a password attribute on the Node
+              object returned from creation.
     """
+
     NODE_STATE_MAP = {}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
@@ -501,6 +528,12 @@ class NodeDriver(object):
         @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers 
                             only support HTTPS, and it is on by default.
         @type       secure: bool
+
+        @keyword    host: Override hostname used for connections.
+        @type       host: str
+
+        @keyword    port: Override port used for connections.
+        @type       port: int
         """
         self.key = key
         self.secret = secret
@@ -601,6 +634,17 @@ class NodeDriver(object):
             'list_locations not implemented for this driver'
 
     def deploy_node(self, **kwargs):
+        """
+        Create a new node, and start deployment.
+
+        Depends on a Provider Driver supporting either using a specific password 
+        or returning a generated password.
+
+        @keyword    deploy: Deployment to run once machine is online and availble to SSH.
+        @type       deploy: L{Deployment}
+
+        See L{NodeDriver.create_node} for more keyword args.
+        """
         # TODO: support ssh keys
         WAIT_PERIOD=3
         password = None
@@ -655,6 +699,14 @@ class NodeDriver(object):
         return n
 
 def is_private_subnet(ip):
+    """
+    Utility function to check if an IP address is inside a private subnet.
+
+    @type ip: C{str}
+    @keyword ip: IP address to check
+
+    @return: C{bool} if the specified IP address is private.
+    """
     priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
                      {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
                      {'subnet': '192.168.0.0', 'mask': '255.255.0.0'} ]
