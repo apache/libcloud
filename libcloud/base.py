@@ -33,6 +33,7 @@ import hashlib
 import StringIO
 import os
 import socket
+import struct
 from pipes import quote as pquote
 
 
@@ -652,3 +653,19 @@ class NodeDriver(object):
         n = kwargs["deploy"].run(node, client)
         client.close()
         return n
+
+def is_private_subnet(ip):
+    priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
+                     {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
+                     {'subnet': '192.168.0.0', 'mask': '255.255.0.0'} ]
+
+    ip = struct.unpack('I',socket.inet_aton(ip))[0]
+
+    for network in priv_subnets:
+        subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
+        mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
+
+        if (ip & mask) == (subnet & mask):
+            return True
+
+    return False

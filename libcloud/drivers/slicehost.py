@@ -18,6 +18,7 @@ Slicehost Driver
 from libcloud.types import NodeState, Provider, InvalidCredsException
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
+from libcloud.base import is_private_subnet
 import base64
 import struct
 import socket
@@ -169,7 +170,7 @@ class SlicehostNodeDriver(NodeDriver):
             except socket.error:
                 # not a valid ip
                 continue
-            if self._is_private_subnet(ip):
+            if is_private_subnet(ip):
                 private_ip = ip
             else:
                 public_ip = ip
@@ -221,20 +222,3 @@ class SlicehostNodeDriver(NodeDriver):
                      name=str(element.findtext('name')),
                      driver=self.connection.driver)
         return i
-
-
-    def _is_private_subnet(self, ip):
-        priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
-                         {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
-                         {'subnet': '192.168.0.0', 'mask': '255.255.0.0'} ]
-
-        ip = struct.unpack('I',socket.inet_aton(ip))[0]
-
-        for network in priv_subnets:
-            subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
-            mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
-
-            if (ip & mask) == (subnet & mask):
-                return True
-            
-        return False
