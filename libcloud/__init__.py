@@ -37,6 +37,15 @@ def enable_debug(fo):
     ConnectionKey.conn_classes = (LoggingHTTPConnection, LoggingHTTPSConnection)
 
 def _init_once():
+    """
+    Utility function that is ran once on Library import.
+
+    This checks for the LIBCLOUD_DEBUG enviroment variable, which if it exists
+    is where we will log debug information about the provider transports.
+
+    If LIBCLOUD_DEBUG is not a path, C{/tmp/libcloud_debug.log} is used by
+    default.
+    """
     import os
     d = os.getenv("LIBCLOUD_DEBUG")
     if d:
