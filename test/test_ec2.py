@@ -15,7 +15,7 @@
 import sys
 import unittest
 
-from libcloud.drivers.ec2 import EC2NodeDriver
+from libcloud.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 
 from test import MockHttp, TestCaseMixin
@@ -92,6 +92,12 @@ class EC2MockHttp(MockHttp):
     def _TerminateInstances(self, method, url, body, headers):
         body = self.fixtures.load('terminate_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+class EC2APSETests(EC2Tests):
+    def setUp(self):
+        EC2APSENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2MockHttp.use_param = 'Action'
+        self.driver = EC2APSENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

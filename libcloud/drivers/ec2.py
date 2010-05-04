@@ -30,6 +30,7 @@ from xml.etree import ElementTree as ET
 EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
+EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
 
 API_VERSION = '2009-11-30'
 
@@ -94,6 +95,7 @@ EC2_INSTANCE_TYPES = {
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.085'
 EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.34'
@@ -118,6 +120,9 @@ EC2_EU_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
 EC2_EU_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
 EC2_EU_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
 EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
+
+# prices are the same
+EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_EU_WEST_INSTANCE_TYPES)
 
 class EC2Response(Response):
 
@@ -436,7 +441,7 @@ class EC2EUConnection(EC2Connection):
 
 class EC2EUNodeDriver(EC2NodeDriver):
 
-    name = 'Amazon EC2 (eu-east-1)'
+    name = 'Amazon EC2 (eu-west-1)'
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_WEST_INSTANCE_TYPES
     def list_locations(self):
@@ -453,6 +458,18 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
     def list_locations(self):
         return [NodeLocation(0, 'Amazon US N. California', 'US', self)]
+
+class EC2APSEConnection(EC2Connection):
+
+    host = EC2_AP_SOUTHEAST_HOST
+
+class EC2APSENodeDriver(EC2NodeDriver):
+
+    name = 'Amazon EC2 (ap-southeast-1)'
+    connectionCls = EC2APSEConnection
+    _instance_types = EC2_AP_SOUTHEAST_INSTANCE_TYPES
+    def list_locations(self):
+        return [NodeLocation(0, 'Amazon Asia-Pacific Singapore', 'SG', self)]
 
 class EucConnection(EC2Connection):
 
