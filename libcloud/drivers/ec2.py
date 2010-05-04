@@ -125,7 +125,9 @@ EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_EU_WEST_INSTANCE_TYPES)
 
 class EC2Response(Response):
-
+    """
+    EC2 specific response parsing and error handling.
+    """
     def parse_body(self):
         if not self.body:
             return None
@@ -153,6 +155,9 @@ class EC2Response(Response):
         return "\n".join(err_list)
 
 class EC2Connection(ConnectionUserAndKey):
+    """
+    Repersents a single connection to the EC2 Endpoint
+    """
 
     host = EC2_US_EAST_HOST
     responseCls = EC2Response
@@ -193,6 +198,9 @@ class EC2Connection(ConnectionUserAndKey):
         return b64_hmac
 
 class EC2NodeDriver(NodeDriver):
+    """
+    Driver for connections to EC2
+    """
 
     connectionCls = EC2Connection
     type = Provider.EC2
@@ -451,10 +459,15 @@ class EC2NodeDriver(NodeDriver):
         return [NodeLocation(0, 'Amazon US N. Virginia', 'US', self)]
 
 class EC2EUConnection(EC2Connection):
-
+    """
+    Connection class for EC2 in the Western Europe Region
+    """
     host = EC2_EU_WEST_HOST
 
 class EC2EUNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Western Europe Region
+    """
 
     name = 'Amazon EC2 (eu-west-1)'
     connectionCls = EC2EUConnection
@@ -463,10 +476,16 @@ class EC2EUNodeDriver(EC2NodeDriver):
         return [NodeLocation(0, 'Amazon Europe Ireland', 'IE', self)]
 
 class EC2USWestConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Western US Region
+    """
 
     host = EC2_US_WEST_HOST
 
 class EC2USWestNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Western US Region
+    """
 
     name = 'Amazon EC2 (us-west-1)'
     connectionCls = EC2USWestConnection
@@ -475,10 +494,16 @@ class EC2USWestNodeDriver(EC2NodeDriver):
         return [NodeLocation(0, 'Amazon US N. California', 'US', self)]
 
 class EC2APSEConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Southeast Asia Pacific Region
+    """
 
     host = EC2_AP_SOUTHEAST_HOST
 
 class EC2APSENodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Southeast Asia Pacific Region
+    """
 
     name = 'Amazon EC2 (ap-southeast-1)'
     connectionCls = EC2APSEConnection
@@ -487,10 +512,16 @@ class EC2APSENodeDriver(EC2NodeDriver):
         return [NodeLocation(0, 'Amazon Asia-Pacific Singapore', 'SG', self)]
 
 class EucConnection(EC2Connection):
+    """
+    Connection class for Eucalyptus
+    """
 
     host = None
 
 class EucNodeDriver(EC2NodeDriver):
+    """
+    Driver class for Eucalyptus
+    """
 
     name = 'Eucalyptus'
     connectionCls = EucConnection
