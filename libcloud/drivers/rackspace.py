@@ -163,13 +163,13 @@ class RackspaceNodeDriver(NodeDriver):
                        'UNKNOWN': NodeState.UNKNOWN}
 
     def list_nodes(self):
-        return self.to_nodes(self.connection.request('/servers/detail').object)
+        return self._to_nodes(self.connection.request('/servers/detail').object)
 
     def list_sizes(self, location=None):
-        return self.to_sizes(self.connection.request('/flavors/detail').object)
+        return self._to_sizes(self.connection.request('/flavors/detail').object)
 
     def list_images(self, location=None):
-        return self.to_images(self.connection.request('/images/detail').object)
+        return self._to_images(self.connection.request('/images/detail').object)
 
     def list_locations(self):
         return [NodeLocation(0, "Rackspace DFW1", 'US', self)]
@@ -178,11 +178,11 @@ class RackspaceNodeDriver(NodeDriver):
         """Create a new rackspace node
 
         See L{NodeDriver.create_node} for more keyword args.
-        @keyword    metadata: Key/Value metadata to associate with a node
-        @type       metadata: C{dict}
+        @keyword    ex_metadata: Key/Value metadata to associate with a node
+        @type       ex_metadata: C{dict}
 
-        @keyword    file:   File Path => File contents to create on the node
-        @type       file:   C{dict}
+        @keyword    ex_files:   File Path => File contents to create on the node
+        @type       ex_files:   C{dict}
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -195,11 +195,11 @@ class RackspaceNodeDriver(NodeDriver):
              'flavorId': str(size.id)}
         )
 
-        metadata_elm = self._metadata_to_xml(kwargs.get("metadata", {}))
+        metadata_elm = self._metadata_to_xml(kwargs.get("ex_metadata", {}))
         if metadata_elm:
             server_elm.append(metadata_elm)
 
-        files_elm = self._files_to_xml(kwargs.get("files", {}))
+        files_elm = self._files_to_xml(kwargs.get("ex_files", {}))
         if files_elm:
             server_elm.append(files_elm)
 
@@ -251,7 +251,7 @@ class RackspaceNodeDriver(NodeDriver):
         resp = self.connection.request(uri, method='POST', data=body)
         return resp
 
-    def to_nodes(self, object):
+    def _to_nodes(self, object):
         node_elements = self._findall(object, 'server')
         return [ self._to_node(el) for el in node_elements ]
 
@@ -293,7 +293,7 @@ class RackspaceNodeDriver(NodeDriver):
                  })
         return n
 
-    def to_sizes(self, object):
+    def _to_sizes(self, object):
         elements = self._findall(object, 'flavor')
         return [ self._to_size(el) for el in elements ]
 
@@ -307,7 +307,7 @@ class RackspaceNodeDriver(NodeDriver):
                      driver=self.connection.driver)
         return s
 
-    def to_images(self, object):
+    def _to_images(self, object):
         elements = self._findall(object, "image")
         return [ self._to_image(el)
                  for el in elements
