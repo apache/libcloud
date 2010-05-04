@@ -127,23 +127,23 @@ class GoGridNodeDriver(NodeDriver):
 
     _instance_types = GOGRID_INSTANCE_TYPES
 
-    def get_state(self, element):
+    def _get_state(self, element):
         try:
             return STATE[element['state']['name']]
         except:
             pass
         return NodeState.UNKNOWN
 
-    def get_ip(self, element):
+    def _get_ip(self, element):
         return element['ip']['ip']
 
-    def get_id(self,element):
+    def _get_id(self,element):
         return element['id']
 
     def _to_node(self, element):
-        state = self.get_state(element)
-        ip = self.get_ip(element)
-        id = self.get_id(element)
+        state = self._get_state(element)
+        ip = self._get_ip(element)
+        id = self._get_id(element)
         n = GoGridNode(id=id,
                  name=element['name'],
                  state=state,
@@ -172,7 +172,7 @@ class GoGridNodeDriver(NodeDriver):
         return hashlib.sha1(uuid_str).hexdigest()
 
     def list_nodes(self):
-        res = self.server_list()
+        res = self._server_list()
         return [ self._to_node(el)
                  for el
                  in res['list'] ]
@@ -180,31 +180,31 @@ class GoGridNodeDriver(NodeDriver):
     def reboot_node(self, node):
         id = node.id
         power = 'restart'
-        res = self.server_power(id, power)
+        res = self._server_power(id, power)
         if not res.success():
             raise Exception(res.parse_error())
         return True
 
     def destroy_node(self, node):
         id = node.id
-        res = self.server_delete(id)
+        res = self._server_delete(id)
         if not res.success():
             raise Exception(res.parse_error())
         return True
 
-    def server_list(self):
+    def _server_list(self):
         return self.connection.request('/api/grid/server/list').object
 
-    def server_power(self, id, power):
+    def _server_power(self, id, power):
         # power in ['start', 'stop', 'restart']
         params = {'id': id, 'power': power}
         return self.connection.request("/api/grid/server/power", params)
 
-    def server_delete(self, id):
+    def _server_delete(self, id):
         params = {'id': id}
         return self.connection.request("/api/grid/server/delete", params)
 
-    def get_first_ip(self):
+    def _get_first_ip(self):
         params = {'ip.state': 'Unassigned', 'ip.type':'public'}
         object = self.connection.request("/api/grid/ip/list", params).object
         return object['list'][0]['ip']
@@ -217,13 +217,20 @@ class GoGridNodeDriver(NodeDriver):
         return [NodeLocation(0, "GoGrid Los Angeles", 'US', self)]
 
     def create_node(self, **kwargs):
+        """Create a new GoGird node
+
+        See L{NodeDriver.create_node} for more keyword args.
+
+        @keyword    ex_description: Description of a Node
+        @type       ex_description: C{string}
+        """
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        first_ip = self.get_first_ip()
+        first_ip = self._get_first_ip()
         params = {'name': name,
                   'image': image.id,
-                  'description': kwargs.get('description',''),
+                  'description': kwargs.get('ex_description',''),
                   'server.ram': size.id,
                   'ip':first_ip}
 
