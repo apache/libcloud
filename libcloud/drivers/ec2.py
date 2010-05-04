@@ -317,13 +317,27 @@ class EC2NodeDriver(NodeDriver):
         )
         return images
 
-    def create_security_group(self, name, description):
+    def ex_create_security_group(self, name, description):
+        """Creates a new Security Group
+
+        @type name: C{str}
+        @param name: The name of the security group to Create. This must be unique.
+
+        @type description: C{str}
+        @param description: Human readable description of a Security Group.
+        """
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
                   'GroupDescription': description}
         return self.connection.request(self.path, params=params).object
 
-    def authorize_security_group_permissive(self, name):
+    def ex_authorize_security_group_permissive(self, name):
+        """Edit a Security Group to allow all traffic.
+
+        @type name: C{str}
+        @param name: The name of the security group to edit
+        """
+
         results = []
         params = {'Action': 'AuthorizeSecurityGroupIngress',
                   'GroupName': name,
@@ -365,23 +379,20 @@ class EC2NodeDriver(NodeDriver):
         See L{NodeDriver.create_node} for more keyword args.
         Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
 
-        @keyword    name: Name (unused by EC2)
-        @type       name: C{str}
+        @keyword    ex_mincount: Minimum number of instances to launch
+        @type       ex_mincount: C{int}
 
-        @keyword    mincount: Minimum number of instances to launch
-        @type       mincount: C{int}
+        @keyword    ex_maxcount: Maximum number of instances to launch
+        @type       ex_maxcount: C{int}
 
-        @keyword    maxcount: Maximum number of instances to launch
-        @type       maxcount: C{int}
+        @keyword    ex_securitygroup: Name of security group
+        @type       ex_securitygroup: C{str}
 
-        @keyword    securitygroup: Name of security group
-        @type       securitygroup: C{str}
+        @keyword    ex_keyname: The name of the key pair
+        @type       ex_keyname: C{str}
 
-        @keyword    keyname: The name of the key pair
-        @type       keyname: C{str}
-
-        @keyword    userdata: User data
-        @type       userdata: C{str}
+        @keyword    ex_userdata: User data
+        @type       ex_userdata: C{str}
         """
         name = kwargs["name"]
         image = kwargs["image"]
@@ -389,22 +400,22 @@ class EC2NodeDriver(NodeDriver):
         params = {
             'Action': 'RunInstances',
             'ImageId': image.id,
-            'MinCount': kwargs.get('mincount','1'),
-            'MaxCount': kwargs.get('maxcount','1'),
+            'MinCount': kwargs.get('ex_mincount','1'),
+            'MaxCount': kwargs.get('ex_maxcount','1'),
             'InstanceType': size.id
         }
 
-        if 'securitygroup' in kwargs:
-            if not isinstance(kwargs['securitygroup'], list):
-              kwargs['securitygroup'] = [kwargs['securitygroup']]
-            for sig in range(len(kwargs['securitygroup'])):
-              params['SecurityGroup.%d' % (sig+1,)]  = kwargs['securitygroup'][sig]
+        if 'ex_securitygroup' in kwargs:
+            if not isinstance(kwargs['ex_securitygroup'], list):
+              kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
+            for sig in range(len(kwargs['ex_securitygroup'])):
+              params['SecurityGroup.%d' % (sig+1,)]  = kwargs['ex_securitygroup'][sig]
 
-        if 'keyname' in kwargs:
-            params['KeyName'] = kwargs['keyname']
+        if 'ex_keyname' in kwargs:
+            params['KeyName'] = kwargs['ex_keyname']
 
-        if 'userdata' in kwargs:
-            params['UserData'] = base64.b64encode(kwargs['userdata'])
+        if 'ex_userdata' in kwargs:
+            params['UserData'] = base64.b64encode(kwargs['ex_userdata'])
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
