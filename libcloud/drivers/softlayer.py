@@ -310,14 +310,16 @@ class SoftLayerNodeDriver(NodeDriver):
         return None
 
     def create_node(self, **kwargs):
-        """
-        @keyword    domain:   e.g. libcloud.org
-        @type       domain:   str
+        """Create a new SoftLayer node
+
+        See L{NodeDriver.create_node} for more keyword args.
+        @keyword    ex_domain: e.g. libcloud.org
+        @type       ex_domain: C{string}
         """
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        domain = kwargs.get('domain')
+        domain = kwargs.get('ex_domain')
         location = kwargs['location']
         if domain == None:
             if name.find(".") != -1:
