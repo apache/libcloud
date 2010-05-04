@@ -320,7 +320,7 @@ class EC2NodeDriver(NodeDriver):
     def ex_create_security_group(self, name, description):
         """Creates a new Security Group
 
-        @warning: This is a non-standard extension API, and only works for EC2.
+        @note: This is a non-standard extension API, and only works for EC2.
 
         @type name: C{str}
         @param name: The name of the security group to Create. This must be unique.
@@ -336,7 +336,7 @@ class EC2NodeDriver(NodeDriver):
     def ex_authorize_security_group_permissive(self, name):
         """Edit a Security Group to allow all traffic.
 
-        @warning: This is a non-standard extension API, and only works for EC2.
+        @note: This is a non-standard extension API, and only works for EC2.
 
         @type name: C{str}
         @param name: The name of the security group to edit
