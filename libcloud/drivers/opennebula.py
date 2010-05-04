@@ -135,6 +135,10 @@ class OpenNebulaNodeDriver(NodeDriver):
         return resp.status == 204
 
     def create_node(self, **kwargs):
+        """Create a new OpenNebula node
+
+        See L{NodeDriver.create_node} for more keyword args.
+        """
         compute = ET.Element('COMPUTE')
 
         name = ET.SubElement(compute, 'NAME')
