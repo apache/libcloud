@@ -192,35 +192,40 @@ class RimuHostingNodeDriver(NodeDriver):
         return True
 
     def create_node(self, **kwargs):
-        # Creates a RimuHosting instance
-        #
-        #   name    Must be a FQDN. e.g example.com.
-        #   image   NodeImage from list_images
-        #   size    NodeSize from list_sizes
-        #
-        # Keyword arguements supported:
-        #
-        #   billing_oid        If not set, a billing method is automatically
-        #                      picked.
-        #
-        #   host_server_oid         The host server to set the VPS up on.
-        #   vps_order_oid_to_clone  Clone another VPS to use as the image
-        #                           for the new VPS.
-        #  
-        #   num_ips = 1        Number of IPs to allocate. Defaults to 1.
-        #   extra_ip_reason    Reason for needing the extra IPS.
-        #   
-        #   memory_mb          Memory to allocate to the VPS.
-        #   disk_space_mb      Diskspace to allocate to the VPS.
-        #                      Defaults to 4096 (4GB).
-        #   disk_space_2_mb    Secondary disk size allocation.
-        #                      Disabled by default.
-        #   
-        #   pricing_plan_code  Plan from list_sizes
-        #   
-        #   control_panel      Control panel to install on the VPS.
-        #
-        #
+        """Creates a RimuHosting instance
+
+        See L{NodeDriver.create_node} for more keyword args.
+
+        @keyword    name: Must be a FQDN. e.g example.com.
+        @type       name: C{string}
+
+        @keyword    ex_billing_oid: If not set, a billing method is automatically picked.
+        @type       ex_billing_oid: C{string}
+
+        @keyword    ex_host_server_oid: The host server to set the VPS up on.
+        @type       ex_host_server_oid: C{string}
+
+        @keyword    ex_vps_order_oid_to_clone: Clone another VPS to use as the image for the new VPS.
+        @type       ex_vps_order_oid_to_clone: C{string}
+
+        @keyword    ex_num_ips: Number of IPs to allocate. Defaults to 1.
+        @type       ex_num_ips: C{int}
+
+        @keyword    ex_extra_ip_reason: Reason for needing the extra IPs.
+        @type       ex_extra_ip_reason: C{string}
+
+        @keyword    ex_memory_mb: Memory to allocate to the VPS.
+        @type       ex_memory_mb: C{int}
+
+        @keyword    ex_disk_space_mb: Diskspace to allocate to the VPS. Defaults to 4096 (4GB).
+        @type       ex_disk_space_mb: C{int}
+
+        @keyword    ex_disk_space_2_mb: Secondary disk size allocation. Disabled by default.
+        @type       ex_disk_space_2_mb: C{int}
+
+        @keyword    ex_control_panel: Control panel to install on the VPS.
+        @type       ex_control_panel: C{string}
+        """
         # Note we don't do much error checking in this because we
         # expect the API to error out if there is a problem.
         name = kwargs['name']
@@ -234,8 +239,8 @@ class RimuHostingNodeDriver(NodeDriver):
             'pricing_plan_code': size.id,
         }
         
-        if kwargs.has_key('control_panel'):
-            data['instantiation_options']['control_panel'] = kwargs['control_panel']
+        if kwargs.has_key('ex_control_panel'):
+            data['instantiation_options']['control_panel'] = kwargs['ex_control_panel']
 
         if kwargs.has_key('auth'):
             auth = kwargs['auth']
@@ -243,39 +248,39 @@ class RimuHostingNodeDriver(NodeDriver):
                 raise ValueError('auth must be of NodeAuthPassword type')
             data['instantiation_options']['password'] = auth.password
         
-        if kwargs.has_key('billing_oid'):
+        if kwargs.has_key('ex_billing_oid'):
             #TODO check for valid oid.
-            data['billing_oid'] = kwargs['billing_oid']
+            data['billing_oid'] = kwargs['ex_billing_oid']
         
-        if kwargs.has_key('host_server_oid'):
-            data['host_server_oid'] = kwargs['host_server_oid']
+        if kwargs.has_key('ex_host_server_oid'):
+            data['host_server_oid'] = kwargs['ex_host_server_oid']
             
-        if kwargs.has_key('vps_order_oid_to_clone'):
-            data['vps_order_oid_to_clone'] = kwargs['vps_order_oid_to_clone']
+        if kwargs.has_key('ex_vps_order_oid_to_clone'):
+            data['vps_order_oid_to_clone'] = kwargs['ex_vps_order_oid_to_clone']
         
-        if kwargs.has_key('num_ips') and int(kwargs['num_ips']) > 1:
-            if not kwargs.has_key('extra_ip_reason'):
+        if kwargs.has_key('ex_num_ips') and int(kwargs['ex_num_ips']) > 1:
+            if not kwargs.has_key('ex_extra_ip_reason'):
                 raise RimuHostingException('Need an reason for having an extra IP')
             else:
                 if not data.has_key('ip_request'):
                     data['ip_request'] = {}
-                data['ip_request']['num_ips'] = int(kwargs['num_ips'])
-                data['ip_request']['extra_ip_reason'] = kwargs['extra_ip_reason']
+                data['ip_request']['num_ips'] = int(kwargs['ex_num_ips'])
+                data['ip_request']['extra_ip_reason'] = kwargs['ex_extra_ip_reason']
         
-        if kwargs.has_key('memory_mb'):
+        if kwargs.has_key('ex_memory_mb'):
             if not data.has_key('vps_parameters'):
                 data['vps_parameters'] = {}
-            data['vps_parameters']['memory_mb'] = kwargs['memory_mb']
+            data['vps_parameters']['memory_mb'] = kwargs['ex_memory_mb']
         
-        if kwargs.has_key('disk_space_mb'):
+        if kwargs.has_key('ex_disk_space_mb'):
+            if not data.has_key('ex_vps_parameters'):
+                data['vps_parameters'] = {}
+            data['vps_parameters']['disk_space_mb'] = kwargs['ex_disk_space_mb']
+        
+        if kwargs.has_key('ex_disk_space_2_mb'):
             if not data.has_key('vps_parameters'):
                 data['vps_parameters'] = {}
-            data['vps_parameters']['disk_space_mb'] = kwargs['disk_space_mb']
-        
-        if kwargs.has_key('disk_space_2_mb'):
-            if not data.has_key('vps_parameters'):
-                data['vps_parameters'] = {}
-            data['vps_parameters']['disk_space_2_mb'] = kwargs['disk_space_2_mb']
+            data['vps_parameters']['disk_space_2_mb'] = kwargs['ex_disk_space_2_mb']
         
         res = self.connection.request(
             '/orders/new-vps',
