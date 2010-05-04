@@ -176,20 +176,20 @@ class LinodeNodeDriver(NodeDriver):
 
         See L{NodeDriver.create_node} for more keyword args.
 
-        @keyword    swap: Size of the swap partition in MB (128).
-        @type       swap: C{number}
+        @keyword    ex_swap: Size of the swap partition in MB (128).
+        @type       ex_swap: C{number}
 
-        @keyword    rsize: Size of the root partition (plan size - swap).
-        @type       rsize: C{number}
+        @keyword    ex_rsize: Size of the root partition (plan size - swap).
+        @type       ex_rsize: C{number}
 
-        @keyword    kernel: A kernel ID from avail.kernels (Latest 2.6).
-        @type       kernel: C{number}
+        @keyword    ex_kernel: A kernel ID from avail.kernels (Latest 2.6).
+        @type       ex_kernel: C{number}
 
-        @keyword    payment: One of 1, 12, or 24; subscription length (1)
-        @type       payment: C{number}
+        @keyword    ex_payment: One of 1, 12, or 24; subscription length (1)
+        @type       ex_payment: C{number}
 
-        @keyword    comment: Comments to store with the config
-        @type       comment: C{str}
+        @keyword    ex_comment: Comments to store with the config
+        @type       ex_comment: C{str}
         """
         #    Labels to override what's generated (default on right):
         #       lconfig      [%name] Instance
@@ -225,7 +225,7 @@ class LinodeNodeDriver(NodeDriver):
             raise LinodeException(0xFB, "Invalid plan ID -- avail.plans")
 
         # Payment schedule
-        payment = "1" if "payment" not in kwargs else str(kwargs["payment"])
+        payment = "1" if "ex_payment" not in kwargs else str(kwargs["ex_payment"])
         if payment not in ["1", "12", "24"]:
             raise LinodeException(0xFB, "Invalid subscription (1, 12, 24)")
 
@@ -243,12 +243,12 @@ class LinodeNodeDriver(NodeDriver):
             raise LinodeException(0xFB, "Root password is too short")
 
         # Swap size
-        try: swap = 128 if "swap" not in kwargs else int(kwargs["swap"])
+        try: swap = 128 if "ex_swap" not in kwargs else int(kwargs["ex_swap"])
         except: raise LinodeException(0xFB, "Need an integer swap size")
 
         # Root partition size
-        imagesize = (size.disk - swap) if "rsize" not in kwargs else \
-            int(kwargs["rsize"])
+        imagesize = (size.disk - swap) if "ex_rsize" not in kwargs else \
+            int(kwargs["ex_rsize"])
         if (imagesize + swap) > size.disk:
             raise LinodeException(0xFB, "Total disk images are too big")
 
@@ -259,8 +259,8 @@ class LinodeNodeDriver(NodeDriver):
                                   "Invalid distro -- avail.distributions")
 
         # Kernel
-        if "kernel" in kwargs:
-            kernel = kwargs["kernel"]
+        if "ex_kernel" in kwargs:
+            kernel = kwargs["ex_kernel"]
         else:
             if image.extra['64bit']:
                 kernel = 111 if image.extra['pvops'] else 107
@@ -273,7 +273,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Comments
         comments = "Created by libcloud <http://www.libcloud.org>" if \
-            "comment" not in kwargs else kwargs["comment"]
+            "ex_comment" not in kwargs else kwargs["ex_comment"]
 
         # Labels
         label = {
