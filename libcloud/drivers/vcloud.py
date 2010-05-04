@@ -494,15 +494,24 @@ class VCloudNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Creates and returns node.
 
+
+        See L{NodeDriver.create_node} for more keyword args.
+
         Non-standard optional keyword arguments:
-        network -- link to a "Network" e.g.,
-            "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
-        vdc -- link to a "VDC" e.g.,
-            "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
-        cpus -- number of virtual cpus (limit depends on provider)
-        password
-        row
-        group
+        @keyword    ex_network: link to a "Network" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
+        @type       ex_network: C{string}
+
+        @keyword    ex_vdc: link to a "VDC" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
+        @type       ex_vdc: C{string}
+
+        @keyword    ex_cpus: number of virtual cpus (limit depends on provider)
+        @type       ex_cpus: C{int}
+
+        @keyword    row: ????
+        @type       row: C{????}
+
+        @keyword    group: ????
+        @type       group: C{????}
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -510,7 +519,7 @@ class VCloudNodeDriver(NodeDriver):
 
         # Some providers don't require a network link
         try:
-            network = kwargs.get('network', self.networks[0].get('href'))
+            network = kwargs.get('ex_network', self.networks[0].get('href'))
         except IndexError:
             network = ''
 
@@ -526,11 +535,11 @@ class VCloudNodeDriver(NodeDriver):
             name=name,
             template=image.id,
             net_href=network,
-            cpus=str(kwargs.get('cpus', 1)),
+            cpus=str(kwargs.get('ex_cpus', 1)),
             memory=str(size.ram),
             password=password,
-            row=kwargs.get('row', None),
-            group=kwargs.get('group', None)
+            row=kwargs.get('ex_row', None),
+            group=kwargs.get('ex_group', None)
         )
 
         # Instantiate VM and get identifier.
