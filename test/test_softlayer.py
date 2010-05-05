@@ -29,11 +29,11 @@ from test.file_fixtures import FileFixtures
 from secrets import SOFTLAYER_USER, SOFTLAYER_APIKEY
 
 class MockSoftLayerTransport(xmlrpclib.Transport):
-    
+
     def request(self, host, handler, request_body, verbose=0):
         self.verbose = 0
         method = ET.XML(request_body).find('methodName').text
-        mock = SoftLayerMockHttp(host, 80) 
+        mock = SoftLayerMockHttp(host, 80)
         mock.request('POST', "%s/%s" % (handler, method))
         resp = mock.getresponse()
 

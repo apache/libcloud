@@ -75,12 +75,12 @@ class OpenNebulaTests(unittest.TestCase, TestCaseMixin):
 class OpenNebulaMockHttp(MockHttp):
 
     fixtures = FileFixtures('opennebula')
-    
+
     def _compute(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('computes.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-            
+
         if method == 'POST':
             body = self.fixtures.load('compute.xml')
             return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
@@ -102,7 +102,7 @@ class OpenNebulaMockHttp(MockHttp):
         if method == 'DELETE':
             body = ""
             return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
-    
+
     def _compute_15(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('compute.xml')
@@ -112,7 +112,7 @@ class OpenNebulaMockHttp(MockHttp):
         if method == 'GET':
             body = self.fixtures.load('disk.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-            
+
     def _storage_8(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('disk.xml')

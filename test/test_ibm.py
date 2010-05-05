@@ -26,23 +26,23 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
     """
     Tests the IBM Developer Cloud driver.
     """
-    
+
     def setUp(self):
         IBM.connectionCls.conn_classes = (None, IBMMockHttp)
         IBMMockHttp.type = None
         self.driver = IBM(IBM_USER, IBM_SECRET)
-    
+
     def test_auth(self):
         IBMMockHttp.type = 'UNAUTHORIZED'
-        
+
         try:
             self.driver.list_nodes()
         except InvalidCredsException, e:
             self.assertTrue(isinstance(e, InvalidCredsException))
             self.assertEquals(e.value, '401: Unauthorized')
-        else:  
+        else:
             self.fail('test should have thrown')
-                
+
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
         self.assertEquals(len(ret), 3)
@@ -53,7 +53,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         self.assertEquals(ret[1].public_ip, None)   # Node is non-active (no IP)
         self.assertEquals(ret[1].private_ip, None)
         self.assertEquals(ret[1].id, '28193')
-        
+
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
         self.assertEquals(len(ret), 3) # 3 instance configurations supported
@@ -62,20 +62,20 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         self.assertEquals(ret[2].id, 'LARGE')
         self.assertEquals(ret[0].name, 'SMALL')
         self.assertEquals(ret[0].disk, None)
-        
+
     def test_list_images(self):
         ret = self.driver.list_images()
         self.assertEqual(len(ret), 21)
         self.assertEqual(ret[10].name, "Rational Asset Manager 7.2.0.1")
         self.assertEqual(ret[9].id, '10002573')
-        
+
     def test_list_locations(self):
         ret = self.driver.list_locations()
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0].id, '1')
         self.assertEquals(ret[0].name, 'US North East: Poughkeepsie, NY')
         self.assertEquals(ret[0].country, 'US')
-        
+
     def test_create_node(self):
         # Test creation of node
         IBMMockHttp.type = 'CREATE'
@@ -93,7 +93,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                            'report_user_password': 'myPassword3'})
         self.assertTrue(isinstance(ret, Node))
         self.assertEquals(ret.name, 'RationalInsight4')
-        
+
         # Test creation attempt with invalid location
         IBMMockHttp.type = 'CREATE_INVALID'
         location = NodeLocation('3', 'DOESNOTEXIST', 'US', driver=self.driver)
@@ -111,8 +111,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             self.assertEquals(e.args[0], 'Error 412: No DataCenter with id: 3')
         else:
             self.fail('test should have thrown')
-        
-    def test_destroy_node(self):        
+
+    def test_destroy_node(self):
         # Delete existant node
         nodes = self.driver.list_nodes()            # retrieves 3 nodes
         self.assertEquals(len(nodes), 3)
@@ -120,7 +120,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         toDelete = nodes[1]
         ret = self.driver.destroy_node(toDelete)
         self.assertTrue(ret)
-        
+
         # Delete non-existant node
         IBMMockHttp.type = 'DELETED'
         nodes = self.driver.list_nodes()            # retrieves 2 nodes
@@ -131,16 +131,16 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             self.assertEquals(e.args[0], 'Error 404: Invalid Instance ID 28193')
         else:
             self.fail('test should have thrown')
-            
+
     def test_reboot_node(self):
         nodes = self.driver.list_nodes()
         IBMMockHttp.type = 'REBOOT'
-        
+
         # Reboot active node
         self.assertEquals(len(nodes), 3)
         ret = self.driver.reboot_node(nodes[0])
         self.assertTrue(ret)
-        
+
         # Reboot inactive node
         try:
             ret = self.driver.reboot_node(nodes[1])
@@ -148,50 +148,50 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             self.assertEquals(e.args[0], 'Error 412: Instance must be in the Active state')
         else:
             self.fail('test should have thrown')
-        
+
 class IBMMockHttp(MockHttp):
     fixtures = FileFixtures('ibm')
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances(self, method, url, body, headers):
         body = self.fixtures.load('instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_DELETED(self, method, url, body, headers):
         body = self.fixtures.load('instances_deleted.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_UNAUTHORIZED(self, method, url, body, headers):
         return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.UNAUTHORIZED])
-        
+
     def _cloud_enterprise_beta_api_rest_20090403_images(self, method, url, body, headers):
         body = self.fixtures.load('images.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _cloud_enterprise_beta_api_rest_20090403_locations(self, method, url, body, headers):
         body = self.fixtures.load('locations.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_26557_REBOOT(self, method, url, body, headers):
         body = self.fixtures.load('reboot_active.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_28193_REBOOT(self, method, url, body, headers):
         return (412, 'Error 412: Instance must be in the Active state', {}, 'Precondition Failed')
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_28193_DELETE(self, method, url, body, headers):
         body = self.fixtures.load('delete.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_28193_DELETED(self, method, url, body, headers):
         return (404, 'Error 404: Invalid Instance ID 28193', {}, 'Precondition Failed')
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_CREATE(self, method, url, body, headers):
         body = self.fixtures.load('create.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _cloud_enterprise_beta_api_rest_20090403_instances_CREATE_INVALID(self, method, url, body, headers):
         return (412, 'Error 412: No DataCenter with id: 3', {}, 'Precondition Failed')
-    
+
     # This is only to accomodate the response tests built into test\__init__.py
     def _cloud_enterprise_beta_api_rest_20090403_instances_26557(self, method, url, body, headers):
         if method == 'DELETE':
@@ -199,6 +199,6 @@ class IBMMockHttp(MockHttp):
         else:
             body = self.fixtures.load('reboot_active.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
 if __name__ == '__main__':
     sys.exit(unittest.main())

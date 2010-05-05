@@ -138,7 +138,7 @@ class RackspaceMockHttp(MockHttp):
     def _v1_0_slug_images_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_images_detail.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _v1_0_slug_servers(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers.xml')
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
