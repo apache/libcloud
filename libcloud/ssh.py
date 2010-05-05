@@ -27,7 +27,27 @@ except ImportError:
 from os.path import split as psplit
 
 class BaseSSHClient(object):
+    """
+    Base class representing a connection over SSH/SCP to a remote node.
+    """
+
     def __init__(self, hostname, port=22, username='root', password=None, key=None):
+        """
+        @type hostname: C{str}
+        @keyword hostname: Hostname or IP address to connect to.
+
+        @type port: C{int}
+        @keyword port: TCP port to communicate on, defaults to 22.
+
+        @type username: C{str}
+        @keyword username: Username to use, defaults to root.
+
+        @type password: C{str}
+        @keyword password: Password to authenticate with.
+
+        @type key: C{list}
+        @keyword key: Private SSH keys to authenticate with.
+        """
         self.hostname = hostname
         self.port = port
         self.username = username
@@ -35,26 +55,61 @@ class BaseSSHClient(object):
         self.key = key
 
     def connect(self):
+        """
+        Connect to the remote node over SSH.
+
+        @return: C{bool}
+        """
         raise NotImplementedError, \
             'connect not implemented for this ssh client'
 
     def put(self, path, contents=None, chmod=None):
+        """
+        Upload a file to the remote node.
+
+        @type path: C{str}
+        @keyword path: File path on the remote node.
+
+        @type contents: C{str}
+        @keyword contents: File Contents.
+
+        @type chmod: C{int}
+        @keyword chmod: chmod file to this after creation.
+        """
         raise NotImplementedError, \
             'put not implemented for this ssh client'
 
     def delete(self, path):
+        """
+        Delete/Unlink a file on the remote node.
+
+        @type path: C{str}
+        @keyword path: File path on the remote node.
+        """
         raise NotImplementedError, \
             'delete not implemented for this ssh client'
 
     def run(self, cmd):
+        """
+        Run a command on a remote node.
+
+        @type cmd: C{str}
+        @keyword cmd: Command to run.
+        """
         raise NotImplementedError, \
             'run not implemented for this ssh client'
 
     def close(self):
+        """
+        Shutdown connection to the remote node.
+        """
         raise NotImplementedError, \
             'close not implemented for this ssh client'
 
 class ParamikoSSHClient(BaseSSHClient):
+    """
+    A SSH Client powered by Paramiko.
+    """
     def __init__(self, hostname, port=22, username='root', password=None, key=None):
         super(ParamikoSSHClient, self).__init__(hostname, port, username, password, key)
         self.client = paramiko.SSHClient()
