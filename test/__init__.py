@@ -55,10 +55,10 @@ class MockResponse(object):
 
     def read(self, *args, **kwargs):
         return self.body.read(*args, **kwargs)
-    
+
     def getheader(self, name, *args, **kwargs):
         return self.headers.get(name, *args, **kwargs)
-    
+
     def getheaders(self):
         return self.headers.items()
 
@@ -68,12 +68,12 @@ class MockResponse(object):
 
 class MockHttp(object):
     """
-    A mock HTTP client/server suitable for testing purposes. This replaces 
+    A mock HTTP client/server suitable for testing purposes. This replaces
     `HTTPConnection` by implementing its API and returning a mock response.
 
     Define methods by request path, replacing slashes (/) with underscores (_).
     Each of these mock methods should return a tuple of:
-        
+
         (int status, str body, dict headers, str reason)
 
     >>> mock = MockHttp('localhost', 8080)
@@ -101,7 +101,7 @@ class MockHttp(object):
     port = None
     response = None
 
-    type = None 
+    type = None
     use_param = None # will use this param to namespace the request function
 
     def __init__(self, host, port, *args, **kwargs):
@@ -117,7 +117,7 @@ class MockHttp(object):
             path = path[:-1]
         meth_name = path.replace('/','_').replace('.', '_').replace('-','_')
         if self.type:
-            meth_name = '%s_%s' % (meth_name, self.type) 
+            meth_name = '%s_%s' % (meth_name, self.type)
         if self.use_param:
             param = qs[self.use_param][0].replace('.', '_')
             meth_name = '%s_%s' % (meth_name, param)
@@ -205,4 +205,3 @@ class TestCaseMixin(object):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

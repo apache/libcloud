@@ -32,7 +32,7 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = "test"
-        VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp) 
+        VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp)
         TerremarkMockHttp.type = None
         self.driver = TerremarkDriver(TERREMARK_USER, TERREMARK_SECRET)
 
@@ -43,22 +43,22 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
         self.assertEqual(ret[0].ram, 512)
-        
+
     def test_create_node(self):
         image = self.driver.list_images()[0]
         size = self.driver.list_sizes()[0]
         node = self.driver.create_node(
-            name='testerpart2', 
-            image=image, 
+            name='testerpart2',
+            image=image,
             size=size,
             vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
-            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725', 
+            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
             cpus=2,
         )
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
         self.assertEqual(node.name, 'testerpart2')
-        
+
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
         node = ret[0]
@@ -67,18 +67,18 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ip, [])
         self.assertEqual(node.private_ip, ['10.112.78.69'])
-        
+
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
-        
+
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
-        
+
 class TerremarkMockHttp(MockHttp):
 
     fixtures = FileFixtures('terremark')
@@ -103,23 +103,23 @@ class TerremarkMockHttp(MockHttp):
     def _api_v0_8_catalogItem_5(self, method, url, body, headers):
         body = self.fixtures.load('api_v0_8_catalogItem_5.xml')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-      
+
     def _api_v0_8_vdc_224_action_instantiateVAppTemplate(self, method, url, body, headers):
         body = self.fixtures.load('api_v0_8_vdc_224_action_instantiateVAppTemplate.xml')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-      
+
     def _api_v0_8_vapp_14031_action_deploy(self, method, url, body, headers):
         body = self.fixtures.load('api_v0_8_vapp_14031_action_deploy.xml')
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-      
+
     def _api_v0_8_task_10496(self, method, url, body, headers):
         body = self.fixtures.load('api_v0_8_task_10496.xml')
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-      
+
     def _api_v0_8_vapp_14031_power_action_powerOn(self, method, url, body, headers):
         body = self.fixtures.load('api_v0_8_vapp_14031_power_action_powerOn.xml')
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
-      
+
     def _api_v0_8_vapp_14031(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('api_v0_8_vapp_14031_get.xml')

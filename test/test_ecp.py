@@ -40,7 +40,7 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'dummy-1')
         self.assertEqual(node.public_ip[0], "42.78.124.75")
         self.assertEqual(node.state, NodeState.RUNNING)
-        
+
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -69,7 +69,7 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
         # Raises exception on failure
         node = self.driver.list_nodes()[0]
         self.driver.destroy_node(node)
-    
+
     def test_create_node(self):
         # Raises exception on failure
         size = self.driver.list_sizes()[0]
@@ -77,7 +77,7 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
         node = self.driver.create_node(name="api.ivan.net.nz", image=image, size=size)
         self.assertEqual(node.name, "api.ivan.net.nz")
         self.assertEqual(node.id, "1234")
-        
+
 class ECPMockHttp(MockHttp):
 
     fixtures = FileFixtures('ecp')
@@ -87,7 +87,7 @@ class ECPMockHttp(MockHttp):
         headers['set-cookie'] = 'vcloud-token=testtoken'
         body = 'Anything'
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-        
+
     def _rest_hosting_vm_1(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('vm_1_get.json')
@@ -99,24 +99,24 @@ class ECPMockHttp(MockHttp):
             if body.find('start',0):
                 body = self.fixtures.load('vm_1_action_start.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _rest_hosting_vm(self, method, url, body, headers):
         if method == 'PUT':
             body = self.fixtures.load('vm_put.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _rest_hosting_vm_list(self, method, url, body, headers):
         body = self.fixtures.load('vm_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _rest_hosting_htemplate_list(self, method, url, body, headers):
         body = self.fixtures.load('htemplate_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _rest_hosting_network_list(self, method, url, body, headers):
         body = self.fixtures.load('network_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _rest_hosting_ptemplate_list(self, method, url, body, headers):
         body = self.fixtures.load('ptemplate_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
