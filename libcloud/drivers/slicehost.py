@@ -35,7 +35,7 @@ class SlicehostResponse(Response):
 
     def parse_error(self):
         if self.status == 401:
-          raise InvalidCredsException(self.body)
+            raise InvalidCredsException(self.body)
 
         try:
             object = ET.XML(self.body)
@@ -44,7 +44,7 @@ class SlicehostResponse(Response):
                                object.findall('error') ])
         except ExpatError:
             return self.body
-    
+
 
 class SlicehostConnection(ConnectionKey):
 
@@ -55,7 +55,7 @@ class SlicehostConnection(ConnectionKey):
         headers['Authorization'] = ('Basic %s'
                               % (base64.b64encode('%s:' % self.key)))
         return headers
-    
+
 
 class SlicehostNodeDriver(NodeDriver):
 
@@ -117,7 +117,7 @@ class SlicehostNodeDriver(NodeDriver):
     def reboot_node(self, node):
         """Reboot the node by passing in the node object"""
 
-        # 'hard' could bubble up as kwarg depending on how reboot_node 
+        # 'hard' could bubble up as kwarg depending on how reboot_node
         # turns out. Defaulting to soft reboot.
         #hard = False
         #reboot = self.api.hard_reboot if hard else self.api.reboot
@@ -151,14 +151,14 @@ class SlicehostNodeDriver(NodeDriver):
 
     def _to_node(self, element):
 
-        attrs = [ 'name', 'image-id', 'progress', 'id', 'bw-out', 'bw-in', 
+        attrs = [ 'name', 'image-id', 'progress', 'id', 'bw-out', 'bw-in',
                   'flavor-id', 'status', 'ip-address', 'root-password' ]
 
         node_attrs = {}
         for attr in attrs:
             node_attrs[attr] = element.findtext(attr)
 
-        # slicehost does not determine between public and private, so we 
+        # slicehost does not determine between public and private, so we
         # have to figure it out
         public_ip = element.findtext('ip-address')
         private_ip = None
@@ -173,7 +173,7 @@ class SlicehostNodeDriver(NodeDriver):
                 private_ip = ip
             else:
                 public_ip = ip
-                
+
         try:
             state = self.NODE_STATE_MAP[element.findtext('status')]
         except:
@@ -183,8 +183,8 @@ class SlicehostNodeDriver(NodeDriver):
         node_attrs['password'] = node_attrs['root-password']
         extra = {}
         for k in node_attrs.keys():
-          ek = k.replace("-", "_")
-          extra[ek] = node_attrs[k]
+            ek = k.replace("-", "_")
+            extra[ek] = node_attrs[k]
         n = Node(id=element.findtext('id'),
                  name=element.findtext('name'),
                  state=state,

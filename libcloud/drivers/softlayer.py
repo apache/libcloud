@@ -164,7 +164,7 @@ class SoftLayerConnection(object):
 
     def __init__(self, user, key):
         self.user = user
-        self.key = key 
+        self.key = key
         self.ua = []
 
     def request(self, service, method, *args, **kwargs):
@@ -255,7 +255,7 @@ class SoftLayerNodeDriver(NodeDriver):
                 'password': password
             }
         )
-    
+
     def _to_nodes(self, hosts):
         return [self._to_node(h) for h in hosts]
 
@@ -391,10 +391,10 @@ class SoftLayerNodeDriver(NodeDriver):
         res = self.connection.request(
             "SoftLayer_Location_Datacenter",
             "getDatacenters"
-        ) 
+        )
 
         # checking "in DATACENTERS", because some of the locations returned by getDatacenters are not useable.
-        return [self._to_loc(l) for l in res if l['name'] in DATACENTERS]     
+        return [self._to_loc(l) for l in res if l['name'] in DATACENTERS]
 
     def list_nodes(self):
         mask = {
@@ -415,8 +415,8 @@ class SoftLayerNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         res = self.connection.request(
-            "SoftLayer_Virtual_Guest", 
-            "rebootHard", 
+            "SoftLayer_Virtual_Guest",
+            "rebootHard",
             id=node.id
         )
         return res
