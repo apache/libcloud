@@ -106,7 +106,7 @@ class VoxelNodeDriver(NodeDriver):
     type = Provider.VOXEL
     name = 'Voxel VoxCLOUD'
 
-    def initialize_instance_types():
+    def _initialize_instance_types():
         for cpus in range(1,14):
             if cpus == 1:
                 name = "Single CPU"
@@ -126,7 +126,7 @@ class VoxelNodeDriver(NodeDriver):
     features = {"create_node": [],
                 "list_sizes":  ["variable_disk"]}
 
-    initialize_instance_types()
+    _initialize_instance_types()
 
     def list_nodes(self):
         params = {"method": "voxel.devices.list"}
