@@ -132,7 +132,7 @@ class RackspaceConnection(ConnectionUserAndKey):
 class RackspaceNodeDriver(NodeDriver):
     """
     Rackspace node driver.
-    
+
     Extra node attributes:
         - password: root password, available after create.
         - hostId: represents the host your cloud server runs on
@@ -203,11 +203,11 @@ class RackspaceNodeDriver(NodeDriver):
         if files_elm:
             server_elm.append(files_elm)
 
-        resp = self.connection.request("/servers", 
-                                       method='POST', 
+        resp = self.connection.request("/servers",
+                                       method='POST',
                                        data=ET.tostring(server_elm))
         return self._to_node(resp.object)
-      
+
     def _metadata_to_xml(self, metadata):
         if len(metadata) == 0:
             return None
@@ -218,7 +218,7 @@ class RackspaceNodeDriver(NodeDriver):
             meta_elm.text = str(v)
 
         return metadata_elm
-  
+
     def _files_to_xml(self, files):
         if len(files) == 0:
             return None
@@ -265,19 +265,19 @@ class RackspaceNodeDriver(NodeDriver):
     def _to_node(self, el):
         def get_ips(el):
             return [ip.get('addr') for ip in el]
-          
+
         def get_meta_dict(el):
             d = {}
             for meta in el:
                 d[meta.get('key')] =  meta.text
             return d
-        
-        public_ip = get_ips(self._findall(el, 
+
+        public_ip = get_ips(self._findall(el,
                                           'addresses/public/ip'))
-        private_ip = get_ips(self._findall(el, 
+        private_ip = get_ips(self._findall(el,
                                           'addresses/private/ip'))
         metadata = get_meta_dict(self._findall(el, 'metadata/meta'))
-        
+
         n = Node(id=el.get('id'),
                  name=el.get('name'),
                  state=self.NODE_STATE_MAP.get(el.get('status'), NodeState.UNKNOWN),

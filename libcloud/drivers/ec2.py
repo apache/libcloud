@@ -139,7 +139,7 @@ class EC2Response(Response):
         # if you are using the wrong user/password.
         msg = "Failure: 403 Forbidden"
         if self.status == 403 and self.body[:len(msg)] == msg:
-          raise InvalidCredsException(msg)
+            raise InvalidCredsException(msg)
 
         for err in ET.XML(self.body).findall('Errors/Error'):
             code, message = err.getchildren()
@@ -167,11 +167,11 @@ class EC2Connection(ConnectionUserAndKey):
         params['SignatureMethod'] = 'HmacSHA256'
         params['AWSAccessKeyId'] = self.user_id
         params['Version'] = API_VERSION
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', 
+        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                             time.gmtime())
         params['Signature'] = self._get_aws_auth_param(params, self.key, self.action)
         return params
-        
+
     def _get_aws_auth_param(self, params, secret_key, path='/'):
         """
         Creates the signature required for AWS, per
@@ -191,7 +191,7 @@ class EC2Connection(ConnectionUserAndKey):
 
         qs = '&'.join(pairs)
         string_to_sign = '\n'.join(('GET', self.host, path, qs))
-                                         
+
         b64_hmac = base64.b64encode(
             hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
         )
@@ -253,7 +253,7 @@ class EC2NodeDriver(NodeDriver):
     def _to_nodes(self, object, xpath, groups=None):
         return [ self._to_node(el, groups=groups)
                  for el in object.findall(self._fixxpath(xpath)) ]
-        
+
     def _to_node(self, element, groups=None):
         try:
             state = self.NODE_STATE_MAP[
@@ -315,9 +315,9 @@ class EC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        return [ NodeSize(driver=self.connection.driver, **i) 
+        return [ NodeSize(driver=self.connection.driver, **i)
                     for i in self._instance_types.values() ]
-    
+
     def list_images(self, location=None):
         params = {'Action': 'DescribeImages'}
         images = self._to_images(
@@ -419,9 +419,9 @@ class EC2NodeDriver(NodeDriver):
 
         if 'ex_securitygroup' in kwargs:
             if not isinstance(kwargs['ex_securitygroup'], list):
-              kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
+                kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
             for sig in range(len(kwargs['ex_securitygroup'])):
-              params['SecurityGroup.%d' % (sig+1,)]  = kwargs['ex_securitygroup'][sig]
+                params['SecurityGroup.%d' % (sig+1,)]  = kwargs['ex_securitygroup'][sig]
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
@@ -528,10 +528,10 @@ class EucNodeDriver(EC2NodeDriver):
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
     def __init__(self, key, secret=None, secure=True, host=None, path=None, port=None):
-      super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
-      if path is None:
-        path = "/services/Eucalyptus"
-      self.path = path
+        super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
+        if path is None:
+            path = "/services/Eucalyptus"
+        self.path = path
 
     def list_locations(self):
         raise NotImplementedError, \

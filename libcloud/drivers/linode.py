@@ -53,7 +53,7 @@ LINODE_ROOT = "/"
 
 class LinodeResponse(Response):
     # Wraps a Linode API HTTP response.
-    
+
     def __init__(self, response):
         # Given a response object, slurp the information from it.
         self.body = response.read()
@@ -62,11 +62,11 @@ class LinodeResponse(Response):
         self.error = response.reason
         self.invalid = LinodeException(0xFF,
                                        "Invalid JSON received from server")
-        
+
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.action, self.object, self.errors = self.parse_body()
-        
+
         if self.error == "Moved Temporarily":
             raise LinodeException(0xFA,
                                   "Redirected to error page by API.  Bug?")
@@ -74,7 +74,7 @@ class LinodeResponse(Response):
         if not self.success():
             # Raise the first error, as there will usually only be one
             raise self.errors[0]
-    
+
     def parse_body(self):
         # Parse the body of the response into JSON.  Will return None if the
         # JSON response chokes the parser.  Returns a triple:
@@ -91,7 +91,7 @@ class LinodeResponse(Response):
         except:
             # Assume invalid JSON, and use an error code unused by Linode API.
             return (None, None, [self.invalid])
-    
+
     def parse_error(self):
         # Obtain the errors from the response.  Will always return a list.
         try:
@@ -101,20 +101,20 @@ class LinodeResponse(Response):
             return [self._make_excp(e) for e in js["ERRORARRAY"]]
         except:
             return [self.invalid]
-    
+
     def success(self):
         # Does the response indicate success?  If ERRORARRAY has more than one
         # entry, we'll say no.
         return len(self.errors) == 0
-    
+
     def _make_excp(self, error):
         # Make an exception from an entry in ERRORARRAY.
         if "ERRORCODE" not in error or "ERRORMESSAGE" not in error:
             return None
         if error["ERRORCODE"] ==  4:
-          return InvalidCredsException(error["ERRORMESSAGE"])
+            return InvalidCredsException(error["ERRORMESSAGE"])
         return LinodeException(error["ERRORCODE"], error["ERRORMESSAGE"])
-        
+
 
 class LinodeConnection(ConnectionKey):
     # Wraps a Linode HTTPS connection, and passes along the connection key.
@@ -132,7 +132,7 @@ class LinodeNodeDriver(NodeDriver):
     type = Provider.LINODE
     name = "Linode"
     connectionCls = LinodeConnection
-    
+
     def __init__(self, key):
         self.datacenter = None
         NodeDriver.__init__(self, key)
@@ -155,14 +155,14 @@ class LinodeNodeDriver(NodeDriver):
         params = { "api_action": "linode.list" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         return [self._to_node(n) for n in data]
-    
+
     def reboot_node(self, node):
         # Reboot
         # Execute a shutdown and boot job for the given Node.
         params = { "api_action": "linode.reboot", "LinodeID": node.id }
         self.connection.request(LINODE_ROOT, params=params)
         return True
-    
+
     def destroy_node(self, node):
         # Destroy
         # Terminates a Node.  With prejudice.
@@ -363,7 +363,7 @@ class LinodeNodeDriver(NodeDriver):
                     price=obj["PRICE"], driver=self.connection.driver)
             sizes.append(n)
         return sizes
-    
+
     def list_images(self, location=None):
         # List Images
         # Retrieve all available Linux distributions.
@@ -424,20 +424,20 @@ class LinodeNodeDriver(NodeDriver):
     def _to_node(self, obj):
         # Convert a returned Linode instance into a Node instance.
         lid = obj["LINODEID"]
-        
+
         # Get the IP addresses for a Linode
-        params = { "api_action": "linode.ip.list", "LinodeID": lid }        
+        params = { "api_action": "linode.ip.list", "LinodeID": lid }
         req = self.connection.request(LINODE_ROOT, params=params)
         if not req.success() or len(req.object) == 0:
             return None
-        
+
         public_ip = []
         private_ip = []
         for ip in req.object:
             if ip["ISPUBLIC"]:
-              public_ip.append(ip["IPADDRESS"])
+                public_ip.append(ip["IPADDRESS"])
             else:
-              private_ip.append(ip["IPADDRESS"])
+                private_ip.append(ip["IPADDRESS"])
 
         n = Node(id=lid, name=obj["LABEL"],
             state=self.LINODE_STATES[obj["STATUS"]], public_ip=public_ip,

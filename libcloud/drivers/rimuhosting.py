@@ -47,11 +47,11 @@ class RimuHostingResponse(Response):
         self.error = response.reason
 
         if self.success():
-          self.object = self.parse_body()
+            self.object = self.parse_body()
 
     def success(self):
         if self.status == 403:
-          raise InvalidCredsException()
+            raise InvalidCredsException()
         return True
     def parse_body(self):
         try:
@@ -67,14 +67,14 @@ class RimuHostingResponse(Response):
         except KeyError:
             raise RimuHostingException('Could not parse body: %s'
                                        % (self.body))
-    
+
 class RimuHostingConnection(ConnectionKey):
-    
+
     api_context = API_CONTEXT
     host = API_HOST
     port = API_PORT
     responseCls = RimuHostingResponse
-    
+
     def __init__(self, key, secure=True):
         # override __init__ so that we can set secure of False for testing
         ConnectionKey.__init__(self,key,secure)
@@ -85,7 +85,7 @@ class RimuHostingConnection(ConnectionKey):
         headers['Accept'] = 'application/json'
         # Must encode all data as json, or override this header.
         headers['Content-Type'] = 'application/json'
-      
+
         headers['Authorization'] = 'rimuhosting apikey=%s' % (self.key)
         return headers;
 
@@ -102,7 +102,7 @@ class RimuHostingNodeDriver(NodeDriver):
     type = Provider.RIMUHOSTING
     name = 'RimuHosting'
     connectionCls = RimuHostingConnection
-    
+
     def __init__(self, key, host=API_HOST, port=API_PORT,
                  api_context=API_CONTEXT, secure=API_SECURE):
         # Pass in some extra vars so that
@@ -118,7 +118,7 @@ class RimuHostingNodeDriver(NodeDriver):
     def _order_uri(self, node,resource):
         # Returns the order uri with its resourse appended.
         return "/orders/%s/%s" % (node.id,resource)
-   
+
     # TODO: Get the node state.
     def _to_node(self, order):
         n = Node(id=order['slug'],
@@ -143,12 +143,12 @@ class RimuHostingNodeDriver(NodeDriver):
             price=plan['monthly_recurring_amt']['amt_usd'],
             driver=self.connection.driver
         )
-                
+
     def _to_image(self,image):
         return NodeImage(id=image['distro_code'],
             name=image['distro_description'],
             driver=self.connection.driver)
-        
+
     def list_sizes(self, location=None):
         # Returns a list of sizes (aka plans)
         # Get plans. Note this is really just for libcloud.
@@ -166,7 +166,7 @@ class RimuHostingNodeDriver(NodeDriver):
         # Will only include active ones.
         res = self.connection.request('/orders;include_inactive=N').object
         return map(lambda x : self._to_node(x), res['about_orders'])
-    
+
     def list_images(self, location=None):
         # Get all base images.
         # TODO: add other image sources. (Such as a backup of a VPS)
@@ -183,7 +183,7 @@ class RimuHostingNodeDriver(NodeDriver):
         self.connection.request(uri,data=json.dumps(data),method='PUT')
         # XXX check that the response was actually successful
         return True
-    
+
     def destroy_node(self, node):
         # Shutdown a VPS.
         uri = self._order_uri(node,'vps')
@@ -238,7 +238,7 @@ class RimuHostingNodeDriver(NodeDriver):
             },
             'pricing_plan_code': size.id,
         }
-        
+
         if kwargs.has_key('ex_control_panel'):
             data['instantiation_options']['control_panel'] = kwargs['ex_control_panel']
 
@@ -247,17 +247,17 @@ class RimuHostingNodeDriver(NodeDriver):
             if not isinstance(auth, NodeAuthPassword):
                 raise ValueError('auth must be of NodeAuthPassword type')
             data['instantiation_options']['password'] = auth.password
-        
+
         if kwargs.has_key('ex_billing_oid'):
             #TODO check for valid oid.
             data['billing_oid'] = kwargs['ex_billing_oid']
-        
+
         if kwargs.has_key('ex_host_server_oid'):
             data['host_server_oid'] = kwargs['ex_host_server_oid']
-            
+
         if kwargs.has_key('ex_vps_order_oid_to_clone'):
             data['vps_order_oid_to_clone'] = kwargs['ex_vps_order_oid_to_clone']
-        
+
         if kwargs.has_key('ex_num_ips') and int(kwargs['ex_num_ips']) > 1:
             if not kwargs.has_key('ex_extra_ip_reason'):
                 raise RimuHostingException('Need an reason for having an extra IP')
@@ -266,22 +266,22 @@ class RimuHostingNodeDriver(NodeDriver):
                     data['ip_request'] = {}
                 data['ip_request']['num_ips'] = int(kwargs['ex_num_ips'])
                 data['ip_request']['extra_ip_reason'] = kwargs['ex_extra_ip_reason']
-        
+
         if kwargs.has_key('ex_memory_mb'):
             if not data.has_key('vps_parameters'):
                 data['vps_parameters'] = {}
             data['vps_parameters']['memory_mb'] = kwargs['ex_memory_mb']
-        
+
         if kwargs.has_key('ex_disk_space_mb'):
             if not data.has_key('ex_vps_parameters'):
                 data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_mb'] = kwargs['ex_disk_space_mb']
-        
+
         if kwargs.has_key('ex_disk_space_2_mb'):
             if not data.has_key('vps_parameters'):
                 data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_2_mb'] = kwargs['ex_disk_space_2_mb']
-        
+
         res = self.connection.request(
             '/orders/new-vps',
             method='POST',
@@ -290,7 +290,7 @@ class RimuHostingNodeDriver(NodeDriver):
         node = self._to_node(res['about_order'])
         node.extra['password'] = res['new_order_request']['instantiation_options']['password']
         return node
-    
+
     def list_locations(self):
         return [
             NodeLocation('DCAUCKLAND', "RimuHosting Auckland", 'NZ', self),
@@ -300,4 +300,3 @@ class RimuHostingNodeDriver(NodeDriver):
         ]
 
     features = {"create_node": ["password"]}
-        

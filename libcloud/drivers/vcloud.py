@@ -178,13 +178,13 @@ class InstantiateVAppXML(object):
         return elm
 
     def _add_virtual_quantity(self, parent, amount):
-       elm = ET.SubElement(
-            parent,
-            "VirtualQuantity",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
-        )
-       elm.text = amount
-       return elm
+        elm = ET.SubElement(
+             parent,
+             "VirtualQuantity",
+             {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+         )
+        elm.text = amount
+        return elm
 
     def _add_network_association(self, parent):
         return ET.SubElement(
@@ -312,13 +312,13 @@ class VCloudNodeDriver(NodeDriver):
         # Following code to find private IPs works for Terremark
         connections = elm.findall('{http://schemas.dmtf.org/ovf/envelope/1}NetworkConnectionSection/{http://www.vmware.com/vcloud/v0.8}NetworkConnection')
         for connection in connections:
-          ips = [ip.text
-                 for ip
-                 in connection.findall(fixxpath(elm, "IpAddress"))]
-          if connection.get('Network') == 'Internal':
-            private_ips.extend(ips)
-          else:
-            public_ips.extend(ips)
+            ips = [ip.text
+                   for ip
+                   in connection.findall(fixxpath(elm, "IpAddress"))]
+            if connection.get('Network') == 'Internal':
+                private_ips.extend(ips)
+            else:
+                public_ips.extend(ips)
 
         node = Node(id=elm.get('href'),
                     name=name,
@@ -345,18 +345,18 @@ class VCloudNodeDriver(NodeDriver):
         res = self.connection.request(task_href)
         status = res.object.get('status')
         while status != 'success':
-          if status == 'error':
-              raise Exception("Error status returned by task %s."
-                              % task_href)
-          if status == 'canceled':
-              raise Exception("Canceled status returned by task %s."
-                              % task_href)
-          if (time.time() - start_time >= timeout):
-              raise Exception("Timeout while waiting for task %s."
-                              % task_href)
-          time.sleep(5)
-          res = self.connection.request(task_href)
-          status = res.object.get('status')
+            if status == 'error':
+                raise Exception("Error status returned by task %s."
+                                % task_href)
+            if status == 'canceled':
+                raise Exception("Canceled status returned by task %s."
+                                % task_href)
+            if (time.time() - start_time >= timeout):
+                raise Exception("Timeout while waiting for task %s."
+                                % task_href)
+            time.sleep(5)
+            res = self.connection.request(task_href)
+            status = res.object.get('status')
 
     def destroy_node(self, node):
         node_path = get_url_path(node.id)

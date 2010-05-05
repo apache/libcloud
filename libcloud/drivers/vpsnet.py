@@ -57,7 +57,7 @@ class VPSNetResponse(Response):
     def success(self):
         # vps.net wrongly uses 406 for invalid auth creds
         if self.status == 406 or self.status == 403:
-          raise InvalidCredsException()
+            raise InvalidCredsException()
         return True
 
     def parse_error(self):
@@ -154,15 +154,15 @@ class VPSNetNodeDriver(NodeDriver):
         return node
 
     def reboot_node(self, node):
-        res = self.connection.request('/virtual_machines/%s/%s.%s' % 
+        res = self.connection.request('/virtual_machines/%s/%s.%s' %
                                         (node.id, 'reboot', API_VERSION),
                                         method="POST")
         node = self._to_node(res.object['virtual_machine'])
         return True
-    
+
     def list_sizes(self, location=None):
         res = self.connection.request('/nodes.%s' % (API_VERSION,))
-        available_nodes = len([size for size in res.object 
+        available_nodes = len([size for size in res.object
                             if not size['slice']["virtual_machine_id"]])
         sizes = [self._to_size(i) for i in range(1,available_nodes + 1)]
         return sizes
@@ -175,7 +175,7 @@ class VPSNetNodeDriver(NodeDriver):
 
     def list_nodes(self):
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,))
-        return [self._to_node(i['virtual_machine']) for i in res.object] 
+        return [self._to_node(i['virtual_machine']) for i in res.object]
 
     def list_images(self, location=None):
         res = self.connection.request('/available_clouds.%s' % (API_VERSION,))
