@@ -26,7 +26,7 @@ from libcloud.interface import INodeDriverFactory, INodeDriver
 from libcloud.interface import INodeFactory, INode
 from libcloud.interface import INodeSizeFactory, INodeSize
 from libcloud.interface import INodeImageFactory, INodeImage
-from libcloud.types import NodeState
+from libcloud.types import NodeState, DeploymentException
 from libcloud.ssh import SSHClient
 import time
 import hashlib
@@ -640,6 +640,11 @@ class NodeDriver(object):
         Depends on a Provider Driver supporting either using a specific password
         or returning a generated password.
 
+        This function may raise a L{DeplyomentException}, if a create_node
+        call was successful, but there is a later error (like SSH failing or 
+        timing out).  This exception includes a Node object which you may want
+        to destroy if incomplete deployments are not desirable.
+
         @keyword    deploy: Deployment to run once machine is online and availble to SSH.
         @type       deploy: L{Deployment}
 
@@ -659,43 +664,48 @@ class NodeDriver(object):
 
             password = kwargs['auth'].password
         node = self.create_node(**kwargs)
-        if 'generates_password' in self.features["create_node"]:
-            password = node.extra.get('password')
-        start = time.time()
-        end = start + (60 * 15)
-        while time.time() < end:
-            # need to wait until we get a public IP address.
-            # TODO: there must be a better way of doing this
-            time.sleep(WAIT_PERIOD)
-            nodes = self.list_nodes()
-            nodes = filter(lambda n: n.uuid == node.uuid, nodes)
-            if len(nodes) == 0:
-                raise Exception("Booted node[%s] is missing form list_nodes.", node)
-            if len(nodes) > 1:
-                raise Exception("Booted single node[%s], but multiple nodes have same UUID", node)
+        try:
+          if 'generates_password' in self.features["create_node"]:
+              password = node.extra.get('password')
+          start = time.time()
+          end = start + (60 * 15)
+          while time.time() < end:
+              # need to wait until we get a public IP address.
+              # TODO: there must be a better way of doing this
+              time.sleep(WAIT_PERIOD)
+              nodes = self.list_nodes()
+              nodes = filter(lambda n: n.uuid == node.uuid, nodes)
+              if len(nodes) == 0:
+                  raise DeploymentException(node, "Booted node[%s] is missing form list_nodes." % node)
+              if len(nodes) > 1:
+                  raise DeploymentException(node, "Booted single node[%s], but multiple nodes have same UUID"% node)
 
-            node = nodes[0]
+              node = nodes[0]
 
-            if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
-                break
+              if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
+                  break
 
-        client = SSHClient(hostname=node.public_ip[0],
-                            port=22, username='root',
-                            password=password)
-        laste = None
-        while time.time() < end:
-            laste = None
-            try:
-                client.connect()
-                break
-            except (IOError, socket.gaierror, socket.error), e:
-                laste = e
-            time.sleep(WAIT_PERIOD)
-        if laste is not None:
-            raise e
+          client = SSHClient(hostname=node.public_ip[0],
+                              port=22, username='root',
+                              password=password)
+          laste = None
+          while time.time() < end:
+              laste = None
+              try:
+                  client.connect()
+                  break
+              except (IOError, socket.gaierror, socket.error), e:
+                  laste = e
+              time.sleep(WAIT_PERIOD)
+          if laste is not None:
+              raise e
 
-        n = kwargs["deploy"].run(node, client)
-        client.close()
+          n = kwargs["deploy"].run(node, client)
+          client.close()
+        except DeploymentException, e:
+          raise
+        except Exception, e:
+          raise DeploymentException(node, e)
         return n
 
 def is_private_subnet(ip):
