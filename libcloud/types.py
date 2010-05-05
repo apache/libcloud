@@ -77,3 +77,15 @@ class InvalidCredsException(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
+
+class DeploymentException(Exception):
+    """
+    Exception used when a Deployment Task failed.
+
+    @ivar node: L{Node} on which this exception happened, you might want to call L{Node.destroy}
+    """
+    def __init__(self, node, original_exception=None):
+        self.node = node
+        self.value = original_exception
+    def __str__(self):
+        return repr(self.value)
