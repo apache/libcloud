@@ -74,7 +74,7 @@ class VPSNetTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[1].id, 2)
         self.assertEqual(ret[1].name, '2 Node')
-        
+
     def test_destroy_node_response(self):
         # should return a node object
         node = Node('2222', None, None, None, None, self.driver)
@@ -115,21 +115,21 @@ class VPSNetMockHttp(MockHttp):
 
     def _virtual_machines_1384_reboot_api10json_reboot(self, method, url, body, headers):
         body = """{
-              "virtual_machine": 
+              "virtual_machine":
                 {
-                  "running": true, 
-                  "updated_at": "2009-05-15T06:55:02-04:00", 
-                  "power_action_pending": false, 
-                  "system_template_id": 41, 
-                  "id": 1384, 
-                  "cloud_id": 3, 
-                  "domain_name": "demodomain.com", 
-                  "hostname": "web01", 
-                  "consumer_id": 0, 
-                  "backups_enabled": false, 
-                  "password": "a8hjsjnbs91", 
-                  "label": "foo", 
-                  "slices_count": null, 
+                  "running": true,
+                  "updated_at": "2009-05-15T06:55:02-04:00",
+                  "power_action_pending": false,
+                  "system_template_id": 41,
+                  "id": 1384,
+                  "cloud_id": 3,
+                  "domain_name": "demodomain.com",
+                  "hostname": "web01",
+                  "consumer_id": 0,
+                  "backups_enabled": false,
+                  "password": "a8hjsjnbs91",
+                  "label": "foo",
+                  "slices_count": null,
                   "created_at": "2009-04-16T08:17:39-04:00"
                 }
               }"""
@@ -137,21 +137,21 @@ class VPSNetMockHttp(MockHttp):
 
     def _virtual_machines_api10json_create(self, method, url, body, headers):
         body = """{
-              "virtual_machine": 
+              "virtual_machine":
                 {
-                  "running": true, 
-                  "updated_at": "2009-05-15T06:55:02-04:00", 
-                  "power_action_pending": false, 
-                  "system_template_id": 41, 
-                  "id": 1384, 
-                  "cloud_id": 3, 
-                  "domain_name": "demodomain.com", 
-                  "hostname": "web01", 
-                  "consumer_id": 0, 
-                  "backups_enabled": false, 
-                  "password": "a8hjsjnbs91", 
-                  "label": "foo", 
-                  "slices_count": null, 
+                  "running": true,
+                  "updated_at": "2009-05-15T06:55:02-04:00",
+                  "power_action_pending": false,
+                  "system_template_id": 41,
+                  "id": 1384,
+                  "cloud_id": 3,
+                  "domain_name": "demodomain.com",
+                  "hostname": "web01",
+                  "consumer_id": 0,
+                  "backups_enabled": false,
+                  "password": "a8hjsjnbs91",
+                  "label": "foo",
+                  "slices_count": null,
                   "created_at": "2009-04-16T08:17:39-04:00"
                 }
               }"""
@@ -159,40 +159,40 @@ class VPSNetMockHttp(MockHttp):
 
     def _virtual_machines_api10json_virtual_machines(self, method, url, body, headers):
         body = """     [{
-              "virtual_machine": 
+              "virtual_machine":
                 {
-                  "running": true, 
-                  "updated_at": "2009-05-15T06:55:02-04:00", 
-                  "power_action_pending": false, 
-                  "system_template_id": 41, 
-                  "id": 1384, 
-                  "cloud_id": 3, 
-                  "domain_name": "demodomain.com", 
-                  "hostname": "web01", 
-                  "consumer_id": 0, 
-                  "backups_enabled": false, 
-                  "password": "a8hjsjnbs91", 
-                  "label": "Web Server 01", 
-                  "slices_count": null, 
+                  "running": true,
+                  "updated_at": "2009-05-15T06:55:02-04:00",
+                  "power_action_pending": false,
+                  "system_template_id": 41,
+                  "id": 1384,
+                  "cloud_id": 3,
+                  "domain_name": "demodomain.com",
+                  "hostname": "web01",
+                  "consumer_id": 0,
+                  "backups_enabled": false,
+                  "password": "a8hjsjnbs91",
+                  "label": "Web Server 01",
+                  "slices_count": null,
                   "created_at": "2009-04-16T08:17:39-04:00"
                 }
               },
               {
-                "virtual_machine": 
+                "virtual_machine":
                   {
-                    "running": true, 
-                    "updated_at": "2009-05-15T06:55:02-04:00", 
-                    "power_action_pending": false, 
-                    "system_template_id": 41, 
-                    "id": 1385, 
-                    "cloud_id": 3, 
-                    "domain_name": "demodomain.com", 
-                    "hostname": "mysql01", 
-                    "consumer_id": 0, 
-                    "backups_enabled": false, 
-                    "password": "dsi8h38hd2s", 
-                    "label": "MySQL Server 01", 
-                    "slices_count": null, 
+                    "running": true,
+                    "updated_at": "2009-05-15T06:55:02-04:00",
+                    "power_action_pending": false,
+                    "system_template_id": 41,
+                    "id": 1385,
+                    "cloud_id": 3,
+                    "domain_name": "demodomain.com",
+                    "hostname": "mysql01",
+                    "consumer_id": 0,
+                    "backups_enabled": false,
+                    "password": "dsi8h38hd2s",
+                    "label": "MySQL Server 01",
+                    "slices_count": null,
                     "created_at": "2009-04-16T08:17:39-04:00"
                   }
                 }]"""

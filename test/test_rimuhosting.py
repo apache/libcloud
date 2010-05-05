@@ -63,7 +63,7 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         # Raises exception on failure
         node = self.driver.list_nodes()[0]
         self.driver.destroy_node(node)
-    
+
     def test_create_node(self):
         # Raises exception on failure
         size = self.driver.list_sizes()[0]

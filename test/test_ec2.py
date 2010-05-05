@@ -33,7 +33,7 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.driver = EC2NodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
     def test_create_node(self):
-        image = NodeImage(id='ami-be3adfd7', 
+        image = NodeImage(id='ami-be3adfd7',
                           name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
                           driver=self.driver)
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)

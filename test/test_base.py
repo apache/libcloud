@@ -29,12 +29,12 @@ from libcloud.base import ConnectionKey, ConnectionUserAndKey
 from test import MockResponse
 
 class FakeDriver(object):
-    type = 0 
+    type = 0
 
 class BaseTests(unittest.TestCase):
 
     def test_base_node(self):
-        node = Node(id=0, name=0, state=0, public_ip=0, private_ip=0, 
+        node = Node(id=0, name=0, state=0, public_ip=0, private_ip=0,
             driver=FakeDriver())
         verifyObject(INode, node)
 
@@ -58,7 +58,7 @@ class BaseTests(unittest.TestCase):
     def test_base_connection_key(self):
         conn = ConnectionKey('foo')
         verifyObject(IConnectionKey, conn)
-        
+
     def test_base_connection_userkey(self):
         conn = ConnectionUserAndKey('foo', 'bar')
         verifyObject(IConnectionUserAndKey, conn)
