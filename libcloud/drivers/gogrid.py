@@ -75,7 +75,7 @@ GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
 class GoGridResponse(Response):
     def success(self):
         if self.status == 403:
-          raise InvalidCredsException()
+            raise InvalidCredsException()
         if not self.body:
             return None
         return json.loads(self.body)['status'] == 'success'
@@ -102,7 +102,7 @@ class GoGridConnection(ConnectionUserAndKey):
         params["sig"] = self.get_signature(self.user_id, self.key)
 
         return params
-        
+
     def get_signature(self, key, secret):
         """ create sig from md5 of key + secret + time """
         m = hashlib.md5(key+secret+str(int(time.time())))
@@ -210,7 +210,7 @@ class GoGridNodeDriver(NodeDriver):
         return object['list'][0]['ip']
 
     def list_sizes(self, location=None):
-        return [ NodeSize(driver=self.connection.driver, **i) 
+        return [ NodeSize(driver=self.connection.driver, **i)
                     for i in self._instance_types.values() ]
 
     def list_locations(self):

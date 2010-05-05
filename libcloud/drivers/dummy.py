@@ -27,8 +27,8 @@ import uuid
 
 class DummyConnection(ConnectionKey):
 
-  def connect(self, host=None, port=None):
-    pass
+    def connect(self, host=None, port=None):
+        pass
 
 class DummyNodeDriver(NodeDriver):
 
