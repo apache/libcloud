@@ -143,12 +143,18 @@ class NodeLocation(object):
                 % (self.id, self.name, self.country, self.driver.name))
 
 class NodeAuthSSHKey(object):
+    """
+    An SSH key to be installed for authentication to a node.
+    """
     def __init__(self, pubkey):
         self.pubkey = pubkey
     def __repr__(self):
         return '<NodeAuthSSHKey>'
 
 class NodeAuthPassword(object):
+    """
+    A password to be used for authentication to a node.
+    """
     def __init__(self, password):
         self.password = password
     def __repr__(self):
