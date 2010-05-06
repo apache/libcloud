@@ -146,7 +146,7 @@ class SlicehostNodeDriver(NodeDriver):
             </errors>
         """
         uri = '/slices/%s/destroy.xml' % (node.id)
-        ret = self.connection.request(uri, method='PUT')
+        self.connection.request(uri, method='PUT')
         return True
 
     def _to_nodes(self, object):
