@@ -14,7 +14,7 @@
 # limitations under the License.
 import os
 import sys
-from distutils.core import setup
+from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -82,6 +82,7 @@ setup(
         'libcloud': 'libcloud',
         'libcloud.drivers': 'libcloud/drivers'
     },
+    include_package_data = True,
     license='Apache License (2.0)',
     url='http://incubator.apache.org/libcloud/',
     cmdclass={
