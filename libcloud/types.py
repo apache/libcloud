@@ -34,6 +34,7 @@ class Provider(object):
     @cvar ECP: Enomaly
     @cvar IBM: IBM Developer Cloud
     @cvar OPENNEBULA: OpenNebula.org
+    @cvar DREAMHOST: DreamHost Private Server
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -54,6 +55,7 @@ class Provider(object):
     ECP = 14
     IBM = 15
     OPENNEBULA = 16
+    DREAMHOST = 17
 
 class NodeState(object):
     """

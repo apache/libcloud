@@ -51,6 +51,8 @@ DRIVERS = {
         ('libcloud.drivers.ibm_sbc', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
         ('libcloud.drivers.opennebula', 'OpenNebulaNodeDriver'),
+    Provider.DREAMHOST:
+        ('libcloud.drivers.dreamhost', 'DreamhostNodeDriver'),
 }
 
 def get_driver(provider):

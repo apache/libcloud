@@ -117,7 +117,7 @@ class MockHttp(object):
         if self.type:
             meth_name = '%s_%s' % (meth_name, self.type)
         if self.use_param:
-            param = qs[self.use_param][0].replace('.', '_')
+            param = qs[self.use_param][0].replace('.', '_').replace('-','_')
             meth_name = '%s_%s' % (meth_name, param)
         meth = getattr(self, meth_name)
         status, body, headers, reason = meth(method, url, body, headers)
