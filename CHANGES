@@ -3,6 +3,7 @@
 Changes with Apache Libcloud 0.3.0
 
     *) New Drivers for:
+      - Dreamhost
       - Eucalyptus
       - Enomaly ECP
       - IBM Developer Cloud
