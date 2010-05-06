@@ -76,6 +76,13 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'm2.xlarge': {
+        'id': 'm2.xlarge',
+        'name': 'High-Memory Extra Large Instance',
+        'ram': 17510,
+        'disk': 420,
+        'bandwidth': None
+    },
     'm2.2xlarge': {
         'id': 'm2.2xlarge',
         'name': 'High-Memory Double Extra Large Instance',
@@ -97,11 +104,16 @@ EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
+#
+# On demand prices must also be hardcoded, because Amazon doesn't provide an
+# API to fetch them. From http://aws.amazon.com/ec2/pricing/
+#
 EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.085'
 EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.34'
 EC2_US_EAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.68'
 EC2_US_EAST_INSTANCE_TYPES['c1.medium']['price'] = '.17'
 EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.68'
+EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.50'
 EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
 EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
 
@@ -110,6 +122,7 @@ EC2_US_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
 EC2_US_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
 EC2_US_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
 EC2_US_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
+EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.57'
 EC2_US_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
 EC2_US_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 
@@ -118,6 +131,7 @@ EC2_EU_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
 EC2_EU_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
 EC2_EU_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
 EC2_EU_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
+EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.57'
 EC2_EU_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
 EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 
