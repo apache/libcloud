@@ -91,6 +91,9 @@ class GoGridResponse(Response):
         return self.object['message']
 
 class GoGridConnection(ConnectionUserAndKey):
+    """
+    Connection class for the GoGrid driver
+    """
 
     host = HOST
     responseCls = GoGridResponse

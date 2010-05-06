@@ -119,9 +119,15 @@ class LinodeResponse(Response):
 
 
 class LinodeConnection(ConnectionKey):
-    # Wraps a Linode HTTPS connection, and passes along the connection key.
+    """
+    Connection class for the LinodeConnection driver
+
+    Wraps Linode HTTPS connection, and passes along the connection key.
+    """
+
     host = LINODE_API
     responseCls = LinodeResponse
+
     def add_default_params(self, params):
         params["api_key"] = self.key
         # Be explicit about this in case the default changes.

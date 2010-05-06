@@ -26,6 +26,9 @@ from zope.interface import implements
 import uuid
 
 class DummyConnection(ConnectionKey):
+    """
+    Dummy connection class
+    """
 
     def connect(self, host=None, port=None):
         pass
