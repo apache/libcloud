@@ -16,12 +16,12 @@ import sys
 import unittest
 
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
-from libcloud.types import Provider, NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsException
 from libcloud.base import Node, NodeImage, NodeSize
 
 import httplib
 
-from test import MockHttp, multipleresponse, TestCaseMixin
+from test import MockHttp, TestCaseMixin
 from test.file_fixtures import FileFixtures
 from secrets import SLICEHOST_KEY
 from xml.etree import ElementTree as ET
@@ -32,8 +32,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
         Slicehost.connectionCls.conn_classes = (None, SlicehostMockHttp)
         SlicehostMockHttp.type = None
-        self.driver = Slicehost('foo')
-        #self.driver = Slicehost(SLICEHOST_KEY)
+        self.driver = Slicehost(SLICEHOST_KEY)
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
