@@ -5,3 +5,6 @@ into various cloud providers.
 
 Apache libcloud is an incubator project at the Apache Software Foundation, see
 <http://incubator.apache.org/libcloud> for more information.
+
+For API documentation and examples, see:
+  <http://incubator.apache.org/libcloud/getting-started.html>
