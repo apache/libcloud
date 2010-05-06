@@ -420,7 +420,6 @@ class EC2NodeDriver(NodeDriver):
         @keyword    ex_userdata: User data
         @type       ex_userdata: C{str}
         """
-        name = kwargs["name"]
         image = kwargs["image"]
         size = kwargs["size"]
         params = {
