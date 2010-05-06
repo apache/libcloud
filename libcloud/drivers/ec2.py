@@ -213,7 +213,7 @@ class EC2Connection(ConnectionUserAndKey):
 
 class EC2NodeDriver(NodeDriver):
     """
-    Driver for connections to EC2
+    Amazon EC2 node driver
     """
 
     connectionCls = EC2Connection

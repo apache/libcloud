@@ -113,6 +113,9 @@ class ECPConnection(ConnectionUserAndKey):
 
 
 class ECPNodeDriver(NodeDriver):
+    """
+    Enomaly ECP node driver
+    """
 
     name = "Enomaly Elastic Computing Platform"
     type = Provider.ECP

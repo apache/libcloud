@@ -123,6 +123,9 @@ class GoGridNode(Node):
         ).hexdigest()
 
 class GoGridNodeDriver(NodeDriver):
+    """
+    GoGrid node driver
+    """
 
     connectionCls = GoGridConnection
     type = Provider.GOGRID
