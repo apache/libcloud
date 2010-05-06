@@ -36,7 +36,7 @@ class VoxelTest(unittest.TestCase):
     def test_auth_failed(self):
         VoxelMockHttp.type = 'UNAUTHORIZED'
         try:
-            ret = self.driver.list_nodes()
+            self.driver.list_nodes()
         except Exception, e:
             self.assertTrue(isinstance(e, InvalidCredsException))
         else:
