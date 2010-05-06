@@ -36,6 +36,13 @@ class TestCommand(Command):
         pass
 
     def run(self):
+        secrets = pjoin(self._dir, 'test', 'secrets.py')
+        if not os.path.isfile(secrets):
+          print "Missing %s" % (secrets)
+          print "Maybe you forgot to copy it from -dist:"
+          print "  cp test/secrets.py-dst test/secrets.py"
+          sys.exit(1)
+
         testfiles = []
         for t in glob(pjoin(self._dir, 'test', 'test_*.py')):
             testfiles.append('.'.join(
