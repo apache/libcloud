@@ -162,6 +162,10 @@ class SoftLayerProxy(xmlrpclib.ServerProxy):
         )
 
 class SoftLayerConnection(object):
+    """
+    Connection class for the SoftLayer driver
+    """
+
     proxyCls = SoftLayerProxy
     driver = None
 

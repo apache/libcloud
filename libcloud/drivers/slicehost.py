@@ -47,6 +47,9 @@ class SlicehostResponse(Response):
 
 
 class SlicehostConnection(ConnectionKey):
+    """
+    Connection class for the Slicehost driver
+    """
 
     host = 'api.slicehost.com'
     responseCls = SlicehostResponse

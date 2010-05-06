@@ -53,6 +53,9 @@ class OpenNebulaResponse(Response):
 
 
 class OpenNebulaConnection(ConnectionUserAndKey):
+    """
+    Connection class for the OpenNebula driver
+    """
 
     host = API_HOST
     port = API_PORT

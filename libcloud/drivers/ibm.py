@@ -44,8 +44,9 @@ class IBMResponse(Response):
 
 class IBMConnection(ConnectionUserAndKey):
     """
-    Handles the connection to the IBM Developer Cloud.
+    Connection class for the IBM Developer Cloud driver
     """
+
     host = HOST
     responseCls = IBMResponse
 

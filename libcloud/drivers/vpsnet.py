@@ -69,6 +69,9 @@ class VPSNetResponse(Response):
             return "\n".join(errors)
 
 class VPSNetConnection(ConnectionUserAndKey):
+    """
+    Connection class for the VPS.net driver
+    """
 
     host = API_HOST
     responseCls = VPSNetResponse
