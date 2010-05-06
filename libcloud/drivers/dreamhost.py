@@ -15,11 +15,9 @@
 """
 DreamHost Driver
 """
-import uuid
 
-from libcloud.interface import INodeDriver
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node
-from libcloud.base import NodeSize, NodeImage, NodeLocation
+from libcloud.base import NodeSize, NodeImage
 from libcloud.types import Provider, NodeState, InvalidCredsException
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
