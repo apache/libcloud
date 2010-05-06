@@ -28,7 +28,7 @@ except:
     pass
 import sys; sys.path.append('..')
 
-from libcloud.types import Provider, InvalidCredsException
+from libcloud.types import Provider
 from libcloud.providers import get_driver
 
 from pprint import pprint
