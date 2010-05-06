@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-vmware VCloud driver.
+VMware vCloud driver.
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsException
@@ -212,7 +212,7 @@ class VCloudResponse(Response):
 
 class VCloudConnection(ConnectionUserAndKey):
     """
-    Connection class for the VCloud driver
+    Connection class for the vCloud driver
     """
 
     responseCls = VCloudResponse
@@ -261,6 +261,10 @@ class VCloudConnection(ConnectionUserAndKey):
         return headers
 
 class VCloudNodeDriver(NodeDriver):
+    """
+    vCloud node driver
+    """
+
     type = Provider.VCLOUD
     name = "vCloud"
     connectionCls = VCloudConnection
@@ -578,7 +582,7 @@ class VCloudNodeDriver(NodeDriver):
 
 class HostingComConnection(VCloudConnection):
     """
-    VCloud connection subclass for hosting.com
+    vCloud connection subclass for Hosting.com
     """
 
     host = "vcloud.safesecureweb.com"
@@ -592,16 +596,24 @@ class HostingComConnection(VCloudConnection):
         }
 
 class HostingComDriver(VCloudNodeDriver):
+    """
+    vCloud node driver for Hosting.com
+    """
     connectionCls = HostingComConnection
 
 class TerremarkConnection(VCloudConnection):
     """
-    VCloud connection subclass for Terremark
+    vCloud connection subclass for Terremark
     """
 
     host = "services.vcloudexpress.terremark.com"
 
 class TerremarkDriver(VCloudNodeDriver):
+    """
+    vCloud node driver for Terremark
+    """
+
     connectionCls = TerremarkConnection
+
     def list_locations(self):
         return [NodeLocation(0, "Terremark Texas", 'US', self)]

@@ -104,6 +104,9 @@ NODE_STATE_MAP = { 'IN_PROGRESS': NodeState.PENDING,
                    'terminated': NodeState.TERMINATED }
 
 class VoxelNodeDriver(NodeDriver):
+    """
+    Voxel VoxCLOUD node driver
+    """
 
     connectionCls = VoxelConnection
     type = Provider.VOXEL

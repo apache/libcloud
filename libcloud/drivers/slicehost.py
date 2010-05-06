@@ -61,6 +61,9 @@ class SlicehostConnection(ConnectionKey):
 
 
 class SlicehostNodeDriver(NodeDriver):
+    """
+    Slicehost node driver
+    """
 
     connectionCls = SlicehostConnection
 

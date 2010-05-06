@@ -69,6 +69,9 @@ class OpenNebulaConnection(ConnectionUserAndKey):
 
 
 class OpenNebulaNodeDriver(NodeDriver):
+    """
+    OpenNebula node driver
+    """
 
     connectionCls = OpenNebulaConnection
     type = Provider.OPENNEBULA
