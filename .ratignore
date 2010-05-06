@@ -2,3 +2,5 @@ MANIFEST.in
 .gitignore
 apidocs/
 CHANGES
+HACKING
+test/fixtures/
