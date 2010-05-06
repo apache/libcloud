@@ -16,14 +16,15 @@
 
 import httplib
 import unittest
+import sys
+
 from xml.etree import ElementTree as ET
 import xmlrpclib
 
-from libcloud.drivers.softlayer import SoftLayerProxy, SoftLayerNodeDriver as SoftLayer
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 from libcloud.types import NodeState
 
-from test import MockHttp, TestCaseMixin
+from test import MockHttp
 from test.file_fixtures import FileFixtures
 
 from secrets import SOFTLAYER_USER, SOFTLAYER_APIKEY
