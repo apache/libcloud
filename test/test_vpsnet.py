@@ -17,7 +17,7 @@ import unittest
 import exceptions
 
 from libcloud.drivers.vpsnet import VPSNetNodeDriver
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.base import Node
 from libcloud.types import NodeState
 
 from test import MockHttp, TestCaseMixin
