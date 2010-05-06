@@ -14,7 +14,7 @@ Changes with Apache Libcloud 0.3.0
     
     *) Added support for Amazon EC2 Asia Pacific (Singapore) Region.
 
-    *) Imrpvoed test coverage for all drivers.
+    *) Imrpoved test coverage for all drivers.
 
     *) Add support for multiple security groups in EC2.
 
