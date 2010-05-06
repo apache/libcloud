@@ -3,6 +3,8 @@ include NOTICE
 include example.py
 include CONTRIBUTORS
 include CHANGES
+include HACKING
+include README
 prune test/secrets.py
 include test/*.py
 include test/secrets.py-dist
