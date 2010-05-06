@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 import unittest
 import httplib
+import sys
 
 from test.file_fixtures import FileFixtures
 from libcloud.types import InvalidCredsException
 from libcloud.drivers.ibm_sbc import IBMNodeDriver as IBM
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 from test import MockHttp, TestCaseMixin
 from secrets import IBM_USER, IBM_SECRET
-from libcloud.base import NodeImage, NodeSize, NodeLocation
 
 class IBMTests(unittest.TestCase, TestCaseMixin):
     """
