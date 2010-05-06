@@ -16,7 +16,7 @@ import httplib
 
 from test.file_fixtures import FileFixtures
 from libcloud.types import InvalidCredsException
-from libcloud.drivers.ibm import IBMNodeDriver as IBM
+from libcloud.drivers.ibm_sbc import IBMNodeDriver as IBM
 from libcloud.base import Node, NodeImage, NodeSize
 from test import MockHttp, TestCaseMixin
 from secrets import IBM_USER, IBM_SECRET
@@ -150,7 +150,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
 class IBMMockHttp(MockHttp):
-    fixtures = FileFixtures('ibm')
+    fixtures = FileFixtures('ibm_sbc')
 
     def _cloud_enterprise_beta_api_rest_20090403_instances(self, method, url, body, headers):
         body = self.fixtures.load('instances.xml')
