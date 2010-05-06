@@ -2,3 +2,8 @@ include LICENSE
 include NOTICE
 include example.py
 include CONTRIBUTORS
+include CHANGES
+prune test/secrets.py
+include test/*.py
+include test/secrets.py-dist
+include test/fixtures/*/*
