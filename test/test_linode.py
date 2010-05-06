@@ -54,11 +54,11 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
 
     def test_create_node(self):
         # Will exception on failure
-        node = self.driver.create_node(name="Test",
-                         location=self.driver.list_locations()[0],
-                         size=self.driver.list_sizes()[0],
-                         image=self.driver.list_images()[6],
-                         auth=NodeAuthPassword("test123"))
+        self.driver.create_node(name="Test",
+                                location=self.driver.list_locations()[0],
+                                size=self.driver.list_sizes()[0],
+                                image=self.driver.list_images()[6],
+                                auth=NodeAuthPassword("test123"))
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
