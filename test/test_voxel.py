@@ -16,16 +16,14 @@ import sys
 import unittest
 
 from libcloud.drivers.voxel import VoxelNodeDriver as Voxel
-from libcloud.types import Provider, NodeState, InvalidCredsException
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.types import InvalidCredsException
 
 import httplib
 
-from test import MockHttp, multipleresponse, TestCaseMixin
+from test import MockHttp
 from test.file_fixtures import FileFixtures
 
 from secrets import VOXEL_KEY, VOXEL_SECRET
-from xml.etree import ElementTree as ET
 
 class VoxelTest(unittest.TestCase):
 
@@ -33,7 +31,7 @@ class VoxelTest(unittest.TestCase):
 
         Voxel.connectionCls.conn_classes = (None, VoxelMockHttp)
         VoxelMockHttp.type = None
-        self.driver = Voxel('foo', 'bar')
+        self.driver = Voxel(VOXEL_KEY, VOXEL_SECRET)
 
     def test_auth_failed(self):
         VoxelMockHttp.type = 'UNAUTHORIZED'
