@@ -16,3 +16,20 @@
 """
 Drivers for working with different providers
 """
+
+__all__ = [
+    'dummy',
+    'ec2',
+    'ecp',
+    'gogrid',
+    'ibm_sbc',
+    'linode',
+    'opennebula',
+    'rackspace',
+    'rimuhosting',
+    'slicehost',
+    'softlayer',
+    'vcloud',
+    'voxel',
+    'vpsnet',
+]
