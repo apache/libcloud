@@ -37,8 +37,10 @@ try: import json
 except: import simplejson as json
 
 
-# Base exception for problems arising from this driver
 class LinodeException(Exception):
+    """
+    Exception class for Linode driver
+    """
     def __str__(self):
         return "(%u) %s" % (self.args[0], self.args[1])
     def __repr__(self):

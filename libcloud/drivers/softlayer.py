@@ -133,6 +133,9 @@ SL_TEMPLATES = {
 }
 
 class SoftLayerException(Exception):
+    """
+    Exception class for SoftLayer driver
+    """
     pass
 
 class SoftLayerSafeTransport(xmlrpclib.SafeTransport):
