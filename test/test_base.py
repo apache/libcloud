@@ -15,11 +15,7 @@
 import sys
 import unittest
 
-from libcloud.providers import DRIVERS, get_driver
-from libcloud.types import InvalidCredsException, Provider
-from libcloud.interface import INodeDriver
 from zope.interface.verify import verifyObject
-from zope.interface.exceptions import BrokenImplementation
 
 from libcloud.interface import IResponse, INode, INodeSize, INodeImage, INodeDriver
 from libcloud.interface import IConnectionKey, IConnectionUserAndKey
