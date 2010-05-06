@@ -33,6 +33,10 @@ API_PORT = (80,443)
 API_SECURE = True
 
 class RimuHostingException(Exception):
+    """
+    Exception class for RimuHosting driver
+    """
+
     def __str__(self):
         return self.args[0]
 
