@@ -136,7 +136,11 @@ class LinodeConnection(ConnectionKey):
 
 
 class LinodeNodeDriver(NodeDriver):
-    # The meat of Linode operations; the Node Driver.
+    """
+    Linode node driver
+
+    The meat of Linode operations.
+    """
     type = Provider.LINODE
     name = "Linode"
     connectionCls = LinodeConnection

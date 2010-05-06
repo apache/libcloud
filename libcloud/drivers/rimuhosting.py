@@ -106,6 +106,10 @@ class RimuHostingConnection(ConnectionKey):
                                      params, data, headers, method)
 
 class RimuHostingNodeDriver(NodeDriver):
+    """
+    RimuHosting node driver
+    """
+
     type = Provider.RIMUHOSTING
     name = 'RimuHosting'
     connectionCls = RimuHostingConnection

@@ -34,6 +34,9 @@ class DummyConnection(ConnectionKey):
         pass
 
 class DummyNodeDriver(NodeDriver):
+    """
+    Dummy node driver
+    """
 
     name = "Dummy Node Provider"
     type = Provider.DUMMY
