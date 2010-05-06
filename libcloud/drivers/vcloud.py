@@ -375,7 +375,7 @@ class VCloudNodeDriver(NodeDriver):
                                           % node_path,
                                           method='POST')
             self._wait_for_task_completion(res.object.get('href'))
-        except Exception, e:
+        except Exception:
             pass
 
         try:
