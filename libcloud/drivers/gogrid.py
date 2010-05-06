@@ -173,10 +173,6 @@ class GoGridNodeDriver(NodeDriver):
                     self.connection.request('/api/grid/image/list').object)
         return images
 
-    def get_uuid(self, field):
-        uuid_str = "%s:%s" % (field,self.connection.user_id)
-        return hashlib.sha1(uuid_str).hexdigest()
-
     def list_nodes(self):
         res = self._server_list()
         return [ self._to_node(el)
