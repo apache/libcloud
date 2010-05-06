@@ -7,5 +7,6 @@ include HACKING
 include README
 prune test/secrets.py
 include test/*.py
+include demos/*
 include test/secrets.py-dist
 include test/fixtures/*/*
