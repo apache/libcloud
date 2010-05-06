@@ -93,13 +93,13 @@ class DreamhostResponse(Response):
     def parse_body(self):
         resp = json.loads(self.body)
         if resp['result'] != 'success':
-            raise Exception(self.api_parse_error(resp))
+            raise Exception(self._api_parse_error(resp))
         return resp['data']
 
     def parse_error(self):
         raise Exception
 
-    def api_parse_error(self, response):
+    def _api_parse_error(self, response):
         if 'data' in response:
             if response['data'] == 'invalid_api_key':
                 raise InvalidCredsException("Oops!  You've entered an invalid API key")
