@@ -70,8 +70,10 @@ class InstantiateVAppXML(object):
         instantionation_params = ET.SubElement(self.root,
                                                "InstantiationParams")
 
-        product = self._make_product_section(instantionation_params)
-        virtual_hardware = self._make_virtual_hardware(instantionation_params)
+        # product and virtual hardware
+        self._make_product_section(instantionation_params)
+        self._make_virtual_hardware(instantionation_params)
+
         network_config_section = ET.SubElement(instantionation_params,
                                                "NetworkConfigSection")
 
@@ -384,7 +386,7 @@ class VCloudNodeDriver(NodeDriver):
             # The undeploy response is malformed XML atm.
             # We can remove this whent he providers fix the problem.
             pass
-        except Exception, e:
+        except Exception:
             # Some vendors don't implement undeploy at all yet,
             # so catch this and move on.
             pass
