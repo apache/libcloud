@@ -54,3 +54,15 @@ Testing
   Ran 7 tests in 0.001s
 
   OK
+
+Making a release
+=======
+ 
+ We have a script that runs the required setup.py commands and then hashes
+ and signs the files.  To run it:
+
+    cd dist
+    ./release.sh -u yourusername@apache.org
+
+ This should result in a set of apache-libcloud-${VERSION}.{tar.bz2,zip}{,asc,md5,sha1}
+ files that are suitable to be uploaded for a release.
