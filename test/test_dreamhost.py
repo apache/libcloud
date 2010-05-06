@@ -16,15 +16,14 @@ import sys
 import unittest
 
 from libcloud.drivers.dreamhost import DreamhostNodeDriver
-from libcloud.types import Provider, NodeState, InvalidCredsException
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.types import NodeState, InvalidCredsException
 
 import httplib
 
 try: import json
 except: import simplejson as json
 
-from test import MockHttp, multipleresponse, TestCaseMixin
+from test import MockHttp, TestCaseMixin
 from secrets import DREAMHOST_KEY
 
 #class DreamhostTest(unittest.TestCase, TestCaseMixin):
@@ -37,7 +36,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         )
         DreamhostMockHttp.type = None
         DreamhostMockHttp.use_param = 'cmd'
-        self.driver = DreamhostNodeDriver('foo')
+        self.driver = DreamhostNodeDriver(DREAMHOST_KEY)
 
     def test_invalid_creds(self):
         """
