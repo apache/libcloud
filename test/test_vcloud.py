@@ -14,11 +14,10 @@
 # limitations under the License.
 import sys
 import unittest
-import exceptions
 
 from libcloud.drivers.vcloud import TerremarkDriver
 from libcloud.drivers.vcloud import VCloudNodeDriver
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.base import Node
 from libcloud.types import NodeState
 
 from test import MockHttp, TestCaseMixin
