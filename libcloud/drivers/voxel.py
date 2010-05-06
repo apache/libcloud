@@ -66,6 +66,9 @@ class VoxelResponse(Response):
         return True
 
 class VoxelConnection(ConnectionUserAndKey):
+    """
+    Connection class for the Voxel driver
+    """
 
     host = VOXEL_API_HOST
     responseCls = VoxelResponse

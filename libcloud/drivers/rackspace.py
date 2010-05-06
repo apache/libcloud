@@ -53,6 +53,10 @@ class RackspaceResponse(Response):
 
 
 class RackspaceConnection(ConnectionUserAndKey):
+    """
+    Connection class for the Rackspace driver
+    """
+
     api_version = 'v1.0'
     auth_host = 'auth.api.rackspacecloud.com'
     responseCls = RackspaceResponse

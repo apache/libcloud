@@ -70,6 +70,9 @@ class ECPResponse(Response):
         return self.headers
 
 class ECPConnection(ConnectionUserAndKey):
+    """
+    Connection class for the Enomaly ECP driver
+    """
 
     responseCls = ECPResponse
     host = API_HOST

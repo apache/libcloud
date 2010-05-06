@@ -211,6 +211,9 @@ class VCloudResponse(Response):
                                httplib.NO_CONTENT, httplib.ACCEPTED)
 
 class VCloudConnection(ConnectionUserAndKey):
+    """
+    Connection class for the VCloud driver
+    """
 
     responseCls = VCloudResponse
     token = None
@@ -574,6 +577,10 @@ class VCloudNodeDriver(NodeDriver):
     features = {"create_node": ["password"]}
 
 class HostingComConnection(VCloudConnection):
+    """
+    VCloud connection subclass for hosting.com
+    """
+
     host = "vcloud.safesecureweb.com"
 
     def _get_auth_headers(self):
@@ -588,6 +595,10 @@ class HostingComDriver(VCloudNodeDriver):
     connectionCls = HostingComConnection
 
 class TerremarkConnection(VCloudConnection):
+    """
+    VCloud connection subclass for Terremark
+    """
+
     host = "services.vcloudexpress.terremark.com"
 
 class TerremarkDriver(VCloudNodeDriver):

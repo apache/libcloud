@@ -73,6 +73,9 @@ class RimuHostingResponse(Response):
                                        % (self.body))
 
 class RimuHostingConnection(ConnectionKey):
+    """
+    Connection class for the RimuHosting driver
+    """
 
     api_context = API_CONTEXT
     host = API_HOST
