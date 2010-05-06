@@ -153,6 +153,7 @@ class DreamhostNodeDriver(NodeDriver):
             'size' : size
         }
         data = self.connection.request('/', params).object
+        # TODO: Is this ID the same as what list_nodes returns?
         return Node(
             id = data['added_' + kwargs['image'].name],
             name = data['added_' + kwargs['image'].name],
