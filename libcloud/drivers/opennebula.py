@@ -150,12 +150,15 @@ class OpenNebulaNodeDriver(NodeDriver):
         name = ET.SubElement(compute, 'NAME')
         name.text = kwargs['name']
 
-        instance_type = ET.SubElement(compute, 'INSTANCE_TYPE')
-        instance_type.text = kwargs['size'].name
-
-        storage = ET.SubElement(compute, 'STORAGE')
-        disk = ET.SubElement(storage, 'DISK', {'image': str(kwargs['image'].id),
-                                               'dev': 'sda1'})
+        # """
+        # Other extractable (but unused) information
+        # """
+        # instance_type = ET.SubElement(compute, 'INSTANCE_TYPE')
+        # instance_type.text = kwargs['size'].name
+        #
+        # storage = ET.SubElement(compute, 'STORAGE')
+        # disk = ET.SubElement(storage, 'DISK', {'image': str(kwargs['image'].id),
+        #                                        'dev': 'sda1'})
 
         xml = ET.tostring(compute)
 
