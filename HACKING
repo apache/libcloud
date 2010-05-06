@@ -36,6 +36,14 @@ Using The Git-SVN Bridge (For Committers)
 Testing
 =======
 
+ Libcloud includes an example secrets.py file at:
+  test/secrets.py-dist
+
+ To run the test cases, you most likely want to run:
+  $ cp test/secrets.py-dist  test/secrets.py
+
+ This is done to prevent accidental commits of a developers provider credentials.
+
  To run all suites:
 
   libcloud$ python setup.py test
