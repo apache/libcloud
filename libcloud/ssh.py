@@ -135,8 +135,8 @@ class ParamikoSSHClient(BaseSSHClient):
             if part != "":
                 try:
                     sftp.mkdir(part)
-                except IOError, e:
-                    # so, there doens't seem to be a way to
+                except IOError:
+                    # so, there doesn't seem to be a way to
                     # catch EEXIST consistently *sigh*
                     pass
                 sftp.chdir(part)
