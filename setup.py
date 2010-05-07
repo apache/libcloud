@@ -40,7 +40,7 @@ class TestCommand(Command):
         if not os.path.isfile(secrets):
           print "Missing %s" % (secrets)
           print "Maybe you forgot to copy it from -dist:"
-          print "  cp test/secrets.py-dst test/secrets.py"
+          print "  cp test/secrets.py-dist test/secrets.py"
           sys.exit(1)
 
         testfiles = []
