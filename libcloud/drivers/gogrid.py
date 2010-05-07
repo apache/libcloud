@@ -143,8 +143,8 @@ class GoGridNodeDriver(NodeDriver):
     def _get_ip(self, element):
         return element['ip']['ip']
 
-    def _get_id(self,element):
-        return element['id']
+    def _get_id(self, element):
+        return element.get('id')
 
     def _to_node(self, element):
         state = self._get_state(element)
