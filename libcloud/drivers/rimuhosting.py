@@ -28,7 +28,7 @@ except: import simplejson as json
 
 # Defaults
 API_CONTEXT = '/r'
-API_HOST = 'api.rimuhosting.com'
+API_HOST = 'rimuhosting.com'
 API_PORT = (80,443)
 API_SECURE = True
 
