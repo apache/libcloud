@@ -15,10 +15,6 @@
 import sys
 import unittest
 
-from zope.interface.verify import verifyObject
-
-from libcloud.interface import IResponse, INode, INodeSize, INodeImage, INodeDriver
-from libcloud.interface import IConnectionKey, IConnectionUserAndKey
 from libcloud.base import Response, Node, NodeSize, NodeImage, NodeDriver
 from libcloud.base import ConnectionKey, ConnectionUserAndKey
 
@@ -32,32 +28,25 @@ class BaseTests(unittest.TestCase):
     def test_base_node(self):
         node = Node(id=0, name=0, state=0, public_ip=0, private_ip=0,
             driver=FakeDriver())
-        verifyObject(INode, node)
 
     def test_base_node_size(self):
         node_size = NodeSize(id=0, name=0, ram=0, disk=0, bandwidth=0, price=0,
             driver=FakeDriver())
-        verifyObject(INodeSize, node_size)
 
     def test_base_node_image(self):
         node_image = NodeImage(id=0, name=0, driver=FakeDriver())
-        verifyObject(INodeImage, node_image)
 
     def test_base_response(self):
-        verifyObject(IResponse, Response(MockResponse(status=200,
-                                                      body='foo')))
+        resp = Response(MockResponse(status=200, body='foo'))
 
     def test_base_node_driver(self):
         node_driver = NodeDriver('foo')
-        verifyObject(INodeDriver, node_driver)
 
     def test_base_connection_key(self):
         conn = ConnectionKey('foo')
-        verifyObject(IConnectionKey, conn)
 
     def test_base_connection_userkey(self):
         conn = ConnectionUserAndKey('foo', 'bar')
-        verifyObject(IConnectionUserAndKey, conn)
 
 #    def test_drivers_interface(self):
 #        failures = []

@@ -17,11 +17,9 @@ Dummy Driver
 
 @note: This driver is out of date
 """
-from libcloud.interface import INodeDriver
 from libcloud.base import ConnectionKey, NodeDriver, NodeSize, NodeLocation
 from libcloud.base import NodeImage, Node
 from libcloud.types import Provider,NodeState
-from zope.interface import implements
 
 import uuid
 
@@ -40,8 +38,6 @@ class DummyNodeDriver(NodeDriver):
 
     name = "Dummy Node Provider"
     type = Provider.DUMMY
-
-    implements(INodeDriver)
 
     def __init__(self, creds):
         self.creds = creds
