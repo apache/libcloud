@@ -16,13 +16,11 @@
 """
 Enomaly ECP driver
 """
-from libcloud.interface import INodeDriver
 from libcloud.base import NodeDriver, NodeSize, NodeLocation
 from libcloud.base import NodeImage, Node
 from libcloud.base import Response, ConnectionUserAndKey
 from libcloud.types import Provider, NodeState, InvalidCredsException
 from libcloud.base import is_private_subnet
-from zope.interface import implements
 
 import time
 import base64
@@ -120,7 +118,6 @@ class ECPNodeDriver(NodeDriver):
     name = "Enomaly Elastic Computing Platform"
     type = Provider.ECP
     connectionCls = ECPConnection
-    implements(INodeDriver)
 
     def list_nodes(self):
         """
