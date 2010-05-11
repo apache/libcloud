@@ -18,14 +18,6 @@ Provides base classes for working with drivers
 """
 import httplib, urllib
 import libcloud
-from zope import interface
-from libcloud.interface import IConnectionUserAndKey, IResponse
-from libcloud.interface import IConnectionKey, IConnectionKeyFactory
-from libcloud.interface import IConnectionUserAndKeyFactory, IResponseFactory
-from libcloud.interface import INodeDriverFactory, INodeDriver
-from libcloud.interface import INodeFactory, INode
-from libcloud.interface import INodeSizeFactory, INodeSize
-from libcloud.interface import INodeImageFactory, INodeImage
 from libcloud.types import NodeState, DeploymentException
 from libcloud.ssh import SSHClient
 import time
@@ -41,9 +33,6 @@ class Node(object):
     """
     A Base Node class to derive from.
     """
-
-    interface.implements(INode)
-    interface.classProvides(INodeFactory)
 
     def __init__(self, id, name, state, public_ip, private_ip,
                  driver, extra=None):
@@ -89,9 +78,6 @@ class NodeSize(object):
     A Base NodeSize class to derive from.
     """
 
-    interface.implements(INodeSize)
-    interface.classProvides(INodeSizeFactory)
-
     def __init__(self, id, name, ram, disk, bandwidth, price, driver):
         self.id = id
         self.name = name
@@ -112,9 +98,6 @@ class NodeImage(object):
     A Base NodeImage class to derive from.
     """
 
-    interface.implements(INodeImage)
-    interface.classProvides(INodeImageFactory)
-
     def __init__(self, id, name, driver, extra=None):
         self.id = id
         self.name = name
@@ -131,8 +114,7 @@ class NodeLocation(object):
     """
     A base NodeLocation class to derive from.
     """
-    interface.implements(INodeImage)
-    interface.classProvides(INodeImageFactory)
+
     def __init__(self, id, name, country, driver):
         self.id = id
         self.name = name
@@ -164,9 +146,6 @@ class Response(object):
     """
     A Base Response class to derive from.
     """
-    interface.implements(IResponse)
-    interface.classProvides(IResponseFactory)
-
     NODE_STATE_MAP = {}
 
     object = None
@@ -328,9 +307,6 @@ class ConnectionKey(object):
     """
     A Base Connection class to derive from.
     """
-    interface.implementsOnly(IConnectionKey)
-    interface.classProvides(IConnectionKeyFactory)
-
     #conn_classes = (httplib.LoggingHTTPConnection, LoggingHTTPSConnection)
     conn_classes = (httplib.HTTPConnection, httplib.HTTPSConnection)
 
@@ -488,8 +464,6 @@ class ConnectionUserAndKey(ConnectionKey):
     """
     Base connection which accepts a user_id and key
     """
-    interface.implementsOnly(IConnectionUserAndKey)
-    interface.classProvides(IConnectionUserAndKeyFactory)
 
     user_id = None
 
@@ -502,8 +476,6 @@ class NodeDriver(object):
     """
     A base NodeDriver class to derive from
     """
-    interface.implements(INodeDriver)
-    interface.classProvides(INodeDriverFactory)
 
     connectionCls = ConnectionKey
     name = None
