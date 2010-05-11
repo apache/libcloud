@@ -1,6 +1,10 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.3.2 [In Development]
+Changes with Apache Libcloud 0.4.0 [In Development]
+
+    *) Removed libcloud.interfaces module.
+
+    *) Removed dependency on zope.interfaces
 
     *) RimuHosting moved API endpoint address.
 
