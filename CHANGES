@@ -2,6 +2,8 @@
 
 Changes with Apache Libcloud 0.3.2 [In Development]
 
+    *) RimuHosting moved API endpoint address.
+
     *) Fix regression and error in GoGrid driver for parsing node objects.
 
     *) Fix parsing of Slicehost nodes with multiple Public IP addresses.
