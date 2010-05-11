@@ -29,6 +29,7 @@ Changes with Apache Libcloud 0.3.0 [Tagged May 6, 2010]
       - Eucalyptus
       - Enomaly ECP
       - IBM Developer Cloud
+      - OpenNebula
       - SoftLayer
 
     *) Added new deployment and bootstrap API.
