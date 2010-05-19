@@ -1,0 +1,220 @@
+{
+    "list": [
+        {
+            "id": 1659917,
+            "ip": "192.168.0.192",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is reserved or in use",
+                "id": 2,
+                "name": "Assigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659918,
+            "ip": "192.168.0.193",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is reserved or in use",
+                "id": 2,
+                "name": "Assigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659919,
+            "ip": "192.168.0.194",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659920,
+            "ip": "192.168.0.195",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659921,
+            "ip": "192.168.0.196",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659922,
+            "ip": "192.168.0.197",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659923,
+            "ip": "192.168.0.198",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is reserved or in use",
+                "id": 2,
+                "name": "Assigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659924,
+            "ip": "192.168.0.199",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is reserved or in use",
+                "id": 2,
+                "name": "Assigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659925,
+            "ip": "192.168.0.200",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is reserved or in use",
+                "id": 2,
+                "name": "Assigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659926,
+            "ip": "192.168.0.201",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659927,
+            "ip": "192.168.0.202",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659928,
+            "ip": "192.168.0.203",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659929,
+            "ip": "192.168.0.204",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659930,
+            "ip": "192.168.0.205",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659931,
+            "ip": "192.168.0.206",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is available to use",
+                "id": 1,
+                "name": "Unassigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        },
+        {
+            "id": 1659932,
+            "ip": "192.168.0.207",
+            "object": "ip",
+            "public": true,
+            "state": {
+                "description": "IP is reserved or in use",
+                "id": 2,
+                "name": "Assigned",
+                "object": "option"
+            },
+            "subnet": "192.168.0.192/255.255.255.240"
+        }
+    ],
+    "method": "/grid/ip/list",
+    "status": "success",
+    "summary": {
+        "numpages": 0,
+        "returned": 16,
+        "start": 0,
+        "total": 16
+    }
+}
