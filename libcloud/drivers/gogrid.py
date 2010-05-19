@@ -150,6 +150,8 @@ class GoGridNodeDriver(NodeDriver):
         state = self._get_state(element)
         ip = self._get_ip(element)
         id = self._get_id(element)
+        if id == None:
+          raise Exception("ID is missing from Node response: "+ element)
         n = GoGridNode(id=id,
                  name=element['name'],
                  state=state,
