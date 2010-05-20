@@ -95,6 +95,8 @@ class BaseSSHClient(object):
 
         @type cmd: C{str}
         @keyword cmd: Command to run.
+        
+        @return C{list} of [stdout, stderr, exit_status]
         """
         raise NotImplementedError, \
             'run not implemented for this ssh client'
@@ -153,11 +155,20 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp.close()
 
     def run(self, cmd):
-        stdin, stdout, stderr = self.client.exec_command(cmd)
+        # based on exec_command()
+        bufsize = -1
+        t =  self.client.get_transport()
+        chan = t.open_session()
+        chan.exec_command(cmd)
+        stdin = chan.makefile('wb', bufsize)
+        stdout = chan.makefile('rb', bufsize)
+        stderr = chan.makefile_stderr('rb', bufsize)
+        #stdin, stdout, stderr = self.client.exec_command(cmd)
         stdin.close()
+        status = chan.recv_exit_status()
         so = stdout.read()
         se = stderr.read()
-        return [so, se]
+        return [so, se, status]
 
     def close(self):
         self.client.close()
