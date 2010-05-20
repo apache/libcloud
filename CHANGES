@@ -10,7 +10,13 @@ Changes with Apache Libcloud 0.4.0 [In Development]
 
     *) Fix regression and error in GoGrid driver for parsing node objects.
 
+    *) Added more test cases for GoGrid driver.
+
     *) Fix parsing of Slicehost nodes with multiple Public IP addresses.
+
+    *) Add exit_status to ScriptDeployment.
+
+    *) Update prices for several drivers.
 
 Changes with Apache Libcloud 0.3.1 [Tagged May 6, 2010]
 
