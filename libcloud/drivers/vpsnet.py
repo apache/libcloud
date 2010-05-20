@@ -101,6 +101,7 @@ class VPSNetNodeDriver(NodeDriver):
                  state=state,
                  public_ip=[vm.get('primary_ip_address', None)],
                  private_ip=[],
+                 extra={'slices_count':vm['slices_count']}, # Number of nodes consumed by VM
                  driver=self.connection.driver)
         return n
 
@@ -166,8 +167,8 @@ class VPSNetNodeDriver(NodeDriver):
     def list_sizes(self, location=None):
         res = self.connection.request('/nodes.%s' % (API_VERSION,))
         available_nodes = len([size for size in res.object
-                            if not size['slice']["virtual_machine_id"]])
-        sizes = [self._to_size(i) for i in range(1,available_nodes + 1)]
+                            if size['slice']['virtual_machine_id']])
+        sizes = [self._to_size(i) for i in range(1, available_nodes + 1)]
         return sizes
 
     def destroy_node(self, node):

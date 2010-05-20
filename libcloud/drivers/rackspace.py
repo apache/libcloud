@@ -28,6 +28,21 @@ from xml.parsers.expat import ExpatError
 
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
+#
+# Prices need to be hardcoded as Rackspace doesn't expose them through
+# the API. Prices are associated with flavors, of which there are 7.
+# See - http://www.rackspacecloud.com/cloud_hosting_products/servers/pricing
+#
+RACKSPACE_PRICES = {
+    '1':'.015',
+    '2':'.030',
+    '3':'.060',
+    '4':'.120',
+    '5':'.240',
+    '6':'.480',
+    '7':'.960',
+}
+
 class RackspaceResponse(Response):
 
     def success(self):
@@ -146,6 +161,8 @@ class RackspaceNodeDriver(NodeDriver):
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
     name = 'Rackspace'
+
+    _rackspace_prices = RACKSPACE_PRICES
 
     features = {"create_node": ["generates_password"]}
 
@@ -307,7 +324,7 @@ class RackspaceNodeDriver(NodeDriver):
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
                      bandwidth=None, # XXX: needs hardcode
-                     price=None, # XXX: needs hardcode,
+                     price=self._rackspace_prices.get(el.get('id')), # Hardcoded,
                      driver=self.connection.driver)
         return s
 
