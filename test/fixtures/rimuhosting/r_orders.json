@@ -18,7 +18,7 @@
        , "server_type" : "VPS"
        , "data_transfer_allowance" : { "data_transfer_gb" : 30
 				       , "data_transfer" : "30"}
-       , "billing_info" : { }
+       , "billing_info" : { "monthly_recurring_fee": 19.99 }
        , "allocated_ips" : { "primary_ip" : "1.2.3.4"
 			     , "secondary_ips" : ["1.2.3.5","1.2.3.6"]}
        , "running_state" : "RUNNING"
