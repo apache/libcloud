@@ -79,6 +79,7 @@ class ScriptDeployment(Deployment):
         self.script = script
         self.stdout = None
         self.stderr = None
+        self.exit_status = None
         self.delete = delete
         self.name = name
         if self.name is None:
@@ -91,7 +92,7 @@ class ScriptDeployment(Deployment):
         See also L{Deployment.run}
         """
         client.put(path=self.name, chmod=755, contents=self.script)
-        self.stdout, self.stderr = client.run(self.name)
+        self.stdout, self.stderr, self.exit_status = client.run(self.name)
         if self.delete:
             client.delete(self.name)
         return node
