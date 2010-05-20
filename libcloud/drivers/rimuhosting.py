@@ -141,7 +141,8 @@ class RimuHostingNodeDriver(NodeDriver):
                 ),
                 private_ip=[],
                 driver=self.connection.driver,
-                extra={'order_oid': order['order_oid']})
+                extra={'order_oid': order['order_oid'],
+                       'monthly_recurring_fee': order['billing_info']['monthly_recurring_fee']})
         return n
 
     def _to_size(self,plan):

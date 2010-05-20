@@ -141,7 +141,7 @@ class GoGridNodeDriver(NodeDriver):
         return NodeState.UNKNOWN
 
     def _get_ip(self, element):
-        return element['ip']['ip']
+        return element.get('ip').get('ip')
 
     def _get_id(self, element):
         return element.get('id')
@@ -157,6 +157,7 @@ class GoGridNodeDriver(NodeDriver):
                  state=state,
                  public_ip=[ip],
                  private_ip=[],
+                 extra={'ram':element.get('ram').get('name')},
                  driver=self.connection.driver)
         return n
 
