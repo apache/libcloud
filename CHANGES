@@ -26,7 +26,7 @@ Changes with Apache Libcloud 0.4.0 [In Development]
     *) Update prices for several drivers.
        [Brad Morgan, Paul Querna]
 
-Changes with Apache Libcloud 0.3.1 [Tagged May 6, 2010]
+Changes with Apache Libcloud 0.3.1 [Released May 11, 2010]
 
     *) Updates to Apache License blocks to correctly reflect status as an
        Apache Project.
