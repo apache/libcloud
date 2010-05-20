@@ -52,6 +52,19 @@ LINODE_API = "api.linode.com"
 # For beta accounts, change this to "/api/".
 LINODE_ROOT = "/"
 
+# Map of TOTALRAM to PLANID, allows us to figure out what plan
+# a particular node is on
+LINODE_PLAN_IDS = {360:'1',
+                   540:'2',
+                   720:'3',
+                  1080:'4',
+                  1440:'5',
+                  2880:'6',
+                  5760:'7',
+                  8640:'8',
+                 11520:'9',
+                 14400:'10'}
+
 
 class LinodeResponse(Response):
     # Wraps a Linode API HTTP response.
@@ -144,6 +157,7 @@ class LinodeNodeDriver(NodeDriver):
     type = Provider.LINODE
     name = "Linode"
     connectionCls = LinodeConnection
+    _linode_plan_ids = LINODE_PLAN_IDS
 
     def __init__(self, key):
         self.datacenter = None
@@ -455,6 +469,7 @@ class LinodeNodeDriver(NodeDriver):
             state=self.LINODE_STATES[obj["STATUS"]], public_ip=public_ip,
             private_ip=private_ip, driver=self.connection.driver)
         n.extra = copy(obj)
+        n.extra = {"PLANID":self._linode_plan_ids.get(obj.get("TOTALRAM"))}
         return n
 
     features = {"create_node": ["ssh_key", "password"]}
