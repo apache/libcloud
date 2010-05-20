@@ -71,9 +71,9 @@ class VPSNetTests(unittest.TestCase, TestCaseMixin):
     def test_list_sizes(self):
         VPSNetMockHttp.type = 'sizes'
         ret = self.driver.list_sizes()
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[1].id, 2)
-        self.assertEqual(ret[1].name, '2 Node')
+        self.assertEqual(len(ret), 1)
+        self.assertEqual(ret[0].id, 1)
+        self.assertEqual(ret[0].name, '1 Node')
 
     def test_destroy_node_response(self):
         # should return a node object
