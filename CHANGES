@@ -8,7 +8,7 @@ Changes with Apache Libcloud 0.4.0 [In Development]
 
     *) RimuHosting moved API endpoint address. [Paul Querna]
 
-    *) Fix regression and error in GoGrid driver for parsing node objects. [Paul Querna]
+    *) Fix regression and error in GoGrid driver for parsing node objects. [Jerry Chen]
 
     *) Added more test cases for GoGrid driver. LIBCLOUD-34. [Roman Bogorodskiy, Jerry Chen]
 
