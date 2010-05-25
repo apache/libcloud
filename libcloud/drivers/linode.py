@@ -469,7 +469,7 @@ class LinodeNodeDriver(NodeDriver):
             state=self.LINODE_STATES[obj["STATUS"]], public_ip=public_ip,
             private_ip=private_ip, driver=self.connection.driver)
         n.extra = copy(obj)
-        n.extra = {"PLANID":self._linode_plan_ids.get(obj.get("TOTALRAM"))}
+        n.extra["PLANID"] = self._linode_plan_ids.get(obj.get("TOTALRAM"))
         return n
 
     features = {"create_node": ["ssh_key", "password"]}
