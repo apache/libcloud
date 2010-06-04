@@ -150,8 +150,6 @@ class GoGridNodeDriver(NodeDriver):
         state = self._get_state(element)
         ip = self._get_ip(element)
         id = self._get_id(element)
-        if id == None:
-          raise Exception("ID is missing from Node response: "+ element)
         n = GoGridNode(id=id,
                  name=element['name'],
                  state=state,
@@ -210,7 +208,7 @@ class GoGridNodeDriver(NodeDriver):
         return self.connection.request("/api/grid/server/delete", params)
 
     def _get_first_ip(self):
-        params = {'ip.state': 'Unassigned', 'ip.type':'public'}
+        params = {'ip.state': 'Unassigned', 'ip.type': 'public'}
         object = self.connection.request("/api/grid/ip/list", params).object
         return object['list'][0]['ip']
 
@@ -235,12 +233,27 @@ class GoGridNodeDriver(NodeDriver):
         first_ip = self._get_first_ip()
         params = {'name': name,
                   'image': image.id,
-                  'description': kwargs.get('ex_description',''),
+                  'description': kwargs.get('ex_description', ''),
                   'server.ram': size.id,
-                  'ip':first_ip}
+                  'ip': first_ip}
 
         object = self.connection.request('/api/grid/server/add',
                                          params=params).object
         node = self._to_node(object['list'][0])
+
+        timeout = 60 * 20
+        waittime = 0
+        interval = 2 * 60
+
+        while node.id is None and waittime < timeout:
+            nodes = self.list_nodes()
+
+            for i in nodes:
+                if i.public_ip[0] == node.public_ip[0] and i.id is not None:
+                    node.id = i.id
+                    return node
+
+            waittime += interval
+            time.sleep(interval)
 
         return node

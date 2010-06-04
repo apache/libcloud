@@ -38,8 +38,9 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         image = NodeImage(1531, None, self.driver)
         size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
 
-        node = self.driver.create_node(name='foo', image=image, size=size)
-        self.assertEqual(node.id, 90967)
+        node = self.driver.create_node(name='test1', image=image, size=size)
+        self.assertEqual(node.name, 'test1')
+        self.assertTrue(node.id is not None)
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
