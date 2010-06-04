@@ -219,14 +219,13 @@ class GoGridNodeDriver(NodeDriver):
     def list_locations(self):
         return [NodeLocation(0, "GoGrid Los Angeles", 'US', self)]
 
-    def create_node(self, **kwargs):
-        """Create a new GoGird node
+    def ex_create_node_nowait(self, **kwargs):
+        """Don't block until GoGrid allocates id for a node
+        but return right away with id == None.
 
-        See L{NodeDriver.create_node} for more keyword args.
-
-        @keyword    ex_description: Description of a Node
-        @type       ex_description: C{string}
-        """
+        The existance of this method is explained by the fact
+        that GoGrid assigns id to a node only few minutes after
+        creation."""
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
@@ -240,6 +239,18 @@ class GoGridNodeDriver(NodeDriver):
         object = self.connection.request('/api/grid/server/add',
                                          params=params).object
         node = self._to_node(object['list'][0])
+
+        return node
+
+    def create_node(self, **kwargs):
+        """Create a new GoGird node
+
+        See L{NodeDriver.create_node} for more keyword args.
+
+        @keyword    ex_description: Description of a Node
+        @type       ex_description: C{string}
+        """
+        node = self.ex_create_node_nowait(**kwargs)
 
         timeout = 60 * 20
         waittime = 0
