@@ -2,6 +2,13 @@
 
 Changes with Apache Libcloud 0.4.0 [In Development]
 
+    *) Fix behavior of GoGrid's create_node to wait for a Node ID.
+       [Roman Bogorodskiy]
+
+   *) Add ex_create_node_nowait to GoGrid driver if you don't need to 
+      wait for a Node ID when creating a node.
+      [Roman Bogorodskiy]
+
     *) Removed libcloud.interfaces module.
        [Paul Querna]
 
