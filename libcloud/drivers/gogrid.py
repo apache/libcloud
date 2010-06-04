@@ -267,4 +267,7 @@ class GoGridNodeDriver(NodeDriver):
             waittime += interval
             time.sleep(interval)
 
+        if id is None:
+            raise Exception("Wasn't able to wait for id allocation for the node %s" % str(node))
+
         return node
