@@ -53,17 +53,17 @@ LINODE_API = "api.linode.com"
 LINODE_ROOT = "/"
 
 # Map of TOTALRAM to PLANID, allows us to figure out what plan
-# a particular node is on
-LINODE_PLAN_IDS = {360:'1',
-                   540:'2',
-                   720:'3',
-                  1080:'4',
-                  1440:'5',
-                  2880:'6',
-                  5760:'7',
-                  8640:'8',
-                 11520:'9',
-                 14400:'10'}
+# a particular node is on (updated with new plan sizes 6/28/10)
+LINODE_PLAN_IDS = {512:'1',
+                   768:'2',
+                  1024:'3',
+                  1536:'4',
+                  2048:'5',
+                  4096:'6',
+                  8192:'7',
+                 12288:'8',
+                 16384:'9',
+                 20480:'10'}
 
 
 class LinodeResponse(Response):
