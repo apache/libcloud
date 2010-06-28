@@ -319,6 +319,14 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(LINODE_ROOT, params=params).object
         linode = { "id": data["LinodeID"] }
 
+        # Step 1b. linode.update to rename the Linode
+        params = {
+            "api_action": "linode.update",
+            "LinodeID": linode["id"],
+            "Label": name
+        }
+        data = self.connection.request(LINODE_ROOT, params=params).object
+
         # Step 2: linode.disk.createfromdistribution
         if not root:
             root = os.urandom(8).encode('hex')
