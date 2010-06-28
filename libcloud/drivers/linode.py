@@ -223,23 +223,20 @@ class LinodeNodeDriver(NodeDriver):
         #       lroot        [%name] %distro
         #       lswap        [%name] Swap Space
         #
-        # Datacenter logic:
-        #
-        #   As Linode requires choosing a datacenter, a little logic is done.
-        #
-        #   1. If the API key in use has all its Linodes in one DC, that DC will
-        #      be chosen (and can be overridden with linode_set_datacenter).
-        #
-        #   2. Otherwise (for both the "No Linodes" and "different DC" cases), a
-        #      datacenter must explicitly be chosen using linode_set_datacenter.
-        #
         # Please note that for safety, only 5 Linodes can be created per hour.
 
         name = kwargs["name"]
-        chosen = kwargs["location"].id
         image = kwargs["image"]
         size = kwargs["size"]
         auth = kwargs["auth"]
+
+        # Pick a location (resolves LIBCLOUD-41 in JIRA)
+        if "location" in kwargs:
+            chosen = kwargs["location"].id
+        elif self.datacenter:
+            chosen = self.datacenter
+        else:
+            raise LinodeException(0xFB, "Need to select a datacenter first")
 
         # Step 0: Parameter validation before we purchase
         # We're especially careful here so we don't fail after purchase, rather
@@ -430,12 +427,6 @@ class LinodeNodeDriver(NodeDriver):
 
     def linode_set_datacenter(self, did):
         # Set the datacenter for create requests.
-        #
-        # Create will try to guess, based on where all of the API key's
-        # Linodes are located; if they are all in one location, Create will
-        # make a new node there.  If there are NO Linodes on the account or
-        # Linodes are in multiple locations, it is imperative to set this or
-        # creates will fail.
         params = { "api_action": "avail.datacenters" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         for dc in data:
