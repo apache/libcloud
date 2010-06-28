@@ -33,6 +33,12 @@ Changes with Apache Libcloud 0.4.0 [In Development]
     *) Update prices for several drivers.
        [Brad Morgan, Paul Querna]
 
+    *) Update driver to reflect new plan sizes available from Linode.
+       [Jed Smith]
+
+    *) Change default of 'location' in Linode create_node. LIBCLOUD-41
+       [Jed Smith, Steve Steiner]
+
 Changes with Apache Libcloud 0.3.1 [Released May 11, 2010]
 
     *) Updates to Apache License blocks to correctly reflect status as an
