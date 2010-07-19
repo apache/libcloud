@@ -421,7 +421,7 @@ class ConnectionKey(object):
         # Encode data if necessary
         if data != '':
             data = self.encode_data(data)
-        headers.update({'Content-Length': len(data)})
+        headers.update({'Content-Length': str(len(data))})
         url = '?'.join((action, urllib.urlencode(params)))
 
         # Removed terrible hack...this a less-bad hack that doesn't execute a
