@@ -41,10 +41,13 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         node = self.driver.create_node(name='test1', image=image, size=size)
         self.assertEqual(node.name, 'test1')
         self.assertTrue(node.id is not None)
+        self.assertEqual(node.extra['password'], 'bebebe')
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
+
         self.assertEqual(node.id, 90967)
+        self.assertEqual(node.extra['password'], 'bebebe')
 
     def test_reboot_node(self):
         node = Node(90967, None, None, None, None, self.driver)
@@ -89,6 +92,10 @@ class GoGridMockHttp(MockHttp):
 
     def _api_grid_server_delete(self, method, url, body, headers):
         body = self.fixtures.load('server_delete.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_support_password_list(self, method, url, body, headers):
+        body = self.fixtures.load('password_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

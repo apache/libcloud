@@ -130,6 +130,7 @@ class GoGridNodeDriver(NodeDriver):
     connectionCls = GoGridConnection
     type = Provider.GOGRID
     name = 'GoGrid API'
+    features = {"create_node": ["generates_password"]}
 
     _instance_types = GOGRID_INSTANCE_TYPES
 
@@ -146,7 +147,7 @@ class GoGridNodeDriver(NodeDriver):
     def _get_id(self, element):
         return element.get('id')
 
-    def _to_node(self, element):
+    def _to_node(self, element, password=None):
         state = self._get_state(element)
         ip = self._get_ip(element)
         id = self._get_id(element)
@@ -155,8 +156,11 @@ class GoGridNodeDriver(NodeDriver):
                  state=state,
                  public_ip=[ip],
                  private_ip=[],
-                 extra={'ram':element.get('ram').get('name')},
+                 extra={'ram': element.get('ram').get('name')},
                  driver=self.connection.driver)
+        if password:
+            n.extra['password'] = password
+
         return n
 
     def _to_image(self, element):
@@ -175,8 +179,16 @@ class GoGridNodeDriver(NodeDriver):
         return images
 
     def list_nodes(self):
+        passwords_map = {}
+
         res = self._server_list()
-        return [ self._to_node(el)
+        for password in self._password_list()['list']:
+            try:
+                passwords_map[password['server']['id']] = password['password']
+            except KeyError:
+                pass
+
+        return [ self._to_node(el, passwords_map.get(el.get('id')))
                  for el
                  in res['list'] ]
 
@@ -197,6 +209,9 @@ class GoGridNodeDriver(NodeDriver):
 
     def _server_list(self):
         return self.connection.request('/api/grid/server/list').object
+
+    def _password_list(self):
+        return self.connection.request('/api/support/password/list').object
 
     def _server_power(self, id, power):
         # power in ['start', 'stop', 'restart']
@@ -261,8 +276,7 @@ class GoGridNodeDriver(NodeDriver):
 
             for i in nodes:
                 if i.public_ip[0] == node.public_ip[0] and i.id is not None:
-                    node.id = i.id
-                    return node
+                    return i
 
             waittime += interval
             time.sleep(interval)
