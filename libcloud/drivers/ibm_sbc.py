@@ -22,8 +22,8 @@ import base64, urllib
 
 from xml.etree import ElementTree as ET
 
-HOST = 'www-180.ibm.com'
-REST_BASE = '/cloud/enterprise/beta/api/rest/20090403/'
+HOST = 'www-147.ibm.com'
+REST_BASE = '/computecloud/enterprise/api/rest/20100331'
 
 class IBMResponse(Response):
     def success(self):
@@ -112,19 +112,19 @@ class IBMNodeDriver(NodeDriver):
                 data.update({key: configurationData.get(key)})
 
         # Send request!
-        resp = self.connection.request(action = REST_BASE + 'instances',
+        resp = self.connection.request(action = REST_BASE + '/instances',
                                        headers = {'Content-Type': 'application/x-www-form-urlencoded'},
                                        method = 'POST',
                                        data = data).object
         return self._to_nodes(resp)[0]
 
     def destroy_node(self, node):
-        url = REST_BASE + 'instances/%s' % (node.id)
+        url = REST_BASE + '/instances/%s' % (node.id)
         status = int(self.connection.request(action = url, method='DELETE').status)
         return status == 200
 
     def reboot_node(self, node):
-        url = REST_BASE + 'instances/%s' % (node.id)
+        url = REST_BASE + '/instances/%s' % (node.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {'state': 'restart'}
 
@@ -135,20 +135,22 @@ class IBMNodeDriver(NodeDriver):
         return int(resp.status) == 200
 
     def list_nodes(self):
-        return self._to_nodes(self.connection.request(REST_BASE + 'instances').object)
+        return self._to_nodes(self.connection.request(REST_BASE + '/instances').object)
 
     def list_images(self, location = None):
-        return self._to_images(self.connection.request(REST_BASE + 'images').object)
+        return self._to_images(self.connection.request(REST_BASE + '/offerings/image').object)
 
-    def list_sizes(self, location = None):
-        # IBM Developer Cloud instances currently support SMALL, MEDIUM, and
-        # LARGE.  Storage also supports SMALL, MEDIUM, and LARGE.
-        return [ NodeSize('SMALL', 'SMALL', None, None, None, None, self.connection.driver),
-                 NodeSize('MEDIUM', 'MEDIUM', None, None, None, None, self.connection.driver),
-                 NodeSize('LARGE', 'LARGE', None, None, None, None, self.connection.driver) ]
+    def list_sizes(self, location = None):        
+        return [ NodeSize('BRZ32.1/2048/175', 'Bronze 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('BRZ64.2/4096/850', 'Bronze 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('SLV32.2/4096/350', 'Silver 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('SLV64.4/8192/1024', 'Silver 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('GLD32.4/4096/350', 'Gold 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('GLD64.8/16384/1024', 'Gold 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('PLT64.16/16384/2045', 'Platinum 64 bit', None, None, None, None, self.connection.driver) ]
 
     def list_locations(self):
-        return self._to_locations(self.connection.request(REST_BASE + 'locations').object)
+        return self._to_locations(self.connection.request(REST_BASE + '/locations').object)
 
     def _to_nodes(self, object):
         return [ self._to_node(instance) for instance in object.findall('Instance') ]
