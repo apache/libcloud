@@ -61,7 +61,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(ret), 11)
         image = ret[0]
         self.assertEqual(image.name, 'CentOS 5.2')
-        self.assertEqual(image.id, 2)
+        self.assertEqual(image.id, '2')
 
     def test_reboot_node(self):
         node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
