@@ -36,7 +36,7 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes),2)
         node = nodes[0]
-        self.assertEqual(node.id, 1)
+        self.assertEqual(node.id, '1')
         self.assertEqual(node.name, 'dummy-1')
         self.assertEqual(node.public_ip[0], "42.78.124.75")
         self.assertEqual(node.state, NodeState.RUNNING)

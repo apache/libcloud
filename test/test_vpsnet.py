@@ -42,7 +42,7 @@ class VPSNetTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes(self):
         VPSNetMockHttp.type = 'virtual_machines'
         node = self.driver.list_nodes()[0]
-        self.assertEqual(node.id, 1384)
+        self.assertEqual(node.id, '1384')
         self.assertEqual(node.state, NodeState.RUNNING)
 
     def test_reboot_node(self):
@@ -65,14 +65,14 @@ class VPSNetTests(unittest.TestCase, TestCaseMixin):
     def test_list_images(self):
         VPSNetMockHttp.type = 'templates'
         ret = self.driver.list_images()
-        self.assertEqual(ret[0].id, 9)
-        self.assertEqual(ret[-1].id, 160)
+        self.assertEqual(ret[0].id, '9')
+        self.assertEqual(ret[-1].id, '160')
 
     def test_list_sizes(self):
         VPSNetMockHttp.type = 'sizes'
         ret = self.driver.list_sizes()
         self.assertEqual(len(ret), 1)
-        self.assertEqual(ret[0].id, 1)
+        self.assertEqual(ret[0].id, '1')
         self.assertEqual(ret[0].name, '1 Node')
 
     def test_destroy_node_response(self):
