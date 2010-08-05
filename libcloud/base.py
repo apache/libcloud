@@ -36,7 +36,7 @@ class Node(object):
 
     def __init__(self, id, name, state, public_ip, private_ip,
                  driver, extra=None):
-        self.id = id
+        self.id = str(id)
         self.name = name
         self.state = state
         self.public_ip = public_ip
@@ -79,7 +79,7 @@ class NodeSize(object):
     """
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver):
-        self.id = id
+        self.id = str(id)
         self.name = name
         self.ram = ram
         self.disk = disk
@@ -99,7 +99,7 @@ class NodeImage(object):
     """
 
     def __init__(self, id, name, driver, extra=None):
-        self.id = id
+        self.id = str(id)
         self.name = name
         self.driver = driver
         if not extra:
@@ -116,7 +116,7 @@ class NodeLocation(object):
     """
 
     def __init__(self, id, name, country, driver):
-        self.id = id
+        self.id = str(id)
         self.name = name
         self.country = country
         self.driver = driver

@@ -56,12 +56,12 @@ class SoftLayerTests(unittest.TestCase):
         locations = self.driver.list_locations()
         seattle = (l for l in locations if l.name == 'sea01').next()
         self.assertEqual(seattle.country, 'US')
-        self.assertEqual(seattle.id, 18171)
+        self.assertEqual(seattle.id, '18171')
 
     def test_list_images(self):
         images = self.driver.list_images()
         image = images[0]
-        self.assertEqual(image.id, 1684)
+        self.assertEqual(image.id, '1684')
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()

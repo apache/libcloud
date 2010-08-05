@@ -46,7 +46,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
 
-        self.assertEqual(node.id, 90967)
+        self.assertEqual(node.id, '90967')
         self.assertEqual(node.extra['password'], 'bebebe')
 
     def test_reboot_node(self):
@@ -64,7 +64,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         image = images[0]
         self.assertEqual(len(images), 4)
         self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
-        self.assertEqual(image.id, 1531)
+        self.assertEqual(image.id, '1531')
 
 class GoGridMockHttp(MockHttp):
 
