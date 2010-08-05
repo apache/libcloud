@@ -2,6 +2,10 @@
 
 Changes with Apache Libcloud 0.4.0 [In Development]
 
+    *) Use more consistent name for GoGrid driver and use http
+       POST method for 'unsafe' operations
+       [Russell Haering]
+
     *) Implement password handling and add deployment support
        for GoGrid nodes.
        [Roman Bogorodskiy]

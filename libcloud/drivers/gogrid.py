@@ -129,7 +129,7 @@ class GoGridNodeDriver(NodeDriver):
 
     connectionCls = GoGridConnection
     type = Provider.GOGRID
-    name = 'GoGrid API'
+    name = 'GoGrid'
     features = {"create_node": ["generates_password"]}
 
     _instance_types = GOGRID_INSTANCE_TYPES
@@ -216,11 +216,13 @@ class GoGridNodeDriver(NodeDriver):
     def _server_power(self, id, power):
         # power in ['start', 'stop', 'restart']
         params = {'id': id, 'power': power}
-        return self.connection.request("/api/grid/server/power", params)
+        return self.connection.request("/api/grid/server/power", params,
+                                         method='POST')
 
     def _server_delete(self, id):
         params = {'id': id}
-        return self.connection.request("/api/grid/server/delete", params)
+        return self.connection.request("/api/grid/server/delete", params,
+                                        method='POST')
 
     def _get_first_ip(self):
         params = {'ip.state': 'Unassigned', 'ip.type': 'public'}
@@ -252,7 +254,7 @@ class GoGridNodeDriver(NodeDriver):
                   'ip': first_ip}
 
         object = self.connection.request('/api/grid/server/add',
-                                         params=params).object
+                                         params=params, method='POST').object
         node = self._to_node(object['list'][0])
 
         return node
