@@ -301,6 +301,9 @@ class LinodeNodeDriver(NodeDriver):
         @keyword ex_comment: a small comment for the configuration (libcloud)
         @type ex_comment: C{str}
 
+        @keyword ex_private: whether or not to request a private IP (False)
+        @type ex_private: C{bool}
+
         @keyword lconfig: what to call the configuration (generated)
         @type lconfig: C{str}
 
@@ -412,6 +415,14 @@ class LinodeNodeDriver(NodeDriver):
             "Label": name
         }
         data = self.connection.request(LINODE_ROOT, params=params).object
+
+        # Step 1c. linode.ip.addprivate if it was requested
+        if "ex_private" in kwargs and kwargs["ex_private"]:
+            params = {
+                "api_action":   "linode.ip.addprivate",
+                "LinodeID":     linode["id"]
+            }
+            data = self.connection.request(LINODE_ROOT, params=params).object
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
