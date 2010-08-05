@@ -37,7 +37,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
         node = nodes[0]
-        self.assertEqual(node.id, 8098)
+        self.assertEqual(node.id, "8098")
         self.assertEqual(node.name, 'api-node3')
         self.assertTrue('75.127.96.245' in node.public_ip)
         self.assertEqual(node.private_ip, [])
@@ -103,6 +103,10 @@ class LinodeMockHttp(MockHttp):
 
     def _linode_delete(self, method, url, body, headers):
         body = '{"ERRORARRAY":[],"ACTION":"linode.delete","DATA":{"LinodeID":8098}}'
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _linode_update(self, method, url, body, headers):
+        body = '{"ERRORARRAY":[],"ACTION":"linode.update","DATA":{"LinodeID":8098}}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_reboot(self, method, url, body, headers):
