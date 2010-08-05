@@ -12,17 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Maintainer: Jed Smith <jsmith@linode.com>
-#
-# BETA TESTING THE LINODE API AND DRIVERS
-#
-# A beta account that incurs no financial charge may be arranged for.  Please
-# contact Jed Smith <jsmith@linode.com> for your request.
-#
-"""
-Linode driver
-"""
+
+"""libcloud driver for the Linode(R) API
+
+This driver implements all libcloud functionality for the Linode API.  Since the
+API is a bit more fine-grained, create_node abstracts a significant amount of
+work (and may take a while to run).
+
+Linode home page                    http://www.linode.com/
+Linode API documentation            http://www.linode.com/api/
+Alternate bindings for reference    http://github.com/tjfontaine/linode-python
+
+Linode(R) is a registered trademark of Linode, LLC.
+
+Maintainer: Jed Smith <jed@linode.com>"""
+
 from libcloud.types import Provider, NodeState, InvalidCredsException
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
@@ -31,25 +35,8 @@ from libcloud.base import NodeImage
 from copy import copy
 import os
 
-# JSON is included in the standard library starting with Python 2.6.  For 2.5
-# and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
-try: import json
-except: import simplejson as json
-
-
-class LinodeException(Exception):
-    """
-    Exception class for Linode driver
-    """
-    def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
-    def __repr__(self):
-        return "<LinodeException code %u '%s'>" % (self.args[0], self.args[1])
-
-# For beta accounts, change this to "beta.linode.com".
+# Where requests go - in beta situations, this information may change.
 LINODE_API = "api.linode.com"
-
-# For beta accounts, change this to "/api/".
 LINODE_ROOT = "/"
 
 # Map of TOTALRAM to PLANID, allows us to figure out what plan
@@ -65,12 +52,44 @@ LINODE_PLAN_IDS = {512:'1',
                  16384:'9',
                  20480:'10'}
 
+# JSON is included in the standard library starting with Python 2.6.  For 2.5
+# and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
+try: import json
+except: import simplejson as json
+
+
+class LinodeException(Exception):
+    """Error originating from the Linode API
+
+    This class wraps a Linode API error, a list of which is available in the
+    API documentation.  All Linode API errors are a numeric code and a
+    human-readable description.
+    """
+    def __str__(self):
+        return "(%u) %s" % (self.args[0], self.args[1])
+    def __repr__(self):
+        return "<LinodeException code %u '%s'>" % (self.args[0], self.args[1])
+
 
 class LinodeResponse(Response):
-    # Wraps a Linode API HTTP response.
+    """Linode API response
 
+    Wraps the HTTP response returned by the Linode API, which should be JSON in
+    this structure:
+
+       {
+         "ERRORARRAY": [ ... ],
+         "DATA": [ ... ],
+         "ACTION": " ... "
+       }
+
+    libcloud does not take advantage of batching, so a response will always
+    reflect the above format.  A few weird quirks are caught here as well."""
     def __init__(self, response):
-        # Given a response object, slurp the information from it.
+        """Instantiate a LinodeResponse from the HTTP response
+
+        @keyword response: The raw response returned by urllib
+        @return: parsed L{LinodeResponse}"""
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
@@ -81,25 +100,22 @@ class LinodeResponse(Response):
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.action, self.object, self.errors = self.parse_body()
-
-        if self.error == "Moved Temporarily":
-            raise LinodeException(0xFA,
-                                  "Redirected to error page by API.  Bug?")
-
         if not self.success():
             # Raise the first error, as there will usually only be one
             raise self.errors[0]
 
     def parse_body(self):
-        # Parse the body of the response into JSON.  Will return None if the
-        # JSON response chokes the parser.  Returns a triple:
-        #    (action, data, errorarray)
+        """Parse the body of the response into JSON objects
+
+        If the response chokes the parser, action and data will be returned as
+        None and errorarray will indicate an invalid JSON exception.
+
+        @return: triple of action (C{str}), data, and errors (C{list})"""
         try:
             js = json.loads(self.body)
             if ("DATA" not in js
                 or "ERRORARRAY" not in js
                 or "ACTION" not in js):
-
                 return (None, None, [self.invalid])
             errs = [self._make_excp(e) for e in js["ERRORARRAY"]]
             return (js["ACTION"], js["DATA"], errs)
@@ -108,7 +124,9 @@ class LinodeResponse(Response):
             return (None, None, [self.invalid])
 
     def parse_error(self):
-        # Obtain the errors from the response.  Will always return a list.
+        """Parse errors from the response
+
+        @return: C{list} of errors, possibly empty"""
         try:
             js = json.loads(self.body)
             if "ERRORARRAY" not in js:
@@ -118,30 +136,38 @@ class LinodeResponse(Response):
             return [self.invalid]
 
     def success(self):
-        # Does the response indicate success?  If ERRORARRAY has more than one
-        # entry, we'll say no.
+        """Check the response for success
+
+        The way we determine success is by the presence of an error in
+        ERRORARRAY.  If one is there, we assume the whole request failed.
+
+        @return: C{bool} indicating a successful request"""
         return len(self.errors) == 0
 
     def _make_excp(self, error):
-        # Make an exception from an entry in ERRORARRAY.
+        """Convert an API error to a LinodeException instance
+
+        @keyword error: JSON object containing C{ERRORCODE} and C{ERRORMESSAGE}
+        @type error: dict"""
         if "ERRORCODE" not in error or "ERRORMESSAGE" not in error:
             return None
-        if error["ERRORCODE"] ==  4:
+        if error["ERRORCODE"] == 4:
             return InvalidCredsException(error["ERRORMESSAGE"])
         return LinodeException(error["ERRORCODE"], error["ERRORMESSAGE"])
 
 
 class LinodeConnection(ConnectionKey):
-    """
-    Connection class for the LinodeConnection driver
+    """A connection to the Linode API
 
-    Wraps Linode HTTPS connection, and passes along the connection key.
-    """
-
+    Wraps SSL connections to the Linode API, automagically injecting the
+    parameters that the API needs for each request."""
     host = LINODE_API
     responseCls = LinodeResponse
 
     def add_default_params(self, params):
+        """Add parameters that are necessary for every request
+
+        This method adds C{api_key} and C{api_responseFormat} to the request."""
         params["api_key"] = self.key
         # Be explicit about this in case the default changes.
         params["api_responseFormat"] = "json"
@@ -149,10 +175,24 @@ class LinodeConnection(ConnectionKey):
 
 
 class LinodeNodeDriver(NodeDriver):
-    """
-    Linode node driver
+    """libcloud driver for the Linode API
 
-    The meat of Linode operations.
+    Rough mapping of which is which:
+
+        list_nodes              linode.list
+        reboot_node             linode.reboot
+        destroy_node            linode.delete
+        create_node             linode.create, linode.update,
+                                linode.disk.createfromdistribution,
+                                linode.disk.create, linode.config.create,
+                                linode.ip.addprivate, linode.boot
+        list_sizes              avail.linodeplans
+        list_images             avail.distributions
+        list_locations          avail.datacenters
+
+    For more information on the Linode API, be sure to read the reference:
+
+        http://www.linode.com/api/
     """
     type = Provider.LINODE
     name = "Linode"
@@ -160,6 +200,10 @@ class LinodeNodeDriver(NodeDriver):
     _linode_plan_ids = LINODE_PLAN_IDS
 
     def __init__(self, key):
+        """Instantiate the driver with the given API key
+
+        @keyword key: the API key to use
+        @type key: C{str}"""
         self.datacenter = None
         NodeDriver.__init__(self, key)
 
@@ -170,61 +214,104 @@ class LinodeNodeDriver(NodeDriver):
         -1: NodeState.PENDING,              # Being Created
          0: NodeState.PENDING,              # Brand New
          1: NodeState.RUNNING,              # Running
-         2: NodeState.REBOOTING,            # Powered Off (TODO: Extra state?)
-         3: NodeState.REBOOTING,            # Shutting Down (?)
+         2: NodeState.REBOOTING,            # Powered Off
+         3: NodeState.REBOOTING,            # Shutting Down
          4: NodeState.UNKNOWN               # Reserved
     }
 
     def list_nodes(self):
-        # List
-        # Provide a list of all nodes that this API key has access to.
+        """List all Linodes that the API key can access
+
+        This call will return all Linodes that the API key in use has access to.
+        If a node is in this list, rebooting will work; however, creation and
+        destruction are a separate grant.
+
+        @return: C{list} of L{Node} objects that the API key can access"""
         params = { "api_action": "linode.list" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         return [self._to_node(n) for n in data]
 
     def reboot_node(self, node):
-        # Reboot
-        # Execute a shutdown and boot job for the given Node.
+        """Reboot the given Linode
+
+        Will issue a shutdown job followed by a boot job, using the last booted
+        configuration.  In most cases, this will be the only configuration.
+
+        @keyword node: the Linode to reboot
+        @type node: L{Node}"""
         params = { "api_action": "linode.reboot", "LinodeID": node.id }
         self.connection.request(LINODE_ROOT, params=params)
         return True
 
     def destroy_node(self, node):
-        # Destroy
-        # Terminates a Node.  With prejudice.
+        """Destroy the given Linode
+
+        Will remove the Linode from the account and issue a prorated credit. A
+        grant for removing Linodes from the account is required, otherwise this
+        method will fail.
+
+        In most cases, all disk images must be removed from a Linode before the
+        Linode can be removed; however, this call explicitly skips those
+        safeguards.  There is no going back from this method.
+
+        @keyword node: the Linode to destroy
+        @type node: L{Node}"""
         params = { "api_action": "linode.delete", "LinodeID": node.id,
             "skipChecks": True }
         self.connection.request(LINODE_ROOT, params=params)
         return True
 
     def create_node(self, **kwargs):
-        """Create a new linode instance
+        """Create a new Linode, deploy a Linux distribution, and boot
 
-        See L{NodeDriver.create_node} for more keyword args.
+        This call abstracts much of the functionality of provisioning a Linode
+        and getting it booted.  A global grant to add Linodes to the account is
+        required, as this call will result in a billing charge.
 
-        @keyword    ex_swap: Size of the swap partition in MB (128).
-        @type       ex_swap: C{number}
+        Note that there is a safety valve of 5 Linodes per hour, in order to
+        prevent a runaway script from ruining your day.
 
-        @keyword    ex_rsize: Size of the root partition (plan size - swap).
-        @type       ex_rsize: C{number}
+        @keyword name: the name to assign the Linode (mandatory)
+        @type name: C{str}
 
-        @keyword    ex_kernel: A kernel ID from avail.kernels (Latest 2.6).
-        @type       ex_kernel: C{number}
+        @keyword image: which distribution to deploy on the Linode (mandatory)
+        @type image: L{NodeImage}
 
-        @keyword    ex_payment: One of 1, 12, or 24; subscription length (1)
-        @type       ex_payment: C{number}
+        @keyword size: the plan size to create (mandatory)
+        @type size: L{NodeSize}
 
-        @keyword    ex_comment: Comments to store with the config
-        @type       ex_comment: C{str}
+        @keyword auth: an SSH key or root password (mandatory)
+        @type auth: L{NodeAuthSSHKey} or L{NodeAuthPassword}
+
+        @keyword location: which datacenter to create the Linode in
+        @type location: L{NodeLocation}
+
+        @keyword ex_swap: size of the swap partition in MB (128)
+        @type ex_swap: C{int}
+
+        @keyword ex_rsize: size of the root partition in MB (plan size - swap).
+        @type ex_rsize: C{int}
+
+        @keyword ex_kernel: a kernel ID from avail.kernels (Latest 2.6 Stable).
+        @type ex_kernel: C{str}
+
+        @keyword ex_payment: one of 1, 12, or 24; subscription length (1)
+        @type ex_payment: C{int}
+
+        @keyword ex_comment: a small comment for the configuration (libcloud)
+        @type ex_comment: C{str}
+
+        @keyword lconfig: what to call the configuration (generated)
+        @type lconfig: C{str}
+
+        @keyword lroot: what to call the root image (generated)
+        @type lroot: C{str}
+
+        @keyword lswap: what to call the swap space (generated)
+        @type lswap: C{str}
+
+        @return: a L{Node} representing the newly-created Linode
         """
-        #    Labels to override what's generated (default on right):
-        #       lconfig      [%name] Instance
-        #       lrecovery    [%name] Finnix Recovery Configuration
-        #       lroot        [%name] %distro
-        #       lswap        [%name] Swap Space
-        #
-        # Please note that for safety, only 5 Linodes can be created per hour.
-
         name = kwargs["name"]
         image = kwargs["image"]
         size = kwargs["size"]
@@ -295,17 +382,16 @@ class LinodeNodeDriver(NodeDriver):
             raise LinodeException(0xFB, "Invalid kernel -- avail.kernels")
 
         # Comments
-        comments = "Created by libcloud <http://www.libcloud.org>" if \
+        comments = "Created by Apache libcloud <http://www.libcloud.org>" if \
             "ex_comment" not in kwargs else kwargs["ex_comment"]
 
         # Labels
         label = {
             "lconfig": "[%s] Configuration Profile" % name,
-            "lrecovery": "[%s] Finnix Recovery Configuration" % name,
             "lroot": "[%s] %s Disk Image" % (name, image.name),
             "lswap": "[%s] Swap Space" % name
         }
-        for what in ["lconfig", "lrecovery", "lroot", "lswap"]:
+        for what in ["lconfig", "lroot", "lswap"]:
             if what in kwargs:
                 label[what] = kwargs[what]
 
@@ -366,8 +452,6 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(LINODE_ROOT, params=params).object
         linode["config"] = data["ConfigID"]
 
-        # TODO: Recovery image (Finnix)
-
         # Step 5: linode.boot
         params = {
             "api_action":       "linode.boot",
@@ -382,9 +466,16 @@ class LinodeNodeDriver(NodeDriver):
         return self._to_node(data[0])
 
     def list_sizes(self, location=None):
-        # List Sizes
-        # Retrieve all available Linode plans.
-        # FIXME: Prices get mangled due to 'float'.
+        """List available Linode plans
+
+        Gets the sizes that can be used for creating a Linode.  Since available
+        Linode plans vary per-location, this method can also be passed a
+        location to filter the availability.
+
+        @keyword location: the facility to retrieve plans in
+        @type location: NodeLocation
+
+        @return: a C{list} of L{NodeSize}s"""
         params = { "api_action": "avail.linodeplans" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         sizes = []
@@ -395,9 +486,12 @@ class LinodeNodeDriver(NodeDriver):
             sizes.append(n)
         return sizes
 
-    def list_images(self, location=None):
-        # List Images
-        # Retrieve all available Linux distributions.
+    def list_images(self):
+        """List available Linux distributions
+
+        Retrieve all Linux distributions that can be deployed to a Linode.
+
+        @return: a C{list} of L{NodeImage}s"""
         params = { "api_action": "avail.distributions" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         distros = []
@@ -411,33 +505,38 @@ class LinodeNodeDriver(NodeDriver):
         return distros
 
     def list_locations(self):
+        """List available facilities for deployment
+
+        Retrieve all facilities that a Linode can be deployed in.
+
+        @return: a C{list} of L{NodeLocation}s"""
         params = { "api_action": "avail.datacenters" }
         data = self.connection.request(LINODE_ROOT, params=params).object
         nl = []
         for dc in data:
             country = None
-            #TODO: this is a hack!
-            if dc["LOCATION"][-3:] == "USA":
-                country = "US"
-            elif dc["LOCATION"][-2:] == "UK":
-                country = "GB"
-            else:
-                raise LinodeException(
-                    0xFD,
-                    "Unable to convert data center location to country: '%s'"
-                    % dc["LOCATION"]
-                )
+            if "USA" in dc["LOCATION"]: country = "US"
+            elif "UK" in dc["LOCATION"]: country = "GB"
+            else: country = "??"
             nl.append(NodeLocation(dc["DATACENTERID"],
                                    dc["LOCATION"],
                                    country,
                                    self))
         return nl
 
-    def linode_set_datacenter(self, did):
-        # Set the datacenter for create requests.
+    def linode_set_datacenter(self, dc):
+        """Set the default datacenter for Linode creation
+
+        Since Linodes must be created in a facility, this function sets the
+        default that L{create_node} will use.  If a C{location} keyword is not
+        passed to L{create_node}, this method must have already been used.
+
+        @keyword dc: the datacenter to create Linodes in unless specified
+        @type dc: L{NodeLocation}"""
+        did = dc.id
         params = { "api_action": "avail.datacenters" }
         data = self.connection.request(LINODE_ROOT, params=params).object
-        for dc in data:
+        for datacenter in data:
             if did == dc["DATACENTERID"]:
                 self.datacenter = did
                 return
@@ -447,10 +546,14 @@ class LinodeNodeDriver(NodeDriver):
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
 
     def _to_node(self, obj):
-        # Convert a returned Linode instance into a Node instance.
-        lid = obj["LINODEID"]
+        """Convert a returned JSON Linode into a Node instance
 
-        # Get the IP addresses for a Linode
+        @keyword obj: a JSON dictionary representing the Linode
+        @type obj: C{dict}
+        @return: L{Node}"""
+        lid = str(obj["LINODEID"])
+
+        # Get the IP addresses for the Linode
         params = { "api_action": "linode.ip.list", "LinodeID": lid }
         req = self.connection.request(LINODE_ROOT, params=params)
         if not req.success() or len(req.object) == 0:
