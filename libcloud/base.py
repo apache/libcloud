@@ -36,7 +36,7 @@ class Node(object):
 
     def __init__(self, id, name, state, public_ip, private_ip,
                  driver, extra=None):
-        self.id = str(id)
+        self.id = str(id) if id else None
         self.name = name
         self.state = state
         self.public_ip = public_ip
