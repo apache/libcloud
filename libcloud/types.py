@@ -73,14 +73,27 @@ class NodeState(object):
     PENDING = 3
     UNKNOWN = 4
 
-class InvalidCredsException(Exception):
-    """Exception used when invalid credentials are used on a provider."""
-    def __init__(self, value='Invalid credentials with the provider'):
+class LibCloudException(Exception):
+    """The base class for other libcloud exceptions"""
+    def __init__(self, value, driver=None):
         self.value = value
+        self.driver = driver
+
+class MalformedResponseException(LibCloudException):
+    """Exception for the cases when a provider returns a malformed
+    response, e.g. you request JSON and provider returns 
+    '<h3>something</h3>' due to some error on their side."""
+    pass
+
+class InvalidCredsException(LibCloudException):
+    """Exception used when invalid credentials are used on a provider."""
+    def __init__(self, value='Invalid credentials with the provider', driver=None):
+        self.value = value
+        self.driver = driver
     def __str__(self):
         return repr(self.value)
 
-class DeploymentException(Exception):
+class DeploymentException(LibCloudException):
     """
     Exception used when a Deployment Task failed.
 

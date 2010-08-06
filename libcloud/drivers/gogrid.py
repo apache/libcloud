@@ -16,7 +16,7 @@
 GoGrid driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, MalformedResponseException, InvalidCredsException
 from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import time
@@ -75,10 +75,13 @@ GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
 class GoGridResponse(Response):
     def success(self):
         if self.status == 403:
-            raise InvalidCredsException()
+            raise InvalidCredsException('Invalid credentials', GoGridNodeDriver)
         if not self.body:
             return None
-        return json.loads(self.body)['status'] == 'success'
+        try:
+            return json.loads(self.body)['status'] == 'success'
+        except ValueError:
+            raise MalformedResponseException('Malformed reply', GoGridNodeDriver)
 
     def parse_body(self):
         if not self.body:

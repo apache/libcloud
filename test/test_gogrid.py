@@ -20,6 +20,7 @@ try:
 except ImportError:
     import simplejson as json
 
+from libcloud.types import LibCloudException, InvalidCredsException
 from libcloud.drivers.gogrid import GoGridNodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 
@@ -32,6 +33,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         GoGridNodeDriver.connectionCls.conn_classes = (None, GoGridMockHttp)
+        GoGridMockHttp.type = None
         self.driver = GoGridNodeDriver("foo", "bar")
 
     def test_create_node(self):
@@ -66,6 +68,25 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
         self.assertEqual(image.id, '1531')
 
+    def test_malformed_reply(self):
+        GoGridMockHttp.type = 'FAIL'
+        try:
+            images = self.driver.list_images()
+        except LibCloudException, e:
+            self.assertEqual(True, isinstance(e, LibCloudException))
+        else:
+            self.fail("test should have thrown")
+
+    def test_invalid_creds(self):
+        GoGridMockHttp.type = 'FAIL'
+        try:
+            nodes = self.driver.list_nodes()
+        except InvalidCredsException, e:
+            self.assertTrue(e.driver is not None)
+            self.assertEqual(e.driver.name, self.driver.name)
+        else:
+            self.fail("test should have thrown")
+
 class GoGridMockHttp(MockHttp):
 
     fixtures = FileFixtures('gogrid')
@@ -74,9 +95,16 @@ class GoGridMockHttp(MockHttp):
         body = self.fixtures.load('image_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _api_grid_image_list_FAIL(self, method, url, body, headers):
+        body = "<h3>some non valid json here</h3>"
+        return (httplib.SERVICE_UNAVAILABLE, body, {}, httplib.responses[httplib.SERVICE_UNAVAILABLE])
+
     def _api_grid_server_list(self, method, url, body, headers):
         body = self.fixtures.load('server_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_grid_server_list_FAIL(self, method, url, body, headers):
+        return (httplib.FORBIDDEN, "123", {}, httplib.responses[httplib.FORBIDDEN])
 
     def _api_grid_ip_list(self, method, url, body, headers):
         body = self.fixtures.load('ip_list.json')
