@@ -339,7 +339,7 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
         node_data = {}
         node_data.update({'name': kwargs['name'], 'cpu': size.cpu, 'mem': size.ram, 'ide:0:0': drive_uuid,
-                          'boot': 'ide:0:0'})
+                          'boot': 'ide:0:0', 'smp': smp})
         node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
 
         if vnc_password:
