@@ -16,7 +16,8 @@
 GoGrid driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, MalformedResponseException, InvalidCredsException
+from libcloud.types import NodeState, MalformedResponseException,\
+        InvalidCredsException, LibCloudException
 from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import time
@@ -230,7 +231,11 @@ class GoGridNodeDriver(NodeDriver):
     def _get_first_ip(self):
         params = {'ip.state': 'Unassigned', 'ip.type': 'public'}
         object = self.connection.request("/api/grid/ip/list", params).object
-        return object['list'][0]['ip']
+        if object['list']:
+            return object['list'][0]['ip']
+        else:
+            raise LibCloudException('No public unassigned IPs left',
+                    GoGridNodeDriver)
 
     def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i)
