@@ -422,7 +422,11 @@ class ConnectionKey(object):
         if data != '':
             data = self.encode_data(data)
         headers.update({'Content-Length': str(len(data))})
-        url = '?'.join((action, urllib.urlencode(params)))
+
+        if params:
+            url = '?'.join((action, urllib.urlencode(params)))
+        else:
+            url = action
 
         # Removed terrible hack...this a less-bad hack that doesn't execute a
         # request twice, but it's still a hack.
