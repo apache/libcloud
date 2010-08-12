@@ -229,6 +229,9 @@ class SoftLayerNodeDriver(NodeDriver):
 
     Extra node attributes:
         - password: root password
+        - hourlyRecurringFee: hourly price (if applicable)
+        - recurringFee      : flat rate    (if applicable)
+        - recurringMonths   : The number of months in which the recurringFee will be incurred.
     """
     connectionCls = SoftLayerConnection
     name = 'SoftLayer'
@@ -248,6 +251,10 @@ class SoftLayerNodeDriver(NodeDriver):
         except (IndexError, KeyError):
             password = None
 
+        hourlyRecurringFee = host.get('billingItem', {}).get('hourlyRecurringFee', 0)
+        recurringFee       = host.get('billingItem', {}).get('recurringFee', 0)
+        recurringMonths    = host.get('billingItem', {}).get('recurringMonths', 0)
+
         return Node(
             id=host['id'],
             name=host['hostname'],
@@ -259,7 +266,10 @@ class SoftLayerNodeDriver(NodeDriver):
             private_ip=[host['primaryBackendIpAddress']],
             driver=self,
             extra={
-                'password': password
+                'password': password,
+                'hourlyRecurringFee': hourlyRecurringFee,
+                'recurringFee': recurringFee,
+                'recurringMonths': recurringMonths,
             }
         )
 
@@ -409,8 +419,9 @@ class SoftLayerNodeDriver(NodeDriver):
                 'powerState': '',
                 'softwareComponents': {
                     'passwords': ''
-                }
-            }
+                },
+                'billingItem': '',
+            },
         }
         res = self.connection.request(
             "SoftLayer_Account",
