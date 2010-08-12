@@ -29,6 +29,12 @@ DRIVERS = {
         ('libcloud.drivers.ec2', 'EC2USWestNodeDriver'),
     Provider.ECP:
         ('libcloud.drivers.ecp', 'ECPNodeDriver'),
+    Provider.ELASTICHOSTS_UK1:
+        ('libcloud.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
+    Provider.ELASTICHOSTS_UK2:
+        ('libcloud.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
+    Provider.ELASTICHOSTS_US1:
+        ('libcloud.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
     Provider.GOGRID:
         ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
