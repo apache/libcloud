@@ -21,8 +21,8 @@ import time
 import base64
 
 from libcloud.types import Provider, NodeState, InvalidCredsException
-from libcloud.base import ConnectionUserAndKey, Response, NodeAuthPassword
-from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
+from libcloud.base import ConnectionUserAndKey, Response
+from libcloud.base import NodeDriver, NodeSize, Node
 from libcloud.base import NodeImage
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
@@ -192,8 +192,6 @@ class ElasticHostsResponse(Response):
     
     def parse_error(self):
         error_header = self.headers.get('x-elastic-error', '')
-        message = self.body
-
         return 'X-Elastic-Error: %s (%s)' % (error_header, self.body.strip())
     
 class ElasticHostsNodeSize(NodeSize):
