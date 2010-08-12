@@ -21,6 +21,7 @@ __all__ = [
     'dummy',
     'ec2',
     'ecp',
+    'elastichosts',
     'gogrid',
     'ibm_sbc',
     'linode',
