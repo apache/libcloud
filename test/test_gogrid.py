@@ -73,7 +73,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         try:
             images = self.driver.list_images()
         except LibCloudException, e:
-            self.assertEqual(True, isinstance(e, LibCloudException))
+            self.assertTrue(isinstance(e, LibCloudException))
         else:
             self.fail("test should have thrown")
 
@@ -82,6 +82,20 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         try:
             nodes = self.driver.list_nodes()
         except InvalidCredsException, e:
+            self.assertTrue(e.driver is not None)
+            self.assertEqual(e.driver.name, self.driver.name)
+        else:
+            self.fail("test should have thrown")
+
+    def test_node_creation_without_free_public_ips(self):
+        GoGridMockHttp.type = 'NOPUBIPS'
+        try:
+            image = NodeImage(1531, None, self.driver)
+            size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
+
+            node = self.driver.create_node(name='test1', image=image, size=size)
+        except LibCloudException, e:
+            self.assertTrue(isinstance(e, LibCloudException))
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
         else:
@@ -103,11 +117,17 @@ class GoGridMockHttp(MockHttp):
         body = self.fixtures.load('server_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    _api_grid_server_list_NOPUBIPS = _api_grid_server_list
+
     def _api_grid_server_list_FAIL(self, method, url, body, headers):
         return (httplib.FORBIDDEN, "123", {}, httplib.responses[httplib.FORBIDDEN])
 
     def _api_grid_ip_list(self, method, url, body, headers):
         body = self.fixtures.load('ip_list.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_grid_ip_list_NOPUBIPS(self, method, url, body, headers):
+        body = self.fixtures.load('ip_list_empty.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_server_power(self, method, url, body, headers):
@@ -118,6 +138,8 @@ class GoGridMockHttp(MockHttp):
         body = self.fixtures.load('server_add.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    _api_grid_server_add_NOPUBIPS = _api_grid_server_add
+
     def _api_grid_server_delete(self, method, url, body, headers):
         body = self.fixtures.load('server_delete.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -125,6 +147,8 @@ class GoGridMockHttp(MockHttp):
     def _api_support_password_list(self, method, url, body, headers):
         body = self.fixtures.load('password_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    _api_support_password_list_NOPUBIPS = _api_support_password_list
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
