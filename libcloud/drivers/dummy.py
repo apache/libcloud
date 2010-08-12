@@ -22,6 +22,8 @@ from libcloud.base import NodeImage, Node
 from libcloud.types import Provider,NodeState
 
 import uuid
+import socket
+import struct
 
 class DummyConnection(ConnectionKey):
     """
@@ -39,24 +41,48 @@ class DummyNodeDriver(NodeDriver):
     name = "Dummy Node Provider"
     type = Provider.DUMMY
 
+    def _ip_to_int(ip):
+      return socket.htonl(struct.unpack('I', socket.inet_aton(ip))[0])
+    def _int_to_ip(ip):
+      return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))
+
     def __init__(self, creds):
         self.creds = creds
-        self.nl = [
-            Node(id=1,
-                 name='dummy-1',
-                 state=NodeState.RUNNING,
-                 public_ip=['127.0.0.1'],
-                 private_ip=[],
-                 driver=self,
-                 extra={'foo': 'bar'}),
-            Node(id=2,
-                 name='dummy-2',
-                 state=NodeState.RUNNING,
-                 public_ip=['127.0.0.1'],
-                 private_ip=[],
-                 driver=self,
-                 extra={'foo': 'bar'}),
-        ]
+        try:
+          num = int(creds)
+        except ValueError:
+          num = None
+        if num:
+          self.nl = []
+          startip = self._ip_to_int('127.0.0.1')
+          for i in xrange(num):
+            ip = self._int_to_ip(startip + i)
+            self.nl.append(
+              Node(id=i,
+                   name='dummy-%d' % (i),
+                   state=NodeState.RUNNING,
+                   public_ip=[ip],
+                   private_ip=[],
+                   driver=self,
+                   extra={'foo': 'bar'})
+            )
+        else:
+          self.nl = [
+              Node(id=1,
+                   name='dummy-1',
+                   state=NodeState.RUNNING,
+                   public_ip=['127.0.0.1'],
+                   private_ip=[],
+                   driver=self,
+                   extra={'foo': 'bar'}),
+              Node(id=2,
+                   name='dummy-2',
+                   state=NodeState.RUNNING,
+                   public_ip=['127.0.0.1'],
+                   private_ip=[],
+                   driver=self,
+                   extra={'foo': 'bar'}),
+          ]
         self.connection = DummyConnection(self.creds)
 
     def get_uuid(self, unique_field=None):
