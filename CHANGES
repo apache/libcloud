@@ -2,6 +2,9 @@
 
 Changes with Apache Libcloud 0.4.0 [In Development]
 
+    *) New Driver for ElasticHosts. LIBCLOUD-45
+       [Tomaz Muraus]
+
     *) Use more consistent name for GoGrid driver and use http
        POST method for 'unsafe' operations
        [Russell Haering]
