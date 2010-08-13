@@ -15,7 +15,7 @@
 """
 Rackspace driver
 """
-from libcloud.types import NodeState, InvalidCredsException, Provider
+from libcloud.types import NodeState, InvalidCredsException, Provider, MalformedResponseException
 from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import os
@@ -52,12 +52,18 @@ class RackspaceResponse(Response):
     def parse_body(self):
         if not self.body:
             return None
-        return ET.XML(self.body)
-
+        try:
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseException("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+        return body
     def parse_error(self):
         # TODO: fixup, Rackspace only uses response codes really!
         try:
-            object = ET.XML(self.body)
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseException("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+        try:
             text = "; ".join([ err.text or ''
                                for err in
                                object.getiterator()
