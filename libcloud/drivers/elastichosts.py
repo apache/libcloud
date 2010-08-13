@@ -20,7 +20,7 @@ import re
 import time
 import base64
 
-from libcloud.types import Provider, NodeState, InvalidCredsError
+from libcloud.types import Provider, NodeState, InvalidCredsError, MalformedResponseError
 from libcloud.base import ConnectionUserAndKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node
 from libcloud.base import NodeImage
