@@ -56,11 +56,11 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
-        self.assertEquals(len(ret), 3) # 3 instance configurations supported
-        self.assertEquals(ret[0].id, 'SMALL')
-        self.assertEquals(ret[1].id, 'MEDIUM')
-        self.assertEquals(ret[2].id, 'LARGE')
-        self.assertEquals(ret[0].name, 'SMALL')
+        self.assertEquals(len(ret), 7) # 3 instance configurations supported
+        self.assertEquals(ret[0].id, 'BRZ32.1/2048/175')
+        self.assertEquals(ret[1].id, 'BRZ64.2/4096/850')
+        self.assertEquals(ret[2].id, 'SLV32.2/4096/350')
+        self.assertEquals(ret[0].name, 'Bronze 32 bit')
         self.assertEquals(ret[0].disk, None)
 
     def test_list_images(self):
@@ -152,48 +152,48 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 class IBMMockHttp(MockHttp):
     fixtures = FileFixtures('ibm_sbc')
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances(self, method, url, body, headers):
         body = self.fixtures.load('instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_DELETED(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_DELETED(self, method, url, body, headers):
         body = self.fixtures.load('instances_deleted.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_UNAUTHORIZED(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_UNAUTHORIZED(self, method, url, body, headers):
         return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.UNAUTHORIZED])
 
-    def _cloud_enterprise_beta_api_rest_20090403_images(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_offerings_image(self, method, url, body, headers):
         body = self.fixtures.load('images.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_locations(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_locations(self, method, url, body, headers):
         body = self.fixtures.load('locations.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_26557_REBOOT(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_26557_REBOOT(self, method, url, body, headers):
         body = self.fixtures.load('reboot_active.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_28193_REBOOT(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_28193_REBOOT(self, method, url, body, headers):
         return (412, 'Error 412: Instance must be in the Active state', {}, 'Precondition Failed')
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_28193_DELETE(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_28193_DELETE(self, method, url, body, headers):
         body = self.fixtures.load('delete.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_28193_DELETED(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_28193_DELETED(self, method, url, body, headers):
         return (404, 'Error 404: Invalid Instance ID 28193', {}, 'Precondition Failed')
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_CREATE(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_CREATE(self, method, url, body, headers):
         body = self.fixtures.load('create.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _cloud_enterprise_beta_api_rest_20090403_instances_CREATE_INVALID(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_CREATE_INVALID(self, method, url, body, headers):
         return (412, 'Error 412: No DataCenter with id: 3', {}, 'Precondition Failed')
 
     # This is only to accomodate the response tests built into test\__init__.py
-    def _cloud_enterprise_beta_api_rest_20090403_instances_26557(self, method, url, body, headers):
+    def _computecloud_enterprise_api_rest_20100331_instances_26557(self, method, url, body, headers):
         if method == 'DELETE':
             body = self.fixtures.load('delete.xml')
         else:
