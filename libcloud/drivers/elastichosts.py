@@ -185,8 +185,8 @@ class ElasticHostsResponse(Response):
         
         try:
             data = json.loads(self.body)
-        except ValueError:
-            raise ElasticHostsException('Could not parse body: %s')
+        except:
+            raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=ElasticHostsBaseNodeDriver)
 
         return data
     

@@ -54,16 +54,16 @@ class RackspaceResponse(Response):
         if not self.body:
             return None
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
         return body
     def parse_error(self):
         # TODO: fixup, Rackspace only uses response codes really!
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
         try:
             text = "; ".join([ err.text or ''
                                for err in
