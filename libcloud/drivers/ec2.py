@@ -17,7 +17,7 @@
 Amazon EC2 driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsError
+from libcloud.types import NodeState, InvalidCredsError, MalformedResponseError
 from libcloud.base import Node, Response, ConnectionUserAndKey
 from libcloud.base import NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
@@ -145,7 +145,11 @@ class EC2Response(Response):
     def parse_body(self):
         if not self.body:
             return None
-        return ET.XML(self.body)
+        try:
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=EC2NodeDriver)
+        return body
 
     def parse_error(self):
         err_list = []
@@ -155,7 +159,12 @@ class EC2Response(Response):
         if self.status == 403 and self.body[:len(msg)] == msg:
             raise InvalidCredsError(msg)
 
-        for err in ET.XML(self.body).findall('Errors/Error'):
+        try:
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=EC2NodeDriver)
+
+        for err in body.findall('Errors/Error'):
             code, message = err.getchildren()
             err_list.append("%s: %s" % (code.text, message.text))
             if code.text == "InvalidClientTokenId":
