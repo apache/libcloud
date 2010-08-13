@@ -15,7 +15,7 @@
 """
 Slicehost Driver
 """
-from libcloud.types import NodeState, Provider, InvalidCredsError
+from libcloud.types import NodeState, Provider, InvalidCredsError, MalformedResponseError
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 from libcloud.base import is_private_subnet
@@ -31,17 +31,24 @@ class SlicehostResponse(Response):
         # a 1 byte response with a "Content-Type: application/xml" header. booya.
         if not self.body or len(self.body) <= 1:
             return None
-        return ET.XML(self.body)
+        try:
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=SlicehostNodeDriver)
+        return body
 
     def parse_error(self):
         if self.status == 401:
             raise InvalidCredsError(self.body)
 
         try:
-            object = ET.XML(self.body)
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=SlicehostNodeDriver)
+        try:
             return "; ".join([ err.text
                                for err in
-                               object.findall('error') ])
+                               body.findall('error') ])
         except ExpatError:
             return self.body
 
