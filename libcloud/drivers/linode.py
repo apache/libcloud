@@ -27,7 +27,7 @@ Linode(R) is a registered trademark of Linode, LLC.
 
 Maintainer: Jed Smith <jed@linode.com>"""
 
-from libcloud.types import Provider, NodeState, InvalidCredsException
+from libcloud.types import Provider, NodeState, InvalidCredsException, MalformedResponseException
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
@@ -113,6 +113,10 @@ class LinodeResponse(Response):
         @return: triple of action (C{str}), data, and errors (C{list})"""
         try:
             js = json.loads(self.body)
+        except:
+          raise MalformedResponseException("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
+
+        try:
             if ("DATA" not in js
                 or "ERRORARRAY" not in js
                 or "ACTION" not in js):
@@ -129,6 +133,10 @@ class LinodeResponse(Response):
         @return: C{list} of errors, possibly empty"""
         try:
             js = json.loads(self.body)
+        except:
+          raise MalformedResponseException("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
+
+        try:
             if "ERRORARRAY" not in js:
                 return [self.invalid]
             return [self._make_excp(e) for e in js["ERRORARRAY"]]
