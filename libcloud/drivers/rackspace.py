@@ -67,7 +67,7 @@ class RackspaceResponse(Response):
         try:
             text = "; ".join([ err.text or ''
                                for err in
-                               object.getiterator()
+                               body.getiterator()
                                if err.text])
         except ExpatError:
             text = self.body
