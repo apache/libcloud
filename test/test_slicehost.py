@@ -16,7 +16,7 @@ import sys
 import unittest
 
 from libcloud.drivers.slicehost import SlicehostNodeDriver as Slicehost
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsError
 from libcloud.base import Node, NodeImage, NodeSize
 
 import httplib
@@ -45,7 +45,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         SlicehostMockHttp.type = 'UNAUTHORIZED'
         try:
             ret = self.driver.list_nodes()
-        except InvalidCredsException, e:
+        except InvalidCredsError, e:
             self.assertEqual(e.value, 'HTTP Basic: Access denied.')
         else:
             self.fail('test should have thrown')

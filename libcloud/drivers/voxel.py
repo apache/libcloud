@@ -17,7 +17,7 @@
 Voxel VoxCloud driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsError
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import datetime
@@ -54,7 +54,7 @@ class VoxelResponse(Response):
             if code == "1" or code == "9":
                 # sucks, but only way to detect
                 # bad authentication tokens so far
-                raise InvalidCredsException(err_list[-1])
+                raise InvalidCredsError(err_list[-1])
         return "\n".join(err_list)
 
     def success(self):

@@ -18,7 +18,7 @@ DreamHost Driver
 
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage
-from libcloud.types import Provider, NodeState, InvalidCredsException
+from libcloud.types import Provider, NodeState, InvalidCredsError
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -102,7 +102,7 @@ class DreamhostResponse(Response):
     def _api_parse_error(self, response):
         if 'data' in response:
             if response['data'] == 'invalid_api_key':
-                raise InvalidCredsException("Oops!  You've entered an invalid API key")
+                raise InvalidCredsError("Oops!  You've entered an invalid API key")
             else:
                 raise DreamhostAPIException(response['data'])
         else:

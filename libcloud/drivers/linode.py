@@ -27,7 +27,7 @@ Linode(R) is a registered trademark of Linode, LLC.
 
 Maintainer: Jed Smith <jed@linode.com>"""
 
-from libcloud.types import Provider, NodeState, InvalidCredsException, MalformedResponseException
+from libcloud.types import Provider, NodeState, InvalidCredsError, MalformedResponseError
 from libcloud.base import ConnectionKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
@@ -114,7 +114,7 @@ class LinodeResponse(Response):
         try:
             js = json.loads(self.body)
         except:
-          raise MalformedResponseException("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
+          raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
 
         try:
             if ("DATA" not in js
@@ -134,7 +134,7 @@ class LinodeResponse(Response):
         try:
             js = json.loads(self.body)
         except:
-          raise MalformedResponseException("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
+          raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
 
         try:
             if "ERRORARRAY" not in js:
@@ -160,7 +160,7 @@ class LinodeResponse(Response):
         if "ERRORCODE" not in error or "ERRORMESSAGE" not in error:
             return None
         if error["ERRORCODE"] == 4:
-            return InvalidCredsException(error["ERRORMESSAGE"])
+            return InvalidCredsError(error["ERRORMESSAGE"])
         return LinodeException(error["ERRORCODE"], error["ERRORMESSAGE"])
 
 

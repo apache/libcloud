@@ -19,7 +19,7 @@ Enomaly ECP driver
 from libcloud.base import NodeDriver, NodeSize, NodeLocation
 from libcloud.base import NodeImage, Node
 from libcloud.base import Response, ConnectionUserAndKey
-from libcloud.types import Provider, NodeState, InvalidCredsException
+from libcloud.types import Provider, NodeState, InvalidCredsError
 from libcloud.base import is_private_subnet
 
 import time
@@ -52,7 +52,7 @@ class ECPResponse(Response):
                 self.error = "ECP error: %s" % j_body['message']
                 return False
         elif self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsException()
+            raise InvalidCredsError()
         else:
             self.error = "HTTP Error Code: %s" % self.status
         return False

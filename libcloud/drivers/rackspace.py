@@ -15,7 +15,8 @@
 """
 Rackspace driver
 """
-from libcloud.types import NodeState, InvalidCredsException, Provider, MalformedResponseException
+from libcloud.types import NodeState, InvalidCredsError, \
+  Provider, MalformedResponseError
 from libcloud.base import ConnectionUserAndKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import os
@@ -55,14 +56,14 @@ class RackspaceResponse(Response):
         try:
           body = ET.XML(self.body)
         except:
-          raise MalformedResponseException("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
         return body
     def parse_error(self):
         # TODO: fixup, Rackspace only uses response codes really!
         try:
           body = ET.XML(self.body)
         except:
-          raise MalformedResponseException("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
         try:
             text = "; ".join([ err.text or ''
                                for err in
@@ -119,14 +120,14 @@ class RackspaceConnection(ConnectionUserAndKey):
                 self.token = headers['x-auth-token']
                 endpoint = headers['x-server-management-url']
             except KeyError:
-                raise InvalidCredsException()
+                raise InvalidCredsError()
 
             scheme, server, self.path, param, query, fragment = (
                 urlparse.urlparse(endpoint)
             )
             if scheme is "https" and self.secure is not 1:
                 # TODO: Custom exception (?)
-                raise InvalidCredsException()
+                raise InvalidCredsError()
 
             # Set host to where we want to make further requests to;
             # close auth conn
