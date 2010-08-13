@@ -32,9 +32,9 @@ class SlicehostResponse(Response):
         if not self.body or len(self.body) <= 1:
             return None
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=SlicehostNodeDriver)
+            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=SlicehostNodeDriver)
         return body
 
     def parse_error(self):
@@ -42,9 +42,9 @@ class SlicehostResponse(Response):
             raise InvalidCredsError(self.body)
 
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=SlicehostNodeDriver)
+            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=SlicehostNodeDriver)
         try:
             return "; ".join([ err.text
                                for err in
