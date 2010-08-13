@@ -15,7 +15,7 @@
 """
 Slicehost Driver
 """
-from libcloud.types import NodeState, Provider, InvalidCredsException
+from libcloud.types import NodeState, Provider, InvalidCredsError
 from libcloud.base import ConnectionKey, Response, NodeDriver, Node
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 from libcloud.base import is_private_subnet
@@ -35,7 +35,7 @@ class SlicehostResponse(Response):
 
     def parse_error(self):
         if self.status == 401:
-            raise InvalidCredsException(self.body)
+            raise InvalidCredsError(self.body)
 
         try:
             object = ET.XML(self.body)

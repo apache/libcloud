@@ -20,7 +20,7 @@ import time
 import xmlrpclib
 
 import libcloud
-from libcloud.types import Provider, InvalidCredsException, NodeState
+from libcloud.types import Provider, InvalidCredsError, NodeState, LibcloudError
 from libcloud.base import NodeDriver, Node, NodeLocation, NodeSize, NodeImage
 
 DATACENTERS = {
@@ -132,7 +132,7 @@ SL_TEMPLATES = {
     }
 }
 
-class SoftLayerException(Exception):
+class SoftLayerException(LibcloudError):
     """
     Exception class for SoftLayer driver
     """

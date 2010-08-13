@@ -17,7 +17,7 @@
 Amazon EC2 driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsError
 from libcloud.base import Node, Response, ConnectionUserAndKey
 from libcloud.base import NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
@@ -153,19 +153,19 @@ class EC2Response(Response):
         # if you are using the wrong user/password.
         msg = "Failure: 403 Forbidden"
         if self.status == 403 and self.body[:len(msg)] == msg:
-            raise InvalidCredsException(msg)
+            raise InvalidCredsError(msg)
 
         for err in ET.XML(self.body).findall('Errors/Error'):
             code, message = err.getchildren()
             err_list.append("%s: %s" % (code.text, message.text))
             if code.text == "InvalidClientTokenId":
-                raise InvalidCredsException(err_list[-1])
+                raise InvalidCredsError(err_list[-1])
             if code.text == "SignatureDoesNotMatch":
-                raise InvalidCredsException(err_list[-1])
+                raise InvalidCredsError(err_list[-1])
             if code.text == "AuthFailure":
-                raise InvalidCredsException(err_list[-1])
+                raise InvalidCredsError(err_list[-1])
             if code.text == "OptInRequired":
-                raise InvalidCredsException(err_list[-1])
+                raise InvalidCredsError(err_list[-1])
         return "\n".join(err_list)
 
 class EC2Connection(ConnectionUserAndKey):
