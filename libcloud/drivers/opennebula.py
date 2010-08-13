@@ -24,7 +24,7 @@ import hashlib
 from xml.etree import ElementTree as ET
 
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsError
 from libcloud.base import Response, ConnectionUserAndKey
 from libcloud.base import NodeDriver, Node, NodeLocation
 from libcloud.base import NodeImage, NodeSize
@@ -48,7 +48,7 @@ class OpenNebulaResponse(Response):
 
     def parse_error(self):
         if int(self.status) == 401:
-            raise InvalidCredsException(self.body)
+            raise InvalidCredsError(self.body)
         return self.body
 
 

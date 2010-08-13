@@ -16,8 +16,8 @@
 GoGrid driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, MalformedResponseException,\
-        InvalidCredsException, LibCloudException
+from libcloud.types import NodeState, MalformedResponseError,\
+        InvalidCredsError, LibcloudError
 from libcloud.base import Node, ConnectionUserAndKey, Response, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import time
@@ -76,13 +76,13 @@ GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
 class GoGridResponse(Response):
     def success(self):
         if self.status == 403:
-            raise InvalidCredsException('Invalid credentials', GoGridNodeDriver)
+            raise InvalidCredsError('Invalid credentials', GoGridNodeDriver)
         if not self.body:
             return None
         try:
             return json.loads(self.body)['status'] == 'success'
         except ValueError:
-            raise MalformedResponseException('Malformed reply', GoGridNodeDriver)
+            raise MalformedResponseError('Malformed reply', body=self.body, driver=GoGridNodeDriver)
 
     def parse_body(self):
         if not self.body:
@@ -234,7 +234,7 @@ class GoGridNodeDriver(NodeDriver):
         if object['list']:
             return object['list'][0]['ip']
         else:
-            raise LibCloudException('No public unassigned IPs left',
+            raise LibcloudError('No public unassigned IPs left',
                     GoGridNodeDriver)
 
     def list_sizes(self, location=None):

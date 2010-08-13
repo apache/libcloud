@@ -20,7 +20,7 @@ import re
 import time
 import base64
 
-from libcloud.types import Provider, NodeState, InvalidCredsException
+from libcloud.types import Provider, NodeState, InvalidCredsError
 from libcloud.base import ConnectionUserAndKey, Response
 from libcloud.base import NodeDriver, NodeSize, Node
 from libcloud.base import NodeImage
@@ -175,7 +175,7 @@ class ElasticHostsException(Exception):
 class ElasticHostsResponse(Response):
     def success(self):
         if self.status == 401:
-            raise InvalidCredsException()
+            raise InvalidCredsError()
 
         return self.status >= 200 and self.status <= 299
     

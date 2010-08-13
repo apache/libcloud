@@ -20,7 +20,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from libcloud.types import LibCloudException, InvalidCredsException
+from libcloud.types import LibcloudError, InvalidCredsError
 from libcloud.drivers.gogrid import GoGridNodeDriver
 from libcloud.base import Node, NodeImage, NodeSize
 
@@ -72,8 +72,8 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'FAIL'
         try:
             images = self.driver.list_images()
-        except LibCloudException, e:
-            self.assertTrue(isinstance(e, LibCloudException))
+        except LibcloudError, e:
+            self.assertTrue(isinstance(e, LibcloudError))
         else:
             self.fail("test should have thrown")
 
@@ -81,7 +81,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'FAIL'
         try:
             nodes = self.driver.list_nodes()
-        except InvalidCredsException, e:
+        except InvalidCredsError, e:
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
         else:
@@ -94,8 +94,8 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
             size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
 
             node = self.driver.create_node(name='test1', image=image, size=size)
-        except LibCloudException, e:
-            self.assertTrue(isinstance(e, LibCloudException))
+        except LibcloudError, e:
+            self.assertTrue(isinstance(e, LibcloudError))
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
         else:

@@ -18,7 +18,7 @@ Provides base classes for working with drivers
 """
 import httplib, urllib
 import libcloud
-from libcloud.types import NodeState, DeploymentException
+from libcloud.types import NodeState, DeploymentError
 from libcloud.ssh import SSHClient
 import time
 import hashlib
@@ -658,9 +658,9 @@ class NodeDriver(object):
               nodes = self.list_nodes()
               nodes = filter(lambda n: n.uuid == node.uuid, nodes)
               if len(nodes) == 0:
-                  raise DeploymentException(node, "Booted node[%s] is missing form list_nodes." % node)
+                  raise DeploymentError(node, "Booted node[%s] is missing form list_nodes." % node)
               if len(nodes) > 1:
-                  raise DeploymentException(node, "Booted single node[%s], but multiple nodes have same UUID"% node)
+                  raise DeploymentError(node, "Booted single node[%s], but multiple nodes have same UUID"% node)
 
               node = nodes[0]
 
@@ -684,10 +684,10 @@ class NodeDriver(object):
 
           n = kwargs["deploy"].run(node, client)
           client.close()
-        except DeploymentException, e:
+        except DeploymentError, e:
           raise
         except Exception, e:
-          raise DeploymentException(node, e)
+          raise DeploymentError(node, e)
         return n
 
 def is_private_subnet(ip):

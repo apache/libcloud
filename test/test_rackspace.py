@@ -15,7 +15,7 @@
 import sys
 import unittest
 
-from libcloud.types import InvalidCredsException
+from libcloud.types import InvalidCredsError
 from libcloud.drivers.rackspace import RackspaceNodeDriver as Rackspace
 from libcloud.base import Node, NodeImage, NodeSize
 
@@ -36,8 +36,8 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         RackspaceMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
-        except InvalidCredsException, e:
-            self.assertEqual(True, isinstance(e, InvalidCredsException))
+        except InvalidCredsError, e:
+            self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
 

@@ -16,7 +16,7 @@ import httplib
 import sys
 
 from test.file_fixtures import FileFixtures
-from libcloud.types import InvalidCredsException
+from libcloud.types import InvalidCredsError
 from libcloud.drivers.ibm_sbc import IBMNodeDriver as IBM
 from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 from test import MockHttp, TestCaseMixin
@@ -37,8 +37,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 
         try:
             self.driver.list_nodes()
-        except InvalidCredsException, e:
-            self.assertTrue(isinstance(e, InvalidCredsException))
+        except InvalidCredsError, e:
+            self.assertTrue(isinstance(e, InvalidCredsError))
             self.assertEquals(e.value, '401: Unauthorized')
         else:
             self.fail('test should have thrown')

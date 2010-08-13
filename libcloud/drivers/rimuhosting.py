@@ -16,7 +16,7 @@
 """
 RimuHosting Driver
 """
-from libcloud.types import Provider, NodeState, InvalidCredsException
+from libcloud.types import Provider, NodeState, InvalidCredsError
 from libcloud.base import ConnectionKey, Response, NodeAuthPassword
 from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeImage
@@ -55,7 +55,7 @@ class RimuHostingResponse(Response):
 
     def success(self):
         if self.status == 403:
-            raise InvalidCredsException()
+            raise InvalidCredsError()
         return True
     def parse_body(self):
         try:

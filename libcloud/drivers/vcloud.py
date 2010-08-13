@@ -16,7 +16,7 @@
 VMware vCloud driver.
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsError
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeAuthPassword, NodeLocation
 
@@ -252,7 +252,7 @@ class VCloudConnection(ConnectionUserAndKey):
             try:
                 self.token = headers['set-cookie']
             except KeyError:
-                raise InvalidCredsException()
+                raise InvalidCredsError()
 
             self.driver.org = get_url_path(
                 body.find(fixxpath(body, 'Org')).get('href')

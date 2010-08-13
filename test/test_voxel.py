@@ -16,7 +16,7 @@ import sys
 import unittest
 
 from libcloud.drivers.voxel import VoxelNodeDriver as Voxel
-from libcloud.types import InvalidCredsException
+from libcloud.types import InvalidCredsError
 
 import httplib
 
@@ -38,7 +38,7 @@ class VoxelTest(unittest.TestCase):
         try:
             self.driver.list_nodes()
         except Exception, e:
-            self.assertTrue(isinstance(e, InvalidCredsException))
+            self.assertTrue(isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
 

@@ -16,7 +16,7 @@ import sys
 import unittest
 
 from libcloud.drivers.dreamhost import DreamhostNodeDriver
-from libcloud.types import NodeState, InvalidCredsException
+from libcloud.types import NodeState, InvalidCredsError
 
 import httplib
 
@@ -46,7 +46,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         try:
             self.driver.list_nodes()
             self.assertTrue(False) # Above command should have thrown an InvalidCredsException
-        except InvalidCredsException:
+        except InvalidCredsError:
             self.assertTrue(True)
 
 

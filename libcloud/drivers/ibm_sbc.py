@@ -16,7 +16,7 @@
 """
 Driver for the IBM Developer Cloud.
 """
-from libcloud.types import NodeState, InvalidCredsException, Provider
+from libcloud.types import NodeState, InvalidCredsError, Provider
 from libcloud.base import Response, ConnectionUserAndKey, NodeDriver, Node, NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
 import base64, urllib
 
@@ -37,9 +37,9 @@ class IBMResponse(Response):
     def parse_error(self):
         if int(self.status) == 401:
             if not self.body:
-                raise InvalidCredsException(str(self.status) + ': ' + self.error)
+                raise InvalidCredsError(str(self.status) + ': ' + self.error)
             else:
-                raise InvalidCredsException(self.body)
+                raise InvalidCredsError(self.body)
         return self.body
 
 class IBMConnection(ConnectionUserAndKey):
