@@ -187,7 +187,7 @@ class SoftLayerConnection(object):
             return getattr(sl, method)(*params)
         except xmlrpclib.Fault, e:
             if e.faultCode == "SoftLayer_Account":
-                raise InvalidCredsException(e.faultString)
+                raise InvalidCredsError(e.faultString)
             raise SoftLayerException(e)
 
     def _user_agent(self):
