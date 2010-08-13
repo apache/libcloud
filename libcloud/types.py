@@ -87,7 +87,12 @@ class MalformedResponseException(LibCloudException):
     """Exception for the cases when a provider returns a malformed
     response, e.g. you request JSON and provider returns 
     '<h3>something</h3>' due to some error on their side."""
-    pass
+    def __init__(self, value, body=None, driver=None):
+      self.value = value
+      self.driver = driver
+      self.body = body
+    def __str__(self):
+        return "<MalformedResponseException in "+ driver +" "+ repr(self.value) +">: "+ repr(self.body)
 
 class InvalidCredsException(LibCloudException):
     """Exception used when invalid credentials are used on a provider."""
