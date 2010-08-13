@@ -160,9 +160,9 @@ class EC2Response(Response):
             raise InvalidCredsError(msg)
 
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=EC2NodeDriver)
+            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=EC2NodeDriver)
 
         for err in body.findall('Errors/Error'):
             code, message = err.getchildren()
