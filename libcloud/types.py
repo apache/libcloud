@@ -92,7 +92,7 @@ class MalformedResponseError(LibcloudError):
       self.driver = driver
       self.body = body
     def __str__(self):
-        return "<MalformedResponseException in "+ driver +" "+ repr(self.value) +">: "+ repr(self.body)
+        return "<MalformedResponseException in "+ self.driver +" "+ repr(self.value) +">: "+ repr(self.body)
 
 class InvalidCredsError(LibcloudError):
     """Exception used when invalid credentials are used on a provider."""
