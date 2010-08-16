@@ -33,6 +33,8 @@ from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.base import NodeImage
 from copy import copy
+import json
+import itertools
 import os
 
 # Where requests go - in beta situations, this information may change.
@@ -99,10 +101,11 @@ class LinodeResponse(Response):
 
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
-        self.action, self.object, self.errors = self.parse_body()
+        self.objects, self.errors = self.parse_body()
         if not self.success():
             # Raise the first error, as there will usually only be one
-            raise self.errors[0]
+            try: raise self.errors[0]
+            except: raise LinodeException(0xFA, "Something bad happened")
 
     def parse_body(self):
         """Parse the body of the response into JSON objects
@@ -110,38 +113,30 @@ class LinodeResponse(Response):
         If the response chokes the parser, action and data will be returned as
         None and errorarray will indicate an invalid JSON exception.
 
-        @return: triple of action (C{str}), data, and errors (C{list})"""
+        @return: C{list} of objects and C{list} of errors"""
         try:
             js = json.loads(self.body)
         except:
-          raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
+            raise MalformedResponseError("Failed to parse JSON", body=self.body,
+                driver=LinodeNodeDriver)
 
         try:
-            if ("DATA" not in js
-                or "ERRORARRAY" not in js
-                or "ACTION" not in js):
-                return (None, None, [self.invalid])
-            errs = [self._make_excp(e) for e in js["ERRORARRAY"]]
-            return (js["ACTION"], js["DATA"], errs)
+            if isinstance(js, dict):
+                # solitary response - promote to list
+                js = [js]
+            ret = []
+            errs = []
+            for obj in js:
+                if ("DATA" not in obj or "ERRORARRAY" not in obj
+                    or "ACTION" not in obj):
+                    ret.append(None)
+                    errs.append(self.invalid)
+                    continue
+                ret.append(obj["DATA"])
+                errs.extend(self._make_excp(e) for e in obj["ERRORARRAY"])
+            return (ret, errs)
         except:
-            # Assume invalid JSON, and use an error code unused by Linode API.
-            return (None, None, [self.invalid])
-
-    def parse_error(self):
-        """Parse errors from the response
-
-        @return: C{list} of errors, possibly empty"""
-        try:
-            js = json.loads(self.body)
-        except:
-          raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=LinodeNodeDriver)
-
-        try:
-            if "ERRORARRAY" not in js:
-                return [self.invalid]
-            return [self._make_excp(e) for e in js["ERRORARRAY"]]
-        except:
-            return [self.invalid]
+            return (None, [self.invalid])
 
     def success(self):
         """Check the response for success
@@ -235,8 +230,8 @@ class LinodeNodeDriver(NodeDriver):
 
         @return: C{list} of L{Node} objects that the API key can access"""
         params = { "api_action": "linode.list" }
-        data = self.connection.request(LINODE_ROOT, params=params).object
-        return [self._to_node(n) for n in data]
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
+        return self._to_nodes(data)
 
     def reboot_node(self, node):
         """Reboot the given Linode
@@ -387,7 +382,7 @@ class LinodeNodeDriver(NodeDriver):
             else:
                 kernel = 110 if image.extra['pvops'] else 60
         params = { "api_action": "avail.kernels" }
-        kernels = self.connection.request(LINODE_ROOT, params=params).object
+        kernels = self.connection.request(LINODE_ROOT, params=params).objects[0]
         if kernel not in [z["KERNELID"] for z in kernels]:
             raise LinodeException(0xFB, "Invalid kernel -- avail.kernels")
 
@@ -412,7 +407,7 @@ class LinodeNodeDriver(NodeDriver):
             "PlanID":       size.id,
             "PaymentTerm":  payment
         }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         linode = { "id": data["LinodeID"] }
 
         # Step 1b. linode.update to rename the Linode
@@ -421,7 +416,7 @@ class LinodeNodeDriver(NodeDriver):
             "LinodeID": linode["id"],
             "Label": name
         }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        self.connection.request(LINODE_ROOT, params=params)
 
         # Step 1c. linode.ip.addprivate if it was requested
         if "ex_private" in kwargs and kwargs["ex_private"]:
@@ -429,7 +424,7 @@ class LinodeNodeDriver(NodeDriver):
                 "api_action":   "linode.ip.addprivate",
                 "LinodeID":     linode["id"]
             }
-            data = self.connection.request(LINODE_ROOT, params=params).object
+            self.connection.request(LINODE_ROOT, params=params)
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
@@ -443,7 +438,7 @@ class LinodeNodeDriver(NodeDriver):
             "rootPass":         root,
         }
         if ssh: params["rootSSHKey"] = ssh
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         linode["rootimage"] = data["DiskID"]
 
         # Step 3: linode.disk.create for swap
@@ -454,7 +449,7 @@ class LinodeNodeDriver(NodeDriver):
             "Type":             "swap",
             "Size":             swap
         }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         linode["swapimage"] = data["DiskID"]
 
         # Step 4: linode.config.create for main profile
@@ -467,7 +462,7 @@ class LinodeNodeDriver(NodeDriver):
             "Comments":         comments,
             "DiskList":         disks
         }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         linode["config"] = data["ConfigID"]
 
         # Step 5: linode.boot
@@ -476,12 +471,12 @@ class LinodeNodeDriver(NodeDriver):
             "LinodeID":         linode["id"],
             "ConfigID":         linode["config"]
         }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        unused = self.connection.request(LINODE_ROOT, params=params)
 
         # Make a node out of it and hand it back
         params = { "api_action": "linode.list", "LinodeID": linode["id"] }
-        data = self.connection.request(LINODE_ROOT, params=params).object
-        return self._to_node(data[0])
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
+        return self._to_nodes(data)
 
     def list_sizes(self, location=None):
         """List available Linode plans
@@ -495,7 +490,7 @@ class LinodeNodeDriver(NodeDriver):
 
         @return: a C{list} of L{NodeSize}s"""
         params = { "api_action": "avail.linodeplans" }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         sizes = []
         for obj in data:
             n = NodeSize(id=obj["PLANID"], name=obj["LABEL"], ram=obj["RAM"],
@@ -511,7 +506,7 @@ class LinodeNodeDriver(NodeDriver):
 
         @return: a C{list} of L{NodeImage}s"""
         params = { "api_action": "avail.distributions" }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         distros = []
         for obj in data:
             i = NodeImage(id=obj["DISTRIBUTIONID"],
@@ -529,7 +524,7 @@ class LinodeNodeDriver(NodeDriver):
 
         @return: a C{list} of L{NodeLocation}s"""
         params = { "api_action": "avail.datacenters" }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         nl = []
         for dc in data:
             country = None
@@ -553,7 +548,7 @@ class LinodeNodeDriver(NodeDriver):
         @type dc: L{NodeLocation}"""
         did = dc.id
         params = { "api_action": "avail.datacenters" }
-        data = self.connection.request(LINODE_ROOT, params=params).object
+        data = self.connection.request(LINODE_ROOT, params=params).objects[0]
         for datacenter in data:
             if did == dc["DATACENTERID"]:
                 self.datacenter = did
@@ -563,33 +558,44 @@ class LinodeNodeDriver(NodeDriver):
         self.datacenter = None
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
 
-    def _to_node(self, obj):
-        """Convert a returned JSON Linode into a Node instance
+    def _to_nodes(self, objs):
+        """Convert returned JSON Linodes into Node instances
 
-        @keyword obj: a JSON dictionary representing the Linode
-        @type obj: C{dict}
-        @return: L{Node}"""
-        lid = str(obj["LINODEID"])
+        @keyword objs: C{list} of JSON dictionaries representing the Linodes
+        @type objs: C{list}
+        @return: C{list} of L{Node}s"""
 
-        # Get the IP addresses for the Linode
-        params = { "api_action": "linode.ip.list", "LinodeID": lid }
-        req = self.connection.request(LINODE_ROOT, params=params)
-        if not req.success() or len(req.object) == 0:
-            return None
+        # Get the IP addresses for the Linodes
+        nodes = {}
+        batch = []
+        for o in objs:
+            lid = o["LINODEID"]
+            nodes[lid] = n = Node(id=lid, name=o["LABEL"], public_ip=[],
+                private_ip=[], state=self.LINODE_STATES[o["STATUS"]],
+                driver=self.connection.driver)
+            n.extra = copy(o)
+            n.extra["PLANID"] = self._linode_plan_ids.get(o.get("TOTALRAM"))
+            batch.append({"api_action": "linode.ip.list", "LinodeID": lid})
 
-        public_ip = []
-        private_ip = []
-        for ip in req.object:
-            if ip["ISPUBLIC"]:
-                public_ip.append(ip["IPADDRESS"])
-            else:
-                private_ip.append(ip["IPADDRESS"])
+        # Avoid batch limitation
+        ip_answers = []
+        args = [iter(batch)] * 25
+        for twenty_five in itertools.izip_longest(*args):
+            twenty_five = [q for q in twenty_five if q]
+            params = { "api_action": "batch",
+                "api_requestArray": json.dumps(twenty_five) }
+            req = self.connection.request(LINODE_ROOT, params=params)
+            if not req.success() or len(req.objects) == 0:
+                return None
+            ip_answers.extend(req.objects)
 
-        n = Node(id=lid, name=obj["LABEL"],
-            state=self.LINODE_STATES[obj["STATUS"]], public_ip=public_ip,
-            private_ip=private_ip, driver=self.connection.driver)
-        n.extra = copy(obj)
-        n.extra["PLANID"] = self._linode_plan_ids.get(obj.get("TOTALRAM"))
-        return n
+        # Add the returned IPs to the nodes and return them
+        for ip_list in ip_answers:
+            for ip in ip_list:
+                lid = ip["LINODEID"]
+                which = nodes[lid].public_ip if ip["ISPUBLIC"] == 1 else \
+                    nodes[lid].private_ip
+                which.append(ip["IPADDRESS"])
+        return nodes.values()
 
     features = {"create_node": ["ssh_key", "password"]}
