@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Maintainer: Jed Smith <jsmith@linode.com>
+# Maintainer: Jed Smith <jed@linode.com>
 # Based upon code written by Alex Polvi <polvi@cloudkick.com>
 #
 
@@ -77,7 +77,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
                          size=self.driver.list_sizes()[0],
                          image=self.driver.list_images()[0],
                          auth=NodeAuthPassword("foobar"))
-        self.assertTrue(isinstance(node, Node))
+        self.assertTrue(isinstance(node[0], Node))
 
 
 class LinodeMockHttp(MockHttp):
@@ -136,6 +136,11 @@ class LinodeMockHttp(MockHttp):
     def _linode_ip_list(self, method, url, body, headers):
         body = '{"ACTION": "linode.ip.list", "DATA": [{"RDNS_NAME": "li22-54.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.54", "IPADDRESSID": 5384, "LINODEID": 8098}, {"RDNS_NAME": "li22-245.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.245", "IPADDRESSID": 5575, "LINODEID": 8098}], "ERRORARRAY": []}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _batch(self, method, url, body, headers):
+        body = '[{"ACTION": "linode.ip.list", "DATA": [{"RDNS_NAME": "li22-54.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.54", "IPADDRESSID": 5384, "LINODEID": 8098}, {"RDNS_NAME": "li22-245.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.245", "IPADDRESSID": 5575, "LINODEID": 8098}], "ERRORARRAY": []}]'
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
