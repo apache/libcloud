@@ -41,11 +41,6 @@ class DummyNodeDriver(NodeDriver):
     name = "Dummy Node Provider"
     type = Provider.DUMMY
 
-    def _ip_to_int(ip):
-      return socket.htonl(struct.unpack('I', socket.inet_aton(ip))[0])
-    def _int_to_ip(ip):
-      return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))
-
     def __init__(self, creds):
         self.creds = creds
         try:
@@ -54,9 +49,9 @@ class DummyNodeDriver(NodeDriver):
           num = None
         if num:
           self.nl = []
-          startip = self._ip_to_int('127.0.0.1')
+          startip = _ip_to_int('127.0.0.1')
           for i in xrange(num):
-            ip = self._int_to_ip(startip + i)
+            ip = _int_to_ip(startip + i)
             self.nl.append(
               Node(id=i,
                    name='dummy-%d' % (i),
@@ -166,3 +161,9 @@ class DummyNodeDriver(NodeDriver):
                  extra={'foo': 'bar'})
         self.nl.append(n)
         return n
+
+def _ip_to_int(ip):
+    return socket.htonl(struct.unpack('I', socket.inet_aton(ip))[0])
+
+def _int_to_ip(ip):
+    return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))
