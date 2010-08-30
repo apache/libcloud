@@ -79,7 +79,9 @@ class IBMNodeDriver(NodeDriver):
                        8: NodeState.REBOOTING,
                        9: NodeState.PENDING,
                        10: NodeState.PENDING,
-                       11: NodeState.TERMINATED }
+                       11: NodeState.TERMINATED,
+                       12: NodeState.PENDING,   # Deprovision pending
+                       13: NodeState.PENDING }  # Restart pending
 
     def create_node(self, **kwargs):
         """
