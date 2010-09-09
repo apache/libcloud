@@ -202,6 +202,34 @@ class RackspaceNodeDriver(NodeDriver):
     def list_locations(self):
         return [NodeLocation(0, "Rackspace DFW1", 'US', self)]
 
+    def _change_password_or_name(self, node, name=None, password=None):
+        uri = '/servers/%s' % (node.id)
+        if not name:
+            name = node.name
+        if not password:
+            password = node.extra.get('password', None)
+            if not password:
+                choices = string.ascii_letters + string.digits
+                suffix = ''
+                while len(suffix) < 9:
+                    suffix.append(random.choice(choices))
+                password = name + suffix
+        server_elm = ET.Element(
+            'server',
+            {'xmlns': NAMESPACE,
+             'name': name,
+             'adminPass': password}
+        )
+        resp = self.connection.request(uri, method='PUT', data=ET.tostring(server_elm))
+        return resp == 204
+
+    def set_password(self, node, password):
+        return self._change_password_or_name(node, password=password)
+
+    def set_server_name(self, node, name):
+        return self._change_password_or_name(node, name=name)
+
+
     def create_node(self, **kwargs):
         """Create a new rackspace node
 

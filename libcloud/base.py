@@ -623,7 +623,7 @@ class NodeDriver(object):
         or returning a generated password.
 
         This function may raise a L{DeplyomentException}, if a create_node
-        call was successful, but there is a later error (like SSH failing or 
+        call was successful, but there is a later error (like SSH failing or
         timing out).  This exception includes a Node object which you may want
         to destroy if incomplete deployments are not desirable.
 
@@ -662,9 +662,9 @@ class NodeDriver(object):
               if len(nodes) > 1:
                   raise DeploymentError(node, "Booted single node[%s], but multiple nodes have same UUID"% node)
 
-              node = nodes[0]
+              found_node = nodes[0]
 
-              if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
+              if found_node.public_ip is not None and found_node.public_ip != "" and found_node.state == NodeState.RUNNING:
                   break
 
           client = SSHClient(hostname=node.public_ip[0],
