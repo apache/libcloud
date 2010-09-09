@@ -144,7 +144,7 @@ class RackspaceConnection(ConnectionUserAndKey):
         # Due to first-run authentication request, we may not have a path
         if self.path:
             action = self.path + action
-        if method == "POST":
+        if method in ("POST", "PUT"):
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
             params['cache-busting'] = os.urandom(8).encode('hex')
