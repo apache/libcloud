@@ -41,6 +41,13 @@ Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
 """
 EC2_INSTANCE_TYPES = {
+    't1.micro': {
+        'id': 't1.micro',
+        'name': 'Micro Instance',
+        'ram': 613,
+        'disk': 15,
+        'bandwidth': None
+    },
     'm1.small': {
         'id': 'm1.small',
         'name': 'Small Instance',
@@ -108,6 +115,7 @@ EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 # On demand prices must also be hardcoded, because Amazon doesn't provide an
 # API to fetch them. From http://aws.amazon.com/ec2/pricing/
 #
+EC2_US_EAST_INSTANCE_TYPES['t1.micro']['price'] = '.02'
 EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.085'
 EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.34'
 EC2_US_EAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.68'
@@ -117,6 +125,7 @@ EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.50'
 EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
 EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
 
+EC2_US_WEST_INSTANCE_TYPES['t1.micro']['price'] = '.025'
 EC2_US_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
 EC2_US_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
 EC2_US_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
@@ -126,6 +135,7 @@ EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.57'
 EC2_US_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.34'
 EC2_US_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 
+EC2_EU_WEST_INSTANCE_TYPES['t1.micro']['price'] = '.025'
 EC2_EU_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
 EC2_EU_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
 EC2_EU_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
