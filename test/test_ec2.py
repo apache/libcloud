@@ -56,9 +56,10 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 8)
+        self.assertEqual(len(sizes), 9)
 
         ids = [s.id for s in sizes]
+        self.assertTrue('t1.micro' in ids)
         self.assertTrue('m1.small' in ids)
         self.assertTrue('m1.large' in ids)
         self.assertTrue('m1.xlarge' in ids)
