@@ -105,6 +105,9 @@ class LinodeResponse(Response):
         if not self.success():
             # Raise the first error, as there will usually only be one
             try: raise self.errors[0]
+            except MalformedResponseError, excp:
+                # pass this one up intact
+                raise
             except: raise LinodeException(0xFA, "Something bad happened")
 
     def parse_body(self):
