@@ -104,11 +104,7 @@ class LinodeResponse(Response):
         self.objects, self.errors = self.parse_body()
         if not self.success():
             # Raise the first error, as there will usually only be one
-            try: raise self.errors[0]
-            except MalformedResponseError, excp:
-                # pass this one up intact
-                raise
-            except: raise LinodeException(0xFA, "Something bad happened")
+            raise self.errors[0]
 
     def parse_body(self):
         """Parse the body of the response into JSON objects
