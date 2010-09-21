@@ -30,7 +30,7 @@ except: import simplejson as json
 
 HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
-API_VERSION = '1.3'
+API_VERSION = '1.5'
 
 STATE = {
     "Starting": NodeState.PENDING,
