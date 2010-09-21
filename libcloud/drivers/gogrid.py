@@ -77,6 +77,8 @@ class GoGridResponse(Response):
     def success(self):
         if self.status == 403:
             raise InvalidCredsError('Invalid credentials', GoGridNodeDriver)
+        if self.status == 401:
+            raise InvalidCredsError('API Key has insufficient rights', GoGridNodeDriver)
         if not self.body:
             return None
         try:
@@ -186,11 +188,15 @@ class GoGridNodeDriver(NodeDriver):
         passwords_map = {}
 
         res = self._server_list()
-        for password in self._password_list()['list']:
-            try:
-                passwords_map[password['server']['id']] = password['password']
-            except KeyError:
-                pass
+        try:
+          for password in self._password_list()['list']:
+              try:
+                  passwords_map[password['server']['id']] = password['password']
+              except KeyError:
+                  pass
+        except InvalidCredsError, e:
+          # some gogrid API keys don't have permission to access the password list.
+          pass
 
         return [ self._to_node(el, passwords_map.get(el.get('id')))
                  for el
