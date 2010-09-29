@@ -8,3 +8,9 @@ Apache libcloud is an incubator project at the Apache Software Foundation, see
 
 For API documentation and examples, see:
   <http://incubator.apache.org/libcloud/getting-started.html>
+
+WARNING: Python's built-in SSL does not do certificate validation.  As such, one
+cannot be sure of the other end of the conversation with any sufficient
+authority.  If you are in a position to be exploited (i.e., on an untrusted
+network), be cautious with SSL connections.  This is an issue with upstream
+Python (see http://bugs.python.org/issue1589 for details) and not with libcloud.

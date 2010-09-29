@@ -307,6 +307,14 @@ class ConnectionKey(object):
     """
     A Base Connection class to derive from.
     """
+
+    # WARNING: Python's built-in SSL does not do certificate validation.  As
+    # such, one cannot be sure of the other end of the conversation with any
+    # sufficient authority.  If you are in a position to be exploited (i.e., on
+    # an untrusted network), be cautious with SSL connections.  This is an issue
+    # with upstream Python (see http://bugs.python.org/issue1589 for details)
+    # and not with libcloud.
+
     #conn_classes = (httplib.LoggingHTTPConnection, LoggingHTTPSConnection)
     conn_classes = (httplib.HTTPConnection, httplib.HTTPSConnection)
 
