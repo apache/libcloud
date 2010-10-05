@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud 0.4.0 [In Development]
 
+    *) Add create keypair functionality to EC2 Drivers. LIBCLOUD-57
+       [Grig Gheorghiu]
+
+    *) Improve handling of GoGrid accounts with limited access
+       API keys. [Paul Querna]
+
     *) New Driver for ElasticHosts. LIBCLOUD-45
        [Tomaz Muraus]
 
