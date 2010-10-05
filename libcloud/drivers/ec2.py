@@ -358,6 +358,26 @@ class EC2NodeDriver(NodeDriver):
         )
         return images
 
+    def ex_create_keypair(self, name):
+        """Creates a new keypair
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @type name: C{str}
+        @param name: The name of the keypair to Create. This must be unique, 
+                     otherwise an InvalidKeyPair.Duplicate exception is raised.
+        """
+        params = {'Action': 'CreateKeyPair',
+                  'KeyName': name,
+        }
+        response = self.connection.request(self.path, params=params).object
+        key_material = self._findtext(response, 'keyMaterial')
+        key_fingerprint = self._findtext(response, 'keyFingerprint')
+        return {
+                'keyMaterial': key_material,
+                'keyFingerprint': key_fingerprint,
+        }
+
     def ex_create_security_group(self, name, description):
         """Creates a new Security Group
 
