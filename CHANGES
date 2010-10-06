@@ -1,6 +1,6 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.4.0 [In Development]
+Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
 
     *) Add create keypair functionality to EC2 Drivers. LIBCLOUD-57
        [Grig Gheorghiu]
