@@ -103,6 +103,11 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         ret = node.destroy()
         self.assertTrue(ret is True)
 
+    def test_ex_limits(self):
+        limits = self.driver.ex_limits()
+        self.assertTrue("rate" in limits)
+        self.assertTrue("absolute" in limits)
+
 class RackspaceMockHttp(MockHttp):
 
     fixtures = FileFixtures('rackspace')
@@ -152,6 +157,10 @@ class RackspaceMockHttp(MockHttp):
             raise NotImplemented
         # only used by reboot() right now, but we will need to parse body someday !!!!
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_limits(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_limits.xml')
+        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_72258(self, method, url, body, headers):
         if method != "DELETE":
