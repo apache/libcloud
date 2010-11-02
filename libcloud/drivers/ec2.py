@@ -22,6 +22,7 @@ from libcloud.base import Node, Response, ConnectionUserAndKey
 from libcloud.base import NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
 import hmac
+import os
 from hashlib import sha256
 import time
 import urllib
@@ -32,7 +33,7 @@ EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
 
-API_VERSION = '2009-11-30'
+API_VERSION = '2010-08-31'
 
 NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
 
@@ -364,7 +365,7 @@ class EC2NodeDriver(NodeDriver):
         @note: This is a non-standard extension API, and only works for EC2.
 
         @type name: C{str}
-        @param name: The name of the keypair to Create. This must be unique, 
+        @param name: The name of the keypair to Create. This must be unique,
                      otherwise an InvalidKeyPair.Duplicate exception is raised.
         """
         params = {'Action': 'CreateKeyPair',
@@ -376,6 +377,55 @@ class EC2NodeDriver(NodeDriver):
         return {
                 'keyMaterial': key_material,
                 'keyFingerprint': key_fingerprint,
+        }
+
+    def ex_import_keypair(self, name, keyfile):
+        """imports a new public key
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @type name: C{str}
+        @param name: The name of the public key to import. This must be unique,
+                     otherwise an InvalidKeyPair.Duplicate exception is raised.
+
+        @type keyfile: C{str}
+        @param keyfile: The filename with path of the public key to import.
+
+        """
+
+        base64key = base64.b64encode(open(os.path.expanduser(keyfile)).read())
+
+        params = {'Action': 'ImportKeyPair',
+                  'KeyName': name,
+                  'PublicKeyMaterial': base64key
+        }
+
+        response = self.connection.request(self.path, params=params).object
+        key_name = self._findtext(response, 'keyName')
+        key_fingerprint = self._findtext(response, 'keyFingerprint')
+        return {
+                'keyName': key_name,
+                'keyFingerprint': key_fingerprint,
+        }
+
+    def ex_describe_keypairs(self, name):
+        """Describes a keypiar by name
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @type name: C{str}
+        @param name: The name of the keypair to describe.
+
+        """
+
+        params = {'Action': 'DescribeKeyPairs',
+                  'KeyName.1': name
+        }
+
+        response = self.connection.request(self.path, params=params).object
+        key_name = self._findattr(response, 'keySet/item/keyName')
+        return {
+                'keyName': key_name
         }
 
     def ex_create_security_group(self, name, description):
