@@ -2,7 +2,11 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Add ImportKeyPair and DescribeKeyPair to EC2. LIBCLOUD-62
+       [Philip Schwartz]
 
+    *) Update EC2 driver and test fixtures for new API.
+       [Philip Schwartz]
 
 Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
 
