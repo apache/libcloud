@@ -50,6 +50,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(node.id, '90967')
         self.assertEqual(node.extra['password'], 'bebebe')
+        self.assertEqual(node.extra['isSandbox'], False)
 
     def test_reboot_node(self):
         node = Node(90967, None, None, None, None, self.driver)
@@ -101,6 +102,11 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail("test should have thrown")
 
+    def test_ex_save_image(self):
+        node = self.driver.list_nodes()[0]
+        image = self.driver.ex_save_image(node, "testimage")
+        self.assertEqual(image.name, "testimage")
+
 class GoGridMockHttp(MockHttp):
 
     fixtures = FileFixtures('gogrid')
@@ -111,7 +117,8 @@ class GoGridMockHttp(MockHttp):
 
     def _api_grid_image_list_FAIL(self, method, url, body, headers):
         body = "<h3>some non valid json here</h3>"
-        return (httplib.SERVICE_UNAVAILABLE, body, {}, httplib.responses[httplib.SERVICE_UNAVAILABLE])
+        return (httplib.SERVICE_UNAVAILABLE, body, {},
+                httplib.responses[httplib.SERVICE_UNAVAILABLE])
 
     def _api_grid_server_list(self, method, url, body, headers):
         body = self.fixtures.load('server_list.json')
@@ -149,6 +156,10 @@ class GoGridMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     _api_support_password_list_NOPUBIPS = _api_support_password_list
+
+    def _api_grid_image_save(self, method, url, body, headers):
+        body = self.fixtures.load('image_save.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
