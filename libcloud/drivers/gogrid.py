@@ -74,6 +74,7 @@ GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
 
 
 class GoGridResponse(Response):
+
     def success(self):
         if self.status == 403:
             raise InvalidCredsError('Invalid credentials', GoGridNodeDriver)
@@ -86,15 +87,16 @@ class GoGridResponse(Response):
         except ValueError:
             raise MalformedResponseError('Malformed reply', body=self.body, driver=GoGridNodeDriver)
 
-    def parse_body(self):
+    def parse_body(self):        
         if not self.body:
             return None
         return json.loads(self.body)
 
     def parse_error(self):
-        if not self.object:
+        try:
+            return json.loads(self.body)["list"][0]['message']
+        except ValueError:
             return None
-        return self.object['message']
 
 class GoGridConnection(ConnectionUserAndKey):
     """
@@ -162,7 +164,8 @@ class GoGridNodeDriver(NodeDriver):
                  state=state,
                  public_ip=[ip],
                  private_ip=[],
-                 extra={'ram': element.get('ram').get('name')},
+                 extra={'ram': element.get('ram').get('name'),
+                     'isSandbox': element['isSandbox'] == 'true'},
                  driver=self.connection.driver)
         if password:
             n.extra['password'] = password
@@ -264,6 +267,7 @@ class GoGridNodeDriver(NodeDriver):
         params = {'name': name,
                   'image': image.id,
                   'description': kwargs.get('ex_description', ''),
+                  'isSandbox': str(kwargs.get('ex_issandbox', False)).lower(),
                   'server.ram': size.id,
                   'ip': first_ip}
 
@@ -280,6 +284,8 @@ class GoGridNodeDriver(NodeDriver):
 
         @keyword    ex_description: Description of a Node
         @type       ex_description: C{string}
+        @keyword    ex_issandbox: Should server be sendbox?
+        @type       ex_issandbox: C{bool}
         """
         node = self.ex_create_node_nowait(**kwargs)
 
@@ -301,3 +307,23 @@ class GoGridNodeDriver(NodeDriver):
             raise Exception("Wasn't able to wait for id allocation for the node %s" % str(node))
 
         return node
+
+    def ex_save_image(self, node, name):
+        """Create an image for node.
+
+        Please refer to GoGrid documentation to get info
+        how prepare a node for image creation:
+
+        http://wiki.gogrid.com/wiki/index.php/MyGSI
+
+        @keyword    node: node to use as a base for image
+        @param      node: L{Node}
+        @keyword    name: name for new image
+        @param      name: C{string}
+        """
+        params = {'server': node.id,
+                  'friendlyName': name}
+        object = self.connection.request('/api/grid/image/save', params=params,
+                                         method='POST').object
+        
+        return self._to_images(object)[0]
