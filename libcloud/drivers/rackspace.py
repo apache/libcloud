@@ -357,6 +357,7 @@ class RackspaceNodeDriver(NodeDriver):
         
         @return: C{dict} with keys 'rate' and 'absolute'
         """
+
         def _to_rate(el):
             rate = {}
             for item in el.items():
@@ -374,3 +375,23 @@ class RackspaceNodeDriver(NodeDriver):
             absolute.update(_to_absolute(item))
 
         return {"rate": rate, "absolute": absolute}
+
+    def ex_save_image(self, node, name):
+        """Create an image for node.
+
+        @keyword    node: node to use as a base for image
+        @param      node: L{Node}
+        @keyword    name: name for new image
+        @param      name: C{string}
+        """
+
+        image_elm = ET.Element(
+                'image',
+                {'xmlns': NAMESPACE,
+                    'name': name,
+                    'serverId': node.id}
+        )
+
+        return self._to_image(self.connection.request("/images",
+                    method="POST",
+                    data=ET.tostring(image_elm)).object)

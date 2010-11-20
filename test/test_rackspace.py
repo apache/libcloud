@@ -108,6 +108,13 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue("rate" in limits)
         self.assertTrue("absolute" in limits)
 
+    def test_ex_save_image(self):
+        node = Node(id=444222, name=None, state=None, public_ip=None, private_ip=None,
+                driver=self.driver)
+        image = self.driver.ex_save_image(node, "imgtest")
+        self.assertEqual(image.name, "imgtest")
+        self.assertEqual(image.id, "12345")
+
 class RackspaceMockHttp(MockHttp):
 
     fixtures = FileFixtures('rackspace')
@@ -139,6 +146,14 @@ class RackspaceMockHttp(MockHttp):
     def _v1_0_slug_flavors_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_flavors_detail.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_images(self, method, url, body, headers):
+        if method != "POST":
+            raise NotImplemented
+        # this is currently used for creation of new image with
+        # POST request, don't handle GET to avoid possible confusion
+        body = self.fixtures.load('v1_slug_images_post.xml')
+        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_images_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_images_detail.xml')
