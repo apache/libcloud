@@ -2,6 +2,19 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) GoGrid driver: add support for locations, i.e. listing
+       of locations and creation of a node in specified
+       location
+       [Roman Bogorodskiy]
+
+    *) GoGrid and Rackspace drivers: add ex_save_image() extra
+       call to convert running node to an image
+       [Roman Bogorodskiy]
+
+    *) GoGrid driver: add support for creating 'sandbox' server
+       and populate isSandbox flag in node's extra information.
+       [Roman Bogorodskiy]
+
     *) Add ImportKeyPair and DescribeKeyPair to EC2. LIBCLOUD-62
        [Philip Schwartz]
 
@@ -93,7 +106,7 @@ Changes with Apache Libcloud 0.3.0 [Tagged May 6, 2010, not released]
     *) Added new deployment and bootstrap API.
 
     *) Improved Voxel driver.
-    
+
     *) Added support for Amazon EC2 Asia Pacific (Singapore) Region.
 
     *) Improved test coverage for all drivers.
@@ -103,7 +116,7 @@ Changes with Apache Libcloud 0.3.0 [Tagged May 6, 2010, not released]
     *) Fixed bug in Rackspace and RimuHosting when using multiple threads.
 
     *) Improved debugging and logging of HTTP requests.
-    
+
     *) Improved documentation for all classes and methods.
 
 Changes with Apache Libcloud 0.2.0 [Tagged February 2, 2010]
