@@ -182,6 +182,17 @@ class GoGridNodeDriver(NodeDriver):
         return [ self._to_image(el)
                  for el in object['list'] ]
 
+    def _to_location(self, element):
+        location = NodeLocation(id=element['id'],
+                name=element['name'],
+                country="US",
+                driver=self.connection.driver)
+        return location
+
+    def _to_locations(self, object):
+        return [self._to_location(el)
+                for el in object['list']]
+
     def list_images(self, location=None):
         images = self._to_images(
                     self.connection.request('/api/grid/image/list').object)
@@ -237,8 +248,10 @@ class GoGridNodeDriver(NodeDriver):
         return self.connection.request("/api/grid/server/delete", params,
                                         method='POST')
 
-    def _get_first_ip(self):
+    def _get_first_ip(self, location=None):
         params = {'ip.state': 'Unassigned', 'ip.type': 'public'}
+        if location is not None:
+            params['datacenter'] = location.id
         object = self.connection.request("/api/grid/ip/list", params).object
         if object['list']:
             return object['list'][0]['ip']
@@ -251,7 +264,10 @@ class GoGridNodeDriver(NodeDriver):
                     for i in self._instance_types.values() ]
 
     def list_locations(self):
-        return [NodeLocation(0, "GoGrid Los Angeles", 'US', self)]
+        locations = self._to_locations(
+            self.connection.request('/api/common/lookup/list',
+                params={'lookup': 'ip.datacenter'}).object)
+        return locations
 
     def ex_create_node_nowait(self, **kwargs):
         """Don't block until GoGrid allocates id for a node
@@ -263,7 +279,7 @@ class GoGridNodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        first_ip = self._get_first_ip()
+        first_ip = self._get_first_ip(kwargs.get('location'))
         params = {'name': name,
                   'image': image.id,
                   'description': kwargs.get('ex_description', ''),
@@ -325,5 +341,5 @@ class GoGridNodeDriver(NodeDriver):
                   'friendlyName': name}
         object = self.connection.request('/api/grid/image/save', params=params,
                                          method='POST').object
-        
+
         return self._to_images(object)[0]
