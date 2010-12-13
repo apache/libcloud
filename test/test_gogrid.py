@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import httplib
 import sys
 import unittest
+import urlparse
 
 try:
     import json
@@ -22,12 +24,11 @@ except ImportError:
 
 from libcloud.types import LibcloudError, InvalidCredsError
 from libcloud.drivers.gogrid import GoGridNodeDriver
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 
 from test import MockHttp, TestCaseMixin
 from test.file_fixtures import FileFixtures
 
-import httplib
 
 class GoGridTests(unittest.TestCase, TestCaseMixin):
 
@@ -102,6 +103,16 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail("test should have thrown")
 
+    def test_list_locations(self):
+        locations = self.driver.list_locations()
+        location_names = [location.name for location in locations]
+
+        self.assertEqual(len(locations), 2)
+        for i in 0, 1:
+            self.assertTrue(isinstance(locations[i], NodeLocation))
+        self.assertTrue("US-West-1" in location_names)
+        self.assertTrue("US-East-1" in location_names)
+
     def test_ex_save_image(self):
         node = self.driver.list_nodes()[0]
         image = self.driver.ex_save_image(node, "testimage")
@@ -159,6 +170,19 @@ class GoGridMockHttp(MockHttp):
 
     def _api_grid_image_save(self, method, url, body, headers):
         body = self.fixtures.load('image_save.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_common_lookup_list(self, method, url, body, headers):
+        _valid_lookups = ("ip.datacenter",)
+
+        lookup = urlparse.parse_qs(
+                    urlparse.urlparse(url).query)["lookup"][0]
+        if lookup in _valid_lookups:
+            fixture_path = "lookup_list_%s.json" % \
+                    (lookup.replace(".", "_"))
+        else:
+            raise NotImplementedError
+        body = self.fixtures.load(fixture_path)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
