@@ -25,8 +25,10 @@ import hashlib
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
-try: import json
-except: import simplejson as json
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
@@ -194,8 +196,11 @@ class GoGridNodeDriver(NodeDriver):
                 for el in object['list']]
 
     def list_images(self, location=None):
+        params = {}
+        if location is not None:
+            params["datacenter"] = location.id
         images = self._to_images(
-                    self.connection.request('/api/grid/image/list').object)
+                self.connection.request('/api/grid/image/list', params).object)
         return images
 
     def list_nodes(self):
