@@ -213,7 +213,7 @@ class GoGridNodeDriver(NodeDriver):
                   passwords_map[password['server']['id']] = password['password']
               except KeyError:
                   pass
-        except InvalidCredsError, e:
+        except InvalidCredsError:
           # some gogrid API keys don't have permission to access the password list.
           pass
 

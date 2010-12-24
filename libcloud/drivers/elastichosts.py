@@ -22,7 +22,7 @@ import base64
 
 from libcloud.types import Provider, NodeState, InvalidCredsError, MalformedResponseError
 from libcloud.base import ConnectionUserAndKey, Response
-from libcloud.base import NodeDriver, NodeSize, Node, NodeAuthPassword
+from libcloud.base import NodeDriver, NodeSize, Node
 from libcloud.base import NodeImage
 from libcloud.deployment import ScriptDeployment, SSHKeyDeployment, MultiStepDeployment
 
@@ -453,7 +453,7 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
         if (image in STANDARD_DRIVES
             and STANDARD_DRIVES[image]['supports_deployment']):
-            raise valueError('Image %s does not support deployment'
+            raise ValueError('Image %s does not support deployment'
                              % (image.id))
 
         if enable_root:

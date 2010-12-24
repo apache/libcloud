@@ -579,7 +579,6 @@ def str2dicts(data):
     d = list_data[-1]
 
     lines = data.split('\n')
-    lines_count = len(lines)
     for line in lines:
         line = line.strip()
 
@@ -623,7 +622,7 @@ def str2list(data):
 
         try:
             splitted = line.split(' ')
-            key = splitted[0]
+            # key = splitted[0]
             value = splitted[1]
         except Exception:
             continue
