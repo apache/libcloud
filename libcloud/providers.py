@@ -37,6 +37,8 @@ DRIVERS = {
         ('libcloud.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
     Provider.ELASTICHOSTS_US1:
         ('libcloud.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
+    Provider.CLOUDSIGMA:
+        ('libcloud.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
     Provider.GOGRID:
         ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:

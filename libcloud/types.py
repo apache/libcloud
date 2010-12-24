@@ -36,6 +36,7 @@ class Provider(object):
     @cvar IBM: IBM Developer Cloud
     @cvar OPENNEBULA: OpenNebula.org
     @cvar DREAMHOST: DreamHost Private Server
+    @cvar CLOUDSIGMA: CloudSigma
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -64,6 +65,7 @@ class Provider(object):
     EC2_AP_SOUTHEAST = 22
     RACKSPACE_UK = 23
     BRIGHTBOX = 24
+    CLOUDSIGMA = 25
 
 class NodeState(object):
     """
