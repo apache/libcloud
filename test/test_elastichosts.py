@@ -50,10 +50,10 @@ class ElasticHostsTestCase(unittest.TestCase, TestCaseMixin):
 
     def test_list_images(self):
         sizes = self.driver.list_images()
-        self.assertEqual(len(sizes), 9)
+        self.assertEqual(len(sizes), 8)
         size = sizes[0]
-        self.assertEqual(size.id, '757586d5-f1e9-4d9c-b215-5a391c9a24bf')
-        self.assertEqual(size.name, 'Ubuntu Linux 9.04: Base system with X')
+        self.assertEqual(size.id, '38df0986-4d85-4b76-b502-3878ffc80161')
+        self.assertEqual(size.name, 'CentOS Linux 5.5')
         
     def test_list_locations_response(self):
         pass
@@ -85,7 +85,7 @@ class ElasticHostsHttp(MockHttp):
         body = self.fixtures.load('drives_create.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
     
-    def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_757586d5_f1e9_4d9c_b215_5a391c9a24bf_gunzip(self, method, url, body, headers):
+    def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_38df0986_4d85_4b76_b502_3878ffc80161_gunzip(self, method, url, body, headers):
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_info(self, method, url, body, headers):
