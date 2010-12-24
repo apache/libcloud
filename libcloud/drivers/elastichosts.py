@@ -22,8 +22,9 @@ import base64
 
 from libcloud.types import Provider, NodeState, InvalidCredsError, MalformedResponseError
 from libcloud.base import ConnectionUserAndKey, Response
-from libcloud.base import NodeDriver, NodeSize, Node
+from libcloud.base import NodeDriver, NodeSize, Node, NodeAuthPassword
 from libcloud.base import NodeImage
+from libcloud.deployment import ScriptDeployment, SSHKeyDeployment, MultiStepDeployment
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -238,6 +239,7 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
     type = Provider.ELASTICHOSTS
     name = 'ElasticHosts'
     connectionCls = ElasticHostsBaseConnection
+    features = {"create_node": ["generates_password"]}
 
     def reboot_node(self, node):
         # Reboots the node
@@ -296,14 +298,15 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
         @keyword    nic_model: e1000, rtl8139 or virtio (is not specified, e1000 is used)
         @type       nic_model: C{string}
 
-        @keyword    vnc_password: If not set, VNC access is disabled.
-        @type       vnc_password: C{bool}
+        @keyword    vnc_password: If set, the same password is also used for SSH access with user toor,
+                                  otherwise VNC access is disabled and no SSH login is possible.
+        @type       vnc_password: C{string}
         """
         size = kwargs['size']
         image = kwargs['image']
         smp = kwargs.get('smp', 'auto')
         nic_model = kwargs.get('nic_model', 'e1000')
-        vnc_password = kwargs.get('vnc_password', None)
+        vnc_password, ssh_password = [kwargs.get('vnc_password', None)] * 2
 
         if nic_model not in ['e1000', 'rtl8139', 'virtio']:
             raise ElasticHostsException('Invalid NIC model specified')
@@ -352,9 +355,9 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
                                            method = 'POST').object
 
         if isinstance(response, list):
-            nodes = [self._to_node(node) for node in response]
+            nodes = [self._to_node(node, ssh_password) for node in response]
         else:
-            nodes = self._to_node(response)
+            nodes = self._to_node(response, ssh_password)
 
         return nodes
 
@@ -383,6 +386,49 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
         return (response.status == 200 and response.body != '')
 
+    def deploy_node(self, **kwargs):
+        """
+        Create a new node, and start deployment.
+
+        @keyword    enable_root: If true, root password will be set to vnc_password (this will enable SSH access)
+                                 and default 'toor' account will be deleted.
+        @type       enable_root: C{bool}
+
+        For detailed description and keywords args, see L{NodeDriver.deploy_node}.
+        """
+        image = kwargs['image']
+        vnc_password = kwargs.get('vnc_password', None)
+        enable_root = kwargs.get('enable_root', False)
+
+        if not vnc_password:
+            raise ValueError('You need to provide vnc_password argument if you want to use deployment')
+
+        if image in STANDARD_DRIVES and STANDARD_DRIVES[image]['supports_deployment']:
+            raise valueError('Image %s does not support deployment' % (image.id))
+
+        if enable_root:
+            root_enable_script = ScriptDeployment(script = "unset HISTFILE;" \
+                                                           "echo root:%s | chpasswd;" \
+                                                           "sed -i '/^toor.*$/d' /etc/passwd /etc/shadow;" \
+                                                           "history -c" % \
+                                                           (vnc_password), delete = True)
+            deploy = kwargs.get('deploy', None)
+            if deploy:
+                if isinstance(deploy, ScriptDeployment) or isinstance(deploy, SSHKeyDeployment):
+                    deployment = MultiStepDeployment([deploy, root_enable_script])
+                elif isinstance(deploy, MultiStepDeployment):
+                    deployment = deploy
+                    deployment.add(root_enable_script)
+            else:
+                deployment = root_enable_script
+
+            kwargs['deploy'] = deployment
+
+        if not kwargs.get('ssh_username', None):
+            kwargs['ssh_username'] = 'toor'
+
+        return super(ElasticHostsBaseNodeDriver, self).deploy_node(**kwargs)
+
     def ex_shutdown_node(self, node):
         # Sends the ACPI power-down event
         response = self.connection.request(action = '/servers/%s/shutdown' % (node.id),
@@ -396,7 +442,7 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
         return response.status == 204
 
     # Helper methods
-    def _to_node(self, data):
+    def _to_node(self, data, ssh_password=None):
         try:
             state = NODE_STATE_MAP[data['status']]
         except KeyError:
@@ -411,6 +457,9 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
         if data.has_key('vnc:ip') and data.has_key('vnc:password'):
             extra.update({'vnc_ip': data['vnc:ip'], 'vnc_password': data['vnc:password']})
+
+        if ssh_password:
+            extra.update({'password': ssh_password})
 
         node = Node(id = data['server'], name = data['name'], state =  state,
                     public_ip = public_ip, private_ip = None, driver = self.connection.driver,
