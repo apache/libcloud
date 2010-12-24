@@ -2,6 +2,9 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Added Rackspace UK (London) support
+       [Chmouel Boudjnah]
+
     *) GoGrid driver: add support for locations, i.e. listing
        of locations and creation of a node in specified
        location
