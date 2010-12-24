@@ -631,12 +631,19 @@ class NodeDriver(object):
         or returning a generated password.
 
         This function may raise a L{DeplyomentException}, if a create_node
-        call was successful, but there is a later error (like SSH failing or 
+        call was successful, but there is a later error (like SSH failing or
         timing out).  This exception includes a Node object which you may want
         to destroy if incomplete deployments are not desirable.
 
         @keyword    deploy: Deployment to run once machine is online and availble to SSH.
         @type       deploy: L{Deployment}
+
+        @keyword    ssh_username: Optional name of the account which is used when connecting to
+                                  SSH server (default is root)
+        @type       ssh_username: C{str}
+
+        @keyword    ssh_port: Optional SSH server port (default is 22)
+        @type       ssh_port: C{int}
 
         See L{NodeDriver.create_node} for more keyword args.
         """
@@ -675,9 +682,12 @@ class NodeDriver(object):
               if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
                   break
 
+          ssh_username = kwargs.get('ssh_username', 'root')
+          ssh_port = kwargs.get('ssh_port', 22)
+
           client = SSHClient(hostname=node.public_ip[0],
-                              port=22, username='root',
-                              password=password)
+                             port=ssh_port, username=ssh_username,
+                             password=password)
           laste = None
           while time.time() < end:
               laste = None
