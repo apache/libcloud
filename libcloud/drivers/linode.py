@@ -470,7 +470,7 @@ class LinodeNodeDriver(NodeDriver):
             "LinodeID":         linode["id"],
             "ConfigID":         linode["config"]
         }
-        unused = self.connection.request(LINODE_ROOT, params=params)
+        self.connection.request(LINODE_ROOT, params=params)
 
         # Make a node out of it and hand it back
         params = { "api_action": "linode.list", "LinodeID": linode["id"] }
