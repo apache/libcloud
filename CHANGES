@@ -2,6 +2,9 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) New driver for CloudSigma
+       [Tomaž Muraus]
+
     *) New driver for Brightbox Cloud. LIBCLOUD-63
        [Tim Fletcher]
 
