@@ -160,15 +160,7 @@ class CloudSigmaResponse(Response):
         if not self.body:
             return self.body
 
-        listdata = str2dicts(self.body)
-        dd = json.dumps(listdata)
-
-        try:
-            data = json.loads(dd)
-        except:
-            raise MalformedResponseError("Failed to parse JSON", body=dd, driver=CloudSigmaBaseNodeDriver)
-
-        return listdata
+        return str2dicts(self.body)
 
     def parse_error(self):
         return 'Error: %s' % (self.body.replace('errors:', '').strip())
