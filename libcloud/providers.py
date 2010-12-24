@@ -41,6 +41,8 @@ DRIVERS = {
         ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
         ('libcloud.drivers.rackspace', 'RackspaceNodeDriver'),
+    Provider.RACKSPACE_UK:
+        ('libcloud.drivers.rackspace', 'RackspaceUKNodeDriver'),
     Provider.SLICEHOST:
         ('libcloud.drivers.slicehost', 'SlicehostNodeDriver'),
     Provider.VPSNET:

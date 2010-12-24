@@ -25,6 +25,7 @@ class Provider(object):
     @cvar EC2_US_WEST: Amazon AWS US N. California
     @cvar EC2_EU_WEST: Amazon AWS EU Ireland
     @cvar RACKSPACE: Rackspace Cloud Servers
+    @cvar RACKSPACE_UK: Rackspace UK Cloud Servers
     @cvar SLICEHOST: Slicehost.com
     @cvar GOGRID: GoGrid
     @cvar VPSNET: VPS.net
@@ -61,6 +62,7 @@ class Provider(object):
     ELASTICHOSTS_UK2 = 20
     ELASTICHOSTS_US1 = 21
     EC2_AP_SOUTHEAST = 22
+    RACKSPACE_UK = 23
 
 class NodeState(object):
     """

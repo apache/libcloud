@@ -27,6 +27,9 @@ import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
+RACKSPACE_US_AUTH_HOST='auth.api.rackspacecloud.com'
+RACKSPACE_UK_AUTH_HOST='lon.auth.api.rackspacecloud.com'
+
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 #
@@ -80,7 +83,7 @@ class RackspaceConnection(ConnectionUserAndKey):
     """
 
     api_version = 'v1.0'
-    auth_host = 'auth.api.rackspacecloud.com'
+    auth_host = RACKSPACE_US_AUTH_HOST
     responseCls = RackspaceResponse
 
     def __init__(self, user_id, key, secure=True):
@@ -395,3 +398,19 @@ class RackspaceNodeDriver(NodeDriver):
         return self._to_image(self.connection.request("/images",
                     method="POST",
                     data=ET.tostring(image_elm)).object)
+
+class RackspaceUKConnection(RackspaceConnection):
+    """
+    Connection class for the Rackspace UK driver
+    """
+    auth_host = RACKSPACE_UK_AUTH_HOST
+
+class RackspaceUKNodeDriver(RackspaceNodeDriver):
+    """Driver for Rackspace in the UK (London)
+    """
+
+    name = 'Rackspace (UK)'
+    connectionCls = RackspaceUKConnection
+
+    def list_locations(self):
+        return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
