@@ -56,7 +56,8 @@ API_ENDPOINTS = {
 DEFAULT_ENDPOINT = 'us-1'
 
 # ElasticHosts doesn't specify special instance types, so I just specified
-# some plans based on the pricing page (http://www.elastichosts.com/cloud-hosting/pricing)
+# some plans based on the pricing page
+# (http://www.elastichosts.com/cloud-hosting/pricing)
 # and other provides.
 #
 # Basically for CPU any value between 500Mhz and 20000Mhz should work,
@@ -190,7 +191,9 @@ class ElasticHostsResponse(Response):
         try:
             data = json.loads(self.body)
         except:
-            raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=ElasticHostsBaseNodeDriver)
+            raise MalformedResponseError("Failed to parse JSON",
+                                         body=self.body,
+                                         driver=ElasticHostsBaseNodeDriver)
 
         return data
 
@@ -210,10 +213,10 @@ class ElasticHostsNodeSize(NodeSize):
         self.driver = driver
 
     def __repr__(self):
-        return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s disk=%s bandwidth=%s '
-                 'price=%s driver=%s ...>')
-                % (self.id, self.name, self.cpu, self.ram, self.disk, self.bandwidth,
-                   self.price, self.driver.name))
+        return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s '
+                 'disk=%s bandwidth=%s price=%s driver=%s ...>')
+                % (self.id, self.name, self.cpu, self.ram,
+                   self.disk, self.bandwidth, self.price, self.driver.name))
 
 class ElasticHostsBaseConnection(ConnectionUserAndKey):
     """
@@ -226,9 +229,10 @@ class ElasticHostsBaseConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
-
-        headers['Authorization'] = 'Basic %s' % (base64.b64encode('%s:%s' % (self.user_id, self.key)))
-
+        headers['Authorization'] = ('Basic %s'
+                                    % (base64.b64encode('%s:%s'
+                                                        % (self.user_id,
+                                                           self.key))))
         return headers
 
 class ElasticHostsBaseNodeDriver(NodeDriver):
@@ -243,22 +247,32 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         # Reboots the node
-        response = self.connection.request(action = '/servers/%s/reset' % (node.id),
-                                           method = 'POST')
+        response = self.connection.request(
+            action='/servers/%s/reset' % (node.id),
+            method='POST'
+        )
         return response.status == 204
 
     def destroy_node(self, node):
         # Kills the server immediately
-        response = self.connection.request(action = '/servers/%s/destroy' % (node.id),
-                                           method = 'POST')
+        response = self.connection.request(
+            action='/servers/%s/destroy' % (node.id),
+            method='POST'
+        )
         return response.status == 204
 
     def list_images(self, location=None):
         # Returns a list of available pre-installed system drive images
         images = []
         for key, value in STANDARD_DRIVES.iteritems():
-            image = NodeImage(id = value['uuid'], name = value['description'], driver = self.connection.driver,
-                               extra = {'size_gunzipped': value['size_gunzipped']})
+            image = NodeImage(
+                id=value['uuid'],
+                name=value['description'],
+                driver=self.connection.driver,
+                extra={
+                    'size_gunzipped': value['size_gunzipped']
+                }
+            )
             images.append(image)
 
         return images
@@ -266,16 +280,19 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
     def list_sizes(self, location=None):
         sizes = []
         for key, value in INSTANCE_TYPES.iteritems():
-            size = ElasticHostsNodeSize(id = value['id'], name = value['name'], cpu = value['cpu'], ram = value['memory'],
-                            disk = value['disk'], bandwidth = value['bandwidth'], price = '',
-                            driver = self.connection.driver)
+            size = ElasticHostsNodeSize(
+                id=value['id'],
+                name=value['name'], cpu=value['cpu'], ram=value['memory'],
+                disk=value['disk'], bandwidth=value['bandwidth'], price='',
+                driver=self.connection.driver
+            )
             sizes.append(size)
 
         return sizes
 
     def list_nodes(self):
         # Returns a list of active (running) nodes
-        response = self.connection.request(action = '/servers/info').object
+        response = self.connection.request(action='/servers/info').object
 
         nodes = []
         for data in response:
@@ -292,33 +309,39 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
         @keyword    name: String with a name for this new node (required)
         @type       name: C{string}
 
-        @keyword    smp: Number of virtual processors or None to calculate based on the cpu speed
+        @keyword    smp: Number of virtual processors or None to calculate
+                         based on the cpu speed
         @type       smp: C{int}
 
-        @keyword    nic_model: e1000, rtl8139 or virtio (is not specified, e1000 is used)
+        @keyword    nic_model: e1000, rtl8139 or virtio
+                               (if not specified, e1000 is used)
         @type       nic_model: C{string}
 
-        @keyword    vnc_password: If set, the same password is also used for SSH access with user toor,
-                                  otherwise VNC access is disabled and no SSH login is possible.
+        @keyword    vnc_password: If set, the same password is also used for
+                                  SSH access with user toor,
+                                  otherwise VNC access is disabled and
+                                  no SSH login is possible.
         @type       vnc_password: C{string}
         """
         size = kwargs['size']
         image = kwargs['image']
         smp = kwargs.get('smp', 'auto')
         nic_model = kwargs.get('nic_model', 'e1000')
-        vnc_password, ssh_password = [kwargs.get('vnc_password', None)] * 2
+        vnc_password = ssh_password = kwargs.get('vnc_password', None)
 
-        if nic_model not in ['e1000', 'rtl8139', 'virtio']:
+        if nic_model not in ('e1000', 'rtl8139', 'virtio'):
             raise ElasticHostsException('Invalid NIC model specified')
 
         # check that drive size is not smaller then pre installed image size
 
         # First we create a drive with the specified size
         drive_data = {}
-        drive_data.update({'name': kwargs['name'], 'size': '%sG' % (kwargs['size'].disk)})
+        drive_data.update({'name': kwargs['name'],
+                           'size': '%sG' % (kwargs['size'].disk)})
 
-        response = self.connection.request(action = '/drives/create', data = json.dumps(drive_data),
-                                           method = 'POST').object
+        response = self.connection.request(action='/drives/create',
+                                           data=json.dumps(drive_data),
+                                           method='POST').object
 
         if not response:
             raise ElasticHostsException('Drive creation failed')
@@ -326,33 +349,47 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
         drive_uuid = response['drive']
 
         # Then we image the selected pre-installed system drive onto it
-        response = self.connection.request(action = '/drives/%s/image/%s/gunzip' % (drive_uuid, image.id),
-                                           method = 'POST')
+        response = self.connection.request(
+            action='/drives/%s/image/%s/gunzip' % (drive_uuid, image.id),
+            method='POST'
+        )
 
         if response.status != 204:
             raise ElasticHostsException('Drive imaging failed')
 
-        # We wait until the drive is imaged and then boot up the node (in most cases, the imaging process
-        # shouldn't take longer then a few minutes)
-        response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
+        # We wait until the drive is imaged and then boot up the node
+        # (in most cases, the imaging process shouldn't take longer
+        # than a few minutes)
+        response = self.connection.request(
+            action='/drives/%s/info' % (drive_uuid)
+        ).object
         imaging_start = time.time()
         while response.has_key('imaging'):
-            response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
+            response = self.connection.request(
+                action='/drives/%s/info' % (drive_uuid)
+            ).object
             elapsed_time = time.time() - imaging_start
-            if response.has_key('imaging') and elapsed_time >= IMAGING_TIMEOUT:
+            if (response.has_key('imaging')
+                and elapsed_time >= IMAGING_TIMEOUT):
                 raise ElasticHostsException('Drive imaging timed out')
             time.sleep(1)
 
         node_data = {}
-        node_data.update({'name': kwargs['name'], 'cpu': size.cpu, 'mem': size.ram, 'ide:0:0': drive_uuid,
-                          'boot': 'ide:0:0', 'smp': smp})
+        node_data.update({'name': kwargs['name'],
+                          'cpu': size.cpu,
+                          'mem': size.ram,
+                          'ide:0:0': drive_uuid,
+                          'boot': 'ide:0:0',
+                          'smp': smp})
         node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
 
         if vnc_password:
             node_data.update({'vnc:ip': 'auto', 'vnc:password': vnc_password})
 
-        response = self.connection.request(action = '/servers/create', data = json.dumps(node_data),
-                                           method = 'POST').object
+        response = self.connection.request(
+            action='/servers/create', data=json.dumps(node_data),
+            method='POST'
+        ).object
 
         if isinstance(response, list):
             nodes = [self._to_node(node, ssh_password) for node in response]
@@ -364,9 +401,12 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
     # Extension methods
     def ex_set_node_configuration(self, node, **kwargs):
         # Changes the configuration of the running server
-        valid_keys = ('^name$', '^parent$', '^cpu$', '^smp$', '^mem$', '^boot$', '^nic:0:model$', '^nic:0:dhcp',
-                      '^nic:1:model$', '^nic:1:vlan$', '^nic:1:mac$', '^vnc:ip$', '^vnc:password$', '^vnc:tls',
-                      '^ide:[0-1]:[0-1](:media)?$', '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
+        valid_keys = ('^name$', '^parent$', '^cpu$', '^smp$', '^mem$',
+                      '^boot$', '^nic:0:model$', '^nic:0:dhcp',
+                      '^nic:1:model$', '^nic:1:vlan$', '^nic:1:mac$',
+                      '^vnc:ip$', '^vnc:password$', '^vnc:tls',
+                      '^ide:[0-1]:[0-1](:media)?$',
+                      '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
 
         invalid_keys = []
         for key in kwargs.keys():
@@ -379,10 +419,15 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
                 invalid_keys.append(key)
 
         if invalid_keys:
-            raise ElasticHostsException('Invalid configuration key specified: %s' % (',' .join(invalid_keys)))
+            raise ElasticHostsException(
+                'Invalid configuration key specified: %s'
+                % (',' .join(invalid_keys))
+            )
 
-        response = self.connection.request(action = '/servers/%s/set' % (node.id), data = json.dumps(kwargs),
-                                           method = 'POST')
+        response = self.connection.request(
+            action='/servers/%s/set' % (node.id), data=json.dumps(kwargs),
+            method='POST'
+        )
 
         return (response.status == 200 and response.body != '')
 
@@ -390,32 +435,40 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
         """
         Create a new node, and start deployment.
 
-        @keyword    enable_root: If true, root password will be set to vnc_password (this will enable SSH access)
+        @keyword    enable_root: If true, root password will be set to
+                                 vnc_password (this will enable SSH access)
                                  and default 'toor' account will be deleted.
         @type       enable_root: C{bool}
 
-        For detailed description and keywords args, see L{NodeDriver.deploy_node}.
+        For detailed description and keywords args, see
+        L{NodeDriver.deploy_node}.
         """
         image = kwargs['image']
         vnc_password = kwargs.get('vnc_password', None)
         enable_root = kwargs.get('enable_root', False)
 
         if not vnc_password:
-            raise ValueError('You need to provide vnc_password argument if you want to use deployment')
+            raise ValueError('You need to provide vnc_password argument '
+                             'if you want to use deployment')
 
-        if image in STANDARD_DRIVES and STANDARD_DRIVES[image]['supports_deployment']:
-            raise valueError('Image %s does not support deployment' % (image.id))
+        if (image in STANDARD_DRIVES
+            and STANDARD_DRIVES[image]['supports_deployment']):
+            raise valueError('Image %s does not support deployment'
+                             % (image.id))
 
         if enable_root:
-            root_enable_script = ScriptDeployment(script = "unset HISTFILE;" \
-                                                           "echo root:%s | chpasswd;" \
-                                                           "sed -i '/^toor.*$/d' /etc/passwd /etc/shadow;" \
-                                                           "history -c" % \
-                                                           (vnc_password), delete = True)
+            script = ("unset HISTFILE;"
+                      "echo root:%s | chpasswd;"
+                      "sed -i '/^toor.*$/d' /etc/passwd /etc/shadow;"
+                      "history -c") % vnc_password
+            root_enable_script = ScriptDeployment(script=script,
+                                                  delete=True)
             deploy = kwargs.get('deploy', None)
             if deploy:
-                if isinstance(deploy, ScriptDeployment) or isinstance(deploy, SSHKeyDeployment):
-                    deployment = MultiStepDeployment([deploy, root_enable_script])
+                if (isinstance(deploy, ScriptDeployment)
+                    or isinstance(deploy, SSHKeyDeployment)):
+                    deployment = MultiStepDeployment([deploy,
+                                                      root_enable_script])
                 elif isinstance(deploy, MultiStepDeployment):
                     deployment = deploy
                     deployment.add(root_enable_script)
@@ -431,14 +484,18 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
     def ex_shutdown_node(self, node):
         # Sends the ACPI power-down event
-        response = self.connection.request(action = '/servers/%s/shutdown' % (node.id),
-                                           method = 'POST')
+        response = self.connection.request(
+            action='/servers/%s/shutdown' % (node.id),
+            method='POST'
+        )
         return response.status == 204
 
     def ex_destroy_drive(self, drive_uuid):
         # Deletes a drive
-        response = self.connection.request(action = '/drives/%s/destroy' % (drive_uuid),
-                                           method = 'POST')
+        response = self.connection.request(
+            action='/drives/%s/destroy' % (drive_uuid),
+            method='POST'
+        )
         return response.status == 204
 
     # Helper methods
@@ -453,23 +510,29 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
         else:
             public_ip = [data['nic:0:dhcp']]
 
-        extra = {'cpu': data['cpu'], 'smp': data['smp'], 'mem': data['mem'], 'started': data['started']}
+        extra = {'cpu': data['cpu'],
+                 'smp': data['smp'],
+                 'mem': data['mem'],
+                 'started': data['started']}
 
         if data.has_key('vnc:ip') and data.has_key('vnc:password'):
-            extra.update({'vnc_ip': data['vnc:ip'], 'vnc_password': data['vnc:password']})
+            extra.update({'vnc_ip': data['vnc:ip'],
+                          'vnc_password': data['vnc:password']})
 
         if ssh_password:
             extra.update({'password': ssh_password})
 
-        node = Node(id = data['server'], name = data['name'], state =  state,
-                    public_ip = public_ip, private_ip = None, driver = self.connection.driver,
-                    extra = extra)
+        node = Node(id=data['server'], name=data['name'], state=state,
+                    public_ip=public_ip, private_ip=None,
+                    driver=self.connection.driver,
+                    extra=extra)
 
         return node
 
 class ElasticHostsUK1Connection(ElasticHostsBaseConnection):
     """
-    Connection class for the ElasticHosts driver for the London Peer 1 end-point
+    Connection class for the ElasticHosts driver for
+    the London Peer 1 end-point
     """
 
     host = API_ENDPOINTS['uk-1']['host']
@@ -482,7 +545,8 @@ class ElasticHostsUK1NodeDriver(ElasticHostsBaseNodeDriver):
 
 class ElasticHostsUK2Connection(ElasticHostsBaseConnection):
     """
-    Connection class for the ElasticHosts driver for the London Bluesquare end-point
+    Connection class for the ElasticHosts driver for
+    the London Bluesquare end-point
     """
     host = API_ENDPOINTS['uk-2']['host']
 
@@ -494,7 +558,8 @@ class ElasticHostsUK2NodeDriver(ElasticHostsBaseNodeDriver):
 
 class ElasticHostsUS1Connection(ElasticHostsBaseConnection):
     """
-    Connection class for the ElasticHosts driver for the San Antonio Peer 1 end-point
+    Connection class for the ElasticHosts driver for
+    the San Antonio Peer 1 end-point
     """
     host = API_ENDPOINTS['us-1']['host']
 
