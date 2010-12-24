@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Deployment capability to ElasticHosts
+       [Tomaž Muraus]
+
+    *) Allow deploy_node to use non-standard SSH username and port
+       [Tomaž Muraus]
+
     *) Added Rackspace UK (London) support
        [Chmouel Boudjnah]
 
