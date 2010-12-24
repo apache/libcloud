@@ -105,50 +105,53 @@ INSTANCE_TYPES = {
 
 # Retrieved from http://www.elastichosts.com/cloud-hosting/api
 STANDARD_DRIVES = {
-    'cf82519b-01a0-4247-aff5-a2dadf4401ad': {
-        'uuid': 'cf82519b-01a0-4247-aff5-a2dadf4401ad',
-        'description': 'Debian Linux 4.0: Base system without X',
-        'size_gunzipped': '1GB',
-    },
-    'e6111e4c-67af-4438-b1bc-189747d5a8e5': {
-        'uuid': 'e6111e4c-67af-4438-b1bc-189747d5a8e5',
-        'description': 'Debian Linux 5.0: Base system without X',
-        'size_gunzipped': '1GB',
-    },
-    'bf1d943e-2a55-46bb-a8c7-6099e44a3dde': {
-        'uuid': 'bf1d943e-2a55-46bb-a8c7-6099e44a3dde',
-        'description': 'Ubuntu Linux 8.10: Base system with X',
+    '38df0986-4d85-4b76-b502-3878ffc80161': {
+        'uuid': '38df0986-4d85-4b76-b502-3878ffc80161',
+        'description': 'CentOS Linux 5.5',
         'size_gunzipped': '3GB',
+        'supports_deployment': True,
     },
-    '757586d5-f1e9-4d9c-b215-5a391c9a24bf': {
-        'uuid': '757586d5-f1e9-4d9c-b215-5a391c9a24bf',
-        'description': 'Ubuntu Linux 9.04: Base system with X',
-        'size_gunzipped': '3GB',
+    '980cf63c-f21e-4382-997b-6541d5809629': {
+        'uuid': '980cf63c-f21e-4382-997b-6541d5809629',
+        'description': 'Debian Linux 5.0',
+        'size_gunzipped': '1GB',
+        'supports_deployment': True,
+    },
+    'aee5589a-88c3-43ef-bb0a-9cab6e64192d': {
+        'uuid': 'aee5589a-88c3-43ef-bb0a-9cab6e64192d',
+        'description': 'Ubuntu Linux 10.04',
+        'size_gunzipped': '1GB',
+        'supports_deployment': True,
     },
     'b9d0eb72-d273-43f1-98e3-0d4b87d372c0': {
         'uuid': 'b9d0eb72-d273-43f1-98e3-0d4b87d372c0',
         'description': 'Windows Web Server 2008',
         'size_gunzipped': '13GB',
+        'supports_deployment': False,
     },
     '30824e97-05a4-410c-946e-2ba5a92b07cb': {
         'uuid': '30824e97-05a4-410c-946e-2ba5a92b07cb',
         'description': 'Windows Web Server 2008 R2',
         'size_gunzipped': '13GB',
+        'supports_deployment': False,
     },
     '9ecf810e-6ad1-40ef-b360-d606f0444671': {
         'uuid': '9ecf810e-6ad1-40ef-b360-d606f0444671',
         'description': 'Windows Web Server 2008 R2 + SQL Server',
         'size_gunzipped': '13GB',
+        'supports_deployment': False,
     },
     '10a88d1c-6575-46e3-8d2c-7744065ea530': {
         'uuid': '10a88d1c-6575-46e3-8d2c-7744065ea530',
         'description': 'Windows Server 2008 Standard R2',
         'size_gunzipped': '13GB',
+        'supports_deployment': False,
     },
     '2567f25c-8fb8-45c7-95fc-bfe3c3d84c47': {
         'uuid': '2567f25c-8fb8-45c7-95fc-bfe3c3d84c47',
         'description': 'Windows Server 2008 Standard R2 + SQL Server',
         'size_gunzipped': '13GB',
+        'supports_deployment': False,
     },
 }
 
