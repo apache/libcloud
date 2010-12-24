@@ -178,22 +178,22 @@ class ElasticHostsResponse(Response):
             raise InvalidCredsError()
 
         return self.status >= 200 and self.status <= 299
-    
+
     def parse_body(self):
         if not self.body:
             return self.body
-        
+
         try:
             data = json.loads(self.body)
         except:
             raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=ElasticHostsBaseNodeDriver)
 
         return data
-    
+
     def parse_error(self):
         error_header = self.headers.get('x-elastic-error', '')
         return 'X-Elastic-Error: %s (%s)' % (error_header, self.body.strip())
-    
+
 class ElasticHostsNodeSize(NodeSize):
     def __init__(self, id, name, cpu, ram, disk, bandwidth, price, driver):
         self.id = id
@@ -215,7 +215,7 @@ class ElasticHostsBaseConnection(ConnectionUserAndKey):
     """
     Base connection class for the ElasticHosts driver
     """
-    
+
     host = API_ENDPOINTS[DEFAULT_ENDPOINT]['host']
     responseCls = ElasticHostsResponse
 
@@ -286,10 +286,10 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
 
         @keyword    name: String with a name for this new node (required)
         @type       name: C{string}
-        
+
         @keyword    smp: Number of virtual processors or None to calculate based on the cpu speed
         @type       smp: C{int}
-        
+
         @keyword    nic_model: e1000, rtl8139 or virtio (is not specified, e1000 is used)
         @type       nic_model: C{string}
 
@@ -451,5 +451,3 @@ class ElasticHostsUS1NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the San Antonio Peer 1 end-point
     """
     connectionCls = ElasticHostsUS1Connection
-
-
