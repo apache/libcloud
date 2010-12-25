@@ -142,6 +142,10 @@ class CloudSigmaException(Exception):
     def __repr__(self):
         return "<CloudSigmaException '%s'>" % (self.args[0])
 
+class CloudSigmaInsufficientFundsException(Exception):
+    def __repr__(self):
+        return "<CloudSigmaInsufficientFundsException '%s'>" % (self.args[0])
+
 class CloudSigmaResponse(Response):
     def success(self):
         if self.status == 401:
@@ -335,10 +339,14 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         response = self.connection.request(action = '/servers/create', data = dict2str(node_data),
                                            method = 'POST').object
 
-        if isinstance(response, list):
-            nodes = [self._to_node(node) for node in response]
-        else:
-            nodes = [self._to_node(response)]
+        if not isinstance(response, list):
+            response = [ response ]
+
+        node = self._to_node(response[0])
+        if node is None:
+            # Insufficient funds, destroy created drive
+            self.ex_drive_destroy(drive_uuid)
+            raise CloudSigmaInsufficientFundsException('Insufficient funds, node creation failed')
 
         # Start the node after it has been created
         node = nodes[0]
@@ -483,6 +491,11 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                 state = NODE_STATE_MAP[data['status']]
             except KeyError:
                 state = NodeState.UNKNOWN
+
+            if 'server' not in data:
+                # Response does not contain server UUID if the server
+                # creation failed because of insufficient funds.
+                return None
 
             public_ip = []
             if data.has_key('nic:0:dhcp'):
