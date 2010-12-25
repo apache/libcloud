@@ -133,7 +133,7 @@ NODE_STATE_MAP = {
 }
 
 # Default timeout (in seconds) for the drive imaging process
-IMAGING_TIMEOUT = 10 * 60
+IMAGING_TIMEOUT = 20 * 60
 
 class CloudSigmaException(Exception):
     def __str__(self):
