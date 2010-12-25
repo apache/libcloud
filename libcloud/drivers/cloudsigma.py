@@ -349,7 +349,6 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
             raise CloudSigmaInsufficientFundsException('Insufficient funds, node creation failed')
 
         # Start the node after it has been created
-        node = nodes[0]
         started = self.ex_start_node(node)
 
         if started:
