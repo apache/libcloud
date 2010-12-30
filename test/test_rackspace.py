@@ -18,8 +18,8 @@ import unittest
 from libcloud.types import InvalidCredsError
 from libcloud.drivers.rackspace import (
     RackspaceNodeDriver as Rackspace,
-    SharedIpGroup,
-    NodeIpAddresses)
+    RackspaceSharedIpGroup,
+    RackspaceNodeIpAddresses)
 from libcloud.base import Node, NodeImage, NodeSize
 
 from test import MockHttp, TestCaseMixin
