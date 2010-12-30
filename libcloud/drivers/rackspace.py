@@ -158,7 +158,7 @@ class RackspaceConnection(ConnectionUserAndKey):
         )
 
 
-class SharedIpGroup(object):
+class RackspaceSharedIpGroup(object):
     """
     Shared IP group info.
     """
@@ -169,7 +169,7 @@ class SharedIpGroup(object):
         self.servers = servers
 
 
-class NodeIpAddresses(object):
+class RackspaceNodeIpAddresses(object):
     """
     List of public and private IP addresses of a Node.
     """
@@ -493,12 +493,12 @@ class RackspaceNodeDriver(NodeDriver):
             servers = [s.get('id') for s in self._findall(servers_el[0], 'server')]
         else:
             servers = None
-        return SharedIpGroup(id=el.get('id'),
-                     name=el.get('name'),
-                     servers=servers)
+        return RackspaceSharedIpGroup(id=el.get('id'),
+                                      name=el.get('name'),
+                                      servers=servers)
 
     def _to_ip_addresses(self, el):
-        return NodeIpAddresses(
+        return RackspaceNodeIpAddresses(
             [ip.get('addr') for ip in self._findall(self._findall(el, 'public')[0], 'ip')],
             [ip.get('addr') for ip in self._findall(self._findall(el, 'private')[0], 'ip')]
         )
