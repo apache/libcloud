@@ -24,6 +24,10 @@ try:
 except ImportError:
     pass
 
+# Depending on your version of Paramiko, it may cause a deprecation
+# warning on Python 2.6.
+# Ref: https://bugs.launchpad.net/paramiko/+bug/392973
+
 from os.path import split as psplit
 
 class BaseSSHClient(object):
