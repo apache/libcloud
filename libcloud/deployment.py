@@ -74,7 +74,7 @@ class ScriptDeployment(Deployment):
         @keyword name: Name of the script to upload it as, if not specified, a random name will be choosen.
 
         @type delete: C{bool}
-        @keyword delete: Weither to delete the script on completion.
+        @keyword delete: Whether to delete the script on completion.
         """
         self.script = script
         self.stdout = None
