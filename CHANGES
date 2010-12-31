@@ -2,6 +2,11 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) ex_create_ip_group, ex_list_ip_groups, ex_delete_ip_group,
+       ex_share_ip, ex_unshare_ip, ex_list_ip_addresses additions
+       to Rackspace driver
+       [Andrew Klochkov]
+
     *) New driver for CloudSigma
        [Tomaž Muraus]
 
