@@ -2,6 +2,11 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Append ORD1 to available Rackspace location, but keep in the
+       same node as DFW1, because it's not readable or writeable from
+       the API.
+       [Per suggestion of Grig Gheorghiu]
+
     *) ex_create_ip_group, ex_list_ip_groups, ex_delete_ip_group,
        ex_share_ip, ex_unshare_ip, ex_list_ip_addresses additions
        to Rackspace driver
