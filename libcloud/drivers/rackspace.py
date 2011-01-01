@@ -224,7 +224,12 @@ class RackspaceNodeDriver(NodeDriver):
         return self._to_images(self.connection.request('/images/detail').object)
 
     def list_locations(self):
-        return [NodeLocation(0, "Rackspace DFW1", 'US', self)]
+        """Lists available locations
+
+        Locations cannot be set or retrieved via the API, but currently
+        there are two locations, DFW and ORD.
+        """
+        return [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
 
     def create_node(self, **kwargs):
         """Create a new rackspace node
