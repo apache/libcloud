@@ -112,7 +112,7 @@ class BlueboxConnection(ConnectionUserAndKey):
     responseCls = BlueboxResponse
 
     def add_default_params(self, params):
-        params["key"] = self.user_id
+        params["customer_id"] = self.customer_id
         params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
 
         for param in params.keys():
@@ -136,10 +136,11 @@ class BlueboxConnection(ConnectionUserAndKey):
 BLUEBOX_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 
-NODE_STATE_MAP = { 'IN_PROGRESS': NodeState.PENDING,
-                   'SUCCEEDED': NodeState.RUNNING,
-                   'shutting-down': NodeState.TERMINATED,
-                   'terminated': NodeState.TERMINATED }
+NODE_STATE_MAP = { 'queued': NodeState.PENDING,
+                   'building': NodeState.PENDING,
+                   'running': NodeState.RUNNING,
+                   'error': NodeState.TERMINATED,
+                   'unknown': NodeState.UNKNOWN }
 
 class BlueboxNodeDriver(NodeDriver):
     """
@@ -182,80 +183,61 @@ class BlueboxNodeDriver(NodeDriver):
 
         if self._getstatus(object):
             return Node(
-                id = object.findtext("device/id"),
-                name = kwargs["name"],
-                state = NODE_STATE_MAP[object.findtext("devices/status")],
-                public_ip = kwargs.get("publicip", None),
-                private_ip = kwargs.get("privateip", None),
+                id = object.findtext("hash/id"),
+                hostname = object.findtext("hash/hostname"),
+                state = NODE_STATE_MAP[object.findtext("hash/status")],
+                public_ip = object.findtext("hash/ips/ip"),
                 driver = self.connection.driver
             )
         else:
             return None
 
-    def reboot_node(self, node):
-        """
-        Reboot the node by passing in the node object
-        """
-        params = {'method': 'voxel.devices.power',
-                  'device_id': node.id,
-                  'power_action': 'reboot'}
-        return self._getstatus(self.connection.request('/', params=params).object)
-
     def destroy_node(self, node):
         """
         Destroy node by passing in the node object
         """
-        params = {'method': 'voxel.voxcloud.delete',
-                  'device_id': node.id}
-        return self._getstatus(self.connection.request('/', params=params).object)
+        return self._getstatus(self.connection.request("/api/blocks/#{node.id}.xml", method='DELETE').object)
 
     def list_locations(self):
-        params = {"method": "voxel.voxcloud.facilities.list"}
-        result = self.connection.request('/', params=params).object
-        nodes = self._to_locations(result)
-        return nodes
+        raise NotImplementedError, \
+          'list_locations not finished for bluebox yet'
 
     def _getstatus(self, element):
         status = element.attrib["stat"]
         return status == "ok"
 
 
-    def _to_locations(self, object):
-        return [NodeLocation(element.attrib["label"],
-                             element.findtext("description"),
-                             element.findtext("description"),
-                             self)
-                for element in object.findall('facilities/facility')]
+#    def _to_locations(self, object):
+#        return [NodeLocation(element.attrib["label"],
+#                             element.findtext("description"),
+#                             element.findtext("description"),
+#                             self)
+#                for element in object.findall('facilities/facility')]
 
     def _to_nodes(self, object):
         nodes = []
-        for element in object.findall('devices/device'):
-            if element.findtext("type") == "Virtual Server":
-                try:
-                    state = self.NODE_STATE_MAP[element.attrib['status']]
-                except KeyError:
-                    state = NodeState.UNKNOWN
+        for element in object.findall('records/record'):
+            try:
+                state = self.NODE_STATE_MAP[element.attrib['status']]
+            except KeyError:
+                state = NodeState.UNKNOWN
 
-                public_ip = private_ip = None
-                ipassignments = element.findall("ipassignments/ipassignment")
-                for ip in ipassignments:
-                    if ip.attrib["type"] =="frontend":
-                        public_ip = ip.text
-                    elif ip.attrib["type"] == "backend":
-                        private_ip = ip.text
+                public_ip = None
+                ips = element.findall("ips")
+                for ip in ips:
+                    public_ip = ip.findtext("address")
 
                 nodes.append(Node(id= element.attrib['id'],
-                                 name=element.attrib['label'],
+                                 name=element.attrib['hostname'],
                                  state=state,
                                  public_ip= public_ip,
-                                 private_ip= private_ip,
                                  driver=self.connection.driver))
         return nodes
 
     def _to_images(self, object):
         images = []
-        for element in object.findall("images/image"):
+        for element in object.findall("records/record"):
             images.append(NodeImage(id = element.attrib["id"],
-                                    name = element.attrib["summary"],
+                                    name = element.attrib["description"],
                                     driver = self.connection.driver))
         return images
