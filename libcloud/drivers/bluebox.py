@@ -25,12 +25,11 @@ import hashlib
 from xml.etree import ElementTree as ET
 
 BLUEBOX_API_HOST = "boxpanel.blueboxgrp.com"
-BLUEBOX_END_POINT = "api/domains"
 
 # Since Bluebox doesn't provide a list of available VPS types through their
 # API, we list them explicitly here.
 
-BLUEBOX_VPS = {
+BLUEBOX_INSTANCE_TYPES = {
   '1gb': {
     'id': '94fd37a7-2606-47f7-84d5-9000deda52ae',
     'name': 'Block 1GB Virtual Server',
@@ -151,40 +150,16 @@ class BlueboxNodeDriver(NodeDriver):
     type = Provider.BLUEBOX
     name = 'Bluebox Blocks'
 
-    def _initialize_instance_types():
-        for cpus in range(1,14):
-            if cpus == 1:
-                name = "Single CPU"
-            else:
-                name = "%d CPUs" % cpus
-            id = "%dcpu" % cpus
-            ram = cpus * RAM_PER_CPU
-
-            VOXEL_INSTANCE_TYPES[id]= {
-                         'id': id,
-                         'name': name,
-                         'ram': ram,
-                         'disk': None,
-                         'bandwidth': None,
-                         'price': None}
-
-    features = {"create_node": [],
-                "list_sizes":  ["variable_disk"]}
-
-    _initialize_instance_types()
-
     def list_nodes(self):
-        params = {"method": "voxel.devices.list"}
-        result = self.connection.request('/', params=params).object
+        result = self.connection.request('/api/blocks.xml').object
         return self._to_nodes(result)
 
     def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i)
-                    for i in VOXEL_INSTANCE_TYPES.values() ]
+                    for i in BLUEBOX_INSTANCE_TYPES.values() ]
 
     def list_images(self, location=None):
-        params = {"method": "voxel.images.list"}
-        result = self.connection.request('/', params=params).object
+        result = self.connection.request('/api/block_templates.xml').object
         return self._to_images(result)
 
     def create_node(self, **kwargs):
@@ -192,21 +167,18 @@ class BlueboxNodeDriver(NodeDriver):
             'create_node not finished for voxel yet'
         size = kwargs["size"]
         cores = size.ram / RAM_PER_CPU
-        params = {'method':           'voxel.voxcloud.create',
-                  'hostname':         kwargs["name"],
-                  'disk_size':        int(kwargs["disk"])/1024,
-                  'processing_cores': cores,
-                  'facility':         kwargs["location"].id,
-                  'image_id':         kwargs["image"],
-                  'backend_ip':       kwargs.get("privateip", None),
-                  'frontend_ip':      kwargs.get("publicip", None),
-                  'admin_password':   kwargs.get("rootpass", None),
-                  'console_password': kwargs.get("consolepass", None),
-                  'ssh_username':     kwargs.get("sshuser", None),
-                  'ssh_password':     kwargs.get("sshpass", None),
-                  'voxel_access':     kwargs.get("voxel_access", None)}
+        params = {
+                  'product':          kwargs["product"],
+                  'template':         kwargs["template"],
+                  'password':         kwargs["password"],
+                  'ssh_key':          kwargs["ssh_key"],
+                  'username':         kwargs["username"]
+        }
 
-        object = self.connection.request('/', params=params).object
+        if params['username'] == "":
+          params['username'] = "deploy"
+
+        object = self.connection.request('/api/blocks.xml', params=params, method='POST').object
 
         if self._getstatus(object):
             return Node(
