@@ -15,7 +15,7 @@
 import sys
 import unittest
 
-from libcloud.drivers.voxel import VoxelNodeDriver as Voxel
+from libcloud.drivers.bluebox import BlueboxNodeDriver as Bluebox
 from libcloud.types import InvalidCredsError
 
 import httplib

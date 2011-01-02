@@ -37,6 +37,7 @@ class Provider(object):
     @cvar OPENNEBULA: OpenNebula.org
     @cvar DREAMHOST: DreamHost Private Server
     @cvar CLOUDSIGMA: CloudSigma
+    @cvar BLUEBOX: Bluebox Blocks
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -66,6 +67,7 @@ class Provider(object):
     RACKSPACE_UK = 23
     BRIGHTBOX = 24
     CLOUDSIGMA = 25
+    BLUEBOX = 26
 
 class NodeState(object):
     """
