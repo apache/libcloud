@@ -29,16 +29,18 @@ class BlueboxTest(unittest.TestCase):
 
     def setUp(self):
 
-        bluebox.connectionCls.conn_classes = (None, BlueboxMockHttp)
+        Bluebox.connectionCls.conn_classes = (None, BlueboxMockHttp)
         BlueboxMockHttp.type = None
         self.driver = Bluebox(BLUEBOX_CUSTOMER_ID, BLUEBOX_API_KEY)
 
-    def test_auth_failed(self):
+    def test_auth(self):
         BlueboxMockHttp.type = 'UNAUTHORIZED'
+
         try:
             self.driver.list_nodes()
-        except Exception, e:
+        except InvalidCredsError, e:
             self.assertTrue(isinstance(e, InvalidCredsError))
+            self.assertEquals(e.value, '401: Unauthorized')
         else:
             self.fail('test should have thrown')
 
@@ -46,9 +48,9 @@ class BlueboxMockHttp(MockHttp):
 
     fixtures = FileFixtures('bluebox')
 
-    def _UNAUTHORIZED(self, method, url, body, headers):
+    def _api_blocks_xml_UNAUTHORIZED(self, method, url, body, headers):
         body = self.fixtures.load('unauthorized.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.UNAUTHORIZED])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

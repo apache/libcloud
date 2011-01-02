@@ -22,6 +22,7 @@ from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeLocation
 import datetime
 import hashlib
+import base64
 from xml.etree import ElementTree as ET
 
 BLUEBOX_API_HOST = "boxpanel.blueboxgrp.com"
@@ -66,42 +67,30 @@ BLUEBOX_INSTANCE_TYPES = {
 
 class BlueboxResponse(Response):
 
-    def __init__(self, response):
-        self.parsed = None
-        super(BlueboxResponse, self).__init__(response)
+#    def __init__(self, response):
+#        self.parsed = None
+#        super(BlueboxResponse, self).__init__(response)
 
     def parse_body(self):
         if not self.body:
             return None
-        if not self.parsed:
-            self.parsed = ET.XML(self.body)
-        return self.parsed
+        return ET.XML(self.body)
 
     def parse_error(self):
-        err_list = []
-        if not self.body:
-            return None
-        if not self.parsed:
-            self.parsed = ET.XML(self.body)
-        for err in self.parsed.findall('err'):
-            code = err.get('code')
-            err_list.append("(%s) %s" % (code, err.get('msg')))
-            # From voxel docs:
-            # 1: Invalid login or password
-            # 9: Permission denied: user lacks access rights for this method
-            if code == "1" or code == "9":
-                # sucks, but only way to detect
-                # bad authentication tokens so far
-                raise InvalidCredsError(err_list[-1])
-        return "\n".join(err_list)
+        if int(self.status) == 401:
+            if not self.body:
+                raise InvalidCredsError(str(self.status) + ': ' + self.error)
+            else:
+                raise InvalidCredsError(self.body)
+        return self.body
 
-    def success(self):
-        if not self.parsed:
-            self.parsed = ET.XML(self.body)
-        stat = self.parsed.get('stat')
-        if stat != "ok":
-            return False
-        return True
+    #def success(self):
+    #    if not self.parsed:
+    #        self.parsed = ET.XML(self.body)
+    #    stat = self.parsed.get('stat')
+    #    if stat != "ok":
+    #        return False
+    #    return True
 
 class BlueboxConnection(ConnectionUserAndKey):
     """
@@ -109,29 +98,13 @@ class BlueboxConnection(ConnectionUserAndKey):
     """
 
     host = BLUEBOX_API_HOST
+    secure = True
     responseCls = BlueboxResponse
 
-    def add_default_params(self, params):
-        params["customer_id"] = self.customer_id
-        params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
-
-        for param in params.keys():
-            if params[param] is None:
-                del params[param]
-
-        keys = params.keys()
-        keys.sort()
-
-        md5 = hashlib.md5()
-        md5.update(self.key)
-        for key in keys:
-            if params[key]:
-                if not params[key] is None:
-                    md5.update("%s%s"% (key, params[key]))
-                else:
-                    md5.update(key)
-        params['api_sig'] = md5.hexdigest()
-        return params
+    def add_default_headers(self, headers):
+        user_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        headers['Authorization'] = 'Basic %s' % (user_b64)
+        return headers
 
 BLUEBOX_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
@@ -152,7 +125,7 @@ class BlueboxNodeDriver(NodeDriver):
     name = 'Bluebox Blocks'
 
     def list_nodes(self):
-        result = self.connection.request('/api/blocks.xml').object
+        result = self.connection.request('/api/blocks.xml', method='GET').object
         return self._to_nodes(result)
 
     def list_sizes(self, location=None):
@@ -160,7 +133,7 @@ class BlueboxNodeDriver(NodeDriver):
                     for i in BLUEBOX_INSTANCE_TYPES.values() ]
 
     def list_images(self, location=None):
-        result = self.connection.request('/api/block_templates.xml').object
+        result = self.connection.request('/api/block_templates.xml', method='GET').object
         return self._to_images(result)
 
     def create_node(self, **kwargs):
@@ -179,7 +152,7 @@ class BlueboxNodeDriver(NodeDriver):
         if params['username'] == "":
           params['username'] = "deploy"
 
-        object = self.connection.request('/api/blocks.xml', params=params, method='POST').object
+        object = self.connection.request('/api/blocks.xml', method='POST').object
 
         if self._getstatus(object):
             return Node(
