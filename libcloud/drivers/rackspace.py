@@ -231,6 +231,46 @@ class RackspaceNodeDriver(NodeDriver):
         """
         return [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
 
+    def _change_password_or_name(self, node, name=None, password=None):
+        uri = '/servers/%s' % (node.id)
+
+        if not name:
+            name = node.name
+
+        body = { 'xmlns': NAMESPACE,
+                 'name': name}
+
+        if password != None:
+            body['adminPass'] = password
+
+        server_elm = ET.Element('server', body)
+
+        resp = self.connection.request(uri, method='PUT', data=ET.tostring(server_elm))
+
+        if resp.status == 204 and password != None:
+            node.extra['password'] = password
+
+        return resp.status == 204
+
+    def ex_set_password(self, node, password):
+        """
+        Sets the Node's root password.
+
+        This will reboot the instance to complete the operation.
+
+        L{node.extra['password']} will be set to the new value if the
+        operation was successful.
+        """
+        return self._change_password_or_name(node, password=password)
+
+    def ex_set_server_name(self, node, name):
+        """
+        Sets the Node's name.
+
+        This will reboot the instance to complete the operation.
+        """
+        return self._change_password_or_name(node, name=name)
+
     def create_node(self, **kwargs):
         """Create a new rackspace node
 
