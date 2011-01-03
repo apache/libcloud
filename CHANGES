@@ -2,6 +2,11 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) SSL Certificate Name Verification:
+       - libcloud.security module
+       - LibcloudHTTPSConnection, LibcloudHTTPConnection (alias)
+       - Emits warning when not verifying, or CA certs not found
+
     *) Append ORD1 to available Rackspace location, but keep in the
        same node as DFW1, because it's not readable or writeable from
        the API.
