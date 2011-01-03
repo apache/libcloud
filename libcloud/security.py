@@ -34,6 +34,9 @@ CA_CERTS_PATH = [
     # debian/ubuntu/arch/gentoo: ca-certificates
     '/etc/ssl/certs/ca-certificates.crt',
 
+    # freebsd: ca_root_nss
+    '/usr/local/share/certs/ca-root-nss.crt',
+
     # macports: curl-ca-bundle
     '/opt/local/share/curl/curl-ca-bundle.crt',
 ]
