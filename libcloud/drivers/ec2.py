@@ -321,6 +321,7 @@ class EC2NodeDriver(NodeDriver):
                                                "placement/availabilityZone"),
                 'kernelid': self._findattr(element, "kernelId"),
                 'ramdiskid': self._findattr(element, "ramdiskId"),
+                'clienttoken' : self._findattr(element, "clientToken"),
                 'groups': groups
             }
         )
@@ -508,6 +509,9 @@ class EC2NodeDriver(NodeDriver):
 
         @keyword    ex_userdata: User data
         @type       ex_userdata: C{str}
+
+        @keyword    ex_clienttoken: Unique identifier to ensure idempotency
+        @type       ex_clienttoken: C{str}
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -530,6 +534,9 @@ class EC2NodeDriver(NodeDriver):
 
         if 'ex_userdata' in kwargs:
             params['UserData'] = base64.b64encode(kwargs['ex_userdata'])
+
+        if 'ex_clienttoken' in kwargs:
+            params['ClientToken'] = kwargs['ex_clienttoken']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
