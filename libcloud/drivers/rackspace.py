@@ -356,10 +356,18 @@ class RackspaceNodeDriver(NodeDriver):
 
         return personality_elm
 
-    def reboot_node(self, node):
-        # TODO: Hard Reboots should be supported too!
-        resp = self._node_action(node, ['reboot', ('type', 'SOFT')])
+    def _reboot_node(self, node, reboot_type='SOFT'):
+        resp = self._node_action(node, ['reboot', ('type', reboot_type)])
         return resp.status == 202
+
+    def ex_soft_reboot_node(self, node):
+        return self._reboot_node(node, reboot_type='SOFT')
+
+    def ex_hard_reboot_node(self, node):
+        return self._reboot_node(node, reboot_type='HARD')
+
+    def reboot_node(self, node):
+        return self._reboot_node(node, reboot_type='HARD')
 
     def destroy_node(self, node):
         uri = '/servers/%s' % (node.id)
