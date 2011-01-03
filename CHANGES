@@ -2,6 +2,9 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Add Hard and Soft reboot methods to Rackspace driver.
+       [Peter Herndon]
+
     *) EC2 Driver availability zones, via ex_list_availability_zones;
        list_locations rewrite to include availablity zones
        [Tomaž Muraus]
