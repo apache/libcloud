@@ -149,6 +149,18 @@ EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.68'
 # prices are the same
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_EU_WEST_INSTANCE_TYPES)
 
+
+class EC2NodeLocation(NodeLocation):
+    def __init__(self, id, name, country, driver, availability_zone):
+        super(EC2NodeLocation, self).__init__(id, name, country, driver)
+        self.availability_zone = availability_zone
+
+    def __repr__(self):
+        return (('<EC2NodeLocation: id=%s, name=%s, country=%s, '
+                 'availability_zone=%s driver=%s>')
+                % (self.id, self.name, self.country,
+                   self.availability_zone.name, self.driver.name))
+
 class EC2Response(Response):
     """
     EC2 specific response parsing and error handling.
@@ -231,6 +243,22 @@ class EC2Connection(ConnectionUserAndKey):
         )
         return b64_hmac
 
+class ExEC2AvailabilityZone(object):
+    """
+    Extension class which stores information about an EC2 availability zone.
+
+    Note: This class is EC2 specific.
+    """
+    def __init__(self, name, zone_state, region_name):
+        self.name = name
+        self.zone_state = zone_state
+        self.region_name = region_name
+
+    def __repr__(self):
+        return (('<ExEC2AvailabilityZone: name=%s, zone_state=%s, '
+                 'region_name=%s>')
+                % (self.name, self.zone_state, self.region_name))
+
 class EC2NodeDriver(NodeDriver):
     """
     Amazon EC2 node driver
@@ -239,6 +267,9 @@ class EC2NodeDriver(NodeDriver):
     connectionCls = EC2Connection
     type = Provider.EC2
     name = 'Amazon EC2 (us-east-1)'
+    friendly_name = 'Amazon US N. Virginia'
+    country = 'US'
+    region_name = 'us-east-1'
     path = '/'
 
     _instance_types = EC2_US_EAST_INSTANCE_TYPES
@@ -360,24 +391,37 @@ class EC2NodeDriver(NodeDriver):
         )
         return images
 
+    def list_locations(self):
+        locations = []
+        for index, availability_zone in enumerate(self.ex_list_availability_zones()):
+            locations.append(EC2NodeLocation(index,
+                                             self.friendly_name,
+                                             self.country,
+                                             self,
+                                             availability_zone))
+        return locations
+
     def ex_create_keypair(self, name):
         """Creates a new keypair
 
-        @note: This is a non-standard extension API, and only works for EC2.
+        @note: This is a non-standard extension API, and
+               only works for EC2.
 
         @type name: C{str}
-        @param name: The name of the keypair to Create. This must be unique,
-                     otherwise an InvalidKeyPair.Duplicate exception is raised.
+        @param name: The name of the keypair to Create. This must be
+                     unique, otherwise an InvalidKeyPair.Duplicate
+                     exception is raised.
         """
-        params = {'Action': 'CreateKeyPair',
-                  'KeyName': name,
+        params = {
+            'Action': 'CreateKeyPair',
+            'KeyName': name,
         }
         response = self.connection.request(self.path, params=params).object
         key_material = self._findtext(response, 'keyMaterial')
         key_fingerprint = self._findtext(response, 'keyFingerprint')
         return {
-                'keyMaterial': key_material,
-                'keyFingerprint': key_fingerprint,
+            'keyMaterial': key_material,
+            'keyFingerprint': key_fingerprint,
         }
 
     def ex_import_keypair(self, name, keyfile):
@@ -489,6 +533,45 @@ class EC2NodeDriver(NodeDriver):
                 raise e
         return results
 
+    def ex_list_availability_zones(self, only_available=True):
+        """
+        Return a list of L{ExEC2AvailabilityZone} objects for the
+        current region.
+
+        Note: This is an extension method and is only available for EC2
+        driver.
+
+        @keyword  only_available: If true, return only availability zones
+                                  with state 'available'
+        @type     only_available: C{string}
+        """
+        params = {'Action': 'DescribeAvailabilityZones'}
+
+        if only_available:
+            params.update({'Filter.0.Name': 'state'})
+            params.update({'Filter.0.Value.0': 'available'})
+
+        params.update({'Filter.1.Name': 'region-name'})
+        params.update({'Filter.1.Value.0': self.region_name})
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        availability_zones = []
+        for element in self._findall(result, 'availabilityZoneInfo/item'):
+            name = self._findtext(element, 'zoneName')
+            zone_state = self._findtext(element, 'zoneState')
+            region_name = self._findtext(element, 'regionName')
+
+            availability_zone = ExEC2AvailabilityZone(
+                name=name,
+                zone_state=zone_state,
+                region_name=region_name
+            )
+            availability_zones.append(availability_zone)
+
+        return availability_zones
+
     def create_node(self, **kwargs):
         """Create a new EC2 node
 
@@ -529,6 +612,13 @@ class EC2NodeDriver(NodeDriver):
             for sig in range(len(kwargs['ex_securitygroup'])):
                 params['SecurityGroup.%d' % (sig+1,)]  = kwargs['ex_securitygroup'][sig]
 
+        if 'location' in kwargs:
+            availability_zone = kwargs['location'].availability_zone
+            if availability_zone.region_name != self.region_name:
+                raise AttributeError('Invalid availability zone: %s'
+                                     % (availability_zone.name))
+            params['Placement.AvailabilityZone'] = availability_zone.name
+
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
 
@@ -564,8 +654,6 @@ class EC2NodeDriver(NodeDriver):
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
 
-    def list_locations(self):
-        return [NodeLocation(0, 'Amazon US N. Virginia', 'US', self)]
 
 class EC2EUConnection(EC2Connection):
     """
@@ -579,10 +667,11 @@ class EC2EUNodeDriver(EC2NodeDriver):
     """
 
     name = 'Amazon EC2 (eu-west-1)'
+    friendly_name = 'Amazon Europe Ireland'
+    country = 'IE'
+    region_name = 'eu-west-1'
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_WEST_INSTANCE_TYPES
-    def list_locations(self):
-        return [NodeLocation(0, 'Amazon Europe Ireland', 'IE', self)]
 
 class EC2USWestConnection(EC2Connection):
     """
@@ -597,10 +686,11 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     """
 
     name = 'Amazon EC2 (us-west-1)'
+    friendly_name = 'Amazon US N. California'
+    country = 'US'
+    region_name = 'us-west-1'
     connectionCls = EC2USWestConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
-    def list_locations(self):
-        return [NodeLocation(0, 'Amazon US N. California', 'US', self)]
 
 class EC2APSEConnection(EC2Connection):
     """
@@ -615,10 +705,11 @@ class EC2APSENodeDriver(EC2NodeDriver):
     """
 
     name = 'Amazon EC2 (ap-southeast-1)'
+    friendly_name = 'Amazon Asia-Pacific Singapore'
+    country = 'SG'
+    region_name = 'ap-southeast-1'
     connectionCls = EC2APSEConnection
     _instance_types = EC2_AP_SOUTHEAST_INSTANCE_TYPES
-    def list_locations(self):
-        return [NodeLocation(0, 'Amazon Asia-Pacific Singapore', 'SG', self)]
 
 class EucConnection(EC2Connection):
     """
