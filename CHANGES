@@ -2,6 +2,9 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) EC2 Driver Idempotency capability in create_node; LIBCLOUD-69
+       [David LaBissoniere]
+
     *) SSL Certificate Name Verification:
        - libcloud.security module
        - LibcloudHTTPSConnection, LibcloudHTTPConnection (alias)
