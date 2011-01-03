@@ -2,6 +2,9 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Add ex_set_password and ex_set_server_name to Rackspace driver.
+       [Peter Herndon, Paul Querna]
+
     *) Add Hard and Soft reboot methods to Rackspace driver.
        [Peter Herndon]
 
