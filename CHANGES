@@ -2,6 +2,10 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) EC2 Driver availability zones, via ex_list_availability_zones;
+       list_locations rewrite to include availablity zones
+       [Tomaž Muraus]
+
     *) EC2 Driver Idempotency capability in create_node; LIBCLOUD-69
        [David LaBissoniere]
 
