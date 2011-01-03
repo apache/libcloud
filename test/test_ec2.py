@@ -40,6 +40,8 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.create_node(name='foo', image=image, size=size)
         self.assertEqual(node.id, 'i-2ba64342')
 
+    # TODO: add tests for create_node for ex_clienttoken
+
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
         self.assertEqual(node.id, 'i-4382922a')
