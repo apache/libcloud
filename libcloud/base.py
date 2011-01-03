@@ -20,14 +20,16 @@ import httplib, urllib
 import libcloud
 from libcloud.types import NodeState, DeploymentError
 from libcloud.ssh import SSHClient
+from libcloud.httplib_ssl import LibcloudHTTPSConnection
+from httplib import HTTPConnection as LibcloudHTTPConnection
 import time
 import hashlib
 import StringIO
+import ssl
 import os
 import socket
 import struct
 from pipes import quote as pquote
-
 
 class Node(object):
     """
@@ -257,13 +259,13 @@ class LoggingConnection():
         cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
         return " ".join(cmd)
 
-class LoggingHTTPSConnection(LoggingConnection, httplib.HTTPSConnection):
+class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     """
     Utility Class for logging HTTPS connections
     """
 
     def getresponse(self):
-        r = httplib.HTTPSConnection.getresponse(self)
+        r = LibcloudHTTPSConnection.getresponse(self)
         if self.log is not None:
             r, rv = self._log_response(r)
             self.log.write(rv + "\n")
@@ -277,16 +279,15 @@ class LoggingHTTPSConnection(LoggingConnection, httplib.HTTPSConnection):
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
-        return httplib.HTTPSConnection.request(self, method, url,
-                                               body, headers)
+        return LibcloudHTTPSConnection.request(self, method, url, body, headers)
 
-class LoggingHTTPConnection(LoggingConnection, httplib.HTTPConnection):
+class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
     Utility Class for logging HTTP connections
     """
 
     def getresponse(self):
-        r = httplib.HTTPConnection.getresponse(self)
+        r = LibcloudHTTPConnection.getresponse(self)
         if self.log is not None:
             r, rv = self._log_response(r)
             self.log.write(rv + "\n")
@@ -300,7 +301,7 @@ class LoggingHTTPConnection(LoggingConnection, httplib.HTTPConnection):
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
-        return httplib.HTTPConnection.request(self, method, url,
+        return LibcloudHTTPConnection.request(self, method, url,
                                                body, headers)
 
 class ConnectionKey(object):
@@ -315,8 +316,8 @@ class ConnectionKey(object):
     # with upstream Python (see http://bugs.python.org/issue1589 for details)
     # and not with libcloud.
 
-    #conn_classes = (httplib.LoggingHTTPConnection, LoggingHTTPSConnection)
-    conn_classes = (httplib.HTTPConnection, httplib.HTTPSConnection)
+    #conn_classes = (LoggingHTTPSConnection)
+    conn_classes = (LibcloudHTTPConnection, LibcloudHTTPSConnection)
 
     responseCls = Response
     connection = None
@@ -355,7 +356,9 @@ class ConnectionKey(object):
         host = host or self.host
         port = port or self.port[self.secure]
 
-        connection = self.conn_classes[self.secure](host, port)
+        kwargs = {'host': host, 'port': port}
+
+        connection = self.conn_classes[self.secure](**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
@@ -439,8 +442,12 @@ class ConnectionKey(object):
         # Removed terrible hack...this a less-bad hack that doesn't execute a
         # request twice, but it's still a hack.
         self.connect()
-        self.connection.request(method=method, url=url, body=data,
-                                headers=headers)
+        try:
+            self.connection.request(method=method, url=url, body=data,
+                                    headers=headers)
+        except ssl.SSLError, e:
+            raise ssl.SSLError(str(e))
+
         response = self.responseCls(self.connection.getresponse())
         response.connection = self
         return response
