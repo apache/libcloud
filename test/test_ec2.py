@@ -15,7 +15,7 @@
 import sys
 import unittest
 
-from libcloud.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
+from libcloud.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver, IdempotentParamError
 from libcloud.base import Node, NodeImage, NodeSize
 
 from test import MockHttp, TestCaseMixin
@@ -30,6 +30,7 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
         self.driver = EC2NodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
     def test_create_node(self):
@@ -40,7 +41,36 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.create_node(name='foo', image=image, size=size)
         self.assertEqual(node.id, 'i-2ba64342')
 
-    # TODO: add tests for create_node for ex_clienttoken
+    def test_create_node_idempotent(self):
+        EC2MockHttp.type = 'idempotent'
+        image = NodeImage(id='ami-be3adfd7',
+                          name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
+        token = 'testclienttoken'
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                ex_clienttoken=token)
+        self.assertEqual(node.id, 'i-2ba64342')
+        self.assertEqual(node.extra['clienttoken'], token)
+
+        # from: http://docs.amazonwebservices.com/AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
+
+        #    If you repeat the request with the same client token, but change
+        #    another request parameter, Amazon EC2 returns an
+        #    IdempotentParameterMismatch error.
+
+        # In our case, changing the parameter doesn't actually matter since we
+        # are forcing the error response fixture.
+        EC2MockHttp.type = 'idempotent_mismatch'
+
+        idem_error = None
+        try:
+            self.driver.create_node(name='foo', image=image, size=size,
+                    ex_mincount='2', ex_maxcount='2', # different count
+                    ex_clienttoken=token)
+        except IdempotentParamError, e:
+            idem_error = e
+        self.assertTrue(idem_error is not None)
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
@@ -115,6 +145,14 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _idempotent_RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances_idem.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _idempotent_mismatch_RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances_idem_mismatch.xml')
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
+
     def _TerminateInstances(self, method, url, body, headers):
         body = self.fixtures.load('terminate_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -123,6 +161,7 @@ class EC2APSETests(EC2Tests):
     def setUp(self):
         EC2APSENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
         self.driver = EC2APSENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
 if __name__ == '__main__':
