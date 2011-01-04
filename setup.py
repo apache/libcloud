@@ -84,7 +84,7 @@ setup(
     description='A unified interface into many cloud server providers',
     author='Apache Software Foundation',
     author_email='libcloud@incubator.apache.org',
-    requires=([], ['ssl'],)[pre_python26],
+    requires=([], ['ssl', 'simplejson'],)[pre_python26],
     packages=[
         'libcloud',
         'libcloud.drivers'
