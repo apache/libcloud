@@ -578,7 +578,8 @@ class LinodeNodeDriver(NodeDriver):
         # Avoid batch limitation
         ip_answers = []
         args = [iter(batch)] * 25
-        for twenty_five in itertools.izip_longest(*args):
+        izip_longest = getattr(itertools, 'izip_longest', _izip_longest)
+        for twenty_five in izip_longest(*args):
             twenty_five = [q for q in twenty_five if q]
             params = { "api_action": "batch",
                 "api_requestArray": json.dumps(twenty_five) }
@@ -597,3 +598,19 @@ class LinodeNodeDriver(NodeDriver):
         return nodes.values()
 
     features = {"create_node": ["ssh_key", "password"]}
+
+def _izip_longest(*args, **kwds):
+    """Taken from Python docs
+
+    http://docs.python.org/library/itertools.html#itertools.izip
+    """
+    fillvalue = kwds.get('fillvalue')
+    def sentinel(counter = ([fillvalue]*(len(args)-1)).pop):
+        yield counter() # yields the fillvalue, or raises IndexError
+    fillers = itertools.repeat(fillvalue)
+    iters = [itertools.chain(it, sentinel(), fillers) for it in args]
+    try:
+        for tup in itertools.izip(*iters):
+            yield tup
+    except IndexError:
+        pass
