@@ -98,10 +98,14 @@ class VoxelConnection(ConnectionUserAndKey):
 VOXEL_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 
-NODE_STATE_MAP = { 'IN_PROGRESS': NodeState.PENDING,
-                   'SUCCEEDED': NodeState.RUNNING,
-                   'shutting-down': NodeState.TERMINATED,
-                   'terminated': NodeState.TERMINATED }
+NODE_STATE_MAP = {
+    'IN_PROGRESS': NodeState.PENDING,
+    'QUEUED': NodeState.PENDING,
+    'SUCCEEDED': NodeState.RUNNING,
+    'shutting-down': NodeState.TERMINATED,
+    'terminated': NodeState.TERMINATED,
+    'unknown': NodeState.UNKNOWN,
+}
 
 class VoxelNodeDriver(NodeDriver):
     """
@@ -141,7 +145,7 @@ class VoxelNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i)
-                    for i in VOXEL_INSTANCE_TYPES.values() ]
+                 for i in VOXEL_INSTANCE_TYPES.values() ]
 
     def list_images(self, location=None):
         params = {"method": "voxel.images.list"}
@@ -149,23 +153,73 @@ class VoxelNodeDriver(NodeDriver):
         return self._to_images(result)
 
     def create_node(self, **kwargs):
-        raise NotImplementedError, \
-            'create_node not finished for voxel yet'
-        size = kwargs["size"]
-        cores = size.ram / RAM_PER_CPU
-        params = {'method':           'voxel.voxcloud.create',
-                  'hostname':         kwargs["name"],
-                  'disk_size':        int(kwargs["disk"])/1024,
-                  'processing_cores': cores,
-                  'facility':         kwargs["location"].id,
-                  'image_id':         kwargs["image"],
-                  'backend_ip':       kwargs.get("privateip", None),
-                  'frontend_ip':      kwargs.get("publicip", None),
-                  'admin_password':   kwargs.get("rootpass", None),
-                  'console_password': kwargs.get("consolepass", None),
-                  'ssh_username':     kwargs.get("sshuser", None),
-                  'ssh_password':     kwargs.get("sshpass", None),
-                  'voxel_access':     kwargs.get("voxel_access", None)}
+        """Create Voxel Node
+
+        @keyword name: the name to assign the node (mandatory)
+        @type    name: C{str}
+
+        @keyword image: distribution to deploy
+        @type    image: L{NodeImage}
+
+        @keyword size: the plan size to create (mandatory)
+                       Requires size.disk (GB) to be set manually
+        @type    size: L{NodeSize}
+
+        @keyword location: which datacenter to create the node in
+        @type    location: L{NodeLocation}
+
+        @keyword ex_privateip: Backend IP address to assign to node;
+                               must be chosen from the customer's
+                               private VLAN assignment.
+        @type    ex_privateip: C{str}
+
+        @keyword ex_publicip: Public-facing IP address to assign to node;
+                              must be chosen from the customer's
+                              public VLAN assignment.
+        @type    ex_publicip: C{str}
+
+        @keyword ex_rootpass: Password for root access; generated if unset.
+        @type    ex_rootpass: C{str}
+
+        @keyword ex_consolepass: Password for remote console;
+                                 generated if unset.
+        @type    ex_consolepass: C{str}
+
+        @keyword ex_sshuser: Username for SSH access
+        @type    ex_sshuser: C{str}
+
+        @keyword ex_sshpass: Password for SSH access; generated if unset.
+        @type    ex_sshpass: C{str}
+
+        @keyword ex_voxel_access: Allow access Voxel administrative access.
+                                  Defaults to False.
+        @type    ex_voxel_access: C{bool}
+        """
+
+        # assert that disk > 0
+        if not kwargs["size"].disk:
+            raise ValueError("size.disk must be non-zero")
+
+        # convert voxel_access to string boolean if needed
+        voxel_access = kwargs.get("ex_voxel_access", None)
+        if voxel_access is not None:
+            voxel_access = "true" if voxel_access else "false"
+
+        params = {
+            'method':           'voxel.voxcloud.create',
+            'hostname':         kwargs["name"],
+            'disk_size':        int(kwargs["size"].disk),
+            'facility':         kwargs["location"].id,
+            'image_id':         kwargs["image"].id,
+            'processing_cores': kwargs["size"].ram / RAM_PER_CPU,
+            'backend_ip':       kwargs.get("ex_privateip", None),
+            'frontend_ip':      kwargs.get("ex_publicip", None),
+            'admin_password':   kwargs.get("ex_rootpass", None),
+            'console_password': kwargs.get("ex_consolepass", None),
+            'ssh_username':     kwargs.get("ex_sshuser", None),
+            'ssh_password':     kwargs.get("ex_sshpass", None),
+            'voxel_access':     voxel_access,
+        }
 
         object = self.connection.request('/', params=params).object
 
@@ -173,7 +227,7 @@ class VoxelNodeDriver(NodeDriver):
             return Node(
                 id = object.findtext("device/id"),
                 name = kwargs["name"],
-                state = NODE_STATE_MAP[object.findtext("devices/status")],
+                state = NODE_STATE_MAP[object.findtext("device/status")],
                 public_ip = kwargs.get("publicip", None),
                 private_ip = kwargs.get("privateip", None),
                 driver = self.connection.driver
