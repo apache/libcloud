@@ -142,13 +142,15 @@ class IBMNodeDriver(NodeDriver):
         return self._to_images(self.connection.request(REST_BASE + '/offerings/image').object)
 
     def list_sizes(self, location = None):        
-        return [ NodeSize('BRZ32.1/2048/175', 'Bronze 32 bit', None, None, None, None, self.connection.driver),
-                 NodeSize('BRZ64.2/4096/850', 'Bronze 64 bit', None, None, None, None, self.connection.driver),
-                 NodeSize('SLV32.2/4096/350', 'Silver 32 bit', None, None, None, None, self.connection.driver),
-                 NodeSize('SLV64.4/8192/1024', 'Silver 64 bit', None, None, None, None, self.connection.driver),
-                 NodeSize('GLD32.4/4096/350', 'Gold 32 bit', None, None, None, None, self.connection.driver),
-                 NodeSize('GLD64.8/16384/1024', 'Gold 64 bit', None, None, None, None, self.connection.driver),
-                 NodeSize('PLT64.16/16384/2045', 'Platinum 64 bit', None, None, None, None, self.connection.driver) ]
+        return [ NodeSize('BRZ32.1/2048/60*175', 'Bronze 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('BRZ64.2/4096/60*500*350', 'Bronze 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('COP32.1/2048/60', 'Copper 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('COP64.2/4096/60', 'Copper 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('SLV32.2/4096/60*350', 'Silver 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('SLV64.4/8192/60*500*500', 'Silver 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('GLD32.4/4096/60*350', 'Gold 32 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('GLD64.8/16384/60*500*500', 'Gold 64 bit', None, None, None, None, self.connection.driver),
+                 NodeSize('PLT64.16/16384/60*500*500*500*500', 'Platinum 64 bit', None, None, None, None, self.connection.driver) ]
 
     def list_locations(self):
         return self._to_locations(self.connection.request(REST_BASE + '/locations').object)
