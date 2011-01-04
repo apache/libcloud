@@ -175,8 +175,12 @@ class GoGridMockHttp(MockHttp):
     def _api_common_lookup_list(self, method, url, body, headers):
         _valid_lookups = ("ip.datacenter",)
 
-        lookup = urlparse.parse_qs(
-                    urlparse.urlparse(url).query)["lookup"][0]
+        try:
+            from urlparse import parse_qs
+        except ImportError:
+            from cgi import parse_qs
+
+        lookup = parse_qs(urlparse.urlparse(url).query)["lookup"][0]
         if lookup in _valid_lookups:
             fixture_path = "lookup_list_%s.json" % \
                     (lookup.replace(".", "_"))
