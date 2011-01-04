@@ -118,6 +118,13 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         image = self.driver.ex_save_image(node, "testimage")
         self.assertEqual(image.name, "testimage")
 
+    def test_ex_edit_node(self):
+        node = Node(90967, None, None, None, None, self.driver)
+        size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
+        ret = self.driver.ex_edit_node(node=node, size=size)
+
+        self.assertTrue(isinstance(ret, Node))
+
 class GoGridMockHttp(MockHttp):
 
     fixtures = FileFixtures('gogrid')
@@ -160,6 +167,10 @@ class GoGridMockHttp(MockHttp):
 
     def _api_grid_server_delete(self, method, url, body, headers):
         body = self.fixtures.load('server_delete.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_grid_server_edit(self, method, url, body, headers):
+        body = self.fixtures.load('server_edit.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_support_password_list(self, method, url, body, headers):
