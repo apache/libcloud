@@ -12,7 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys, unittest, httplib, json
+import sys, unittest, httplib
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from libcloud.drivers.brightbox import BrightboxNodeDriver
 from libcloud.types import NodeState, InvalidCredsError
