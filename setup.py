@@ -75,12 +75,16 @@ class ApiDocsCommand(Command):
             % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR)
         )
 
+# pre-2.6 will need the ssl PyPI package
+pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
+
 setup(
     name='apache-libcloud',
     version='0.4.0',
     description='A unified interface into many cloud server providers',
     author='Apache Software Foundation',
     author_email='libcloud@incubator.apache.org',
+    requires=([], ['ssl'],)[pre_python26],
     packages=[
         'libcloud',
         'libcloud.drivers'
