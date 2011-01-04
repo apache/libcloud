@@ -33,7 +33,6 @@ from libcloud.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.base import NodeImage
 from copy import copy
-import json
 import itertools
 import os
 
