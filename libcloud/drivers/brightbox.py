@@ -20,8 +20,10 @@ from libcloud.base import ConnectionUserAndKey, Response, NodeDriver
 from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 import httplib
 import base64
-import json
-
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 API_VERSION = '1.0'
 
