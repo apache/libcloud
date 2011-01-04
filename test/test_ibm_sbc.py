@@ -57,9 +57,9 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
         self.assertEquals(len(ret), 9) # 9 instance configurations supported
-        self.assertEquals(ret[0].id, 'BRZ32.1/2048/175')
-        self.assertEquals(ret[1].id, 'BRZ64.2/4096/850')
-        self.assertEquals(ret[2].id, 'SLV32.2/4096/350')
+        self.assertEquals(ret[0].id, 'BRZ32.1/2048/60*175')
+        self.assertEquals(ret[1].id, 'BRZ64.2/4096/60*500*350')
+        self.assertEquals(ret[2].id, 'COP32.1/2048/60')
         self.assertEquals(ret[0].name, 'Bronze 32 bit')
         self.assertEquals(ret[0].disk, None)
 
