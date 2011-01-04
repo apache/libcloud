@@ -2,6 +2,10 @@
 
 Changes with Apache Libcloud 0.4.1 [In Development]
 
+    *) Implement ex_edit_node method for GoGrid driver which allows
+       changing node attributes like amount of RAM or description.
+       [Roman Bogorodskiy]
+
     *) Add ex_set_password and ex_set_server_name to Rackspace driver.
        [Peter Herndon, Paul Querna]
 

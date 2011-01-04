@@ -32,7 +32,7 @@ except ImportError:
 
 HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
-API_VERSION = '1.5'
+API_VERSION = '1.7'
 
 STATE = {
     "Starting": NodeState.PENDING,
@@ -89,7 +89,7 @@ class GoGridResponse(Response):
         except ValueError:
             raise MalformedResponseError('Malformed reply', body=self.body, driver=GoGridNodeDriver)
 
-    def parse_body(self):        
+    def parse_body(self):
         if not self.body:
             return None
         return json.loads(self.body)
@@ -348,3 +348,18 @@ class GoGridNodeDriver(NodeDriver):
                                          method='POST').object
 
         return self._to_images(object)[0]
+
+    def ex_edit_node(self, **kwargs):
+        node = kwargs['node']
+        size = kwargs['size']
+
+        params = {'id': node.id,
+                'server.ram': size.id}
+
+        if 'ex_description' in kwargs:
+            params['description'] = kwargs['ex_description']
+
+        object = self.connection.request('/api/grid/server/edit',
+                params=params).object
+
+        return self._to_node(object['list'][0])
