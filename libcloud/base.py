@@ -33,7 +33,48 @@ from pipes import quote as pquote
 
 class Node(object):
     """
-    A Base Node class to derive from.
+    Provide a common interface for handling nodes of all types.
+
+    The Node object provides the interface in libcloud through which
+    we can manipulate nodes in different cloud providers in the same
+    way.  Node objects don't actually do much directly themselves,
+    instead the node driver handles the connection to the node.
+
+    You don't normally create a node object yourself; instead you use
+    a driver and then have that create the node for you.
+
+    >>> from libcloud.drivers.dummy import DummyNodeDriver
+    >>> driver = DummyNodeDriver(0)
+    >>> node = driver.create_node()
+    >>> node.public_ip[0]
+    '127.0.0.3'
+    >>> node.name
+    'dummy-3'
+
+    You can also get nodes from the driver's list_node function.
+
+    >>> node = driver.list_nodes()[0]
+    >>> node.name
+    'dummy-1'
+
+    the node keeps a reference to its own driver which means that we
+    can work on nodes from different providers without having to know
+    which is which.
+
+    >>> driver = DummyNodeDriver(72)
+    >>> node2 = driver.create_node()
+    >>> node.driver.creds
+    0
+    >>> node2.driver.creds
+    72
+
+    Althrough Node objects can be subclassed, this isn't normally
+    done.  Instead, any driver specific information is stored in the
+    "extra" proproperty of the node.
+
+    >>> node.extra
+    {'foo': 'bar'}
+
     """
 
     def __init__(self, id, name, state, public_ip, private_ip,
@@ -52,19 +93,67 @@ class Node(object):
 
     def get_uuid(self):
         """Unique hash for this node
+
         @return: C{string}
+
+        The hash is a function of an SHA1 hash of the node's ID and
+        its driver which means that it should be unique between all
+        nodes.  In some subclasses (e.g. GoGrid) there is no ID
+        available so the public IP address is used.  This means that,
+        unlike a properly done system UUID, the same UUID may mean a
+        different system install at a different time
+
+        >>> from libcloud.drivers.dummy import DummyNodeDriver
+        >>> driver = DummyNodeDriver(0)
+        >>> node = driver.create_node()
+        >>> node.get_uuid()
+        'd3748461511d8b9b0e0bfa0d4d3383a619a2bb9f'
+
+        Note, for example, that this example will always produce the
+        same UUID!
         """
         return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()
 
     def reboot(self):
         """Reboot this node
+
         @return: C{bool}
+
+        This calls the node's driver and reboots the node
+
+        >>> from libcloud.drivers.dummy import DummyNodeDriver
+        >>> driver = DummyNodeDriver(0)
+        >>> node = driver.create_node()
+        >>> from libcloud.types import NodeState
+        >>> node.state == NodeState.RUNNING
+        True
+        >>> node.state == NodeState.REBOOTING
+        False
+        >>> node.reboot()
+        True
+        >>> node.state == NodeState.REBOOTING
+        True
         """
         return self.driver.reboot_node(self)
 
     def destroy(self):
         """Destroy this node
+
         @return: C{bool}
+
+        This calls the node's driver and destroys the node
+
+        >>> from libcloud.drivers.dummy import DummyNodeDriver
+        >>> driver = DummyNodeDriver(0)
+        >>> from libcloud.types import NodeState
+        >>> node = driver.create_node()
+        >>> node.state == NodeState.RUNNING
+        True
+        >>> node.destroy()
+        True
+        >>> node.state == NodeState.RUNNING
+        False
+
         """
         return self.driver.destroy_node(self)
 
@@ -78,6 +167,25 @@ class Node(object):
 class NodeSize(object):
     """
     A Base NodeSize class to derive from.
+
+    NodeSizes are objects which are typically returned a driver's
+    list_sizes function.  They contain a number of different
+    parameters which define how big an image is.
+
+    The exact parameters available depends on the provider.
+
+    N.B. Where a parameter is "unlimited" (for example bandwidth in
+    Amazon) this will be given as 0.
+
+    >>> from libcloud.drivers.dummy import DummyNodeDriver
+    >>> driver = DummyNodeDriver(0)
+    >>> size = driver.list_sizes()[0]
+    >>> size.ram
+    128
+    >>> size.bandwidth
+    500
+    >>> size.price
+    4
     """
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver):
@@ -97,7 +205,25 @@ class NodeSize(object):
 
 class NodeImage(object):
     """
-    A Base NodeImage class to derive from.
+    An operating system image.
+
+    NodeImage objects are typically returned by the driver for the
+    cloud provider in response to the list_images function
+
+    >>> from libcloud.drivers.dummy import DummyNodeDriver
+    >>> driver = DummyNodeDriver(0)
+    >>> image = driver.list_images()[0]
+    >>> image.name
+    'Ubuntu 9.10'
+
+    Apart from name and id, there is no further standard information;
+    other parameters are stored in a driver specific "extra" variable
+
+    When creating a node, a node image should be given as an argument
+    to the create_node function to decide which OS image to use.
+
+    >>> node = driver.create_node(image=image)
+
     """
 
     def __init__(self, id, name, driver, extra=None):
@@ -114,7 +240,13 @@ class NodeImage(object):
 
 class NodeLocation(object):
     """
-    A base NodeLocation class to derive from.
+    A physical location where nodes can be.
+
+    >>> from libcloud.drivers.dummy import DummyNodeDriver
+    >>> driver = DummyNodeDriver(0)
+    >>> location = driver.list_locations()[0]
+    >>> location.country
+    'US'
     """
 
     def __init__(self, id, name, country, driver):
@@ -129,6 +261,16 @@ class NodeLocation(object):
 class NodeAuthSSHKey(object):
     """
     An SSH key to be installed for authentication to a node.
+
+    This is the actual contents of the users ssh public key which will
+    normally be installed as root's public key on the node.
+
+    >>> pubkey = '...' # read from file
+    >>> from libcloud.base import NodeAuthSSHKey
+    >>> k = NodeAuthSSHKey(pubkey)
+    >>> k
+    <NodeAuthSSHKey>
+
     """
     def __init__(self, pubkey):
         self.pubkey = pubkey
@@ -494,6 +636,11 @@ class ConnectionUserAndKey(ConnectionKey):
 class NodeDriver(object):
     """
     A base NodeDriver class to derive from
+
+    This class is always subclassed by a specific driver.  For
+    examples of base behavior of most functions (except deploy node)
+    see the dummy driver.
+
     """
 
     connectionCls = ConnectionKey
@@ -637,7 +784,7 @@ class NodeDriver(object):
         Depends on a Provider Driver supporting either using a specific password
         or returning a generated password.
 
-        This function may raise a L{DeplyomentException}, if a create_node
+        This function may raise a L{DeploymentException}, if a create_node
         call was successful, but there is a later error (like SSH failing or
         timing out).  This exception includes a Node object which you may want
         to destroy if incomplete deployments are not desirable.
@@ -653,6 +800,24 @@ class NodeDriver(object):
         @type       ssh_port: C{int}
 
         See L{NodeDriver.create_node} for more keyword args.
+
+        >>> from libcloud.drivers.dummy import DummyNodeDriver
+        >>> from libcloud.deployment import ScriptDeployment, MultiStepDeployment
+        >>> from libcloud.base import NodeAuthSSHKey
+        >>> driver = DummyNodeDriver(0)
+        >>> key = NodeAuthSSHKey('...') # read from file
+        >>> script = ScriptDeployment("yum -y install emacs strace tcpdump")
+        >>> msd = MultiStepDeployment([key, script])
+        >>> def d():
+        ...     try:
+        ...         node = driver.deploy_node(deploy=msd)
+        ...     except NotImplementedError:
+        ...         print "not implemented for dummy driver"
+        >>> d()
+        not implemented for dummy driver
+
+        Deploy node is typically not overridden in subclasses.  The
+        existing implementation should be able to handle most such.
         """
         # TODO: support ssh keys
         WAIT_PERIOD=3
@@ -738,3 +903,8 @@ def is_private_subnet(ip):
             return True
 
     return False
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
