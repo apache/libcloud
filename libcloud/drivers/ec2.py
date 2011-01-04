@@ -17,7 +17,7 @@
 Amazon EC2 driver
 """
 from libcloud.providers import Provider
-from libcloud.types import NodeState, InvalidCredsError, MalformedResponseError
+from libcloud.types import NodeState, InvalidCredsError, MalformedResponseError, LibcloudError
 from libcloud.base import Node, Response, ConnectionUserAndKey
 from libcloud.base import NodeDriver, NodeSize, NodeImage, NodeLocation
 import base64
@@ -198,6 +198,8 @@ class EC2Response(Response):
                 raise InvalidCredsError(err_list[-1])
             if code.text == "OptInRequired":
                 raise InvalidCredsError(err_list[-1])
+            if code.text == "IdempotentParameterMismatch":
+                raise IdempotentParamError(err_list[-1])
         return "\n".join(err_list)
 
 class EC2Connection(ConnectionUserAndKey):
@@ -654,6 +656,12 @@ class EC2NodeDriver(NodeDriver):
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
 
+class IdempotentParamError(LibcloudError):
+    """
+    Request used the same client token as a previous, but non-identical request.
+    """
+    def __str__(self):
+        return repr(self.value)
 
 class EC2EUConnection(EC2Connection):
     """
