@@ -86,8 +86,13 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
             return httplib.HTTPSConnection.connect(self)
 
         # otherwise, create a connection and verify the hostname
-        sock = socket.create_connection((self.host, self.port),
-                                        self.timeout)
+        # use socket.create_connection (in 2.6+) if possible
+        if getattr(socket, 'create_connection', None):
+            sock = socket.create_connection((self.host, self.port),
+                                            self.timeout)
+        else:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((self.host, self.port))
         self.sock = ssl.wrap_socket(sock,
                                     self.key_file,
                                     self.cert_file,
