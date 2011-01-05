@@ -38,10 +38,27 @@ class TestCommand(Command):
     def run(self):
         secrets = pjoin(self._dir, 'test', 'secrets.py')
         if not os.path.isfile(secrets):
-          print "Missing %s" % (secrets)
-          print "Maybe you forgot to copy it from -dist:"
-          print "  cp test/secrets.py-dist test/secrets.py"
-          sys.exit(1)
+            print "Missing %s" % (secrets)
+            print "Maybe you forgot to copy it from -dist:"
+            print "  cp test/secrets.py-dist test/secrets.py"
+            sys.exit(1)
+
+        pre_python26 = (sys.version_info[0] == 2
+                        and sys.version_info[1] < 6)
+        if pre_python26:
+            missing = []
+            # test for dependencies
+            try:
+                import simplejson
+            except ImportError:
+                missing.append("simplejson")
+
+            try:
+                import ssl
+            except ImportError:
+                missing.append("ssl")
+            print "Missing dependencies: %s" % ", ".join(missing)
+            sys.exit(1)
 
         testfiles = []
         for t in glob(pjoin(self._dir, 'test', 'test_*.py')):
