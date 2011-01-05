@@ -99,7 +99,7 @@ pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 setup(
     name='apache-libcloud',
-    version='0.4.0',
+    version='0.4.1',
     description='A unified interface into many cloud server providers',
     author='Apache Software Foundation',
     author_email='libcloud@incubator.apache.org',
