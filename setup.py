@@ -57,8 +57,10 @@ class TestCommand(Command):
                 import ssl
             except ImportError:
                 missing.append("ssl")
-            print "Missing dependencies: %s" % ", ".join(missing)
-            sys.exit(1)
+
+            if missing:
+                print "Missing dependencies: %s" % ", ".join(missing)
+                sys.exit(1)
 
         testfiles = []
         for t in glob(pjoin(self._dir, 'test', 'test_*.py')):
