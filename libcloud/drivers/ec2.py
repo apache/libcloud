@@ -615,11 +615,13 @@ class EC2NodeDriver(NodeDriver):
                 params['SecurityGroup.%d' % (sig+1,)]  = kwargs['ex_securitygroup'][sig]
 
         if 'location' in kwargs:
-            availability_zone = kwargs['location'].availability_zone
-            if availability_zone.region_name != self.region_name:
-                raise AttributeError('Invalid availability zone: %s'
-                                     % (availability_zone.name))
-            params['Placement.AvailabilityZone'] = availability_zone.name
+            availability_zone = getattr(kwargs['location'], 'availability_zone',
+                                        None)
+            if availability_zone:
+                if availability_zone.region_name != self.region_name:
+                    raise AttributeError('Invalid availability zone: %s'
+                                         % (availability_zone.name))
+                params['Placement.AvailabilityZone'] = availability_zone.name
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']

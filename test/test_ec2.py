@@ -16,7 +16,7 @@ import sys
 import unittest
 
 from libcloud.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver, IdempotentParamError
-from libcloud.base import Node, NodeImage, NodeSize
+from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 
 from test import MockHttp, TestCaseMixin
 from test.file_fixtures import FileFixtures
@@ -71,6 +71,19 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         except IdempotentParamError, e:
             idem_error = e
         self.assertTrue(idem_error is not None)
+
+    def test_create_node_no_availability_zone(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='foo', image=image, size=size)
+        location = NodeLocation(0, 'Amazon US N. Virginia', 'US', self.driver)
+        self.assertEqual(node.id, 'i-2ba64342')
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       location=location)
+        self.assertEqual(node.id, 'i-2ba64342')
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
