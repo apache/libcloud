@@ -1,6 +1,6 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.4.2 [In Development]
+Changes with Apache Libcloud 0.4.2
 
     *) Fix EC2 create_node to become backward compatible for
        NodeLocation.
