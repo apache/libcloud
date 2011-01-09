@@ -363,3 +363,34 @@ class GoGridNodeDriver(NodeDriver):
                 params=params).object
 
         return self._to_node(object['list'][0])
+
+    def ex_edit_image(self, **kwargs):
+        """Edit metadata of a server image.
+
+        @keyword    image: image to be edited
+        @type       image: L{NodeImage}
+        @keyword    public: should be the image public?
+        @type       public: C{bool}
+        @keyword    ex_description: description of the image (optional)
+        @type       ex_description: C{string}
+        @keyword    name: name of the image
+        @type       name C{string}
+
+        """
+
+        image = kwargs['image']
+        public = kwargs['public']
+
+        params = {'id': image.id,
+                'isPublic': str(public).lower()}
+
+        if 'ex_description' in kwargs:
+            params['description'] = kwargs['ex_description']
+
+        if 'name' in kwargs:
+            params['friendlyName'] = kwargs['name']
+
+        object = self.connection.request('/api/grid/image/edit',
+                params=params).object
+
+        return self._to_image(object['list'][0])

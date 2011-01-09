@@ -118,6 +118,13 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         image = self.driver.ex_save_image(node, "testimage")
         self.assertEqual(image.name, "testimage")
 
+    def test_ex_edit_image(self):
+        image = self.driver.list_images()[0]
+        ret = self.driver.ex_edit_image(image=image, public=False,
+                ex_description="test", name="testname")
+
+        self.assertTrue(isinstance(ret, NodeImage))
+
     def test_ex_edit_node(self):
         node = Node(90967, None, None, None, None, self.driver)
         size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
@@ -180,6 +187,12 @@ class GoGridMockHttp(MockHttp):
     _api_support_password_list_NOPUBIPS = _api_support_password_list
 
     def _api_grid_image_save(self, method, url, body, headers):
+        body = self.fixtures.load('image_save.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_grid_image_edit(self, method, url, body, headers):
+        # edit method is quite similar to save method from the response
+        # perspective
         body = self.fixtures.load('image_save.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

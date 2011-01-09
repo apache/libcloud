@@ -1,5 +1,12 @@
                                                         -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud 0.4.3
+
+    *) Implement ex_edit_image method for GoGrid driver
+       which allows changing image attributes like name,
+       description and make image public or private.
+       [Roman Bogorodskiy]
+
 Changes with Apache Libcloud 0.4.2
 
     *) Fix EC2 create_node to become backward compatible for
