@@ -338,9 +338,9 @@ class GoGridNodeDriver(NodeDriver):
         http://wiki.gogrid.com/wiki/index.php/MyGSI
 
         @keyword    node: node to use as a base for image
-        @param      node: L{Node}
+        @type       node: L{Node}
         @keyword    name: name for new image
-        @param      name: C{string}
+        @type       name: C{string}
         """
         params = {'server': node.id,
                   'friendlyName': name}
@@ -350,6 +350,15 @@ class GoGridNodeDriver(NodeDriver):
         return self._to_images(object)[0]
 
     def ex_edit_node(self, **kwargs):
+        """Change attributes of a node.
+
+        @keyword    node: node to be edited
+        @type       node: L{Node}
+        @keyword    size: new size of a node
+        @type       size: L{NodeSize}
+        @keyword    ex_description: new description of a node
+        @type       ex_description: C{string}
+        """
         node = kwargs['node']
         size = kwargs['size']
 
