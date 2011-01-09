@@ -23,7 +23,9 @@ from libcloud.base import NodeSize, NodeImage, NodeLocation
 import datetime
 import hashlib
 import base64
-from xml.etree import ElementTree as ET
+
+try: import json
+except: import simplejson as json
 
 BLUEBOX_API_HOST = "boxpanel.blueboxgrp.com"
 
@@ -72,9 +74,11 @@ class BlueboxResponse(Response):
 #        super(BlueboxResponse, self).__init__(response)
 
     def parse_body(self):
-        if not self.body:
-            return None
-        return ET.XML(self.body)
+        try:
+            js = json.loads(self.body)
+            return js
+        except ValueError:
+            return self.body
 
     def parse_error(self):
         if int(self.status) == 401:
@@ -125,20 +129,23 @@ class BlueboxNodeDriver(NodeDriver):
     name = 'Bluebox Blocks'
 
     def list_nodes(self):
-        result = self.connection.request('/api/blocks.xml', method='GET').object
-        return self._to_nodes(result)
+        result = self.connection.request('/api/blocks.json')
+        return [self._to_node(i) for i in result.object]
 
     def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i)
                     for i in BLUEBOX_INSTANCE_TYPES.values() ]
 
     def list_images(self, location=None):
-        result = self.connection.request('/api/block_templates.xml', method='GET').object
-        return self._to_images(result)
+        result = self.connection.request('/api/block_templates.json')
+        images = []
+        for image in result.object:
+          images.extend([self._to_image(image)])
+          
+        return images
 
     def create_node(self, **kwargs):
-        raise NotImplementedError, \
-            'create_node not finished for voxel yet'
+        headers = { 'Content-Type': 'application/json' }
         size = kwargs["size"]
         cores = size.ram / RAM_PER_CPU
         params = {
@@ -152,65 +159,46 @@ class BlueboxNodeDriver(NodeDriver):
         if params['username'] == "":
           params['username'] = "deploy"
 
-        object = self.connection.request('/api/blocks.xml', method='POST').object
+        if kwargs["hostname"]:
+          params['hostname'] = kwargs["hostname"]
 
-        if self._getstatus(object):
-            return Node(
-                id = object.findtext("hash/id"),
-                hostname = object.findtext("hash/hostname"),
-                state = NODE_STATE_MAP[object.findtext("hash/status")],
-                public_ip = object.findtext("hash/ips/ip"),
-                driver = self.connection.driver
-            )
-        else:
-            return None
+        result = self.connection.request('/api/blocks.json', data=json.dumps(request), headers=headers, method='POST')
+        node = self._to_node(result.object)
+        return node
 
     def destroy_node(self, node):
         """
         Destroy node by passing in the node object
         """
-        return self._getstatus(self.connection.request("/api/blocks/#{node.id}.xml", method='DELETE').object)
+        result = self.connection.request("/api/blocks/#{node.id}.json", method='DELETE')
+
+        return result.status == 200
 
     def list_locations(self):
-        raise NotImplementedError, \
-          'list_locations not finished for bluebox yet'
+        return [NodeLocation(0, "Blue Box Seattle US", 'US', self)]
 
-    def _getstatus(self, element):
-        status = element.attrib["stat"]
-        return status == "ok"
+    def reboot_node(self, node):
+        result = self.connection.request("/api/blocks/#{node.id}/reboot.json", method="PUT")
+        node = self._to_node(result.object)
+        return result.status == 200
 
+    def _to_node(self, vm):
+        if vm['status'] == "running":
+            state = NodeState.RUNNING
+        else:
+            state = NodeState.PENDING
 
-#    def _to_locations(self, object):
-#        return [NodeLocation(element.attrib["label"],
-#                             element.findtext("description"),
-#                             element.findtext("description"),
-#                             self)
-#                for element in object.findall('facilities/facility')]
+        n = Node(id=vm['id'],
+                 name=vm['hostname'],
+                 state=state,
+                 public_ip=[ i['address'] for i in vm['ips'] ],
+                 private_ip=[],
+                 extra={'storage':vm['storage'], 'cpu':vm['cpu']},
+                 driver=self.connection.driver)
+        return n
 
-    def _to_nodes(self, object):
-        nodes = []
-        for element in object.findall('records/record'):
-            try:
-                state = self.NODE_STATE_MAP[element.attrib['status']]
-            except KeyError:
-                state = NodeState.UNKNOWN
-
-                public_ip = None
-                ips = element.findall("ips")
-                for ip in ips:
-                    public_ip = ip.findtext("address")
-
-                nodes.append(Node(id= element.attrib['id'],
-                                 name=element.attrib['hostname'],
-                                 state=state,
-                                 public_ip= public_ip,
-                                 driver=self.connection.driver))
-        return nodes
-
-    def _to_images(self, object):
-        images = []
-        for element in object.findall("records/record"):
-            images.append(NodeImage(id = element.attrib["id"],
-                                    name = element.attrib["description"],
-                                    driver = self.connection.driver))
-        return images
+    def _to_image(self, image):
+        image = NodeImage(id=image['id'],
+                          name=image['description'],
+                          driver=self.connection.driver)
+        return image

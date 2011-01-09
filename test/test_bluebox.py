@@ -14,9 +14,11 @@
 # limitations under the License.
 import sys
 import unittest
+import exceptions
 
 from libcloud.drivers.bluebox import BlueboxNodeDriver as Bluebox
-from libcloud.types import InvalidCredsError
+from libcloud.base import Node
+from libcloud.types import NodeState
 
 import httplib
 
@@ -28,29 +30,38 @@ from secrets import BLUEBOX_CUSTOMER_ID, BLUEBOX_API_KEY
 class BlueboxTest(unittest.TestCase):
 
     def setUp(self):
-
         Bluebox.connectionCls.conn_classes = (None, BlueboxMockHttp)
-        BlueboxMockHttp.type = None
         self.driver = Bluebox(BLUEBOX_CUSTOMER_ID, BLUEBOX_API_KEY)
 
-    def test_auth(self):
-        BlueboxMockHttp.type = 'UNAUTHORIZED'
+    def test_create_node(self):
+        node = self.driver.create_node(
+          product='94fd37a7-2606-47f7-84d5-9000deda52ae',
+          template='c66b8145-f768-45ef-9878-395bf8b1b7ff',
+          password='testpass',
+          username='deploy',
+          hostname='foo'
+        )
+        self.assertEqual(node.name, 'foo')
 
-        try:
-            self.driver.list_nodes()
-        except InvalidCredsError, e:
-            self.assertTrue(isinstance(e, InvalidCredsError))
-            self.assertEquals(e.value, '401: Unauthorized')
-        else:
-            self.fail('test should have thrown')
+    def test_list_nodes(self):
+        node = self.driver.list_nodes()[0]
+        self.assertEqual(node.name, 'foo')
+        self.assertEqual(node.state, NodeState.RUNNING)
+
+    def test_reboot_node(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.reboot_node(node)
+        self.assertTrue(ret)
+
+    def test_destroy_node(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
 
 class BlueboxMockHttp(MockHttp):
 
     fixtures = FileFixtures('bluebox')
 
-    def _api_blocks_xml_UNAUTHORIZED(self, method, url, body, headers):
-        body = self.fixtures.load('unauthorized.xml')
-        return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.UNAUTHORIZED])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
