@@ -34,6 +34,7 @@ class BlueboxTest(unittest.TestCase):
         self.driver = Bluebox(BLUEBOX_CUSTOMER_ID, BLUEBOX_API_KEY)
 
     def test_create_node(self):
+        BlueboxMockHttp.type = 'create'
         node = self.driver.create_node(
           product='94fd37a7-2606-47f7-84d5-9000deda52ae',
           template='c66b8145-f768-45ef-9878-395bf8b1b7ff',
@@ -41,20 +42,28 @@ class BlueboxTest(unittest.TestCase):
           username='deploy',
           hostname='foo'
         )
+        self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, 'foo')
 
     def test_list_nodes(self):
+        BlueboxMockHttp.type = 'list'
         node = self.driver.list_nodes()[0]
         self.assertEqual(node.name, 'foo')
         self.assertEqual(node.state, NodeState.RUNNING)
 
     def test_reboot_node(self):
+        BlueboxMockHttp.type = 'list'
         node = self.driver.list_nodes()[0]
+        
+        BlueboxMockHttp.type = 'reboot'
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
 
     def test_destroy_node(self):
+        BlueboxMockHttp.type = 'list'
         node = self.driver.list_nodes()[0]
+
+        BlueboxMockHttp.type = 'delete'
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
@@ -62,6 +71,9 @@ class BlueboxMockHttp(MockHttp):
 
     fixtures = FileFixtures('bluebox')
 
+    def _api_blocks_json_list(self, method, url, body, headers):
+        body = """[]"""
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

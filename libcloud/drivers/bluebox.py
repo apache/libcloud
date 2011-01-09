@@ -20,8 +20,10 @@ from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsError
 from libcloud.base import Node, Response, ConnectionUserAndKey, NodeDriver
 from libcloud.base import NodeSize, NodeImage, NodeLocation
+from libcloud.base import NodeAuthPassword, NodeAuthSSHKey
 import datetime
 import hashlib
+import urllib
 import base64
 
 try: import json
@@ -39,7 +41,7 @@ BLUEBOX_INSTANCE_TYPES = {
     'ram': 1024,
     'disk': 20,
     'cpu': 0.5,
-    'cost': 0.15
+    'price': 0.15
   },
   '2gb': {
     'id': 'b412f354-5056-4bf0-a42f-6ddd998aa092',
@@ -47,7 +49,7 @@ BLUEBOX_INSTANCE_TYPES = {
     'ram': 2048,
     'disk': 25,
     'cpu': 1,
-    'cost': 0.25
+    'price': 0.25
   },
   '4gb': {
     'id': '0cd183d3-0287-4b1a-8288-b3ea8302ed58',
@@ -55,7 +57,7 @@ BLUEBOX_INSTANCE_TYPES = {
     'ram': 4096,
     'disk': 50,
     'cpu': 2,
-    'cost': 0.35
+    'price': 0.35
   },
   '8gb': {
     'id': 'b9b87a5b-2885-4a2e-b434-44a163ca6251',
@@ -63,7 +65,7 @@ BLUEBOX_INSTANCE_TYPES = {
     'ram': 8192,
     'disk': 100,
     'cpu': 4,
-    'cost': 0.45
+    'price': 0.45
   }
 }
 
@@ -88,13 +90,19 @@ class BlueboxResponse(Response):
                 raise InvalidCredsError(self.body)
         return self.body
 
-    #def success(self):
-    #    if not self.parsed:
-    #        self.parsed = ET.XML(self.body)
-    #    stat = self.parsed.get('stat')
-    #    if stat != "ok":
-    #        return False
-    #    return True
+class BlueboxNodeSize(NodeSize):
+    def __init__(self, id, name, cpu, ram, disk, price, driver):
+        self.id = id
+        self.name = name
+        self.cpu = cpu
+        self.ram = ram
+        self.disk = disk
+        self.price = price
+        self.driver = driver
+
+    def __repr__(self):
+        return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, price=%s, driver=%s ...>')
+               % (self.id, self.name, self.cpu, self.ram, self.disk, self.price, self.driver.name))
 
 class BlueboxConnection(ConnectionUserAndKey):
     """
@@ -110,7 +118,6 @@ class BlueboxConnection(ConnectionUserAndKey):
         headers['Authorization'] = 'Basic %s' % (user_b64)
         return headers
 
-BLUEBOX_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 
 NODE_STATE_MAP = { 'queued': NodeState.PENDING,
@@ -133,7 +140,7 @@ class BlueboxNodeDriver(NodeDriver):
         return [self._to_node(i) for i in result.object]
 
     def list_sizes(self, location=None):
-        return [ NodeSize(driver=self.connection.driver, **i)
+        return [ BlueboxNodeSize(driver=self.connection.driver, **i)
                     for i in BLUEBOX_INSTANCE_TYPES.values() ]
 
     def list_images(self, location=None):
@@ -145,24 +152,39 @@ class BlueboxNodeDriver(NodeDriver):
         return images
 
     def create_node(self, **kwargs):
-        headers = { 'Content-Type': 'application/json' }
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
         size = kwargs["size"]
         cores = size.ram / RAM_PER_CPU
-        params = {
-                  'product':          kwargs["product"],
-                  'template':         kwargs["template"],
-                  'password':         kwargs["password"],
-                  'ssh_key':          kwargs["ssh_key"],
-                  'username':         kwargs["username"]
+
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
+        auth = kwargs['auth']
+        
+        data = {
+            'hostname': name,
+            'product': size.id,
+            'template': image.id
         }
 
-        if params['username'] == "":
-          params['username'] = "deploy"
+        ssh = None
+        password = None
 
-        if kwargs["hostname"]:
-          params['hostname'] = kwargs["hostname"]
+        if isinstance(auth, NodeAuthSSHKey):
+            ssh = auth.pubkey
+            data.update(ssh_public_key=ssh)
+        elif isinstance(auth, NodeAuthPassword):
+            password = auth.password
+            data.update(password=password)
 
-        result = self.connection.request('/api/blocks.json', data=json.dumps(request), headers=headers, method='POST')
+        if "ex_username" in kwargs:
+            data.update(username=kwargs["ex_username"])
+
+        if not ssh and not password:
+            raise Exception("SSH public key or password required.")
+
+        params = urllib.urlencode(data)
+        result = self.connection.request('/api/blocks.json', headers=headers, data=params, method='POST')
         node = self._to_node(result.object)
         return node
 
@@ -170,7 +192,8 @@ class BlueboxNodeDriver(NodeDriver):
         """
         Destroy node by passing in the node object
         """
-        result = self.connection.request("/api/blocks/#{node.id}.json", method='DELETE')
+        url = '/api/blocks/%s.json' % (node.id)
+        result = self.connection.request(url, method='DELETE')
 
         return result.status == 200
 
@@ -178,20 +201,20 @@ class BlueboxNodeDriver(NodeDriver):
         return [NodeLocation(0, "Blue Box Seattle US", 'US', self)]
 
     def reboot_node(self, node):
-        result = self.connection.request("/api/blocks/#{node.id}/reboot.json", method="PUT")
+        url = '/api/blocks/%s/reboot.json' % (node.id)
+        result = self.connection.request(url, method="PUT")
         node = self._to_node(result.object)
         return result.status == 200
 
     def _to_node(self, vm):
-        if vm['status'] == "running":
-            state = NodeState.RUNNING
-        else:
-            state = NodeState.PENDING
-
+        try:
+            state = NODE_STATE_MAP[vm['status']]
+        except KeyError:
+            state = NodeState.UNKNOWN
         n = Node(id=vm['id'],
                  name=vm['hostname'],
                  state=state,
-                 public_ip=[ i['address'] for i in vm['ips'] ],
+                 public_ip=[ ip['address'] for ip in vm['ips'] ],
                  private_ip=[],
                  extra={'storage':vm['storage'], 'cpu':vm['cpu']},
                  driver=self.connection.driver)
