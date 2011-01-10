@@ -14,7 +14,14 @@
 # limitations under the License.
 
 """
-Bluebox Blocks driver
+libcloud driver for the Blue Box Blocks API
+
+This driver implements all libcloud functionality for the Blue Box Blocks API.
+
+Blue Box home page            http://bluebox.net
+Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/index.php/Blocks_API
+
+Maintainer: Christian Paredes <christian.paredes@blueboxgrp.com>
 """
 from libcloud.providers import Provider
 from libcloud.types import NodeState, InvalidCredsError
@@ -26,13 +33,18 @@ import hashlib
 import urllib
 import base64
 
+# JSON is included in the standard library starting with Python 2.6.  For 2.5
+# and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
+
 try: import json
 except: import simplejson as json
 
-BLUEBOX_API_HOST = "boxpanel.blueboxgrp.com"
+# Current end point for Blue Box API.
+BLUEBOX_API_HOST = "boxpanel.bluebox.net"
 
-# Since Bluebox doesn't provide a list of available VPS types through their
-# API, we list them explicitly here.
+# The API doesn't currently expose all of the required values for libcloud,
+# so we simply list what's available right now, along with all of the various
+# attributes that are needed by libcloud.
 
 BLUEBOX_INSTANCE_TYPES = {
   '1gb': {
@@ -69,12 +81,15 @@ BLUEBOX_INSTANCE_TYPES = {
   }
 }
 
+RAM_PER_CPU = 2048
+
+NODE_STATE_MAP = { 'queued': NodeState.PENDING,
+                   'building': NodeState.PENDING,
+                   'running': NodeState.RUNNING,
+                   'error': NodeState.TERMINATED,
+                   'unknown': NodeState.UNKNOWN }
+
 class BlueboxResponse(Response):
-
-#    def __init__(self, response):
-#        self.parsed = None
-#        super(BlueboxResponse, self).__init__(response)
-
     def parse_body(self):
         try:
             js = json.loads(self.body)
@@ -118,14 +133,6 @@ class BlueboxConnection(ConnectionUserAndKey):
         headers['Authorization'] = 'Basic %s' % (user_b64)
         return headers
 
-RAM_PER_CPU = 2048
-
-NODE_STATE_MAP = { 'queued': NodeState.PENDING,
-                   'building': NodeState.PENDING,
-                   'running': NodeState.RUNNING,
-                   'error': NodeState.TERMINATED,
-                   'unknown': NodeState.UNKNOWN }
-
 class BlueboxNodeDriver(NodeDriver):
     """
     Bluebox Blocks node driver
@@ -140,6 +147,7 @@ class BlueboxNodeDriver(NodeDriver):
         return [self._to_node(i) for i in result.object]
 
     def list_sizes(self, location=None):
+        result = self.connection.request('/api/block_products.json')
         return [ BlueboxNodeSize(driver=self.connection.driver, **i)
                     for i in BLUEBOX_INSTANCE_TYPES.values() ]
 
@@ -204,14 +212,10 @@ class BlueboxNodeDriver(NodeDriver):
     def reboot_node(self, node):
         url = '/api/blocks/%s/reboot.json' % (node.id)
         result = self.connection.request(url, method="PUT")
-        node = self._to_node(result.object)
         return result.status == 200
 
     def _to_node(self, vm):
-        try:
-            state = NODE_STATE_MAP[vm['status']]
-        except KeyError:
-            state = NodeState.UNKNOWN
+        state = NODE_STATE_MAP[vm.get('status', NodeState.UNKNOWN)]
         n = Node(id=vm['id'],
                  name=vm['hostname'],
                  state=state,
