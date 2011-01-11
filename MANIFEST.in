@@ -1,5 +1,6 @@
 include LICENSE
 include NOTICE
+include DISCLAIMER
 include example.py
 include CONTRIBUTORS
 include CHANGES
