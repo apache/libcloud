@@ -167,6 +167,7 @@ class BlueboxNodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
+
         try: auth = kwargs['auth']
         except: raise Exception("SSH public key or password required.")
         
