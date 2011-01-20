@@ -864,8 +864,18 @@ class NodeDriver(object):
           if laste is not None:
               raise e
 
-          n = kwargs["deploy"].run(node, client)
-          client.close()
+          tries = 3
+          while tries >= 0:
+            try:
+              n = kwargs["deploy"].run(node, client)
+              client.close()
+              break
+            except Exception, e:
+              tries -= 1
+              if tries == 0:
+                raise
+              client.connect()
+
         except DeploymentError, e:
           raise
         except Exception, e:
