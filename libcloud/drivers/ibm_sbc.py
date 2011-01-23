@@ -67,20 +67,22 @@ class IBMNodeDriver(NodeDriver):
     type = Provider.IBM
     name = "IBM Developer Cloud"
 
-    NODE_STATE_MAP = { 0: NodeState.PENDING,
-                       1: NodeState.PENDING,
-                       2: NodeState.TERMINATED,
-                       3: NodeState.TERMINATED,
-                       4: NodeState.TERMINATED,
-                       5: NodeState.RUNNING,
-                       6: NodeState.UNKNOWN,
-                       7: NodeState.PENDING,
-                       8: NodeState.REBOOTING,
-                       9: NodeState.PENDING,
-                       10: NodeState.PENDING,
-                       11: NodeState.TERMINATED,
-                       12: NodeState.PENDING,   # Deprovision pending
-                       13: NodeState.PENDING }  # Restart pending
+    NODE_STATE_MAP = { 0: NodeState.PENDING,    # New
+                       1: NodeState.PENDING,    # Provisioning
+                       2: NodeState.TERMINATED, # Failed
+                       3: NodeState.TERMINATED, # Removed
+                       4: NodeState.TERMINATED, # Rejected
+                       5: NodeState.RUNNING,    # Active
+                       6: NodeState.UNKNOWN,    # Unknown
+                       7: NodeState.PENDING,    # Deprovisioning
+                       8: NodeState.REBOOTING,  # Restarting
+                       9: NodeState.PENDING,    # Starting
+                       10: NodeState.PENDING,   # Stopping
+                       11: NodeState.TERMINATED,# Stopped
+                       12: NodeState.PENDING,   # Deprovision Pending
+                       13: NodeState.PENDING,   # Restart Pending
+                       14: NodeState.PENDING,   # Attaching
+                       15: NodeState.PENDING }  # Detaching
 
     def create_node(self, **kwargs):
         """
