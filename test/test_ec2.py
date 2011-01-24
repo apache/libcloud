@@ -110,19 +110,32 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
     def test_list_sizes(self):
-        sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 9)
+        region_old = self.driver.region_name
 
-        ids = [s.id for s in sizes]
-        self.assertTrue('t1.micro' in ids)
-        self.assertTrue('m1.small' in ids)
-        self.assertTrue('m1.large' in ids)
-        self.assertTrue('m1.xlarge' in ids)
-        self.assertTrue('c1.medium' in ids)
-        self.assertTrue('c1.xlarge' in ids)
-        self.assertTrue('m2.xlarge' in ids)
-        self.assertTrue('m2.2xlarge' in ids)
-        self.assertTrue('m2.4xlarge' in ids)
+        for region_name in [ 'us-east-1', 'us-west-1', 'eu-west-1',
+                             'ap-southeast-1' ]:
+            self.driver.region_name = region_name
+            sizes = self.driver.list_sizes()
+
+            ids = [s.id for s in sizes]
+            self.assertTrue('t1.micro' in ids)
+            self.assertTrue('m1.small' in ids)
+            self.assertTrue('m1.large' in ids)
+            self.assertTrue('m1.xlarge' in ids)
+            self.assertTrue('c1.medium' in ids)
+            self.assertTrue('c1.xlarge' in ids)
+            self.assertTrue('m2.xlarge' in ids)
+            self.assertTrue('m2.2xlarge' in ids)
+            self.assertTrue('m2.4xlarge' in ids)
+
+            if region_name == 'us-east-1':
+                self.assertEqual(len(sizes), 11)
+                self.assertTrue('cg1.4xlarge' in ids)
+                self.assertTrue('cc1.4xlarge' in ids)
+            else:
+                self.assertEqual(len(sizes), 9)
+
+        self.driver.region_name = region_old
 
     def test_list_images(self):
         images = self.driver.list_images()
