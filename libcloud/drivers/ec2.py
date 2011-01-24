@@ -105,7 +105,23 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'cg1.4xlarge': {
+        'id': 'cg1.4xlarge',
+        'name': 'Cluster GPU Quadruple Extra Large Instance',
+        'ram': 22528,
+        'disk': 1690,
+        'bandwidth': None
+    },
+    'cc1.4xlarge': {
+        'id': 'cc1.4xlarge',
+        'name': 'Cluster Compute Quadruple Extra Large Instance',
+        'ram': 23552,
+        'disk': 1690,
+        'bandwidth': None
+    },
 }
+
+CLUSTER_INSTANCES_IDS = [ 'cg1.4xlarge', 'cc1.4xlarge' ]
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
@@ -125,6 +141,8 @@ EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.68'
 EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.50'
 EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.2'
 EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.4'
+EC2_US_EAST_INSTANCE_TYPES['cg1.4xlarge']['price'] = '2.1'
+EC2_US_EAST_INSTANCE_TYPES['cc1.4xlarge']['price'] = '1.6'
 
 EC2_US_WEST_INSTANCE_TYPES['t1.micro']['price'] = '.025'
 EC2_US_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
@@ -383,8 +401,21 @@ class EC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        return [ NodeSize(driver=self.connection.driver, **i)
-                    for i in self._instance_types.values() ]
+        # Cluster instances are currently only available in the US - N. Virginia Region
+        include_cluser_instances = self.region_name == 'us-east-1'
+        sizes = self._get_sizes(include_cluser_instances =
+                                include_cluser_instances)
+
+        return sizes
+
+    def _get_sizes(self, include_cluser_instances=False):
+        sizes = [ NodeSize(driver=self.connection.driver, **i)
+                         for i in self._instance_types.values() ]
+
+        if not include_cluser_instances:
+            sizes = [ size for size in sizes if \
+                      size.id not in CLUSTER_INSTANCES_IDS]
+        return sizes
 
     def list_images(self, location=None):
         params = {'Action': 'DescribeImages'}
