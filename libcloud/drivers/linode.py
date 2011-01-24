@@ -25,7 +25,7 @@ Alternate bindings for reference    http://github.com/tjfontaine/linode-python
 
 Linode(R) is a registered trademark of Linode, LLC.
 
-Maintainer: Jed Smith <jed@linode.com>"""
+"""
 
 from libcloud.types import Provider, NodeState, InvalidCredsError, MalformedResponseError
 from libcloud.base import ConnectionKey, Response
