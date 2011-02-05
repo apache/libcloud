@@ -160,6 +160,15 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
+    def test_ex_describe_tags(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        tags = self.driver.ex_describe_tags(node)
+
+        self.assertEqual(len(tags), 3)
+        self.assertTrue('tag' in tags)
+        self.assertTrue('owner' in tags)
+        self.assertTrue('stack' in tags)
+
 class EC2MockHttp(MockHttp):
 
     fixtures = FileFixtures('ec2')
@@ -198,6 +207,10 @@ class EC2MockHttp(MockHttp):
 
     def _TerminateInstances(self, method, url, body, headers):
         body = self.fixtures.load('terminate_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeTags(self, method, url, body, headers):
+        body = self.fixtures.load('describe_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 class EC2APSETests(EC2Tests):
