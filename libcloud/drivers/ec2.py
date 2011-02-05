@@ -605,6 +605,33 @@ class EC2NodeDriver(NodeDriver):
 
         return availability_zones
 
+    def ex_describe_tags(self, node):
+        """
+        Return a dictionary of tags for this instance.
+
+        @type node: C{Node}
+        @param node: Node instance
+
+        @return dict Node tags
+        """
+        params = { 'Action': 'DescribeTags',
+                   'Filter.0.Name': 'resource-id',
+                   'Filter.0.Value.0': node.id,
+                   'Filter.1.Name': 'resource-type',
+                   'Filter.1.Value.0': 'instance',
+                   }
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        tags = {}
+        for element in self._findall(result, 'tagSet/item'):
+            key = self._findtext(element, 'key')
+            value = self._findtext(element, 'value')
+
+            tags[key] = value
+        return tags
+
     def create_node(self, **kwargs):
         """Create a new EC2 node
 
