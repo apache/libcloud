@@ -94,11 +94,6 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(len(locations) > 0)
         self.assertTrue(locations[0].availability_zone != None)
 
-    def test_list_location(self):
-        locations = self.driver.list_locations()
-        self.assertTrue(len(locations) > 0)
-        self.assertTrue(locations[0].availability_zone != None)
-
     def test_reboot_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.reboot_node(node)
@@ -152,14 +147,6 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
-    def test_ex_list_availability_zones(self):
-        availability_zones = self.driver.ex_list_availability_zones()
-        availability_zone = availability_zones[0]
-        self.assertTrue(len(availability_zones) > 0)
-        self.assertEqual(availability_zone.name, 'eu-west-1a')
-        self.assertEqual(availability_zone.zone_state, 'available')
-        self.assertEqual(availability_zone.region_name, 'eu-west-1')
-
     def test_ex_describe_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         tags = self.driver.ex_describe_tags(node)
@@ -175,10 +162,6 @@ class EC2MockHttp(MockHttp):
 
     def _DescribeInstances(self, method, url, body, headers):
         body = self.fixtures.load('describe_instances.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _DescribeAvailabilityZones(self, method, url, body, headers):
-        body = self.fixtures.load('describe_availability_zones.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeAvailabilityZones(self, method, url, body, headers):
