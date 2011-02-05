@@ -2,6 +2,10 @@
 
 Changes with Apache Libcloud 0.4.3
 
+    *) Implement ex_rebuild() and ex_get_node_details()
+       routines for Rackspace driver.
+       [Andrew Klochkov]
+
     *) Implement ex_list_ips() for GoGrid driver to list
        IP addresses assigned to the account. Make use of
        it in _get_first_ip().
