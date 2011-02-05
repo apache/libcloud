@@ -121,6 +121,18 @@ class GoGridConnection(ConnectionUserAndKey):
         m = hashlib.md5(key+secret+str(int(time.time())))
         return m.hexdigest()
 
+class GoGridIpAddress(object):
+    """
+    IP Address
+    """
+
+    def __init__(self, id, ip, public, state, subnet):
+        self.id = id
+        self.ip = ip
+        self.public = public
+        self.state = state
+        self.subnet = subnet
+
 class GoGridNode(Node):
     # Generating uuid based on public ip to get around missing id on
     # create_node in gogrid api
@@ -191,6 +203,18 @@ class GoGridNodeDriver(NodeDriver):
                 driver=self.connection.driver)
         return location
 
+    def _to_ip(self, element):
+        ip = GoGridIpAddress(id=element['id'],
+                ip=element['ip'],
+                public=element['public'],
+                subnet=element['subnet'],
+                state=element["state"]["name"])
+        return ip
+
+    def _to_ips(self, object):
+        return [ self._to_ip(el)
+                for el in object['list'] ]
+
     def _to_locations(self, object):
         return [self._to_location(el)
                 for el in object['list']]
@@ -254,13 +278,10 @@ class GoGridNodeDriver(NodeDriver):
                                         method='POST')
 
     def _get_first_ip(self, location=None):
-        params = {'ip.state': 'Unassigned', 'ip.type': 'public'}
-        if location is not None:
-            params['datacenter'] = location.id
-        object = self.connection.request("/api/grid/ip/list", params).object
-        if object['list']:
-            return object['list'][0]['ip']
-        else:
+        ips = self.ex_list_ips(public=True, assigned=False)
+        try:
+            return ips[0].ip 
+        except IndexError:
             raise LibcloudError('No public unassigned IPs left',
                     GoGridNodeDriver)
 
@@ -403,3 +424,34 @@ class GoGridNodeDriver(NodeDriver):
                 params=params).object
 
         return self._to_image(object['list'][0])
+
+    def ex_list_ips(self, **kwargs):
+        """Return list of IP addresses assigned to
+        the account.
+
+        @keyword    public: set to True to list only
+                    public IPs or False to list only
+                    private IPs. Set to None or not specify
+                    at all not to filter by type
+        @type       public: C{bool}
+        @keyword    assigned: set to True to list only addresses
+                    assigned to servers, False to list unassigned
+                    addresses and set to None or don't set at all
+                    not no filter by state
+        @type       assigned: C{bool}
+        @return:    C{list} of L{GoGridIpAddress}es
+        """
+
+        params = {}
+
+        if "public" in kwargs and kwargs["public"] is not None:
+            params["ip.type"] = {True: "Public",
+                    False: "Private"}[kwargs["public"]]
+        if "assigned" in kwargs and kwargs["assigned"] is not None:
+            params["ip.state"] = {True: "Assigned",
+                    False: "Unassigned"}[kwargs["assigned"]]
+
+        ips = self._to_ips(
+                self.connection.request('/api/grid/ip/list',
+                    params=params).object)
+        return ips

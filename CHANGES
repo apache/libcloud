@@ -2,6 +2,11 @@
 
 Changes with Apache Libcloud 0.4.3
 
+    *) Implement ex_list_ips() for GoGrid driver to list
+       IP addresses assigned to the account. Make use of
+       it in _get_first_ip().
+       [Roman Bogorodskiy]
+
     *) Implement ex_edit_image method for GoGrid driver
        which allows changing image attributes like name,
        description and make image public or private.

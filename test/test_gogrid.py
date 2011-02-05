@@ -23,7 +23,7 @@ except ImportError:
     import simplejson as json
 
 from libcloud.types import LibcloudError, InvalidCredsError
-from libcloud.drivers.gogrid import GoGridNodeDriver
+from libcloud.drivers.gogrid import GoGridNodeDriver, GoGridIpAddress
 from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 
 from test import MockHttp, TestCaseMixin
@@ -131,6 +131,31 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_edit_node(node=node, size=size)
 
         self.assertTrue(isinstance(ret, Node))
+
+    def test_ex_list_ips(self):
+        ips = self.driver.ex_list_ips()
+
+        expected_ips = {"192.168.75.66": GoGridIpAddress(id="5348099",
+            ip="192.168.75.66", public=True, state="Unassigned",
+            subnet="192.168.75.64/255.255.255.240"),
+            "192.168.75.67": GoGridIpAddress(id="5348100",
+                ip="192.168.75.67", public=True, state="Assigned",
+                subnet="192.168.75.64/255.255.255.240"),
+            "192.168.75.68": GoGridIpAddress(id="5348101",
+                ip="192.168.75.68", public=False, state="Unassigned",
+                subnet="192.168.75.64/255.255.255.240")}
+
+        self.assertEqual(len(expected_ips), 3)
+
+        for ip in ips:
+            self.assertTrue(ip.ip in expected_ips)
+            self.assertEqual(ip.public, expected_ips[ip.ip].public)
+            self.assertEqual(ip.state, expected_ips[ip.ip].state)
+            self.assertEqual(ip.subnet, expected_ips[ip.ip].subnet)
+
+            del expected_ips[ip.ip]
+
+        self.assertEqual(len(expected_ips), 0)
 
 class GoGridMockHttp(MockHttp):
 
