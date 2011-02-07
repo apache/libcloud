@@ -480,6 +480,7 @@ class RackspaceNodeDriver(NodeDriver):
                     'hostId': el.get('hostId'),
                     'imageId': el.get('imageId'),
                     'flavorId': el.get('flavorId'),
+                    'uri': "https://%s%s/servers/%s" % (self.connection.host, self.connection.path, el.get('id')),
                     'metadata': metadata,
                  })
         return n
