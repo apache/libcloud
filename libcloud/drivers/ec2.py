@@ -632,6 +632,29 @@ class EC2NodeDriver(NodeDriver):
             tags[key] = value
         return tags
 
+    def ex_describe_addresses(self, node):
+        """
+        Return a list of Elastic IP addresses associated with this node.
+
+        @type node: C{Node}
+        @param node: Node instance
+
+        @return list Elastic IP addresses attached to this node.
+        """
+        params = { 'Action': 'DescribeAddresses',
+                   'Filter.0.Name': 'instance-id',
+                   'Filter.0.Value.0': node.id
+                 }
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        ip_addresses = []
+        for element in self._findall(result, 'addressesSet/item'):
+            ip_address = self._findtext(element, 'publicIp')
+            ip_addresses.append(ip_address)
+        return ip_addresses
+
     def create_node(self, **kwargs):
         """Create a new EC2 node
 
