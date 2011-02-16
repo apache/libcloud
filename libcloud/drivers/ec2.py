@@ -351,8 +351,8 @@ class EC2NodeDriver(NodeDriver):
             id=self._findtext(element, 'instanceId'),
             name=self._findtext(element, 'instanceId'),
             state=state,
-            public_ip=[self._findtext(element, 'dnsName')],
-            private_ip=[self._findtext(element, 'privateDnsName')],
+            public_ip=[self._findtext(element, 'ipAddress')],
+            private_ip=[self._findtext(element, 'privateIpAddress')],
             driver=self.connection.driver,
             extra={
                 'dns_name': self._findattr(element, "dnsName"),
