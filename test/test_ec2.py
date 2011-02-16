@@ -156,6 +156,14 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue('owner' in tags)
         self.assertTrue('stack' in tags)
 
+    def test_ex_describe_addresses(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ip_addresses = self.driver.ex_describe_addresses(node)
+
+        self.assertEqual(len(ip_addresses), 1)
+        self.assertEqual(ip_addresses[0], '1.2.3.4')
+
+
 class EC2MockHttp(MockHttp):
 
     fixtures = FileFixtures('ec2')
@@ -195,6 +203,11 @@ class EC2MockHttp(MockHttp):
     def _DescribeTags(self, method, url, body, headers):
         body = self.fixtures.load('describe_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeAddresses(self, method, url, body, headers):
+        body = self.fixtures.load('describe_addresses.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class EC2APSETests(EC2Tests):
     def setUp(self):
