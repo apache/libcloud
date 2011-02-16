@@ -20,6 +20,8 @@
           <privateDnsName/>
           <dnsName/>
           <reason/>
+          <privateIpAddress>1.2.3.5</privateIpAddress>
+          <ipAddress>1.2.3.5</ipAddress>
           <amiLaunchIndex>0</amiLaunchIndex>
           <productCodes/>
           <instanceType>m1.small</instanceType>
