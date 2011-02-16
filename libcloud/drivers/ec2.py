@@ -398,6 +398,12 @@ class EC2NodeDriver(NodeDriver):
             groups=[g.findtext('')
                         for g in self._findall(rs, 'groupSet/item/groupId')]
             nodes += self._to_nodes(rs, 'instancesSet/item', groups)
+
+        for node in nodes:
+            elastic_ip_address = self.ex_describe_addresses(node)
+
+            if elastic_ip_address:
+                node.public_ip.extend(elastic_ip_address)
         return nodes
 
     def list_sizes(self, location=None):
