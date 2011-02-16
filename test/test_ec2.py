@@ -88,6 +88,7 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
         self.assertEqual(node.id, 'i-4382922a')
+        self.assertEqual(len(node.public_ip), 1)
 
     def test_list_location(self):
         locations = self.driver.list_locations()
