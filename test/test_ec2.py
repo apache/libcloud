@@ -161,12 +161,26 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue('owner' in tags)
         self.assertTrue('stack' in tags)
 
+    def test_ex_describe_addresses_for_node(self):
+        node1 = Node('i-4382922a', None, None, None, None, self.driver)
+        ip_addresses1 = self.driver.ex_describe_addresses_for_node(node1)
+        node2 = Node('i-4382922b', None, None, None, None, self.driver)
+        ip_addresses2 = sorted(self.driver.ex_describe_addresses_for_node(node2))
+
+        self.assertEqual(len(ip_addresses1), 1)
+        self.assertEqual(ip_addresses1[0], '1.2.3.4')
+
+        self.assertEqual(len(ip_addresses2), 2)
+        self.assertEqual(ip_addresses2[0], '1.2.3.5')
+        self.assertEqual(ip_addresses2[1], '1.2.3.6')
+
     def test_ex_describe_addresses(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
-        ip_addresses = self.driver.ex_describe_addresses(node)
+        nodes_elastic_ips = self.driver.ex_describe_addresses([node])
 
-        self.assertEqual(len(ip_addresses), 1)
-        self.assertEqual(ip_addresses[0], '1.2.3.4')
+        self.assertEqual(len(nodes_elastic_ips), 1)
+        self.assertTrue(node.id in nodes_elastic_ips)
+        self.assertEqual(nodes_elastic_ips[node.id], ['1.2.3.4'])
 
 
 class EC2MockHttp(MockHttp):
@@ -210,7 +224,7 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeAddresses(self, method, url, body, headers):
-        body = self.fixtures.load('describe_addresses.xml')
+        body = self.fixtures.load('describe_addresses_multi.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

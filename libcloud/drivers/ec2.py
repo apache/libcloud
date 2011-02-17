@@ -399,11 +399,9 @@ class EC2NodeDriver(NodeDriver):
                         for g in self._findall(rs, 'groupSet/item/groupId')]
             nodes += self._to_nodes(rs, 'instancesSet/item', groups)
 
+        nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
-            elastic_ip_address = self.ex_describe_addresses(node)
-
-            if elastic_ip_address:
-                node.public_ip.extend(elastic_ip_address)
+            node.public_ip.extend(nodes_elastic_ips_mappings[node.id])
         return nodes
 
     def list_sizes(self, location=None):
@@ -638,7 +636,46 @@ class EC2NodeDriver(NodeDriver):
             tags[key] = value
         return tags
 
-    def ex_describe_addresses(self, node):
+    def ex_describe_addresses(self, nodes):
+        """
+        Return Elastic IP addresses for all the nodes in the provided list.
+
+        @type nodes: C{list}
+        @param nodes: List of C{Node} instances
+
+        @return dict Dictionary where a key is a node ID and the value is a
+                     list with the Elastic IP addresses associated with this node.
+        """
+        if not nodes:
+            return {}
+
+        params = { 'Action': 'DescribeAddresses' }
+
+        if len(nodes) == 1:
+           params.update({
+                  'Filter.0.Name': 'instance-id',
+                  'Filter.0.Value.0': nodes[0].id
+           })
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        node_instance_ids = [ node.id for node in nodes ]
+        nodes_elastic_ip_mappings = {}
+
+        for node_id in node_instance_ids:
+            nodes_elastic_ip_mappings.setdefault(node_id, [])
+        for element in self._findall(result, 'addressesSet/item'):
+            instance_id = self._findtext(element, 'instanceId')
+            ip_address = self._findtext(element, 'publicIp')
+
+            if instance_id not in node_instance_ids:
+                continue
+
+            nodes_elastic_ip_mappings[instance_id].append(ip_address)
+        return nodes_elastic_ip_mappings
+
+    def ex_describe_addresses_for_node(self, node):
         """
         Return a list of Elastic IP addresses associated with this node.
 
@@ -647,19 +684,8 @@ class EC2NodeDriver(NodeDriver):
 
         @return list Elastic IP addresses attached to this node.
         """
-        params = { 'Action': 'DescribeAddresses',
-                   'Filter.0.Name': 'instance-id',
-                   'Filter.0.Value.0': node.id
-                 }
-
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
-
-        ip_addresses = []
-        for element in self._findall(result, 'addressesSet/item'):
-            ip_address = self._findtext(element, 'publicIp')
-            ip_addresses.append(ip_address)
-        return ip_addresses
+        node_elastic_ips = self.ex_describe_addresses([node])
+        return node_elastic_ips[node.id]
 
     def create_node(self, **kwargs):
         """Create a new EC2 node
