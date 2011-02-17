@@ -166,6 +166,8 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         ip_addresses1 = self.driver.ex_describe_addresses_for_node(node1)
         node2 = Node('i-4382922b', None, None, None, None, self.driver)
         ip_addresses2 = sorted(self.driver.ex_describe_addresses_for_node(node2))
+        node3 = Node('i-4382922g', None, None, None, None, self.driver)
+        ip_addresses3 = sorted(self.driver.ex_describe_addresses_for_node(node3))
 
         self.assertEqual(len(ip_addresses1), 1)
         self.assertEqual(ip_addresses1[0], '1.2.3.4')
@@ -174,13 +176,21 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ip_addresses2[0], '1.2.3.5')
         self.assertEqual(ip_addresses2[1], '1.2.3.6')
 
-    def test_ex_describe_addresses(self):
-        node = Node('i-4382922a', None, None, None, None, self.driver)
-        nodes_elastic_ips = self.driver.ex_describe_addresses([node])
+        self.assertEqual(len(ip_addresses3), 0)
 
-        self.assertEqual(len(nodes_elastic_ips), 1)
-        self.assertTrue(node.id in nodes_elastic_ips)
-        self.assertEqual(nodes_elastic_ips[node.id], ['1.2.3.4'])
+    def test_ex_describe_addresses(self):
+        node1 = Node('i-4382922a', None, None, None, None, self.driver)
+        node2 = Node('i-4382922g', None, None, None, None, self.driver)
+        nodes_elastic_ips1 = self.driver.ex_describe_addresses([node1])
+        nodes_elastic_ips2 = self.driver.ex_describe_addresses([node2])
+
+        self.assertEqual(len(nodes_elastic_ips1), 1)
+        self.assertTrue(node1.id in nodes_elastic_ips1)
+        self.assertEqual(nodes_elastic_ips1[node1.id], ['1.2.3.4'])
+
+        self.assertEqual(len(nodes_elastic_ips2), 1)
+        self.assertTrue(node2.id in nodes_elastic_ips2)
+        self.assertEqual(nodes_elastic_ips2[node2.id], [])
 
 
 class EC2MockHttp(MockHttp):
