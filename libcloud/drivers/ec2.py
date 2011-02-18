@@ -636,6 +636,48 @@ class EC2NodeDriver(NodeDriver):
             tags[key] = value
         return tags
 
+    def ex_create_tags(self, node, tags):
+        """
+        Create tags for an instance.
+
+        @type node: C{Node}
+        @param node: Node instance
+        @param tags: A dictionary or other mapping of strings to strings,
+                     associating tag names with tag values.
+        """
+        if not tags:
+            return
+
+        params = { 'Action': 'CreateTags',
+                   'ResourceId.0': node.id }
+        for i, key in enumerate(tags):
+            params['Tag.%d.Key' % i] = key
+            params['Tag.%d.Value' % i] = tags[key]
+
+        self.connection.request(self.path,
+                                params=params.copy()).object
+
+    def ex_delete_tags(self, node, tags):
+        """
+        Delete tags from an instance.
+
+        @type node: C{Node}
+        @param node: Node instance
+        @param tags: A dictionary or other mapping of strings to strings,
+                     specifying the tag names and tag values to be deleted.
+        """
+        if not tags:
+            return
+
+        params = { 'Action': 'DeleteTags',
+                   'ResourceId.0': node.id }
+        for i, key in enumerate(tags):
+            params['Tag.%d.Key' % i] = key
+            params['Tag.%d.Value' % i] = tags[key]
+
+        self.connection.request(self.path,
+                                params=params.copy()).object
+
     def ex_describe_addresses(self, nodes):
         """
         Return Elastic IP addresses for all the nodes in the provided list.
