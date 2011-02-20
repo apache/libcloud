@@ -161,6 +161,14 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue('owner' in tags)
         self.assertTrue('stack' in tags)
 
+    def test_ex_create_tags(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        self.driver.ex_create_tags(node, {'sample': 'tag'})
+
+    def test_ex_delete_tags(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        self.driver.ex_delete_tags(node, {'sample': 'tag'})
+
     def test_ex_describe_addresses_for_node(self):
         node1 = Node('i-4382922a', None, None, None, None, self.driver)
         ip_addresses1 = self.driver.ex_describe_addresses_for_node(node1)
@@ -231,6 +239,14 @@ class EC2MockHttp(MockHttp):
 
     def _DescribeTags(self, method, url, body, headers):
         body = self.fixtures.load('describe_tags.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateTags(self, method, url, body, headers):
+        body = self.fixtures.load('create_tags.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteTags(self, method, url, body, headers):
+        body = self.fixtures.load('delete_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeAddresses(self, method, url, body, headers):
