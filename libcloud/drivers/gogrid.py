@@ -209,6 +209,7 @@ class GoGridNodeDriver(NodeDriver):
                 public=element['public'],
                 subnet=element['subnet'],
                 state=element["state"]["name"])
+        ip.location = self._to_location(element['datacenter'])
         return ip
 
     def _to_ips(self, object):
@@ -278,7 +279,7 @@ class GoGridNodeDriver(NodeDriver):
                                         method='POST')
 
     def _get_first_ip(self, location=None):
-        ips = self.ex_list_ips(public=True, assigned=False)
+        ips = self.ex_list_ips(public=True, assigned=False, location=location)
         try:
             return ips[0].ip 
         except IndexError:
@@ -305,13 +306,17 @@ class GoGridNodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        first_ip = self._get_first_ip(kwargs.get('location'))
+        try:
+            ip = kwargs['ex_ip']
+        except KeyError:
+            ip = self._get_first_ip(kwargs.get('location'))
+
         params = {'name': name,
                   'image': image.id,
                   'description': kwargs.get('ex_description', ''),
                   'isSandbox': str(kwargs.get('ex_issandbox', False)).lower(),
                   'server.ram': size.id,
-                  'ip': first_ip}
+                  'ip': ip}
 
         object = self.connection.request('/api/grid/server/add',
                                          params=params, method='POST').object
@@ -328,6 +333,9 @@ class GoGridNodeDriver(NodeDriver):
         @type       ex_description: C{string}
         @keyword    ex_issandbox: Should server be sendbox?
         @type       ex_issandbox: C{bool}
+        @keyword    ex_ip: Public IP address to use for a Node. If not
+                    specified, first available IP address will be picked
+        @type       ex_ip: C{string}
         """
         node = self.ex_create_node_nowait(**kwargs)
 
@@ -439,6 +447,8 @@ class GoGridNodeDriver(NodeDriver):
                     addresses and set to None or don't set at all
                     not no filter by state
         @type       assigned: C{bool}
+        @keyword    location: filter IP addresses by location
+        @type       location: L{NodeLocation}
         @return:    C{list} of L{GoGridIpAddress}es
         """
 
@@ -450,6 +460,8 @@ class GoGridNodeDriver(NodeDriver):
         if "assigned" in kwargs and kwargs["assigned"] is not None:
             params["ip.state"] = {True: "Assigned",
                     False: "Unassigned"}[kwargs["assigned"]]
+        if "location" in kwargs and kwargs['location'] is not None:
+            params['datacenter'] = kwargs['location'].id
 
         ips = self._to_ips(
                 self.connection.request('/api/grid/ip/list',
