@@ -66,6 +66,7 @@ class Provider(object):
     RACKSPACE_UK = 23
     BRIGHTBOX = 24
     CLOUDSIGMA = 25
+    EC2_AP_NORTHEAST = 26
 
 class NodeState(object):
     """

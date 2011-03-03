@@ -32,6 +32,7 @@ EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
+EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
 
 API_VERSION = '2010-08-31'
 
@@ -127,6 +128,7 @@ EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 #
 # On demand prices must also be hardcoded, because Amazon doesn't provide an
@@ -167,6 +169,15 @@ EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.28'
 # prices are the same
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_EU_WEST_INSTANCE_TYPES)
 
+EC2_AP_NORTHEAST_INSTANCE_TYPES['t1.micro']['price'] = '.027'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['m1.small']['price'] = '.10'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['m1.large']['price'] = '.40'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.80'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['c1.medium']['price'] = '.20'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.80'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.60'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.20'
+EC2_AP_NORTHEAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.39'
 
 class EC2NodeLocation(NodeLocation):
     def __init__(self, id, name, country, driver, availability_zone):
@@ -864,6 +875,13 @@ class EC2APSEConnection(EC2Connection):
 
     host = EC2_AP_SOUTHEAST_HOST
 
+class EC2APNEConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Northeast Asia Pacific Region
+    """
+
+    host = EC2_AP_NORTHEAST_HOST
+
 class EC2APSENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific Region
@@ -875,6 +893,18 @@ class EC2APSENodeDriver(EC2NodeDriver):
     region_name = 'ap-southeast-1'
     connectionCls = EC2APSEConnection
     _instance_types = EC2_AP_SOUTHEAST_INSTANCE_TYPES
+
+class EC2APNENodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Northeast Asia Pacific Region
+    """
+
+    name = 'Amazon EC2 (ap-northeast-1)'
+    friendly_name = 'Amazon Asia-Pacific Tokyo'
+    country = 'JP'
+    region_name = 'ap-northeast-1'
+    connectionCls = EC2APNEConnection
+    _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
 
 class EucConnection(EC2Connection):
     """
