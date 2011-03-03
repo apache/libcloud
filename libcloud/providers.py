@@ -29,6 +29,8 @@ DRIVERS = {
         ('libcloud.drivers.ec2', 'EC2USWestNodeDriver'),
     Provider.EC2_AP_SOUTHEAST:
         ('libcloud.drivers.ec2', 'EC2APSENodeDriver'),
+    Provider.EC2_AP_NORTHEAST:
+        ('libcloud.drivers.ec2', 'EC2APNENodeDriver'),
     Provider.ECP:
         ('libcloud.drivers.ecp', 'ECPNodeDriver'),
     Provider.ELASTICHOSTS_UK1:

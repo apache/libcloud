@@ -16,6 +16,7 @@ import sys
 import unittest
 
 from libcloud.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver, IdempotentParamError
+from libcloud.drivers.ec2 import EC2APNENodeDriver
 from libcloud.base import Node, NodeImage, NodeSize, NodeLocation
 
 from test import MockHttp, TestCaseMixin
@@ -260,6 +261,13 @@ class EC2APSETests(EC2Tests):
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = EC2APSENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+
+class EC2APNETests(EC2Tests):
+    def setUp(self):
+        EC2APNENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = EC2APNENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
