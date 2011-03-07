@@ -1,0 +1,16 @@
+<DescribeImagesResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+  <imagesSet>
+    <item>
+      <imageId>ami-be3adfd7</imageId>
+      <imageLocation>ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml</imageLocation>
+      <imageState>available</imageState>
+      <imageOwnerId>206029621532</imageOwnerId>
+      <isPublic>false</isPublic>
+      <architecture>i386</architecture>
+      <imageType>machine</imageType>
+      <kernelId>aki-4438dd2d</kernelId>
+      <ramdiskId>ari-4538dd2c</ramdiskId>
+    </item>
+  </imagesSet>
+</DescribeImagesResponse>
+

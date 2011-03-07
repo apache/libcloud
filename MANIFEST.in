@@ -1,0 +1,13 @@
+include LICENSE
+include NOTICE
+include DISCLAIMER
+include example.py
+include CONTRIBUTORS
+include CHANGES
+include HACKING
+include README
+prune test/secrets.py
+include test/*.py
+include demos/*
+include test/secrets.py-dist
+include test/fixtures/*/*
