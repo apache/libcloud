@@ -2,6 +2,36 @@
 
 Changes with Apache Libcloud 0.4.3
 
+   *) Add support for the new Amazon Region (Tokyo)
+      [Tomaz Muraus]
+
+   *) Implement ex_rebuild() and ex_get_node_details()
+      routines for Rackspace driver.
+      [Andrew Klochkov]
+
+    *) Implement ex_list_ips() for GoGrid driver to list
+       IP addresses assigned to the account. Make use of
+       it in _get_first_ip().
+       [Roman Bogorodskiy]
+
+    *) Added ex_create_tags and ex_delete_tags methods to the
+       EC2 driver.
+       [Brandon Rhodes]
+
+    *) Include node Elastic IP addresses in the node public_ip
+       attribute for the EC2 nodes.
+       [Tomaz Muraus]
+
+    *) Use ipAddress and privateIpAddress attribute for
+       the EC 2node public and private ip 
+       [Tomaz Muraus]
+
+    *) Add ex_describe_addresses method to the EC2 driver.
+       [Tomaz Muraus]
+
+    *) Expose URI of a Rackspace node to the node meta data.
+       [Paul Querna]
+
     *) Implement ex_edit_image method for GoGrid driver
        which allows changing image attributes like name,
        description and make image public or private.
