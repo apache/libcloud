@@ -466,7 +466,7 @@ class StorageDriver(object):
                 chunk = ''
 
         if chunked:
-                response.connection.connection.send('0\r\n\r\n')
+            response.connection.connection.send('0\r\n\r\n')
 
         if calculate_hash:
             data_hash = data_hash.hexdigest()
