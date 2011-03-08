@@ -257,7 +257,31 @@ class CloudFilesTests(unittest.TestCase):
         finally:
             libcloud.utils.guess_file_mime_type = old_func
 
-    # TODO: Add test for upload_object throwing a LibcloudError
+    def test_upload_object_error(self):
+        def dummy_content_type(name):
+            return 'application/zip', None
+
+        def send(instance):
+            raise Exception('')
+
+        old_func1 = libcloud.utils.guess_file_mime_type
+        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func2 = CloudFilesMockHttp.send
+        CloudFilesMockHttp.send = send
+
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = 'foo_test_upload'
+        try:
+            obj = self.driver.upload_object(file_path=file_path, container=container,
+                                            object_name=object_name)
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Timeout while uploading but an exception was not thrown')
+        finally:
+            libcloud.utils.guess_file_mime_type = old_func1
+            CloudFilesMockHttp.send = old_func2
 
     def test_upload_object_inexistent_file(self):
         def dummy_content_type(name):
@@ -275,7 +299,7 @@ class CloudFilesTests(unittest.TestCase):
         except OSError:
             pass
         else:
-            self.fail('Timeout while uploading but an exception was not thrown')
+            self.fail('Inesitent but an exception was not thrown')
         finally:
             libcloud.utils.guess_file_mime_type = old_func
 
