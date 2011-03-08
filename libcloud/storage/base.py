@@ -444,27 +444,26 @@ class StorageDriver(object):
             return False, None, None
 
         while len(chunk) > 0:
+            try:
+                if chunked:
+                    response.connection.connection.send('%X\r\n' %
+                                                       (len(chunk)))
+                    response.connection.connection.send(chunk)
+                    response.connection.connection.send('\r\n')
+                else:
+                    response.connection.connection.send(chunk)
+            except Exception, e:
+                # Timeout, etc.
+                return False, None, bytes_transferred
+
+            bytes_transferred += len(chunk)
             if calculate_hash:
-                try:
-                    if chunked:
-                        response.connection.connection.send('%X\r\n' %
-                                                           (len(chunk)))
-                        response.connection.connection.send(chunk)
-                        response.connection.connection.send('\r\n')
-                    else:
-                        response.connection.connection.send(chunk)
-                except Exception, e:
-                    # Timeout, etc.
-                    return False, None, bytes_transferred
+                data_hash.update(chunk)
 
-                bytes_transferred += len(chunk)
-                if calculate_hash:
-                    data_hash.update(chunk)
-
-                try:
-                    chunk = generator.next()
-                except StopIteration:
-                    chunk = ''
+            try:
+                chunk = generator.next()
+            except StopIteration:
+                chunk = ''
 
         if chunked:
                 response.connection.connection.send('0\r\n\r\n')
