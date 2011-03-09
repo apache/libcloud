@@ -112,7 +112,10 @@ setup(
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
     packages=[
         'libcloud',
-        'libcloud.drivers'
+        'libcloud.common',
+        'libcloud.compute',
+        'libcloud.compute.drivers',
+        'libcloud.drivers',
     ],
     package_dir={
         'libcloud': 'libcloud',
