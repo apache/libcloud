@@ -21,55 +21,55 @@ from libcloud.compute.types import Provider
 
 DRIVERS = {
     Provider.DUMMY:
-        ('libcloud.drivers.dummy', 'DummyNodeDriver'),
+        ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
     Provider.EC2_US_EAST:
-        ('libcloud.drivers.ec2', 'EC2NodeDriver'),
+        ('libcloud.compute.drivers.ec2', 'EC2NodeDriver'),
     Provider.EC2_EU_WEST:
-        ('libcloud.drivers.ec2', 'EC2EUNodeDriver'),
+        ('libcloud.compute.drivers.ec2', 'EC2EUNodeDriver'),
     Provider.EC2_US_WEST:
-        ('libcloud.drivers.ec2', 'EC2USWestNodeDriver'),
+        ('libcloud.compute.drivers.ec2', 'EC2USWestNodeDriver'),
     Provider.EC2_AP_SOUTHEAST:
-        ('libcloud.drivers.ec2', 'EC2APSENodeDriver'),
+        ('libcloud.compute.drivers.ec2', 'EC2APSENodeDriver'),
     Provider.EC2_AP_NORTHEAST:
-        ('libcloud.drivers.ec2', 'EC2APNENodeDriver'),
+        ('libcloud.compute.drivers.ec2', 'EC2APNENodeDriver'),
     Provider.ECP:
-        ('libcloud.drivers.ecp', 'ECPNodeDriver'),
+        ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
     Provider.ELASTICHOSTS_UK1:
-        ('libcloud.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
     Provider.ELASTICHOSTS_UK2:
-        ('libcloud.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
     Provider.ELASTICHOSTS_US1:
-        ('libcloud.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
     Provider.CLOUDSIGMA:
-        ('libcloud.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
+        ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
     Provider.GOGRID:
-        ('libcloud.drivers.gogrid', 'GoGridNodeDriver'),
+        ('libcloud.compute.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
-        ('libcloud.drivers.rackspace', 'RackspaceNodeDriver'),
+        ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.RACKSPACE_UK:
-        ('libcloud.drivers.rackspace', 'RackspaceUKNodeDriver'),
+        ('libcloud.compute.drivers.rackspace', 'RackspaceUKNodeDriver'),
     Provider.SLICEHOST:
-        ('libcloud.drivers.slicehost', 'SlicehostNodeDriver'),
+        ('libcloud.compute.drivers.slicehost', 'SlicehostNodeDriver'),
     Provider.VPSNET:
-        ('libcloud.drivers.vpsnet', 'VPSNetNodeDriver'),
+        ('libcloud.compute.drivers.vpsnet', 'VPSNetNodeDriver'),
     Provider.LINODE:
-        ('libcloud.drivers.linode', 'LinodeNodeDriver'),
+        ('libcloud.compute.drivers.linode', 'LinodeNodeDriver'),
     Provider.RIMUHOSTING:
-        ('libcloud.drivers.rimuhosting', 'RimuHostingNodeDriver'),
+        ('libcloud.compute.drivers.rimuhosting', 'RimuHostingNodeDriver'),
     Provider.VOXEL:
-        ('libcloud.drivers.voxel', 'VoxelNodeDriver'),
+        ('libcloud.compute.drivers.voxel', 'VoxelNodeDriver'),
     Provider.SOFTLAYER:
-        ('libcloud.drivers.softlayer', 'SoftLayerNodeDriver'),
+        ('libcloud.compute.drivers.softlayer', 'SoftLayerNodeDriver'),
     Provider.EUCALYPTUS:
-        ('libcloud.drivers.ec2', 'EucNodeDriver'),
+        ('libcloud.compute.drivers.ec2', 'EucNodeDriver'),
     Provider.IBM:
-        ('libcloud.drivers.ibm_sbc', 'IBMNodeDriver'),
+        ('libcloud.compute.drivers.ibm_sbc', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
-        ('libcloud.drivers.opennebula', 'OpenNebulaNodeDriver'),
+        ('libcloud.compute.drivers.opennebula', 'OpenNebulaNodeDriver'),
     Provider.DREAMHOST:
-        ('libcloud.drivers.dreamhost', 'DreamhostNodeDriver'),
+        ('libcloud.compute.drivers.dreamhost', 'DreamhostNodeDriver'),
     Provider.BRIGHTBOX:
-        ('libcloud.drivers.brightbox', 'BrightboxNodeDriver'),
+        ('libcloud.compute.drivers.brightbox', 'BrightboxNodeDriver'),
 }
 
 def get_driver(provider):
