@@ -70,7 +70,7 @@ class PricingTestCase(unittest.TestCase):
                                                 driver_name='foo',
                                                 size_id='3')
         self.assertEqual(price1, 2)
-        self.assertEqual(price3, 3)
+        self.assertEqual(price2, 3)
 
     def test_invalid_pricing_cache(self):
         libcloud.pricing.PRICING_DATA['compute']['foo'] = { 2: 2 }
