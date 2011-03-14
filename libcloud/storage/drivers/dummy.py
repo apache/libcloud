@@ -86,7 +86,7 @@ class DummyStorageDriver(StorageDriver):
         {'object_count': 0, 'container_count': 0, 'bytes_used': 0}
         >>> container = driver.create_container(container_name='test container 1')
         >>> container = driver.create_container(container_name='test container 2')
-        >>> obj = container.stream_object_data(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
+        >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> driver.get_meta_data()
         {'object_count': 1, 'container_count': 2, 'bytes_used': 50}
         """
@@ -167,7 +167,7 @@ class DummyStorageDriver(StorageDriver):
         >>> driver.get_object('test container 1', 'unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ObjectDoesNotExistError:
-        >>> obj = container.stream_object_data(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
+        >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> obj
         <Object: name=test object, size=50, hash=None, provider=Dummy Storage Provider ...>
         """
@@ -219,7 +219,7 @@ class DummyStorageDriver(StorageDriver):
         >>> len(driver._containers)
         0
         >>> container = driver.create_container(container_name='test container 1') #doctest: +IGNORE_EXCEPTION_DETAIL
-        >>> obj = container.stream_object_data(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
+        >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> driver.delete_container(container=container) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ContainerIsNotEmptyError:
@@ -252,7 +252,7 @@ class DummyStorageDriver(StorageDriver):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container = driver.create_container(container_name='test container 1') #doctest: +IGNORE_EXCEPTION_DETAIL
-        >>> obj = container.stream_object_data(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
+        >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> stream = container.object_as_stream(obj)
         >>> stream #doctest: +ELLIPSIS
         <closed file '<uninitialized file>', mode '<uninitialized file>' at 0x...>
@@ -285,11 +285,11 @@ class DummyStorageDriver(StorageDriver):
         return self._add_object(container=container, object_name=object_name,
                                 size=size, extra=extra)
 
-    def stream_object_data(self, iterator, container, object_name, extra=None):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container = driver.create_container(container_name='test container 1') #doctest: +IGNORE_EXCEPTION_DETAIL
-        >>> obj = container.stream_object_data(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
+        >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> obj #doctest: +ELLIPSIS
         <Object: name=test object, size=50, ...>
         """
@@ -302,7 +302,7 @@ class DummyStorageDriver(StorageDriver):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container = driver.create_container(container_name='test container 1') #doctest: +IGNORE_EXCEPTION_DETAIL
-        >>> obj = container.stream_object_data(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
+        >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> obj #doctest: +ELLIPSIS
         <Object: name=test object, size=50, ...>
         >>> container.delete_object(obj=obj)

@@ -317,7 +317,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                 upload_func=upload_func,
                                 upload_func_args=upload_func_args)
 
-    def stream_object_data(self, iterator, container, object_name, extra=None):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
