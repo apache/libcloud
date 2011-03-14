@@ -248,12 +248,12 @@ class DummyStorageDriver(StorageDriver):
 
       return self._save_object(**kwargs_dict)
 
-    def object_as_stream(self, obj, chunk_size=None):
+    def download_object_as_stream(self, obj, chunk_size=None):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container = driver.create_container(container_name='test container 1') #doctest: +IGNORE_EXCEPTION_DETAIL
         >>> obj = container.upload_object_via_stream(object_name='test object', iterator=DummyFileObject(5, 10), extra={})
-        >>> stream = container.object_as_stream(obj)
+        >>> stream = container.download_object_as_stream(obj)
         >>> stream #doctest: +ELLIPSIS
         <closed file '<uninitialized file>', mode '<uninitialized file>' at 0x...>
         """
