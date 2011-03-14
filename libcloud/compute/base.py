@@ -16,11 +16,8 @@
 """
 Provides base classes for working with drivers
 """
-import httplib, urllib
 import time
 import hashlib
-import StringIO
-import ssl
 import os
 import socket
 import struct

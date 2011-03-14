@@ -15,13 +15,8 @@
 
 import httplib
 import urllib
-import time
-import hashlib
 import StringIO
 import ssl
-import os
-import socket
-import struct
 
 from pipes import quote as pquote
 
