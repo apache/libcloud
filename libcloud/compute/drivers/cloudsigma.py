@@ -20,6 +20,7 @@ import re
 import time
 import base64
 
+from libcloud.utils import str2dicts, str2list, dict2str
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState, Provider
@@ -556,99 +557,3 @@ class CloudSigmaZrhNodeDriver(CloudSigmaBaseNodeDriver):
     CloudSigma node driver for the Zurich end-point
     """
     connectionCls = CloudSigmaZrhConnection
-
-# Utility methods (should we place them in libcloud/utils.py ?)
-def str2dicts(data):
-    """
-    Create a list of dictionaries from a whitespace and newline delimited text.
-
-    For example, this:
-    cpu 1100
-    ram 640
-
-    cpu 2200
-    ram 1024
-
-    becomes:
-    [{'cpu': '1100', 'ram': '640'}, {'cpu': '2200', 'ram': '1024'}]
-    """
-    list_data = []
-    list_data.append({})
-    d = list_data[-1]
-
-    lines = data.split('\n')
-    for line in lines:
-        line = line.strip()
-
-        if not line:
-            d = {}
-            list_data.append(d)
-            d = list_data[-1]
-            continue
-
-        whitespace = line.find(' ')
-
-        if not whitespace:
-            continue
-
-        key = line[0:whitespace]
-        value = line[whitespace + 1:]
-        d.update({key: value})
-
-    list_data = [value for value in list_data if value != {}]
-    return list_data
-
-def str2list(data):
-    """
-    Create a list of values from a whitespace and newline delimited text (keys are ignored).
-
-    For example, this:
-    ip 1.2.3.4
-    ip 1.2.3.5
-    ip 1.2.3.6
-
-    becomes:
-    ['1.2.3.4', '1.2.3.5', '1.2.3.6']
-    """
-    list_data = []
-
-    for line in data.split('\n'):
-        line = line.strip()
-
-        if not line:
-            continue
-
-        try:
-            splitted = line.split(' ')
-            # key = splitted[0]
-            value = splitted[1]
-        except Exception:
-            continue
-
-        list_data.append(value)
-
-    return list_data
-
-def dict2str(data):
-    """
-    Create a string with a whitespace and newline delimited text from a dictionary.
-
-    For example, this:
-    {'cpu': '1100', 'ram': '640', 'smp': 'auto'}
-
-    becomes:
-    cpu 1100
-    ram 640
-    smp auto
-
-    cpu 2200
-    ram 1024
-    """
-    result = ''
-    for k in data:
-        if data[k] != None:
-            result += '%s %s\n' % (str(k), str(data[k]))
-        else:
-            result += '%s\n' % str(k)
-
-    return result

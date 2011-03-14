@@ -61,9 +61,21 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     return pricing
 
 def invalidate_pricing_cache():
+    """
+    Invalidate the cache for all the drivers.
+    """
     PRICING_DATA['compute'] = {}
     PRICING_DATA['storage'] = {}
 
 def invalidate_module_pricing_cache(driver_type, driver_name):
+    """
+    Invalidate the cache for the specified driver.
+
+    @type driver_type: C{str}
+    @param driver_type: Driver type ('compute' or 'storage')
+
+    @type driver_name: C{str}
+    @param driver_name: Driver name
+    """
     if driver_name in PRICING_DATA[driver_type]:
         del PRICING_DATA[driver_type][driver_name]
