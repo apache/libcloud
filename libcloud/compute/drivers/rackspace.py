@@ -23,16 +23,15 @@ import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import Response
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
-RACKSPACE_US_AUTH_HOST='auth.api.rackspacecloud.com'
-RACKSPACE_UK_AUTH_HOST='lon.auth.api.rackspacecloud.com'
+from libcloud.common.rackspace import AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection
 
-NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
+NAMESPACE='http://docs.rackspacecloud.com/servers/api/v1.0'
 
 #
 # Prices need to be hardcoded as Rackspace doesn't expose them through
@@ -79,67 +78,19 @@ class RackspaceResponse(Response):
         return '%s %s %s' % (self.status, self.error, text)
 
 
-class RackspaceConnection(ConnectionUserAndKey):
+class RackspaceConnection(RackspaceBaseConnection):
     """
     Connection class for the Rackspace driver
     """
 
-    api_version = 'v1.0'
-    auth_host = RACKSPACE_US_AUTH_HOST
     responseCls = RackspaceResponse
+    auth_host = AUTH_HOST_US
+    _url_key = "server_url"
 
     def __init__(self, user_id, key, secure=True):
-        self.__host = None
-        self.path = None
-        self.token = None
         super(RackspaceConnection, self).__init__(user_id, key, secure)
-
-    def add_default_headers(self, headers):
-        headers['X-Auth-Token'] = self.token;
-        headers['Accept'] = 'application/xml'
-        return headers
-
-    @property
-    def host(self):
-        """
-        Rackspace uses a separate host for API calls which is only provided
-        after an initial authentication request. If we haven't made that
-        request yet, do it here. Otherwise, just return the management host.
-
-        TODO: Fixup for when our token expires (!!!)
-        """
-        if not self.__host:
-            # Initial connection used for authentication
-            conn = self.conn_classes[self.secure](self.auth_host, self.port[self.secure])
-            conn.request(
-                method='GET',
-                url='/%s' % self.api_version,
-                headers={
-                    'X-Auth-User': self.user_id,
-                    'X-Auth-Key': self.key
-                }
-            )
-            resp = conn.getresponse()
-            headers = dict(resp.getheaders())
-            try:
-                self.token = headers['x-auth-token']
-                endpoint = headers['x-server-management-url']
-            except KeyError:
-                raise InvalidCredsError()
-
-            scheme, server, self.path, param, query, fragment = (
-                urlparse.urlparse(endpoint)
-            )
-            if scheme is "https" and self.secure is not 1:
-                # TODO: Custom exception (?)
-                raise InvalidCredsError()
-
-            # Set host to where we want to make further requests to;
-            # close auth conn
-            self.__host = server
-            conn.close()
-
-        return self.__host
+        self.api_version = 'v1.0'
+        self.accept_format = 'application/xml'
 
     def request(self, action, params=None, data='', headers=None, method='GET'):
         if not headers:
@@ -147,8 +98,8 @@ class RackspaceConnection(ConnectionUserAndKey):
         if not params:
             params = {}
         # Due to first-run authentication request, we may not have a path
-        if self.path:
-            action = self.path + action
+        if self.server_url:
+            action = self.server_url + action
         if method in ("POST", "PUT"):
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
@@ -482,7 +433,7 @@ class RackspaceNodeDriver(NodeDriver):
                     'hostId': el.get('hostId'),
                     'imageId': el.get('imageId'),
                     'flavorId': el.get('flavorId'),
-                    'uri': "https://%s%s/servers/%s" % (self.connection.host, self.connection.path, el.get('id')),
+                    'uri': "https://%s%s/servers/%s" % (self.connection.host, self.connection.request_path, el.get('id')),
                     'metadata': metadata,
                  })
         return n
@@ -588,7 +539,7 @@ class RackspaceUKConnection(RackspaceConnection):
     """
     Connection class for the Rackspace UK driver
     """
-    auth_host = RACKSPACE_UK_AUTH_HOST
+    auth_host = AUTH_HOST_UK
 
 class RackspaceUKNodeDriver(RackspaceNodeDriver):
     """Driver for Rackspace in the UK (London)

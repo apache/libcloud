@@ -37,8 +37,8 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 
-AUTH_HOST_US = 'auth.api.rackspacecloud.com'
-AUTH_HOST_UK = 'lon.auth.api.rackspacecloud.com'
+from libcloud.common.rackspace import AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection
+
 API_VERSION = 'v1.0'
 
 class CloudFilesResponse(Response):
@@ -79,74 +79,19 @@ class CloudFilesResponse(Response):
         return data
 
 
-class CloudFilesConnection(ConnectionUserAndKey):
+class CloudFilesConnection(RackspaceBaseConnection):
     """
     Base connection class for the Cloudfiles driver.
     """
 
-    auth_host = None
-    api_version = API_VERSION
     responseCls = CloudFilesResponse
+    auth_host = None
+    _url_key = "storage_url"
 
     def __init__(self, user_id, key, secure=True):
-        self.cdn_management_url = None
-        self.storage_url = None
-        self.auth_token = None
-        self.request_path = None
-
-        self.__host = None
-        super(CloudFilesConnection, self).__init__(user_id, key, secure)
-
-    def add_default_headers(self, headers):
-        headers['X-Auth-Token'] = self.auth_token
-        headers['Accept'] = 'application/json'
-        return headers
-
-    @property
-    def host(self):
-        """
-        Rackspace uses a separate host for API calls which is only provided
-        after an initial authentication request. If we haven't made that
-        request yet, do it here. Otherwise, just return the management host.
-        """
-        if not self.__host:
-            # Initial connection used for authentication
-            conn = self.conn_classes[self.secure](self.auth_host, self.port[self.secure])
-            conn.request(
-                method='GET',
-                url='/%s' % (self.api_version),
-                headers={
-                    'X-Auth-User': self.user_id,
-                    'X-Auth-Key': self.key
-                }
-            )
-
-            resp = conn.getresponse()
-
-            if resp.status != httplib.NO_CONTENT:
-                raise InvalidCredsError()
-
-            headers = dict(resp.getheaders())
-
-            try:
-                self.storage_url = headers['x-storage-url']
-                self.cdn_management_url = headers['x-cdn-management-url']
-                self.auth_token = headers['x-auth-token']
-            except KeyError:
-                raise InvalidCredsError()
-
-            scheme, server, self.request_path, param, query, fragment = (
-                urlparse.urlparse(self.storage_url)
-            )
-
-            if scheme is "https" and self.secure is not True:
-                raise InvalidCredsError()
-
-            # Set host to where we want to make further requests to;
-            self.__host = server
-            conn.close()
-
-        return self.__host
+        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure)
+        self.api_version = API_VERSION
+        self.accept_format = 'application/json'
 
     def request(self, action, params=None, data='', headers=None, method='GET',
                 raw=False):
