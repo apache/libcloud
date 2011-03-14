@@ -41,6 +41,10 @@ class TestCommand(Command):
         pass
 
     def run(self):
+        status = self._run_tests()
+        sys.exit(status)
+
+    def _run_tests(self):
         secrets = pjoin(self._dir, 'test', 'secrets.py')
         if not os.path.isfile(secrets):
             print "Missing %s" % (secrets)
@@ -77,7 +81,7 @@ class TestCommand(Command):
         tests = TestLoader().loadTestsFromNames(testfiles)
         t = TextTestRunner(verbosity = 2)
         res = t.run(tests)
-        sys.exit(not res.wasSuccessful())
+        return not res.wasSuccessful()
 
 class ApiDocsCommand(Command):
     user_options = []
@@ -99,6 +103,27 @@ class ApiDocsCommand(Command):
             ' --project-url="%s"'
             % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR)
         )
+
+class CoverageCommand(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import coverage
+        cov = coverage.coverage(config_file='.coveragerc')
+        cov.start()
+
+        tc = TestCommand(self.distribution)
+        tc._run_tests()
+
+        cov.stop()
+        cov.save()
+        cov.html_report()
 
 # pre-2.6 will need the ssl PyPI package
 pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
@@ -125,7 +150,8 @@ setup(
     url='http://incubator.apache.org/libcloud/',
     cmdclass={
         'test': TestCommand,
-        'apidocs': ApiDocsCommand
+        'apidocs': ApiDocsCommand,
+        'coverage': CoverageCommand
     },
     classifiers=[
         'Development Status :: 4 - Beta',
