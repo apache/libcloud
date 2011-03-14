@@ -21,6 +21,7 @@ import hmac
 import os
 import time
 import urllib
+import copy
 
 from hashlib import sha256
 from xml.etree import ElementTree as ET
@@ -133,55 +134,6 @@ EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-
-#
-# On demand prices must also be hardcoded, because Amazon doesn't provide an
-# API to fetch them. From http://aws.amazon.com/ec2/pricing/
-#
-EC2_US_EAST_INSTANCE_TYPES['t1.micro']['price'] = '.02'
-EC2_US_EAST_INSTANCE_TYPES['m1.small']['price'] = '.085'
-EC2_US_EAST_INSTANCE_TYPES['m1.large']['price'] = '.34'
-EC2_US_EAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.68'
-EC2_US_EAST_INSTANCE_TYPES['c1.medium']['price'] = '.17'
-EC2_US_EAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.68'
-EC2_US_EAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.50'
-EC2_US_EAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.0'
-EC2_US_EAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.0'
-EC2_US_EAST_INSTANCE_TYPES['cg1.4xlarge']['price'] = '2.1'
-EC2_US_EAST_INSTANCE_TYPES['cc1.4xlarge']['price'] = '1.6'
-
-EC2_US_WEST_INSTANCE_TYPES['t1.micro']['price'] = '.025'
-EC2_US_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
-EC2_US_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
-EC2_US_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
-EC2_US_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
-EC2_US_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
-EC2_US_WEST_INSTANCE_TYPES['m2.xlarge']['price'] = '.57'
-EC2_US_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.14'
-EC2_US_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.28'
-
-EC2_EU_WEST_INSTANCE_TYPES['t1.micro']['price'] = '.025'
-EC2_EU_WEST_INSTANCE_TYPES['m1.small']['price'] = '.095'
-EC2_EU_WEST_INSTANCE_TYPES['m1.large']['price'] = '.38'
-EC2_EU_WEST_INSTANCE_TYPES['m1.xlarge']['price'] = '.76'
-EC2_EU_WEST_INSTANCE_TYPES['c1.medium']['price'] = '.19'
-EC2_EU_WEST_INSTANCE_TYPES['c1.xlarge']['price'] = '.76'
-EC2_EU_WEST_INSTANCE_TYPES['m2.xlarge']['price'] = '.57'
-EC2_EU_WEST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.14'
-EC2_EU_WEST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.28'
-
-# prices are the same
-EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_EU_WEST_INSTANCE_TYPES)
-
-EC2_AP_NORTHEAST_INSTANCE_TYPES['t1.micro']['price'] = '.027'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['m1.small']['price'] = '.10'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['m1.large']['price'] = '.40'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['m1.xlarge']['price'] = '.80'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['c1.medium']['price'] = '.20'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['c1.xlarge']['price'] = '.80'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['m2.xlarge']['price'] = '.60'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['m2.2xlarge']['price'] = '1.20'
-EC2_AP_NORTHEAST_INSTANCE_TYPES['m2.4xlarge']['price'] = '2.39'
 
 class EC2NodeLocation(NodeLocation):
     def __init__(self, id, name, country, driver, availability_zone):
@@ -301,6 +253,7 @@ class EC2NodeDriver(NodeDriver):
 
     connectionCls = EC2Connection
     type = Provider.EC2
+    api_name = 'ec2_us_east'
     name = 'Amazon EC2 (us-east-1)'
     friendly_name = 'Amazon US N. Virginia'
     country = 'US'
@@ -428,12 +381,14 @@ class EC2NodeDriver(NodeDriver):
         return sizes
 
     def _get_sizes(self, include_cluser_instances=False):
-        sizes = [ NodeSize(driver=self.connection.driver, **i)
-                         for i in self._instance_types.values() ]
-
-        if not include_cluser_instances:
-            sizes = [ size for size in sizes if \
-                      size.id not in CLUSTER_INSTANCES_IDS]
+        sizes = []
+        for key, values in self._instance_types.iteritems():
+            if not include_cluser_instances and \
+               key in CLUSTER_INSTANCES_IDS:
+               continue
+            attributes = copy.deepcopy(values)
+            attributes.update({'price': self._get_size_price(size_id=key)})
+            sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
     def list_images(self, location=None):
@@ -846,6 +801,7 @@ class EC2EUNodeDriver(EC2NodeDriver):
     Driver class for EC2 in the Western Europe Region
     """
 
+    api_name = 'ec2_eu_west'
     name = 'Amazon EC2 (eu-west-1)'
     friendly_name = 'Amazon Europe Ireland'
     country = 'IE'
@@ -865,6 +821,7 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     Driver class for EC2 in the Western US Region
     """
 
+    api_name = 'ec2_us_west'
     name = 'Amazon EC2 (us-west-1)'
     friendly_name = 'Amazon US N. California'
     country = 'US'
@@ -891,6 +848,7 @@ class EC2APSENodeDriver(EC2NodeDriver):
     Driver class for EC2 in the Southeast Asia Pacific Region
     """
 
+    api_name = 'ec2_ap_southeast'
     name = 'Amazon EC2 (ap-southeast-1)'
     friendly_name = 'Amazon Asia-Pacific Singapore'
     country = 'SG'
@@ -903,6 +861,7 @@ class EC2APNENodeDriver(EC2NodeDriver):
     Driver class for EC2 in the Northeast Asia Pacific Region
     """
 
+    api_name = 'ec2_ap_northeast'
     name = 'Amazon EC2 (ap-northeast-1)'
     friendly_name = 'Amazon Asia-Pacific Tokyo'
     country = 'JP'

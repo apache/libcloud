@@ -50,7 +50,6 @@ INSTANCE_TYPES = {
         'cpu': 1100,
         'memory': 640,
         'disk': 50,
-        'price': '0.0548',
         'bandwidth': None,
     },
     'micro-high-cpu': {
@@ -59,7 +58,6 @@ INSTANCE_TYPES = {
         'cpu': 2200,
         'memory': 640,
         'disk': 80,
-        'price': '.381',
         'bandwidth': None,
     },
     'standard-small': {
@@ -68,7 +66,6 @@ INSTANCE_TYPES = {
         'cpu': 1100,
         'memory': 1741,
         'disk': 50,
-        'price': '0.0796',
         'bandwidth': None,
     },
     'standard-large': {
@@ -77,7 +74,6 @@ INSTANCE_TYPES = {
         'cpu': 4400,
         'memory': 7680,
         'disk': 250,
-        'price': '0.381',
         'bandwidth': None,
     },
     'standard-extra-large': {
@@ -86,7 +82,6 @@ INSTANCE_TYPES = {
         'cpu': 8800,
         'memory': 15360,
         'disk': 500,
-        'price': '0.762',
         'bandwidth': None,
     },
     'high-memory-extra-large': {
@@ -95,7 +90,6 @@ INSTANCE_TYPES = {
         'cpu': 7150,
         'memory': 17510,
         'disk': 250,
-        'price': '0.642',
         'bandwidth': None,
     },
     'high-memory-double-extra-large': {
@@ -104,7 +98,6 @@ INSTANCE_TYPES = {
         'cpu': 14300,
         'memory': 32768,
         'disk': 500,
-        'price': '1.383',
         'bandwidth': None,
     },
     'high-cpu-medium': {
@@ -113,7 +106,6 @@ INSTANCE_TYPES = {
         'cpu': 5500,
         'memory': 1741,
         'disk': 150,
-        'price': '0.211',
         'bandwidth': None,
     },
     'high-cpu-extra-large': {
@@ -122,9 +114,8 @@ INSTANCE_TYPES = {
         'cpu': 20000,
         'memory': 7168,
         'disk': 500,
-        'price': '0.780',
         'bandwidth': None,
-    },
+    }
 }
 
 NODE_STATE_MAP = {
@@ -263,9 +254,11 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         sizes = []
         for key, value in INSTANCE_TYPES.iteritems():
-            size = CloudSigmaNodeSize(id = value['id'], name = value['name'], cpu = value['cpu'], ram = value['memory'],
-                            disk = value['disk'], bandwidth = value['bandwidth'], price = value['price'],
-                            driver = self.connection.driver)
+            size = CloudSigmaNodeSize(id = value['id'], name = value['name'],
+                                      cpu = value['cpu'], ram = value['memory'],
+                                      disk = value['disk'], bandwidth = value['bandwidth'],
+                                      price = self._get_size_price(size_id=key),
+                                      driver = self.connection.driver)
             sizes.append(size)
 
         return sizes
@@ -557,3 +550,4 @@ class CloudSigmaZrhNodeDriver(CloudSigmaBaseNodeDriver):
     CloudSigma node driver for the Zurich end-point
     """
     connectionCls = CloudSigmaZrhConnection
+    api_name = 'cloudsigma_zrh'
