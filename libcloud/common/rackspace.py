@@ -23,6 +23,7 @@ from libcloud.compute.types import InvalidCredsError
 
 AUTH_HOST_US='auth.api.rackspacecloud.com'
 AUTH_HOST_UK='lon.auth.api.rackspacecloud.com'
+AUTH_API_VERSION = 'v1.0'
 
 class RackspaceBaseConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure):
@@ -50,7 +51,7 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
             conn = self.conn_classes[self.secure](self.auth_host, self.port[self.secure])
             conn.request(
                 method='GET',
-                url='/%s' % (self.api_version),
+                url='/%s' % (AUTH_API_VERSION),
                 headers={
                     'X-Auth-User': self.user_id,
                     'X-Auth-Key': self.key
