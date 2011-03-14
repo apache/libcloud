@@ -47,18 +47,19 @@ class DummyFileObject(file):
         return self._yield_count * self._chunk_len
 
 class DummyIterator(object):
-  def __init__(self, data=None):
-    self._data = data or []
-    self._current_item = 0
+    def __init__(self, data=None):
+        self._data = data or []
+        self._current_item = 0
 
-  def next(self):
-      if self._current_item == len(self._data):
-          raise StopIteration
+    def next(self):
+        if self._current_item == len(self._data):
+            raise StopIteration
 
-      value = self._data[self._current_item]
-      self._current_item += 1
-      return value
+        value = self._data[self._current_item]
+        self._current_item += 1
+        return value
 
+# @@FIX: the doctests below are not run by the main test suite
 class DummyStorageDriver(StorageDriver):
     """
     Dummy Storage driver.

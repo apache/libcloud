@@ -493,10 +493,11 @@ class StorageDriver(object):
                          is the number of transferred bytes.
         """
         with open (file_path, 'rb') as file_handle:
-            success, data_hash, bytes_transferred = \
-                     self._stream_data(response=response,
-                                       iterator=iter(file_handle),
-                                       chunked=chunked,
-                                       calculate_hash=calculate_hash)
+            success, data_hash, bytes_transferred = (
+                self._stream_data(
+                    response=response,
+                    iterator=iter(file_handle),
+                    chunked=chunked,
+                    calculate_hash=calculate_hash))
 
         return success, data_hash, bytes_transferred

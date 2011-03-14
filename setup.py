@@ -34,7 +34,7 @@ class TestCommand(Command):
         THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
         sys.path.insert(0, THIS_DIR)
         for test_path in TEST_PATHS:
-          sys.path.insert(0, pjoin(THIS_DIR, test_path))
+            sys.path.insert(0, pjoin(THIS_DIR, test_path))
         self._dir = os.getcwd()
 
     def finalize_options(self):
@@ -59,11 +59,13 @@ class TestCommand(Command):
             # test for dependencies
             try:
                 import simplejson
+                simplejson              # silence pyflakes
             except ImportError:
                 missing.append("simplejson")
 
             try:
                 import ssl
+                ssl                     # silence pyflakes
             except ImportError:
                 missing.append("ssl")
 
@@ -73,10 +75,9 @@ class TestCommand(Command):
 
         testfiles = []
         for test_path in TEST_PATHS:
-          for t in glob(pjoin(self._dir, test_path, 'test_*.py')):
-              testfiles.append('.'.join(
-                  [test_path.replace('/', '.'), splitext(basename(t))[0]])
-              )
+            for t in glob(pjoin(self._dir, test_path, 'test_*.py')):
+                testfiles.append('.'.join(
+                    [test_path.replace('/', '.'), splitext(basename(t))[0]]))
 
         tests = TestLoader().loadTestsFromNames(testfiles)
         t = TextTestRunner(verbosity = 2)
