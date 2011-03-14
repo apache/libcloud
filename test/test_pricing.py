@@ -33,9 +33,9 @@ class PricingTestCase(unittest.TestCase):
 
     def test_get_pricing_invalid_file_path(self):
         try:
-            get_pricing(driver_type='compute', driver_name='bar',
-                        pricing_file_path='inexistent.json')
-        except Exception:
+            libcloud.pricing.get_pricing(driver_type='compute', driver_name='bar',
+                                         pricing_file_path='inexistent.json')
+        except IOError:
             pass
         else:
             self.fail('Invalid pricing file path provided, but an exception was not'
@@ -43,12 +43,22 @@ class PricingTestCase(unittest.TestCase):
 
     def test_get_pricing_invalid_driver_type(self):
         try:
-            get_pricing(driver_type='invalid_type', driver_name='bar',
-                        pricing_file_path='inexistent.json')
-        except Exception:
+            libcloud.pricing.get_pricing(driver_type='invalid_type', driver_name='bar',
+                                         pricing_file_path='inexistent.json')
+        except AttributeError:
             pass
         else:
             self.fail('Invalid driver_type provided, but an exception was not'
+                       ' thrown')
+
+    def test_get_pricing_not_in_cache(self):
+        try:
+            libcloud.pricing.get_pricing(driver_type='compute', driver_name='inexistent',
+                                         pricing_file_path='test/pricing_test.json')
+        except KeyError:
+            pass
+        else:
+            self.fail('Invalid driver provided, but an exception was not'
                        ' thrown')
 
     def test_invalid_pricing_cache(self):
