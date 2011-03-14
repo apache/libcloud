@@ -298,7 +298,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                  'overwrite_existing': overwrite_existing,
                                  'delete_on_failure': delete_on_failure})
 
-    def object_as_stream(self, obj, chunk_size=None):
+    def download_object_as_stream(self, obj, chunk_size=None):
         return self._get_object(obj, self._get_object_as_stream,
                                 {'chunk_size': chunk_size})
 
