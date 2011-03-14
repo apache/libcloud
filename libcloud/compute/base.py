@@ -22,11 +22,14 @@ import os
 import socket
 import struct
 
+from httplib import HTTPConnection as LibcloudHTTPConnection
+
+from libcloud.pricing import get_size_price
+
 from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.compute.types import NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
-from httplib import HTTPConnection as LibcloudHTTPConnection
 
 class Node(object):
     """
@@ -539,6 +542,12 @@ class NodeDriver(object):
         except Exception, e:
           raise DeploymentError(node, e)
         return n
+
+    def _get_size_price(self, size_id):
+        return get_size_price(driver_type='compute',
+                              driver_name=self.api_name,
+                              size_id=size_id)
+
 
 def is_private_subnet(ip):
     """

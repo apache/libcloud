@@ -18,7 +18,7 @@ import unittest
 import httplib
 
 from libcloud.compute.base import Node
-from libcloud.compute.drivers.cloudsigma import CloudSigmaBaseNodeDriver
+from libcloud.compute.drivers.cloudsigma import CloudSigmaZrhNodeDriver
 from libcloud.utils import str2dicts, str2list, dict2str
 
 from test import MockHttp
@@ -28,9 +28,9 @@ from test.file_fixtures import ComputeFileFixtures
 
 class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
     def setUp(self):
-        CloudSigmaBaseNodeDriver.connectionCls.conn_classes = (None,
+        CloudSigmaZrhNodeDriver.connectionCls.conn_classes = (None,
                                                                CloudSigmaHttp)
-        self.driver = CloudSigmaBaseNodeDriver('foo', 'bar')
+        self.driver = CloudSigmaZrhNodeDriver('foo', 'bar')
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()

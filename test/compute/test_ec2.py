@@ -113,8 +113,14 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
     def test_list_sizes(self):
         region_old = self.driver.region_name
 
-        for region_name in [ 'us-east-1', 'us-west-1', 'eu-west-1',
-                             'ap-southeast-1' ]:
+        names = [ ('ec2_us_east', 'us-east-1'),
+                  ('ec2_us_west', 'us-west-1'),
+                  ('ec2_eu_west', 'eu-west-1'),
+                  ('ec2_ap_southeast', 'ap-southeast-1'),
+                  ('ec2_ap_northeast', 'ap-northeast-1')
+                ]
+        for api_name, region_name in names:
+            self.driver.api_name = api_name
             self.driver.region_name = region_name
             sizes = self.driver.list_sizes()
 
