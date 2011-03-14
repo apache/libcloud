@@ -303,7 +303,7 @@ class CloudFilesTests(unittest.TestCase):
         finally:
             libcloud.utils.guess_file_mime_type = old_func
 
-    def test_stream_object_data(self):
+    def test_upload_object_via_stream(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
@@ -314,7 +314,7 @@ class CloudFilesTests(unittest.TestCase):
         object_name = 'foo_test_stream_data'
         iterator = DummyIterator(data=['2', '3', '5'])
         try:
-            obj = self.driver.stream_object_data(container=container,
+            obj = self.driver.upload_object_via_stream(container=container,
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
@@ -545,7 +545,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data(self, method, url, body, headers):
-        # test_stream_object_data_success
+        # test_upload_object_via_stream_success
         body = 'test'
         return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
 
