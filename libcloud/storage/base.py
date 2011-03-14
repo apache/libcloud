@@ -112,8 +112,8 @@ class Container(object):
     def upload_object(self, file_path, object_name, extra=None, file_hash=None):
         return self.driver.upload_object(file_path, self, object_name, extra, file_hash)
 
-    def stream_object_data(self, iterator, object_name, extra=None):
-        return self.driver.stream_object_data(iterator, self, object_name, extra)
+    def upload_object_via_stream(self, iterator, object_name, extra=None):
+        return self.driver.upload_object_via_stream(iterator, self, object_name, extra)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
@@ -277,7 +277,7 @@ class StorageDriver(object):
         raise NotImplementedError, \
             'upload_object not implemented for this driver'
 
-    def stream_object_data(self, iterator, container, object_name, extra=None):
+    def upload_object_via_stream(self, iterator, container, object_name, extra=None):
         """
         @type iterator: C{object}
         @param iterator: An object which implements the iterator interface.
@@ -292,7 +292,7 @@ class StorageDriver(object):
         @param extra: (optional) Extra attributes (driver specific).
         """
         raise NotImplementedError, \
-            'stream_object_data not implemented for this driver'
+            'upload_object_via_stream not implemented for this driver'
 
     def delete_object(self, obj):
         """
