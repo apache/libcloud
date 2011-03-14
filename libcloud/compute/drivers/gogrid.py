@@ -17,6 +17,7 @@ GoGrid driver
 """
 import time
 import hashlib
+import copy
 
 try:
     import json
@@ -44,36 +45,33 @@ STATE = {
     "Restoring": NodeState.PENDING,
 }
 
-GOGRID_INSTANCE_TYPES = {'512MB': {'id': '512MB',
+GOGRID_INSTANCE_TYPES = {
+        '512MB': {'id': '512MB',
                        'name': '512MB',
                        'ram': 512,
                        'disk': 30,
-                       'bandwidth': None,
-                       'price':0.095},
+                       'bandwidth': None},
         '1GB': {'id': '1GB',
                        'name': '1GB',
                        'ram': 1024,
                        'disk': 60,
-                       'bandwidth': None,
-                       'price':0.19},
+                       'bandwidth': None},
         '2GB': {'id': '2GB',
                        'name': '2GB',
                        'ram': 2048,
                        'disk': 120,
-                       'bandwidth': None,
-                       'price':0.38},
+                       'bandwidth': None},
         '4GB': {'id': '4GB',
                        'name': '4GB',
                        'ram': 4096,
                        'disk': 240,
-                       'bandwidth': None,
-                       'price':0.76},
+                       'bandwidth': None},
         '8GB': {'id': '8GB',
                        'name': '8GB',
                        'ram': 8192,
                        'disk': 480,
-                       'bandwidth': None,
-                       'price':1.52}}
+                       'bandwidth': None}
+}
 
 
 class GoGridResponse(Response):
@@ -152,6 +150,7 @@ class GoGridNodeDriver(NodeDriver):
 
     connectionCls = GoGridConnection
     type = Provider.GOGRID
+    api_name = 'gogrid'
     name = 'GoGrid'
     features = {"create_node": ["generates_password"]}
 
@@ -288,8 +287,13 @@ class GoGridNodeDriver(NodeDriver):
                     GoGridNodeDriver)
 
     def list_sizes(self, location=None):
-        return [ NodeSize(driver=self.connection.driver, **i)
-                    for i in self._instance_types.values() ]
+        sizes = []
+        for key, values in self._instance_types.iteritems():
+            attributes = copy.deepcopy(values)
+            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            sizes.append(NodeSize(driver=self.connection.driver, **attributes))
+
+        return sizes
 
     def list_locations(self):
         locations = self._to_locations(
