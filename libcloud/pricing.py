@@ -81,7 +81,8 @@ def get_size_price(driver_type, driver_name, size_id):
     @return C{int} Size price.
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
-    return pricing[size_id]
+    price = float(pricing[size_id])
+    return price
 
 def invalidate_pricing_cache():
     """
