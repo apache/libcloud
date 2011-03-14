@@ -15,6 +15,8 @@
 # limitations under the License.
 
 from libcloud.utils import deprecated_warning
+
+from libcloud.utils import str2dicts, str2list, dict2str
 from libcloud.compute.drivers.cloudsigma import *
 
 deprecated_warning(__name__)
