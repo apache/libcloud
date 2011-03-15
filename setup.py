@@ -146,6 +146,9 @@ setup(
         'libcloud': 'libcloud',
         'libcloud.drivers': 'libcloud/drivers'
     },
+    package_data={
+        'libcloud': ['data/*.json'],
+    },
     license='Apache License (2.0)',
     url='http://incubator.apache.org/libcloud/',
     cmdclass={
