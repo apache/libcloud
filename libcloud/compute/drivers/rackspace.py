@@ -136,6 +136,7 @@ class RackspaceNodeDriver(NodeDriver):
     """
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
+    api_name = 'rackspace'
     name = 'Rackspace'
 
     _rackspace_prices = get_pricing(driver_type='compute',
@@ -446,8 +447,7 @@ class RackspaceNodeDriver(NodeDriver):
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
                      bandwidth=None, # XXX: needs hardcode
-                     price=self._rackspace_prices.get(
-                         el.get('id')), # Hardcoded,
+                     price=self._get_size_price(el.get('id')), # Hardcoded,
                      driver=self.connection.driver)
         return s
 
