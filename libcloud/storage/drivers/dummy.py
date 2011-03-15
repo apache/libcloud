@@ -153,8 +153,8 @@ class DummyStorageDriver(StorageDriver):
         """
 
         if container_name not in self._containers:
-           raise ContainerDoesNotExistError(driver=self, value=None,
-                                            container_name=container_name)
+            raise ContainerDoesNotExistError(driver=self, value=None,
+                                             container_name=container_name)
 
         return self._containers[container_name]['container']
 
@@ -237,26 +237,26 @@ class DummyStorageDriver(StorageDriver):
 
         container_name = container.name
         if container_name not in self._containers:
-           raise ContainerDoesNotExistError(container_name=container_name,
-                                            value=None, driver=self)
+            raise ContainerDoesNotExistError(container_name=container_name,
+                                             value=None, driver=self)
 
         container = self._containers[container_name]
         if len(container['objects']) > 0:
-           raise ContainerIsNotEmptyError(container_name=container_name,
-                                          value=None, driver=self)
+            raise ContainerIsNotEmptyError(container_name=container_name,
+                                           value=None, driver=self)
 
         del self._containers[container_name]
         return True
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                        delete_on_failure=True):
-      kwargs_dict =  {'obj': obj,
-                      'response': DummyFileObject(),
-                      'destination_path': destination_path,
-                      'overwrite_existing': overwrite_existing,
-                      'delete_on_failure': delete_on_failure}
+        kwargs_dict =  {'obj': obj,
+                        'response': DummyFileObject(),
+                        'destination_path': destination_path,
+                        'overwrite_existing': overwrite_existing,
+                        'delete_on_failure': delete_on_failure}
 
-      return self._save_object(**kwargs_dict)
+        return self._save_object(**kwargs_dict)
 
     def download_object_as_stream(self, obj, chunk_size=None):
         """
