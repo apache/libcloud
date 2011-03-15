@@ -17,18 +17,13 @@ import sys
 import unittest
 import urlparse
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.drivers.gogrid import GoGridNodeDriver, GoGridIpAddress
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
-from test import MockHttp
-from test.compute import TestCaseMixin
-from test.file_fixtures import ComputeFileFixtures
+from test import MockHttp               # pylint: disable-msg=E0611
+from test.compute import TestCaseMixin  # pylint: disable-msg=E0611
+from test.file_fixtures import ComputeFileFixtures # pylint: disable-msg=E0611
 
 class GoGridTests(unittest.TestCase, TestCaseMixin):
 
