@@ -32,11 +32,21 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = None
         self.driver = GoGridNodeDriver("foo", "bar")
 
+    def _get_test_512Mb_node_size(self):
+        return NodeSize(id='512Mb',
+                        name=None,
+                        ram=None,
+                        disk=None,
+                        bandwidth=None,
+                        price=None,
+                        driver=self.driver)
+
     def test_create_node(self):
         image = NodeImage(1531, None, self.driver)
-        size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
-
-        node = self.driver.create_node(name='test1', image=image, size=size)
+        node = self.driver.create_node(
+            name='test1',
+            image=image,
+            size=self._get_test_512Mb_node_size())
         self.assertEqual(node.name, 'test1')
         self.assertTrue(node.id is not None)
         self.assertEqual(node.extra['password'], 'bebebe')
@@ -88,9 +98,10 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'NOPUBIPS'
         try:
             image = NodeImage(1531, None, self.driver)
-            size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
-
-            node = self.driver.create_node(name='test1', image=image, size=size)
+            self.driver.create_node(
+                name='test1',
+                image=image,
+                size=self._get_test_512Mb_node_size())
         except LibcloudError, e:
             self.assertTrue(isinstance(e, LibcloudError))
             self.assertTrue(e.driver is not None)
@@ -121,9 +132,10 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(isinstance(ret, NodeImage))
 
     def test_ex_edit_node(self):
-        node = Node(90967, None, None, None, None, self.driver)
-        size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
-        ret = self.driver.ex_edit_node(node=node, size=size)
+        node = Node(id=90967, name=None, state=None,
+                    public_ip=None, private_ip=None, driver=self.driver)
+        ret = self.driver.ex_edit_node(node=node,
+                                       size=self._get_test_512Mb_node_size())
 
         self.assertTrue(isinstance(ret, Node))
 
