@@ -23,11 +23,10 @@ import xmlrpclib
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 from libcloud.compute.types import NodeState
 
-from test import MockHttp
-from test.compute import TestCaseMixin
-from test.file_fixtures import ComputeFileFixtures
-
-from test.secrets import SOFTLAYER_USER, SOFTLAYER_APIKEY
+from test import MockHttp               # pylint: disable-msg=E0611
+from test.file_fixtures import ComputeFileFixtures # pylint: disable-msg=E0611
+from test.secrets import ( # pylint: disable-msg=E0611
+    SOFTLAYER_USER, SOFTLAYER_APIKEY)
 
 class MockSoftLayerTransport(xmlrpclib.Transport):
 
@@ -43,7 +42,8 @@ class MockSoftLayerTransport(xmlrpclib.Transport):
 class SoftLayerTests(unittest.TestCase):
 
     def setUp(self):
-        SoftLayer.connectionCls.proxyCls.transportCls = [MockSoftLayerTransport, MockSoftLayerTransport]
+        SoftLayer.connectionCls.proxyCls.transportCls = [
+            MockSoftLayerTransport, MockSoftLayerTransport]
         self.driver = SoftLayer(SOFTLAYER_USER, SOFTLAYER_APIKEY)
 
     def test_list_nodes(self):
@@ -71,12 +71,17 @@ class SoftLayerTests(unittest.TestCase):
 class SoftLayerMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('softlayer')
 
-    def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(self, method, url, body, headers):
+    def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(
+        self, method, url, body, headers):
+
         body = self.fixtures.load('v3_SoftLayer_Account_getVirtualGuests.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(self, method, url, body, headers):
-        body = self.fixtures.load('v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
+    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
+        self, method, url, body, headers):
+
+        body = self.fixtures.load(
+            'v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
