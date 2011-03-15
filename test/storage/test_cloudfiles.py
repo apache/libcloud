@@ -51,7 +51,7 @@ class CloudFilesTests(unittest.TestCase):
         self._remove_test_file()
 
     def test_get_meta_data(self):
-        meta_data = self.driver.get_meta_data()
+        self.driver.get_meta_data()
 
     def test_list_containers(self):
         CloudFilesMockHttp.type = 'EMPTY'
@@ -111,7 +111,8 @@ class CloudFilesTests(unittest.TestCase):
         CloudFilesMockHttp.type = 'ALREADY_EXISTS'
 
         try:
-            container = self.driver.create_container(container_name='test_create_container')
+            self.driver.create_container(
+                container_name='test_create_container')
         except ContainerAlreadyExistsError:
             pass
         else:
@@ -120,7 +121,7 @@ class CloudFilesTests(unittest.TestCase):
 
     def test_create_container_invalid_name(self):
         try:
-            container = self.driver.create_container(container_name='invalid//name/')
+            self.driver.create_container(container_name='invalid//name/')
         except:
             pass
         else:
@@ -131,7 +132,7 @@ class CloudFilesTests(unittest.TestCase):
     def test_create_container_invalid_name(self):
         name = ''.join([ 'x' for x in range(0, 257)])
         try:
-            container = self.driver.create_container(container_name=name)
+            self.driver.create_container(container_name=name)
         except:
             pass
         else:
@@ -148,7 +149,7 @@ class CloudFilesTests(unittest.TestCase):
         CloudFilesMockHttp.type = 'NOT_FOUND'
         container = Container(name='foo_bar_container', extra={}, driver=self)
         try:
-            result = self.driver.delete_container(container=container)
+            self.driver.delete_container(container=container)
         except ContainerDoesNotExistError:
             pass
         else:
@@ -159,7 +160,7 @@ class CloudFilesTests(unittest.TestCase):
         CloudFilesMockHttp.type = 'NOT_EMPTY'
         container = Container(name='foo_bar_container', extra={}, driver=self)
         try:
-            result = self.driver.delete_container(container=container)
+            self.driver.delete_container(container=container)
         except ContainerIsNotEmptyError:
             pass
         else:
@@ -244,9 +245,9 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
         try:
-            obj = self.driver.upload_object(file_path=file_path, container=container,
-                                            object_name=object_name,
-                                            file_hash='footest123')
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name,
+                                      file_hash='footest123')
         except ObjectHashMismatchError:
             pass
         else:
@@ -265,8 +266,8 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
         try:
-            obj = self.driver.upload_object(file_path=file_path, container=container,
-                                            object_name=object_name)
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name)
         except AttributeError:
             pass
         else:
@@ -292,8 +293,10 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
         try:
-            obj = self.driver.upload_object(file_path=file_path, container=container,
-                                            object_name=object_name)
+            self.driver.upload_object(
+                file_path=file_path,
+                container=container,
+                object_name=object_name)
         except LibcloudError:
             pass
         else:
@@ -313,8 +316,10 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
         try:
-            obj = self.driver.upload_object(file_path=file_path, container=container,
-                                            object_name=object_name)
+            self.driver.upload_object(
+                file_path=file_path,
+                container=container,
+                object_name=object_name)
         except OSError:
             pass
         else:
@@ -333,7 +338,7 @@ class CloudFilesTests(unittest.TestCase):
         object_name = 'foo_test_stream_data'
         iterator = DummyIterator(data=['2', '3', '5'])
         try:
-            obj = self.driver.upload_object_via_stream(container=container,
+            self.driver.upload_object_via_stream(container=container,
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
@@ -354,7 +359,7 @@ class CloudFilesTests(unittest.TestCase):
                      container=container, meta_data=None,
                      driver=CloudFilesStorageDriver)
         try:
-            result = self.driver.delete_object(obj=obj)
+            self.driver.delete_object(obj=obj)
         except ObjectDoesNotExistError:
             pass
         else:
