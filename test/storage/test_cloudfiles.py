@@ -186,14 +186,16 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={}, driver=self)
 
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
-                     container=container, meta_data=None,
+                     container=container,
+                     meta_data=None,
                      driver=CloudFilesStorageDriver)
-        destination_path = os.path.abspath(__file__)
+        destination_path = os.path.abspath(__file__) + '.temp'
         try:
-            result = self.driver.download_object(obj=obj,
-                                                 destination_path=destination_path,
-                                                 overwrite_existing=False,
-                                                 delete_on_failure=True)
+            self.driver.download_object(
+                obj=obj,
+                destination_path=destination_path,
+                overwrite_existing=False,
+                delete_on_failure=True)
         except ObjectDoesNotExistError:
             pass
         else:
