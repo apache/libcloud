@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import httplib
-import urlparse
 import os.path
 import urllib
 
@@ -25,8 +24,7 @@ except:
 
 from libcloud import utils
 from libcloud.common.types import MalformedResponseError, LibcloudError
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import Response
 
 from libcloud.storage.providers import Provider
 from libcloud.storage.base import Object, Container, StorageDriver
