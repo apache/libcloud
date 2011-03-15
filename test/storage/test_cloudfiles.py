@@ -383,7 +383,7 @@ class CloudFilesMockHttp(MockHttp):
         pass
 
     def send(self, data):
-      pass
+        pass
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):
