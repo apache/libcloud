@@ -31,6 +31,12 @@ PRICING_DATA = {
     'storage': {}
 }
 
+def get_pricing_file_path(file_path=None):
+    pricing_directory = os.path.dirname(os.path.abspath(__file__))
+    pricing_file_path = pjoin(pricing_directory, PRICING_FILE_PATH)
+
+    return pricing_file_path
+
 def get_pricing(driver_type, driver_name, pricing_file_path=None):
     """
     Return pricing for the provided driver.
@@ -47,14 +53,11 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     if not driver_type in [ 'compute', 'storage' ]:
         raise AttributeError('Invalid driver type: %s', driver_type)
 
-    driver_name = driver_name.lower().replace('nodedriver', '')
-
     if driver_name in PRICING_DATA[driver_type]:
         return PRICING_DATA[driver_type][driver_name]
 
     if not pricing_file_path:
-        pricing_directory = os.path.dirname(os.path.abspath(__file__))
-        pricing_file_path = pjoin(pricing_directory, PRICING_FILE_PATH)
+        pricing_file_path = get_pricing_file_path(file_path=pricing_file_path)
 
     with open(pricing_file_path) as fp:
         content = fp.read()
