@@ -452,7 +452,11 @@ class StorageDriver(object):
                     response.connection.connection.send('\r\n')
                 else:
                     response.connection.connection.send(chunk)
-            except Exception, e:
+            except Exception:
+                # @@TR: this wildcard try/except block looks like it
+                # could mask unexpected errors. It should be narrowed
+                # down to expected exceptions.
+
                 # Timeout, etc.
                 return False, None, bytes_transferred
 
