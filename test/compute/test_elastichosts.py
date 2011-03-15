@@ -49,6 +49,7 @@ class ElasticHostsTestCase(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.cpu, 2000)
         self.assertEqual(image.ram, 1700)
         self.assertEqual(image.disk, 160)
+        self.assertTrue(isinstance(image.price, float))
 
     def test_list_images(self):
         sizes = self.driver.list_images()
