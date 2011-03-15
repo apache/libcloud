@@ -184,7 +184,8 @@ class GoGridMockHttp(MockHttp):
     _api_grid_server_list_NOPUBIPS = _api_grid_server_list
 
     def _api_grid_server_list_FAIL(self, method, url, body, headers):
-        return (httplib.FORBIDDEN, "123", {}, httplib.responses[httplib.FORBIDDEN])
+        return (httplib.FORBIDDEN,
+                "123", {}, httplib.responses[httplib.FORBIDDEN])
 
     def _api_grid_ip_list(self, method, url, body, headers):
         body = self.fixtures.load('ip_list.json')
