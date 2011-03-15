@@ -14,6 +14,18 @@
 # limitations under the License.
 
 from libcloud.utils import deprecated_warning
-from libcloud.compute.providers import *
-
+from libcloud.compute.providers import (
+    DRIVERS,
+    Provider,
+    providers,
+    get_driver,
+    get_provider_driver # @@TR: can this be removed from here?
+    )
+__all__ = [
+    "DRIVERS",
+    "Provider",
+    "providers",
+    "get_driver",
+    "get_provider_driver"
+    ]
 deprecated_warning(__name__)

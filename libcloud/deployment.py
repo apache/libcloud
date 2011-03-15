@@ -14,6 +14,18 @@
 # limitations under the License.
 
 from libcloud.utils import deprecated_warning
-from libcloud.compute.deployment import *
+from libcloud.compute.deployment import ( # pylint: disable-msg=W0611
+    Deployment,
+    SSHKeyDeployment,
+    ScriptDeployment,
+    MultiStepDeployment
+    )
+
+__all__ = [
+    "Deployment",
+    "SSHKeyDeployment",
+    "ScriptDeployment",
+    "MultiStepDeployment"
+    ]
 
 deprecated_warning(__name__)

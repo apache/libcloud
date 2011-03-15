@@ -17,7 +17,7 @@
 from __future__ import with_statement
 
 import os
-import os.path
+import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
 
@@ -78,8 +78,8 @@ class Object(object):
         return self.driver.delete_object(self)
 
     def __repr__(self):
-        return '<Object: name=%s, size=%s, hash=%s, provider=%s ...>' % \
-        (self.name, self.size, self.hash, self.driver.name)
+        return ('<Object: name=%s, size=%s, hash=%s, provider=%s ...>' %
+                (self.name, self.size, self.hash, self.driver.name))
 
 class Container(object):
     """
@@ -110,10 +110,12 @@ class Container(object):
                                       object_name=object_name)
 
     def upload_object(self, file_path, object_name, extra=None, file_hash=None):
-        return self.driver.upload_object(file_path, self, object_name, extra, file_hash)
+        return self.driver.upload_object(
+            file_path, self, object_name, extra, file_hash)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None):
-        return self.driver.upload_object_via_stream(iterator, self, object_name, extra)
+        return self.driver.upload_object_via_stream(
+            iterator, self, object_name, extra)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
@@ -129,7 +131,8 @@ class Container(object):
         return self.driver.delete_container(self)
 
     def __repr__(self):
-        return '<Container: name=%s, provider=%s>' % (self.name, self.driver.name)
+        return ('<Container: name=%s, provider=%s>'
+                % (self.name, self.driver.name))
 
 class StorageDriver(object):
     """
@@ -169,12 +172,12 @@ class StorageDriver(object):
 
         @return A C{dict} with account meta data.
         """
-        raise NotImplementedError, \
-            'get_account_meta_data not implemented for this driver'
+        raise NotImplementedError(
+            'get_account_meta_data not implemented for this driver')
 
     def list_containters(self):
-        raise NotImplementedError, \
-            'list_containers not implemented for this driver'
+        raise NotImplementedError(
+            'list_containers not implemented for this driver')
 
     def list_container_objects(self, container):
         """
@@ -185,8 +188,8 @@ class StorageDriver(object):
 
         @return A list of Object instances.
         """
-        raise NotImplementedError, \
-            'list_objects not implemented for this driver'
+        raise NotImplementedError(
+            'list_objects not implemented for this driver')
 
     def get_container(self, container_name):
         """
@@ -197,8 +200,8 @@ class StorageDriver(object):
 
         @return: C{Container} instance.
         """
-        raise NotImplementedError, \
-            'get_object not implemented for this driver'
+        raise NotImplementedError(
+            'get_object not implemented for this driver')
 
     def get_object(self, container_name, object_name):
         """
@@ -212,8 +215,8 @@ class StorageDriver(object):
 
         @return: C{Object} instance.
         """
-        raise NotImplementedError, \
-            'get_object not implemented for this driver'
+        raise NotImplementedError(
+            'get_object not implemented for this driver')
 
     def download_object(self, obj, destination_path, delete_on_failure=True):
         """
@@ -236,8 +239,8 @@ class StorageDriver(object):
         @return C{bool} True if an object has been successfully downloaded, False
         otherwise.
         """
-        raise NotImplementedError, \
-            'download_object not implemented for this driver'
+        raise NotImplementedError(
+            'download_object not implemented for this driver')
 
     def download_object_as_stream(self, obj, chunk_size=None):
         """
@@ -249,8 +252,8 @@ class StorageDriver(object):
         @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (in bytes).
         """
-        raise NotImplementedError, \
-            'download_object_as_stream not implemented for this driver'
+        raise NotImplementedError(
+            'download_object_as_stream not implemented for this driver')
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       file_hash=None):
@@ -274,10 +277,12 @@ class StorageDriver(object):
                           on upload and if it doesn't match the one provided an
                           exception is thrown.
         """
-        raise NotImplementedError, \
-            'upload_object not implemented for this driver'
+        raise NotImplementedError(
+            'upload_object not implemented for this driver')
 
-    def upload_object_via_stream(self, iterator, container, object_name, extra=None):
+    def upload_object_via_stream(self, iterator, container,
+                                 object_name,
+                                 extra=None):
         """
         @type iterator: C{object}
         @param iterator: An object which implements the iterator interface.
@@ -291,8 +296,8 @@ class StorageDriver(object):
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
         """
-        raise NotImplementedError, \
-            'upload_object_via_stream not implemented for this driver'
+        raise NotImplementedError(
+            'upload_object_via_stream not implemented for this driver')
 
     def delete_object(self, obj):
         """
@@ -303,8 +308,8 @@ class StorageDriver(object):
 
         @return: C{bool} True on success.
         """
-        raise NotImplementedError, \
-            'delete_object not implemented for this driver'
+        raise NotImplementedError(
+            'delete_object not implemented for this driver')
 
     def create_container(self, container_name):
         """
@@ -315,8 +320,8 @@ class StorageDriver(object):
 
         @return C{Container} instance on success.
         """
-        raise NotImplementedError, \
-            'create_container not implemented for this driver'
+        raise NotImplementedError(
+            'create_container not implemented for this driver')
 
     def delete_container(self, container):
         """
@@ -327,8 +332,8 @@ class StorageDriver(object):
 
         @return C{bool} True on success, False otherwise.
         """
-        raise NotImplementedError, \
-            'delete_container not implemented for this driver'
+        raise NotImplementedError(
+            'delete_container not implemented for this driver')
 
     def _save_object(self, response, obj, destination_path,
                      overwrite_existing=False, delete_on_failure=True,
@@ -363,8 +368,9 @@ class StorageDriver(object):
         base_name = os.path.basename(destination_path)
 
         if not base_name and not os.path.exists(destination_path):
-            raise LibcloudError(value='Path %s does not exist' % (destination_path),
-                                driver=self)
+            raise LibcloudError(
+                value='Path %s does not exist' % (destination_path),
+                driver=self)
 
         if not base_name:
             file_path = pjoin(destination_path, obj.name)
@@ -372,9 +378,10 @@ class StorageDriver(object):
             file_path = destination_path
 
         if os.path.exists(file_path) and not overwrite_existing:
-            raise LibcloudError(value='File %s already exists, but ' % (file_path) +
-                                'overwrite_existing=False',
-                                driver=self)
+            raise LibcloudError(
+                value='File %s already exists, but ' % (file_path) +
+                'overwrite_existing=False',
+                driver=self)
 
         stream = utils.read_in_chunks(response, chunk_size)
 
@@ -452,7 +459,11 @@ class StorageDriver(object):
                     response.connection.connection.send('\r\n')
                 else:
                     response.connection.connection.send(chunk)
-            except Exception, e:
+            except Exception:
+                # @@TR: this wildcard try/except block looks like it
+                # could mask unexpected errors. It should be narrowed
+                # down to expected exceptions.
+
                 # Timeout, etc.
                 return False, None, bytes_transferred
 
@@ -493,10 +504,11 @@ class StorageDriver(object):
                          is the number of transferred bytes.
         """
         with open (file_path, 'rb') as file_handle:
-            success, data_hash, bytes_transferred = \
-                     self._stream_data(response=response,
-                                       iterator=iter(file_handle),
-                                       chunked=chunked,
-                                       calculate_hash=calculate_hash)
+            success, data_hash, bytes_transferred = (
+                self._stream_data(
+                    response=response,
+                    iterator=iter(file_handle),
+                    chunked=chunked,
+                    calculate_hash=calculate_hash))
 
         return success, data_hash, bytes_transferred

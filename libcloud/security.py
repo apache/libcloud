@@ -42,8 +42,8 @@ CA_CERTS_PATH = [
 ]
 
 CA_CERTS_UNAVAILABLE_MSG = (
-   'Warning: No CA Certificates were found in CA_CERTS_PATH. '
-   'Toggling VERIFY_SSL_CERT to False.'
+    'Warning: No CA Certificates were found in CA_CERTS_PATH. '
+    'Toggling VERIFY_SSL_CERT to False.'
 )
 
 VERIFY_SSL_DISABLED_MSG = (

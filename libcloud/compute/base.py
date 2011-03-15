@@ -22,14 +22,32 @@ import os
 import socket
 import struct
 
-from httplib import HTTPConnection as LibcloudHTTPConnection
-
 from libcloud.pricing import get_size_price
-
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.compute.types import NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
+
+# @@TR: are the imports below part of the public api for this
+# module? They aren't used in here ...
+from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
+from libcloud.common.base import LibcloudHTTPConnection
+
+__all__ = [
+    "Node",
+    "NodeState",
+    "NodeSize",
+    "NodeImage",
+    "NodeLocation",
+    "NodeAuthSSHKey",
+    "NodeAuthPassword",
+    "NodeDriver",
+
+    # @@TR: do the following need exporting?
+    "ConnectionKey",
+    "ConnectionUserAndKey",
+    "LibcloudHTTPSConnection",
+    "LibcloudHTTPConnection"
+    ]
 
 class Node(object):
     """
@@ -196,6 +214,7 @@ class NodeSize(object):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+
     def __repr__(self):
         return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
                  'price=%s driver=%s ...>')
@@ -473,6 +492,7 @@ class NodeDriver(object):
         existing implementation should be able to handle most such.
         """
         # TODO: support ssh keys
+        # FIX: this method is too long and complicated
         WAIT_PERIOD=3
         password = None
 
@@ -487,60 +507,68 @@ class NodeDriver(object):
             password = kwargs['auth'].password
         node = self.create_node(**kwargs)
         try:
-          if 'generates_password' in self.features["create_node"]:
-              password = node.extra.get('password')
-          start = time.time()
-          end = start + (60 * 15)
-          while time.time() < end:
-              # need to wait until we get a public IP address.
-              # TODO: there must be a better way of doing this
-              time.sleep(WAIT_PERIOD)
-              nodes = self.list_nodes()
-              nodes = filter(lambda n: n.uuid == node.uuid, nodes)
-              if len(nodes) == 0:
-                  raise DeploymentError(node, "Booted node[%s] is missing form list_nodes." % node)
-              if len(nodes) > 1:
-                  raise DeploymentError(node, "Booted single node[%s], but multiple nodes have same UUID"% node)
+            if 'generates_password' in self.features["create_node"]:
+                password = node.extra.get('password')
+                start = time.time()
+                end = start + (60 * 15)# FIX: this should be soft-coded
+                while time.time() < end:
+                    # need to wait until we get a public IP address.
+                    # TODO: there must be a better way of doing this
+                    time.sleep(WAIT_PERIOD)
+                    nodes = self.list_nodes()
+                    nodes = filter(lambda n: n.uuid == node.uuid, nodes)
+                    if len(nodes) == 0:
+                        raise DeploymentError(
+                            node,
+                            ("Booted node[%s] " % node
+                             + "is missing from list_nodes."))
+                    if len(nodes) > 1:
+                        raise DeploymentError(
+                            node,
+                            ("Booted single node[%s], " % node
+                             + "but multiple nodes have same UUID"))
 
-              node = nodes[0]
+                    node = nodes[0]
 
-              if node.public_ip is not None and node.public_ip != "" and node.state == NodeState.RUNNING:
-                  break
+                    if (node.public_ip is not None
+                        and node.public_ip != ""
+                        and node.state == NodeState.RUNNING):
+                        break
 
-          ssh_username = kwargs.get('ssh_username', 'root')
-          ssh_port = kwargs.get('ssh_port', 22)
+                    ssh_username = kwargs.get('ssh_username', 'root')
+                    ssh_port = kwargs.get('ssh_port', 22)
 
-          client = SSHClient(hostname=node.public_ip[0],
-                             port=ssh_port, username=ssh_username,
-                             password=password)
-          laste = None
-          while time.time() < end:
-              laste = None
-              try:
-                  client.connect()
-                  break
-              except (IOError, socket.gaierror, socket.error), e:
-                  laste = e
-              time.sleep(WAIT_PERIOD)
-          if laste is not None:
-              raise e
+                    client = SSHClient(hostname=node.public_ip[0],
+                                       port=ssh_port, username=ssh_username,
+                                       password=password)
+                    laste = None
+                    while time.time() < end:
+                        laste = None
+                        try:
+                            client.connect()
+                            break
+                        except (IOError, socket.gaierror, socket.error), e:
+                            laste = e
+                            time.sleep(WAIT_PERIOD)
+                            if laste is not None:
+                                raise e
 
-          tries = 3
-          while tries >= 0:
-            try:
-              n = kwargs["deploy"].run(node, client)
-              client.close()
-              break
-            except Exception, e:
-              tries -= 1
-              if tries == 0:
-                raise
-              client.connect()
+                            tries = 3
+                            while tries >= 0:
+                                try:
+                                    n = kwargs["deploy"].run(node, client)
+                                    client.close()
+                                    break
+                                except Exception, e:
+                                    tries -= 1
+                                    if tries == 0:
+                                        raise
+                                    client.connect()
 
-        except DeploymentError, e:
-          raise
+        except DeploymentError:
+            raise
         except Exception, e:
-          raise DeploymentError(node, e)
+            raise DeploymentError(node, e)
         return n
 
     def _get_size_price(self, size_id):

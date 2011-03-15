@@ -26,15 +26,14 @@ import copy
 from libcloud.pricing import get_pricing
 from libcloud.common.base import ConnectionKey, Response
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
+from libcloud.compute.base import Node, NodeDriver, NodeSize
 from libcloud.compute.base import NodeImage
 from libcloud.compute.types import Provider, NodeState
 
-"""
-DreamHost Private Servers can be resized on the fly, but Libcloud doesn't
-currently support extensions to its interface, so we'll put some basic sizes
-in for node creation.
-"""
+# DreamHost Private Servers can be resized on the fly, but Libcloud doesn't
+# currently support extensions to its interface, so we'll put some basic sizes
+# in for node creation.
+
 DH_PS_SIZES = {
     'minimum': {
         'id' : 'minimum',
@@ -100,7 +99,8 @@ class DreamhostResponse(Response):
     def _api_parse_error(self, response):
         if 'data' in response:
             if response['data'] == 'invalid_api_key':
-                raise InvalidCredsError("Oops!  You've entered an invalid API key")
+                raise InvalidCredsError(
+                    "Oops!  You've entered an invalid API key")
             else:
                 raise DreamhostAPIException(response['data'])
         else:
@@ -186,11 +186,13 @@ class DreamhostNodeDriver(NodeDriver):
             return False
 
     def list_nodes(self, **kwargs):
-        data = self.connection.request('/', {'cmd': 'dreamhost_ps-list_ps'}).object
+        data = self.connection.request(
+            '/', {'cmd': 'dreamhost_ps-list_ps'}).object
         return [self._to_node(n) for n in data]
 
     def list_images(self, **kwargs):
-        data = self.connection.request('/', {'cmd': 'dreamhost_ps-list_images'}).object
+        data = self.connection.request(
+            '/', {'cmd': 'dreamhost_ps-list_images'}).object
         images = []
         for img in data:
             images.append(NodeImage(
@@ -210,7 +212,9 @@ class DreamhostNodeDriver(NodeDriver):
         return sizes
 
     def list_locations(self, **kwargs):
-        raise NotImplementedError('You cannot select a location for DreamHost Private Servers at this time.')
+        raise NotImplementedError(
+            'You cannot select a location for '
+            'DreamHost Private Servers at this time.')
 
     ############################################
     # Private Methods (helpers and extensions) #
@@ -243,6 +247,4 @@ class DreamhostNodeDriver(NodeDriver):
             extra = {
                 'current_size' : data['memory_mb'],
                 'account_id' : data['account_id'],
-                'type' : data['type']
-            }
-        )
+                'type' : data['type']})

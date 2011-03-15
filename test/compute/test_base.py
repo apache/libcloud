@@ -19,7 +19,7 @@ from libcloud.common.base import Response
 from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
 
-from test import MockResponse
+from test import MockResponse           # pylint: disable-msg=E0611
 
 class FakeDriver(object):
     type = 0
@@ -27,57 +27,27 @@ class FakeDriver(object):
 class BaseTests(unittest.TestCase):
 
     def test_base_node(self):
-        node = Node(id=0, name=0, state=0, public_ip=0, private_ip=0,
-            driver=FakeDriver())
+        Node(id=0, name=0, state=0, public_ip=0, private_ip=0,
+             driver=FakeDriver())
 
     def test_base_node_size(self):
-        node_size = NodeSize(id=0, name=0, ram=0, disk=0, bandwidth=0, price=0,
-            driver=FakeDriver())
+        NodeSize(id=0, name=0, ram=0, disk=0, bandwidth=0, price=0,
+                 driver=FakeDriver())
 
     def test_base_node_image(self):
-        node_image = NodeImage(id=0, name=0, driver=FakeDriver())
+        NodeImage(id=0, name=0, driver=FakeDriver())
 
     def test_base_response(self):
-        resp = Response(MockResponse(status=200, body='foo'))
+        Response(MockResponse(status=200, body='foo'))
 
     def test_base_node_driver(self):
-        node_driver = NodeDriver('foo')
+        NodeDriver('foo')
 
     def test_base_connection_key(self):
-        conn = ConnectionKey('foo')
+        ConnectionKey('foo')
 
     def test_base_connection_userkey(self):
-        conn = ConnectionUserAndKey('foo', 'bar')
-
-#    def test_drivers_interface(self):
-#        failures = []
-#        for driver in DRIVERS:
-#            creds = ProviderCreds(driver, 'foo', 'bar')
-#            try:
-#                verifyObject(INodeDriver, get_driver(driver)(creds))
-#            except BrokenImplementation:
-#                failures.append(DRIVERS[driver][1])
-#
-#        if failures:
-#            self.fail('the following drivers do not support the \
-#                       INodeDriver interface: %s' % (', '.join(failures)))
-
-#    def test_invalid_creds(self):
-#        failures = []
-#        for driver in DRIVERS:
-#            if driver == Provider.DUMMY:
-#                continue
-#            conn = connect(driver, 'bad', 'keys')
-#            try:
-#                conn.list_nodes()
-#            except InvalidCredsException:
-#                pass
-#            else:
-#                failures.append(DRIVERS[driver][1])
-#
-#        if failures:
-#            self.fail('the following drivers did not throw an \
-#                       InvalidCredsException: %s' % (', '.join(failures)))
+        ConnectionUserAndKey('foo', 'bar')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
