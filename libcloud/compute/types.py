@@ -18,7 +18,18 @@ Base types used by other parts of libcloud
 
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.types import InvalidCredsError, InvalidCredsException
+__all__ = [
+    "Provider",
+    "NodeState",
+    "DeploymentError",
+    "DeploymentException",
 
+    # @@TR: should the unused imports below be exported?
+    "LibcloudError",
+    "MalformedResponseError",
+    "InvalidCredsError",
+    "InvalidCredsException"
+    ]
 class Provider(object):
     """
     Defines for each of the supported providers
