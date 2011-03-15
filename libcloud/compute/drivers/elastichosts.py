@@ -247,6 +247,7 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
     """
 
     type = Provider.ELASTICHOSTS
+    api_name = 'elastichosts'
     name = 'ElasticHosts'
     connectionCls = ElasticHostsBaseConnection
     features = {"create_node": ["generates_password"]}
@@ -289,7 +290,8 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
             size = ElasticHostsNodeSize(
                 id=value['id'],
                 name=value['name'], cpu=value['cpu'], ram=value['memory'],
-                disk=value['disk'], bandwidth=value['bandwidth'], price='',
+                disk=value['disk'], bandwidth=value['bandwidth'], 
+                price=self._get_size_price(size_id=value['id']),
                 driver=self.connection.driver
             )
             sizes.append(size)

@@ -91,6 +91,15 @@
         "high-cpu-extra-large": 0.780
     },
 
+    "elastichosts": {
+       "small": 0.100,
+       "medium": 0.223, 
+       "large": 0.378,
+       "extra-large": 0.579,
+       "high-cpu-medium": 0.180,
+       "high-cpu-extra-large": 0.770
+    },
+
     "gogrid": {
         "512MB": 0.095,
         "1GB": 0.19,
