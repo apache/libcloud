@@ -177,7 +177,7 @@ class DummyStorageDriver(StorageDriver):
        <Object: name=test object, size=50, hash=None, provider=Dummy Storage Provider ...>
         """
 
-        container = self.get_container(container_name)
+        self.get_container(container_name)
 
         container_objects = self._containers[container_name]['objects']
         if object_name not in container_objects:
