@@ -34,7 +34,7 @@ class ElasticHostsTestCase(unittest.TestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         self.assertTrue(isinstance(nodes, list))
         self.assertEqual(len(nodes), 1)
-        
+
         node = nodes[0]
         self.assertEqual(node.public_ip[0], "1.2.3.4")
         self.assertEqual(node.public_ip[1], "1.2.3.5")
@@ -42,8 +42,8 @@ class ElasticHostsTestCase(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes(self):
         images = self.driver.list_sizes()
-        self.assertEqual(len(images), 5)
-        image = images[0]
+        self.assertEqual(len(images), 6)
+        image = [i for i in images if i.id == 'small'][0]
         self.assertEqual(image.id, 'small')
         self.assertEqual(image.name, 'Small instance')
         self.assertEqual(image.cpu, 2000)
@@ -56,7 +56,7 @@ class ElasticHostsTestCase(unittest.TestCase, TestCaseMixin):
         size = sizes[0]
         self.assertEqual(size.id, '38df0986-4d85-4b76-b502-3878ffc80161')
         self.assertEqual(size.name, 'CentOS Linux 5.5')
-        
+
     def test_list_locations_response(self):
         pass
 
@@ -76,24 +76,24 @@ class ElasticHostsTestCase(unittest.TestCase, TestCaseMixin):
 class ElasticHostsHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('elastichosts')
-    
+
     def _servers_b605ca90_c3e6_4cee_85f8_a8ebdf8f9903_reset(self, method, url, body, headers):
          return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
-    
+
     def _servers_b605ca90_c3e6_4cee_85f8_a8ebdf8f9903_destroy(self, method, url, body, headers):
          return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
-    
+
     def _drives_create(self, method, url, body, headers):
         body = self.fixtures.load('drives_create.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_38df0986_4d85_4b76_b502_3878ffc80161_gunzip(self, method, url, body, headers):
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_info(self, method, url, body, headers):
         body = self.fixtures.load('drives_info.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _servers_create(self, method, url, body, headers):
         body = self.fixtures.load('servers_create.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
