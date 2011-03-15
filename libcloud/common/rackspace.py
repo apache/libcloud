@@ -25,6 +25,11 @@ AUTH_HOST_US='auth.api.rackspacecloud.com'
 AUTH_HOST_UK='lon.auth.api.rackspacecloud.com'
 AUTH_API_VERSION = 'v1.0'
 
+__all__ = [
+    "RackspaceBaseConnection",
+    "AUTH_HOST_US",
+    "AUTH_HOST_UK"
+    ]
 class RackspaceBaseConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure):
         self.cdn_management_url = None
@@ -32,7 +37,8 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
         self.auth_token = None
         self.request_path = None
         self.__host = None
-        super(RackspaceBaseConnection, self).__init__(user_id, key, secure=secure)
+        super(RackspaceBaseConnection, self).__init__(
+            user_id, key, secure=secure)
 
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.auth_token
@@ -48,7 +54,8 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
         """
         if not self.__host:
             # Initial connection used for authentication
-            conn = self.conn_classes[self.secure](self.auth_host, self.port[self.secure])
+            conn = self.conn_classes[self.secure](
+                self.auth_host, self.port[self.secure])
             conn.request(
                 method='GET',
                 url='/%s' % (AUTH_API_VERSION),
@@ -74,8 +81,7 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
                 raise InvalidCredsError()
 
             scheme, server, self.request_path, param, query, fragment = (
-                urlparse.urlparse(getattr(self, self._url_key))
-            )
+                urlparse.urlparse(getattr(self, self._url_key)))
 
             if scheme is "https" and self.secure is not True:
                 raise InvalidCredsError()

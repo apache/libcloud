@@ -17,18 +17,13 @@ import sys
 import unittest
 import urlparse
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.drivers.gogrid import GoGridNodeDriver, GoGridIpAddress
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
-from test import MockHttp
-from test.compute import TestCaseMixin
-from test.file_fixtures import ComputeFileFixtures
+from test import MockHttp               # pylint: disable-msg=E0611
+from test.compute import TestCaseMixin  # pylint: disable-msg=E0611
+from test.file_fixtures import ComputeFileFixtures # pylint: disable-msg=E0611
 
 class GoGridTests(unittest.TestCase, TestCaseMixin):
 
@@ -37,11 +32,21 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = None
         self.driver = GoGridNodeDriver("foo", "bar")
 
+    def _get_test_512Mb_node_size(self):
+        return NodeSize(id='512Mb',
+                        name=None,
+                        ram=None,
+                        disk=None,
+                        bandwidth=None,
+                        price=None,
+                        driver=self.driver)
+
     def test_create_node(self):
         image = NodeImage(1531, None, self.driver)
-        size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
-
-        node = self.driver.create_node(name='test1', image=image, size=size)
+        node = self.driver.create_node(
+            name='test1',
+            image=image,
+            size=self._get_test_512Mb_node_size())
         self.assertEqual(node.name, 'test1')
         self.assertTrue(node.id is not None)
         self.assertEqual(node.extra['password'], 'bebebe')
@@ -73,7 +78,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_malformed_reply(self):
         GoGridMockHttp.type = 'FAIL'
         try:
-            images = self.driver.list_images()
+            self.driver.list_images()
         except LibcloudError, e:
             self.assertTrue(isinstance(e, LibcloudError))
         else:
@@ -82,7 +87,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_invalid_creds(self):
         GoGridMockHttp.type = 'FAIL'
         try:
-            nodes = self.driver.list_nodes()
+            self.driver.list_nodes()
         except InvalidCredsError, e:
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
@@ -93,9 +98,10 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'NOPUBIPS'
         try:
             image = NodeImage(1531, None, self.driver)
-            size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
-
-            node = self.driver.create_node(name='test1', image=image, size=size)
+            self.driver.create_node(
+                name='test1',
+                image=image,
+                size=self._get_test_512Mb_node_size())
         except LibcloudError, e:
             self.assertTrue(isinstance(e, LibcloudError))
             self.assertTrue(e.driver is not None)
@@ -126,9 +132,10 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(isinstance(ret, NodeImage))
 
     def test_ex_edit_node(self):
-        node = Node(90967, None, None, None, None, self.driver)
-        size = NodeSize('512Mb', None, None, None, None, None, driver=self.driver)
-        ret = self.driver.ex_edit_node(node=node, size=size)
+        node = Node(id=90967, name=None, state=None,
+                    public_ip=None, private_ip=None, driver=self.driver)
+        ret = self.driver.ex_edit_node(node=node,
+                                       size=self._get_test_512Mb_node_size())
 
         self.assertTrue(isinstance(ret, Node))
 
@@ -177,7 +184,8 @@ class GoGridMockHttp(MockHttp):
     _api_grid_server_list_NOPUBIPS = _api_grid_server_list
 
     def _api_grid_server_list_FAIL(self, method, url, body, headers):
-        return (httplib.FORBIDDEN, "123", {}, httplib.responses[httplib.FORBIDDEN])
+        return (httplib.FORBIDDEN,
+                "123", {}, httplib.responses[httplib.FORBIDDEN])
 
     def _api_grid_ip_list(self, method, url, body, headers):
         body = self.fixtures.load('ip_list.json')

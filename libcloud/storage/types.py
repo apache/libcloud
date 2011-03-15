@@ -15,6 +15,16 @@
 
 from libcloud.common.types import LibcloudError
 
+__all__ = ['Provider',
+           'ContainerError',
+           'ObjectError',
+           'ContainerAlreadyExistsError',
+           'ContainerDoesNotExistError',
+           'ContainerIsNotEmptyError',
+           'ObjectDoesNotExistError',
+           'ObjectHashMismatchError',
+           'InvalidContainerNameError']
+
 class Provider(object):
     """
     Defines for each of the supported providers
@@ -35,8 +45,9 @@ class ContainerError(LibcloudError):
         super(ContainerError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
-        return '<%s in %s, container = %s>' % (self.error_type, repr(self.driver),
-                                          self.container_name)
+        return ('<%s in %s, container = %s>' %
+                (self.error_type, repr(self.driver),
+                 self.container_name))
 
 class ObjectError(LibcloudError):
     error_type = 'ContainerError'
