@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import os.path
+import os.path                          # pylint: disable-msg=W0404
 import random
 import sys
 import copy
@@ -30,10 +30,10 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
-from libcloud.storage.drivers.dummy import DummyFileObject, DummyIterator
+from libcloud.storage.drivers.dummy import DummyIterator
 
-from test import MockHttp, MockRawResponse
-from test.file_fixtures import StorageFileFixtures
+from test import MockHttp, MockRawResponse # pylint: disable-msg=E0611
+from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 
 class CloudFilesTests(unittest.TestCase):
 
