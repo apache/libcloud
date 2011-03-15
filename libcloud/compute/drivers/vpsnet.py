@@ -126,7 +126,7 @@ class VPSNetNodeDriver(NodeDriver):
             return PRICE_PER_NODE[keys[-1]]
 
         for i in range(0,len(keys)):
-            if int(keys[i]) <= num < (keys[i+1]):
+            if int(keys[i]) <= num < int(keys[i+1]):
                 return PRICE_PER_NODE[keys[i]]
 
     def create_node(self, name, image, size, **kwargs):
