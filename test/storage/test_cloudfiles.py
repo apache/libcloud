@@ -180,8 +180,11 @@ class CloudFilesTests(unittest.TestCase):
                                              delete_on_failure=True)
         self.assertFalse(result)
 
-    def download_object_success_not_found(self):
-        CloudFilesMockHttp.type = 'NOT_FOUND'
+    def test_download_object_success_not_found(self):
+        #CloudFilesMockHttp.type = 'NOT_FOUND'
+        CloudFilesMockRawResponse.type = 'NOT_FOUND'
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=CloudFilesStorageDriver)
@@ -547,7 +550,27 @@ class CloudFilesMockRawResponse(MockRawResponse):
     def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data(self, method, url, body, headers):
         # test_upload_object_via_stream_success
         body = 'test'
-        return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
+        return (httplib.OK, body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NOT_FOUND(
+        self, method, url, body, headers):
+
+        body = ''
+        return (httplib.NOT_FOUND, body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data(
+        self, method, url, body, headers):
+
+        # test_upload_object_via_stream_success
+        body = 'test'
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -302,7 +302,10 @@ class CloudFilesStorageDriver(StorageDriver):
         if response.status == httplib.OK:
             return callback(**callback_args)
         elif response.status == httplib.NOT_FOUND:
-            raise ObjectDoesNotExistError(name=object_name)
+            raise ObjectDoesNotExistError(
+                object_name=object_name,
+                driver=self,
+                value='')
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
