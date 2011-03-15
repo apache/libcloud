@@ -120,16 +120,6 @@ class CloudFilesTests(unittest.TestCase):
                 'Container already exists but an exception was not thrown')
 
     def test_create_container_invalid_name(self):
-        try:
-            self.driver.create_container(container_name='invalid//name/')
-        except:
-            pass
-        else:
-            self.fail(
-                'Invalid name was provided (name contains slashes)'
-                ', but exception was not thrown')
-
-    def test_create_container_invalid_name(self):
         name = ''.join([ 'x' for x in range(0, 257)])
         try:
             self.driver.create_container(container_name=name)
@@ -343,14 +333,6 @@ class CloudFilesTests(unittest.TestCase):
                                                  iterator=iterator)
         finally:
             libcloud.utils.guess_file_mime_type = old_func
-
-    def test_delete_object_success(self):
-        container = Container(name='foo_bar_container', extra={}, driver=self)
-        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
-                     container=container, meta_data=None,
-                     driver=CloudFilesStorageDriver)
-        result = self.driver.delete_object(obj=obj)
-        self.assertTrue(result)
 
     def test_delete_object_success(self):
         CloudFilesMockHttp.type = 'NOT_FOUND'
