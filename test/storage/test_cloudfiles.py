@@ -499,57 +499,64 @@ class CloudFilesMockRawResponse(MockRawResponse):
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
 
     def __init__(self, *args, **kwargs):
-      super(CloudFilesMockRawResponse, self).__init__(*args, **kwargs)
-      self._data = []
-      self._current_item = 0
+        super(CloudFilesMockRawResponse, self).__init__(*args, **kwargs)
+        self._data = []
+        self._current_item = 0
 
     def next(self):
         if self._current_item == len(self._data):
-          raise StopIteration
+            raise StopIteration
 
         value = self._data[self._current_item]
         self._current_item += 1
         return value
 
     def _generate_random_data(self, size):
-      data = []
-      current_size = 0
-      while current_size < size:
-        value = str(random.randint(0, 9))
-        value_size = len(value)
-        data.append(value)
-        current_size += value_size
+        data = []
+        current_size = 0
+        while current_size < size:
+            value = str(random.randint(0, 9))
+            value_size = len(value)
+            data.append(value)
+            current_size += value_size
 
-      return data
+        return data
 
-    def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload(self, method, url, body, headers):
+    def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload(
+        self, method, url, body, headers):
         # test_object_upload_success
+
         body = ''
-        header = copy.deepcopy(self.base_headers)
+        headers = copy.deepcopy(self.base_headers)
+        headers.update(headers)
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
-    def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload_INVALID_HASH(self, method, url, body, headers):
+    def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload_INVALID_HASH(
+        self, method, url, body, headers):
+
         # test_object_upload_invalid_hash
         body = ''
         headers = self.base_headers
         return (httplib.UNPROCESSABLE_ENTITY, body, headers,
                 httplib.responses[httplib.OK])
 
-    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object(self, method, url, body, headers):
+    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object(
+        self, method, url, body, headers):
+
         # test_download_object_success
         body = 'test'
         self._data = self._generate_random_data(1000)
-        return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
 
-    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url, body, headers):
+    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(
+        self, method, url, body, headers):
+
         # test_download_object_invalid_file_size
         body = 'test'
         self._data = self._generate_random_data(100)
-        return (httplib.OK, body, self.base_headers, httplib.responses[httplib.OK])
-
-    def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data(self, method, url, body, headers):
-        # test_upload_object_via_stream_success
-        body = 'test'
         return (httplib.OK, body,
                 self.base_headers,
                 httplib.responses[httplib.OK])
