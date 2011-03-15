@@ -21,9 +21,9 @@ from libcloud.compute.base import Node
 from libcloud.compute.drivers.cloudsigma import CloudSigmaBaseNodeDriver
 from libcloud.compute.drivers.cloudsigma import str2dicts, str2list, dict2str
 
-from test import MockHttp
-from test.compute import TestCaseMixin
-from test.file_fixtures import ComputeFileFixtures
+from test import MockHttp               # pylint: disable-msg=E0611
+from test.compute import TestCaseMixin  # pylint: disable-msg=E0611
+from test.file_fixtures import ComputeFileFixtures # pylint: disable-msg=E0611
 
 
 class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
@@ -72,12 +72,13 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.destroy_node(node))
-        nodes = self.driver.list_nodes()
+        self.driver.list_nodes()
 
     def test_create_node(self):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        node = self.driver.create_node(name = "cloudsigma node", image = image, size = size)
+        node = self.driver.create_node(
+            name="cloudsigma node", image=image, size = size)
         self.assertTrue(isinstance(node, Node))
 
     def test_ex_static_ip_list(self):
@@ -99,7 +100,9 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(result), 2)
 
     def test_ex_drive_destroy(self):
-        result = self.driver.ex_drive_destroy('d18119ce_7afa_474a_9242_e0384b160220')
+        result = self.driver.ex_drive_destroy(
+            # @@TR: this should be soft-coded:
+            'd18119ce_7afa_474a_9242_e0384b160220')
         self.assertTrue(result)
 
     def test_ex_set_node_configuration(self):
@@ -135,20 +138,31 @@ class CloudSigmaHttp(MockHttp):
         body = self.fixtures.load('drives_standard_info.txt')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_start(self, method, url, body, headers):
+    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_start(
+        self, method, url, body, headers):
+
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_stop(self, method, url, body, headers):
+    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_stop(
+        self, method, url, body, headers):
+
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.OK])
 
-    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_destroy(self, method, url, body, headers):
-         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_destroy(
+        self, method, url, body, headers):
 
-    def _drives_d18119ce_7afa_474a_9242_e0384b160220_clone(self, method, url, body, headers):
+        return (httplib.NO_CONTENT,
+                body, {}, httplib.responses[httplib.NO_CONTENT])
+
+    def _drives_d18119ce_7afa_474a_9242_e0384b160220_clone(
+        self, method, url, body, headers):
+
         body = self.fixtures.load('drives_clone.txt')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _drives_a814def5_1789_49a0_bf88_7abe7bb1682a_info(self, method, url, body, headers):
+    def _drives_a814def5_1789_49a0_bf88_7abe7bb1682a_info(
+        self, method, url, body, headers):
+
         body = self.fixtures.load('drives_single_info.txt')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -175,10 +189,14 @@ class CloudSigmaHttp(MockHttp):
     def _resources_ip_1_2_3_4_destroy(self, method, url, body, headers):
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.OK])
 
-    def _drives_d18119ce_7afa_474a_9242_e0384b160220_destroy(self, method, url, body, headers):
+    def _drives_d18119ce_7afa_474a_9242_e0384b160220_destroy(
+        self, method, url, body, headers):
+
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.OK])
 
-    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_set(self, method, url, body, headers):
+    def _servers_62fe7cde_4fb9_4c63_bd8c_e757930066a0_set(
+        self, method, url, body, headers):
+
         body = self.fixtures.load('servers_set.txt')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

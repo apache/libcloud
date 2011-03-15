@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
-from cStringIO import StringIO
-from urllib2 import urlparse
-from cgi import parse_qs
-
 from libcloud.compute.base import Node, NodeImage, NodeLocation
 
 class TestCaseMixin(object):
