@@ -67,6 +67,22 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     PRICING_DATA[driver_type][driver_name] = pricing
     return pricing
 
+def set_pricing(driver_type, driver_name, pricing):
+    """
+    Populate the driver pricing dictionary.
+
+    @type driver_type: C{str}
+    @param driver_type: Driver type ('compute' or 'storage')
+
+    @type driver_name: C{str}
+    @param driver_name: Driver name
+
+    @type pricing: C{dict}
+    @param pricing: Dictionary where a key is a size ID and a value is a price.
+    """
+
+    PRICING_DATA[driver_type][driver_name] = pricing
+
 def get_size_price(driver_type, driver_name, size_id):
     """
     Return price for the provided size.
