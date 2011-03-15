@@ -169,12 +169,12 @@ class StorageDriver(object):
 
         @return A C{dict} with account meta data.
         """
-        raise NotImplementedError, \
-            'get_account_meta_data not implemented for this driver'
+        raise NotImplementedError(
+            'get_account_meta_data not implemented for this driver')
 
     def list_containters(self):
-        raise NotImplementedError, \
-            'list_containers not implemented for this driver'
+        raise NotImplementedError(
+            'list_containers not implemented for this driver')
 
     def list_container_objects(self, container):
         """
@@ -185,8 +185,8 @@ class StorageDriver(object):
 
         @return A list of Object instances.
         """
-        raise NotImplementedError, \
-            'list_objects not implemented for this driver'
+        raise NotImplementedError(
+            'list_objects not implemented for this driver')
 
     def get_container(self, container_name):
         """
@@ -197,8 +197,8 @@ class StorageDriver(object):
 
         @return: C{Container} instance.
         """
-        raise NotImplementedError, \
-            'get_object not implemented for this driver'
+        raise NotImplementedError(
+            'get_object not implemented for this driver')
 
     def get_object(self, container_name, object_name):
         """
@@ -212,8 +212,8 @@ class StorageDriver(object):
 
         @return: C{Object} instance.
         """
-        raise NotImplementedError, \
-            'get_object not implemented for this driver'
+        raise NotImplementedError(
+            'get_object not implemented for this driver')
 
     def download_object(self, obj, destination_path, delete_on_failure=True):
         """
@@ -236,8 +236,8 @@ class StorageDriver(object):
         @return C{bool} True if an object has been successfully downloaded, False
         otherwise.
         """
-        raise NotImplementedError, \
-            'download_object not implemented for this driver'
+        raise NotImplementedError(
+            'download_object not implemented for this driver')
 
     def download_object_as_stream(self, obj, chunk_size=None):
         """
@@ -249,8 +249,8 @@ class StorageDriver(object):
         @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (in bytes).
         """
-        raise NotImplementedError, \
-            'download_object_as_stream not implemented for this driver'
+        raise NotImplementedError(
+            'download_object_as_stream not implemented for this driver')
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       file_hash=None):
@@ -274,10 +274,12 @@ class StorageDriver(object):
                           on upload and if it doesn't match the one provided an
                           exception is thrown.
         """
-        raise NotImplementedError, \
-            'upload_object not implemented for this driver'
+        raise NotImplementedError(
+            'upload_object not implemented for this driver')
 
-    def upload_object_via_stream(self, iterator, container, object_name, extra=None):
+    def upload_object_via_stream(self, iterator, container,
+                                 object_name,
+                                 extra=None):
         """
         @type iterator: C{object}
         @param iterator: An object which implements the iterator interface.
@@ -291,8 +293,8 @@ class StorageDriver(object):
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
         """
-        raise NotImplementedError, \
-            'upload_object_via_stream not implemented for this driver'
+        raise NotImplementedError(
+            'upload_object_via_stream not implemented for this driver')
 
     def delete_object(self, obj):
         """
@@ -303,8 +305,8 @@ class StorageDriver(object):
 
         @return: C{bool} True on success.
         """
-        raise NotImplementedError, \
-            'delete_object not implemented for this driver'
+        raise NotImplementedError(
+            'delete_object not implemented for this driver')
 
     def create_container(self, container_name):
         """
@@ -315,8 +317,8 @@ class StorageDriver(object):
 
         @return C{Container} instance on success.
         """
-        raise NotImplementedError, \
-            'create_container not implemented for this driver'
+        raise NotImplementedError(
+            'create_container not implemented for this driver')
 
     def delete_container(self, container):
         """
@@ -327,8 +329,8 @@ class StorageDriver(object):
 
         @return C{bool} True on success, False otherwise.
         """
-        raise NotImplementedError, \
-            'delete_container not implemented for this driver'
+        raise NotImplementedError(
+            'delete_container not implemented for this driver')
 
     def _save_object(self, response, obj, destination_path,
                      overwrite_existing=False, delete_on_failure=True,
