@@ -78,7 +78,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_malformed_reply(self):
         GoGridMockHttp.type = 'FAIL'
         try:
-            images = self.driver.list_images()
+            self.driver.list_images()
         except LibcloudError, e:
             self.assertTrue(isinstance(e, LibcloudError))
         else:
@@ -87,7 +87,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_invalid_creds(self):
         GoGridMockHttp.type = 'FAIL'
         try:
-            nodes = self.driver.list_nodes()
+            self.driver.list_nodes()
         except InvalidCredsError, e:
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
