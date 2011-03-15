@@ -18,8 +18,6 @@ from cStringIO import StringIO
 from urllib2 import urlparse
 from cgi import parse_qs
 
-from libcloud.common.base import RawResponse
-
 class multipleresponse(object):
     """
     A decorator that allows MockHttp objects to return multi responses

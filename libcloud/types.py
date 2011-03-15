@@ -20,4 +20,9 @@ from libcloud.compute.types import DeploymentException
 
 from libcloud.utils import deprecated_warning
 
+__all__ = ["LibcloudError", "MalformedResponseError",
+           "InvalidCredsError", "InvalidCredsException",
+           "Provider", "NodeState", "DeploymentError",
+           "DeploymentException"
+           ]
 deprecated_warning(__name__)

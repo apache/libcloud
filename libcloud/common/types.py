@@ -13,33 +13,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = [
+    "LibcloudError",
+    "MalformedResponseError",
+    "InvalidCredsError",
+    "InvalidCredsException"
+    ]
+
 class LibcloudError(Exception):
     """The base class for other libcloud exceptions"""
+
     def __init__(self, value, driver=None):
         self.value = value
         self.driver = driver
 
     def __str__(self):
-        return "<LibcloudError in "+ repr(self.driver) +" "+ repr(self.value) + ">"
+        return ("<LibcloudError in "
+                + repr(self.driver)
+                +" "
+                + repr(self.value) + ">")
 
 class MalformedResponseError(LibcloudError):
     """Exception for the cases when a provider returns a malformed
-    response, e.g. you request JSON and provider returns 
+    response, e.g. you request JSON and provider returns
     '<h3>something</h3>' due to some error on their side."""
+
     def __init__(self, value, body=None, driver=None):
-      self.value = value
-      self.driver = driver
-      self.body = body
+        self.value = value
+        self.driver = driver
+        self.body = body
+
     def __str__(self):
-        return "<MalformedResponseException in "+ repr(self.driver) +" "+ repr(self.value) +">: "+ repr(self.body)
+        return ("<MalformedResponseException in "
+                + repr(self.driver)
+                + " "
+                + repr(self.value)
+                + ">: "
+                + repr(self.body))
 
 class InvalidCredsError(LibcloudError):
     """Exception used when invalid credentials are used on a provider."""
-    def __init__(self, value='Invalid credentials with the provider', driver=None):
+
+    def __init__(self, value='Invalid credentials with the provider',
+                 driver=None):
         self.value = value
         self.driver = driver
     def __str__(self):
         return repr(self.value)
 
-"""Deprecated alias of L{InvalidCredsError}"""
+# Deprecated alias of L{InvalidCredsError}
 InvalidCredsException = InvalidCredsError

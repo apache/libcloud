@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import httplib
-import urlparse
 import os.path
 import urllib
 
@@ -25,8 +24,7 @@ except:
 
 from libcloud import utils
 from libcloud.common.types import MalformedResponseError, LibcloudError
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import Response
 
 from libcloud.storage.providers import Provider
 from libcloud.storage.base import Object, Container, StorageDriver
@@ -37,7 +35,8 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 
-from libcloud.common.rackspace import AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection
+from libcloud.common.rackspace import (
+    AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
 
 API_VERSION = 'v1.0'
 
@@ -145,9 +144,12 @@ class CloudFilesStorageDriver(StorageDriver):
         response = self.connection.request('', method='HEAD')
 
         if response.status == httplib.NO_CONTENT:
-            container_count = response.headers.get('x-account-container-count', 'unknown')
-            object_count = response.headers.get('x-account-object-count', 'unknown')
-            bytes_used = response.headers.get('x-account-bytes-used', 'unknown')
+            container_count = response.headers.get(
+                'x-account-container-count', 'unknown')
+            object_count = response.headers.get(
+                'x-account-object-count', 'unknown')
+            bytes_used = response.headers.get(
+                'x-account-bytes-used', 'unknown')
 
             return { 'container_count': int(container_count),
                       'object_count': int(object_count),
@@ -181,7 +183,8 @@ class CloudFilesStorageDriver(StorageDriver):
                                                     method='HEAD')
 
         if response.status == httplib.NO_CONTENT:
-            container = self._headers_to_container(container_name, response.headers)
+            container = self._headers_to_container(
+                container_name, response.headers)
             return container
         elif response.status == httplib.NOT_FOUND:
             raise ContainerDoesNotExistError(None, self, container_name)
@@ -195,7 +198,8 @@ class CloudFilesStorageDriver(StorageDriver):
                                                        method='HEAD')
 
         if response.status in [ httplib.OK, httplib.NO_CONTENT ]:
-            obj = self._headers_to_object(object_name, container, response.headers)
+            obj = self._headers_to_object(
+                object_name, container, response.headers)
             return obj
         elif response.status == httplib.NOT_FOUND:
             raise ObjectDoesNotExistError(None, self, object_name)
@@ -204,7 +208,8 @@ class CloudFilesStorageDriver(StorageDriver):
 
     def create_container(self, container_name):
         container_name = self._clean_container_name(container_name)
-        response = self.connection.request('/%s' % (container_name), method='PUT')
+        response = self.connection.request(
+            '/%s' % (container_name), method='PUT')
 
         if response.status == httplib.CREATED:
             # Accepted mean that container is not yet created but it will be
@@ -262,7 +267,8 @@ class CloudFilesStorageDriver(StorageDriver):
                                 upload_func=upload_func,
                                 upload_func_args=upload_func_args)
 
-    def upload_object_via_stream(self, iterator, container, object_name, extra=None):
+    def upload_object_via_stream(self, iterator,
+                                 container, object_name, extra=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
@@ -278,8 +284,8 @@ class CloudFilesStorageDriver(StorageDriver):
         container_name = self._clean_container_name(obj.container.name)
         object_name = self._clean_object_name(obj.name)
 
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name), method='DELETE')
+        response = self.connection.request(
+            '/%s/%s' % (container_name, object_name), method='DELETE')
 
         if response.status == httplib.NO_CONTENT:
             return True
@@ -302,7 +308,10 @@ class CloudFilesStorageDriver(StorageDriver):
         if response.status == httplib.OK:
             return callback(**callback_args)
         elif response.status == httplib.NOT_FOUND:
-            raise ObjectDoesNotExistError(name=object_name)
+            raise ObjectDoesNotExistError(
+                object_name=object_name,
+                driver=self,
+                value='')
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
@@ -323,8 +332,9 @@ class CloudFilesStorageDriver(StorageDriver):
             content_type, _ = utils.guess_file_mime_type(name)
 
             if not content_type:
-                raise AttributeError('File content-type could not be guessed and' +
-                                     ' no content_type value provided')
+                raise AttributeError(
+                    'File content-type could not be guessed and' +
+                    ' no content_type value provided')
 
         headers = {}
         if iterator:
@@ -361,12 +371,14 @@ class CloudFilesStorageDriver(StorageDriver):
         if response.status == httplib.EXPECTATION_FAILED:
             raise LibcloudError('Missing content-type header')
         elif response.status == httplib.UNPROCESSABLE_ENTITY:
-            raise ObjectHashMismatchError(value='MD5 hash checksum does not match',
-                                          object_name=object_name, driver=self)
+            raise ObjectHashMismatchError(
+                value='MD5 hash checksum does not match',
+                object_name=object_name, driver=self)
         elif response.status == httplib.CREATED:
-            obj = Object(name=object_name, size=bytes_transferred, hash=file_hash,
-                         extra=None, meta_data=meta_data, container=container,
-                         driver=self)
+            obj = Object(
+                name=object_name, size=bytes_transferred, hash=file_hash,
+                extra=None, meta_data=meta_data, container=container,
+                driver=self)
 
             return obj
 
@@ -416,8 +428,9 @@ class CloudFilesStorageDriver(StorageDriver):
             hash = obj['hash']
             extra = { 'content_type': obj['content_type'],
                       'last_modified': obj['last_modified'] }
-            objects.append(Object(name=name, size=size, hash=hash, extra=extra,
-                                  meta_data=None, container=container, driver=self))
+            objects.append(Object(
+                name=name, size=size, hash=hash, extra=extra,
+                meta_data=None, container=container, driver=self))
 
         return objects
 

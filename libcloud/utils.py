@@ -56,10 +56,10 @@ def guess_file_mime_type(file_path):
 def deprecated_warning(module):
     if SHOW_DEPRECATION_WARNING:
         warnings.warn('This path has been deprecated and the module'
-                       ' is now available at "libcloud.compute.%s".'
-                       ' This path will be fully removed in libcloud %s.' % \
-                       (module, OLD_API_REMOVE_VERSION),
-                  category=DeprecationWarning)
+                      ' is now available at "libcloud.compute.%s".'
+                      ' This path will be fully removed in libcloud %s.' %
+                      (module, OLD_API_REMOVE_VERSION),
+                      category=DeprecationWarning)
 
 def str2dicts(data):
     """
