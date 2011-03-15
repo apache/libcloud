@@ -68,6 +68,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(ret), 7)
         size = ret[0]
         self.assertEqual(size.name, '256 slice')
+        self.assertTrue(isinstance(size.price, float))
 
     def test_list_images(self):
         ret = self.driver.list_images()
