@@ -14,6 +14,17 @@
 # limitations under the License.
 
 from libcloud.utils import deprecated_warning
-from libcloud.compute.ssh import *
+from libcloud.compute.ssh import (
+    BaseSSHClient,
+    ParamikoSSHClient,
+    ShellOutSSHClient,
+    SSHClient,
+    have_paramiko)
 
+__all__ = [
+    "BaseSSHClient",
+    "ParamikoSSHClient",
+    "ShellOutSSHClient",
+    "SSHClient",
+    "have_paramiko"]
 deprecated_warning(__name__)

@@ -20,6 +20,22 @@ from libcloud.compute.base import Node, NodeSize, NodeImage
 from libcloud.compute.base import NodeLocation, NodeAuthSSHKey, NodeAuthPassword
 from libcloud.compute.base import NodeDriver, is_private_subnet
 
+__all__ = ['RawResponse',
+           'Response',
+           'LoggingConnection',
+           'LoggingHTTPSConnection',
+           'LoggingHTTPConnection',
+           'ConnectionKey',
+           'ConnectionUserAndKey',
+           'Node',
+           'NodeSize',
+           'NodeImage',
+           'NodeLocation',
+           'NodeAuthSSHKey',
+           'NodeAuthPassword',
+           'NodeDriver',
+           'is_private_subnet']
+
 from libcloud.utils import deprecated_warning
 
 deprecated_warning(__name__)
