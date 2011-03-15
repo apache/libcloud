@@ -22,6 +22,8 @@ try:
 except:
     import simplejson as json
 
+from libcloud.pricing import get_pricing
+
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
@@ -35,17 +37,7 @@ API_VERSION = 'api10json'
 RAM_PER_NODE = 256
 DISK_PER_NODE = 10
 BANDWIDTH_PER_NODE = 250
-PRICE_PER_NODE = {1: 20,
-                  2: 19,
-                  3: 18,
-                  4: 17,
-                  5: 16,
-                  6: 15,
-                  7: 14,
-                  15: 13,
-                  30: 12,
-                  60: 11,
-                  100: 10}
+
 
 class VPSNetResponse(Response):
 
@@ -89,6 +81,7 @@ class VPSNetNodeDriver(NodeDriver):
     """
 
     type = Provider.VPSNET
+    api_name = 'vps_net'
     name = "vps.net"
     connectionCls = VPSNetConnection
 
@@ -125,13 +118,15 @@ class VPSNetNodeDriver(NodeDriver):
         return size
 
     def _get_price_per_node(self, num):
+        PRICE_PER_NODE = get_pricing(driver_type='compute',
+                                     driver_name=self.api_name)
         keys = sorted(PRICE_PER_NODE.keys())
 
         if num >= max(keys):
             return PRICE_PER_NODE[keys[-1]]
 
         for i in range(0,len(keys)):
-            if keys[i] <= num < keys[i+1]:
+            if int(keys[i]) <= num < (keys[i+1]):
                 return PRICE_PER_NODE[keys[i]]
 
     def create_node(self, name, image, size, **kwargs):
