@@ -16,20 +16,37 @@
 """
 Provides base classes for working with drivers
 """
-import httplib, urllib
 import time
 import hashlib
-import StringIO
-import ssl
 import os
 import socket
 import struct
 
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.compute.types import NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
+
+# @@TR: are the imports below part of the public api for this
+# module? They aren't used in here ...
+from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from httplib import HTTPConnection as LibcloudHTTPConnection
+
+__all__ = [
+    "Node",
+    "NodeState",
+    "NodeSize",
+    "NodeImage",
+    "NodeLocation",
+    "NodeAuthSSHKey",
+    "NodeAuthPassword",
+    "NodeDriver",
+
+    # @@TR: do the following need exporting?
+    "ConnectionKey",
+    "ConnectionUserAndKey",
+    "LibcloudHTTPSConnection",
+    "LibcloudHTTPConnection"
+    ]
 
 class Node(object):
     """

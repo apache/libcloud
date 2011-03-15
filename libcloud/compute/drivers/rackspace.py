@@ -18,18 +18,18 @@ Rackspace driver
 import os
 
 import base64
-import urlparse
 
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
 from libcloud.common.base import Response
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
-from libcloud.common.rackspace import AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection
+from libcloud.common.rackspace import (
+    AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
 
 NAMESPACE='http://docs.rackspacecloud.com/servers/api/v1.0'
 
