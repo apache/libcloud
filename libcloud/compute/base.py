@@ -213,6 +213,7 @@ class NodeSize(object):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+
     def __repr__(self):
         return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
                  'price=%s driver=%s ...>')
@@ -490,6 +491,7 @@ class NodeDriver(object):
         existing implementation should be able to handle most such.
         """
         # TODO: support ssh keys
+        # FIX: this method is too long and complicated
         WAIT_PERIOD=3
         password = None
 

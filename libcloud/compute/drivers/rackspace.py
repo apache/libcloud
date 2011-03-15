@@ -60,14 +60,19 @@ class RackspaceResponse(Response):
         try:
             body = ET.XML(self.body)
         except:
-            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+            raise MalformedResponseError(
+                "Failed to parse XML",
+                body=self.body,
+                driver=RackspaceNodeDriver)
         return body
     def parse_error(self):
         # TODO: fixup, Rackspace only uses response codes really!
         try:
             body = ET.XML(self.body)
         except:
-            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=RackspaceNodeDriver)
+            raise MalformedResponseError(
+                "Failed to parse XML",
+                body=self.body, driver=RackspaceNodeDriver)
         try:
             text = "; ".join([ err.text or ''
                                for err in
@@ -198,7 +203,8 @@ class RackspaceNodeDriver(NodeDriver):
 
         server_elm = ET.Element('server', body)
 
-        resp = self.connection.request(uri, method='PUT', data=ET.tostring(server_elm))
+        resp = self.connection.request(
+            uri, method='PUT', data=ET.tostring(server_elm))
 
         if resp.status == 204 and password != None:
             node.extra['password'] = password
@@ -253,7 +259,8 @@ class RackspaceNodeDriver(NodeDriver):
         if files_elm:
             server_elm.append(files_elm)
 
-        shared_ip_elm = self._shared_ip_group_to_xml(kwargs.get("ex_shared_ip_group", None))
+        shared_ip_elm = self._shared_ip_group_to_xml(
+            kwargs.get("ex_shared_ip_group", None))
         if shared_ip_elm:
             server_elm.append(shared_ip_elm)
 
@@ -424,7 +431,8 @@ class RackspaceNodeDriver(NodeDriver):
 
         n = Node(id=el.get('id'),
                  name=el.get('name'),
-                 state=self.NODE_STATE_MAP.get(el.get('status'), NodeState.UNKNOWN),
+                 state=self.NODE_STATE_MAP.get(
+                     el.get('status'), NodeState.UNKNOWN),
                  public_ip=public_ip,
                  private_ip=private_ip,
                  driver=self.connection.driver,
@@ -433,7 +441,9 @@ class RackspaceNodeDriver(NodeDriver):
                     'hostId': el.get('hostId'),
                     'imageId': el.get('imageId'),
                     'flavorId': el.get('flavorId'),
-                    'uri': "https://%s%s/servers/%s" % (self.connection.host, self.connection.request_path, el.get('id')),
+                    'uri': "https://%s%s/servers/%s" % (
+                         self.connection.host,
+                         self.connection.request_path, el.get('id')),
                     'metadata': metadata,
                  })
         return n
@@ -448,7 +458,8 @@ class RackspaceNodeDriver(NodeDriver):
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
                      bandwidth=None, # XXX: needs hardcode
-                     price=self._rackspace_prices.get(el.get('id')), # Hardcoded,
+                     price=self._rackspace_prices.get(
+                         el.get('id')), # Hardcoded,
                      driver=self.connection.driver)
         return s
 
@@ -471,7 +482,7 @@ class RackspaceNodeDriver(NodeDriver):
         rates (for example amount of POST requests per day)
         and absolute limits like total amount of available
         RAM to be used by servers.
-        
+
         @return: C{dict} with keys 'rate' and 'absolute'
         """
 
@@ -516,7 +527,8 @@ class RackspaceNodeDriver(NodeDriver):
     def _to_shared_ip_group(self, el):
         servers_el = self._findall(el, 'servers')
         if servers_el:
-            servers = [s.get('id') for s in self._findall(servers_el[0], 'server')]
+            servers = [s.get('id')
+                       for s in self._findall(servers_el[0], 'server')]
         else:
             servers = None
         return RackspaceSharedIpGroup(id=el.get('id'),
@@ -525,8 +537,10 @@ class RackspaceNodeDriver(NodeDriver):
 
     def _to_ip_addresses(self, el):
         return RackspaceNodeIpAddresses(
-            [ip.get('addr') for ip in self._findall(self._findall(el, 'public')[0], 'ip')],
-            [ip.get('addr') for ip in self._findall(self._findall(el, 'private')[0], 'ip')]
+            [ip.get('addr') for ip in
+             self._findall(self._findall(el, 'public')[0], 'ip')],
+            [ip.get('addr') for ip in
+             self._findall(self._findall(el, 'private')[0], 'ip')]
         )
 
     def _shared_ip_group_to_xml(self, shared_ip_group):
