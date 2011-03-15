@@ -69,6 +69,14 @@ INSTANCE_TYPES = {
         'disk': 160,
         'bandwidth': None,
     },
+    'medium': {
+        'id': 'medium',
+        'name': 'Medium instance',
+        'cpu': 3000,
+        'memory': 4096,
+        'disk': 500,
+        'bandwidth': None,
+    },
     'large': {
         'id': 'large',
         'name': 'Large instance',
