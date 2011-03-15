@@ -24,6 +24,11 @@ from libcloud.compute.types import InvalidCredsError
 AUTH_HOST_US='auth.api.rackspacecloud.com'
 AUTH_HOST_UK='lon.auth.api.rackspacecloud.com'
 
+__all__ = [
+    "RackspaceBaseConnection",
+    "AUTH_HOST_US",
+    "AUTH_HOST_UK"
+    ]
 class RackspaceBaseConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure):
         self.cdn_management_url = None
