@@ -18,8 +18,8 @@ import unittest
 import httplib
 
 from libcloud.compute.base import Node
-from libcloud.compute.drivers.cloudsigma import CloudSigmaBaseNodeDriver
-from libcloud.compute.drivers.cloudsigma import str2dicts, str2list, dict2str
+from libcloud.compute.drivers.cloudsigma import CloudSigmaZrhNodeDriver
+from libcloud.utils import str2dicts, str2list, dict2str
 
 from test import MockHttp               # pylint: disable-msg=E0611
 from test.compute import TestCaseMixin  # pylint: disable-msg=E0611
@@ -28,9 +28,9 @@ from test.file_fixtures import ComputeFileFixtures # pylint: disable-msg=E0611
 
 class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
     def setUp(self):
-        CloudSigmaBaseNodeDriver.connectionCls.conn_classes = (None,
+        CloudSigmaZrhNodeDriver.connectionCls.conn_classes = (None,
                                                                CloudSigmaHttp)
-        self.driver = CloudSigmaBaseNodeDriver('foo', 'bar')
+        self.driver = CloudSigmaZrhNodeDriver('foo', 'bar')
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()

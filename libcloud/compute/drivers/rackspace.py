@@ -22,6 +22,7 @@ import base64
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
+from libcloud.pricing import get_pricing
 from libcloud.common.base import Response
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
@@ -33,20 +34,6 @@ from libcloud.common.rackspace import (
 
 NAMESPACE='http://docs.rackspacecloud.com/servers/api/v1.0'
 
-#
-# Prices need to be hardcoded as Rackspace doesn't expose them through
-# the API. Prices are associated with flavors, of which there are 7.
-# See - http://www.rackspacecloud.com/cloud_hosting_products/servers/pricing
-#
-RACKSPACE_PRICES = {
-    '1':'.015',
-    '2':'.030',
-    '3':'.060',
-    '4':'.120',
-    '5':'.240',
-    '6':'.480',
-    '7':'.960',
-}
 
 class RackspaceResponse(Response):
 
@@ -151,7 +138,8 @@ class RackspaceNodeDriver(NodeDriver):
     type = Provider.RACKSPACE
     name = 'Rackspace'
 
-    _rackspace_prices = RACKSPACE_PRICES
+    _rackspace_prices = get_pricing(driver_type='compute',
+                                    driver_name='rackspace')
 
     features = {"create_node": ["generates_password"]}
 

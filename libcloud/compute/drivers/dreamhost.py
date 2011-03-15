@@ -21,6 +21,9 @@ try:
 except:
     import simplejson as json
 
+import copy
+
+from libcloud.pricing import get_pricing
 from libcloud.common.base import ConnectionKey, Response
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver, NodeSize
@@ -36,7 +39,6 @@ DH_PS_SIZES = {
         'id' : 'minimum',
         'name' : 'Minimum DH PS size',
         'ram' : 300,
-        'price' : 15,
         'disk' : None,
         'bandwidth' : None
     },
@@ -44,7 +46,6 @@ DH_PS_SIZES = {
         'id' : 'maximum',
         'name' : 'Maximum DH PS size',
         'ram' : 4000,
-        'price' : 200,
         'disk' : None,
         'bandwidth' : None
     },
@@ -52,7 +53,6 @@ DH_PS_SIZES = {
         'id' : 'default',
         'name' : 'Default DH PS size',
         'ram' : 2300,
-        'price' : 115,
         'disk' : None,
         'bandwidth' : None
     },
@@ -60,7 +60,6 @@ DH_PS_SIZES = {
         'id' : 'low',
         'name' : 'DH PS with 1GB RAM',
         'ram' : 1000,
-        'price' : 50,
         'disk' : None,
         'bandwidth' : None
     },
@@ -68,7 +67,6 @@ DH_PS_SIZES = {
         'id' : 'high',
         'name' : 'DH PS with 3GB RAM',
         'ram' : 3000,
-        'price' : 150,
         'disk' : None,
         'bandwidth' : None
     },
@@ -133,8 +131,10 @@ class DreamhostNodeDriver(NodeDriver):
     Node Driver for DreamHost PS
     """
     type = Provider.DREAMHOST
+    api_name = 'dreamhost'
     name = "Dreamhost"
     connectionCls = DreamhostConnection
+
     _sizes = DH_PS_SIZES
 
     def create_node(self, **kwargs):
@@ -203,8 +203,13 @@ class DreamhostNodeDriver(NodeDriver):
         return images
 
     def list_sizes(self, **kwargs):
-        return [ NodeSize(driver=self.connection.driver, **i)
-            for i in self._sizes.values() ]
+        sizes = []
+        for key, values in self._sizes.iteritems():
+            attributes = copy.deepcopy(values)
+            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            sizes.append(NodeSize(driver=self.connection.driver, **attributes))
+
+        return sizes
 
     def list_locations(self, **kwargs):
         raise NotImplementedError(
