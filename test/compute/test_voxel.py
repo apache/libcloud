@@ -41,12 +41,58 @@ class VoxelTest(unittest.TestCase):
         else:
             self.fail('test should have thrown')
 
+    def test_list_nodes(self):
+        VoxelMockHttp.type = 'LIST_NODES'
+        nodes = self.driver.list_nodes()
+
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0].name, 'www.voxel.net')
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+
+        self.assertEqual(len(sizes), 13)
+
+    def test_list_images(self):
+        VoxelMockHttp.type = 'LIST_IMAGES'
+        images = self.driver.list_images()
+
+        self.assertEqual(len(images), 1)
+
+    def test_list_locations(self):
+        VoxelMockHttp.type = 'LIST_LOCATIONS'
+        locations = self.driver.list_locations()
+
+        self.assertEqual(len(locations), 2)
+        self.assertEqual(locations[0].name, 'Amsterdam')
+
+    def test_create_node(self):
+        pass
+
+    def test_reboot_node(self):
+        pass
+
+    def test_destroy_node(self):
+        pass
+
 class VoxelMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('voxel')
 
     def _UNAUTHORIZED(self, method, url, body, headers):
         body = self.fixtures.load('unauthorized.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _LIST_NODES(self, method, url, body, headers):
+        body = self.fixtures.load('nodes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _LIST_IMAGES(self, method, url, body, headers):
+        body = self.fixtures.load('images.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _LIST_LOCATIONS(self, method, url, body, headers):
+        body = self.fixtures.load('locations.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
