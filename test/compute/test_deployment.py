@@ -18,15 +18,26 @@ import sys
 import unittest
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
+from libcloud.compute.deployment import SSHKeyDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState
+from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
 
 class MockDeployment(Deployment):
     def run(self, node, client):
         return node
 
+class MockClient(BaseSSHClient):
+    def put(self, file, contents):
+        return contents
+
 class DeploymentTests(unittest.TestCase):
+
+    def setUp(self):
+        self.node = Node(id=1, name='test', state=NodeState.RUNNING,
+                   public_ip=['1.2.3.4'], private_ip='1.2.3.5',
+                   driver=EC2NodeDriver)
 
     def test_multi_step_deployment(self):
         msd = MultiStepDeployment()
@@ -35,10 +46,13 @@ class DeploymentTests(unittest.TestCase):
         msd.add(MockDeployment())
         self.assertEqual(len(msd.steps), 1)
 
-        node = Node(id=1, name='test', state=NodeState.RUNNING,
-                   public_ip=['1.2.3.4'], private_ip='1.2.3.5',
-                   driver=EC2NodeDriver)
-        self.assertEqual(node, msd.run(node=node, client=None))
+        self.assertEqual(self.node, msd.run(node=self.node, client=None))
+
+    def test_ssh_key_deployment(self):
+        sshd = SSHKeyDeployment(key='1234')
+
+        self.assertEqual(self.node, sshd.run(node=self.node,
+                        client=MockClient(hostname='localhost')))
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
