@@ -17,8 +17,6 @@ import sys
 import unittest
 import os.path
 
-import mock
-
 import libcloud.security
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
