@@ -83,9 +83,6 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
             scheme, server, self.request_path, param, query, fragment = (
                 urlparse.urlparse(getattr(self, self._url_key)))
 
-            if scheme is "https" and self.secure is not True:
-                raise InvalidCredsError()
-
             # Set host to where we want to make further requests to;
             self.__host = server
             conn.close()

@@ -42,6 +42,15 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('test should have thrown')
 
+    def test_auth_missing_key(self):
+        RackspaceMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
+        try:
+            self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        except InvalidCredsError, e:
+            self.assertEqual(True, isinstance(e, InvalidCredsError))
+        else:
+            self.fail('test should have thrown')
+
     def test_list_nodes(self):
         RackspaceMockHttp.type = 'EMPTY'
         ret = self.driver.list_nodes()
@@ -187,6 +196,12 @@ class RackspaceMockHttp(MockHttp):
 
     def _v1_0_UNAUTHORIZED(self, method, url, body, headers):
         return  (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])
+
+    def _v1_0_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
+        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
+                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
+        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_servers_detail_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_empty.xml')
