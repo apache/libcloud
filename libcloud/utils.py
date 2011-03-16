@@ -19,6 +19,7 @@ import warnings
 from httplib import HTTPResponse
 
 SHOW_DEPRECATION_WARNING = True
+SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.6.0'
 
 def read_in_chunks(iterator, chunk_size=None):
@@ -60,6 +61,12 @@ def deprecated_warning(module):
                       ' This path will be fully removed in libcloud %s.' %
                       (module, OLD_API_REMOVE_VERSION),
                       category=DeprecationWarning)
+
+def in_development_warning(module):
+    if SHOW_IN_DEVELOPMENT_WARNING:
+        warnings.warn('The module %s is in development and your are advised '
+                      'against using it in production.' % (module),
+                      category=FutureWarning)
 
 def str2dicts(data):
     """
