@@ -42,7 +42,7 @@ class TestUtils(unittest.TestCase):
         file_path = os.path.abspath(__file__)
         mimetype, encoding = libcloud.utils.guess_file_mime_type(file_path=file_path)
 
-        self.assertEqual(mimetype, 'text/x-python')
+        self.assertTrue(mimetype.find('python') != -1)
 
     def test_deprecated_warning(self):
         warnings.showwarning = show_warning
