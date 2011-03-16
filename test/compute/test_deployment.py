@@ -18,7 +18,7 @@ import sys
 import unittest
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
-from libcloud.compute.deployment import SSHKeyDeployment
+from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState
 from libcloud.compute.ssh import BaseSSHClient
@@ -29,8 +29,19 @@ class MockDeployment(Deployment):
         return node
 
 class MockClient(BaseSSHClient):
-    def put(self, file, contents):
+    def __init__(self, *args, **kwargs):
+        self.stdout = ''
+        self.stderr = ''
+        self.exit_status = 0
+
+    def put(self,  path, contents, chmod=755):
         return contents
+
+    def run(self, name):
+        return self.stdout, self.stderr, self.exit_status
+
+    def delete(self, name):
+        return True
 
 class DeploymentTests(unittest.TestCase):
 
@@ -52,6 +63,12 @@ class DeploymentTests(unittest.TestCase):
         sshd = SSHKeyDeployment(key='1234')
 
         self.assertEqual(self.node, sshd.run(node=self.node,
+                        client=MockClient(hostname='localhost')))
+
+    def test_script_deployment(self):
+        sd = ScriptDeployment(script='foobar', delete=True)
+
+        self.assertEqual(self.node, sd.run(node=self.node,
                         client=MockClient(hostname='localhost')))
 
 if __name__ == '__main__':
