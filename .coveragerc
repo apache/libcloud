@@ -22,6 +22,8 @@ exclude_lines =
     if __name__ == .__main__.:
     __all__
     import
+    deprecated_warning
+    in_development_warning
 
 ignore_errors = True
 
