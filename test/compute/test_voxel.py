@@ -16,6 +16,7 @@ import sys
 import unittest
 import httplib
 
+from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation
 from libcloud.compute.drivers.voxel import VoxelNodeDriver as Voxel
 from libcloud.compute.types import InvalidCredsError
 
@@ -40,6 +41,16 @@ class VoxelTest(unittest.TestCase):
             self.assertTrue(isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
+
+    def test_response_failure(self):
+        VoxelMockHttp.type = 'FAILURE'
+
+        try:
+            self.driver.list_nodes()
+        except Exception:
+            pass
+        else:
+            self.fail('Invalid response, but exception was not thrown')
 
     def test_list_nodes(self):
         VoxelMockHttp.type = 'LIST_NODES'
@@ -66,14 +77,49 @@ class VoxelTest(unittest.TestCase):
         self.assertEqual(len(locations), 2)
         self.assertEqual(locations[0].name, 'Amsterdam')
 
+    def test_create_node_invalid_disk_size(self):
+        image = NodeImage(id=1, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        location = NodeLocation(id=1, name='Europe', country='England',
+                                driver=self.driver)
+
+        try:
+            self.driver.create_node(name='foo', image=image, size=size,
+                                    location=location)
+        except ValueError:
+            pass
+        else:
+            self.fail('Invalid disk size provided but an exception was not'
+                      ' thrown')
+
     def test_create_node(self):
-        pass
+        VoxelMockHttp.type = 'CREATE_NODE'
+        image = NodeImage(id=1, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', 1024, 500, None, None, driver=self.driver)
+        location = NodeLocation(id=1, name='Europe', country='England',
+                                driver=self.driver)
+
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       location=location)
+        self.assertEqual(node.id, '1234')
+
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       location=location, voxel_access=True)
+        self.assertEqual(node.id, '1234')
 
     def test_reboot_node(self):
-        pass
+        VoxelMockHttp.type = 'REBOOT_NODE'
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
+
+        self.assertTrue(node.reboot())
 
     def test_destroy_node(self):
-        pass
+        VoxelMockHttp.type = 'DESTROY_NODE'
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
+
+        self.assertTrue(node.destroy())
 
 class VoxelMockHttp(MockHttp):
 
@@ -81,6 +127,10 @@ class VoxelMockHttp(MockHttp):
 
     def _UNAUTHORIZED(self, method, url, body, headers):
         body = self.fixtures.load('unauthorized.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _FAILURE(self, method, url, body, headers):
+        body = self.fixtures.load('failure.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _LIST_NODES(self, method, url, body, headers):
@@ -93,6 +143,18 @@ class VoxelMockHttp(MockHttp):
 
     def _LIST_LOCATIONS(self, method, url, body, headers):
         body = self.fixtures.load('locations.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CREATE_NODE(self, method, url, body, headers):
+        body = self.fixtures.load('create_node.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _REBOOT_NODE(self, method, url, body, headers):
+        body = self.fixtures.load('success.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DESTROY_NODE(self, method, url, body, headers):
+        body = self.fixtures.load('success.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
