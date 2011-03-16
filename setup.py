@@ -14,6 +14,8 @@
 # limitations under the License.
 import os
 import sys
+import doctest
+
 from distutils.core import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
@@ -26,6 +28,8 @@ libcloud.utils.SHOW_DEPRECATION_WARNING = False
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/incubator/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://incubator.apache.org/libcloud/'
 TEST_PATHS = [ 'test', 'test/compute', 'test/storage' ]
+DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
+                     'libcloud.storage.drivers.dummy' ]
 
 class TestCommand(Command):
     user_options = []
@@ -80,6 +84,10 @@ class TestCommand(Command):
                     [test_path.replace('/', '.'), splitext(basename(t))[0]]))
 
         tests = TestLoader().loadTestsFromNames(testfiles)
+
+        for test_module in DOC_TEST_MODULES:
+            tests.addTests(doctest.DocTestSuite(test_module))
+
         t = TextTestRunner(verbosity = 2)
         res = t.run(tests)
         return not res.wasSuccessful()
