@@ -87,3 +87,13 @@ class PricingTestCase(unittest.TestCase):
         libcloud.pricing.invalidate_module_pricing_cache(driver_type='compute',
                                                          driver_name='foo')
         self.assertFalse('foo' in libcloud.pricing.PRICING_DATA['compute'])
+        libcloud.pricing.invalidate_module_pricing_cache(driver_type='compute',
+                                                         driver_name='foo1')
+
+    def test_set_pricing(self):
+        self.assertFalse('foo' in libcloud.pricing.PRICING_DATA['compute'])
+
+        libcloud.pricing.set_pricing(driver_type='compute', driver_name='foo',
+                                     pricing={'foo': 1})
+        self.assertTrue('foo' in libcloud.pricing.PRICING_DATA['compute'])
+
