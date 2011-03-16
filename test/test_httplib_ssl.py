@@ -17,6 +17,8 @@ import sys
 import unittest
 import os.path
 
+import mock
+
 import libcloud.security
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
@@ -25,8 +27,34 @@ class TestHttpLibSSLTests(unittest.TestCase):
     def setUp(self):
         self.httplib_object = LibcloudHTTPSConnection('foo.bar')
 
-    def test_connect(self):
-        pass
+    def test_verify_hostname(self):
+        cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
+         'subject': ((('countryName', 'US'),),
+                     (('stateOrProvinceName', 'Delaware'),),
+                     (('localityName', 'Wilmington'),),
+                     (('organizationName', 'Python Software Foundation'),),
+                     (('organizationalUnitName', 'SSL'),),
+                     (('commonName', 'somemachine.python.org'),))}
+
+        cert2 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
+         'subject': ((('countryName', 'US'),),
+                     (('stateOrProvinceName', 'Delaware'),),
+                     (('localityName', 'Wilmington'),),
+                     (('organizationName', 'Python Software Foundation'),),
+                     (('organizationalUnitName', 'SSL'),),
+                     (('commonName', 'somemachine.python.org'),)),
+         'subjectAltName': ((('DNS', 'foo.alt.name')),
+                           (('DNS', 'foo.alt.name.1')))}
+
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='invalid', cert=cert1))
+        self.assertTrue(self.httplib_object._verify_hostname(
+                        hostname='somemachine.python.org', cert=cert1))
+
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='invalid', cert=cert2))
+        self.assertTrue(self.httplib_object._verify_hostname(
+                        hostname='foo.alt.name.1', cert=cert2))
 
     def test_get_subject_alt_names(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
