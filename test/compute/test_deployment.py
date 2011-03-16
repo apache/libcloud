@@ -66,9 +66,16 @@ class DeploymentTests(unittest.TestCase):
                         client=MockClient(hostname='localhost')))
 
     def test_script_deployment(self):
-        sd = ScriptDeployment(script='foobar', delete=True)
+        sd1 = ScriptDeployment(script='foobar', delete=True)
+        sd2 = ScriptDeployment(script='foobar', delete=False)
+        sd3 = ScriptDeployment(script='foobar', delete=False, name='foobarname')
 
-        self.assertEqual(self.node, sd.run(node=self.node,
+        self.assertTrue(sd1.name.find('deployment') != '1')
+        self.assertEqual(sd3.name, 'foobarname')
+
+        self.assertEqual(self.node, sd1.run(node=self.node,
+                        client=MockClient(hostname='localhost')))
+        self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
 
 if __name__ == '__main__':
