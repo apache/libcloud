@@ -118,16 +118,8 @@ class VPSNetNodeDriver(NodeDriver):
         return size
 
     def _get_price_per_node(self, num):
-        PRICE_PER_NODE = get_pricing(driver_type='compute',
-                                     driver_name=self.api_name)
-        keys = sorted(PRICE_PER_NODE.keys())
-
-        if num >= max(keys):
-            return PRICE_PER_NODE[keys[-1]]
-
-        for i in range(0,len(keys)):
-            if int(keys[i]) <= num < int(keys[i+1]):
-                return PRICE_PER_NODE[keys[i]]
+        single_node_price = self._get_size_price(size_id='1')
+        return num * single_node_price
 
     def create_node(self, name, image, size, **kwargs):
         """Create a new VPS.net node
