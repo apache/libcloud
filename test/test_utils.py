@@ -23,7 +23,7 @@ import libcloud.utils
 
 WARNINGS_BUFFER = []
 
-def show_warning(msg, cat, fname, lno):
+def show_warning(msg, cat, fname, lno, line=None):
     WARNINGS_BUFFER.append((msg, cat, fname, lno))
 
 original_func = warnings.showwarning
