@@ -19,6 +19,9 @@ import unittest
 import warnings
 import os.path
 
+# In Python > 2.7 DeprecationWarnings are disabled by default
+warnings.simplefilter('default')
+
 import libcloud.utils
 
 WARNINGS_BUFFER = []
