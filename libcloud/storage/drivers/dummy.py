@@ -267,7 +267,7 @@ class DummyStorageDriver(StorageDriver):
         ...    iterator=DummyFileObject(5, 10), extra={})
         >>> stream = container.download_object_as_stream(obj)
         >>> stream #doctest: +ELLIPSIS
-        <closed file '<uninitialized file>', mode '<uninitialized file>' at 0x...>
+        <closed file ..., mode '<uninitialized file>' at 0x...>
         """
 
         return DummyFileObject()
