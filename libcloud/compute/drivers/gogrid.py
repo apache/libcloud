@@ -96,7 +96,7 @@ class GoGridResponse(Response):
     def parse_error(self):
         try:
             return json.loads(self.body)["list"][0]['message']
-        except ValueError:
+        except (ValueError, KeyError):
             return None
 
 class GoGridConnection(ConnectionUserAndKey):
