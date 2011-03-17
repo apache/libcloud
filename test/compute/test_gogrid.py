@@ -17,6 +17,7 @@ import sys
 import unittest
 import urlparse
 
+from libcloud.compute.base import NodeState, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.compute.drivers.gogrid import GoGridNodeDriver, GoGridIpAddress
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
@@ -63,6 +64,17 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
 
+    def test_reboot_node_not_successful(self):
+        GoGridMockHttp.type = 'FAIL'
+        node = Node(90967, None, None, None, None, self.driver)
+
+        try:
+            ret = self.driver.reboot_node(node)
+        except Exception:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
     def test_destroy_node(self):
         node = Node(90967, None, None, None, None, self.driver)
         ret = self.driver.destroy_node(node)
@@ -70,6 +82,15 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_images(self):
         images = self.driver.list_images()
+        image = images[0]
+        self.assertEqual(len(images), 4)
+        self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
+        self.assertEqual(image.id, '1531')
+
+        location = NodeLocation(id='gogrid/GSI-939ef909-84b8-4a2f-ad56-02ccd7da05ff.img',
+                                name='test location', country='Slovenia',
+                                driver=self.driver)
+        images = self.driver.list_images(location=location)
         image = images[0]
         self.assertEqual(len(images), 4)
         self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
@@ -164,6 +185,10 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(len(expected_ips), 0)
 
+    def test_get_state_invalid(self):
+        state = self.driver._get_state('invalid')
+        self.assertEqual(state, NodeState.UNKNOWN)
+
 class GoGridMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('gogrid')
@@ -198,6 +223,10 @@ class GoGridMockHttp(MockHttp):
     def _api_grid_server_power(self, method, url, body, headers):
         body = self.fixtures.load('server_power.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_grid_server_power_FAIL(self, method, url, body, headers):
+        body = self.fixtures.load('server_power_fail.json')
+        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_server_add(self, method, url, body, headers):
         body = self.fixtures.load('server_add.json')
