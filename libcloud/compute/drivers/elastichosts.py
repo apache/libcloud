@@ -18,6 +18,7 @@ ElasticHosts Driver
 import re
 import time
 import base64
+import httplib
 
 try:
     import json
@@ -437,7 +438,7 @@ class ElasticHostsBaseNodeDriver(NodeDriver):
             method='POST'
         )
 
-        return (response.status == 200 and response.body != '')
+        return (response.status == httplib.OK and response.body != '')
 
     def deploy_node(self, **kwargs):
         """
