@@ -75,6 +75,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.brightbox', 'BrightboxNodeDriver'),
     Provider.NIMBUS:
         ('libcloud.compute.drivers.ec2', 'NimbusNodeDriver'),
+    Provider.BLUEBOX:
+        ('libcloud.compute.drivers.bluebox', 'BlueboxNodeDriver'),
 }
 
 def get_driver(provider):
