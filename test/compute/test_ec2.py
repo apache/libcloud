@@ -17,6 +17,7 @@ import unittest
 import httplib
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
+from libcloud.compute.drivers.ec2 import NimbusNodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver, IdempotentParamError
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
@@ -274,6 +275,44 @@ class EC2APNETests(EC2Tests):
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = EC2APNENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+
+class NimbusTests(EC2Tests):
+    def setUp(self):
+        NimbusNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = NimbusNodeDriver(EC2_ACCESS_ID, EC2_SECRET,
+                host="some.nimbuscloud.com")
+
+    def test_ex_describe_addresses_for_node(self):
+        # overridden from EC2Tests -- Nimbus doesn't support elastic IPs.
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ip_addresses = self.driver.ex_describe_addresses_for_node(node)
+        self.assertEqual(len(ip_addresses), 0)
+
+    def test_ex_describe_addresses(self):
+        # overridden from EC2Tests -- Nimbus doesn't support elastic IPs.
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        nodes_elastic_ips = self.driver.ex_describe_addresses([node])
+
+        self.assertEqual(len(nodes_elastic_ips), 1)
+        self.assertEqual(len(nodes_elastic_ips[node.id]), 0)
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+
+        ids = [s.id for s in sizes]
+        self.assertTrue('m1.small' in ids)
+        self.assertTrue('m1.large' in ids)
+        self.assertTrue('m1.xlarge' in ids)
+
+    def test_list_nodes(self):
+        # overridden from EC2Tests -- Nimbus doesn't support elastic IPs.
+        node = self.driver.list_nodes()[0]
+        public_ips = node.public_ip
+        self.assertEqual(node.id, 'i-4382922a')
+        self.assertEqual(len(node.public_ip), 1)
+        self.assertEqual(public_ips[0], '1.2.3.5')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
