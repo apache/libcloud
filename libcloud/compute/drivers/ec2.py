@@ -894,3 +894,59 @@ class EucNodeDriver(EC2NodeDriver):
     def list_locations(self):
         raise NotImplementedError, \
             'list_locations not implemented for this driver'
+
+# Nimbus clouds have 3 EC2-style instance types but their particular RAM
+# allocations are configured by the admin
+NIMBUS_INSTANCE_TYPES = {
+    'm1.small': {
+        'id' : 'm1.small',
+        'name': 'Small Instance',
+        'ram': None,
+        'disk': None,
+        'bandwidth': None,
+    },
+    'm1.large': {
+        'id' : 'm1.large',
+        'name': 'Large Instance',
+        'ram': None,
+        'disk': None,
+        'bandwidth': None,
+    },
+    'm1.xlarge': {
+        'id' : 'm1.xlarge',
+        'name': 'Extra Large Instance',
+        'ram': None,
+        'disk': None,
+        'bandwidth': None,
+    },
+}
+
+class NimbusConnection(EC2Connection):
+    """
+    Connection class for Nimbus
+    """
+
+    host = None
+
+class NimbusNodeDriver(EC2NodeDriver):
+    """
+    Driver class for Nimbus
+    """
+
+    type = Provider.NIMBUS
+    name = 'Nimbus'
+    api_name = 'nimbus'
+    region_name = 'nimbus'
+    friendly_name = 'Nimbus Private Cloud'
+    connectionCls = NimbusConnection
+    _instance_types = NIMBUS_INSTANCE_TYPES
+
+    def ex_describe_addresses(self, nodes):
+        """Nimbus doesn't support elastic IPs, so this is a passthrough
+        """
+        nodes_elastic_ip_mappings = {}
+        for node in nodes:
+            # empty list per node
+            nodes_elastic_ip_mappings[node.id] = []
+        return nodes_elastic_ip_mappings
+

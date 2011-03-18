@@ -79,6 +79,12 @@
         "m2.4xlarge": 2.39
     },
 
+    "nimbus" : {
+        "m1.small": 0.0,
+        "m1.large": 0.0,
+        "m1.xlarge": 0.0
+    },
+
     "cloudsigma_zrh": {
         "micro-regular": 0.0548,
         "micro-high-cpu": 0.381,
