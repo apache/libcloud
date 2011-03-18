@@ -19,6 +19,7 @@ Drivers for working with different providers
 
 __all__ = [
     'brightbox',
+    'bluebox',
     'dummy',
     'ec2',
     'ecp',
