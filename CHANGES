@@ -1,6 +1,9 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+   *) Add Bluebox driver.
+      [Christian Paredes]
+   
    *) Add Nimbus driver.
       [David LaBissoniere]
    
