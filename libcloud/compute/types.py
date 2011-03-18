@@ -52,6 +52,7 @@ class Provider(object):
     @cvar DREAMHOST: DreamHost Private Server
     @cvar CLOUDSIGMA: CloudSigma
     @cvar NIMBUS: Nimbus
+    @cvar BLUEBOX: Bluebox
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -83,6 +84,7 @@ class Provider(object):
     CLOUDSIGMA = 25
     EC2_AP_NORTHEAST = 26
     NIMBUS = 27
+    BLUEBOX = 28
 
 class NodeState(object):
     """
