@@ -23,6 +23,8 @@ import os.path
 warnings.simplefilter('default')
 
 import libcloud.utils
+from libcloud.compute.types import Provider
+from libcloud.compute.providers import DRIVERS
 
 WARNINGS_BUFFER = []
 
@@ -46,6 +48,19 @@ class TestUtils(unittest.TestCase):
         mimetype, encoding = libcloud.utils.guess_file_mime_type(file_path=file_path)
 
         self.assertTrue(mimetype.find('python') != -1)
+
+    def test_get_driver(self):
+        driver = libcloud.utils.get_driver(drivers=DRIVERS,
+                                           provider=Provider.DUMMY)
+        self.assertTrue(driver is not None)
+
+        try:
+            driver = libcloud.utils.get_driver(drivers=DRIVERS,
+                                               provider='fooba')
+        except AttributeError:
+            pass
+        else:
+            self.fail('Invalid provider, but an exception was not thrown')
 
     def test_deprecated_warning(self):
         warnings.showwarning = show_warning
