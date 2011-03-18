@@ -51,6 +51,7 @@ class Provider(object):
     @cvar OPENNEBULA: OpenNebula.org
     @cvar DREAMHOST: DreamHost Private Server
     @cvar CLOUDSIGMA: CloudSigma
+    @cvar NIMBUS: Nimbus
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -81,6 +82,7 @@ class Provider(object):
     BRIGHTBOX = 24
     CLOUDSIGMA = 25
     EC2_AP_NORTHEAST = 26
+    NIMBUS = 27
 
 class NodeState(object):
     """
