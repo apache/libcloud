@@ -208,6 +208,25 @@ class EC2Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(node2.id in nodes_elastic_ips2)
         self.assertEqual(nodes_elastic_ips2[node2.id], [])
 
+    def test_ex_change_node_size_same_size(self):
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
+        node = Node('i-4382922a', None, None, None, None, self.driver,
+                    extra={'instancetype': 'm1.small'})
+
+        try:
+            self.driver.ex_change_node_size(node=node, new_size=size)
+        except ValueError:
+            pass
+        else:
+            self.fail('Same size was passed, but an exception was not thrown')
+
+    def test_ex_change_node_size(self):
+        size = NodeSize('m1.large', 'Small Instance', None, None, None, None, driver=self.driver)
+        node = Node('i-4382922a', None, None, None, None, self.driver,
+                    extra={'instancetype': 'm1.small'})
+
+        result = self.driver.ex_change_node_size(node=node, new_size=size)
+        self.assertTrue(result)
 
 class EC2MockHttp(MockHttp):
 
@@ -261,6 +280,9 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('describe_addresses_multi.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _ModifyInstanceAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_instance_attribute.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 class EC2APSETests(EC2Tests):
     def setUp(self):
