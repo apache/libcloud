@@ -1,12 +1,16 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+   *) Add extension method for modifying node attributes and
+      changing the node size (EC2 driver).
+      [Tomaz Muraus]
+
    *) Add Bluebox driver.
       [Christian Paredes]
-   
+
    *) Add Nimbus driver.
       [David LaBissoniere]
-   
+
    *) Minor fixes to get the library and tests working on
       Python 2.7 and PyPy.
       [Tomaz Muraus]
@@ -35,7 +39,7 @@ Changes with Apache Libcloud 0.4.3
        [Tomaz Muraus]
 
     *) Use ipAddress and privateIpAddress attribute for
-       the EC 2node public and private ip 
+       the EC 2node public and private ip
        [Tomaz Muraus]
 
     *) Add ex_describe_addresses method to the EC2 driver.
@@ -146,7 +150,7 @@ Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
     *) Fix behavior of GoGrid's create_node to wait for a Node ID.
        [Roman Bogorodskiy]
 
-    *) Add ex_create_node_nowait to GoGrid driver if you don't need to 
+    *) Add ex_create_node_nowait to GoGrid driver if you don't need to
        wait for a Node ID when creating a node.
        [Roman Bogorodskiy]
 
