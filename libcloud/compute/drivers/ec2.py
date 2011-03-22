@@ -700,6 +700,18 @@ class EC2NodeDriver(NodeDriver):
         return node_elastic_ips[node.id]
 
     def ex_modify_instance_attribute(self, node, attributes):
+        """
+        Modify node attributes.
+        A list of valid attributes can be found at http://goo.gl/gxcj8
+
+        @type node: C{Node}
+        @param node: Node instance
+
+        @type attributes: C{dict}
+        @param attributes: Dictionary with node attributes
+
+        @return bool True on success, False otherwise.
+        """
         attributes = attributes or {}
         attributes.update({'InstanceId': node.id})
 
@@ -712,6 +724,18 @@ class EC2NodeDriver(NodeDriver):
         return element == 'true'
 
     def ex_change_node_size(self, node, new_size):
+        """
+        Change the node size.
+        Note: Node must be turned of before changing the size.
+
+        @type node: C{Node}
+        @param node: Node instance
+
+        @type new_size: C{NodeSize}
+        @param new_size: NodeSize intance
+
+        @return bool True on success, False otherwise.
+        """
         if 'instancetype' in node.extra:
             current_instance_type = node.extra['instancetype']
 
