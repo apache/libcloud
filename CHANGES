@@ -1,6 +1,9 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+   *) Add Gandi.net driver.
+      [Aymeric Barantal]
+
    *) Add extension method for modifying node attributes and
       changing the node size (EC2 driver).
       [Tomaz Muraus]
