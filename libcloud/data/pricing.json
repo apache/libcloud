@@ -106,7 +106,7 @@
 
     "elastichosts": {
        "small": 0.100,
-       "medium": 0.223, 
+       "medium": 0.223,
        "large": 0.378,
        "extra-large": 0.579,
        "high-cpu-medium": 0.180,
@@ -119,6 +119,10 @@
         "2GB": 0.38,
         "4GB": 0.76,
         "8GB": 1.52
+    },
+
+    "gandi": {
+        "1": 0.02
     },
 
     "vps_net": {
