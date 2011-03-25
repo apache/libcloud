@@ -21,6 +21,7 @@ import httplib
 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi
+from libcloud.compute.types import NodeState
 
 from xml.etree import ElementTree as ET
 from test import MockHttp
@@ -61,10 +62,20 @@ class GandiTests(unittest.TestCase):
         sizes = self.driver.list_sizes()
         self.assertTrue(len(sizes)>=1)
 
-    def test_destroy_node(self):
+    def test_destroy_node_running(self):
         nodes = self.driver.list_nodes()
-        test_node = filter(lambda x: self.node_name in x.name, nodes)[0]
+        test_node = filter(lambda x: x.state == NodeState.RUNNING, nodes)[0]
         self.assertTrue(self.driver.destroy_node(test_node))
+
+    def test_destroy_node_halted(self):
+        nodes = self.driver.list_nodes()
+        test_node = filter(lambda x: x.state == NodeState.TERMINATED, nodes)[0]
+        self.assertTrue(self.driver.destroy_node(test_node))
+
+    def test_reboot_node(self):
+        nodes = self.driver.list_nodes()
+        test_node = filter(lambda x: x.state == NodeState.RUNNING, nodes)[0]
+        self.assertTrue(self.driver.reboot_node(test_node))
 
     def test_create_node(self):
         login = 'libcloud'
@@ -118,6 +129,14 @@ class GandiMockHttp(MockHttp):
 
     def _xmlrpc_2_0__vm_create_from(self, method, url, body, headers):
         body = self.fixtures.load('vm_create_from.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_reboot(self, method, url, body, headers):
+        body = self.fixtures.load('vm_reboot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_stop(self, method, url, body, headers):
+        body = self.fixtures.load('vm_stop.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
