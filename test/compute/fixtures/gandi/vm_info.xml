@@ -89,7 +89,7 @@
 </member>
 <member>
 <name>state</name>
-<value><string>halted</string></value>
+<value><string>running</string></value>
 </member>
 <member>
 <name>is_boot_disk</name>
@@ -130,7 +130,7 @@
 </member>
 <member>
 <name>state</name>
-<value><string>halted</string></value>
+<value><string>running</string></value>
 </member>
 <member>
 <name>flex_shares</name>
