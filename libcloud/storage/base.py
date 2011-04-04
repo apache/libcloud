@@ -65,6 +65,9 @@ class Object(object):
         self.meta_data = meta_data or {}
         self.driver = driver
 
+    def get_cdn_url(self):
+        return self.driver.get_object_cdn_url(obj=self)
+
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
         return self.driver.download_object(self, destination_path,
@@ -103,7 +106,10 @@ class Container(object):
         self.driver = driver
 
     def list_objects(self):
-        return self.driver.list_container_objects(self)
+        return self.driver.list_container_objects(container=self)
+
+    def get_cdn_url(self):
+        return self.driver.get_container_cdn_url(container=self)
 
     def get_object(self, object_name):
         return self.driver.get_object(container_name=self.name,
@@ -203,6 +209,18 @@ class StorageDriver(object):
         raise NotImplementedError(
             'get_object not implemented for this driver')
 
+    def get_container_cdn_url(self, container):
+        """
+        Return a container CDN URL.
+
+        @type container: C{Container}
+        @param container: Container instance
+
+        @return A CDN URL for this container.
+        """
+        raise NotImplementedError(
+            'get_container_cdn_url not implemented for this driver')
+
     def get_object(self, container_name, object_name):
         """
         Return an object instance.
@@ -217,6 +235,18 @@ class StorageDriver(object):
         """
         raise NotImplementedError(
             'get_object not implemented for this driver')
+
+    def get_object_cdn_url(self, obj):
+        """
+        Return a container CDN URL.
+
+        @type obj: C{Object}
+        @param obj: Object instance
+
+        @return A CDN URL for this object.
+        """
+        raise NotImplementedError(
+            'get_object_cdn_url not implemented for this driver')
 
     def download_object(self, obj, destination_path, delete_on_failure=True):
         """
