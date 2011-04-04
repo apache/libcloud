@@ -59,7 +59,6 @@ class DummyIterator(object):
         self._current_item += 1
         return value
 
-# @@FIX: the doctests below are not run by the main test suite
 class DummyStorageDriver(StorageDriver):
     """
     Dummy Storage driver.
@@ -158,8 +157,29 @@ class DummyStorageDriver(StorageDriver):
 
         return self._containers[container_name]['container']
 
-    def get_object(self, container_name, object_name):
+    def get_container_cdn_url(self, container):
         """
+        >>> driver = DummyStorageDriver('key', 'secret')
+        >>> driver.get_container('unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ContainerDoesNotExistError:
+        >>> container = driver.create_container(container_name='test container 1')
+        >>> container
+        <Container: name=test container 1, provider=Dummy Storage Provider>
+        >>> container.name
+        'test container 1'
+        >>> container.get_cdn_url()
+        'http://www.test.com/container/test_container_1'
+        """
+
+        if container.name not in self._containers:
+            raise ContainerDoesNotExistError(driver=self, value=None,
+                                             container_name=container.name)
+
+        return self._containers[container.name]['cdn_url']
+
+    def get_object(self, container_name, object_name):
+       """
        >>> driver = DummyStorageDriver('key', 'secret')
        >>> driver.get_object('unknown', 'unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
        Traceback (most recent call last):
@@ -175,16 +195,38 @@ class DummyStorageDriver(StorageDriver):
        ...      iterator=DummyFileObject(5, 10), extra={})
        >>> obj
        <Object: name=test object, size=50, hash=None, provider=Dummy Storage Provider ...>
-        """
+       """
 
-        self.get_container(container_name)
-
-        container_objects = self._containers[container_name]['objects']
-        if object_name not in container_objects:
+       self.get_container(container_name)
+       container_objects = self._containers[container_name]['objects']
+       if object_name not in container_objects:
             raise ObjectDoesNotExistError(object_name=object_name, value=None,
                                           driver=self)
 
-        return container_objects[object_name]
+       return container_objects[object_name]
+
+    def get_object_cdn_url(self, obj):
+       """
+       >>> driver = DummyStorageDriver('key', 'secret')
+       >>> container = driver.create_container(container_name='test container 1')
+       >>> container
+       <Container: name=test container 1, provider=Dummy Storage Provider>
+       >>> obj = container.upload_object_via_stream(object_name='test object 5',
+       ...      iterator=DummyFileObject(5, 10), extra={})
+       >>> obj
+       <Object: name=test object 5, size=50, hash=None, provider=Dummy Storage Provider ...>
+       >>> obj.get_cdn_url()
+       'http://www.test.com/object/test_object_5'
+       """
+
+       container_name = obj.container.name
+       container_objects = self._containers[container_name]['objects']
+       if obj.name not in container_objects:
+           raise ObjectDoesNotExistError(object_name=obj.name, value=None,
+                                         driver=self)
+
+       return container_objects[obj.name].meta_data['cdn_url']
+
 
     def create_container(self, container_name):
         """
@@ -206,7 +248,10 @@ class DummyStorageDriver(StorageDriver):
         container = Container(name=container_name, extra=extra, driver=self)
 
         self._containers[container_name] = { 'container': container,
-                                             'objects': {}
+                                             'objects': {},
+                                             'cdn_url':
+                                             'http://www.test.com/container/%s' %
+                                             (container_name.replace(' ', '_'))
                                            }
         return container
 
@@ -346,6 +391,8 @@ class DummyStorageDriver(StorageDriver):
 
         extra = extra or {}
         meta_data = extra.get('meta_data', {})
+        meta_data.update({'cdn_url': 'http://www.test.com/object/%s' %
+                          (object_name.replace(' ', '_'))})
         obj = Object(name=object_name, size=size, extra=extra, hash=None,
                      meta_data=meta_data, container=container, driver=self)
 
