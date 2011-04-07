@@ -27,7 +27,8 @@ from hashlib import sha256
 from xml.etree import ElementTree as ET
 
 from libcloud.utils import fixxpath, findtext, findattr, findall
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.aws import AWSBaseResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, LibcloudError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
@@ -147,19 +148,10 @@ class EC2NodeLocation(NodeLocation):
                 % (self.id, self.name, self.country,
                    self.availability_zone.name, self.driver.name))
 
-class EC2Response(Response):
+class EC2Response(AWSBaseResponse):
     """
     EC2 specific response parsing and error handling.
     """
-    def parse_body(self):
-        if not self.body:
-            return None
-        try:
-          body = ET.XML(self.body)
-        except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body, driver=EC2NodeDriver)
-        return body
-
     def parse_error(self):
         err_list = []
         # Okay, so for Eucalyptus, you can get a 403, with no body,
