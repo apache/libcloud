@@ -170,10 +170,10 @@ def fixxpath(xpath, namespace):
 def findtext(element, xpath, namespace):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findattr(self, element, xpath, namespace):
+def findattr(element, xpath, namespace):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findall(self, element, xpath, namespace):
+def findall(element, xpath, namespace):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
 
 def get_driver(drivers, provider):
