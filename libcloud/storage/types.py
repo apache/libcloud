@@ -32,10 +32,20 @@ class Provider(object):
     @cvar DUMMY: Example provider
     @cvar CLOUDFILES_US: CloudFiles US
     @cvar CLOUDFILES_UK: CloudFiles UK
+    @cvar S3: Amazon S3 US
+    @cvar S3_US_WEST: Amazon S3 US West (Northern California)
+    @cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
+    @cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
+    @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     """
     DUMMY = 0
     CLOUDFILES_US = 1
     CLOUDFILES_UK = 2
+    S3 = 3
+    S3_US_WEST = 4
+    S3_EU_WEST = 5
+    S3_AP_SOUTHEAST_HOST = 6
+    S3_AP_NORTHEAST_HOST = 7
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
