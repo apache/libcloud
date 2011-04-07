@@ -23,6 +23,16 @@ DRIVERS = {
         ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
     Provider.CLOUDFILES_UK:
         ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver'),
+    Provider.S3:
+        ('libcloud.storage.drivers.s3', 'S3StorageDriver'),
+    Provider.S3_US_WEST:
+        ('libcloud.storage.drivers.s3', 'S3USWestStorageDriver'),
+    Provider.S3_EU_WEST:
+        ('libcloud.storage.drivers.s3', 'S3EUWestStorageDriver'),
+    Provider.S3_AP_SOUTHEAST_HOST:
+        ('libcloud.storage.drivers.s3', 'S3APSEStorageDriver'),
+    Provider.S3_AP_NORTHEAST_HOST:
+        ('libcloud.storage.drivers.s3', 'S3APNEStorageDriver'),
 }
 
 def get_driver(provider):
