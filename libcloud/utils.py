@@ -162,6 +162,20 @@ def dict2str(data):
             result += '%s\n' % str(k)
 
     return result
+
+def fixxpath(xpath, namespace):
+    # ElementTree wants namespaces in its xpaths, so here we add them.
+    return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
+
+def findtext(element, xpath, namespace):
+    return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
+
+def findattr(self, element, xpath, namespace):
+    return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
+
+def findall(self, element, xpath, namespace):
+    return element.findall(fixxpath(xpath=xpath, namespace=namespace))
+
 def get_driver(drivers, provider):
     """
     Get a driver.
