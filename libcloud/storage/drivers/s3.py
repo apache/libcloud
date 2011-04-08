@@ -14,12 +14,13 @@
 # limitations under the License.
 
 import time
-import urllib
+import httplib
 import copy
 import base64
 import hmac
 
 from hashlib import sha1
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 from libcloud.utils import fixxpath, findtext, in_development_warning
 from libcloud.common.types import InvalidCredsError, LibcloudError
@@ -27,6 +28,8 @@ from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.aws import AWSBaseResponse
 
 from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.types import ContainerIsNotEmptyError
+from libcloud.storage.types import ContainerDoesNotExistError
 
 in_development_warning('libcloud.storage.drivers.s3')
 
@@ -44,11 +47,17 @@ NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
 
 
 class S3Response(AWSBaseResponse):
+
+    valid_response_codes = [ httplib.NOT_FOUND, httplib.CONFLICT ]
+
+    def success(self):
+        i = int(self.status)
+        return i >= 200 and i <= 299 or i in self.valid_response_codes
+
     def parse_error(self):
         if self.status == 403:
             raise InvalidCredsError(self.body)
         elif self.status == 301:
-            # This bucket is located in a different region
             raise LibcloudError('This bucket is located in a different ' +
                                 'region. Please use the correct driver.',
                                 driver=S3StorageDriver)
@@ -124,24 +133,64 @@ class S3StorageDriver(StorageDriver):
     name = 'Amazon S3 (standard)'
     connectionCls = S3Connection
     hash_type = 'md5'
+    ex_location_name = ''
 
     def list_containers(self):
         response = self.connection.request('/')
-        if response.status == 200:
+        if response.status == httplib.OK:
             containers = self._to_containers(obj=response.object,
                                              xpath='Buckets/Bucket')
             return containers
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % (response.status),
+                            driver=self)
 
     def list_container_objects(self, container):
         response = self.connection.request('/%s' % (container.name))
-        if response.status == 200:
+        if response.status == httplib.OK:
             objects = self._to_objs(obj=response.object,
                                        xpath='Contents', container=container)
             return objects
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % (response.status),
+                            driver=self)
+
+    def create_container(self, container_name):
+        root = Element('CreateBucketConfiguration')
+        child = SubElement(root, 'LocationConstraint')
+        child.text = self.ex_location_name
+
+        response = self.connection.request('/%s' % (container_name),
+                                           data=tostring(root),
+                                           method='PUT')
+        if response.status == httplib.OK:
+            container = Container(name=container_name, extra=None, driver=self)
+            return container
+        elif response.status == httplib.CONFLICT:
+            raise LibcloudError('Container with this name already exists.' +
+                                'The name must be unique across all the ' +
+                                'containers in the system')
+
+        raise LibcloudError('Unexpected status code: %s' % (response.status),
+                            driver=self)
+
+    def delete_container(self, container):
+        # All the objects in the container must be deleted first
+        response = self.connection.request('/%s' % (container.name),
+                                           method='DELETE')
+        if response.status == httplib.NO_CONTENT:
+            return True
+        elif response.status == httplib.CONFLICT:
+            raise ContainerIsNotEmptyError(value='Container must be empty' +
+                                                  ' before it can be deleted.',
+                                           container_name=container.name,
+                                           driver=self)
+        elif response.status == httplib.NOT_FOUND:
+            raise ContainerDoesNotExistError(value=None,
+                                             driver=self,
+                                             container_name=container.name)
+
+        return False
 
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
@@ -195,6 +244,7 @@ class S3USWestConnection(S3Connection):
 class S3USWestStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (us-west-1)'
     connectionCls = S3USWestConnection
+    ex_location_name = 'us-west-1'
 
 class S3EUWestConnection(S3Connection):
     host = S3_EU_WEST_HOST
@@ -202,6 +252,7 @@ class S3EUWestConnection(S3Connection):
 class S3EUWestStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (eu-west-1)'
     connectionCls = S3EUWestConnection
+    ex_location_name = 'EU'
 
 class S3APSEConnection(S3Connection):
     host = S3_AP_SOUTHEAST_HOST
@@ -209,6 +260,7 @@ class S3APSEConnection(S3Connection):
 class S3APSEStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (ap-southeast-1)'
     connectionCls = S3APSEConnection
+    ex_location_name = 'ap-southeast-1'
 
 class S3APNEConnection(S3Connection):
     host = S3_AP_NORTHEAST_HOST
@@ -216,4 +268,4 @@ class S3APNEConnection(S3Connection):
 class S3APNEStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (ap-northeast-1)'
     connectionCls = S3APNEConnection
-
+    ex_location_name = 'ap-northeast-1'
