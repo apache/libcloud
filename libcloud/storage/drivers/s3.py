@@ -15,6 +15,7 @@
 
 import time
 import httplib
+import urllib
 import copy
 import base64
 import hmac
@@ -223,9 +224,9 @@ class S3StorageDriver(StorageDriver):
         return False
 
     def delete_object(self, obj):
-        # TODO: escape object and container name
+        object_name = self._clean_name(name=obj.name)
         response = self.connection.request('/%s/%s' % (obj.container.name,
-                                                       obj.name),
+                                                       object_name),
                                            method='DELETE')
         if response.status == httplib.NO_CONTENT:
             return True
@@ -234,6 +235,10 @@ class S3StorageDriver(StorageDriver):
                                          object_name=obj.name)
 
         return False
+
+    def _clean_name(self, name):
+        name = urllib.quote(name)
+        return name
 
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
