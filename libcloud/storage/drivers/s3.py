@@ -30,6 +30,7 @@ from libcloud.common.aws import AWSBaseResponse
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ObjectDoesNotExistError
 
 in_development_warning('libcloud.storage.drivers.s3')
 
@@ -155,6 +156,35 @@ class S3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
+    def get_container(self, container_name):
+        # This is very inefficient, but afaik it's the only way to do it
+        containers = self.list_containers()
+
+        try:
+            container = [ c for c in containers if c.name == container_name ][0]
+        except IndexError:
+            raise ContainerDoesNotExistError(value=None, driver=self,
+                                             container_name=container_name)
+
+        return container
+
+    def get_object(self, container_name, object_name):
+        # TODO: Figure out what is going on when the object or container does not exist
+        # - it seems that Amazon just keeps the connection open and doesn't return a
+        # response.
+        container = self.get_container(container_name=container_name)
+        response = self.connection.request('/%s/%s' % (container_name,
+                                                       object_name),
+                                           method='HEAD')
+        if response.status == httplib.OK:
+            obj = self._headers_to_object(object_name=object_name,
+                                          container=container,
+                                          headers=response.headers)
+            return obj
+
+        raise ObjectDoesNotExistError(value=None, driver=self,
+                                      object_name=object_name)
+
     def create_container(self, container_name):
         root = Element('CreateBucketConfiguration')
         child = SubElement(root, 'LocationConstraint')
@@ -215,6 +245,15 @@ class S3StorageDriver(StorageDriver):
 
         return container
 
+    def _headers_to_object(self, object_name, container, headers):
+        meta_data = { 'content_type': headers['content-type'] }
+        obj = Object(name=object_name, size=headers['content-length'],
+                     hash=headers['etag'], extra=None,
+                     meta_data=meta_data,
+                     container=container,
+                     driver=self)
+        return obj
+
     def _to_obj(self, element, container):
         owner_id = findtext(element=element, xpath='Owner/ID',
                             namespace=NAMESPACE)
@@ -233,8 +272,9 @@ class S3StorageDriver(StorageDriver):
                      extra=None,
                      meta_data=meta_data,
                      container=container,
-                     driver=self,
+                     driver=self
              )
+
         return obj
 
 
