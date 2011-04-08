@@ -222,6 +222,19 @@ class S3StorageDriver(StorageDriver):
 
         return False
 
+    def delete_object(self, obj):
+        # TODO: escape object and container name
+        response = self.connection.request('/%s/%s' % (obj.container.name,
+                                                       obj.name),
+                                           method='DELETE')
+        if response.status == httplib.NO_CONTENT:
+            return True
+        elif response.status == httplib.NOT_FOUND:
+            raise ObjectDoesNotExistError(value=None, driver=self,
+                                         object_name=obj.name)
+
+        return False
+
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
                  obj.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))]
