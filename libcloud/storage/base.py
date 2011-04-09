@@ -433,7 +433,7 @@ class StorageDriver(object):
                 except StopIteration:
                     data_read = ''
 
-        if obj.size != bytes_transferred:
+        if int(obj.size) != int(bytes_transferred):
             # Transfer failed, support retry?
             if delete_on_failure:
                 try:
