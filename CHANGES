@@ -1,6 +1,10 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+   *) When creating an EC2 node, don't ignore the name argument
+      and create a "Name" tag with the value of this argument.
+      [Tomaz Muraus]
+
    *) Add Gandi.net driver.
       [Aymeric Barantal]
 
