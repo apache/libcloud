@@ -24,6 +24,7 @@ from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from libcloud.utils import fixxpath, findtext, in_development_warning
+from libcloud.utils import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.aws import AWSBaseResponse
@@ -236,9 +237,23 @@ class S3StorageDriver(StorageDriver):
         return self._get_object(obj=obj, callback=self._save_object,
                                 response=response,
                                 callback_kwargs={'obj': obj,
+                                 'response': response.response,
                                  'destination_path': destination_path,
                                  'overwrite_existing': overwrite_existing,
                                  'delete_on_failure': delete_on_failure},
+                                success_status_code=httplib.OK)
+
+    def download_object_as_stream(self, obj, chunk_size=None):
+        container_name = self._clean_name(obj.container.name)
+        object_name = self._clean_name(obj.name)
+        response = self.connection.request('/%s/%s' % (container_name,
+                                                       object_name),
+                                           method='GET', raw=True)
+
+        return self._get_object(obj=obj, callback=read_in_chunks,
+                                response=response,
+                                callback_kwargs={ 'iterator': response.response,
+                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
     def delete_object(self, obj):
