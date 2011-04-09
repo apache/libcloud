@@ -16,7 +16,7 @@
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
-import os
+import httplib
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
@@ -24,6 +24,7 @@ from os.path import join as pjoin
 from libcloud import utils
 from libcloud.common.types import LibcloudError
 from libcloud.common.base import ConnectionKey
+from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
 
@@ -364,6 +365,42 @@ class StorageDriver(object):
         """
         raise NotImplementedError(
             'delete_container not implemented for this driver')
+
+    def _get_object(self, obj, callback, callback_kwargs, response,
+                    success_status_code=None):
+        """
+        Call passed callback and start transfer of the object'
+
+        @type obj: C{Object}
+        @param obj: Object instance.
+
+        @type callback: C{Function}
+        @param callback: Function which is called with the passed callback_kwargs
+
+        @type callback_kwargs: C{dict}
+        @param callback_kwargs: Keyword arguments which are passed to the callback.
+
+        @typed response: C{Response}
+        @param response: Response instance.
+
+        @type success_status_code: C{int}
+        @param success_status_code: Status code which represents a successful
+                                    transfer (defaults to httplib.OK)
+
+        @return C{bool} True on success, False otherwise.
+        """
+        success_status_code = success_status_code or httplib.OK
+        callback_kwargs['response'] = response.response
+
+        if response.status == success_status_code:
+            return callback(**callback_kwargs)
+        elif response.status == httplib.NOT_FOUND:
+            raise ObjectDoesNotExistError(object_name=obj.name,
+                                          value='', driver=self)
+
+        raise LibcloudError(value='Unexpected status code: %s' %
+                                  (response.status),
+                            driver=self)
 
     def _save_object(self, response, obj, destination_path,
                      overwrite_existing=False, delete_on_failure=True,
