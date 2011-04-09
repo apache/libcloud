@@ -505,7 +505,6 @@ class StorageDriver(object):
                     'File content-type could not be guessed and' +
                     ' no content_type value provided')
 
-        headers = {}
         if iterator:
             headers['Transfer-Encoding'] = 'chunked'
             upload_func_kwargs['chunked'] = True
