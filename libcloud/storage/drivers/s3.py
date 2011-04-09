@@ -223,6 +223,24 @@ class S3StorageDriver(StorageDriver):
 
         return False
 
+    def download_object(self, obj, destination_path, overwrite_existing=False,
+                        delete_on_failure=True):
+        container_name = self._clean_name(obj.container.name)
+        object_name = self._clean_name(obj.name)
+
+        response = self.connection.request('/%s/%s' % (container_name,
+                                                       object_name),
+                                           method='GET',
+                                           raw=True)
+
+        return self._get_object(obj=obj, callback=self._save_object,
+                                response=response,
+                                callback_kwargs={'obj': obj,
+                                 'destination_path': destination_path,
+                                 'overwrite_existing': overwrite_existing,
+                                 'delete_on_failure': delete_on_failure},
+                                success_status_code=httplib.OK)
+
     def delete_object(self, obj):
         object_name = self._clean_name(name=obj.name)
         response = self.connection.request('/%s/%s' % (obj.container.name,
