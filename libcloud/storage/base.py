@@ -390,7 +390,6 @@ class StorageDriver(object):
         @return C{bool} True on success, False otherwise.
         """
         success_status_code = success_status_code or httplib.OK
-        callback_kwargs['response'] = response.response
 
         if response.status == success_status_code:
             return callback(**callback_kwargs)
