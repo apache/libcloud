@@ -33,6 +33,7 @@ from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
+from libcloud.storage.types import ObjectHashMismatchError
 
 in_development_warning('libcloud.storage.drivers.s3')
 
@@ -77,9 +78,8 @@ class S3Connection(ConnectionUserAndKey):
 
     def add_default_params(self, params):
         expires = str(int(time.time()) + EXPIRATION_SECONDS)
-        headers = self.add_default_headers({})
         params['Signature'] = self._get_aws_auth_param(method=self.method,
-                                                       headers=headers,
+                                                       headers={},
                                                        params=params,
                                                        expires=expires,
                                                        secret_key=self.key,
@@ -207,7 +207,7 @@ class S3StorageDriver(StorageDriver):
                             driver=self)
 
     def delete_container(self, container):
-        # All the objects in the container must be deleted first
+        # Note: All the objects in the container must be deleted first
         response = self.connection.request('/%s' % (container.name),
                                            method='DELETE')
         if response.status == httplib.NO_CONTENT:
@@ -256,6 +256,18 @@ class S3StorageDriver(StorageDriver):
                                                   'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
+    def upload_object(self, file_path, container, object_name, extra=None,
+                      file_hash=None, ex_storage_class=None):
+        upload_func = self._upload_file
+        upload_func_kwargs = { 'file_path': file_path }
+
+        return self._put_object(container=container, object_name=object_name,
+                                upload_func=upload_func,
+                                upload_func_kwargs=upload_func_kwargs,
+                                extra=extra, file_path=file_path,
+                                file_hash=file_hash,
+                                storage_class=ex_storage_class)
+
     def delete_object(self, obj):
         object_name = self._clean_name(name=obj.name)
         response = self.connection.request('/%s/%s' % (obj.container.name,
@@ -272,6 +284,67 @@ class S3StorageDriver(StorageDriver):
     def _clean_name(self, name):
         name = urllib.quote(name)
         return name
+
+    def _put_object(self, container, object_name, upload_func,
+                    upload_func_kwargs, extra=None, file_path=None,
+                    iterator=None, file_hash=None, storage_class=None):
+        headers = {}
+        extra = extra or {}
+        storage_class = storage_class or 'standard'
+        if storage_class not in ['standard', 'reduced_redundancy']:
+            raise ValueError('Invalid storage class value: %s' % (storage_class))
+
+        headers['x-amz-storage-class'] = storage_class.upper()
+
+        container_name_cleaned = container.name
+        object_name_cleaned = self._clean_name(object_name)
+        content_type = extra.get('content_type', None)
+        meta_data = extra.get('meta_data', None)
+
+        if not iterator and file_hash:
+            # TODO: This driver also needs to access to the headers in the
+            # add_default_params method so the correct signature can be
+            # calculated when a MD5 hash is provided.
+            # Uncomment this line when we decide what is the best way to handle
+            # this.
+            #headers['Content-MD5'] = file_hash
+            pass
+
+        if meta_data:
+            for key, value in meta_data.iteritems():
+                key = 'x-amz-meta--%s' % (key)
+                headers[key] = value
+
+        request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
+        # TODO: Let the underlying exceptions bubble up and capture the SIGPIPE
+        # here.
+        # SIGPIPE is thrown if the provided container does not exist or the user
+        # does not have correct permission
+        result_dict = self._upload_object(object_name=object_name,
+                                          content_type=content_type,
+                                          upload_func=upload_func,
+                                          upload_func_kwargs=upload_func_kwargs,
+                                          request_path=request_path,
+                                          request_method='PUT',
+                                          headers=headers, file_path=file_path,
+                                          iterator=iterator)
+
+        response = result_dict['response']
+        bytes_transferred = result_dict['bytes_transferred']
+        headers = response.headers
+        response = response.response
+
+        if file_hash and file_hash != headers['etag'].replace('"', ''):
+            raise ObjectHashMismatchError(
+                value='MD5 hash checksum does not match',
+                object_name=object_name, driver=self)
+        elif response.status == httplib.OK:
+            obj = Object(
+                name=object_name, size=bytes_transferred, hash=file_hash,
+                extra=None, meta_data=meta_data, container=container,
+                driver=self)
+
+            return obj
 
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
