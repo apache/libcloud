@@ -18,7 +18,7 @@ from pprint import pprint
 from libcloud.storage.types import Provider
 from libcloud.storage.providers import get_driver
 
-CloudFiles = get_driver(Provider.CloudFiles)
+CloudFiles = get_driver(Provider.CLOUDFILES)
 
 driver = CloudFiles('access key id', 'secret key')
 
