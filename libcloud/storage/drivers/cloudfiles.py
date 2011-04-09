@@ -251,6 +251,7 @@ class CloudFilesStorageDriver(StorageDriver):
         return self._get_object(obj=obj, callback=self._save_object,
                                 response=response,
                                 callback_kwargs={'obj': obj,
+                                 'response': response.response,
                                  'destination_path': destination_path,
                                  'overwrite_existing': overwrite_existing,
                                  'delete_on_failure': delete_on_failure},
@@ -265,7 +266,8 @@ class CloudFilesStorageDriver(StorageDriver):
 
         return self._get_object(obj=obj, callback=self._get_object_as_stream,
                                 response=response,
-                                callback_kwargs={'chunk_size': chunk_size},
+                                callback_kwargs={ 'iterator': response.response,
+                                                 'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
