@@ -821,6 +821,9 @@ class EC2NodeDriver(NodeDriver):
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
+        for node in nodes:
+            self.ex_create_tags(node=node, tags={'Name': kwargs['name']})
+
         if len(nodes) == 1:
             return nodes[0]
         else:
