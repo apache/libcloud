@@ -263,7 +263,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                                        object_name),
                                            method='GET', raw=True)
 
-        return self._get_object(obj=obj, callback=self._save_object,
+        return self._get_object(obj=obj, callback=self._get_object_as_stream,
                                 response=response,
                                 callback_kwargs={'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
