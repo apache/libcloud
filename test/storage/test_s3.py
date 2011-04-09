@@ -17,7 +17,11 @@ import sys
 import httplib
 import unittest
 
+from libcloud.common.types import InvalidCredsError
 from libcloud.storage.base import Container, Object
+from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ContainerIsNotEmptyError
+from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
 from libcloud.storage.drivers.s3 import S3EUWestStorageDriver
 from libcloud.storage.drivers.s3 import S3APSEStorageDriver
@@ -28,13 +32,20 @@ from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 
 class S3Tests(unittest.TestCase):
     def setUp(self):
-        S3StorageDriver.connectionCls.conn_classes = (
-            None, S3MockHttp)
-        S3StorageDriver.connectionCls.rawResponseCls = \
-                                              S3MockRawResponse
+        S3StorageDriver.connectionCls.conn_classes = (None, S3MockHttp)
+        S3StorageDriver.connectionCls.rawResponseCls = S3MockRawResponse
         S3MockHttp.type = None
         S3MockRawResponse.type = None
         self.driver = S3StorageDriver('dummy', 'dummy')
+
+    def test_invalid_credts(self):
+        S3MockHttp.type = 'UNAUTHORIZED'
+        try:
+            self.driver.list_containers()
+        except InvalidCredsError, e:
+            self.assertEqual(True, isinstance(e, InvalidCredsError))
+        else:
+            self.fail('Exception was not thrown')
 
     def test_get_meta_data(self):
         try:
@@ -72,42 +83,117 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.container.name, 'test_container')
         self.assertTrue('owner' in obj.meta_data)
 
+    def test_get_container(self):
+        S3MockHttp.type = 'list_containers'
+
+        try:
+            container = self.driver.get_container(container_name='container1')
+        except ContainerDoesNotExistError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        container = self.driver.get_container(container_name='test1')
+        self.assertTrue(container.name, 'test1')
+
+    def test_get_object(self):
+        # This method makes two requests which makes mocking the response a bit
+        # trickier
+        S3MockHttp.type = 'list_containers'
+
+        try:
+            obj = self.driver.get_object(container_name='test-inexistent',
+                                         object_name='test')
+        except ContainerDoesNotExistError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        obj = self.driver.get_object(container_name='test2',
+                                     object_name='test')
+
+        self.assertEqual(obj.name, 'test')
+        self.assertEqual(obj.container.name, 'test2')
+        self.assertEqual(obj.size, 12345)
+        self.assertEqual(obj.hash, 'e31208wqsdoj329jd')
+
+    def test_create_container(self):
+        # invalid container name
+        S3MockHttp.type = 'INVALID_NAME'
+        try:
+            self.driver.create_container(container_name='new_container')
+        except InvalidContainerNameError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        # container with this name already exists
+        S3MockHttp.type = 'ALREADY_EXISTS'
+        try:
+            self.driver.create_container(container_name='new-container')
+        except InvalidContainerNameError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        # success
+        S3MockHttp.type = None
+        container = self.driver.create_container(container_name='new_container')
+        self.assertEqual(container.name, 'new_container')
+
+    def test_delete_container(self):
+        container = Container(name='new_container', extra=None, driver=self)
+
+        S3MockHttp.type = 'DOESNT_EXIST'
+        # does not exist
+        try:
+            self.driver.delete_container(container=container)
+        except ContainerDoesNotExistError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        # container is not empty
+        S3MockHttp.type = 'NOT_EMPTY'
+        try:
+            self.driver.delete_container(container=container)
+        except ContainerIsNotEmptyError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        # success
+        S3MockHttp.type = None
+        self.assertTrue(self.driver.delete_container(container=container))
+
 class S3USWestTests(S3Tests):
     def setUp(self):
-        S3USWestStorageDriver.connectionCls.conn_classes = (
-            None, S3MockHttp)
-        S3USWestStorageDriver.connectionCls.rawResponseCls = \
-                                              S3MockRawResponse
+        S3USWestStorageDriver.connectionCls.conn_classes = (None, S3MockHttp)
+        S3USWestStorageDriver.connectionCls.rawResponseCls = S3MockRawResponse
         S3MockHttp.type = None
         S3MockRawResponse.type = None
         self.driver = S3USWestStorageDriver('dummy', 'dummy')
 
 class S3EUWestTests(S3Tests):
     def setUp(self):
-        S3EUWestStorageDriver.connectionCls.conn_classes = (
-            None, S3MockHttp)
-        S3EUWestStorageDriver.connectionCls.rawResponseCls = \
-                                              S3MockRawResponse
+        S3EUWestStorageDriver.connectionCls.conn_classes = (None, S3MockHttp)
+        S3EUWestStorageDriver.connectionCls.rawResponseCls = S3MockRawResponse
         S3MockHttp.type = None
         S3MockRawResponse.type = None
         self.driver = S3EUWestStorageDriver('dummy', 'dummy')
 
 class S3APSETests(S3Tests):
     def setUp(self):
-        S3APSEStorageDriver.connectionCls.conn_classes = (
-            None, S3MockHttp)
-        S3APSEStorageDriver.connectionCls.rawResponseCls = \
-                                              S3MockRawResponse
+        S3APSEStorageDriver.connectionCls.conn_classes = (None, S3MockHttp)
+        S3APSEStorageDriver.connectionCls.rawResponseCls = S3MockRawResponse
         S3MockHttp.type = None
         S3MockRawResponse.type = None
         self.driver = S3APSEStorageDriver('dummy', 'dummy')
 
 class S3APNETests(S3Tests):
     def setUp(self):
-        S3APNEStorageDriver.connectionCls.conn_classes = (
-            None, S3MockHttp)
-        S3APNEStorageDriver.connectionCls.rawResponseCls = \
-                                              S3MockRawResponse
+        S3APNEStorageDriver.connectionCls.conn_classes = (None, S3MockHttp)
+        S3APNEStorageDriver.connectionCls.rawResponseCls = S3MockRawResponse
         S3MockHttp.type = None
         S3MockRawResponse.type = None
         self.driver = S3APNEStorageDriver('dummy', 'dummy')
@@ -116,6 +202,12 @@ class S3MockHttp(MockHttp):
 
     fixtures = StorageFileFixtures('s3')
     base_headers = {}
+
+    def _UNAUTHORIZED(self, method, url, body, headers):
+        return (httplib.UNAUTHORIZED,
+                '',
+                self.base_headers,
+                httplib.responses[httplib.OK])
 
     def _list_containers_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('list_containers_empty.xml')
@@ -143,6 +235,60 @@ class S3MockHttp(MockHttp):
         return (httplib.OK,
                 body,
                 self.base_headers,
+                httplib.responses[httplib.OK])
+
+    def _test2_test_list_containers(self, method, url, body, headers):
+        # test_get_object
+        body = self.fixtures.load('list_containers.xml')
+        headers = { 'content-type': 'application/zip',
+                    'etag': '"e31208wqsdoj329jd"',
+                    'content-length': 12345,
+                    }
+
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _new_container_INVALID_NAME(self, method, url, body, headers):
+        # test_create_container
+        return (httplib.BAD_REQUEST,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _new_container_ALREADY_EXISTS(self, method, url, body, headers):
+        # test_create_container
+        return (httplib.CONFLICT,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _new_container(self, method, url, body, headers):
+        # test_create_container, test_delete_container
+
+        if method == 'PUT':
+            status = httplib.OK
+        elif method == 'DELETE':
+            status = httplib.NO_CONTENT
+
+        return (status,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _new_container_DOESNT_EXIST(self, method, url, body, headers):
+        # test_delete_container
+        return (httplib.NOT_FOUND,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _new_container_NOT_EMPTY(self, method, url, body, headers):
+        # test_delete_container
+        return (httplib.CONFLICT,
+                body,
+                headers,
                 httplib.responses[httplib.OK])
 
 class S3MockRawResponse(MockRawResponse):
