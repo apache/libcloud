@@ -481,6 +481,51 @@ class StorageDriver(object):
 
         return True
 
+    def _upload_object(self, object_name, content_type, upload_func,
+                       upload_func_kwargs, request_path, request_method='PUT',
+                       headers=None, file_path=None, iterator=None):
+        """
+        Helper function for setting common request headers and calling the
+        passed in callback which uploads an object.
+        """
+        headers = headers or {}
+        if not content_type:
+            if file_path:
+                name = file_path
+            else:
+                name = object_name
+            content_type, _ = utils.guess_file_mime_type(name)
+
+            if not content_type:
+                raise AttributeError(
+                    'File content-type could not be guessed and' +
+                    ' no content_type value provided')
+
+        headers = {}
+        if iterator:
+            headers['Transfer-Encoding'] = 'chunked'
+            upload_func_kwargs['chunked'] = True
+        else:
+            file_size = os.path.getsize(file_path)
+            headers['Content-Length'] = file_size
+            upload_func_kwargs['chunked'] = False
+
+        headers['Content-Type'] = content_type
+        response = self.connection.request(request_path,
+                                           method=request_method, data=None,
+                                           headers=headers, raw=True)
+
+        upload_func_kwargs['response'] = response
+        success, data_hash, bytes_transferred = upload_func(**upload_func_kwargs)
+
+        if not success:
+            raise LibcloudError(value='Object upload failed, Perhaps a timeout?',
+                                driver=self)
+
+        result_dict = { 'response': response.response, 'data_hash': data_hash,
+                        'bytes_transferred': bytes_transferred }
+        return result_dict
+
     def _stream_data(self, response, iterator, chunked=False,
                      calculate_hash=True, chunk_size=None):
         """

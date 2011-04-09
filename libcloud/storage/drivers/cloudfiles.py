@@ -278,12 +278,13 @@ class CloudFilesStorageDriver(StorageDriver):
         Note: This will override file with a same name if it already exists.
         """
         upload_func = self._upload_file
-        upload_func_args = { 'file_path': file_path }
+        upload_func_kwargs = { 'file_path': file_path }
 
-        return self._put_object(container=container, file_path=file_path,
-                                object_name=object_name, extra=extra,
+        return self._put_object(container=container, object_name=object_name,
                                 upload_func=upload_func,
-                                upload_func_args=upload_func_args)
+                                upload_func_kwargs=upload_func_kwargs,
+                                extra=extra, file_path=file_path,
+                                file_hash=file_hash)
 
     def upload_object_via_stream(self, iterator,
                                  container, object_name, extra=None):
@@ -291,12 +292,12 @@ class CloudFilesStorageDriver(StorageDriver):
             iterator = iter(iterator)
 
         upload_func = self._stream_data
-        upload_func_args = { 'iterator': iterator }
+        upload_func_kwargs = { 'iterator': iterator }
 
-        return self._put_object(container=container, iterator=iterator,
-                                object_name=object_name, extra=extra,
+        return self._put_object(container=container, object_name=object_name,
                                 upload_func=upload_func,
-                                upload_func_args=upload_func_args)
+                                upload_func_kwargs=upload_func_kwargs,
+                                extra=extra, iterator=iterator)
 
     def delete_object(self, obj):
         container_name = self._clean_container_name(obj.container.name)
@@ -313,61 +314,40 @@ class CloudFilesStorageDriver(StorageDriver):
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
-    def _put_object(self, upload_func, upload_func_args, container, object_name,
-                    extra=None, file_path=None, iterator=None, file_hash=None):
+    def _put_object(self, container, object_name, upload_func,
+                    upload_func_kwargs, extra=None, file_path=None,
+                    iterator=None, file_hash=None):
+        extra = extra or {}
         container_name_cleaned = self._clean_container_name(container.name)
         object_name_cleaned = self._clean_object_name(object_name)
-
-        extra = extra or {}
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
 
-        if not content_type:
-            if file_path:
-                name = file_path
-            else:
-                name = object_name
-            content_type, _ = utils.guess_file_mime_type(name)
-
-            if not content_type:
-                raise AttributeError(
-                    'File content-type could not be guessed and' +
-                    ' no content_type value provided')
-
         headers = {}
-        if iterator:
-            headers['Transfer-Encoding'] = 'chunked'
-            upload_func_args['chunked'] = True
-        else:
-            file_size = os.path.getsize(file_path)
-            headers['Content-Length'] = file_size
-            upload_func_args['chunked'] = False
-
-            if file_hash:
-                headers['ETag'] = file_hash
-
-        headers['Content-Type'] = content_type
+        if not iterator and file_hash:
+            headers['ETag'] = file_hash
 
         if meta_data:
             for key, value in meta_data.iteritems():
                 key = 'X-Object-Meta-%s' % (key)
                 headers[key] = value
 
-        response = self.connection.request('/%s/%s' % (container_name_cleaned,
-                                                       object_name_cleaned),
-                                           method='PUT', data=None,
-                                           headers=headers, raw=True)
+        request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
+        result_dict = self._upload_object(object_name=object_name,
+                                          content_type=content_type,
+                                          upload_func=upload_func,
+                                          upload_func_kwargs=upload_func_kwargs,
+                                          request_path=request_path,
+                                          request_method='PUT',
+                                          headers=headers, file_path=file_path,
+                                          iterator=iterator)
 
-        upload_func_args['response'] = response
-        success, data_hash, bytes_transferred = upload_func(**upload_func_args)
-
-        if not success:
-            raise LibcloudError('Object upload failed, Perhaps a timeout?')
-
-        response = response.response
+        response = result_dict['response']
+        bytes_transferred = result_dict['bytes_transferred']
 
         if response.status == httplib.EXPECTATION_FAILED:
-            raise LibcloudError('Missing content-type header')
+            raise LibcloudError(value='Missing content-type header',
+                                driver=self)
         elif response.status == httplib.UNPROCESSABLE_ENTITY:
             raise ObjectHashMismatchError(
                 value='MD5 hash checksum does not match',
