@@ -489,6 +489,10 @@ class StorageDriver(object):
         passed in callback which uploads an object.
         """
         headers = headers or {}
+
+        if file_path and not os.path.exists(file_path):
+          raise OSError('File %s does not exist' % (file_path))
+
         if not content_type:
             if file_path:
                 name = file_path
