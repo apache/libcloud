@@ -342,7 +342,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                           headers=headers, file_path=file_path,
                                           iterator=iterator)
 
-        response = result_dict['response']
+        response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
 
         if response.status == httplib.EXPECTATION_FAILED:
