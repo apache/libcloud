@@ -526,7 +526,7 @@ class StorageDriver(object):
             raise LibcloudError(value='Object upload failed, Perhaps a timeout?',
                                 driver=self)
 
-        result_dict = { 'response': response.response, 'data_hash': data_hash,
+        result_dict = { 'response': response, 'data_hash': data_hash,
                         'bytes_transferred': bytes_transferred }
         return result_dict
 
@@ -575,10 +575,7 @@ class StorageDriver(object):
                 else:
                     response.connection.connection.send(chunk)
             except Exception:
-                # @@TR: this wildcard try/except block looks like it
-                # could mask unexpected errors. It should be narrowed
-                # down to expected exceptions.
-
+                # TODO: let this exception propagate
                 # Timeout, etc.
                 return False, None, bytes_transferred
 
