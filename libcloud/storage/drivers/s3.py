@@ -379,8 +379,10 @@ class S3StorageDriver(StorageDriver):
 
     def _headers_to_object(self, object_name, container, headers):
         meta_data = { 'content_type': headers['content-type'] }
+        hash = headers['etag'].replace('"', '')
+
         obj = Object(name=object_name, size=headers['content-length'],
-                     hash=headers['etag'], extra=None,
+                     hash=hash, extra=None,
                      meta_data=meta_data,
                      container=container,
                      driver=self)
@@ -396,11 +398,11 @@ class S3StorageDriver(StorageDriver):
                                  'display_name':owner_display_name }}
 
         obj = Object(name=findtext(element=element, xpath='Key',
-                     namespace=NAMESPACE),
-                     size=findtext(element=element, xpath='Size',
-                     namespace=NAMESPACE),
+                                   namespace=NAMESPACE),
+                     size=int(findtext(element=element, xpath='Size',
+                                       namespace=NAMESPACE)),
                      hash=findtext(element=element, xpath='ETag',
-                     namespace=NAMESPACE),
+                                   namespace=NAMESPACE).replace('"', ''),
                      extra=None,
                      meta_data=meta_data,
                      container=container,
