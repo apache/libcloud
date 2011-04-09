@@ -31,6 +31,7 @@ from libcloud.common.aws import AWSBaseResponse
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerIsNotEmptyError
+from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
@@ -52,14 +53,15 @@ NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
 
 class S3Response(AWSBaseResponse):
 
-    valid_response_codes = [ httplib.NOT_FOUND, httplib.CONFLICT ]
+    valid_response_codes = [ httplib.NOT_FOUND, httplib.CONFLICT,
+                             httplib.BAD_REQUEST ]
 
     def success(self):
         i = int(self.status)
         return i >= 200 and i <= 299 or i in self.valid_response_codes
 
     def parse_error(self):
-        if self.status == 403:
+        if self.status  in [ 401, 403 ]:
             raise InvalidCredsError(self.body)
         elif self.status == 301:
             raise LibcloudError('This bucket is located in a different ' +
@@ -199,9 +201,15 @@ class S3StorageDriver(StorageDriver):
             container = Container(name=container_name, extra=None, driver=self)
             return container
         elif response.status == httplib.CONFLICT:
-            raise LibcloudError('Container with this name already exists.' +
-                                'The name must be unique across all the ' +
-                                'containers in the system')
+            raise InvalidContainerNameError(value='Container with this name ' +
+                                'already exists. The name must be unique among '
+                                'all the containers in the system',
+                                container_name=container_name, driver=self)
+        elif response.status == httplib.BAD_REQUEST:
+            raise InvalidContainerNameError(value='Container name contains ' +
+                                            'invalid characters.',
+                                            container_name=container_name,
+                                            driver=self)
 
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
@@ -291,6 +299,11 @@ class S3StorageDriver(StorageDriver):
 
     def _clean_name(self, name):
         name = urllib.quote(name)
+        return name
+
+    def _clean_container_name(self, name):
+        # Invalid characters: _
+        name = name.replace('_', '')
         return name
 
     def _put_object(self, container, object_name, upload_func,
