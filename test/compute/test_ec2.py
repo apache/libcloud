@@ -284,6 +284,10 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('modify_instance_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _idempotent_CreateTags(self, method, url, body, headers):
+        body = self.fixtures.load('create_tags.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 class EC2APSETests(EC2Tests):
     def setUp(self):
         EC2APSENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
