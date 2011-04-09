@@ -242,15 +242,31 @@ class CloudFilesStorageDriver(StorageDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        return self._get_object(obj, self._save_object,
-                                {'obj': obj,
+        container_name = obj.container.name
+        object_name = obj.name
+        response = self.connection.request('/%s/%s' % (container_name,
+                                                       object_name),
+                                           method='GET', raw=True)
+
+        return self._get_object(obj=obj, callback=self._save_object,
+                                response=response,
+                                callback_kwargs={'obj': obj,
                                  'destination_path': destination_path,
                                  'overwrite_existing': overwrite_existing,
-                                 'delete_on_failure': delete_on_failure})
+                                 'delete_on_failure': delete_on_failure},
+                                success_status_code=httplib.OK)
 
     def download_object_as_stream(self, obj, chunk_size=None):
-        return self._get_object(obj, self._get_object_as_stream,
-                                {'chunk_size': chunk_size})
+        container_name = obj.container.name
+        object_name = obj.name
+        response = self.connection.request('/%s/%s' % (container_name,
+                                                       object_name),
+                                           method='GET', raw=True)
+
+        return self._get_object(obj=obj, callback=self._save_object,
+                                response=response,
+                                callback_kwargs={'chunk_size': chunk_size},
+                                success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       file_hash=None):
@@ -292,26 +308,6 @@ class CloudFilesStorageDriver(StorageDriver):
         elif response.status == httplib.NOT_FOUND:
             raise ObjectDoesNotExistError(value='', object_name=object_name,
                                           driver=self)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def _get_object(self, obj, callback, callback_args):
-        container_name = obj.container.name
-        object_name = obj.name
-
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                           raw=True)
-
-        callback_args['response'] = response.response
-
-        if response.status == httplib.OK:
-            return callback(**callback_args)
-        elif response.status == httplib.NOT_FOUND:
-            raise ObjectDoesNotExistError(
-                object_name=object_name,
-                driver=self,
-                value='')
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
