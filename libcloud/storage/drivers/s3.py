@@ -61,9 +61,9 @@ class S3Response(AWSBaseResponse):
         return i >= 200 and i <= 299 or i in self.valid_response_codes
 
     def parse_error(self):
-        if self.status  in [ 401, 403 ]:
+        if self.status  in [ httplib.UNAUTHORIZED, httplib.FORBIDDEN ]:
             raise InvalidCredsError(self.body)
-        elif self.status == 301:
+        elif self.status == httplib.MOVED_PERMANENTLY:
             raise LibcloudError('This bucket is located in a different ' +
                                 'region. Please use the correct driver.',
                                 driver=S3StorageDriver)
