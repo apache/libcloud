@@ -184,6 +184,24 @@ class MockRawResponse(BaseMockHttpObject):
 
     @property
     def response(self):
+        return self._get_response_if_not_availale()
+
+    @property
+    def status(self):
+        self._get_response_if_not_availale()
+        return self._status
+
+    @property
+    def headers(self):
+        self._get_response_if_not_availale()
+        return self._headers
+
+    @property
+    def reason(self):
+        self._get_response_if_not_availale()
+        return self._reason
+
+    def _get_response_if_not_availale(self):
         if not self._response:
             meth_name = self._get_method_name(type=self.type,
                                               use_param=False, qs=None,
@@ -195,18 +213,6 @@ class MockRawResponse(BaseMockHttpObject):
                                               self._headers, self._reason)
             return self
         return self._response
-
-    @property
-    def status(self):
-        return self._status
-
-    @property
-    def headers(self):
-        return self._headers
-
-    @property
-    def reason(self):
-        return self._reason
 
 if __name__ == "__main__":
     import doctest
