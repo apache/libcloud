@@ -515,30 +515,6 @@ class CloudFilesMockRawResponse(MockRawResponse):
     fixtures = StorageFileFixtures('cloudfiles')
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
 
-    def __init__(self, *args, **kwargs):
-        super(CloudFilesMockRawResponse, self).__init__(*args, **kwargs)
-        self._data = []
-        self._current_item = 0
-
-    def next(self):
-        if self._current_item == len(self._data):
-            raise StopIteration
-
-        value = self._data[self._current_item]
-        self._current_item += 1
-        return value
-
-    def _generate_random_data(self, size):
-        data = []
-        current_size = 0
-        while current_size < size:
-            value = str(random.randint(0, 9))
-            value_size = len(value)
-            data.append(value)
-            current_size += value_size
-
-        return data
-
     def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload(
         self, method, url, body, headers):
         # test_object_upload_success

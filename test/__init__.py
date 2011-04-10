@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import httplib
+import random
 
 from cStringIO import StringIO
 from urllib2 import urlparse
@@ -177,10 +178,32 @@ class MockRawResponse(BaseMockHttpObject):
 
     def __init__(self):
         super(MockRawResponse, self).__init__()
+        self._data = []
+        self._current_item = 0
+
         self._status = None
         self._response = None
         self._headers = None
         self._reason = None
+
+    def next(self):
+        if self._current_item == len(self._data):
+            raise StopIteration
+
+        value = self._data[self._current_item]
+        self._current_item += 1
+        return value
+
+    def _generate_random_data(self, size):
+        data = []
+        current_size = 0
+        while current_size < size:
+            value = str(random.randint(0, 9))
+            value_size = len(value)
+            data.append(value)
+            current_size += value_size
+
+        return data
 
     @property
     def response(self):
