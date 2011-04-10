@@ -80,15 +80,18 @@ class S3Connection(ConnectionUserAndKey):
 
     def add_default_params(self, params):
         expires = str(int(time.time()) + EXPIRATION_SECONDS)
-        params['Signature'] = self._get_aws_auth_param(method=self.method,
-                                                       headers={},
-                                                       params=params,
-                                                       expires=expires,
-                                                       secret_key=self.key,
-                                                       path=self.action)
         params['AWSAccessKeyId'] = self.user_id
         params['Expires'] = expires
         return params
+
+    def pre_connect_hook(self, params, headers):
+        params['Signature'] = self._get_aws_auth_param(method=self.method,
+                                                       headers=headers,
+                                                       params=params,
+                                                       expires=params['Expires'],
+                                                       secret_key=self.key,
+                                                       path=self.action)
+        return params, headers
 
     def _get_aws_auth_param(self, method, headers, params, expires,
                             secret_key, path='/'):
@@ -323,13 +326,7 @@ class S3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
 
         if not iterator and file_hash:
-            # TODO: This driver also needs to access to the headers in the
-            # add_default_params method so the correct signature can be
-            # calculated when a MD5 hash is provided.
-            # Uncomment this line when we decide what is the best way to handle
-            # this.
-            #headers['Content-MD5'] = file_hash
-            pass
+            headers['Content-MD5'] = base64.b64encode(file_hash.decode('hex'))
 
         if meta_data:
             for key, value in meta_data.iteritems():
