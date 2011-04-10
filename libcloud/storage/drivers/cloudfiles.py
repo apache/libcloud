@@ -22,7 +22,8 @@ try:
 except:
     import simplejson as json
 
-from libcloud import utils
+from libcloud.utils import fixxpath, findtext, in_development_warning
+from libcloud.utils import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.common.base import Response
 
@@ -264,7 +265,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                                        object_name),
                                            method='GET', raw=True)
 
-        return self._get_object(obj=obj, callback=self._get_object_as_stream,
+        return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
                                 callback_kwargs={ 'iterator': response.response,
                                                  'chunk_size': chunk_size},
