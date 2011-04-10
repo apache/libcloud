@@ -32,7 +32,7 @@ from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
-from test import MockHttp, MockRawResponse # pylint: disable-msg=E0611
+from test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
 from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 
 class CloudFilesTests(unittest.TestCase):
@@ -355,22 +355,10 @@ class CloudFilesTests(unittest.TestCase):
         except OSError:
             pass
 
-class CloudFilesMockHttp(MockHttp):
+class CloudFilesMockHttp(StorageMockHttp):
 
     fixtures = StorageFileFixtures('cloudfiles')
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
-
-    def putrequest(self, method, action):
-        pass
-
-    def putheader(self, key, value):
-        pass
-
-    def endheaders(self):
-        pass
-
-    def send(self, data):
-        pass
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):

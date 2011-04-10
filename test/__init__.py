@@ -153,6 +153,20 @@ class MockHttp(BaseMockHttpObject):
         return (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
                 httplib.responses[httplib.FORBIDDEN])
 
+class StorageMockHttp(MockHttp):
+    def putrequest(self, method, action):
+        pass
+
+    def putheader(self, key, value):
+        pass
+
+    def endheaders(self):
+        pass
+
+    def send(self, data):
+        pass
+
+
 class MockRawResponse(BaseMockHttpObject):
     """
     Mock RawResponse object suitable for testing.
