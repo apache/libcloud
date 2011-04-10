@@ -345,6 +345,8 @@ class ConnectionKey(object):
         if data is not None:
             headers.update({'Content-Length': str(len(data))})
 
+        params, headers = self.pre_connect_hook(params, headers)
+
         if params:
             url = '?'.join((action, urllib.urlencode(params)))
         else:
@@ -394,6 +396,20 @@ class ConnectionKey(object):
         Should return a dictionary.
         """
         return headers
+
+    def pre_connect_hook(self, params, headers):
+        """
+        A hook which is called before connecting to the remote server.
+        This hook can perform a final manipulation on the params, headers and
+        url parameters.
+
+        @type params: C{dict}
+        @param params: Request parameters.
+
+        @type headers: C{dict}
+        @param headers: Request headers.
+        """
+        return params, headers
 
     def encode_data(self, data):
         """
