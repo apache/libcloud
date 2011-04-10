@@ -330,7 +330,7 @@ class S3StorageDriver(StorageDriver):
 
         if meta_data:
             for key, value in meta_data.iteritems():
-                key = 'x-amz-meta--%s' % (key)
+                key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
 
         request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
@@ -421,7 +421,6 @@ class S3StorageDriver(StorageDriver):
              )
 
         return obj
-
 
 class S3USWestConnection(S3Connection):
     host = S3_US_WEST_HOST
