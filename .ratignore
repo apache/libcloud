@@ -7,3 +7,6 @@ HACKING
 test/storage/fixtures/
 test/compute/fixtures/
 coverage_html_report/
+.coverage
+.coveragerc
+data/pricing.json
