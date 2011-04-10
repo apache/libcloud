@@ -18,10 +18,12 @@ Provider related utilities
 
 from libcloud.utils import get_driver as _get_provider_driver
 from libcloud.compute.types import Provider
+
 __all__ = [
     "Provider",
     "DRIVERS",
     "get_driver"]
+
 DRIVERS = {
     Provider.DUMMY:
         ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
@@ -79,6 +81,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.bluebox', 'BlueboxNodeDriver'),
     Provider.GANDI:
         ('libcloud.compute.drivers.gandi', 'GandiNodeDriver'),
+    Provider.OPSOURCE:
+        ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver')
 }
 
 def get_driver(provider):

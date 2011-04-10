@@ -53,6 +53,7 @@ class Provider(object):
     @cvar CLOUDSIGMA: CloudSigma
     @cvar NIMBUS: Nimbus
     @cvar BLUEBOX: Bluebox
+    @cvar OPSOURCE: Opsource Cloud
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -86,6 +87,7 @@ class Provider(object):
     NIMBUS = 27
     BLUEBOX = 28
     GANDI = 29
+    OPSOURCE = 30
 
 class NodeState(object):
     """

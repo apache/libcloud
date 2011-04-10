@@ -34,5 +34,5 @@ __all__ = [
     'softlayer',
     'vcloud',
     'voxel',
-    'vpsnet',
+    'vpsnet'
 ]
