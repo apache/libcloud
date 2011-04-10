@@ -23,7 +23,6 @@ from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerIsNotEmptyError
-from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
@@ -37,12 +36,24 @@ from test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
 from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 
 class S3Tests(unittest.TestCase):
+
     def setUp(self):
         S3StorageDriver.connectionCls.conn_classes = (None, S3MockHttp)
         S3StorageDriver.connectionCls.rawResponseCls = S3MockRawResponse
         S3MockHttp.type = None
         S3MockRawResponse.type = None
         self.driver = S3StorageDriver('dummy', 'dummy')
+
+    def tearDown(self):
+        self._remove_test_file()
+
+    def _remove_test_file(self):
+        file_path = os.path.abspath(__file__) + '.temp'
+
+        try:
+            os.unlink(file_path)
+        except OSError:
+            pass
 
     def test_invalid_credentials(self):
         S3MockHttp.type = 'UNAUTHORIZED'
@@ -201,10 +212,51 @@ class S3Tests(unittest.TestCase):
             self.fail('Container does not exist but an exception was not thrown')
 
     def test_delete_container_success(self):
-        # success
         S3MockHttp.type = None
         container = Container(name='new_container', extra=None, driver=self)
         self.assertTrue(self.driver.delete_container(container=container))
+
+    def test_download_object_success(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=S3StorageDriver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=False,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+    def test_download_object_invalid_file_size(self):
+        S3MockRawResponse.type = 'INVALID_SIZE'
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=S3StorageDriver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=False,
+                                             delete_on_failure=True)
+        self.assertFalse(result)
+
+    def test_download_object_invalid_file_already_exists(self):
+        S3MockRawResponse.type = 'INVALID_SIZE'
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=S3StorageDriver)
+        destination_path = os.path.abspath(__file__) 
+        try:
+            self.driver.download_object(obj=obj,
+                                        destination_path=destination_path,
+                                        overwrite_existing=False,
+                                        delete_on_failure=True)
+        except LibcloudError:
+           pass
+        else:
+           self.fail('Exception was not thrown')
 
     def test_upload_object_invalid_hash1(self):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
@@ -471,6 +523,15 @@ class S3MockRawResponse(MockRawResponse):
 
     fixtures = StorageFileFixtures('s3')
 
+    def _foo_bar_container_foo_bar_object(self, method, url, body, headers):
+        # test_download_object_success
+        body = ''
+        self._data = self._generate_random_data(1000)
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
     def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url, body, headers):
         body = ''
         # test_upload_object_invalid_hash1
@@ -492,6 +553,14 @@ class S3MockRawResponse(MockRawResponse):
         # test_upload_object_success
         body = ''
         headers = { 'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url, body, headers):
+        # test_upload_object_invalid_file_size
+        body = ''
         return (httplib.OK,
                 body,
                 headers,
