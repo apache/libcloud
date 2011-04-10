@@ -352,7 +352,8 @@ class S3StorageDriver(StorageDriver):
         headers = response.headers
         response = response.response
 
-        if file_hash and file_hash != headers['etag'].replace('"', ''):
+        if (file_hash and response.status == httplib.BAD_REQUEST) or \
+           (file_hash and file_hash != headers['etag'].replace('"', '')):
             raise ObjectHashMismatchError(
                 value='MD5 hash checksum does not match',
                 object_name=object_name, driver=self)
