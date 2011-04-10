@@ -4,4 +4,6 @@ MANIFEST.in
 apidocs/
 CHANGES
 HACKING
-test/fixtures/
+test/storage/fixtures/
+test/compute/fixtures/
+coverage_html_report/
