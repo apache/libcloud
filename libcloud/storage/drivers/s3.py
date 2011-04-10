@@ -237,8 +237,8 @@ class S3StorageDriver(StorageDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        container_name = self._clean_name(obj.container.name)
-        object_name = self._clean_name(obj.name)
+        container_name = self._clean_object_name(obj.container.name)
+        object_name = self._clean_object_name(obj.name)
 
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),
@@ -255,8 +255,8 @@ class S3StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def download_object_as_stream(self, obj, chunk_size=None):
-        container_name = self._clean_name(obj.container.name)
-        object_name = self._clean_name(obj.name)
+        container_name = self._clean_object_name(obj.container.name)
+        object_name = self._clean_object_name(obj.name)
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),
                                            method='GET', raw=True)
@@ -288,7 +288,7 @@ class S3StorageDriver(StorageDriver):
             'upload_object_via_stream not implemented for this driver')
 
     def delete_object(self, obj):
-        object_name = self._clean_name(name=obj.name)
+        object_name = self._clean_object_name(name=obj.name)
         response = self.connection.request('/%s/%s' % (obj.container.name,
                                                        object_name),
                                            method='DELETE')
@@ -300,13 +300,8 @@ class S3StorageDriver(StorageDriver):
 
         return False
 
-    def _clean_name(self, name):
+    def _clean_object_name(self, name):
         name = urllib.quote(name)
-        return name
-
-    def _clean_container_name(self, name):
-        # Invalid characters: _
-        name = name.replace('_', '')
         return name
 
     def _put_object(self, container, object_name, upload_func,
@@ -321,7 +316,7 @@ class S3StorageDriver(StorageDriver):
         headers['x-amz-storage-class'] = storage_class.upper()
 
         container_name_cleaned = container.name
-        object_name_cleaned = self._clean_name(object_name)
+        object_name_cleaned = self._clean_object_name(object_name)
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
 
