@@ -247,7 +247,7 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=S3StorageDriver)
-        destination_path = os.path.abspath(__file__) 
+        destination_path = os.path.abspath(__file__)
         try:
             self.driver.download_object(obj=obj,
                                         destination_path=destination_path,
@@ -255,6 +255,33 @@ class S3Tests(unittest.TestCase):
                                         delete_on_failure=True)
         except LibcloudError:
            pass
+        else:
+           self.fail('Exception was not thrown')
+
+    def test_download_object_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=S3StorageDriver)
+
+        stream = self.driver.download_object_as_stream(obj=obj, chunk_size=None)
+        self.assertTrue(hasattr(stream, '__iter__'))
+
+    def test_upload_object_invalid_ex_storage_class(self):
+        # Invalid hash is detected on the amazon side and BAD_REQUEST is
+        # returned
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = 'foo_test_upload'
+        try:
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name,
+                                      file_hash='0cc175b9c0f1b6a831c399e269772661',
+                                      ex_storage_class='invalid-class')
+        except ValueError, e:
+            self.assertTrue(str(e).lower().find('invalid storage class') != -1)
+            pass
         else:
            self.fail('Exception was not thrown')
 
@@ -320,11 +347,14 @@ class S3Tests(unittest.TestCase):
         file_path = os.path.abspath(__file__)
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
+        extra = {'meta_data': { 'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path, container=container,
                                       object_name=object_name,
+                                      extra=extra,
                                       file_hash='0cc175b9c0f1b6a831c399e269772661')
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, 1000)
+        self.assertTrue('some-value' in obj.meta_data)
         S3StorageDriver._upload_file = old_func
 
     def test_upload_object_via_stream(self):
