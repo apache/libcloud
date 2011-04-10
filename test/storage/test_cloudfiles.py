@@ -14,7 +14,6 @@
 # limitations under the License.
 import os
 import os.path                          # pylint: disable-msg=W0404
-import random
 import sys
 import copy
 import unittest
@@ -182,7 +181,6 @@ class CloudFilesTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_download_object_success_not_found(self):
-        #CloudFilesMockHttp.type = 'NOT_FOUND'
         CloudFilesMockRawResponse.type = 'NOT_FOUND'
         container = Container(name='foo_bar_container', extra={}, driver=self)
 
@@ -201,9 +199,6 @@ class CloudFilesTests(unittest.TestCase):
             pass
         else:
             self.fail('Object does not exist but an exception was not thrown')
-
-    def object_as_stream(self):
-        pass
 
     def test_upload_object_success(self):
         def upload_file(self, response, file_path, chunked=False,
