@@ -216,7 +216,7 @@ class S3StorageDriver(StorageDriver):
             child.text = self.ex_location_name
             data = tostring(root)
         else:
-            data = None
+            data = ''
 
         response = self.connection.request('/%s' % (container_name),
                                            data=data,
