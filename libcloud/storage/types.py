@@ -44,8 +44,8 @@ class Provider(object):
     S3 = 3
     S3_US_WEST = 4
     S3_EU_WEST = 5
-    S3_AP_SOUTHEAST_HOST = 6
-    S3_AP_NORTHEAST_HOST = 7
+    S3_AP_SOUTHEAST = 6
+    S3_AP_NORTHEAST = 7
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
