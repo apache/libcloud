@@ -107,11 +107,14 @@ class S3Connection(ConnectionUserAndKey):
         """
         special_header_keys = [ 'content-md5', 'content-type', 'date' ]
         special_header_values = { 'date': '' }
+        amz_header_values = {}
 
         headers_copy = copy.deepcopy(headers)
         for key, value in headers_copy.iteritems():
             if key.lower() in special_header_keys:
                 special_header_values[key.lower()] = value.lower().strip()
+            elif key.lower().startswith('x-amz-'):
+                amz_header_values[key.lower()] = value.lower().strip()
 
         if not special_header_values.has_key('content-md5'):
             special_header_values['content-md5'] = ''
@@ -131,7 +134,21 @@ class S3Connection(ConnectionUserAndKey):
             buf.append(value)
         string_to_sign = '\n'.join(buf)
 
-        string_to_sign = '%s\n%s' % (string_to_sign, path)
+        keys_sorted = amz_header_values.keys()
+        keys_sorted.sort()
+
+        amz_header_string = []
+        for key in keys_sorted:
+            value = amz_header_values[key]
+            amz_header_string.append('%s:%s' % (key, value))
+        amz_header_string = '\n'.join(amz_header_string)
+
+        values_to_sign = []
+        for value in [ string_to_sign, amz_header_string, path]:
+            if value:
+                values_to_sign.append(value)
+
+        string_to_sign = '\n'.join(values_to_sign)
         b64_hmac = base64.b64encode(
             hmac.new(secret_key, string_to_sign, digestmod=sha1).digest()
         )
@@ -193,13 +210,18 @@ class S3StorageDriver(StorageDriver):
                                       object_name=object_name)
 
     def create_container(self, container_name):
-        root = Element('CreateBucketConfiguration')
-        child = SubElement(root, 'LocationConstraint')
-        child.text = self.ex_location_name
+        if self.ex_location_name:
+            root = Element('CreateBucketConfiguration')
+            child = SubElement(root, 'LocationConstraint')
+            child.text = self.ex_location_name
+            data = tostring(root)
+        else:
+            data = None
 
         response = self.connection.request('/%s' % (container_name),
-                                           data=tostring(root),
+                                           data=data,
                                            method='PUT')
+
         if response.status == httplib.OK:
             container = Container(name=container_name, extra=None, driver=self)
             return container
