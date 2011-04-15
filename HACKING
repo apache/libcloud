@@ -56,7 +56,7 @@ Testing
 
  To run specific tests:
 
-  libcloud$ PYTHONPATH=. python test/test_base.py
+  libcloud$ PYTHONPATH=. python test/compute/test_base.py
   .......
   ----------------------------------------------------------------------
   Ran 7 tests in 0.001s
