@@ -34,11 +34,12 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
-API_VERSION = '1.7'
+API_VERSION = '1.8'
 
 STATE = {
     "Starting": NodeState.PENDING,
     "On": NodeState.RUNNING,
+    "On/Saving": NodeState.RUNNING,
     "Off": NodeState.PENDING,
     "Restarting": NodeState.REBOOTING,
     "Saving": NodeState.PENDING,
@@ -178,8 +179,7 @@ class GoGridNodeDriver(NodeDriver):
                  state=state,
                  public_ip=[ip],
                  private_ip=[],
-                 extra={'ram': element.get('ram').get('name'),
-                     'isSandbox': element['isSandbox'] == 'true'},
+                 extra={'ram': element.get('ram').get('name')},
                  driver=self.connection.driver)
         if password:
             n.extra['password'] = password
@@ -319,7 +319,6 @@ class GoGridNodeDriver(NodeDriver):
         params = {'name': name,
                   'image': image.id,
                   'description': kwargs.get('ex_description', ''),
-                  'isSandbox': str(kwargs.get('ex_issandbox', False)).lower(),
                   'server.ram': size.id,
                   'ip': ip}
 
@@ -336,8 +335,6 @@ class GoGridNodeDriver(NodeDriver):
 
         @keyword    ex_description: Description of a Node
         @type       ex_description: C{string}
-        @keyword    ex_issandbox: Should server be sendbox?
-        @type       ex_issandbox: C{bool}
         @keyword    ex_ip: Public IP address to use for a Node. If not
                     specified, first available IP address will be picked
         @type       ex_ip: C{string}
