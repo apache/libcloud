@@ -1,36 +1,40 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
-   *) When creating an EC2 node, don't ignore the name argument
-      and create a "Name" tag with the value of this argument.
-      [Tomaz Muraus]
+    *) Update GoGrid driver to use API Version 1.8. Sandbox flag
+       for servers is no longer used.
+       [Roman Bogorodskiy]
 
-   *) Add Gandi.net driver.
-      [Aymeric Barantal]
+    *) When creating an EC2 node, don't ignore the name argument
+       and create a "Name" tag with the value of this argument.
+       [Tomaz Muraus]
 
-   *) Add extension method for modifying node attributes and
-      changing the node size (EC2 driver).
-      [Tomaz Muraus]
+    *) Add Gandi.net driver.
+       [Aymeric Barantal]
 
-   *) Add Bluebox driver.
-      [Christian Paredes]
+    *) Add extension method for modifying node attributes and
+       changing the node size (EC2 driver).
+       [Tomaz Muraus]
 
-   *) Add Nimbus driver.
-      [David LaBissoniere]
+    *) Add Bluebox driver.
+       [Christian Paredes]
 
-   *) Minor fixes to get the library and tests working on
-      Python 2.7 and PyPy.
-      [Tomaz Muraus]
+    *) Add Nimbus driver.
+       [David LaBissoniere]
 
-   *) Added "pricing" module and improved pricing handling.
-      [Tomaz Muraus]
+    *) Minor fixes to get the library and tests working on
+       Python 2.7 and PyPy.
+       [Tomaz Muraus]
 
-   *) Add support for the new Amazon Region (Tokyo)
-      [Tomaz Muraus]
+    *) Added "pricing" module and improved pricing handling.
+       [Tomaz Muraus]
 
-   *) Implement ex_rebuild() and ex_get_node_details()
-      routines for Rackspace driver.
-      [Andrew Klochkov]
+    *) Add support for the new Amazon Region (Tokyo)
+       [Tomaz Muraus]
+
+    *) Implement ex_rebuild() and ex_get_node_details()
+       routines for Rackspace driver.
+       [Andrew Klochkov]
 
     *) Implement ex_list_ips() for GoGrid driver to list
        IP addresses assigned to the account. Make use of
