@@ -1,6 +1,11 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+    *) Add support for Load Balancing services, available through
+       libcloud.resource.lb. Drivers for Rackspace and GoGrid are
+       included.
+       [Roman Bogorodskiy]
+
     *) Update GoGrid driver to use API Version 1.8. Sandbox flag
        for servers is no longer used.
        [Roman Bogorodskiy]
