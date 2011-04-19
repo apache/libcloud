@@ -150,6 +150,9 @@ setup(
         'libcloud.compute',
         'libcloud.compute.drivers',
         'libcloud.drivers',
+        'libcloud.resource',
+        'libcloud.resource.lb',
+        'libcloud.resource.lb.drivers',
     ],
     package_dir={
         'libcloud': 'libcloud',

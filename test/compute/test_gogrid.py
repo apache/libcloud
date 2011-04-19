@@ -19,7 +19,8 @@ import urlparse
 
 from libcloud.compute.base import NodeState, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
-from libcloud.compute.drivers.gogrid import GoGridNodeDriver, GoGridIpAddress
+from libcloud.common.gogrid import GoGridIpAddress
+from libcloud.compute.drivers.gogrid import GoGridNodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
 from test import MockHttp               # pylint: disable-msg=E0611
