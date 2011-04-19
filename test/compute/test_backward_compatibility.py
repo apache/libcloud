@@ -32,7 +32,8 @@ class BackwardCompatibilityTests(unittest.TestCase):
         from libcloud.drivers.cloudsigma import CloudSigmaZrhNodeDriver
         from libcloud.drivers.rimuhosting import RimuHostingNodeDriver
         from libcloud.drivers.elastichosts import ElasticHostsBaseNodeDriver
-        from libcloud.drivers.gogrid import GoGridNodeDriver, GoGridIpAddress
+        from libcloud.drivers.gogrid import GoGridNodeDriver
+        from libcloud.common.gogrid import GoGridIpAddress
         from libcloud.drivers.linode import LinodeNodeDriver
         from libcloud.drivers.vpsnet import VPSNetNodeDriver
         from libcloud.drivers.opennebula import OpenNebulaNodeDriver
