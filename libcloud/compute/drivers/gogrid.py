@@ -24,17 +24,12 @@ try:
 except ImportError:
     import simplejson as json
 
-from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
-
-HOST = 'api.gogrid.com'
-PORTS_BY_SECURITY = { True: 443, False: 80 }
-API_VERSION = '1.8'
 
 STATE = {
     "Starting": NodeState.PENDING,
@@ -75,64 +70,6 @@ GOGRID_INSTANCE_TYPES = {
 }
 
 
-class GoGridResponse(Response):
-
-    def success(self):
-        if self.status == 403:
-            raise InvalidCredsError('Invalid credentials', GoGridNodeDriver)
-        if self.status == 401:
-            raise InvalidCredsError('API Key has insufficient rights', GoGridNodeDriver)
-        if not self.body:
-            return None
-        try:
-            return json.loads(self.body)['status'] == 'success'
-        except ValueError:
-            raise MalformedResponseError('Malformed reply', body=self.body, driver=GoGridNodeDriver)
-
-    def parse_body(self):
-        if not self.body:
-            return None
-        return json.loads(self.body)
-
-    def parse_error(self):
-        try:
-            return json.loads(self.body)["list"][0]['message']
-        except (ValueError, KeyError):
-            return None
-
-class GoGridConnection(ConnectionUserAndKey):
-    """
-    Connection class for the GoGrid driver
-    """
-
-    host = HOST
-    responseCls = GoGridResponse
-
-    def add_default_params(self, params):
-        params["api_key"] = self.user_id
-        params["v"] = API_VERSION
-        params["format"] = 'json'
-        params["sig"] = self.get_signature(self.user_id, self.key)
-
-        return params
-
-    def get_signature(self, key, secret):
-        """ create sig from md5 of key + secret + time """
-        m = hashlib.md5(key+secret+str(int(time.time())))
-        return m.hexdigest()
-
-class GoGridIpAddress(object):
-    """
-    IP Address
-    """
-
-    def __init__(self, id, ip, public, state, subnet):
-        self.id = id
-        self.ip = ip
-        self.public = public
-        self.state = state
-        self.subnet = subnet
-
 class GoGridNode(Node):
     # Generating uuid based on public ip to get around missing id on
     # create_node in gogrid api
@@ -144,7 +81,7 @@ class GoGridNode(Node):
             "%s:%d" % (self.public_ip,self.driver.type)
         ).hexdigest()
 
-class GoGridNodeDriver(NodeDriver):
+class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     """
     GoGrid node driver
     """
@@ -202,19 +139,6 @@ class GoGridNodeDriver(NodeDriver):
                 country="US",
                 driver=self.connection.driver)
         return location
-
-    def _to_ip(self, element):
-        ip = GoGridIpAddress(id=element['id'],
-                ip=element['ip'],
-                public=element['public'],
-                subnet=element['subnet'],
-                state=element["state"]["name"])
-        ip.location = self._to_location(element['datacenter'])
-        return ip
-
-    def _to_ips(self, object):
-        return [ self._to_ip(el)
-                for el in object['list'] ]
 
     def _to_locations(self, object):
         return [self._to_location(el)

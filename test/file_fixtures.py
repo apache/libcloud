@@ -19,13 +19,14 @@ import os
 
 FIXTURES_ROOT = {
     'compute': 'compute/fixtures',
-    'storage': 'storage/fixtures'
+    'storage': 'storage/fixtures',
+    'resource': 'resource/fixtures',
 }
 
 class FileFixtures(object):
     def __init__(self, fixtures_type, sub_dir=''):
         script_dir = os.path.abspath(os.path.split(__file__)[0])
-        self.root = os.path.join(script_dir, FIXTURES_ROOT[fixtures_type], 
+        self.root = os.path.join(script_dir, FIXTURES_ROOT[fixtures_type],
                                  sub_dir)
 
     def load(self, file):
@@ -33,7 +34,7 @@ class FileFixtures(object):
         if os.path.exists(path):
             return open(path, 'r').read()
         else:
-            raise IOError
+            raise IOError(path)
 
 class ComputeFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
@@ -43,4 +44,9 @@ class ComputeFileFixtures(FileFixtures):
 class StorageFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
         super(StorageFileFixtures, self).__init__(fixtures_type='storage',
+                                                  sub_dir=sub_dir)
+
+class ResourceFileFixtures(FileFixtures):
+    def __init__(self, sub_dir=''):
+        super(ResourceFileFixtures, self).__init__(fixtures_type='resource',
                                                   sub_dir=sub_dir)
