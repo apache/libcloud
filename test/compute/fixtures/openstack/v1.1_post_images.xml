@@ -1,0 +1,18 @@
+<image xmlns="http://docs.openstack.org/compute/api/v1.1"
+       xmlns:atom="http://www.w3.org/2005/Atom"
+       id="22" name="Just in case"
+       created="2010-10-10T12:00:00Z"
+       status="SAVING" progress="0"
+       serverRef="http://servers.api.openstack.org/v1.1/1234/servers/12">
+    <atom:link
+            rel="self"
+            href="http://servers.api.openstack.org/v1.1/1234/images/22"/>
+    <atom:link
+            rel="bookmark"
+            type="application/vnd.openstack.compute-v1.1+xml"
+            href="http://servers.api.openstack.org/1234/images/22"/>
+    <atom:link
+            rel="bookmark"
+            type="application/vnd.openstack.compute-v1.1+json"
+            href="http://servers.api.openstack.org/1234/images/22"/>
+</image>

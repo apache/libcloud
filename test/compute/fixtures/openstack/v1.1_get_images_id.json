@@ -1,0 +1,31 @@
+{
+    "image" : {
+        "id" : 2,
+        "name" : "CentOS 5.2",
+        "serverRef" : "http://servers.api.openstack.org/v1.1/1234/servers/12",
+        "updated" : "2010-10-10T12:00:00Z",
+        "created" : "2010-08-10T12:00:00Z",
+        "status" : "SAVING",
+        "progress" : 80,
+        "metadata" : {
+            "ImageVersion" : "1.5",
+            "ImageType" : "Gold"
+        },
+        "links": [
+            {
+                "rel" : "self",
+                "href" : "http://servers.api.openstack.org/v1.1/1234/images/1"
+            },
+            {
+                "rel" : "bookmark",
+                "type" : "application/vnd.openstack.computev1.1+xml",
+                "href" : "http://servers.api.openstack.org/1234/images/1"
+            },
+            {
+                "rel" : "bookmark",
+                "type" : "application/vnd.openstack.computev1.1+json",
+                "href" : "https://servers.api.rackspacecloud.com/v1.1/1234/images/1"
+            }
+        ]
+    }
+}

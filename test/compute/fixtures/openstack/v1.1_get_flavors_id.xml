@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flavor
+        xmlns="http://docs.openstack.org/compute/api/v1.1"
+        xmlns:atom="http://www.w3.org/2005/Atom"
+        id="1" name="256 MB Server" ram="256" disk="10">
+    <atom:link
+            rel="self"
+            href="http://servers.api.openstack.org/v1.1/1234/flavors/1"/>
+    <atom:link
+            rel="bookmark"
+            type="application/vnd.openstack.compute-v1.1+xml"
+            href="http://servers.api.openstack.org/1234/flavors/1"/>
+    <atom:link
+            rel="bookmark"
+            type="application/vnd.openstack.compute-v1.1+json"
+            href="http://servers.api.openstack.org/1234/flavors/1"/>
+</flavor>

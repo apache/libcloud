@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<image
+        xmlns="http://docs.openstack.org/compute/api/v1.1"
+        xmlns:atom="http://www.w3.org/2005/Atom"
+        id="1" name="CentOS 5.2"
+        serverRef="http://servers.api.openstack.org/v1.1/1234/servers/12"
+        updated="2010-10-10T12:00:00Z"
+        created="2010-08-10T12:00:00Z"
+        status="SAVING" progress="80">
+    <metadata>
+        <meta key="ImageVersion">1.5</meta>
+        <meta key="ImageType">Gold</meta>
+    </metadata>
+    <atom:link
+            rel="self"
+            href="http://servers.api.openstack.org/v1.1/1234/images/1"/>
+    <atom:link
+            rel="bookmark"
+            type="application/vnd.openstack.compute-v1.1+xml"
+            href="http://servers.api.openstack.org/1234/images/1"/>
+    <atom:link
+            rel="bookmark"
+            type="application/vnd.openstack.compute-v1.1+json"
+            href="http://servers.api.openstack.org/1234/images/1"/>
+</image>

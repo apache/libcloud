@@ -1,0 +1,24 @@
+{
+    "flavor" : {
+        "id" : 1,
+        "name" : "256 MB Server",
+        "ram" : 256,
+        "disk" : 10,
+        "links": [
+            {
+                "rel" : "self",
+                "href" : "http://servers.api.openstack.org/v1.1/1234/flavors/1"
+            },
+            {
+                "rel" : "bookmark",
+                "type" : "application/vnd.openstack.computev1.1+xml",
+                "href" : "http://servers.api.openstack.org/1234/flavors/1"
+            },
+            {
+                "rel" : "bookmark",
+                "type" : "application/vnd.openstack.computev1.1+json",
+                "href" : "http://servers.api.openstack.org/1234/flavors/1"
+            }
+        ]
+    }
+}

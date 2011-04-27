@@ -1,0 +1,84 @@
+{
+    "images" : [
+        {
+            "id" : 1,
+            "name" : "CentOS 5.2",
+            "updated" : "2010-10-10T12:00:00Z",
+            "created" : "2010-08-10T12:00:00Z",
+            "status" : "ACTIVE",
+            "metadata" : {
+                "ImageType" : "Gold",
+                "ImageVersion" : "1.5"
+            },
+            "links": [
+                {
+                    "rel" : "self",
+                    "href" : "http://servers.api.openstack.org/v1.1/1234/images/1"
+                },
+                {
+                    "rel" : "bookmark",
+                    "type" : "application/vnd.openstack.compute-v1.1+xml",
+                    "href" : "http://servers.api.openstack.org/1234/images/1"
+                },
+                {
+                    "rel" : "bookmark",
+                    "type" : "application/vnd.openstack.compute-v1.1+json",
+                    "href" : "http://servers.api.openstack.org/1234/images/1"
+                }
+            ]
+        },
+        {
+            "id" : 743,
+            "name" : "My Server Backup",
+            "serverRef" : "http://servers.api.openstack.org/v1.1/1234/servers/12",
+            "updated" : "2010-10-10T12:00:00Z",
+            "created" : "2009-07-07T09:56:16Z",
+            "status" : "SAVING",
+            "progress" : 80,
+            "links": [
+                {
+                    "rel" : "self",
+                    "href" : "http://servers.api.openstack.org/v1.1/1234/images/743"
+                },
+                {
+                    "rel" : "bookmark",
+                    "type" : "application/vnd.openstack.compute-v1.1+xml",
+                    "href" : "http://servers.api.openstack.org/1234/images/743"
+                },
+                {
+                    "rel" : "bookmark",
+                    "type" : "application/vnd.openstack.compute-v1.1+json",
+                    "href" : "http://servers.api.openstack.org/1234/images/743"
+                }
+            ]
+        },
+        {
+            "id" : 5,
+            "name" : "CentOS 5.2",
+            "serverRef" : 12,
+            "updated" : "2010-10-10T12:00:00Z",
+            "created" : "2010-08-10T12:00:00Z",
+            "status" : "ACTIVE",
+            "metadata" : {
+                "ImageType" : "Gold",
+                "ImageVersion" : "1.5"
+            },
+            "links": [
+                {
+                    "rel" : "self",
+                    "href" : "http://servers.api.openstack.org/v1.1/1234/images/1"
+                },
+                {
+                    "rel" : "bookmark",
+                    "type" : "application/vnd.openstack.compute-v1.1+xml",
+                    "href" : "http://servers.api.openstack.org/1234/images/1"
+                },
+                {
+                    "rel" : "bookmark",
+                    "type" : "application/vnd.openstack.compute-v1.1+json",
+                    "href" : "http://servers.api.openstack.org/1234/images/1"
+                }
+            ]
+        }
+    ]
+}

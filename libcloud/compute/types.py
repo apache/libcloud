@@ -54,6 +54,8 @@ class Provider(object):
     @cvar NIMBUS: Nimbus
     @cvar BLUEBOX: Bluebox
     @cvar OPSOURCE: Opsource Cloud
+    @cvar OPENSTACK1_0: OpenStack Cloud API version 1.0
+    @cvar OPENSTACK1_1: OpenStack Cloud API version 1.1
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -88,7 +90,8 @@ class Provider(object):
     BLUEBOX = 28
     GANDI = 29
     OPSOURCE = 30
-    OPENSTACK = 31
+    OPENSTACK1_0 = 31
+    OPENSTACK1_1 = 32
 
 class NodeState(object):
     """

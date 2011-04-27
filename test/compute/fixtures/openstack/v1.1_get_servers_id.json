@@ -1,0 +1,64 @@
+{
+    "server" : {
+        "id" : 1234,
+        "name" : "sample-server",
+        "imageRef" : "https://servers.api.rackspacecloud.com/v1.1/1234/images/1",
+        "flavorRef" : "http://servers.api.openstack.org/1234/flavors/1",
+        "updated" : "2010-10-10T12:00:00Z",
+        "created" : "2010-08-10T12:00:00Z",
+        "hostId" : "e4d909c290d0fb1ca068ffaddf22cbd0",
+        "affinityId" : "fc88bcf8394db9c8d0564e08ca6a9724188a84d1",
+        "status" : "BUILD",
+        "progress" : 60,
+        "addresses" : {
+            "public": [
+                {
+                    "version" : 4,
+                    "addr" : "67.23.10.132"
+                },
+                {
+                    "version" : 6,
+                    "addr" : "::babe:67.23.10.132"
+                },
+                {
+                    "version" : 4,
+                    "addr" : "67.23.10.131"
+                },
+                {
+                    "version" : 6,
+                    "addr" : "::babe:4317:0A83"
+                }
+            ],
+            "private" : [
+                {
+                    "version" : 4,
+                    "addr" : "10.176.42.16"
+                },
+                {
+                    "version" : 6,
+                    "addr" : "::babe:10.176.42.16"
+                }
+            ]
+        },
+        "metadata" : {
+            "Server Label" : "Web Head 1",
+            "Image Version" : "2.1"
+        },
+        "links": [
+            {
+                "rel" : "self",
+                "href" : "http://servers.api.openstack.org/v1.1/1234/servers/1234"
+            },
+            {
+                "rel" : "bookmark",
+                "type" : "application/vnd.openstack.compute-v1.1+xml",
+                "href" : "http://servers.api.openstack.org/1234/servers/1234"
+            },
+            {
+                "rel" : "bookmark",
+                "type" : "application/vnd.openstack.compute-v1.1+json",
+                "href" : "http://servers.api.openstack.org/1234/servers/1234"
+            }
+        ]
+    }
+}

@@ -83,8 +83,10 @@ DRIVERS = {
         ('libcloud.compute.drivers.gandi', 'GandiNodeDriver'),
     Provider.OPSOURCE:
         ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver'),
-    Provider.OPENSTACK:
-        ('libcloud.compute.drivers.rackspace', 'OpenStackNodeDriver'),
+    Provider.OPENSTACK1_0:
+        ('libcloud.compute.drivers.rackspace', 'OpenStackNodeDriver1_0'),
+    Provider.OPENSTACK1_1:
+        ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver1_1')
 }
 
 def get_driver(provider):
