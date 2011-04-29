@@ -170,7 +170,8 @@ class LoggingConnection():
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
 
-        cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
+        is_ssl = isinstance(self, LibcloudHTTPSConnection)
+        cmd.extend([pquote("http%s://%s:%d%s" % (is_ssl and 's' or '', self.host, self.port, url))])
         return " ".join(cmd)
 
 class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
