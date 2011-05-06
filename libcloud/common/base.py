@@ -261,9 +261,14 @@ class ConnectionKey(object):
         @returns: A connection
         """
         host = host or self.host
-        port = port or self.port[self.secure]
 
-        kwargs = {'host': host, 'port': port}
+        # port might be included in service url, so pick it if it's present
+        if ":" in host:
+            host, port = host.split(":")
+        else:
+            port = port or self.port[self.secure]
+
+        kwargs = {'host': host, 'port': int(port)}
 
         connection = self.conn_classes[self.secure](**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server

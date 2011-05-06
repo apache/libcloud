@@ -88,6 +88,7 @@ class Provider(object):
     BLUEBOX = 28
     GANDI = 29
     OPSOURCE = 30
+    OPENSTACK = 31
 
 class NodeState(object):
     """
