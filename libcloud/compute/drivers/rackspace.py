@@ -556,7 +556,7 @@ class RackspaceUKNodeDriver(RackspaceNodeDriver):
 class OpenStackConnection(RackspaceConnection):
 
     def __init__(self, user_id, key, secure, host, port):
-        super(OpenStackConnection, self).__init__(user_id, key, secure=False)
+        super(OpenStackConnection, self).__init__(user_id, key, secure=secure)
         self.auth_host = host
         self.port = (port, port)
 
