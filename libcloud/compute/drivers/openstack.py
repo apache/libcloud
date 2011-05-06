@@ -24,7 +24,7 @@ from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeDriver, Node, NodeLocation
 from libcloud.compute.base import NodeSize, NodeImage
 
-class OpenStackResponse(Response):
+class OpenStackResponse1_1(Response):
 
     @staticmethod
     def is_success(status):
@@ -47,7 +47,7 @@ class OpenStackResponse(Response):
         return int(status) in (200, 202, 203, 204)
 
     def success(self):
-        return OpenStackResponse.is_success(self.status)
+        return OpenStackResponse1_1.is_success(self.status)
 
     def parse_body(self):
         if not self.body:
@@ -55,7 +55,7 @@ class OpenStackResponse(Response):
         try:
             body = json.loads(self.body)
         except:
-            raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=OpenStackNodeDriver)
+            raise MalformedResponseError("Failed to parse JSON", body=self.body, driver=OpenStackNodeDriver1_1)
         return body
 
     def parse_error(self):
@@ -63,17 +63,17 @@ class OpenStackResponse(Response):
         #TODO get test fixture and implement error message retrieval from json
         return '%s %s' % (self.status, self.error)
 
-class OpenStackConnection(ConnectionUserAndKey):
+class OpenStackConnection1_1(ConnectionUserAndKey):
     """ Connection class for the OpenStack driver """
     
-    responseCls = OpenStackResponse
+    responseCls = OpenStackResponse1_1
 
     def __init__(self, user_name, api_key, url, secure):
         self.server_url = url
         r = urlparse.urlparse(url)
         self.api_version = r.path # here we rely on structure http://hostname:port/v1.0 so path=path_version
         self.auth_token = None
-        super(OpenStackConnection, self).__init__(user_id=user_name, key=api_key, secure=secure, host=r.hostname, port=r.port)
+        super(OpenStackConnection1_1, self).__init__(user_id=user_name, key=api_key, secure=secure, host=r.hostname, port=r.port)
 
     def encode_data(self, data): #TODO implement and parametrise body encoding
         return data
@@ -91,7 +91,7 @@ class OpenStackConnection(ConnectionUserAndKey):
         if method in ("POST", "PUT"):
             headers = {'Content-Type': 'application/json'}#TODO parametrise Content-Type
             #TODO check what about token cache-expire in OS
-        return super(OpenStackConnection, self).request(
+        return super(OpenStackConnection1_1, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers
@@ -125,11 +125,11 @@ class OpenStackConnection(ConnectionUserAndKey):
         except KeyError:
             raise InvalidCredsError()
         
-class OpenStackNodeDriver(NodeDriver):
+class OpenStackNodeDriver1_1(NodeDriver):
     """ OpenStack node driver. """
-    connectionCls = OpenStackConnection
-    name = 'OpenStack'
-    type = Provider.OPENSTACK
+    connectionCls = OpenStackConnection1_1
+    name = 'OpenStack1.1'
+    type = Provider.OPENSTACK1_1
 
     features = {"create_node": ["generates_password"]}
 
@@ -162,7 +162,7 @@ class OpenStackNodeDriver(NodeDriver):
         @keyword    secure: use HTTPS or HTTP. Note: currently only HTTP
         @type       secure: bool
         """
-        self.connection = OpenStackConnection(user_name=user_name, api_key=api_key, url=url, secure= secure)
+        self.connection = OpenStackConnection1_1(user_name=user_name, api_key=api_key, url=url, secure= secure)
         self.connection.driver = self
         self.connection.connect()
 
@@ -183,7 +183,7 @@ class OpenStackNodeDriver(NodeDriver):
         self.list_sizes()
 
     def _to_size(self, el):
-        s = OpenstackNodeSize(id=el.get('id'),
+        s = OpenstackNodeSize1_1(id=el.get('id'),
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
                      name=el.get('name'),
@@ -254,7 +254,7 @@ class OpenStackNodeDriver(NodeDriver):
 
     def _to_node(self, server_dict):
         """ Here we expect a dictionary which is under the clause server or servers in /servers or /servers/detail """
-        ips = OpenStackIps(server_dict['addresses'])
+        ips = OpenStackIps1_1(server_dict['addresses'])
 
         n = Node(id=server_dict.get('id'),
                  name=server_dict.get('name'),
@@ -279,7 +279,7 @@ class OpenStackNodeDriver(NodeDriver):
     def destroy_node(self, node):
         uri = '/servers/%s' % node.id
         resp = self.connection.request(uri, method='DELETE')
-        return OpenStackResponse.is_success(resp.status)
+        return OpenStackResponse1_1.is_success(resp.status)
 
     def reboot_node(self, node):
         return self._reboot_node(node, reboot_type='HARD')
@@ -316,7 +316,7 @@ class OpenStackNodeDriver(NodeDriver):
         resp = self.connection.request('/limits', method='GET')
         return resp.object['limits']
 
-class OpenStackIps(object):
+class OpenStackIps1_1(object):
     """
         Contains the list of public and private IPs
         @keyword    ip_list: IPs with the structure C{dict} {'values'}: [{'version':4, 'addr':''}, ], 'id' : 'public'}
@@ -338,9 +338,9 @@ class OpenStackIps(object):
             if ip['version'] == 6:
                 out_list_v6.append(ip['addr'])
 
-class OpenstackNodeSize(NodeSize):
+class OpenstackNodeSize1_1(NodeSize):
     """ extends base NodeSize with links section """
     links = []
     def __init__(self, id, name, ram, disk, bandwidth, price, driver, links):
-        super(OpenstackNodeSize, self).__init__(id, name, ram, disk, bandwidth, price, driver)
+        super(OpenstackNodeSize1_1, self).__init__(id, name, ram, disk, bandwidth, price, driver)
         self.links = links

@@ -19,24 +19,24 @@ import re
 from urllib2 import urlparse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import NodeImage, Node
-from libcloud.compute.drivers.openstack import OpenStackNodeDriver, OpenstackNodeSize
+from libcloud.compute.drivers.openstack import OpenStackNodeDriver1_1, OpenstackNodeSize1_1
 from libcloud.compute.types import NodeState
 from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
-class OpenStackTests(unittest.TestCase, TestCaseMixin):
+class OpenStackTests1_1(unittest.TestCase, TestCaseMixin):
     def setUp(self):
-        OpenStackNodeDriver.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
+        OpenStackNodeDriver1_1.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
         OpenStackMockHttp.type = None
-        self.driver = OpenStackNodeDriver(user_name='TestUser', api_key='TestKey',
+        self.driver = OpenStackNodeDriver1_1(user_name='TestUser', api_key='TestKey',
                                           url='http://test.url.faked.auth:3333/v1.1/')
         self.driver.list_nodes() # to authorize
 
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
-            self.driver = OpenStackNodeDriver('TestUser', 'TestKey', 'http://test.url.faked.auth:3333/v1.1/')
+            self.driver = OpenStackNodeDriver1_1('TestUser', 'TestKey', 'http://test.url.faked.auth:3333/v1.1/')
             self.driver.list_nodes() # authorization if first request
         except InvalidCredsError, e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
@@ -46,7 +46,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
     def test_auth_missing_key(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
-            self.driver = OpenStackNodeDriver('TestUser', 'TestKey', 'http://test.url.faked.auth:3333/v1.1/')
+            self.driver = OpenStackNodeDriver1_1('TestUser', 'TestKey', 'http://test.url.faked.auth:3333/v1.1/')
             self.driver.list_nodes() # authorization if first request
         except InvalidCredsError, e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
@@ -113,7 +113,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
 
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver, extra={'links':[{'href':'http://servers.api.openstack.org/1234/flavors/1'}]})
-        size = OpenstackNodeSize(1, '256 slice', None, None, None, None, driver=self.driver, links=[{'href':'http://servers.api.openstack.org/1234/flavors/1'}])
+        size = OpenstackNodeSize1_1(1, '256 slice', None, None, None, None, driver=self.driver, links=[{'href':'http://servers.api.openstack.org/1234/flavors/1'}])
         node = self.driver.create_node(name='new-server-test', image=image, size=size, shared_ip_group='group1')
         self.assertEqual(node.id, str(1235))
         self.assertEqual(node.driver, self.driver)
@@ -130,7 +130,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
     def test_create_node_with_metadata(self):
         OpenStackMockHttp.type = 'METADATA'
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver, extra={'links':[{'href':'http://servers.api.openstack.org/1234/flavors/1'}]})
-        size = OpenstackNodeSize(1, '256 slice', None, None, None, None, driver=self.driver, links=[{'href':'http://servers.api.openstack.org/1234/flavors/1'}])
+        size = OpenstackNodeSize1_1(1, '256 slice', None, None, None, None, driver=self.driver, links=[{'href':'http://servers.api.openstack.org/1234/flavors/1'}])
         metadata = {u'My Server Name': u'Apache1'}
         files = {'/file1': 'content1', '/file2': 'content2'}
         node = self.driver.create_node(name='new-server-test', image=image, size=size, metadata=metadata, files=files)

@@ -42,7 +42,7 @@ def main():
     - Destroy it
     """
 
-    OpenStackDriver = get_driver(Provider.OPENSTACK)
+    OpenStackDriver = get_driver(Provider.OPENSTACK1_1)
 
     import os
     try:
