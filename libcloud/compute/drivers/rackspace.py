@@ -552,3 +552,14 @@ class RackspaceUKNodeDriver(RackspaceNodeDriver):
 
     def list_locations(self):
         return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
+
+class OpenStackConnection(RackspaceConnection):
+
+    def __init__(self, user_id, key, secure, host, port):
+        super(OpenStackConnection, self).__init__(user_id, key, secure=False)
+        self.auth_host = host
+        self.port = (port, port)
+
+class OpenStackNodeDriver(RackspaceNodeDriver):
+    name = 'OpenStack'
+    connectionCls = OpenStackConnection
