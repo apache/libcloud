@@ -1,6 +1,11 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+    *) Add OpenStack driver, which is actually an extension for
+       Rackspace driver that allows to specify custom port and
+       host of user's OpenStack installation
+       [Roman Bogorodskiy]
+
     *) Add support for Load Balancing services, available through
        libcloud.resource.lb. Drivers for Rackspace and GoGrid are
        included.
