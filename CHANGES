@@ -1,7 +1,12 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
-    *) Add OpenStack driver, which is actually an extension for
+    *) Add OpenStack driver API 1.1, independent driver that allows to
+       deel with user's OpenStack installation.
+       Meets OpenStack revision 1054
+       [Eugene Polyan]
+
+    *) Add OpenStack driver API 1.0, which is actually an extension for
        Rackspace driver that allows to specify custom port and
        host of user's OpenStack installation
        [Roman Bogorodskiy]
