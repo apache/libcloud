@@ -30,12 +30,12 @@ __all__ = [
     "AUTH_HOST_US",
     "AUTH_HOST_UK"
     ]
+
 class RackspaceBaseConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure):
         self.cdn_management_url = None
         self.storage_url = None
         self.auth_token = None
-        self.request_path = None
         self.__host = None
         super(RackspaceBaseConnection, self).__init__(
             user_id, key, secure=secure)
@@ -46,13 +46,41 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
         return headers
 
     @property
+    def request_path(self):
+        return self.get_request_path(url_key=self._url_key)
+
+    @property
     def host(self):
+        # Default to server_host
+        return self.get_host(url_key=self._url_key)
+
+    def get_request_path(self, url_key):
+        value_key = '__request_path_%s' % (url_key)
+        value = getattr(self, value_key, None)
+
+        if not value:
+            self._populate_hosts_and_request_paths()
+            value = getattr(self, value_key, None)
+
+        return value
+
+    def get_host(self, url_key):
+        value_key = '__%s' % (url_key)
+        value = getattr(self, value_key, None)
+
+        if not value:
+            self._populate_hosts_and_request_paths()
+            value = getattr(self, value_key, None)
+
+        return value
+
+    def _populate_hosts_and_request_paths(self):
         """
         Rackspace uses a separate host for API calls which is only provided
         after an initial authentication request. If we haven't made that
         request yet, do it here. Otherwise, just return the management host.
         """
-        if not self.__host:
+        if not self.auth_token:
             # Initial connection used for authentication
             conn = self.conn_classes[self.secure](
                 self.auth_host, self.port[self.secure])
@@ -81,11 +109,12 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
             except KeyError:
                 raise InvalidCredsError()
 
-            scheme, server, self.request_path, param, query, fragment = (
-                urlparse.urlparse(getattr(self, self._url_key)))
+            for key in ['server_url', 'storage_url', 'cdn_management_url',
+                        'lb_url']:
+                scheme, server, request_path, param, query, fragment = (
+                    urlparse.urlparse(getattr(self, key)))
+                # Set host to where we want to make further requests to
+                setattr(self, '__%s' % (key), server)
+                setattr(self, '__request_path_%s' % (key), request_path)
 
-            # Set host to where we want to make further requests to;
-            self.__host = server
             conn.close()
-
-        return self.__host
