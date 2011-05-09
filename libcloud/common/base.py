@@ -303,7 +303,8 @@ class ConnectionKey(object):
                 data='',
                 headers=None,
                 method='GET',
-                raw=False):
+                raw=False,
+                host=None):
         """
         Request a given `action`.
 
@@ -327,6 +328,15 @@ class ConnectionKey(object):
         @type method: C{str}
         @param method: An HTTP method such as "GET" or "POST".
 
+        @type raw: C{bool}
+        @param raw: True to perform a "raw" request aka only send the headers
+                     and use the rawResponseCls class. This is used with
+                     storage API when uploading a file.
+
+        @type host: C{str}
+        @param host: To which host to send the request. If not specified,
+                     self.host is used.
+
         @return: An instance of type I{responseCls}
         """
         if params is None:
@@ -340,9 +350,10 @@ class ConnectionKey(object):
         params = self.add_default_params(params)
         # Extend default headers
         headers = self.add_default_headers(headers)
-        # We always send a content length and user-agent header
+        # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
-        headers.update({'Host': self.host})
+        host = host or self.host
+        headers.update({'Host': host})
         # Encode data if necessary
         if data != '' and data != None:
             data = self.encode_data(data)
