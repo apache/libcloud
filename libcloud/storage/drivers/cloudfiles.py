@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import httplib
-import os.path
 import urllib
 
 try:
