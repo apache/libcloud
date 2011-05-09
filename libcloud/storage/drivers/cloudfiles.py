@@ -103,7 +103,6 @@ class CloudFilesConnection(RackspaceBaseConnection):
 
         if cdn_request:
             host = self._get_host(url_key='cdn_management_url')
-            print host
         else:
             host = None
 
