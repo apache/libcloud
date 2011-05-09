@@ -69,6 +69,9 @@ class Object(object):
     def get_cdn_url(self):
         return self.driver.get_object_cdn_url(obj=self)
 
+    def enable_cdn(self):
+        return self.driver.enable_object_cdn(obj=self)
+
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
         return self.driver.download_object(self, destination_path,
@@ -111,6 +114,9 @@ class Container(object):
 
     def get_cdn_url(self):
         return self.driver.get_container_cdn_url(container=self)
+
+    def enable_cdn(self):
+        return self.driver.enable_container_cdn(container=self)
 
     def get_object(self, object_name):
         return self.driver.get_object(container_name=self.name,
@@ -248,6 +254,14 @@ class StorageDriver(object):
         """
         raise NotImplementedError(
             'get_object_cdn_url not implemented for this driver')
+
+    def enable_container_cdn(self, container):
+        raise NotImplementedError(
+            'enable_container_cdn not implemented for this driver')
+
+    def enable_object_cdn(self, obj):
+        raise NotImplementedError(
+            'enable_object_cdn not implemented for this driver')
 
     def download_object(self, obj, destination_path, delete_on_failure=True):
         """
