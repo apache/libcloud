@@ -47,14 +47,14 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
 
     @property
     def request_path(self):
-        return self.get_request_path(url_key=self._url_key)
+        return self._get_request_path(url_key=self._url_key)
 
     @property
     def host(self):
         # Default to server_host
-        return self.get_host(url_key=self._url_key)
+        return self._get_host(url_key=self._url_key)
 
-    def get_request_path(self, url_key):
+    def _get_request_path(self, url_key):
         value_key = '__request_path_%s' % (url_key)
         value = getattr(self, value_key, None)
 
@@ -64,7 +64,7 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
 
         return value
 
-    def get_host(self, url_key):
+    def _get_host(self, url_key):
         value_key = '__%s' % (url_key)
         value = getattr(self, value_key, None)
 
