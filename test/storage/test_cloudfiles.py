@@ -642,7 +642,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
 
         # test_upload_object_via_stream_success
         body = 'test'
-        return (httplib.OK,
+        return (httplib.CREATED,
                 body,
                 self.base_headers,
                 httplib.responses[httplib.OK])
