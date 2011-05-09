@@ -360,6 +360,10 @@ class CloudFilesStorageDriver(StorageDriver):
                 driver=self)
 
             return obj
+        else:
+            # @TODO: Add test case for this condition (probably 411)
+            raise LibcloudError('status_code=%s' % (response.status),
+                                driver=self)
 
     def _clean_container_name(self, name):
         """
