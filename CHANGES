@@ -1,6 +1,11 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+    *) Add implementation for the following methods to the CloudFiles
+       storage driver: enable_container_cdn(), get_container_cdn_url(),
+       get_object_cdn_url()
+       [Tomaz Muraus]
+
     *) Add OpenStack driver, which is actually an extension for
        Rackspace driver that allows to specify custom port and
        host of user's OpenStack installation
