@@ -104,7 +104,7 @@ class CloudFilesConnection(RackspaceBaseConnection):
             action = self.request_path + action
             params['format'] = 'json'
         if method in [ 'POST', 'PUT' ]:
-            headers = {'Content-Type': 'application/json; charset=UTF-8'}
+            headers.update({'Content-Type': 'application/json; charset=UTF-8'})
 
         return super(CloudFilesConnection, self).request(
             action=action,
