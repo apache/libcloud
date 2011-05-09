@@ -38,7 +38,9 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.rackspace import (
     AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
 
+CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
+
 
 class CloudFilesResponse(Response):
 
@@ -93,11 +95,18 @@ class CloudFilesConnection(RackspaceBaseConnection):
         self.accept_format = 'application/json'
 
     def request(self, action, params=None, data='', headers=None, method='GET',
-                raw=False):
+                raw=False, cdn_request=False):
         if not headers:
             headers = {}
         if not params:
             params = {}
+
+        if cdn_request:
+            host = self._get_host(url_key='cdn_management_url')
+            print host
+        else:
+            host = None
+
         # Due to first-run authentication request, we may not have a path
         if self.request_path:
             action = self.request_path + action
@@ -109,7 +118,7 @@ class CloudFilesConnection(RackspaceBaseConnection):
             action=action,
             params=params, data=data,
             method=method, headers=headers,
-            raw=raw
+            raw=raw, host=host
         )
 
 
@@ -205,6 +214,37 @@ class CloudFilesStorageDriver(StorageDriver):
             raise ObjectDoesNotExistError(None, self, object_name)
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
+
+    def get_container_cdn_url(self, container):
+        container_name = container.name
+        response = self.connection.request('/%s' % (container_name),
+                                           method='HEAD',
+                                           cdn_request=True)
+
+        if response.status == httplib.NO_CONTENT:
+            cdn_url = response.headers['x-cdn-uri']
+            return cdn_url
+        elif response.status == httplib.NOT_FOUND:
+            raise ContainerDoesNotExistError(value='',
+                                             container_name=container_name,
+                                             driver=self)
+
+        raise LibcloudError('Unexpected status code: %s' % (response.status))
+
+    def get_object_cdn_url(self, obj):
+        container_cdn_url = self.get_container_cdn_url(container=obj.container)
+        return '%s/%s' % (container_cdn_url, obj.name)
+
+    def enable_container_cdn(self, container):
+        container_name = container.name
+        response = self.connection.request('/%s' % (container_name),
+                                           method='PUT',
+                                           cdn_request=True)
+
+        if response.status in [ httplib.CREATED, httplib.ACCEPTED ]:
+            return True
+
+        return False
 
     def create_container(self, container_name):
         container_name = self._clean_container_name(container_name)
