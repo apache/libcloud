@@ -120,7 +120,8 @@ class ParamikoSSHClient(BaseSSHClient):
     """
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, timeout=None):
-        super(ParamikoSSHClient, self).__init__(hostname, port, username, password, key)
+        super(ParamikoSSHClient, self).__init__(hostname, port, username,
+                                                password, key, timeout)
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
