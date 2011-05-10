@@ -35,7 +35,8 @@ class BaseSSHClient(object):
     Base class representing a connection over SSH/SCP to a remote node.
     """
 
-    def __init__(self, hostname, port=22, username='root', password=None, key=None):
+    def __init__(self, hostname, port=22, username='root', password=None,
+                 key=None, timeout=None):
         """
         @type hostname: C{str}
         @keyword hostname: Hostname or IP address to connect to.
@@ -57,6 +58,7 @@ class BaseSSHClient(object):
         self.username = username
         self.password = password
         self.key = key
+        self.timeout = timeout
 
     def connect(self):
         """
@@ -99,7 +101,7 @@ class BaseSSHClient(object):
 
         @type cmd: C{str}
         @keyword cmd: Command to run.
-        
+
         @return C{list} of [stdout, stderr, exit_status]
         """
         raise NotImplementedError, \
@@ -116,7 +118,8 @@ class ParamikoSSHClient(BaseSSHClient):
     """
     A SSH Client powered by Paramiko.
     """
-    def __init__(self, hostname, port=22, username='root', password=None, key=None):
+    def __init__(self, hostname, port=22, username='root', password=None,
+                 key=None, timeout=None):
         super(ParamikoSSHClient, self).__init__(hostname, port, username, password, key)
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -128,6 +131,10 @@ class ParamikoSSHClient(BaseSSHClient):
                     'password': self.password,
                     'allow_agent': False,
                     'look_for_keys': False}
+
+        if self.timeout:
+            conninfo['timeout'] = self.timeout
+
         self.client.connect(**conninfo)
         return True
 
