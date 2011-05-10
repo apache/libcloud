@@ -21,9 +21,11 @@ try:
 except ImportError:
     import simplejson
 
+from libcloud.common.types import LibcloudError
+from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
 from libcloud.resource.lb.base import LB, LBNode, LBDriver
 from libcloud.resource.lb.types import Provider, LBState, LibcloudLBImmutableError
-from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
+
 
 class GoGridLBDriver(BaseGoGridDriver, LBDriver):
     connectionCls = GoGridConnection
@@ -149,7 +151,7 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
             if "Update already pending" in str(err):
                 raise LibcloudLBImmutableError("Balancer is immutable", GoGridLBDriver)
 
-        return None
+        raise LibcloudError(value='Exception: %s' % str(err), driver=self)
 
     def _nodes_to_params(self, nodes):
         """
