@@ -183,9 +183,15 @@ class SlicehostNodeDriver(NodeDriver):
 
         # slicehost does not determine between public and private, so we
         # have to figure it out
-        primary_ip = element.findtext('ip-address')
         public_ip = []
         private_ip = []
+
+        ip_address = element.findtext('ip-address')
+        if is_private_subnet(ip_address):
+            private_ip.append(ip_address)
+        else:
+            public_ip.append(ip_address)
+
         for addr in element.findall('addresses/address'):
             ip = addr.text
             try:
@@ -197,8 +203,6 @@ class SlicehostNodeDriver(NodeDriver):
                 private_ip.append(ip)
             else:
                 public_ip.append(ip)
-
-        public_ip.append(primary_ip)
 
         public_ip = list(set(public_ip))
 
