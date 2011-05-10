@@ -471,6 +471,10 @@ class NodeDriver(object):
         @keyword    ssh_port: Optional SSH server port (default is 22)
         @type       ssh_port: C{int}
 
+        @keyword    ssh_timeout: Optional SSH connection timeout in seconds
+                                 (default is None)
+        @type       ssh_timeout: C{float}
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -540,7 +544,8 @@ class NodeDriver(object):
 
                     client = SSHClient(hostname=node.public_ip[0],
                                        port=ssh_port, username=ssh_username,
-                                       password=password)
+                                       password=password,
+                                       timeout=kwargs.get('ssh_timeout', None))
                     laste = None
                     while time.time() < end:
                         laste = None
