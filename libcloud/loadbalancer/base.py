@@ -16,13 +16,13 @@
 from libcloud.common.base import ConnectionKey
 
 __all__ = [
-        "LBNode",
+        "LBMember",
         "LB",
         "LBDriver",
         "LBAlgorithm"
         ]
 
-class LBNode(object):
+class LBMember(object):
 
     def __init__(self, id, ip, port):
         self.id = str(id) if id else None
@@ -30,7 +30,7 @@ class LBNode(object):
         self.port = port
 
     def __repr__(self):
-        return ('<LBNode: id=%s, address=%s:%s>' % (self.id,
+        return ('<LBMember: id=%s, address=%s:%s>' % (self.id,
             self.ip, self.port))
 
 class LBAlgorithm(object):
@@ -53,14 +53,14 @@ class LB(object):
         self.port = port
         self.driver = driver
 
-    def attach_node(self, **kwargs):
-        return self.driver.balancer_attach_node(self, **kwargs)
+    def attach_member(self, **kwargs):
+        return self.driver.balancer_attach_member(self, **kwargs)
 
-    def detach_node(self, node):
-        return self.driver.balancer_detach_node(self, node)
+    def detach_member(self, member):
+        return self.driver.balancer_detach_member(self, member)
 
-    def list_nodes(self):
-        return self.driver.balancer_list_nodes(self)
+    def list_members(self):
+        return self.driver.balancer_list_members(self)
 
     def __repr__(self):
         return ('<LB: id=%s, name=%s, state=%s>' % (self.id,
@@ -110,7 +110,7 @@ class LBDriver(object):
         @type name: C{str}
         @keyword port: Port the load balancer should listen on (required)
         @type port: C{str}
-        @keyword nodes: C{list} of L{LBNode}s to attach to balancer
+        @keyword members: C{list} of L{LBNode}s to attach to balancer
         @type: C{list} of L{LBNode}s
 
         """
@@ -145,38 +145,38 @@ class LBDriver(object):
         raise NotImplementedError, \
                 'balancer_detail not implemented for this driver'
 
-    def balancer_attach_node(self, balancer, **kwargs):
+    def balancer_attach_member(self, balancer, **kwargs):
         """
-        Attach a node to balancer
+        Attach a member to balancer
 
-        @keyword ip: IP address of a node
+        @keyword ip: IP address of a member
         @type ip: C{str}
-        @keyword port: port that services we're balancing listens on on the node
+        @keyword port: port that services we're balancing listens on on the member
         @keyword port: C{str}
 
         """
 
         raise NotImplementedError, \
-                'balancer_attach_node not implemented for this driver'
+                'balancer_attach_member not implemented for this driver'
 
-    def balancer_detach_node(self, balancer, node):
+    def balancer_detach_member(self, balancer, member):
         """
-        Detach node from balancer
+        Detach member from balancer
 
-        @return: C{bool} True if node detach was successful, otherwise False
+        @return: C{bool} True if member detach was successful, otherwise False
 
         """
 
         raise NotImplementedError, \
-                'balancer_detach_node not implemented for this driver'
+                'balancer_detach_member not implemented for this driver'
 
-    def balancer_list_nodes(self, balancer):
+    def balancer_list_members(self, balancer):
         """
-        Return list of nodes attached to balancer
+        Return list of members attached to balancer
 
         @return: C{list} of L{LBNode}s
 
         """
 
         raise NotImplementedError, \
-                'balancer_list_nodes not implemented for this driver'
+                'balancer_list_members not implemented for this driver'
