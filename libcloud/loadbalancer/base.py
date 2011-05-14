@@ -57,6 +57,9 @@ class LB(object):
     def attach_compute_node(self, node):
         return self.driver.balancer_attach_compute_node(node)
 
+    def attach_member(self, member):
+        return self.driver.balancer_attach_member(self, member)
+
     def detach_member(self, member):
         return self.driver.balancer_detach_member(self, member)
 
