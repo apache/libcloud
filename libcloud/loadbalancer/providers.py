@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from libcloud.utils import get_driver as get_provider_driver
-from libcloud.resource.lb.types import Provider
+from libcloud.loadbalancer.types import Provider
 
 __all__ = [
         "Provider",
@@ -24,9 +24,9 @@ __all__ = [
 
 DRIVERS = {
         Provider.RACKSPACE:
-            ('libcloud.resource.lb.drivers.rackspace', 'RackspaceLBDriver'),
+            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
         Provider.GOGRID:
-            ('libcloud.resource.lb.drivers.gogrid', 'GoGridLBDriver'),
+            ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
 }
 
 def get_driver(provider):

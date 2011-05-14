@@ -27,7 +27,7 @@ libcloud.utils.SHOW_DEPRECATION_WARNING = False
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/incubator/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://incubator.apache.org/libcloud/'
-TEST_PATHS = [ 'test', 'test/compute', 'test/storage' ]
+TEST_PATHS = [ 'test', 'test/compute', 'test/storage' , 'test/loadbalancer']
 DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy' ]
 
@@ -150,9 +150,8 @@ setup(
         'libcloud.compute',
         'libcloud.compute.drivers',
         'libcloud.drivers',
-        'libcloud.resource',
-        'libcloud.resource.lb',
-        'libcloud.resource.lb.drivers',
+        'libcloud.loadbalancer',
+        'libcloud.loadbalancer.drivers',
     ],
     package_dir={
         'libcloud': 'libcloud',
