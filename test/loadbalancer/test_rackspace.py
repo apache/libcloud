@@ -17,6 +17,12 @@ class RackspaceLBTests(unittest.TestCase):
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
 
+    def test_list_protocols(self):
+        protocols = self.driver.list_protocols()
+
+        self.assertEqual(len(protocols), 10)
+        self.assertTrue('http' in protocols)
+
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
 
@@ -82,6 +88,11 @@ class RackspaceLBMockHttp(MockHttp):
                    'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
                    'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
         return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _v1_0_slug_loadbalancers_protocols(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_loadbalancers_protocols.json')
+        return (httplib.ACCEPTED, body, {},
+                httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_loadbalancers(self, method, url, body, headers):
         if method == "GET":
