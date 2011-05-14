@@ -3,7 +3,7 @@ import os.path
 import sys
 import unittest
 
-from libcloud.loadbalancer.base import Member
+from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 
 from test import MockHttp, MockRawResponse
@@ -29,6 +29,7 @@ class RackspaceLBTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
+                algorithm=Algorithm.ROUND_ROBIN,
                 members=(Member(None, '10.1.0.10', 80),
                     Member(None, '10.1.0.11', 80))
                 )
