@@ -40,8 +40,8 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
         members = kwargs['members']
 
         params = {'name': name,
-                'virtualip.ip': self._get_first_ip(),
-                'virtualip.port': port}
+                   'virtualip.ip': self._get_first_ip(),
+                   'virtualip.port': port}
         params.update(self._members_to_params(members))
 
         resp = self.connection.request('/api/grid/loadbalancer/add',
