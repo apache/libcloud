@@ -277,7 +277,7 @@ class S3Tests(unittest.TestCase):
         try:
             self.driver.upload_object(file_path=file_path, container=container,
                                       object_name=object_name,
-                                      file_hash='0cc175b9c0f1b6a831c399e269772661',
+                                      verify_hash=True,
                                       ex_storage_class='invalid-class')
         except ValueError, e:
             self.assertTrue(str(e).lower().find('invalid storage class') != -1)
@@ -302,7 +302,7 @@ class S3Tests(unittest.TestCase):
         try:
             self.driver.upload_object(file_path=file_path, container=container,
                                       object_name=object_name,
-                                      file_hash='0cc175b9c0f1b6a831c399e269772661')
+                                      verify_hash=True)
         except ObjectHashMismatchError:
             pass
         else:
@@ -328,7 +328,7 @@ class S3Tests(unittest.TestCase):
         try:
             self.driver.upload_object(file_path=file_path, container=container,
                                       object_name=object_name,
-                                      file_hash='0cc175b9c0f1b6a831c399e269772661')
+                                      verify_hash=True)
         except ObjectHashMismatchError:
             pass
         else:
@@ -351,7 +351,7 @@ class S3Tests(unittest.TestCase):
         obj = self.driver.upload_object(file_path=file_path, container=container,
                                       object_name=object_name,
                                       extra=extra,
-                                      file_hash='0cc175b9c0f1b6a831c399e269772661')
+                                      verify_hash=True)
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, 1000)
         self.assertTrue('some-value' in obj.meta_data)
@@ -564,8 +564,10 @@ class S3MockRawResponse(MockRawResponse):
 
     def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url, body, headers):
         body = ''
+        headers = {}
+        headers['etag'] = '"foobar"'
         # test_upload_object_invalid_hash1
-        return (httplib.BAD_REQUEST,
+        return (httplib.OK,
                 body,
                 headers,
                 httplib.responses[httplib.OK])

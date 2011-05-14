@@ -122,9 +122,9 @@ class Container(object):
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None, file_hash=None):
+    def upload_object(self, file_path, object_name, extra=None, verify_hash=True):
         return self.driver.upload_object(
-            file_path, self, object_name, extra, file_hash)
+            file_path, self, object_name, extra, verify_hash)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None):
         return self.driver.upload_object_via_stream(
@@ -301,7 +301,7 @@ class StorageDriver(object):
             'download_object_as_stream not implemented for this driver')
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      file_hash=None):
+                      verify_hash=True):
         """
         Upload an object.
 
@@ -317,10 +317,8 @@ class StorageDriver(object):
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
 
-        @type file_hash: C{str}
-        @param file_hash: (optional) File hash. If provided object hash is
-                          on upload and if it doesn't match the one provided an
-                          exception is thrown.
+        @type verify_hash: C{boolean}
+        @param verify_hash: True to do a file integrity check.
         """
         raise NotImplementedError(
             'upload_object not implemented for this driver')

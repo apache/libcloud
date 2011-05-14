@@ -203,7 +203,6 @@ class CloudFilesStorageDriver(StorageDriver):
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),
                                                        method='HEAD')
-
         if response.status in [ httplib.OK, httplib.NO_CONTENT ]:
             obj = self._headers_to_object(
                 object_name, container, response.headers)
@@ -309,7 +308,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      file_hash=None):
+                      verify_hash=True):
         """
         Upload an object.
 
@@ -322,7 +321,7 @@ class CloudFilesStorageDriver(StorageDriver):
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
-                                file_hash=file_hash)
+                                verify_hash=verify_hash)
 
     def upload_object_via_stream(self, iterator,
                                  container, object_name, extra=None):
@@ -354,7 +353,7 @@ class CloudFilesStorageDriver(StorageDriver):
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, file_hash=None):
+                    iterator=None, verify_hash=True):
         extra = extra or {}
         container_name_cleaned = self._clean_container_name(container.name)
         object_name_cleaned = self._clean_object_name(object_name)
@@ -362,9 +361,6 @@ class CloudFilesStorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
 
         headers = {}
-        if not iterator and file_hash:
-            headers['ETag'] = file_hash
-
         if meta_data:
             for key, value in meta_data.iteritems():
                 key = 'X-Object-Meta-%s' % (key)
@@ -382,17 +378,23 @@ class CloudFilesStorageDriver(StorageDriver):
 
         response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
+        print result_dict['data_hash']
+        server_hash = result_dict['response'].headers.get('etag', None)
 
         if response.status == httplib.EXPECTATION_FAILED:
             raise LibcloudError(value='Missing content-type header',
                                 driver=self)
-        elif response.status == httplib.UNPROCESSABLE_ENTITY:
+        elif verify_hash and not server_hash:
+            raise LibcloudError(value='Server didn\'t return etag',
+                                driver=self)
+        elif (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
-                value='MD5 hash checksum does not match',
+                value=('MD5 hash checksum does not match (expected=%s, ' +
+                       'actual=%s)') % (result_dict['data_hash'], server_hash),
                 object_name=object_name, driver=self)
         elif response.status == httplib.CREATED:
             obj = Object(
-                name=object_name, size=bytes_transferred, hash=file_hash,
+                name=object_name, size=bytes_transferred, hash=server_hash,
                 extra=None, meta_data=meta_data, container=container,
                 driver=self)
 
