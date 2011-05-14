@@ -3,7 +3,7 @@ import os.path
 import sys
 import unittest
 
-from libcloud.loadbalancer.base import LB, LBMember
+from libcloud.loadbalancer.base import LB, LBMember, LBAlgorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
 from test import MockHttp, MockRawResponse
@@ -29,6 +29,7 @@ class GoGridTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
+                algorithm=LBAlgorithm.ROUND_ROBIN,
                 members=(LBMember(None, '10.1.0.10', 80),
                     LBMember(None, '10.1.0.11', 80))
                 )
