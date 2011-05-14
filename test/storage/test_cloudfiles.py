@@ -35,6 +35,8 @@ from libcloud.storage.drivers.dummy import DummyIterator
 from test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
 from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 
+current_hash = None
+
 class CloudFilesTests(unittest.TestCase):
 
     def setUp(self):
@@ -279,7 +281,7 @@ class CloudFilesTests(unittest.TestCase):
         try:
             self.driver.upload_object(file_path=file_path, container=container,
                                       object_name=object_name,
-                                      file_hash='footest123')
+                                      verify_hash=True)
         except ObjectHashMismatchError:
             pass
         else:
@@ -598,16 +600,19 @@ class CloudFilesMockRawResponse(MockRawResponse):
         # test_object_upload_success
 
         body = ''
-        headers = copy.deepcopy(self.base_headers)
-        headers.update(headers)
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = 'hash343hhash89h932439jsaa89'
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
     def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload_INVALID_HASH(
         self, method, url, body, headers):
         # test_object_upload_invalid_hash
         body = ''
-        headers = self.base_headers
-        return (httplib.UNPROCESSABLE_ENTITY, body, headers,
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = 'foobar'
+        return (httplib.CREATED, body, headers,
                 httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object(
@@ -641,10 +646,13 @@ class CloudFilesMockRawResponse(MockRawResponse):
         self, method, url, body, headers):
 
         # test_upload_object_via_stream_success
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = '577ef1154f3240ad5b9b413aa7346a1e'
         body = 'test'
         return (httplib.CREATED,
                 body,
-                self.base_headers,
+                headers,
                 httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

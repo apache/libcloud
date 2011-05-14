@@ -15,6 +15,7 @@
 
 import os.path
 import random
+import hashlib
 
 from libcloud.common.types import LibcloudError
 
@@ -48,14 +49,19 @@ class DummyFileObject(file):
 
 class DummyIterator(object):
     def __init__(self, data=None):
+        self.hash = hashlib.md5()
         self._data = data or []
         self._current_item = 0
+
+    def get_md5_hash(self):
+        return self.hash.hexdigest()
 
     def next(self):
         if self._current_item == len(self._data):
             raise StopIteration
 
         value = self._data[self._current_item]
+        self.hash.update(value)
         self._current_item += 1
         return value
 
