@@ -1,15 +1,17 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.4.3
+
+    *) Add new libcloud.compute drivers for:
+        - OpenStack [Roman Bogorodskiy]
+        - Gandi.net [Aymeric Barantal]
+        - Bluebox [Christian Paredes]
+        - Nimbus [David LaBissoniere]
+
     *) Add implementation for the following methods to the CloudFiles
        storage driver: enable_container_cdn(), get_container_cdn_url(),
        get_object_cdn_url()
        [Tomaz Muraus]
-
-    *) Add OpenStack driver, which is actually an extension for
-       Rackspace driver that allows to specify custom port and
-       host of user's OpenStack installation
-       [Roman Bogorodskiy]
 
     *) Add support for Load Balancing services, available through
        libcloud.resource.lb. Drivers for Rackspace and GoGrid are
@@ -24,18 +26,9 @@ Changes with Apache Libcloud 0.4.3
        and create a "Name" tag with the value of this argument.
        [Tomaz Muraus]
 
-    *) Add Gandi.net driver.
-       [Aymeric Barantal]
-
     *) Add extension method for modifying node attributes and
        changing the node size (EC2 driver).
        [Tomaz Muraus]
-
-    *) Add Bluebox driver.
-       [Christian Paredes]
-
-    *) Add Nimbus driver.
-       [David LaBissoniere]
 
     *) Minor fixes to get the library and tests working on
        Python 2.7 and PyPy.
