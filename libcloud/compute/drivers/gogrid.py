@@ -19,11 +19,6 @@ import time
 import hashlib
 import copy
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
 from libcloud.compute.providers import Provider
