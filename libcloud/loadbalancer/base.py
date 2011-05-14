@@ -19,6 +19,7 @@ __all__ = [
         "LBNode",
         "LB",
         "LBDriver",
+        "LBAlgorithm"
         ]
 
 class LBNode(object):
@@ -32,6 +33,12 @@ class LBNode(object):
         return ('<LBNode: id=%s, address=%s:%s>' % (self.id,
             self.ip, self.port))
 
+class LBAlgorithm(object):
+    RANDOM = 0
+    ROUND_ROBIN = 1
+    LEAST_CONNECTIONS = 2
+
+DEFAULT_ALGORITHM = LBAlgorithm.ROUND_ROBIN
 
 class LB(object):
     """
