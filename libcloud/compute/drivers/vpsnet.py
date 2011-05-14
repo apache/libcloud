@@ -22,8 +22,6 @@ try:
 except:
     import simplejson as json
 
-from libcloud.pricing import get_pricing
-
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
