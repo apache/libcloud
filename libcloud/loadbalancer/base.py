@@ -18,10 +18,9 @@ from libcloud.common.types import LibcloudError
 
 __all__ = [
         "Member",
-        "LB",
-        "LBDriver",
-        "LBAlgorithm",
-        "LBProtocol"
+        "LoadBalancer",
+        "Driver",
+        "Algorithm"
         ]
 
 class Member(object):
