@@ -176,6 +176,9 @@ def findattr(element, xpath, namespace):
 def findall(element, xpath, namespace):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
 
+def reverse_dict(dictionary):
+    return dict([ (value, key) for key, value in dictionary.iteritems() ])
+
 def get_driver(drivers, provider):
     """
     Get a driver.
