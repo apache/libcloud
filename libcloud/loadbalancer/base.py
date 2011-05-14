@@ -136,22 +136,18 @@ class LBDriver(object):
         raise NotImplementedError, \
                 'destroy_balancer not implemented for this driver'
 
-    def balancer_detail(self, **kwargs):
+    def get_balancer(self, balancer_id):
         """
-        Returns a detailed info about load balancer given by
-        existing L{LB} object or its id
+        Return a C{LB} object.
 
-        @keyword balancer: L{LB} object you already fetched using list method for example
-        @type balancer: L{LB}
         @keyword balancer_id: id of a load balancer you want to fetch
         @type balancer_id: C{str}
 
-        @return: L{LB}
-
+        @return: C{LB}
         """
 
         raise NotImplementedError, \
-                'balancer_detail not implemented for this driver'
+                'get_balancer not implemented for this driver'
 
     def balancer_attach_compute_node(self, balancer, node):
       """
