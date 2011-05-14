@@ -13,13 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import time
-
-try:
-    import json
-except ImportError:
-    import simplejson
 
 from libcloud.common.types import LibcloudError
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
