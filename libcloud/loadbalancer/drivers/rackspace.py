@@ -23,6 +23,7 @@ except ImportError:
 from libcloud.utils import reverse_dict
 from libcloud.common.base import Response
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.loadbalancer.types import Provider, State
 from libcloud.common.rackspace import (AUTH_HOST_US,
         RackspaceBaseConnection)
@@ -83,17 +84,13 @@ class RackspaceLBDriver(Driver):
         return self._to_balancers(
                 self.connection.request('/loadbalancers').object)
 
-    def create_balancer(self, name, port, algorithm, members):
-        if not algorithm:
-            algorithm = DEFAULT_ALGORITHM
-        else:
-            algorithm = self._algorithm_to_value(algorithm)
-
+    def create_balancer(self, name, members, protocol='http',
+                        port=80, algorithm=DEFAULT_ALGORITHM):
         balancer_object = {"loadBalancer":
                 {"name": name,
                     "port": port,
                     "algorithm": algorithm,
-                    "protocol": "HTTP",
+                    "protocol": protocol.upper(),
                     "virtualIps": [{"type": "PUBLIC"}],
                     "nodes": [{"address": member.ip,
                         "port": member.port,

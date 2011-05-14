@@ -46,7 +46,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
                 self.connection.request('/api/grid/loadbalancer/list').object)
 
     def ex_create_balancer_nowait(self, name, members, protocol='http', port=80,
-                                  algorithm=Algorithm.ROUND_ROBIN):
+                                  algorithm=DEFAULT_ALGORITHM):
         algorithm = self._algorithm_to_value(algorithm)
 
         params = {'name': name,
