@@ -18,22 +18,22 @@ import time
 from libcloud.common.types import LibcloudError
 from libcloud.utils import reverse_dict
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
-from libcloud.loadbalancer.base import LB, LBMember, LBDriver, LBAlgorithm
+from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM 
-from libcloud.loadbalancer.types import Provider, LBState, LibcloudLBImmutableError
+from libcloud.loadbalancer.types import Provider, State, LibcloudLBImmutableError
 
 
-class GoGridLBDriver(BaseGoGridDriver, LBDriver):
+class GoGridLBDriver(BaseGoGridDriver, Driver):
     connectionCls = GoGridConnection
     type = Provider.RACKSPACE
     api_name = 'gogrid_lb'
     name = 'GoGrid LB'
 
-    LB_STATE_MAP = { 'On': LBState.RUNNING,
-                     'Unknown': LBState.UNKNOWN }
+    LB_STATE_MAP = { 'On': State.RUNNING,
+                     'Unknown': State.UNKNOWN }
     _VALUE_TO_ALGORITHM_MAP = {
-        'round balancer': LBAlgorithm.ROUND_ROBIN,
-        'least connection': LBAlgorithm.LEAST_CONNECTIONS
+        'round balancer': Algorithm.ROUND_ROBIN,
+        'least connection': Algorithm.LEAST_CONNECTIONS
     }
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
@@ -151,7 +151,7 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
 
     def _members_to_params(self, members):
         """
-        Helper method to convert list of L{LBMember} objects
+        Helper method to convert list of L{Member} objects
         to GET params.
 
         """
@@ -170,10 +170,10 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
         return [ self._to_balancer(el) for el in object["list"] ]
 
     def _to_balancer(self, el):
-        lb = LB(id=el.get("id"),
+        lb = LoadBalancer(id=el.get("id"),
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
-                    el["state"]["name"], LBState.UNKNOWN),
+                    el["state"]["name"], State.UNKNOWN),
                 ip=el["virtualip"]["ip"]["ip"],
                 port=el["virtualip"]["port"],
                 driver=self.connection.driver)
@@ -183,7 +183,7 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
         return [ self._to_member(el) for el in object ]
 
     def _to_member(self, el):
-        member = LBMember(id=el["ip"]["id"],
+        member = Member(id=el["ip"]["id"],
                 ip=el["ip"]["ip"],
                 port=el["port"])
         return member

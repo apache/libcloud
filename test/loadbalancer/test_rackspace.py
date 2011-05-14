@@ -3,7 +3,7 @@ import os.path
 import sys
 import unittest
 
-from libcloud.loadbalancer.base import LB, LBMember
+from libcloud.loadbalancer.base import Member
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 
 from test import MockHttp, MockRawResponse
@@ -29,8 +29,8 @@ class RackspaceLBTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
-                members=(LBMember(None, '10.1.0.10', 80),
-                    LBMember(None, '10.1.0.11', 80))
+                members=(Member(None, '10.1.0.10', 80),
+                    Member(None, '10.1.0.11', 80))
                 )
 
         self.assertEquals(balancer.name, 'test2')
@@ -58,7 +58,7 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_balancer_attach_member(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
-        member = balancer.attach_member(LBMember(None, ip='10.1.0.12', port='80'))
+        member = balancer.attach_member(Member(None, ip='10.1.0.12', port='80'))
 
         self.assertEquals(member.ip, '10.1.0.12')
         self.assertEquals(member.port, 80)
