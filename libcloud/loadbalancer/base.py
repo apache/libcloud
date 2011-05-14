@@ -108,7 +108,7 @@ class LBDriver(object):
         raise NotImplementedError, \
                 'list_balancers not implemented for this driver'
 
-    def create_balancer(self, **kwargs):
+    def create_balancer(self, name, port, algorithm, members):
         """
         Create a new load balancer instance
 
