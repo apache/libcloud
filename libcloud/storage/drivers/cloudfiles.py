@@ -21,7 +21,6 @@ try:
 except:
     import simplejson as json
 
-from libcloud.utils import fixxpath, findtext, in_development_warning
 from libcloud.utils import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.common.base import Response
