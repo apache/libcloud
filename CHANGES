@@ -1,6 +1,16 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.4.3
+Changes with Apache Libcloud 0.5.0
+
+    *) Add new libcloud.loadbalancers API, with initial support for:
+        - Rackspace
+        - GoGrid
+      [Roman Bogorodskiy]
+
+    *) Add new libcloud.storage API, with initial support for:
+        - CloudFiles
+        - Amazon S3
+       [Tomaz Muraus]
 
     *) Add new libcloud.compute drivers for:
         - OpenStack [Roman Bogorodskiy]
@@ -8,69 +18,37 @@ Changes with Apache Libcloud 0.4.3
         - Bluebox [Christian Paredes]
         - Nimbus [David LaBissoniere]
 
-    *) Add implementation for the following methods to the CloudFiles
-       storage driver: enable_container_cdn(), get_container_cdn_url(),
-       get_object_cdn_url()
+    *) Added "pricing" module and improved pricing handling.
        [Tomaz Muraus]
 
-    *) Add support for Load Balancing services, available through
-       libcloud.resource.lb. Drivers for Rackspace and GoGrid are
-       included.
+    *) Updates to the GoGrid compute driver:
+        - Use API version 1.0.
+        - Remove sandbox flag.
+        - Add ex_list_ips() to list IP addresses assigned to the account. 
+        - Implement ex_edit_image method which allows changing image attributes
+          like name, description and make image public or private.
        [Roman Bogorodskiy]
 
-    *) Update GoGrid driver to use API Version 1.8. Sandbox flag
-       for servers is no longer used.
-       [Roman Bogorodskiy]
+    *) Updates to the Amazon EC2 compute driver:
+        - When creating a Node, use the name argument to set a Tag with the
+          value.  [Tomaz Muraus]
+        - Add extension method for modifying node attributes and changing the 
+          node size. [Tomaz Muraus]
+        - Add support for the new Amazon Region (Tokyo). [Tomaz Muraus]
+        - Added ex_create_tags and ex_delete_tags. [Brandon Rhodes]
+        - Include node Elastic IP addresses in the node public_ip attribute
+          for the EC2 nodes. [Tomaz Muraus]
+        - Use ipAddress and privateIpAddress attribute for the EC 2node public
+          and private ip. [Tomaz Muraus]
+        - Add ex_describe_addresses method to the EC2 driver. [Tomaz Muraus]
 
-    *) When creating an EC2 node, don't ignore the name argument
-       and create a "Name" tag with the value of this argument.
-       [Tomaz Muraus]
-
-    *) Add extension method for modifying node attributes and
-       changing the node size (EC2 driver).
-       [Tomaz Muraus]
+    *) Updates to the Rackspace CloudServers compute driver:
+        - Add ex_rebuild() and ex_get_node_details() [Andrew Klochkov]
+        - Expose URI of a Rackspace node to the node meta data. [Paul Querna]
 
     *) Minor fixes to get the library and tests working on
        Python 2.7 and PyPy.
        [Tomaz Muraus]
-
-    *) Added "pricing" module and improved pricing handling.
-       [Tomaz Muraus]
-
-    *) Add support for the new Amazon Region (Tokyo)
-       [Tomaz Muraus]
-
-    *) Implement ex_rebuild() and ex_get_node_details()
-       routines for Rackspace driver.
-       [Andrew Klochkov]
-
-    *) Implement ex_list_ips() for GoGrid driver to list
-       IP addresses assigned to the account. Make use of
-       it in _get_first_ip().
-       [Roman Bogorodskiy]
-
-    *) Added ex_create_tags and ex_delete_tags methods to the
-       EC2 driver.
-       [Brandon Rhodes]
-
-    *) Include node Elastic IP addresses in the node public_ip
-       attribute for the EC2 nodes.
-       [Tomaz Muraus]
-
-    *) Use ipAddress and privateIpAddress attribute for
-       the EC 2node public and private ip
-       [Tomaz Muraus]
-
-    *) Add ex_describe_addresses method to the EC2 driver.
-       [Tomaz Muraus]
-
-    *) Expose URI of a Rackspace node to the node meta data.
-       [Paul Querna]
-
-    *) Implement ex_edit_image method for GoGrid driver
-       which allows changing image attributes like name,
-       description and make image public or private.
-       [Roman Bogorodskiy]
 
 Changes with Apache Libcloud 0.4.2
 
