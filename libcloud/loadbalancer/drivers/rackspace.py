@@ -80,6 +80,10 @@ class RackspaceLBDriver(Driver):
     }
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
+    def list_protocols(self):
+        return self._to_protocols(
+                   self.connection.request('/loadbalancers/protocols').object)
+
     def list_balancers(self):
         return self._to_balancers(
                 self.connection.request('/loadbalancers').object)
@@ -140,6 +144,12 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         return self._to_members(
                 self.connection.request(uri).object)
+
+    def _to_protocols(self, object):
+        protocols = []
+        for item in object["protocols"]:
+            protocols.append(item['name'].lower())
+        return protocols
 
     def _to_balancers(self, object):
         return [ self._to_balancer(el) for el in object["loadBalancers"] ]
