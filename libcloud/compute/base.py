@@ -541,11 +541,12 @@ class NodeDriver(object):
 
                     ssh_username = kwargs.get('ssh_username', 'root')
                     ssh_port = kwargs.get('ssh_port', 22)
+                    ssh_timeout = kwargs.get('ssh_timeout', 20)
 
                     client = SSHClient(hostname=node.public_ip[0],
                                        port=ssh_port, username=ssh_username,
                                        password=password,
-                                       timeout=kwargs.get('ssh_timeout', None))
+                                       timeout=ssh_timeout)
 
                     while time.time() < end:
                         try:
