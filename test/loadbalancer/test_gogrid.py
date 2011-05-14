@@ -17,6 +17,12 @@ class GoGridTests(unittest.TestCase):
         GoGridLBMockHttp.type = None
         self.driver = GoGridLBDriver('user', 'key')
 
+    def test_list_protocols(self):
+        protocols = self.driver.list_protocols()
+
+        self.assertEqual(len(protocols), 1)
+        self.assertEqual(protocols[0], 'http')
+
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
 
@@ -29,9 +35,10 @@ class GoGridTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
+                protocol='http',
                 algorithm=Algorithm.ROUND_ROBIN,
                 members=(Member(None, '10.1.0.10', 80),
-                         Member(None, '10.1.0.11', 80))
+                    Member(None, '10.1.0.11', 80))
                 )
 
         self.assertEquals(balancer.name, 'test2')

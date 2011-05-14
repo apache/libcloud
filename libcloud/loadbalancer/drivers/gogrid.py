@@ -19,7 +19,7 @@ from libcloud.common.types import LibcloudError
 from libcloud.utils import reverse_dict
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
-from libcloud.loadbalancer.base import DEFAULT_ALGORITHM 
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.loadbalancer.types import Provider, State, LibcloudLBImmutableError
 
 
@@ -37,15 +37,17 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
     }
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
+    def list_protocols(self):
+        # GoGrid only supports http
+        return [ 'http' ]
+
     def list_balancers(self):
         return self._to_balancers(
                 self.connection.request('/api/grid/loadbalancer/list').object)
 
-    def ex_create_balancer_nowait(self, name, port, algorithm, members):
-        if not algorithm:
-            algorithm = DEFAULT_ALGORITHM
-        else:
-            algorithm = self._algorithm_to_value(algorithm)
+    def ex_create_balancer_nowait(self, name, members, protocol='http', port=80,
+                                  algorithm=Algorithm.ROUND_ROBIN):
+        algorithm = self._algorithm_to_value(algorithm)
 
         params = {'name': name,
                   'loadbalancer.type': algorithm,
@@ -58,8 +60,10 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
                 params=params)
         return self._to_balancers(resp.object)[0]
 
-    def create_balancer(self, name, port, algorithm, members):
-        balancer = self.ex_create_balancer_nowait(name, port, algorithm, members)
+    def create_balancer(self, name, members, protocol='http', port=80,
+                        algorithm=Algorithm.ROUND_ROBIN):
+        balancer = self.ex_create_balancer_nowait(name, members, protocol,
+                                                  port, algorithm)
 
         timeout = 60 * 20
         waittime = 0
