@@ -3,20 +3,20 @@
 Changes with Apache Libcloud 0.5.0
 
     *) Add new libcloud.loadbalancers API, with initial support for:
-        - Rackspace
-        - GoGrid
+        - GoGrid Load Balancers
+        - Rackspace Load Balancers
       [Roman Bogorodskiy]
 
     *) Add new libcloud.storage API, with initial support for:
-        - CloudFiles
         - Amazon S3
+        - Rackspace CloudFiles
        [Tomaz Muraus]
 
     *) Add new libcloud.compute drivers for:
-        - OpenStack [Roman Bogorodskiy]
-        - Gandi.net [Aymeric Barantal]
         - Bluebox [Christian Paredes]
+        - Gandi.net [Aymeric Barantal]
         - Nimbus [David LaBissoniere]
+        - OpenStack [Roman Bogorodskiy]
 
     *) Added "pricing" module and improved pricing handling.
        [Tomaz Muraus]
@@ -46,8 +46,7 @@ Changes with Apache Libcloud 0.5.0
         - Add ex_rebuild() and ex_get_node_details() [Andrew Klochkov]
         - Expose URI of a Rackspace node to the node meta data. [Paul Querna]
 
-    *) Minor fixes to get the library and tests working on
-       Python 2.7 and PyPy.
+    *) Minor fixes to get the library and tests working on Python 2.7 and PyPy.
        [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.4.2
