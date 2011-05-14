@@ -43,14 +43,14 @@ class GoGridTests(unittest.TestCase):
         ret = self.driver.destroy_balancer(balancer)
         self.assertTrue(ret)
 
-    def test_balancer_detail(self):
-        balancer = self.driver.balancer_detail(balancer_id='23530')
+    def test_get_balancer(self):
+        balancer = self.driver.get_balancer(balancer_id='23530')
 
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '23530')
 
     def test_balancer_list_members(self):
-        balancer = self.driver.balancer_detail(balancer_id='23530')
+        balancer = self.driver.get_balancer(balancer_id='23530')
         members = balancer.list_members()
 
         expected_members = set([u'10.0.0.78:80', u'10.0.0.77:80',
