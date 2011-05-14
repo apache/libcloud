@@ -16,8 +16,10 @@
 import time
 
 from libcloud.common.types import LibcloudError
+from libcloud.utils import reverse_dict
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
-from libcloud.loadbalancer.base import LB, LBMember, LBDriver
+from libcloud.loadbalancer.base import LB, LBMember, LBDriver, LBAlgorithm
+from libcloud.loadbalancer.base import DEFAULT_ALGORITHM 
 from libcloud.loadbalancer.types import Provider, LBState, LibcloudLBImmutableError
 
 
@@ -29,19 +31,26 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
 
     LB_STATE_MAP = { 'On': LBState.RUNNING,
                      'Unknown': LBState.UNKNOWN }
+    _VALUE_TO_ALGORITHM_MAP = {
+        'round balancer': LBAlgorithm.ROUND_ROBIN,
+        'least connection': LBAlgorithm.LEAST_CONNECTIONS
+    }
+    _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
     def list_balancers(self):
         return self._to_balancers(
                 self.connection.request('/api/grid/loadbalancer/list').object)
 
-    def ex_create_balancer_nowait(self, **kwargs):
-        name = kwargs['name']
-        port = kwargs['port']
-        members = kwargs['members']
+    def ex_create_balancer_nowait(self, name, port, algorithm, members):
+        if not algorithm:
+            algorithm = DEFAULT_ALGORITHM
+        else:
+            algorithm = self._algorithm_to_value(algorithm)
 
         params = {'name': name,
-                   'virtualip.ip': self._get_first_ip(),
-                   'virtualip.port': port}
+                  'loadbalancer.type': algorithm,
+                  'virtualip.ip': self._get_first_ip(),
+                  'virtualip.port': port}
         params.update(self._members_to_params(members))
 
         resp = self.connection.request('/api/grid/loadbalancer/add',
@@ -49,8 +58,8 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
                 params=params)
         return self._to_balancers(resp.object)[0]
 
-    def create_balancer(self, **kwargs):
-        balancer = self.ex_create_balancer_nowait(**kwargs)
+    def create_balancer(self, name, port, algorithm, members):
+        balancer = self.ex_create_balancer_nowait(name, port, algorithm, members)
 
         timeout = 60 * 20
         waittime = 0
