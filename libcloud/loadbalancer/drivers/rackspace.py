@@ -103,12 +103,7 @@ class RackspaceLBDriver(LBDriver):
 
         return resp.status == 202
 
-    def balancer_detail(self, **kwargs):
-        try:
-            balancer_id = kwargs['balancer_id']
-        except KeyError:
-            balancer_id = kwargs['balancer'].id
-
+    def get_balancer(self, balancer_id):
         uri = '/loadbalancers/%s' % (balancer_id)
         resp = self.connection.request(uri)
 
