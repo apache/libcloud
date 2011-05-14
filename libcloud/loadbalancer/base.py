@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from libcloud.common.base import ConnectionKey
+from libcloud.common.types import LibcloudError
 
 __all__ = [
         "LBMember",
@@ -76,6 +77,8 @@ class LBDriver(object):
     """
 
     connectionCls = ConnectionKey
+    _algorithm_to_value_map = {}
+    _value_to_algorithm_map = {}
 
     def __init__(self, key, secret=None, secure=True):
         self.key = key
@@ -110,6 +113,8 @@ class LBDriver(object):
         @type name: C{str}
         @keyword port: Port the load balancer should listen on (required)
         @type port: C{str}
+        @keyword algorithm: Load balancing algorithm (defaults to round robin)
+        @type algorithm: C{LBAlgorithm}
         @keyword members: C{list} of L{LBNode}s to attach to balancer
         @type: C{list} of L{LBNode}s
 
@@ -180,3 +185,23 @@ class LBDriver(object):
 
         raise NotImplementedError, \
                 'balancer_list_members not implemented for this driver'
+
+    def _value_to_algorithm(self, value):
+        """
+        Return C{LBAlgorithm} based on the value.
+        """
+        try:
+            return self._value_to_algorithm_map[value]
+        except KeyError:
+            raise LibcloudError(value='Invalid value: %s' % (value),
+                                driver=self)
+
+    def _algorithm_to_value(self, algorithm):
+        """
+        Return value based in the algorithm (C{LBAlgorithm}).
+        """
+        try:
+            return self._algorithm_to_value_map[algorithm]
+        except KeyError:
+            raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
+                                driver=self)
