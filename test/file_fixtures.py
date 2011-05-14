@@ -20,7 +20,7 @@ import os
 FIXTURES_ROOT = {
     'compute': 'compute/fixtures',
     'storage': 'storage/fixtures',
-    'resource': 'resource/fixtures',
+    'loadbalancer': 'loadbalancer/fixtures',
 }
 
 class FileFixtures(object):
@@ -46,7 +46,7 @@ class StorageFileFixtures(FileFixtures):
         super(StorageFileFixtures, self).__init__(fixtures_type='storage',
                                                   sub_dir=sub_dir)
 
-class ResourceFileFixtures(FileFixtures):
+class LoadBalancerFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
-        super(ResourceFileFixtures, self).__init__(fixtures_type='resource',
+        super(LoadBalancerFileFixtures, self).__init__(fixtures_type='loadbalancer',
                                                   sub_dir=sub_dir)
