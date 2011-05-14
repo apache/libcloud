@@ -61,7 +61,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         return self._to_balancers(resp.object)[0]
 
     def create_balancer(self, name, members, protocol='http', port=80,
-                        algorithm=Algorithm.ROUND_ROBIN):
+                        algorithm=DEFAULT_ALGORITHM):
         balancer = self.ex_create_balancer_nowait(name, members, protocol,
                                                   port, algorithm)
 
