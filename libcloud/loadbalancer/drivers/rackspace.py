@@ -20,8 +20,9 @@ try:
 except ImportError:
     import simplejson as json
 
+from libcloud.utils import reverse_dict
 from libcloud.common.base import Response
-from libcloud.loadbalancer.base import LoadBalancer, Member, Driver
+from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.types import Provider, State
 from libcloud.common.rackspace import (AUTH_HOST_US,
         RackspaceBaseConnection)
@@ -71,19 +72,27 @@ class RackspaceLBDriver(Driver):
 
     LB_STATE_MAP = { 'ACTIVE': State.RUNNING,
                      'BUILD': State.PENDING }
+    _VALUE_TO_ALGORITHM_MAP = {
+        'RANDOM': Algorithm.RANDOM,
+        'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
+        'LEAST_CONNECTIONS': Algorithm.LEAST_CONNECTIONS
+    }
+    _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
     def list_balancers(self):
         return self._to_balancers(
                 self.connection.request('/loadbalancers').object)
 
-    def create_balancer(self, **kwargs):
-        name = kwargs['name']
-        port = kwargs['port']
-        members = kwargs['members']
+    def create_balancer(self, name, port, algorithm, members):
+        if not algorithm:
+            algorithm = DEFAULT_ALGORITHM
+        else:
+            algorithm = self._algorithm_to_value(algorithm)
 
         balancer_object = {"loadBalancer":
                 {"name": name,
                     "port": port,
+                    "algorithm": algorithm,
                     "protocol": "HTTP",
                     "virtualIps": [{"type": "PUBLIC"}],
                     "nodes": [{"address": member.ip,
