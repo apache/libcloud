@@ -3,11 +3,11 @@ import os.path
 import sys
 import unittest
 
-from libcloud.resource.lb.base import LB, LBNode
-from libcloud.resource.lb.drivers.gogrid import GoGridLBDriver
+from libcloud.loadbalancer.base import LB, LBNode
+from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
 from test import MockHttp, MockRawResponse
-from test.file_fixtures import ResourceFileFixtures
+from test.file_fixtures import LoadBalancerFileFixtures
 
 class GoGridTests(unittest.TestCase):
 
@@ -76,7 +76,7 @@ class GoGridTests(unittest.TestCase):
         self.assertTrue(ret)
 
 class GoGridLBMockHttp(MockHttp):
-    fixtures = ResourceFileFixtures(os.path.join('lb', 'gogrid'))
+    fixtures = LoadBalancerFileFixtures('gogrid')
 
     def _api_grid_loadbalancer_list(self, method, url, body, headers):
         body = self.fixtures.load('loadbalancer_list.json')

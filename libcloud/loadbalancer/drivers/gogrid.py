@@ -23,8 +23,8 @@ except ImportError:
 
 from libcloud.common.types import LibcloudError
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
-from libcloud.resource.lb.base import LB, LBNode, LBDriver
-from libcloud.resource.lb.types import Provider, LBState, LibcloudLBImmutableError
+from libcloud.loadbalancer.base import LB, LBNode, LBDriver
+from libcloud.loadbalancer.types import Provider, LBState, LibcloudLBImmutableError
 
 
 class GoGridLBDriver(BaseGoGridDriver, LBDriver):
