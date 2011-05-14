@@ -54,8 +54,8 @@ class LB(object):
         self.port = port
         self.driver = driver
 
-    def attach_member(self, member):
-        return self.driver.balancer_attach_member(self, member)
+    def attach_compute_node(self, node):
+        return self.driver.balacner_attach_compute_node(node)
 
     def detach_member(self, member):
         return self.driver.balancer_detach_member(self, member)
@@ -150,15 +150,24 @@ class LBDriver(object):
         raise NotImplementedError, \
                 'balancer_detail not implemented for this driver'
 
-    def balancer_attach_member(self, balancer, **kwargs):
+    def balancer_attach_node(self, balacner, node):
+      """
+      Attach a compute node as a member to the load balancer.
+
+      @keyword node: Member to join to the balancer
+      @type member: C{libcloud.compute.base.Node}
+      @return {LBMember} Member after joining the balancer.
+      """
+
+      return self.attach_member(LBMember(None, node.public_ip[0], balacner.port))
+    
+    def balancer_attach_member(self, balancer, member):
         """
         Attach a member to balancer
 
-        @keyword ip: IP address of a member
-        @type ip: C{str}
-        @keyword port: port that services we're balancing listens on on the member
-        @keyword port: C{str}
-
+        @keyword member: Member to join to the balancer
+        @type member: C{LBMember}
+        @return {LBMember} Member after joining the balancer.
         """
 
         raise NotImplementedError, \
