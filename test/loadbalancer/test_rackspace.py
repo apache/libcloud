@@ -3,7 +3,7 @@ import os.path
 import sys
 import unittest
 
-from libcloud.loadbalancer.base import LB, LBNode
+from libcloud.loadbalancer.base import LB, LBMember
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 
 from test import MockHttp, MockRawResponse
@@ -29,8 +29,8 @@ class RackspaceLBTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
-                nodes=(LBNode(None, '10.1.0.10', 80),
-                    LBNode(None, '10.1.0.11', 80))
+                members=(LBMember(None, '10.1.0.10', 80),
+                    LBMember(None, '10.1.0.11', 80))
                 )
 
         self.assertEquals(balancer.name, 'test2')
@@ -48,26 +48,26 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
 
-    def test_balancer_list_nodes(self):
+    def test_balancer_list_members(self):
         balancer = self.driver.balancer_detail(balancer_id='8290')
-        nodes = balancer.list_nodes()
+        members = balancer.list_members()
 
-        self.assertEquals(len(nodes), 2)
+        self.assertEquals(len(members), 2)
         self.assertEquals(set(['10.1.0.10:80', '10.1.0.11:80']),
-                set(["%s:%s" % (node.ip, node.port) for node in nodes]))
+                set(["%s:%s" % (member.ip, member.port) for member in members]))
 
-    def test_balancer_attach_node(self):
+    def test_balancer_attach_member(self):
         balancer = self.driver.balancer_detail(balancer_id='8290')
-        node = balancer.attach_node(ip='10.1.0.12', port='80')
+        member = balancer.attach_member(ip='10.1.0.12', port='80')
 
-        self.assertEquals(node.ip, '10.1.0.12')
-        self.assertEquals(node.port, 80)
+        self.assertEquals(member.ip, '10.1.0.12')
+        self.assertEquals(member.port, 80)
 
-    def test_balancer_detach_node(self):
+    def test_balancer_detach_member(self):
         balancer = self.driver.balancer_detail(balancer_id='8290')
-        node = balancer.list_nodes()[0]
+        member = balancer.list_members()[0]
 
-        ret = balancer.detach_node(node)
+        ret = balancer.detach_member(member)
 
         self.assertTrue(ret)
 

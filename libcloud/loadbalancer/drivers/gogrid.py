@@ -23,7 +23,7 @@ except ImportError:
 
 from libcloud.common.types import LibcloudError
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
-from libcloud.loadbalancer.base import LB, LBNode, LBDriver
+from libcloud.loadbalancer.base import LB, LBMember, LBDriver
 from libcloud.loadbalancer.types import Provider, LBState, LibcloudLBImmutableError
 
 
@@ -43,12 +43,12 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
     def ex_create_balancer_nowait(self, **kwargs):
         name = kwargs['name']
         port = kwargs['port']
-        nodes = kwargs['nodes']
+        members = kwargs['members']
 
         params = {'name': name,
                 'virtualip.ip': self._get_first_ip(),
                 'virtualip.port': port}
-        params.update(self._nodes_to_params(nodes))
+        params.update(self._members_to_params(members))
 
         resp = self.connection.request('/api/grid/loadbalancer/add',
                 method='GET',
@@ -108,41 +108,41 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
 
         return self._to_balancers(resp.object)[0]
 
-    def balancer_attach_node(self, balancer, **kwargs):
+    def balancer_attach_member(self, balancer, **kwargs):
         ip = kwargs['ip']
         port = kwargs['port']
 
-        nodes = self.balancer_list_nodes(balancer)
-        nodes.append(LBNode(None, ip, port))
+        members = self.balancer_list_members(balancer)
+        members.append(LBMember(None, ip, port))
 
         params = {"id": balancer.id}
 
-        params.update(self._nodes_to_params(nodes))
+        params.update(self._members_to_params(members))
 
-        resp = self._update_node(params)
+        resp = self._update_balancer(params)
 
-        return [ node for node in
-                self._to_nodes(resp.object["list"][0]["realiplist"])
-                if node.ip == ip ][0]
+        return [ member for member in
+                self._to_members(resp.object["list"][0]["realiplist"])
+                if member.ip == ip ][0]
 
-    def balancer_detach_node(self, balancer, node):
-        nodes = self.balancer_list_nodes(balancer)
+    def balancer_detach_member(self, balancer, member):
+        members = self.balancer_list_members(balancer)
 
-        remaining_nodes = [n for n in nodes if n.id != node.id]
+        remaining_members = [n for n in members if n.id != member.id]
 
         params = {"id": balancer.id}
-        params.update(self._nodes_to_params(remaining_nodes))
+        params.update(self._members_to_params(remaining_members))
 
-        resp = self._update_node(params)
+        resp = self._update_balancer(params)
 
         return resp.status == 200
 
-    def balancer_list_nodes(self, balancer):
+    def balancer_list_members(self, balancer):
         resp = self.connection.request('/api/grid/loadbalancer/get',
                 params={'id': balancer.id})
-        return self._to_nodes(resp.object["list"][0]["realiplist"])
+        return self._to_members(resp.object["list"][0]["realiplist"])
 
-    def _update_node(self, params):
+    def _update_balancer(self, params):
         try:
             return self.connection.request('/api/grid/loadbalancer/edit',
                     method='POST',
@@ -153,9 +153,9 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
 
         raise LibcloudError(value='Exception: %s' % str(err), driver=self)
 
-    def _nodes_to_params(self, nodes):
+    def _members_to_params(self, members):
         """
-        Helper method to convert list of L{LBNode} objects
+        Helper method to convert list of L{LBMember} objects
         to GET params.
 
         """
@@ -163,9 +163,9 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
         params = {}
 
         i = 0
-        for node in nodes:
-            params["realiplist.%s.ip" % i] = node.ip
-            params["realiplist.%s.port" % i] = node.port
+        for member in members:
+            params["realiplist.%s.ip" % i] = member.ip
+            params["realiplist.%s.port" % i] = member.port
             i += 1
 
         return params
@@ -183,11 +183,11 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
                 driver=self.connection.driver)
         return lb
 
-    def _to_nodes(self, object):
-        return [ self._to_node(el) for el in object ]
+    def _to_members(self, object):
+        return [ self._to_member(el) for el in object ]
 
-    def _to_node(self, el):
-        lbnode = LBNode(id=el["ip"]["id"],
+    def _to_member(self, el):
+        member = LBMember(id=el["ip"]["id"],
                 ip=el["ip"]["ip"],
                 port=el["port"])
-        return lbnode
+        return member

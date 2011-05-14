@@ -3,7 +3,7 @@ import os.path
 import sys
 import unittest
 
-from libcloud.loadbalancer.base import LB, LBNode
+from libcloud.loadbalancer.base import LB, LBMember
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
 from test import MockHttp, MockRawResponse
@@ -29,8 +29,8 @@ class GoGridTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
-                nodes=(LBNode(None, '10.1.0.10', 80),
-                    LBNode(None, '10.1.0.11', 80))
+                members=(LBMember(None, '10.1.0.10', 80),
+                    LBMember(None, '10.1.0.11', 80))
                 )
 
         self.assertEquals(balancer.name, 'test2')
@@ -48,30 +48,30 @@ class GoGridTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '23530')
 
-    def test_balancer_list_nodes(self):
+    def test_balancer_list_members(self):
         balancer = self.driver.balancer_detail(balancer_id='23530')
-        nodes = balancer.list_nodes()
+        members = balancer.list_members()
 
-        expected_nodes = set([u'10.0.0.78:80', u'10.0.0.77:80',
+        expected_members = set([u'10.0.0.78:80', u'10.0.0.77:80',
             u'10.0.0.76:80'])
 
-        self.assertEquals(len(nodes), 3)
-        self.assertEquals(expected_nodes,
-                set(["%s:%s" % (node.ip, node.port) for node in nodes]))
+        self.assertEquals(len(members), 3)
+        self.assertEquals(expected_members,
+                set(["%s:%s" % (member.ip, member.port) for member in members]))
 
-    def test_balancer_attach_node(self):
+    def test_balancer_attach_member(self):
         balancer = LB(23530, None, None, None, None, None)
-        node = self.driver.balancer_attach_node(balancer,
+        member = self.driver.balancer_attach_member(balancer,
                 ip='10.0.0.75', port='80')
 
-        self.assertEquals(node.ip, '10.0.0.75')
-        self.assertEquals(node.port, 80)
+        self.assertEquals(member.ip, '10.0.0.75')
+        self.assertEquals(member.port, 80)
 
-    def test_balancer_detach_node(self):
+    def test_balancer_detach_member(self):
         balancer = LB(23530, None, None, None, None, None)
-        node = self.driver.balancer_list_nodes(balancer)[0]
+        member = self.driver.balancer_list_members(balancer)[0]
 
-        ret = self.driver.balancer_detach_node(balancer, node)
+        ret = self.driver.balancer_detach_member(balancer, member)
 
         self.assertTrue(ret)
 

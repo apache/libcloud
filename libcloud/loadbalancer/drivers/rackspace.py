@@ -21,7 +21,7 @@ except ImportError:
     import simplejson
 
 from libcloud.common.base import Response
-from libcloud.loadbalancer.base import LB, LBNode, LBDriver
+from libcloud.loadbalancer.base import LB, LBMember, LBDriver
 from libcloud.loadbalancer.types import Provider, LBState
 from libcloud.common.rackspace import (AUTH_HOST_US,
         RackspaceBaseConnection)
@@ -79,16 +79,16 @@ class RackspaceLBDriver(LBDriver):
     def create_balancer(self, **kwargs):
         name = kwargs['name']
         port = kwargs['port']
-        nodes = kwargs['nodes']
+        members = kwargs['members']
 
         balancer_object = {"loadBalancer":
                 {"name": name,
                     "port": port,
                     "protocol": "HTTP",
                     "virtualIps": [{"type": "PUBLIC"}],
-                    "nodes": [{"address": node.ip,
-                        "port": node.port,
-                        "condition": "ENABLED"} for node in nodes],
+                    "nodes": [{"address": member.ip,
+                        "port": member.port,
+                        "condition": "ENABLED"} for member in members],
                     }
                 }
 
@@ -114,11 +114,11 @@ class RackspaceLBDriver(LBDriver):
 
         return self._to_balancer(resp.object["loadBalancer"])
 
-    def balancer_attach_node(self, balancer, **kwargs):
+    def balancer_attach_member(self, balancer, **kwargs):
         ip = kwargs['ip']
         port = kwargs['port']
 
-        node_object = {"nodes":
+        member_object = {"nodes":
                 [{"port": port,
                     "address": ip,
                     "condition": "ENABLED"}]
@@ -126,18 +126,18 @@ class RackspaceLBDriver(LBDriver):
 
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         resp = self.connection.request(uri, method='POST',
-                data=json.dumps(node_object))
-        return self._to_nodes(resp.object)[0]
+                data=json.dumps(member_object))
+        return self._to_members(resp.object)[0]
 
-    def balancer_detach_node(self, balancer, node):
-        uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, node.id)
+    def balancer_detach_member(self, balancer, member):
+        uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, member.id)
         resp = self.connection.request(uri, method='DELETE')
 
         return resp.status == 202
 
-    def balancer_list_nodes(self, balancer):
+    def balancer_list_members(self, balancer):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
-        return self._to_nodes(
+        return self._to_members(
                 self.connection.request(uri).object)
 
     def _to_balancers(self, object):
@@ -153,11 +153,11 @@ class RackspaceLBDriver(LBDriver):
                 driver=self.connection.driver)
         return lb
 
-    def _to_nodes(self, object):
-        return [ self._to_node(el) for el in object["nodes"] ]
+    def _to_members(self, object):
+        return [ self._to_member(el) for el in object["nodes"] ]
 
-    def _to_node(self, el):
-        lbnode = LBNode(id=el["id"],
+    def _to_member(self, el):
+        lbmember = LBMember(id=el["id"],
                 ip=el["address"],
                 port=el["port"])
-        return lbnode
+        return lbmember
