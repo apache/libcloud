@@ -18,7 +18,7 @@ import os
 try:
     import json
 except ImportError:
-    import simplejson
+    import simplejson as json
 
 from libcloud.common.base import Response
 from libcloud.loadbalancer.base import LB, LBMember, LBDriver
