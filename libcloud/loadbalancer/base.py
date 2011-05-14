@@ -55,7 +55,7 @@ class LB(object):
         self.driver = driver
 
     def attach_compute_node(self, node):
-        return self.driver.balacner_attach_compute_node(node)
+        return self.driver.balancer_attach_compute_node(node)
 
     def detach_member(self, member):
         return self.driver.balancer_detach_member(self, member)
@@ -77,8 +77,8 @@ class LBDriver(object):
     """
 
     connectionCls = ConnectionKey
-    _algorithm_to_value_map = {}
-    _value_to_algorithm_map = {}
+    _ALGORITHM_TO_VALUE_MAP = {}
+    _VALUE_TO_ALGORITHM_MAP = {}
 
     def __init__(self, key, secret=None, secure=True):
         self.key = key
@@ -150,7 +150,7 @@ class LBDriver(object):
         raise NotImplementedError, \
                 'balancer_detail not implemented for this driver'
 
-    def balancer_attach_node(self, balacner, node):
+    def balancer_attach_compute_node(self, balancer, node):
       """
       Attach a compute node as a member to the load balancer.
 
@@ -159,8 +159,8 @@ class LBDriver(object):
       @return {LBMember} Member after joining the balancer.
       """
 
-      return self.attach_member(LBMember(None, node.public_ip[0], balacner.port))
-    
+      return self.attach_member(LBMember(None, node.public_ip[0], balancer.port))
+
     def balancer_attach_member(self, balancer, member):
         """
         Attach a member to balancer
@@ -200,7 +200,7 @@ class LBDriver(object):
         Return C{LBAlgorithm} based on the value.
         """
         try:
-            return self._value_to_algorithm_map[value]
+            return self._VALUE_TO_ALGORITHM_MAP[value]
         except KeyError:
             raise LibcloudError(value='Invalid value: %s' % (value),
                                 driver=self)
@@ -210,7 +210,7 @@ class LBDriver(object):
         Return value based in the algorithm (C{LBAlgorithm}).
         """
         try:
-            return self._algorithm_to_value_map[algorithm]
+            return self._ALGORITHM_TO_VALUE_MAP[algorithm]
         except KeyError:
             raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
                                 driver=self)
