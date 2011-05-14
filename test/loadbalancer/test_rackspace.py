@@ -58,7 +58,7 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_balancer_attach_member(self):
         balancer = self.driver.balancer_detail(balancer_id='8290')
-        member = balancer.attach_member(ip='10.1.0.12', port='80')
+        member = balancer.attach_member(LBMember(None, ip='10.1.0.12', port='80'))
 
         self.assertEquals(member.ip, '10.1.0.12')
         self.assertEquals(member.port, 80)

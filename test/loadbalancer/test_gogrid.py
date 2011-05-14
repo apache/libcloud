@@ -62,7 +62,7 @@ class GoGridTests(unittest.TestCase):
     def test_balancer_attach_member(self):
         balancer = LB(23530, None, None, None, None, None)
         member = self.driver.balancer_attach_member(balancer,
-                ip='10.0.0.75', port='80')
+                LBMember(None, ip='10.0.0.75', port='80'))
 
         self.assertEquals(member.ip, '10.0.0.75')
         self.assertEquals(member.port, 80)
