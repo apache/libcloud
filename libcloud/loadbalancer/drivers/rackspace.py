@@ -114,9 +114,9 @@ class RackspaceLBDriver(LBDriver):
 
         return self._to_balancer(resp.object["loadBalancer"])
 
-    def balancer_attach_member(self, balancer, **kwargs):
-        ip = kwargs['ip']
-        port = kwargs['port']
+    def balancer_attach_member(self, balancer, member):
+        ip = member.ip
+        port = member.port
 
         member_object = {"nodes":
                 [{"port": port,

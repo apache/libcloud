@@ -53,8 +53,8 @@ class LB(object):
         self.port = port
         self.driver = driver
 
-    def attach_member(self, **kwargs):
-        return self.driver.balancer_attach_member(self, **kwargs)
+    def attach_member(self, member):
+        return self.driver.balancer_attach_member(self, member)
 
     def detach_member(self, member):
         return self.driver.balancer_detach_member(self, member)
