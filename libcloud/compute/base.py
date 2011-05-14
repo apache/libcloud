@@ -546,29 +546,28 @@ class NodeDriver(object):
                                        port=ssh_port, username=ssh_username,
                                        password=password,
                                        timeout=kwargs.get('ssh_timeout', None))
-                    laste = None
+
                     while time.time() < end:
-                        laste = None
                         try:
                             client.connect()
-                            break
                         except (IOError, socket.gaierror, socket.error), e:
-                            laste = e
+                            # Retry if a connection is refused or timeout
+                            # occured
+                            client.close()
                             time.sleep(WAIT_PERIOD)
-                            if laste is not None:
-                                raise e
+                            continue
 
-                            tries = 3
-                            while tries >= 0:
-                                try:
-                                    n = kwargs["deploy"].run(node, client)
-                                    client.close()
-                                    break
-                                except Exception, e:
-                                    tries -= 1
-                                    if tries == 0:
-                                        raise
-                                    client.connect()
+                        max_tries, tries = 3, 0
+                        while tries < max_tries:
+                            try:
+                                n = kwargs["deploy"].run(node, client)
+                                client.close()
+                                raise
+                            except Exception, e:
+                                tries += 1
+                                if tries >= max_tries:
+                                    raise DeploymentError(node,
+                                          'Failed after %d tries' % (max_tries))
 
         except DeploymentError:
             raise
