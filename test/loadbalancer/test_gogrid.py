@@ -3,7 +3,7 @@ import os.path
 import sys
 import unittest
 
-from libcloud.loadbalancer.base import LB, LBMember, LBAlgorithm
+from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
 from test import MockHttp, MockRawResponse
@@ -29,9 +29,9 @@ class GoGridTests(unittest.TestCase):
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
-                algorithm=LBAlgorithm.ROUND_ROBIN,
-                members=(LBMember(None, '10.1.0.10', 80),
-                    LBMember(None, '10.1.0.11', 80))
+                algorithm=Algorithm.ROUND_ROBIN,
+                members=(Member(None, '10.1.0.10', 80),
+                         Member(None, '10.1.0.11', 80))
                 )
 
         self.assertEquals(balancer.name, 'test2')
@@ -61,15 +61,15 @@ class GoGridTests(unittest.TestCase):
                 set(["%s:%s" % (member.ip, member.port) for member in members]))
 
     def test_balancer_attach_member(self):
-        balancer = LB(23530, None, None, None, None, None)
+        balancer = LoadBalancer(23530, None, None, None, None, None)
         member = self.driver.balancer_attach_member(balancer,
-                LBMember(None, ip='10.0.0.75', port='80'))
+                    Member(None, ip='10.0.0.75', port='80'))
 
         self.assertEquals(member.ip, '10.0.0.75')
         self.assertEquals(member.port, 80)
 
     def test_balancer_detach_member(self):
-        balancer = LB(23530, None, None, None, None, None)
+        balancer = LoadBalancer(23530, None, None, None, None, None)
         member = self.driver.balancer_list_members(balancer)[0]
 
         ret = self.driver.balancer_detach_member(balancer, member)

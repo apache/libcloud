@@ -17,14 +17,14 @@ from libcloud.common.base import ConnectionKey
 from libcloud.common.types import LibcloudError
 
 __all__ = [
-        "LBMember",
+        "Member",
         "LB",
         "LBDriver",
         "LBAlgorithm",
         "LBProtocol"
         ]
 
-class LBMember(object):
+class Member(object):
 
     def __init__(self, id, ip, port):
         self.id = str(id) if id else None
@@ -35,14 +35,14 @@ class LBMember(object):
         return ('<LBMember: id=%s, address=%s:%s>' % (self.id,
             self.ip, self.port))
 
-class LBAlgorithm(object):
+class Algorithm(object):
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
 
-DEFAULT_ALGORITHM = LBAlgorithm.ROUND_ROBIN
+DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
-class LB(object):
+class LoadBalancer(object):
     """
     Provide a common interface for handling Load Balancers.
     """
@@ -72,7 +72,7 @@ class LB(object):
                 self.name, self.state))
 
 
-class LBDriver(object):
+class Driver(object):
     """
     A base LBDriver class to derive from
 
