@@ -16,9 +16,7 @@
 Opsource Driver
 """
 import base64
-import socket
 from xml.etree import ElementTree as ET
-from xml.parsers.expat import ExpatError
 
 from libcloud.utils import fixxpath, findtext, findall
 from libcloud.common.base import ConnectionUserAndKey, Response
