@@ -169,7 +169,7 @@ class Driver(object):
       @return {LBMember} Member after joining the balancer.
       """
 
-      return self.attach_member(LBMember(None, node.public_ip[0], balancer.port))
+      return self.attach_member(Member(None, node.public_ip[0], balancer.port))
 
     def balancer_attach_member(self, balancer, member):
         """
