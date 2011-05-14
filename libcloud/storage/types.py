@@ -67,8 +67,8 @@ class ObjectError(LibcloudError):
         super(ObjectError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
-        return '<%s in %s, object = %s>' % (self.error_type, repr(self.driver),
-                                            self.object_name)
+        return '<%s in %s, value=%s, object = %s>' % (self.error_type, repr(self.driver),
+                                                      self.value, self.object_name)
 
 class ContainerAlreadyExistsError(ContainerError):
     error_type = 'ContainerAlreadyExistsError'

@@ -290,7 +290,7 @@ class S3StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      file_hash=None, ex_storage_class=None):
+                      verify_hash=True, ex_storage_class=None):
         upload_func = self._upload_file
         upload_func_kwargs = { 'file_path': file_path }
 
@@ -298,7 +298,7 @@ class S3StorageDriver(StorageDriver):
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, file_path=file_path,
-                                file_hash=file_hash,
+                                verify_hash=verify_hash,
                                 storage_class=ex_storage_class)
 
     def upload_object_via_stream(self, iterator, container, object_name,
@@ -328,7 +328,7 @@ class S3StorageDriver(StorageDriver):
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, file_hash=None, storage_class=None):
+                    iterator=None, verify_hash=True, storage_class=None):
         headers = {}
         extra = extra or {}
         storage_class = storage_class or 'standard'
@@ -341,9 +341,6 @@ class S3StorageDriver(StorageDriver):
         object_name_cleaned = self._clean_object_name(object_name)
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
-
-        if not iterator and file_hash:
-            headers['Content-MD5'] = base64.b64encode(file_hash.decode('hex'))
 
         if meta_data:
             for key, value in meta_data.iteritems():
@@ -368,19 +365,22 @@ class S3StorageDriver(StorageDriver):
         bytes_transferred = result_dict['bytes_transferred']
         headers = response.headers
         response = response.response
+        server_hash = headers['etag'].replace('"', '')
 
-        if (file_hash and response.status == httplib.BAD_REQUEST) or \
-           (file_hash and file_hash != headers['etag'].replace('"', '')):
+        if (verify_hash and result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
                 value='MD5 hash checksum does not match',
                 object_name=object_name, driver=self)
         elif response.status == httplib.OK:
             obj = Object(
-                name=object_name, size=bytes_transferred, hash=file_hash,
+                name=object_name, size=bytes_transferred, hash=server_hash,
                 extra=None, meta_data=meta_data, container=container,
                 driver=self)
 
             return obj
+        else:
+            raise LibcloudError('Unexpected status code, status_code=%s' % (response.status),
+                                driver=self)
 
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
