@@ -3,7 +3,7 @@
 import os
 import time
 
-from libcloud.loadbalancer.base import LB, LBNode
+from libcloud.loadbalancer.base import LB, LBMember
 from libcloud.loadbalancer.types import Provider, LBState
 from libcloud.loadbalancer.providers import get_driver
 
@@ -20,8 +20,8 @@ def main():
     new_balancer_name = 'testlb' + os.urandom(4).encode('hex')
     new_balancer = driver.create_balancer(name=new_balancer_name,
             port=80,
-            nodes=(LBNode(None, '192.168.86.1', 80),
-                LBNode(None, '192.168.86.2', 8080))
+            nodes=(LBMember(None, '192.168.86.1', 80),
+                LBMember(None, '192.168.86.2', 8080))
             )
 
     print new_balancer
