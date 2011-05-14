@@ -20,7 +20,8 @@ __all__ = [
         "LBMember",
         "LB",
         "LBDriver",
-        "LBAlgorithm"
+        "LBAlgorithm",
+        "LBProtocol"
         ]
 
 class LBMember(object):
@@ -97,6 +98,14 @@ class LBDriver(object):
         self.connection.driver = self
         self.connection.connect()
 
+    def list_protocols(self):
+        """
+        Return a list of supported protocols.
+        """
+
+        raise NotImplementedError, \
+                'list_protocols not implemented for this driver'
+
     def list_balancers(self):
         """
         List all loadbalancers
@@ -108,18 +117,21 @@ class LBDriver(object):
         raise NotImplementedError, \
                 'list_balancers not implemented for this driver'
 
-    def create_balancer(self, name, port, algorithm, members):
+    def create_balancer(self, name, port, protocol, algorithm, members):
         """
         Create a new load balancer instance
 
         @keyword name: Name of the new load balancer (required)
         @type name: C{str}
-        @keyword port: Port the load balancer should listen on (required)
-        @type port: C{str}
-        @keyword algorithm: Load balancing algorithm (defaults to round robin)
-        @type algorithm: C{LBAlgorithm}
-        @keyword members: C{list} of L{LBNode}s to attach to balancer
+        @keyword members: C{list} ofL{LBNode}s to attach to balancer
         @type: C{list} of L{LBNode}s
+        @keyword protocol: Loadbalancer protocol, defaults to http.
+        @type: C{str}
+        @keyword port: Port the load balancer should listen on, defaults to 80
+        @type port: C{str}
+        @keyword algorithm: Load balancing algorithm, defaults to
+                            LBAlgorithm.ROUND_ROBIN
+        @type algorithm: C{LBAlgorithm}
 
         """
 
