@@ -93,17 +93,13 @@ class GoGridLBDriver(BaseGoGridDriver, LBDriver):
 
         return resp.status == 200
 
-    def balancer_detail(self, **kwargs):
+    def get_balancer(self, **kwargs):
         params = {}
 
         try:
-            params['name'] = kwargs['balancer_name']
+            params['name'] = kwargs['ex_balancer_name']
         except KeyError:
-            try:
-                balancer_id = kwargs['balancer_id']
-            except KeyError:
-                balancer_id = kwargs['balancer'].id
-
+            balancer_id = kwargs['balancer_id']
             params['id'] = balancer_id
 
         resp = self.connection.request('/api/grid/loadbalancer/get',
