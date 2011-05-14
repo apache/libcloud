@@ -263,7 +263,7 @@ class StorageDriver(object):
         raise NotImplementedError(
             'enable_object_cdn not implemented for this driver')
 
-    def download_object(self, obj, destination_path, delete_on_failure=True):
+    def download_object(self, obj, destination_path, overwrite_existing=False, delete_on_failure=True):
         """
         Download an object to the specified destination path.
 
@@ -275,7 +275,7 @@ class StorageDriver(object):
                                 incoming file will be saved.
 
         @type overwrite_existing: C{bool}
-        @type overwrite_existing: True to overwrite an existing file.
+        @type overwrite_existing: True to overwrite an existing file, defaults to False.
 
         @type delete_on_failure: C{bool}
         @param delete_on_failure: True to delete a partially downloaded file if
@@ -438,7 +438,7 @@ class StorageDriver(object):
                                    exists.
 
         @type chunk_size: C{int}
-        @param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
+        @param chunk_size: Optional chunk size (defaults to L{libcloud.storage.base.CHUNK_SIZE}, 8kb)
 
         @return C{bool} True on success, False otherwise.
         """
