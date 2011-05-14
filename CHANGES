@@ -49,7 +49,7 @@ Changes with Apache Libcloud 0.5.0
     *) Minor fixes to get the library and tests working on Python 2.7 and PyPy.
        [Tomaz Muraus]
 
-Changes with Apache Libcloud 0.4.2
+Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
 
     *) Fix EC2 create_node to become backward compatible for
        NodeLocation.
