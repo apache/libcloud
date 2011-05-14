@@ -21,8 +21,8 @@ except ImportError:
     import simplejson as json
 
 from libcloud.common.base import Response
-from libcloud.loadbalancer.base import LB, LBMember, LBDriver
-from libcloud.loadbalancer.types import Provider, LBState
+from libcloud.loadbalancer.base import LoadBalancer, Member, Driver
+from libcloud.loadbalancer.types import Provider, State
 from libcloud.common.rackspace import (AUTH_HOST_US,
         RackspaceBaseConnection)
 
@@ -63,14 +63,14 @@ class RackspaceConnection(RackspaceBaseConnection):
                 params=params, data=data, method=method, headers=headers)
 
 
-class RackspaceLBDriver(LBDriver):
+class RackspaceLBDriver(Driver):
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
     api_name = 'rackspace_lb'
     name = 'Rackspace LB'
 
-    LB_STATE_MAP = { 'ACTIVE': LBState.RUNNING,
-                     'BUILD': LBState.PENDING }
+    LB_STATE_MAP = { 'ACTIVE': State.RUNNING,
+                     'BUILD': State.PENDING }
 
     def list_balancers(self):
         return self._to_balancers(
@@ -139,10 +139,10 @@ class RackspaceLBDriver(LBDriver):
         return [ self._to_balancer(el) for el in object["loadBalancers"] ]
 
     def _to_balancer(self, el):
-        lb = LB(id=el["id"],
+        lb = LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
-                    el["status"], LBState.UNKNOWN),
+                    el["status"], State.UNKNOWN),
                 ip=el["virtualIps"][0]["address"],
                 port=el["port"],
                 driver=self.connection.driver)
@@ -152,7 +152,7 @@ class RackspaceLBDriver(LBDriver):
         return [ self._to_member(el) for el in object["nodes"] ]
 
     def _to_member(self, el):
-        lbmember = LBMember(id=el["id"],
+        lbmember = Member(id=el["id"],
                 ip=el["address"],
                 port=el["port"])
         return lbmember

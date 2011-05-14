@@ -3,8 +3,8 @@
 import os
 import time
 
-from libcloud.loadbalancer.base import LB, LBMember
-from libcloud.loadbalancer.types import Provider, LBState
+from libcloud.loadbalancer.base import LoadBalancer, Member
+from libcloud.loadbalancer.types import Provider, State
 from libcloud.loadbalancer.providers import get_driver
 
 def main():
@@ -20,8 +20,8 @@ def main():
     new_balancer_name = 'testlb' + os.urandom(4).encode('hex')
     new_balancer = driver.create_balancer(name=new_balancer_name,
             port=80,
-            nodes=(LBMember(None, '192.168.86.1', 80),
-                LBMember(None, '192.168.86.2', 8080))
+            nodes=(Member(None, '192.168.86.1', 80),
+                Member(None, '192.168.86.2', 8080))
             )
 
     print new_balancer
@@ -32,7 +32,7 @@ def main():
     while True:
         balancer = driver.balancer_detail(balancer=new_balancer)
 
-        if balancer.state == LBState.RUNNING:
+        if balancer.state == State.RUNNING:
             break
 
         time.sleep(30)
@@ -45,7 +45,7 @@ def main():
     balancer.detach_node(nodes[0])
 
     # and add another one: 10.0.0.10:1000
-    print balancer.attach_node(ip='10.0.0.10', port='1000')
+    print balancer.attach_node(Member(None, ip='10.0.0.10', port='1000'))
 
     # remove the balancer
     driver.destroy_balancer(new_balancer)
