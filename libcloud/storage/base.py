@@ -178,16 +178,6 @@ class StorageDriver(object):
         self.connection.driver = self
         self.connection.connect()
 
-    def get_meta_data(self):
-        """
-        Return account meta data - total number of containers, objects and
-        number of bytes currently used.
-
-        @return A C{dict} with account meta data.
-        """
-        raise NotImplementedError(
-            'get_account_meta_data not implemented for this driver')
-
     def list_containters(self):
         raise NotImplementedError(
             'list_containers not implemented for this driver')

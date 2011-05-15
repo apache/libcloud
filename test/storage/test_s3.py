@@ -73,14 +73,6 @@ class S3Tests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
-    def test_get_meta_data(self):
-        try:
-            self.driver.get_meta_data()
-        except NotImplementedError:
-            pass
-        else:
-            self.fail('Exception was not thrown')
-
     def test_list_containers_empty(self):
         S3MockHttp.type = 'list_containers_EMPTY'
         containers = self.driver.list_containers()
