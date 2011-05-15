@@ -378,7 +378,6 @@ class CloudFilesStorageDriver(StorageDriver):
 
         response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
-        print result_dict['data_hash']
         server_hash = result_dict['response'].headers.get('etag', None)
 
         if response.status == httplib.EXPECTATION_FAILED:
