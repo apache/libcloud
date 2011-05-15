@@ -2,6 +2,12 @@ import httplib
 import os.path
 import sys
 import unittest
+from urlparse import parse_qsl
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
@@ -78,7 +84,7 @@ class RackspaceLBTests(unittest.TestCase):
 
         self.assertTrue(ret)
 
-class RackspaceLBMockHttp(MockHttp):
+class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
 
     def _v1_0(self, method, url, body, headers):
@@ -99,6 +105,10 @@ class RackspaceLBMockHttp(MockHttp):
             body = self.fixtures.load('v1_slug_loadbalancers.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == "POST":
+            body_json = json.loads(body)
+            self.assertEqual(body_json['loadBalancer']['protocol'], 'HTTP')
+            self.assertEqual(body_json['loadBalancer']['algorithm'], 'ROUND_ROBIN')
+
             body = self.fixtures.load('v1_slug_loadbalancers_post.json')
             return (httplib.ACCEPTED, body, {},
                     httplib.responses[httplib.ACCEPTED])
