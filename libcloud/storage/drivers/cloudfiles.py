@@ -476,10 +476,9 @@ class CloudFilesStorageDriver(StorageDriver):
                 key = key.replace('x-object-meta-', '')
                 meta_data[key] = value
 
-        extra = { 'content_type': content_type, 'last_modified': last_modified,
-                  'etag': etag }
+        extra = { 'content_type': content_type, 'last_modified': last_modified }
 
-        obj = Object(name=name, size=size, hash=None, extra=extra,
+        obj = Object(name=name, size=size, hash=etag, extra=extra,
                      meta_data=meta_data, container=container, driver=self)
         return obj
 
