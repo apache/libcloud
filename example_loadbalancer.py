@@ -1,9 +1,24 @@
 #!/usr/bin/env python
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import os
 import time
 
-from libcloud.loadbalancer.base import LoadBalancer, Member
+from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.types import Provider, State
 from libcloud.loadbalancer.providers import get_driver
 
@@ -19,9 +34,11 @@ def main():
     # itself listens on port 80/tcp
     new_balancer_name = 'testlb' + os.urandom(4).encode('hex')
     new_balancer = driver.create_balancer(name=new_balancer_name,
+            algorithm=Algorithm.ROUND_ROBIN,
             port=80,
-            nodes=(Member(None, '192.168.86.1', 80),
-                Member(None, '192.168.86.2', 8080))
+            protocol='http',
+            members=(Member(None, '192.168.86.1', 80),
+                     Member(None, '192.168.86.2', 8080))
             )
 
     print new_balancer
@@ -30,7 +47,7 @@ def main():
     # NOTE: in real life code add timeout to not end up in
     # endless loop when things go wrong on provider side
     while True:
-        balancer = driver.balancer_detail(balancer=new_balancer)
+        balancer = driver.get_balancer(balancer_id=new_balancer.id)
 
         if balancer.state == State.RUNNING:
             break
@@ -45,7 +62,7 @@ def main():
     balancer.detach_node(nodes[0])
 
     # and add another one: 10.0.0.10:1000
-    print balancer.attach_node(Member(None, ip='10.0.0.10', port='1000'))
+    print balancer.attach_member(Member(None, ip='10.0.0.10', port='1000'))
 
     # remove the balancer
     driver.destroy_balancer(new_balancer)
