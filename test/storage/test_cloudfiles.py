@@ -109,8 +109,8 @@ class CloudFilesTests(unittest.TestCase):
                                      object_name='test_object')
         self.assertEqual(obj.container.name, 'test_container')
         self.assertEqual(obj.size, 555)
+        self.assertEqual(obj.hash, '6b21c4a111ac178feacf9ec9d0c71f17')
         self.assertEqual(obj.extra['content_type'], 'application/zip')
-        self.assertEqual(obj.extra['etag'], '6b21c4a111ac178feacf9ec9d0c71f17')
         self.assertEqual(
             obj.extra['last_modified'], 'Tue, 25 Jan 2011 22:01:49 GMT')
         self.assertEqual(obj.meta_data['foo-bar'], 'test 1')
