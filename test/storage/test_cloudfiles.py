@@ -52,9 +52,6 @@ class CloudFilesTests(unittest.TestCase):
     def tearDown(self):
         self._remove_test_file()
 
-    def test_get_meta_data(self):
-        self.driver.get_meta_data()
-
     def test_invalid_json_throws_exception(self):
         CloudFilesMockHttp.type = 'MALFORMED_JSON'
         try:
@@ -399,6 +396,12 @@ class CloudFilesTests(unittest.TestCase):
         else:
             self.fail('Object does not exist but an exception was not thrown')
 
+    def test_ex_get_meta_data(self):
+        meta_data = self.driver.ex_get_meta_data()
+        self.assertTrue(isinstance(meta_data, dict))
+        self.assertTrue('object_count' in meta_data)
+        self.assertTrue('container_count' in meta_data)
+        self.assertTrue('bytes_used' in meta_data)
 
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
