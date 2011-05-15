@@ -90,6 +90,8 @@ class RackspaceLBDriver(Driver):
 
     def create_balancer(self, name, members, protocol='http',
                         port=80, algorithm=DEFAULT_ALGORITHM):
+        algorithm = self._algorithm_to_value(algorithm)
+
         balancer_object = {"loadBalancer":
                 {"name": name,
                     "port": port,

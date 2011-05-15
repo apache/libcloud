@@ -2,6 +2,7 @@ import httplib
 import os.path
 import sys
 import unittest
+from urlparse import urlparse, parse_qsl
 
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
@@ -83,7 +84,7 @@ class GoGridTests(unittest.TestCase):
 
         self.assertTrue(ret)
 
-class GoGridLBMockHttp(MockHttp):
+class GoGridLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')
 
     def _api_grid_loadbalancer_list(self, method, url, body, headers):
@@ -95,6 +96,9 @@ class GoGridLBMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_loadbalancer_add(self, method, url, body, headers):
+        qs = dict(parse_qsl(urlparse(url).query))
+        self.assertEqual(qs['loadbalancer.type'], 'round balancer')
+
         body = self.fixtures.load('loadbalancer_add.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
