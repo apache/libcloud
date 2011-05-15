@@ -25,39 +25,6 @@ import libcloud
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from httplib import HTTPConnection as LibcloudHTTPConnection
 
-class RawResponse(object):
-
-    def __init__(self, response=None):
-        self._status = None
-        self._response = None
-        self._headers = {}
-        self._error = None
-        self._reason = None
-
-    @property
-    def response(self):
-        if not self._response:
-            self._response = self.connection.connection.getresponse()
-        return self._response
-
-    @property
-    def status(self):
-        if not self._status:
-            self._status = self.response.status
-        return self._status
-
-    @property
-    def headers(self):
-        if not self._headers:
-            self._headers = dict(self.response.getheaders())
-        return self._headers
-
-    @property
-    def reason(self):
-        if not self._reason:
-            self._reason = self.response.reason
-        return self._reason
-
 class Response(object):
     """
     A Base Response class to derive from.
@@ -112,6 +79,43 @@ class Response(object):
         @return: C{True} or C{False}
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
+
+class RawResponse(Response):
+
+    def __init__(self, response=None):
+        self._status = None
+        self._response = None
+        self._headers = {}
+        self._error = None
+        self._reason = None
+
+    @property
+    def response(self):
+        if not self._response:
+            response = self.connection.connection.getresponse()
+            self._response, self.body = response, response
+            if not self.success():
+                self.parse_error()
+        return self._response
+
+    @property
+    def status(self):
+        if not self._status:
+            self._status = self.response.status
+        return self._status
+
+    @property
+    def headers(self):
+        if not self._headers:
+            self._headers = dict(self.response.getheaders())
+        return self._headers
+
+    @property
+    def reason(self):
+        if not self._reason:
+            self._reason = self.response.reason
+        return self._reason
+
 
 #TODO: Move this to a better location/package
 class LoggingConnection():
