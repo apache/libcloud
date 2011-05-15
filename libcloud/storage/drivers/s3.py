@@ -26,7 +26,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from libcloud.utils import fixxpath, findtext, in_development_warning
 from libcloud.utils import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse
 
 from libcloud.storage.base import Object, Container, StorageDriver
@@ -70,6 +70,9 @@ class S3Response(AWSBaseResponse):
         raise LibcloudError('Unknown error. Status code: %d' % (self.status),
                             driver=S3StorageDriver)
 
+class S3RawResponse(S3Response, RawResponse):
+    pass
+
 class S3Connection(ConnectionUserAndKey):
     """
     Repersents a single connection to the EC2 Endpoint
@@ -77,6 +80,7 @@ class S3Connection(ConnectionUserAndKey):
 
     host = 's3.amazonaws.com'
     responseCls = S3Response
+    rawResponseCls = S3RawResponse
 
     def add_default_params(self, params):
         expires = str(int(time.time()) + EXPIRATION_SECONDS)

@@ -23,7 +23,7 @@ except:
 
 from libcloud.utils import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
-from libcloud.common.base import Response
+from libcloud.common.base import Response, RawResponse
 
 from libcloud.storage.providers import Provider
 from libcloud.storage.base import Object, Container, StorageDriver
@@ -78,6 +78,8 @@ class CloudFilesResponse(Response):
 
         return data
 
+class CloudFilesRawResponse(CloudFilesResponse, RawResponse):
+    pass
 
 class CloudFilesConnection(RackspaceBaseConnection):
     """
@@ -85,6 +87,7 @@ class CloudFilesConnection(RackspaceBaseConnection):
     """
 
     responseCls = CloudFilesResponse
+    rawResponseCls = CloudFilesRawResponse
     auth_host = None
     _url_key = "storage_url"
 
