@@ -55,11 +55,11 @@ def main():
         time.sleep(30)
 
     # fetch list of nodes
-    nodes = balancer.list_nodes()
+    nodes = balancer.list_members()
     print nodes
 
     # remove first node
-    balancer.detach_node(nodes[0])
+    balancer.detach_member(nodes[0])
 
     # and add another one: 10.0.0.10:1000
     print balancer.attach_member(Member(None, ip='10.0.0.10', port='1000'))
