@@ -31,7 +31,7 @@ class Member(object):
         self.port = port
 
     def __repr__(self):
-        return ('<LBMember: id=%s, address=%s:%s>' % (self.id,
+        return ('<Member: id=%s, address=%s:%s>' % (self.id,
             self.ip, self.port))
 
 class Algorithm(object):
@@ -67,7 +67,7 @@ class LoadBalancer(object):
         return self.driver.balancer_list_members(self)
 
     def __repr__(self):
-        return ('<LB: id=%s, name=%s, state=%s>' % (self.id,
+        return ('<LoadBalancer: id=%s, name=%s, state=%s>' % (self.id,
                 self.name, self.state))
 
 
@@ -109,7 +109,7 @@ class Driver(object):
         """
         List all loadbalancers
 
-        @return: C{list} of L{LB} objects
+        @return: C{list} of L{LoadBalancer} objects
 
         """
 
@@ -122,8 +122,8 @@ class Driver(object):
 
         @keyword name: Name of the new load balancer (required)
         @type name: C{str}
-        @keyword members: C{list} ofL{LBNode}s to attach to balancer
-        @type: C{list} of L{LBNode}s
+        @keyword members: C{list} ofL{Member}s to attach to balancer
+        @type: C{list} of L{Member}s
         @keyword protocol: Loadbalancer protocol, defaults to http.
         @type: C{str}
         @keyword port: Port the load balancer should listen on, defaults to 80
@@ -149,12 +149,12 @@ class Driver(object):
 
     def get_balancer(self, balancer_id):
         """
-        Return a C{LB} object.
+        Return a C{LoadBalancer} object.
 
         @keyword balancer_id: id of a load balancer you want to fetch
         @type balancer_id: C{str}
 
-        @return: C{LB}
+        @return: C{LoadBalancer}
         """
 
         raise NotImplementedError, \
@@ -166,7 +166,7 @@ class Driver(object):
 
       @keyword node: Member to join to the balancer
       @type member: C{libcloud.compute.base.Node}
-      @return {LBMember} Member after joining the balancer.
+      @return {Member} Member after joining the balancer.
       """
 
       return self.attach_member(Member(None, node.public_ip[0], balancer.port))
@@ -176,8 +176,8 @@ class Driver(object):
         Attach a member to balancer
 
         @keyword member: Member to join to the balancer
-        @type member: C{LBMember}
-        @return {LBMember} Member after joining the balancer.
+        @type member: C{Member}
+        @return {Member} Member after joining the balancer.
         """
 
         raise NotImplementedError, \
@@ -198,7 +198,7 @@ class Driver(object):
         """
         Return list of members attached to balancer
 
-        @return: C{list} of L{LBNode}s
+        @return: C{list} of L{Member}s
 
         """
 
