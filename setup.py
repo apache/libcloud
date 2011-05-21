@@ -36,6 +36,7 @@ def read_version_string():
     sys.path.insert(0, pjoin(os.getcwd()))
     from libcloud import __version__
     version = __version__
+    sys.path.pop(0)
     return version
 
 class TestCommand(Command):
