@@ -112,7 +112,7 @@ class GoGridLBMockHttp(MockHttpTestCase):
 
     def _api_grid_loadbalancer_add(self, method, url, body, headers):
         qs = dict(parse_qsl(urlparse(url).query))
-        self.assertEqual(qs['loadbalancer.type'], 'round balancer')
+        self.assertEqual(qs['loadbalancer.type'], 'round robin')
 
         body = self.fixtures.load('loadbalancer_add.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
