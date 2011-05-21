@@ -165,10 +165,9 @@ setup(
     ],
     package_dir={
         'libcloud': 'libcloud',
-        'libcloud.drivers': 'libcloud/drivers'
     },
     package_data={
-        'libcloud': ['data/*.json', 'test/pricing_test.json'],
+        'libcloud': ['data/*.json']
     },
     license='Apache License (2.0)',
     url='http://incubator.apache.org/libcloud/',
