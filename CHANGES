@@ -2,6 +2,10 @@
 
 Changes with Apache Libcloud 0.5.0
 
+    *) Existing APIs directly on the libcloud.* module have been
+       deprecated and will be removed in version 0.6.0.  Most methods
+       were moved to the libcloud.compute.* module.
+
     *) Add new libcloud.loadbalancers API, with initial support for:
         - GoGrid Load Balancers
         - Rackspace Load Balancers
@@ -24,7 +28,7 @@ Changes with Apache Libcloud 0.5.0
     *) Updates to the GoGrid compute driver:
         - Use API version 1.0.
         - Remove sandbox flag.
-        - Add ex_list_ips() to list IP addresses assigned to the account. 
+        - Add ex_list_ips() to list IP addresses assigned to the account.
         - Implement ex_edit_image method which allows changing image attributes
           like name, description and make image public or private.
        [Roman Bogorodskiy]
@@ -32,7 +36,7 @@ Changes with Apache Libcloud 0.5.0
     *) Updates to the Amazon EC2 compute driver:
         - When creating a Node, use the name argument to set a Tag with the
           value.  [Tomaz Muraus]
-        - Add extension method for modifying node attributes and changing the 
+        - Add extension method for modifying node attributes and changing the
           node size. [Tomaz Muraus]
         - Add support for the new Amazon Region (Tokyo). [Tomaz Muraus]
         - Added ex_create_tags and ex_delete_tags. [Brandon Rhodes]
