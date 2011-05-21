@@ -118,7 +118,7 @@ class S3Connection(ConnectionUserAndKey):
             if key.lower() in special_header_keys:
                 special_header_values[key.lower()] = value.lower().strip()
             elif key.lower().startswith('x-amz-'):
-                amz_header_values[key.lower()] = value.lower().strip()
+                amz_header_values[key.lower()] = value.strip()
 
         if not special_header_values.has_key('content-md5'):
             special_header_values['content-md5'] = ''
