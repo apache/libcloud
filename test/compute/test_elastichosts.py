@@ -25,7 +25,6 @@ from libcloud.compute.drivers.elastichosts import \
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 from test import MockHttp
-from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
 class ElasticHostsTestCase(unittest.TestCase):

@@ -21,7 +21,7 @@ from libcloud.compute.base import NodeState, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.gogrid import GoGridIpAddress
 from libcloud.compute.drivers.gogrid import GoGridNodeDriver
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
+from libcloud.compute.base import Node, NodeImage, NodeSize
 
 from test import MockHttp               # pylint: disable-msg=E0611
 from test.compute import TestCaseMixin  # pylint: disable-msg=E0611
@@ -69,7 +69,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         node = Node(90967, None, None, None, None, self.driver)
 
         try:
-            ret = self.driver.reboot_node(node)
+            self.driver.reboot_node(node)
         except Exception:
             pass
         else:

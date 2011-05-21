@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import httplib
-import os.path
 import sys
 import unittest
 from urlparse import urlparse, parse_qsl
