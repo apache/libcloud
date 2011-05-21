@@ -32,7 +32,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
                      'Unknown': State.UNKNOWN }
     _VALUE_TO_ALGORITHM_MAP = {
         'round robin': Algorithm.ROUND_ROBIN,
-        'least connection': Algorithm.LEAST_CONNECTIONS
+        'least connect': Algorithm.LEAST_CONNECTIONS
     }
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
