@@ -379,7 +379,7 @@ class ConnectionKey(object):
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
             if raw:
-                self.connection.putrequest(method, action)
+                self.connection.putrequest(method, url)
 
                 for key, value in headers.iteritems():
                     self.connection.putheader(key, value)
