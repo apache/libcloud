@@ -161,7 +161,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
 
         params = {}
 
-        i = 0
+        i = 1
         for member in members:
             params["realiplist.%s.ip" % i] = member.ip
             params["realiplist.%s.port" % i] = member.port
