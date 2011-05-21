@@ -55,9 +55,9 @@ class ContainerError(LibcloudError):
         super(ContainerError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
-        return ('<%s in %s, container = %s>' %
+        return ('<%s in %s, container=%s, value=%s>' %
                 (self.error_type, repr(self.driver),
-                 self.container_name))
+                 self.container_name, self.value))
 
 class ObjectError(LibcloudError):
     error_type = 'ContainerError'
