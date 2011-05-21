@@ -27,7 +27,7 @@ class LibcloudLBError(LibcloudError): pass
 class LibcloudLBImmutableError(LibcloudLBError): pass
 
 class Provider(object):
-    RACKSPACE = 0
+    RACKSPACE_US = 0
     GOGRID = 1
 
 class State(object):

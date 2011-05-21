@@ -23,7 +23,7 @@ from libcloud.loadbalancer.types import Provider, State
 from libcloud.loadbalancer.providers import get_driver
 
 def main():
-    Rackspace = get_driver(Provider.RACKSPACE)
+    Rackspace = get_driver(Provider.RACKSPACE_US)
 
     driver = Rackspace('username', 'api key')
 
@@ -63,9 +63,6 @@ def main():
 
     # remove first member
     balancer.detach_member(members[0])
-
-    # and add another one: 10.0.0.10:1000
-    print balancer.attach_member(Member(None, ip='10.0.0.10', port='1000'))
 
     # remove the balancer
     driver.destroy_balancer(new_balancer)
