@@ -14,17 +14,42 @@
 # limitations under the License.
 
 import time
+import httplib
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from libcloud.common.types import LibcloudError
 from libcloud.utils import reverse_dict
-from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
+from libcloud.common.gogrid import GoGridConnection, GoGridResponse, BaseGoGridDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import Provider, State, LibcloudLBImmutableError
+from libcloud.loadbalancer.types import State, LibcloudLBImmutableError
 
+class GoGridLBResponse(GoGridResponse):
+    def success(self):
+        if self.status == httplib.INTERNAL_SERVER_ERROR:
+            # Hack, but at least this error message is more useful than
+            # "unexpected server error"
+            body = json.loads(self.body)
+            if body['method'] == '/grid/loadbalancer/add' and \
+               len(body['list']) >= 1 and \
+               body['list'][0]['message'].find('unexpected server error') != -1:
+                raise LibcloudError(value='You mostly likely tried to add a '
+                                         + 'member with an IP address not assigned '
+                                         +  'to your account', driver=self)
+        return super(GoGridLBResponse, self).success()
+
+class GoGridLBConnection(GoGridConnection):
+    """
+    Connection class for the GoGrid load-balancer driver.
+    """
+    responseCls = GoGridLBResponse
 
 class GoGridLBDriver(BaseGoGridDriver, Driver):
-    connectionCls = GoGridConnection
+    connectionCls = GoGridLBConnection
     api_name = 'gogrid_lb'
     name = 'GoGrid LB'
 
