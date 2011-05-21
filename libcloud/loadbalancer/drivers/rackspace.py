@@ -67,7 +67,6 @@ class RackspaceConnection(RackspaceBaseConnection):
 
 class RackspaceLBDriver(Driver):
     connectionCls = RackspaceConnection
-    type = Provider.RACKSPACE
     api_name = 'rackspace_lb'
     name = 'Rackspace LB'
 
