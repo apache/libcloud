@@ -87,6 +87,17 @@ class GoGridTests(unittest.TestCase):
 class GoGridLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')
 
+    def __init__(self, *args, **kwargs):
+        unittest.TestCase.__init__(self)
+
+        if kwargs.get('host', None) and kwargs.get('port', None):
+            MockHttp.__init__(self, *args, **kwargs)
+
+    def runTest(self):
+        # @TODO: Add a new base MockHttpTestCase class and add this method and
+        # constructor there
+        pass
+
     def _api_grid_loadbalancer_list(self, method, url, body, headers):
         body = self.fixtures.load('loadbalancer_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
