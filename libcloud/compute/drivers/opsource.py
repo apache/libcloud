@@ -295,9 +295,6 @@ class OpsourceNodeDriver(NodeDriver):
 
         # XXX:  Node sizes can be adjusted after a node is created, but cannot be
         #       set at create time because size is part of the image definition.
-        size = NodeSize(id=0, name='', ram=0, disk=None, bandwidth=None,
-                        price=0, driver=self.connection.driver)
-
         password = None
         if kwargs.has_key('auth'):
             auth = kwargs.get('auth')
@@ -328,10 +325,10 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "administratorPassword").text = password
         ET.SubElement(server_elm, "isStarted").text = str(ex_isStarted)
 
-        data = self.connection.request_with_orgId('server',
-                                                  method='POST',
-                                                  data=ET.tostring(server_elm)
-                                                  ).object
+        self.connection.request_with_orgId('server',
+                                           method='POST',
+                                           data=ET.tostring(server_elm)
+                                           ).object
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
         #      because opsource allows multiple nodes to have the same name
