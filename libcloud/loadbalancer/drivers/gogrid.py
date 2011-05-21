@@ -25,7 +25,6 @@ from libcloud.loadbalancer.types import Provider, State, LibcloudLBImmutableErro
 
 class GoGridLBDriver(BaseGoGridDriver, Driver):
     connectionCls = GoGridConnection
-    type = Provider.RACKSPACE
     api_name = 'gogrid_lb'
     name = 'GoGrid LB'
 
