@@ -14,10 +14,8 @@
 # limitations under the License.
 
 import httplib
-import os.path
 import sys
 import unittest
-from urlparse import parse_qsl
 
 try:
     import json
@@ -27,7 +25,7 @@ except ImportError:
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 
-from test import MockHttp, MockRawResponse
+from test import MockHttp
 from test.file_fixtures import LoadBalancerFileFixtures
 
 class RackspaceLBTests(unittest.TestCase):
