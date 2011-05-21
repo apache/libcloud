@@ -157,6 +157,8 @@ setup(
         'libcloud.common',
         'libcloud.compute',
         'libcloud.compute.drivers',
+        'libcloud.storage',
+        'libcloud.storage.drivers',
         'libcloud.drivers',
         'libcloud.loadbalancer',
         'libcloud.loadbalancer.drivers',
