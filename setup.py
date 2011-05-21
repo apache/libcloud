@@ -31,6 +31,13 @@ TEST_PATHS = [ 'test', 'test/compute', 'test/storage' , 'test/loadbalancer']
 DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy' ]
 
+def read_version_string():
+    version = None
+    sys.path.insert(0, pjoin(os.getcwd()))
+    from libcloud import __version__
+    version = __version__
+    return version
+
 class TestCommand(Command):
     user_options = []
 
@@ -139,7 +146,7 @@ pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 setup(
     name='apache-libcloud',
-    version='0.4.3',
+    version=read_version_string(),
     description='A unified interface into many cloud server providers',
     author='Apache Software Foundation',
     author_email='libcloud@incubator.apache.org',
