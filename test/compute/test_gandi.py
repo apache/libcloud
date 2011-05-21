@@ -36,7 +36,12 @@ class MockGandiTransport(xmlrpclib.Transport):
         mock = GandiMockHttp(host, 80)
         mock.request('POST', "%s/%s" % (handler, method))
         resp = mock.getresponse()
-        return self._parse_response(resp.body, None)
+
+        if sys.version[0] == '2' and sys.version[2] == '7':
+            response = self.parse_response(resp)
+        else:
+            response = self.parse_response(resp.body)
+        return response
 
 class GandiTests(unittest.TestCase):
 
