@@ -19,6 +19,7 @@ import sys
 import unittest
 from urlparse import urlparse, parse_qsl
 
+from libcloud.common.types import LibcloudError
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
@@ -59,6 +60,24 @@ class GoGridTests(unittest.TestCase):
 
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '123')
+
+    def test_create_balancer_UNEXPECTED_ERROR(self):
+        # Try to create new balancer and attach members with an IP address which
+        # does not belong to this account
+        GoGridLBMockHttp.type = 'UNEXPECTED_ERROR'
+
+        try:
+            self.driver.create_balancer(name='test2',
+                    port=80,
+                    protocol='http',
+                    algorithm=Algorithm.ROUND_ROBIN,
+                    members=(Member(None, '10.1.0.10', 80),
+                             Member(None, '10.1.0.11', 80))
+                    )
+        except LibcloudError, e:
+            self.assertTrue(str(e).find('tried to add a member with an IP address not assigned to your account') != -1)
+        else:
+            self.fail('Exception was not thrown')
 
     def test_destroy_balancer(self):
         balancer = self.driver.list_balancers()[0]
@@ -116,6 +135,13 @@ class GoGridLBMockHttp(MockHttpTestCase):
 
         body = self.fixtures.load('loadbalancer_add.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_grid_ip_list_UNEXPECTED_ERROR(self, method, url, body, headers):
+        return self._api_grid_ip_list(method, url, body, headers)
+
+    def _api_grid_loadbalancer_add_UNEXPECTED_ERROR(self, method, url, body, headers):
+        body = self.fixtures.load('unexpected_error.json')
+        return (httplib.INTERNAL_SERVER_ERROR, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_loadbalancer_delete(self, method, url, body, headers):
         body = self.fixtures.load('loadbalancer_add.json')
