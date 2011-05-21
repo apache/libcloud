@@ -137,6 +137,9 @@ class RackspaceLBDriver(Driver):
         return self._to_members(resp.object)[0]
 
     def balancer_detach_member(self, balancer, member):
+        # Loadbalancer always needs to have at least 1 member.
+        # Last member cannot be detached. You can only disable it or destroy the
+        # balancer.
         uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, member.id)
         resp = self.connection.request(uri, method='DELETE')
 
