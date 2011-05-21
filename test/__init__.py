@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import httplib
 import random
+import unittest
 
 from cStringIO import StringIO
 from urllib2 import urlparse
@@ -154,6 +156,18 @@ class MockHttp(BaseMockHttpObject):
         return (httplib.FORBIDDEN, 'Oh Noes!', {'X-Foo': 'fail'},
                 httplib.responses[httplib.FORBIDDEN])
 
+class MockHttpTestCase(MockHttp, unittest.TestCase):
+    # Same as the MockHttp class, but you can also use assertions in the
+    # classes which inherit from this one.
+    def __init__(self, *args, **kwargs):
+        unittest.TestCase.__init__(self)
+
+        if kwargs.get('host', None) and kwargs.get('port', None):
+            MockHttp.__init__(self, *args, **kwargs)
+
+    def runTest(self):
+        pass
+
 class StorageMockHttp(MockHttp):
     def putrequest(self, method, action):
         pass
@@ -166,7 +180,6 @@ class StorageMockHttp(MockHttp):
 
     def send(self, data):
         pass
-
 
 class MockRawResponse(BaseMockHttpObject):
     """
