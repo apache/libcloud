@@ -16,7 +16,7 @@ import sys
 import unittest
 import httplib
 
-from libcloud.common.types import InvalidCredsError
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 from libcloud.compute.base import Node, NodeImage, NodeSize
 
@@ -46,8 +46,17 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         RackspaceMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
             self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
-        except InvalidCredsError, e:
-            self.assertEqual(True, isinstance(e, InvalidCredsError))
+        except MalformedResponseError, e:
+            self.assertEqual(True, isinstance(e, MalformedResponseError))
+        else:
+            self.fail('test should have thrown')
+
+    def test_auth_server_error(self):
+        RackspaceMockHttp.type = 'INTERNAL_SERVER_ERROR'
+        try:
+            self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        except MalformedResponseError, e:
+            self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
 
@@ -197,6 +206,9 @@ class RackspaceMockHttp(MockHttp):
     def _v1_0_UNAUTHORIZED(self, method, url, body, headers):
         return  (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])
 
+    def _v1_0_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
+        return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>", {}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
+
     def _v1_0_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
         headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
                    'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
@@ -276,8 +288,6 @@ class RackspaceMockHttp(MockHttp):
 
     def _v1_0_slug_servers_3445_ips_public_67_23_21_133(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
-
-
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
