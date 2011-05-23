@@ -21,6 +21,29 @@ from cStringIO import StringIO
 from urllib2 import urlparse
 from cgi import parse_qs
 
+class LibcloudTestCase(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        self._visited_urls = []
+        self._executed_mock_methods = []
+        super(LibcloudTestCase, self).__init__(*args, **kwargs)
+
+    def setUp(self):
+        self._visited_urls = []
+        self._executed_mock_methods = []
+
+    def _add_visited_url(self, url):
+        self._visited_urls.append(url)
+
+    def _add_executed_mock_method(self, method_name):
+        self._executed_mock_methods.append(method_name)
+
+    def assertExecutedMethodCount(self, expected):
+        print self._executed_mock_methods
+        actual = len(self._executed_mock_methods)
+        self.assertEqual(actual, expected,
+                         'expected %d, but %d mock methods were executed'
+                         % (expected, actual))
+
 class multipleresponse(object):
     """
     A decorator that allows MockHttp objects to return multi responses
@@ -114,6 +137,8 @@ class MockHttp(BaseMockHttpObject):
     type = None
     use_param = None # will use this param to namespace the request function
 
+    test = None # TestCase instance which is using this mock
+
     def __init__(self, host, port, *args, **kwargs):
         self.host = host
         self.port = port
@@ -129,6 +154,11 @@ class MockHttp(BaseMockHttpObject):
                                           use_param=self.use_param,
                                           qs=qs, path=path)
         meth = getattr(self, meth_name)
+
+        if self.test and isinstance(self.test, LibcloudTestCase):
+            self.test._add_visited_url(url=url)
+            self.test._add_executed_mock_method(method_name=meth_name)
+
         status, body, headers, reason = meth(method, url, body, headers)
         self.response = self.responseCls(status, body, headers, reason)
 
