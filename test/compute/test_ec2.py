@@ -21,15 +21,16 @@ from libcloud.compute.drivers.ec2 import NimbusNodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver, IdempotentParamError
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
-from test import MockHttp
+from test import MockHttp, LibcloudTestCase
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
 from test.secrets import EC2_ACCESS_ID, EC2_SECRET
 
-class EC2Tests(unittest.TestCase, TestCaseMixin):
+class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def setUp(self):
+        EC2MockHttp.test = self
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
@@ -335,6 +336,7 @@ class NimbusTests(EC2Tests):
     def test_list_nodes(self):
         # overridden from EC2Tests -- Nimbus doesn't support elastic IPs.
         node = self.driver.list_nodes()[0]
+        self.assertExecutedMethodCount(0)
         public_ips = node.public_ip
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(len(node.public_ip), 1)
@@ -344,8 +346,8 @@ class NimbusTests(EC2Tests):
        # Nimbus doesn't support creating tags so this one should be a
        # passthrough
        node = self.driver.list_nodes()[0]
-       EC2MockHttp.type = 'EX_CREATE_TAGS'
        self.driver.ex_create_tags(node=node, tags={'foo': 'bar'})
+       self.assertExecutedMethodCount(0)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
