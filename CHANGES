@@ -1,5 +1,15 @@
                                                         -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud 0.5.1
+  *) Rackspace driver:
+      - Properly handle response errors and only throw InvalidCredsError if
+        the returned status code is 401
+     [Brad Morgan]
+
+  *) Nimbus driver:
+     - Fix the create_node method and make the "ex_create_tag" method a no-op,
+       because Nimbus doesn't support creating tags.
+
 Changes with Apache Libcloud 0.5.0
 
     *) Existing APIs directly on the libcloud.* module have been
