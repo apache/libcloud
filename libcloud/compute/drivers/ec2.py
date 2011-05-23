@@ -1006,10 +1006,17 @@ class NimbusNodeDriver(EC2NodeDriver):
     _instance_types = NIMBUS_INSTANCE_TYPES
 
     def ex_describe_addresses(self, nodes):
-        """Nimbus doesn't support elastic IPs, so this is a passthrough
+        """
+        Nimbus doesn't support elastic IPs, so this is a passthrough
         """
         nodes_elastic_ip_mappings = {}
         for node in nodes:
             # empty list per node
             nodes_elastic_ip_mappings[node.id] = []
         return nodes_elastic_ip_mappings
+
+    def ex_create_tags(self, node, tags):
+        """
+        Nimbus doesn't support creating tags, so this is a passthrough
+        """
+        pass
