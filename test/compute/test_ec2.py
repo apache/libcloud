@@ -340,5 +340,12 @@ class NimbusTests(EC2Tests):
         self.assertEqual(len(node.public_ip), 1)
         self.assertEqual(public_ips[0], '1.2.3.5')
 
+    def test_ex_create_tags(self):
+       # Nimbus doesn't support creating tags so this one should be a
+       # passthrough
+       node = self.driver.list_nodes()[0]
+       EC2MockHttp.type = 'EX_CREATE_TAGS'
+       self.driver.ex_create_tags(node=node, tags={'foo': 'bar'})
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
