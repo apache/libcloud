@@ -19,7 +19,7 @@ Common utilities for Rackspace Cloud Servers and Cloud Files
 import httplib
 from urllib2 import urlparse
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.compute.types import InvalidCredsError
+from libcloud.compute.types import InvalidCredsError, MalformedResponseError
 
 AUTH_HOST_US='auth.api.rackspacecloud.com'
 AUTH_HOST_UK='lon.auth.api.rackspacecloud.com'
@@ -95,19 +95,29 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
 
             resp = conn.getresponse()
 
-            if resp.status != httplib.NO_CONTENT:
-                raise InvalidCredsError()
+            if resp.status == httplib.NO_CONTENT:
+                # HTTP NO CONTENT (204): auth successful
+                headers = dict(resp.getheaders())
 
-            headers = dict(resp.getheaders())
-
-            try:
-                self.server_url = headers['x-server-management-url']
-                self.storage_url = headers['x-storage-url']
-                self.cdn_management_url = headers['x-cdn-management-url']
-                self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
-                self.auth_token = headers['x-auth-token']
-            except KeyError:
+                try:
+                    self.server_url = headers['x-server-management-url']
+                    self.storage_url = headers['x-storage-url']
+                    self.cdn_management_url = headers['x-cdn-management-url']
+                    self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
+                    self.auth_token = headers['x-auth-token']
+                except KeyError, e:
+                    # Returned 204 but has missing information in the header, something is wrong
+                    raise MalformedResponseError('Malformed response',
+                                                 body='Missing header: %s' % (str(e)),
+                                                 driver=self.driver)
+            elif resp.status == httplib.UNAUTHORIZED:
+                # HTTP UNAUTHORIZED (401): auth failed
                 raise InvalidCredsError()
+            else:
+                # Any response code != 401 or 204, something is wrong
+                raise MalformedResponseError('Malformed response',
+                        body='code: %s body:%s' % (resp.status, ''.join(resp.body.readlines())),
+                        driver=self.driver)
 
             for key in ['server_url', 'storage_url', 'cdn_management_url',
                         'lb_url']:
