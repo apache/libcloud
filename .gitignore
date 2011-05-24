@@ -1,0 +1,6 @@
+*.py[co]
+*.sw[po]
+test/secrets.py
+*~
+_trial_temp
+build
