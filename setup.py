@@ -150,7 +150,7 @@ setup(
     version=read_version_string(),
     description='A unified interface into many cloud server providers',
     author='Apache Software Foundation',
-    author_email='libcloud@incubator.apache.org',
+    author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
     packages=[
         'libcloud',
@@ -170,7 +170,7 @@ setup(
         'libcloud': ['data/*.json']
     },
     license='Apache License (2.0)',
-    url='http://incubator.apache.org/libcloud/',
+    url='http://libcloud.apache.org/',
     cmdclass={
         'test': TestCommand,
         'apidocs': ApiDocsCommand,
