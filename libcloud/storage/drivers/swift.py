@@ -441,10 +441,10 @@ class SwiftStorageDriver(StorageDriver):
 
 class SwiftOSStorageDriver(SwiftStorageDriver):
     """
-    Cloudfiles storage driver for the US endpoint.
+    Swift endpoint
     """
 
-    type = Provider.SWIFT_OS
-    name = 'Swift (US)'
+    type = Provider.SWIFT
+    name = 'Swift'
     connectionCls = SwiftOSConnection
 
