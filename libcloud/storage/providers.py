@@ -23,6 +23,8 @@ DRIVERS = {
         ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
     Provider.CLOUDFILES_UK:
         ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver'),
+    Provider.SWIFT:
+        ('libcloud.storage.drivers.swift', 'SwiftOSStorageDriver'),
     Provider.S3:
         ('libcloud.storage.drivers.s3', 'S3StorageDriver'),
     Provider.S3_US_WEST:

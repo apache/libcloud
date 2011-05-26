@@ -37,6 +37,7 @@ class Provider(object):
     @cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     @cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
     @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
+	@cvar SWIFT: Swfit provider allowing the usage of OpenStack Swift
     """
     DUMMY = 0
     CLOUDFILES_US = 1
@@ -46,6 +47,7 @@ class Provider(object):
     S3_EU_WEST = 5
     S3_AP_SOUTHEAST = 6
     S3_AP_NORTHEAST = 7
+    SWIFT = 8
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
