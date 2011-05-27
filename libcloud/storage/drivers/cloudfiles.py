@@ -60,7 +60,6 @@ class CloudFilesConnection(SwiftConnection):
     _url_key = "storage_url"
     auth_headers_keys = {
         'storage_url' :'x-storage-url',
-        'auth_token':'x-auth-token',
         'server_url':'x-server-management-url',
         'cdn_management_url':'x-cdn-management-url'
     }

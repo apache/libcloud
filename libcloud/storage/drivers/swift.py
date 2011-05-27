@@ -88,8 +88,7 @@ class SwiftConnection(OpenstackBaseConnection):
     auth_host = None
     _url_key = "storage_url"
     auth_headers_keys = {
-        'storage_url':'x-storage-url',
-        'auth_token':'x-auth-token'
+        'storage_url':'x-storage-url'
     }
 
 

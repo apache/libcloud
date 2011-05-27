@@ -92,10 +92,10 @@ class OpenstackBaseConnection(ConnectionUserAndKey):
                 # HTTP NO CONTENT (204): auth successful
                 headers = dict(resp.getheaders())
                 try:
-                    for k in self.auth_headers_keys.keys():
-                        if k not in self.__dict__ or not self.__dict__[k]:
-                            self.__dict__[k] = headers[self.auth_headers_keys[k]]
-
+                    self.auth_token = headers['x-auth-token']
+                    for class_key, response_key in self.auth_headers_keys.iteritems():
+                        if getattr(self, class_key, False) is False:
+                            setattr(self, class_key, headers[response_key])
                 except KeyError, e:
                     # Returned 204 but has missing information in the header, something is wrong
                     raise MalformedResponseError('Malformed response',
@@ -110,7 +110,8 @@ class OpenstackBaseConnection(ConnectionUserAndKey):
                         body='code: %s body:%s' % (resp.status, ''.join(resp.body.readlines())),
                         driver=self.driver)
 
-            for key in ['storage_url']:
+            for key in self.auth_headers_keys.keys():
+                print getattr(self,key)
                 scheme, server, request_path, param, query, fragment = (
                     urlparse.urlparse(getattr(self, key)))
                 # Set host to where we want to make further requests to
