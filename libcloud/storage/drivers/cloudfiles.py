@@ -37,51 +37,19 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.rackspace import (
     AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
 
+from libcloud.storage.drivers.swift import SwiftConnection, SwiftStorageDriver, SwiftResponse
+
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
 
 
-class CloudFilesResponse(Response):
-
-    valid_response_codes = [ httplib.NOT_FOUND, httplib.CONFLICT ]
-
-    def success(self):
-        i = int(self.status)
-        return i >= 200 and i <= 299 or i in self.valid_response_codes
-
-    def parse_body(self):
-        if not self.body:
-            return None
-
-        if 'content-type' in self.headers:
-            key = 'content-type'
-        elif 'Content-Type' in self.headers:
-            key = 'Content-Type'
-        else:
-            raise LibcloudError('Missing content-type header')
-
-        content_type = self.headers[key]
-        if content_type.find(';') != -1:
-            content_type = content_type.split(';')[0]
-
-        if content_type == 'application/json':
-            try:
-                data = json.loads(self.body)
-            except:
-                raise MalformedResponseError('Failed to parse JSON',
-                                             body=self.body,
-                                             driver=CloudFilesStorageDriver)
-        elif content_type == 'text/plain':
-            data = self.body
-        else:
-            data = self.body
-
-        return data
+class CloudFilesResponse(SwiftResponse):
+    pass
 
 class CloudFilesRawResponse(CloudFilesResponse, RawResponse):
     pass
 
-class CloudFilesConnection(RackspaceBaseConnection):
+class CloudFilesConnection(SwiftConnection):
     """
     Base connection class for the Cloudfiles driver.
     """
@@ -90,6 +58,12 @@ class CloudFilesConnection(RackspaceBaseConnection):
     rawResponseCls = CloudFilesRawResponse
     auth_host = None
     _url_key = "storage_url"
+    auth_headers_keys = {
+        'storage_url' :'x-storage-url',
+        'auth_token':'x-auth-token',
+        'server_url':'x-server-management-url',
+        'cdn_management_url':'x-cdn-management-url'
+    }
 
     def __init__(self, user_id, key, secure=True):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure)
@@ -139,7 +113,7 @@ class CloudFilesUKConnection(CloudFilesConnection):
     auth_host = AUTH_HOST_UK
 
 
-class CloudFilesStorageDriver(StorageDriver):
+class CloudFilesStorageDriver(SwiftStorageDriver):
     """
     Base CloudFiles driver.
 
@@ -149,54 +123,6 @@ class CloudFilesStorageDriver(StorageDriver):
     name = 'CloudFiles'
     connectionCls = CloudFilesConnection
     hash_type = 'md5'
-
-    def list_containers(self):
-        response = self.connection.request('')
-
-        if response.status == httplib.NO_CONTENT:
-            return []
-        elif response.status == httplib.OK:
-            return self._to_container_list(json.loads(response.body))
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def list_container_objects(self, container):
-        response = self.connection.request('/%s' % (container.name))
-
-        if response.status == httplib.NO_CONTENT:
-            # Empty or inexistent container
-            return []
-        elif response.status == httplib.OK:
-            return self._to_object_list(json.loads(response.body), container)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def get_container(self, container_name):
-        response = self.connection.request('/%s' % (container_name),
-                                                    method='HEAD')
-
-        if response.status == httplib.NO_CONTENT:
-            container = self._headers_to_container(
-                container_name, response.headers)
-            return container
-        elif response.status == httplib.NOT_FOUND:
-            raise ContainerDoesNotExistError(None, self, container_name)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def get_object(self, container_name, object_name):
-        container = self.get_container(container_name)
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                                       method='HEAD')
-        if response.status in [ httplib.OK, httplib.NO_CONTENT ]:
-            obj = self._headers_to_object(
-                object_name, container, response.headers)
-            return obj
-        elif response.status == httplib.NOT_FOUND:
-            raise ObjectDoesNotExistError(None, self, object_name)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def get_container_cdn_url(self, container):
         container_name = container.name
@@ -229,261 +155,6 @@ class CloudFilesStorageDriver(StorageDriver):
 
         return False
 
-    def create_container(self, container_name):
-        container_name = self._clean_container_name(container_name)
-        response = self.connection.request(
-            '/%s' % (container_name), method='PUT')
-
-        if response.status == httplib.CREATED:
-            # Accepted mean that container is not yet created but it will be
-            # eventually
-            extra = { 'object_count': 0 }
-            container = Container(name=container_name, extra=extra, driver=self)
-
-            return container
-        elif response.status == httplib.ACCEPTED:
-            error = ContainerAlreadyExistsError(None, self, container_name)
-            raise error
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def delete_container(self, container):
-        name = self._clean_container_name(container.name)
-
-        # Only empty container can be deleted
-        response = self.connection.request('/%s' % (name), method='DELETE')
-
-        if response.status == httplib.NO_CONTENT:
-            return True
-        elif response.status == httplib.NOT_FOUND:
-            raise ContainerDoesNotExistError(value='',
-                                             container_name=name, driver=self)
-        elif response.status == httplib.CONFLICT:
-            # @TODO: Add "delete_all_objects" parameter?
-            raise ContainerIsNotEmptyError(value='',
-                                           container_name=name, driver=self)
-
-    def download_object(self, obj, destination_path, overwrite_existing=False,
-                        delete_on_failure=True):
-        container_name = obj.container.name
-        object_name = obj.name
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                           method='GET', raw=True)
-
-        return self._get_object(obj=obj, callback=self._save_object,
-                                response=response,
-                                callback_kwargs={'obj': obj,
-                                 'response': response.response,
-                                 'destination_path': destination_path,
-                                 'overwrite_existing': overwrite_existing,
-                                 'delete_on_failure': delete_on_failure},
-                                success_status_code=httplib.OK)
-
-    def download_object_as_stream(self, obj, chunk_size=None):
-        container_name = obj.container.name
-        object_name = obj.name
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                           method='GET', raw=True)
-
-        return self._get_object(obj=obj, callback=read_in_chunks,
-                                response=response,
-                                callback_kwargs={ 'iterator': response.response,
-                                                 'chunk_size': chunk_size},
-                                success_status_code=httplib.OK)
-
-    def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
-        """
-        Upload an object.
-
-        Note: This will override file with a same name if it already exists.
-        """
-        upload_func = self._upload_file
-        upload_func_kwargs = { 'file_path': file_path }
-
-        return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, file_path=file_path,
-                                verify_hash=verify_hash)
-
-    def upload_object_via_stream(self, iterator,
-                                 container, object_name, extra=None):
-        if isinstance(iterator, file):
-            iterator = iter(iterator)
-
-        upload_func = self._stream_data
-        upload_func_kwargs = { 'iterator': iterator }
-
-        return self._put_object(container=container, object_name=object_name,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, iterator=iterator)
-
-    def delete_object(self, obj):
-        container_name = self._clean_container_name(obj.container.name)
-        object_name = self._clean_object_name(obj.name)
-
-        response = self.connection.request(
-            '/%s/%s' % (container_name, object_name), method='DELETE')
-
-        if response.status == httplib.NO_CONTENT:
-            return True
-        elif response.status == httplib.NOT_FOUND:
-            raise ObjectDoesNotExistError(value='', object_name=object_name,
-                                          driver=self)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def ex_get_meta_data(self):
-        response = self.connection.request('', method='HEAD')
-
-        if response.status == httplib.NO_CONTENT:
-            container_count = response.headers.get(
-                'x-account-container-count', 'unknown')
-            object_count = response.headers.get(
-                'x-account-object-count', 'unknown')
-            bytes_used = response.headers.get(
-                'x-account-bytes-used', 'unknown')
-
-            return { 'container_count': int(container_count),
-                      'object_count': int(object_count),
-                      'bytes_used': int(bytes_used) }
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def _put_object(self, container, object_name, upload_func,
-                    upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, verify_hash=True):
-        extra = extra or {}
-        container_name_cleaned = self._clean_container_name(container.name)
-        object_name_cleaned = self._clean_object_name(object_name)
-        content_type = extra.get('content_type', None)
-        meta_data = extra.get('meta_data', None)
-
-        headers = {}
-        if meta_data:
-            for key, value in meta_data.iteritems():
-                key = 'X-Object-Meta-%s' % (key)
-                headers[key] = value
-
-        request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
-        result_dict = self._upload_object(object_name=object_name,
-                                          content_type=content_type,
-                                          upload_func=upload_func,
-                                          upload_func_kwargs=upload_func_kwargs,
-                                          request_path=request_path,
-                                          request_method='PUT',
-                                          headers=headers, file_path=file_path,
-                                          iterator=iterator)
-
-        response = result_dict['response'].response
-        bytes_transferred = result_dict['bytes_transferred']
-        server_hash = result_dict['response'].headers.get('etag', None)
-
-        if response.status == httplib.EXPECTATION_FAILED:
-            raise LibcloudError(value='Missing content-type header',
-                                driver=self)
-        elif verify_hash and not server_hash:
-            raise LibcloudError(value='Server didn\'t return etag',
-                                driver=self)
-        elif (verify_hash and result_dict['data_hash'] != server_hash):
-            raise ObjectHashMismatchError(
-                value=('MD5 hash checksum does not match (expected=%s, ' +
-                       'actual=%s)') % (result_dict['data_hash'], server_hash),
-                object_name=object_name, driver=self)
-        elif response.status == httplib.CREATED:
-            obj = Object(
-                name=object_name, size=bytes_transferred, hash=server_hash,
-                extra=None, meta_data=meta_data, container=container,
-                driver=self)
-
-            return obj
-        else:
-            # @TODO: Add test case for this condition (probably 411)
-            raise LibcloudError('status_code=%s' % (response.status),
-                                driver=self)
-
-    def _clean_container_name(self, name):
-        """
-        Clean container name.
-        """
-        if name.startswith('/'):
-            name = name[1:]
-        name = urllib.quote(name)
-
-        if name.find('/') != -1:
-            raise InvalidContainerNameError(value='Container name cannot'
-                                                  ' contain slashes',
-                                            container_name=name, driver=self)
-
-        if len(name) > 256:
-            raise InvalidContainerNameError(value='Container name cannot be'
-                                                   ' longer than 256 bytes',
-                                            container_name=name, driver=self)
-
-
-        return name
-
-    def _clean_object_name(self, name):
-        name = urllib.quote(name)
-        return name
-
-    def _to_container_list(self, response):
-        # @TODO: Handle more then 10k containers - use "lazy list"?
-        containers = []
-
-        for container in response:
-            extra = { 'object_count': int(container['count']),
-                      'size': int(container['bytes'])}
-            containers.append(Container(name=container['name'], extra=extra,
-                                        driver=self))
-
-        return containers
-
-    def _to_object_list(self, response, container):
-        objects = []
-
-        for obj in response:
-            name = obj['name']
-            size = int(obj['bytes'])
-            hash = obj['hash']
-            extra = { 'content_type': obj['content_type'],
-                      'last_modified': obj['last_modified'] }
-            objects.append(Object(
-                name=name, size=size, hash=hash, extra=extra,
-                meta_data=None, container=container, driver=self))
-
-        return objects
-
-    def _headers_to_container(self, name, headers):
-        size = int(headers.get('x-container-bytes-used', 0))
-        object_count = int(headers.get('x-container-object-count', 0))
-
-        extra = { 'object_count': object_count,
-                  'size': size }
-        container = Container(name=name, extra=extra, driver=self)
-        return container
-
-    def _headers_to_object(self, name, container, headers):
-        size = int(headers.pop('content-length', 0))
-        last_modified = headers.pop('last-modified', None)
-        etag = headers.pop('etag', None)
-        content_type = headers.pop('content-type', None)
-
-        meta_data = {}
-        for key, value in headers.iteritems():
-            if key.find('x-object-meta-') != -1:
-                key = key.replace('x-object-meta-', '')
-                meta_data[key] = value
-
-        extra = { 'content_type': content_type, 'last_modified': last_modified }
-
-        obj = Object(name=name, size=size, hash=etag, extra=extra,
-                     meta_data=meta_data, container=container, driver=self)
-        return obj
 
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     """

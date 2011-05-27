@@ -87,13 +87,18 @@ class SwiftConnection(OpenstackBaseConnection):
     rawResponseCls = SwiftRawResponse
     auth_host = None
     _url_key = "storage_url"
+    auth_headers_keys = {
+        'storage_url':'x-storage-url',
+        'auth_token':'x-auth-token'
+    }
+
 
     def __init__(self, user_id, key, secure=True):
         super(SwiftConnection, self).__init__(user_id, key, secure=secure)
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
 
-    def request(self, action, params=None, data='', headers=None, method='GET', raw=False):
+    def request(self, action, params=None, data='', headers=None, method='GET', raw=False, host=None):
         if not headers:
             headers = {}
         if not params:
@@ -110,17 +115,19 @@ class SwiftConnection(OpenstackBaseConnection):
             action=action,
             params=params, data=data,
             method=method, headers=headers,
-            raw=raw
+            raw=raw, host=host
         )
 
 class SwiftOSConnection(SwiftConnection):
     """
     Connection class for the Cloudfiles US endpoint.
     """
+
     def __init__(self, user_id, key, host, port, secure=True):
         super(SwiftOSConnection, self).__init__(user_id,key, secure=secure)
         self.auth_host = host
         self.port = (port,port)
+
 
 
 class SwiftStorageDriver(StorageDriver):
@@ -130,6 +137,7 @@ class SwiftStorageDriver(StorageDriver):
     You should never create an instance of this class directly but use US/US
     class.
     """
+    
     name = 'Swift'
     connectionCls = SwiftConnection
     hash_type = 'md5'

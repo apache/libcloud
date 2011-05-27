@@ -29,8 +29,6 @@ __all__ = [
 
 class OpenstackBaseConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure):
-        self.cdn_management_url = None
-        self.storage_url = None
         self.auth_token = None
         self.__host = None
         super(OpenstackBaseConnection, self).__init__(
@@ -72,7 +70,7 @@ class OpenstackBaseConnection(ConnectionUserAndKey):
 
     def _populate_hosts_and_request_paths(self):
         """
-        Rackspace uses a separate host for API calls which is only provided
+        Openstack uses a separate host for API calls which is only provided
         after an initial authentication request. If we haven't made that
         request yet, do it here. Otherwise, just return the management host.
         """
@@ -90,14 +88,14 @@ class OpenstackBaseConnection(ConnectionUserAndKey):
             )
 
             resp = conn.getresponse()
-
             if resp.status == httplib.NO_CONTENT:
                 # HTTP NO CONTENT (204): auth successful
                 headers = dict(resp.getheaders())
-
                 try:
-                    self.storage_url = headers['x-storage-url']
-                    self.auth_token = headers['x-auth-token']
+                    for k in self.auth_headers_keys.keys():
+                        if k not in self.__dict__ or not self.__dict__[k]:
+                            self.__dict__[k] = headers[self.auth_headers_keys[k]]
+
                 except KeyError, e:
                     # Returned 204 but has missing information in the header, something is wrong
                     raise MalformedResponseError('Malformed response',

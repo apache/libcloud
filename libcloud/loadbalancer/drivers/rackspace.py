@@ -43,6 +43,13 @@ class RackspaceConnection(RackspaceBaseConnection):
     responseCls = RackspaceResponse
     auth_host = AUTH_HOST_US
     _url_key = "lb_url"
+    auth_headers_keys = {
+        'storage_url' :'x-storage-url',
+        'auth_token':'x-auth-token',
+        'server_url':'x-server-management-url',
+        'cdn_management_url':'x-cdn-management-url'
+    }
+
 
     def __init__(self, user_id, key, secure=True):
         super(RackspaceConnection, self).__init__(user_id, key, secure)
