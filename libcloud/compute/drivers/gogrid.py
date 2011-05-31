@@ -116,7 +116,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
                  state=state,
                  public_ip=[ip],
                  private_ip=[],
-                 extra={'ram': element.get('ram').get('name')},
+                 extra={'ram': element.get('ram').get('name'),
+                     'description': element.get('description', '')},
                  driver=self.connection.driver)
         if password:
             n.extra['password'] = password
