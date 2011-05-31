@@ -59,6 +59,7 @@
             },
             "isSandbox": false,
             "name": "test1",
+            "description": "test server",
             "object": "server",
             "os": {
                 "description": "CentOS 5.3 (32-bit)",

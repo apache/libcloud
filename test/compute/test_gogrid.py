@@ -58,6 +58,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(node.id, '90967')
         self.assertEqual(node.extra['password'], 'bebebe')
+        self.assertEqual(node.extra['description'], 'test server')
 
     def test_reboot_node(self):
         node = Node(90967, None, None, None, None, self.driver)
