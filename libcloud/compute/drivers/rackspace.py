@@ -23,7 +23,7 @@ import warnings
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.pricing import get_pricing
+from libcloud.pricing import get_pricing, get_size_price, PRICING_DATA
 from libcloud.common.base import Response
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
@@ -34,7 +34,6 @@ from libcloud.common.rackspace import (
     AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
 
 NAMESPACE='http://docs.rackspacecloud.com/servers/api/v1.0'
-
 
 class RackspaceResponse(Response):
 
@@ -592,3 +591,11 @@ class OpenStackConnection(RackspaceConnection):
 class OpenStackNodeDriver(RackspaceNodeDriver):
     name = 'OpenStack'
     connectionCls = OpenStackConnection
+
+    def _get_size_price(self, size_id):
+        if 'openstack' not in PRICING_DATA['compute']:
+            return 0.0
+            
+        return get_size_price(driver_type='compute',
+                              driver_name='openstack',
+                              size_id=size_id)
