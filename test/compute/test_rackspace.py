@@ -17,10 +17,10 @@ import unittest
 import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
+from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace, OpenStackResponse, OpenStackNodeDriver as OpenStack
 from libcloud.compute.base import Node, NodeImage, NodeSize
 
-from test import MockHttpTestCase
+from test import MockHttp, MockResponse, MockHttpTestCase
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
@@ -304,6 +304,73 @@ class RackspaceMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_3445_ips_public_67_23_21_133(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+
+#
+# OpenStack
+#
+
+class OpenStackResponseTestCase(unittest.TestCase):
+
+    XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
+
+    def test_simple_xml_content_type_handling(self):
+        http_response = MockResponse(200, OpenStackResponseTestCase.XML, headers={'content-type':'application/xml'})
+        body = OpenStackResponse(http_response).parse_body()
+
+        self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
+
+    def test_extended_xml_content_type_handling(self):
+        http_response = MockResponse(200,
+                                     OpenStackResponseTestCase.XML,
+                                     headers={'content-type':'application/xml; charset=UTF-8'})
+        body = OpenStackResponse(http_response).parse_body()
+
+        self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
+
+    def test_non_xml_content_type_handling(self):
+        RESPONSE_BODY = "Accepted"
+
+        http_response = MockResponse(202, RESPONSE_BODY, headers={'content-type':'text/html'})
+        body = OpenStackResponse(http_response).parse_body()
+
+        self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
+
+
+from test.secrets import NOVA_USERNAME, NOVA_API_KEY, NOVA_HOST, NOVA_PORT, NOVA_SECURE
+
+class OpenStackTests(unittest.TestCase):
+
+    def setUp(self):
+        OpenStack.connectionCls.conn_classes = (OpenStackMockHttp, None)
+        OpenStackMockHttp.type = None
+        self.driver = OpenStack(NOVA_USERNAME, NOVA_API_KEY, NOVA_SECURE, NOVA_HOST, NOVA_PORT)
+
+    def test_destroy_node(self):
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
+        ret = node.destroy()
+        self.assertTrue(ret is True)
+
+
+class OpenStackMockHttp(MockHttp):
+    def _v1_0(self, method, url, body, headers):
+        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
+                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
+        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _v1_0_slug_servers_72258(self, method, url, body, headers):
+        if method != "DELETE":
+            raise NotImplemented
+        # only used by destroy node()
+        return (httplib.ACCEPTED,
+                "202 Accepted\n\nThe request is accepted for processing.\n\n   ",
+                {'date': 'Thu, 09 Jun 2011 10:51:53 GMT', 'content-length': '58', 'content-type': 'text/html; charset=UTF-8'},
+                httplib.responses[httplib.ACCEPTED])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

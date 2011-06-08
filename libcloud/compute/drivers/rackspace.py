@@ -555,7 +555,34 @@ class RackspaceUKNodeDriver(RackspaceNodeDriver):
     def list_locations(self):
         return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
 
+class OpenStackResponse(RackspaceResponse):
+
+    def has_content_type(self, content_type):
+        content_type_headers = filter(lambda key: key[0].lower() == 'content-type', self.headers.items())
+
+        if not content_type_headers:
+            return False
+
+        content_type_value = content_type_headers[-1][1].lower()
+
+        return content_type_value.find(content_type.lower()) > -1
+
+    def parse_body(self):
+        if not self.has_content_type("application/xml") or not self.body:
+            return self.body
+
+        try:
+            return ET.XML(self.body)
+        except:
+            raise MalformedResponseError(
+                "Failed to parse XML",
+                body=self.body,
+                driver=RackspaceNodeDriver)
+
+
 class OpenStackConnection(RackspaceConnection):
+
+    responseCls = OpenStackResponse
 
     def __init__(self, user_id, key, secure, host, port):
         super(OpenStackConnection, self).__init__(user_id, key, secure=secure)
