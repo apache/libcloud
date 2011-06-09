@@ -339,7 +339,11 @@ class EC2NodeDriver(NodeDriver):
                                       namespace=NAMESPACE),
                 'clienttoken' : findattr(element=element, xpath="clientToken",
                                          namespace=NAMESPACE),
-                'groups': groups
+                'groups': groups,
+                'tags':
+                    dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
+                          findtext(element=item, xpath='value', namespace=NAMESPACE))
+                           for item in findall(element=element, xpath='tagSet/item', namespace=NAMESPACE))
             }
         )
         return n

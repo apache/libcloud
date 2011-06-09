@@ -341,6 +341,15 @@ class NimbusTests(EC2Tests):
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(len(node.public_ip), 1)
         self.assertEqual(public_ips[0], '1.2.3.5')
+        self.assertEqual(node.extra['tags'], {})
+
+        node = self.driver.list_nodes()[1]
+        self.assertExecutedMethodCount(0)
+        public_ips = node.public_ip
+        self.assertEqual(node.id, 'i-8474834a')
+        self.assertEqual(len(node.public_ip), 1)
+        self.assertEqual(public_ips[0], '1.2.3.5')
+        self.assertEqual(node.extra['tags'], {'user_key0': 'user_val0', 'user_key1': 'user_val1'})
 
     def test_ex_create_tags(self):
        # Nimbus doesn't support creating tags so this one should be a
