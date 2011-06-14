@@ -76,6 +76,9 @@ class ScriptDeployment(Deployment):
         @type delete: C{bool}
         @keyword delete: Whether to delete the script on completion.
         """
+        if not isinstance(script, basestring):
+            raise TypeError('script argument must be a string')
+
         self.script = script
         self.stdout = None
         self.stderr = None
