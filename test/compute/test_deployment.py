@@ -78,5 +78,16 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
 
+    def test_script_deployment_argument_types(self):
+        ScriptDeployment(script='foobar')
+        ScriptDeployment(script=unicode('foobar'))
+
+        try:
+            ScriptDeployment(script=[])
+        except TypeError:
+            pass
+        else:
+            self.fail('TypeError was not thrown')
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
