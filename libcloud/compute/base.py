@@ -475,6 +475,10 @@ class NodeDriver(object):
                                  (default is None)
         @type       ssh_timeout: C{float}
 
+        @keyword    auth:   Initial authentication information for the node
+                            (optional)
+        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -498,6 +502,7 @@ class NodeDriver(object):
         # TODO: support ssh keys
         # FIX: this method is too long and complicated
         WAIT_PERIOD=3
+        TIMEOUT=60 * 15 # 15 minutes
         password = None
 
         if 'generates_password' not in self.features["create_node"]:
@@ -514,7 +519,8 @@ class NodeDriver(object):
             if 'generates_password' in self.features["create_node"]:
                 password = node.extra.get('password')
                 start = time.time()
-                end = start + (60 * 15)# FIX: this should be soft-coded
+                end = start + TIMEOUT
+
                 while time.time() < end:
                     # need to wait until we get a public IP address.
                     # TODO: there must be a better way of doing this
@@ -537,7 +543,7 @@ class NodeDriver(object):
                     if (node.public_ip is not None
                         and node.public_ip != ""
                         and node.state == NodeState.RUNNING):
-                        break
+                        continue
 
                     ssh_username = kwargs.get('ssh_username', 'root')
                     ssh_port = kwargs.get('ssh_port', 22)
