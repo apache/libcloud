@@ -25,7 +25,7 @@ from os.path import splitext, basename, join as pjoin
 import libcloud.utils
 libcloud.utils.SHOW_DEPRECATION_WARNING = False
 
-HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/incubator/libcloud/trunk'
+HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://incubator.apache.org/libcloud/'
 TEST_PATHS = [ 'test', 'test/compute', 'test/storage' , 'test/loadbalancer']
 DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
