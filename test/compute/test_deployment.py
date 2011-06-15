@@ -78,9 +78,21 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
 
-    def test_script_deployment_argument_types(self):
+    def test_script_deployment_and_sshkey_deployment_argument_types(self):
+        class FileObject(object):
+            def __init__(self, name):
+                self.name = name
+
+            def read(self):
+                return 'bar'
+
         ScriptDeployment(script='foobar')
         ScriptDeployment(script=unicode('foobar'))
+        ScriptDeployment(script=FileObject('test'))
+
+        SSHKeyDeployment(key='foobar')
+        SSHKeyDeployment(key=unicode('foobar'))
+        SSHKeyDeployment(key=FileObject('test'))
 
         try:
             ScriptDeployment(script=[])
@@ -88,6 +100,14 @@ class DeploymentTests(unittest.TestCase):
             pass
         else:
             self.fail('TypeError was not thrown')
+
+        try:
+            SSHKeyDeployment(key={})
+        except TypeError:
+            pass
+        else:
+            self.fail('TypeError was not thrown')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

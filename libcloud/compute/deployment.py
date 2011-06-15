@@ -38,6 +38,17 @@ class Deployment(object):
         raise NotImplementedError, \
             'run not implemented for this deployment'
 
+    def _get_string_value(self, argument_name, argument_value):
+        if not isinstance(argument_value, basestring) and \
+           not hasattr(argument_value, 'read'):
+            raise TypeError('%s argument must be a string or a file-like '
+                            'object' % (argument_name))
+
+        if hasattr(argument_value, 'read'):
+            argument_value = argument_value.read()
+
+        return argument_value
+
 
 class SSHKeyDeployment(Deployment):
     """
@@ -49,7 +60,8 @@ class SSHKeyDeployment(Deployment):
         @type key: C{str}
         @keyword key: Contents of the public key write
         """
-        self.key = key
+        self.key = self._get_string_value(argument_name='key',
+                                          argument_value=key)
 
     def run(self, node, client):
         """
@@ -76,8 +88,8 @@ class ScriptDeployment(Deployment):
         @type delete: C{bool}
         @keyword delete: Whether to delete the script on completion.
         """
-        if not isinstance(script, basestring):
-            raise TypeError('script argument must be a string')
+        script = self._get_string_value(argument_name='script',
+                                        argument_value=script)
 
         self.script = script
         self.stdout = None
