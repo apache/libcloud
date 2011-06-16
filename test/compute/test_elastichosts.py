@@ -12,33 +12,43 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Copyright 2009 RedRata Ltd
 
 import sys
 import unittest
 import httplib
 
 from libcloud.compute.base import Node
+from libcloud.compute.types import Provider
+from libcloud.compute.drivers.elasticstack import (ElasticStackException,
+                              ElasticStackBaseConnection,
+                              ElasticStackBaseNodeDriver as ElasticStack)
 from libcloud.compute.drivers.elastichosts import \
-                              (ElasticHostsBaseNodeDriver as ElasticHosts,
-                               ElasticHostsException)
+                              (ElasticHostsBaseNodeDriver as ElasticHosts)
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
 
-class ElasticHostsTestCase(unittest.TestCase):
+class ElasticStackTestCase(unittest.TestCase):
 
     def setUp(self):
-        ElasticHosts.connectionCls.conn_classes = (None,
-                                                            ElasticHostsHttp)
-        ElasticHostsHttp.type = None
-        self.driver = ElasticHosts('foo', 'bar')
+        # Re-use ElasticHosts fixtures for the base ElasticStack platform tests
+        ElasticStack.type = Provider.ELASTICHOSTS
+        ElasticStack.api_name = 'elastichosts'
+
+        ElasticStackBaseConnection.host = 'test.com'
+        ElasticStack.connectionCls.conn_classes = (None,
+                                                   ElasticStackMockHttp)
+        ElasticStack._standard_drives = ElasticHosts._standard_drives
+
+        self.mockHttp = ElasticStackMockHttp
+        self.mockHttp.type = None
+        self.driver = ElasticStack('foo', 'bar')
         self.node = Node(id=72258, name=None, state=None, public_ip=None,
                          private_ip=None, driver=self.driver)
 
     def test_invalid_creds(self):
-        ElasticHostsHttp.type = 'UNAUTHORIZED'
+        self.mockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
         except InvalidCredsError, e:
@@ -47,7 +57,7 @@ class ElasticHostsTestCase(unittest.TestCase):
             self.fail('test should have thrown')
 
     def test_malformed_response(self):
-        ElasticHostsHttp.type = 'MALFORMED'
+        self.mockHttp.type = 'MALFORMED'
         try:
             self.driver.list_nodes()
         except MalformedResponseError:
@@ -56,7 +66,7 @@ class ElasticHostsTestCase(unittest.TestCase):
             self.fail('test should have thrown')
 
     def test_parse_error(self):
-        ElasticHostsHttp.type = 'PARSE_ERROR'
+        self.mockHttp.type = 'PARSE_ERROR'
         try:
             self.driver.list_nodes()
         except Exception, e:
@@ -68,11 +78,12 @@ class ElasticHostsTestCase(unittest.TestCase):
         success = self.driver.ex_set_node_configuration(node=self.node,
                                                         name='name',
                                                         cpu='2')
+        self.assertTrue(success)
 
     def test_ex_set_node_configuration_invalid_keys(self):
         try:
             self.driver.ex_set_node_configuration(node=self.node, foo='bar')
-        except ElasticHostsException:
+        except ElasticStackException:
             pass
         else:
             self.fail('Invalid option specified, but an exception was not thrown')
@@ -125,7 +136,17 @@ class ElasticHostsTestCase(unittest.TestCase):
         self.assertTrue(self.driver.create_node(name="api.ivan.net.nz",
                                                 image=image, size=size))
 
-class ElasticHostsHttp(MockHttp):
+
+class ElasticHostsTestCase(ElasticStackTestCase):
+
+    def setUp(self):
+        ElasticHosts.connectionCls.conn_classes = (None,
+                                                   ElasticStackMockHttp)
+        self.driver = ElasticHosts('foo', 'bar')
+        super(ElasticHostsTestCase, self).setUp()
+
+
+class ElasticStackMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('elastichosts')
 
