@@ -45,6 +45,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
     Provider.ELASTICHOSTS_US1:
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
+    Provider.SKALICLOUD:
+        ('libcloud.compute.drivers.skalicloud', 'SkaliCloudNodeDriver'),
     Provider.CLOUDSIGMA:
         ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
     Provider.GOGRID:
