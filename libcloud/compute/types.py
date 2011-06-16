@@ -89,6 +89,7 @@ class Provider(object):
     GANDI = 29
     OPSOURCE = 30
     OPENSTACK = 31
+    SKALICLOUD = 32
 
 class NodeState(object):
     """

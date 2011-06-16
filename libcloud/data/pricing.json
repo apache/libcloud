@@ -113,6 +113,15 @@
        "high-cpu-extra-large": 0.770
     },
 
+    "skalicloud": {
+      "small": 0.136,
+       "medium": 0.301,
+       "large": 0.505,
+       "extra-large": 0.654,
+       "high-cpu-medium": 0.249,
+       "high-cpu-extra-large": 0.936
+    },
+
     "gogrid": {
         "512MB": 0.095,
         "1GB": 0.19,

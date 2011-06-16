@@ -24,16 +24,18 @@ from libcloud.compute.drivers.elasticstack import (ElasticStackException,
                               ElasticStackBaseNodeDriver as ElasticStack)
 from libcloud.compute.drivers.elastichosts import \
                               (ElasticHostsBaseNodeDriver as ElasticHosts)
+from libcloud.compute.drivers.skalicloud import \
+                              (SkaliCloudNodeDriver as SkaliCloud)
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
 
-class ElasticStackTestCase(unittest.TestCase):
+class ElasticStackTestCase(object):
 
     def setUp(self):
         # Re-use ElasticHosts fixtures for the base ElasticStack platform tests
-        ElasticStack.type = Provider.ELASTICHOSTS
+        """ElasticStack.type = Provider.ELASTICHOSTS
         ElasticStack.api_name = 'elastichosts'
 
         ElasticStackBaseConnection.host = 'test.com'
@@ -41,9 +43,11 @@ class ElasticStackTestCase(unittest.TestCase):
                                                    ElasticStackMockHttp)
         ElasticStack._standard_drives = ElasticHosts._standard_drives
 
+        self.driver = ElasticStack('foo', 'bar')
+        """
         self.mockHttp = ElasticStackMockHttp
         self.mockHttp.type = None
-        self.driver = ElasticStack('foo', 'bar')
+
         self.node = Node(id=72258, name=None, state=None, public_ip=None,
                          private_ip=None, driver=self.driver)
 
@@ -110,12 +114,11 @@ class ElasticStackTestCase(unittest.TestCase):
         self.assertTrue(isinstance(image.price, float))
 
     def test_list_images(self):
-        sizes = self.driver.list_images()
-        self.assertEqual(len(sizes), 8)
-        size = [s for s in sizes if \
-                s.id == '38df0986-4d85-4b76-b502-3878ffc80161'][0]
-        self.assertEqual(size.id, '38df0986-4d85-4b76-b502-3878ffc80161')
-        self.assertEqual(size.name, 'CentOS Linux 5.5')
+        images = self.driver.list_images()
+        self.assertEqual(len(images), len(self.driver._standard_drives))
+
+        for uuid, values in self.driver._standard_drives.iteritems():
+            self.assertEqual(len([image for image in images if image.id == uuid]), 1)
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
@@ -129,21 +132,41 @@ class ElasticStackTestCase(unittest.TestCase):
         sizes = self.driver.list_sizes()
         size = [s for s in sizes if \
                 s.id == 'large'][0]
-        images = self.driver.list_images()
-        image = [i for i in images if \
-                i.id == '38df0986-4d85-4b76-b502-3878ffc80161'][0]
+        image = self.image
 
         self.assertTrue(self.driver.create_node(name="api.ivan.net.nz",
                                                 image=image, size=size))
 
 
-class ElasticHostsTestCase(ElasticStackTestCase):
+class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
 
     def setUp(self):
         ElasticHosts.connectionCls.conn_classes = (None,
                                                    ElasticStackMockHttp)
+
         self.driver = ElasticHosts('foo', 'bar')
-        super(ElasticHostsTestCase, self).setUp()
+        images = self.driver.list_images()
+        self.image = [i for i in images if \
+                      i.id == '38df0986-4d85-4b76-b502-3878ffc80161'][0]
+
+        ElasticStackTestCase.setUp(self)
+        unittest.TestCase.setUp(self)
+
+
+class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
+
+    def setUp(self):
+        SkaliCloud.connectionCls.conn_classes = (None,
+                                                 ElasticStackMockHttp)
+
+        self.driver = SkaliCloud('foo', 'bar')
+
+        images = self.driver.list_images()
+        self.image = [i for i in images if \
+                     i.id == '90aa51f2-15c0-4cff-81ee-e93aa20b9468'][0]
+
+        ElasticStackTestCase.setUp(self)
+        unittest.TestCase.setUp(self)
 
 
 class ElasticStackMockHttp(MockHttp):
@@ -171,7 +194,13 @@ class ElasticStackMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_38df0986_4d85_4b76_b502_3878ffc80161_gunzip(self, method, url, body, headers):
+        # ElasticHosts image
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+
+    def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_90aa51f2_15c0_4cff_81ee_e93aa20b9468_gunzip(self, method, url, body, headers):
+        # Skalikloud image
+        return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_info(self, method, url, body, headers):
         body = self.fixtures.load('drives_info.json')
