@@ -38,7 +38,6 @@ class LibcloudTestCase(unittest.TestCase):
         self._executed_mock_methods.append(method_name)
 
     def assertExecutedMethodCount(self, expected):
-        print self._executed_mock_methods
         actual = len(self._executed_mock_methods)
         self.assertEqual(actual, expected,
                          'expected %d, but %d mock methods were executed'
