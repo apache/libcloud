@@ -23,6 +23,7 @@ __all__ = [
     'dummy',
     'ec2',
     'ecp',
+    'elasticstack',
     'elastichosts',
     'cloudsigma',
     'gogrid',
