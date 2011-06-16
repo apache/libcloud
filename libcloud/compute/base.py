@@ -31,6 +31,7 @@ from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from libcloud.common.base import LibcloudHTTPConnection
+from libcloud.common.types import LibcloudError
 
 __all__ = [
     "Node",
@@ -500,9 +501,6 @@ class NodeDriver(object):
         existing implementation should be able to handle most such.
         """
         # TODO: support ssh keys
-        # FIX: this method is too long and complicated
-        WAIT_PERIOD=3
-        TIMEOUT=60 * 15 # 15 minutes
         password = None
 
         if 'generates_password' not in self.features["create_node"]:
@@ -515,72 +513,150 @@ class NodeDriver(object):
 
             password = kwargs['auth'].password
         node = self.create_node(**kwargs)
+
         try:
-            if 'generates_password' in self.features["create_node"]:
+            if 'generates_password' in self.features['create_node']:
                 password = node.extra.get('password')
-                start = time.time()
-                end = start + TIMEOUT
 
-                while time.time() < end:
-                    # need to wait until we get a public IP address.
-                    # TODO: there must be a better way of doing this
-                    time.sleep(WAIT_PERIOD)
-                    nodes = self.list_nodes()
-                    nodes = filter(lambda n: n.uuid == node.uuid, nodes)
-                    if len(nodes) == 0:
-                        raise DeploymentError(
-                            node,
-                            ("Booted node[%s] " % node
-                             + "is missing from list_nodes."))
-                    if len(nodes) > 1:
-                        raise DeploymentError(
-                            node,
-                            ("Booted single node[%s], " % node
-                             + "but multiple nodes have same UUID"))
+                # Wait until node is up and running and has public IP assigned
+                node = self._wait_until_running(node=node, wait_period=3,
+                                                timeout=15*60)
 
-                    node = nodes[0]
+                ssh_username = kwargs.get('ssh_username', 'root')
+                ssh_port = kwargs.get('ssh_port', 22)
+                ssh_timeout = kwargs.get('ssh_timeout', 10)
 
-                    if (node.public_ip is not None
-                        and node.public_ip != ""
-                        and node.state == NodeState.RUNNING):
-                        continue
-
-                    ssh_username = kwargs.get('ssh_username', 'root')
-                    ssh_port = kwargs.get('ssh_port', 22)
-                    ssh_timeout = kwargs.get('ssh_timeout', 20)
-
-                    client = SSHClient(hostname=node.public_ip[0],
+                ssh_client = SSHClient(hostname=node.public_ip[0],
                                        port=ssh_port, username=ssh_username,
                                        password=password,
                                        timeout=ssh_timeout)
 
-                    while time.time() < end:
-                        try:
-                            client.connect()
-                        except (IOError, socket.gaierror, socket.error), e:
-                            # Retry if a connection is refused or timeout
-                            # occured
-                            client.close()
-                            time.sleep(WAIT_PERIOD)
-                            continue
+                # Connect to the SSH server running on the node
+                ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
+                                                      timeout=300)
 
-                        max_tries, tries = 3, 0
-                        while tries < max_tries:
-                            try:
-                                n = kwargs["deploy"].run(node, client)
-                                client.close()
-                                raise
-                            except Exception, e:
-                                tries += 1
-                                if tries >= max_tries:
-                                    raise DeploymentError(node,
-                                          'Failed after %d tries' % (max_tries))
+                # Execute the deployment task
+                node = self._run_deployment_script(task=kwargs['deploy'],
+                                                   node=node,
+                                                   ssh_client=ssh_client,
+                                                   max_tries=3)
 
-        except DeploymentError:
-            raise
         except Exception, e:
             raise DeploymentError(node, e)
-        return n
+        return node
+
+    def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
+        """
+        Run the deployment script on the provided node. At this point it is
+        assumed that SSH connection has already been established.
+
+        @keyword    task: Deployment task to run on the node.
+        @type       task: C{Deployment}
+
+        @keyword    node: Node to operate one
+        @type       node: C{Node}
+
+        @keyword    ssh_client: A configured and connected SSHClient instance
+        @type       ssh_client: C{SSHClient}
+
+        @keyword    max_tries: How many times to retry if a deployment fails
+                               before giving up (default is 3)
+        @type       max_tries: C{int}
+
+        @return: C{Node} Node instance on success.
+        """
+        tries = 0
+        while tries < max_tries:
+            try:
+                node = task.run(node, ssh_client)
+                ssh_client.close()
+            except Exception:
+                tries += 1
+                if tries >= max_tries:
+                    raise LibcloudError(value='Failed after %d tries'
+                                        % (max_tries), driver=self)
+            else:
+                return node
+
+    def _ssh_client_connect(self, ssh_client, timeout=300):
+        """
+        Try to connect to the remote SSH server. If a connection times out or is
+        refused it is retried up to timeout number of seconds.
+
+        @keyword    ssh_client: A configured SSHClient instance
+        @type       ssh_client: C{SSHClient}
+
+        @keyword    timeout: How many seconds to wait before timing out
+                             (default is 600)
+        @type       timeout: C{int}
+
+        @return: C{SSHClient} on success
+        """
+        start = time.time()
+        end = start + timeout
+
+        while time.time() < end:
+            try:
+                ssh_client.connect()
+            except (IOError, socket.gaierror, socket.error):
+                # Retry if a connection is refused or timeout
+                # occurred
+                ssh_client.close()
+                continue
+            else:
+                return ssh_client
+
+        raise LibcloudError(value='Could not connect to the remote SSH ' +
+                            'server. Giving up.', driver=self)
+
+    def _wait_until_running(self, node, wait_period=3, timeout=600):
+        """
+        Block until node is fully booted and has an IP address assigned.
+
+        @keyword    node: Node instance.
+        @type       node: C{Node}
+
+        @keyword    wait_period: How many seconds to between each loop iteration
+                                 (default is 3)
+        @type       wait_period: C{int}
+
+        @keyword    timeout: How many seconds to wait before timing out
+                             (default is 600)
+        @type       timeout: C{int}
+
+        @return: C{Node} Node instance on success.
+        """
+        start = time.time()
+        end = start + timeout
+
+        while time.time() < end:
+            time.sleep(wait_period)
+            nodes = self.list_nodes()
+            nodes = filter(lambda n: n.uuid == node.uuid, nodes)
+
+            if len(nodes) == 0:
+                raise DeploymentError(
+                    node,
+                    ("Booted node[%s] " % node
+                     + "is missing from list_nodes."))
+
+            if len(nodes) > 1:
+                raise DeploymentError(
+                    node,
+                    ("Booted single node[%s], " % node
+                     + "but multiple nodes have same UUID"))
+
+            node = nodes[0]
+
+            if (node.public_ip is not None
+                and node.public_ip != ""
+                and node.state == NodeState.RUNNING):
+                return node
+            else:
+                continue
+
+        raise LibcloudError(value='Timed out after %s seconds' % (timeout),
+                            driver=self)
 
     def _get_size_price(self, size_id):
         return get_size_price(driver_type='compute',
