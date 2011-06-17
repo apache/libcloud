@@ -221,7 +221,8 @@ class DeploymentTests(unittest.TestCase):
 
         deploy = Mock()
 
-        self.driver.deploy_node(deploy=deploy)
+        node = self.driver.deploy_node(deploy=deploy)
+        self.assertEqual(self.node.id, node.id)
 
     @patch('libcloud.compute.base.SSHClient')
     def test_deploy_node_exception_run_deployment_script(self, _):
@@ -239,7 +240,7 @@ class DeploymentTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
-    @patch('libcloud.compute.base.SSHClient', spec=True)
+    @patch('libcloud.compute.base.SSHClient')
     def test_deploy_node_exception_ssh_client_connect(self, ssh_client):
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
@@ -255,8 +256,6 @@ class DeploymentTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_deploy_node_depoy_node_not_implemented(self):
-        oldFeatures = self.driver.features
-
         self.driver.features = {'create_node': []}
 
         try:
@@ -274,6 +273,16 @@ class DeploymentTests(unittest.TestCase):
             pass
         else:
             self.fail('Exception was not thrown')
+
+    @patch('libcloud.compute.base.SSHClient')
+    def test_deploy_node_password_auth(self, _):
+        self.driver.features = {'create_node': ['password']}
+
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+
+        node = self.driver.deploy_node(deploy=Mock())
+        self.assertEqual(self.node.id, node.id)
 
 
 class RackspaceMockHttp(MockHttp):
