@@ -29,7 +29,7 @@ from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
-from mock import Mock
+from mock import Mock, patch
 
 from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
 
@@ -58,6 +58,7 @@ class DeploymentTests(unittest.TestCase):
         Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
         self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        self.driver.features = {'create_node': ['generates_password']}
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
                    public_ip=['1.2.3.4'], private_ip='1.2.3.5',
                    driver=Rackspace)
@@ -212,6 +213,68 @@ class DeploymentTests(unittest.TestCase):
             self.assertTrue(e.value.find('Failed after 2 tries') != -1)
         else:
             self.fail('Exception was not thrown')
+
+    @patch('libcloud.compute.base.SSHClient')
+    def test_deploy_node_success(self, _):
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+
+        deploy = Mock()
+
+        self.driver.deploy_node(deploy=deploy)
+
+    @patch('libcloud.compute.base.SSHClient')
+    def test_deploy_node_exception_run_deployment_script(self, _):
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+
+        deploy = Mock()
+        deploy.run = Mock()
+        deploy.run.side_effect = Exception('foo')
+
+        try:
+            self.driver.deploy_node(deploy=deploy)
+        except DeploymentError, e:
+            self.assertTrue(e.node.id, self.node.id)
+        else:
+            self.fail('Exception was not thrown')
+
+    @patch('libcloud.compute.base.SSHClient', spec=True)
+    def test_deploy_node_exception_ssh_client_connect(self, ssh_client):
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+
+        deploy = Mock()
+        ssh_client.side_effect = IOError('bar')
+
+        try:
+            self.driver.deploy_node(deploy=deploy)
+        except DeploymentError, e:
+            self.assertTrue(e.node.id, self.node.id)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_deploy_node_depoy_node_not_implemented(self):
+        oldFeatures = self.driver.features
+
+        self.driver.features = {'create_node': []}
+
+        try:
+            self.driver.deploy_node(deploy=Mock())
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+        self.driver.features = {}
+
+        try:
+            self.driver.deploy_node(deploy=Mock())
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
 
 class RackspaceMockHttp(MockHttp):
 

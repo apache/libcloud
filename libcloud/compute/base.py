@@ -510,7 +510,9 @@ class NodeDriver(object):
         # TODO: support ssh keys
         password = None
 
-        if 'generates_password' not in self.features["create_node"]:
+        if 'create_node' not in self.features:
+            raise NotImplementedError, 'deploy_node not implemented for this driver'
+        elif 'generates_password' not in self.features["create_node"]:
             if 'password' not in self.features["create_node"]:
                 raise NotImplementedError, \
                     'deploy_node not implemented for this driver'
@@ -519,6 +521,7 @@ class NodeDriver(object):
                 kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
 
             password = kwargs['auth'].password
+
         node = self.create_node(**kwargs)
 
         try:
