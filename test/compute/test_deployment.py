@@ -15,14 +15,23 @@
 # limitations under the License.
 
 import sys
+import time
 import unittest
+import httplib
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
 from libcloud.compute.base import Node
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
+from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
+
+from test import MockHttp
+from test.file_fixtures import ComputeFileFixtures
+from mock import Mock
+
+from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
 
 class MockDeployment(Deployment):
     def run(self, node, client):
@@ -46,9 +55,12 @@ class MockClient(BaseSSHClient):
 class DeploymentTests(unittest.TestCase):
 
     def setUp(self):
-        self.node = Node(id=1, name='test', state=NodeState.RUNNING,
+        Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
+        RackspaceMockHttp.type = None
+        self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
                    public_ip=['1.2.3.4'], private_ip='1.2.3.5',
-                   driver=EC2NodeDriver)
+                   driver=Rackspace)
 
     def test_multi_step_deployment(self):
         msd = MultiStepDeployment()
@@ -107,6 +119,133 @@ class DeploymentTests(unittest.TestCase):
             pass
         else:
             self.fail('TypeError was not thrown')
+
+    def test_wait_until_running_running_instantly(self):
+        node2 = self.driver._wait_until_running(node=self.node, wait_period=1,
+                                                timeout=10)
+        self.assertEqual(self.node.uuid, node2.uuid)
+
+    def test_wait_until_running_running_after_1_second(self):
+        RackspaceMockHttp.type = '1_SECOND_DELAY'
+        node2 = self.driver._wait_until_running(node=self.node, wait_period=1,
+                                                timeout=10)
+        self.assertEqual(self.node.uuid, node2.uuid)
+
+    def test_wait_until_running_timeout(self):
+        RackspaceMockHttp.type = 'TIMEOUT'
+
+        try:
+            self.driver._wait_until_running(node=self.node, wait_period=0.5,
+                                            timeout=1)
+        except LibcloudError, e:
+            self.assertTrue(e.value.find('Timed out') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+
+    def test_wait_until_running_running_node_missing_from_list_nodes(self):
+        RackspaceMockHttp.type = 'MISSING'
+
+        try:
+            self.driver._wait_until_running(node=self.node, wait_period=0.5,
+                                            timeout=1)
+        except LibcloudError, e:
+            self.assertTrue(e.value.find('is missing from list_nodes') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_wait_until_running_running_multiple_nodes_have_same_uuid(self):
+        RackspaceMockHttp.type = 'SAME_UUID'
+
+        try:
+            self.driver._wait_until_running(node=self.node, wait_period=0.5,
+                                            timeout=1)
+        except LibcloudError, e:
+            self.assertTrue(e.value.find('multiple nodes have same UUID') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+
+    def test_ssh_client_connect_success(self):
+        mock_ssh_client = Mock()
+        mock_ssh_client.return_value = None
+
+        ssh_client = self.driver._ssh_client_connect(ssh_client=mock_ssh_client,
+                                                     timeout=10)
+        self.assertEqual(mock_ssh_client, ssh_client)
+
+    def test_ssh_client_connect_timeout(self):
+        mock_ssh_client = Mock()
+        mock_ssh_client.connect = Mock()
+        mock_ssh_client.connect.side_effect = IOError('bam')
+
+        try:
+            self.driver._ssh_client_connect(ssh_client=mock_ssh_client,
+                                            timeout=1)
+        except LibcloudError, e:
+            self.assertTrue(e.value.find('Giving up') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_run_deployment_script_success(self):
+        task = Mock()
+        ssh_client = Mock()
+
+        ssh_client2 = self.driver._run_deployment_script(task=task,
+                                                         node=self.node,
+                                                         ssh_client=ssh_client,
+                                                         max_tries=2)
+        self.assertTrue(isinstance(ssh_client2, Mock))
+
+    def test_run_deployment_script_exception(self):
+        task = Mock()
+        task.run = Mock()
+        task.run.side_effect = Exception('bar')
+        ssh_client = Mock()
+
+        try:
+            self.driver._run_deployment_script(task=task,
+                                               node=self.node,
+                                               ssh_client=ssh_client,
+                                               max_tries=2)
+        except LibcloudError, e:
+            self.assertTrue(e.value.find('Failed after 2 tries') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+class RackspaceMockHttp(MockHttp):
+
+    fixtures = ComputeFileFixtures('rackspace')
+
+    # fake auth token response
+    def _v1_0(self, method, url, body, headers):
+        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
+                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
+        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _v1_0_slug_servers_detail(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_detail_deployment_success.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_1_SECOND_DELAY(self, method, url, body, headers):
+        time.sleep(1)
+        body = self.fixtures.load('v1_slug_servers_detail_deployment_success.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_TIMEOUT(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_detail_deployment_pending.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_MISSING(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_detail_deployment_missing.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_SAME_UUID(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_detail_deployment_same_uuid.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
