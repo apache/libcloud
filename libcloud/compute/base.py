@@ -33,6 +33,13 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from libcloud.common.base import LibcloudHTTPConnection
 from libcloud.common.types import LibcloudError
 
+# How long to wait for the node to come online after creating it
+NODE_ONLINE_WAIT_TIMEOUT = 10*60
+
+# How long to try connecting to a remote SSH server when running a deployment
+# script.
+SSH_CONNECT_TIMEOUT=5*60
+
 __all__ = [
     "Node",
     "NodeState",
@@ -520,7 +527,7 @@ class NodeDriver(object):
 
                 # Wait until node is up and running and has public IP assigned
                 node = self._wait_until_running(node=node, wait_period=3,
-                                                timeout=15*60)
+                                                timeout=NODE_ONLINE_WAIT_TIMEOUT)
 
                 ssh_username = kwargs.get('ssh_username', 'root')
                 ssh_port = kwargs.get('ssh_port', 22)
@@ -533,7 +540,7 @@ class NodeDriver(object):
 
                 # Connect to the SSH server running on the node
                 ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                                      timeout=300)
+                                                      timeout=SSH_CONNECT_TIMEOUT)
 
                 # Execute the deployment task
                 node = self._run_deployment_script(task=kwargs['deploy'],
@@ -569,13 +576,13 @@ class NodeDriver(object):
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
-                ssh_client.close()
             except Exception:
                 tries += 1
                 if tries >= max_tries:
                     raise LibcloudError(value='Failed after %d tries'
                                         % (max_tries), driver=self)
             else:
+                ssh_client.close()
                 return node
 
     def _ssh_client_connect(self, ssh_client, timeout=300):
@@ -630,21 +637,18 @@ class NodeDriver(object):
         end = start + timeout
 
         while time.time() < end:
-            time.sleep(wait_period)
             nodes = self.list_nodes()
             nodes = filter(lambda n: n.uuid == node.uuid, nodes)
 
             if len(nodes) == 0:
-                raise DeploymentError(
-                    node,
-                    ("Booted node[%s] " % node
-                     + "is missing from list_nodes."))
+                raise LibcloudError(value=('Booted node[%s] ' % node
+                                    + 'is missing from list_nodes.'),
+                                    driver=self)
 
             if len(nodes) > 1:
-                raise DeploymentError(
-                    node,
-                    ("Booted single node[%s], " % node
-                     + "but multiple nodes have same UUID"))
+                raise LibcloudError(value=('Booted single node[%s], ' % node
+                                    + 'but multiple nodes have same UUID'),
+                                    driver=self)
 
             node = nodes[0]
 
@@ -653,6 +657,7 @@ class NodeDriver(object):
                 and node.state == NodeState.RUNNING):
                 return node
             else:
+                time.sleep(wait_period)
                 continue
 
         raise LibcloudError(value='Timed out after %s seconds' % (timeout),
