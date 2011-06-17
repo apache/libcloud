@@ -122,6 +122,9 @@
        "high-cpu-extra-large": 0.936
     },
 
+    "serverlove": {
+    },
+
     "gogrid": {
         "512MB": 0.095,
         "1GB": 0.19,
