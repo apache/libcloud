@@ -26,6 +26,8 @@ from libcloud.compute.drivers.elastichosts import \
                               (ElasticHostsBaseNodeDriver as ElasticHosts)
 from libcloud.compute.drivers.skalicloud import \
                               (SkaliCloudNodeDriver as SkaliCloud)
+from libcloud.compute.drivers.serverlove import \
+                              (ServerLoveNodeDriver as ServerLove)
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
 from test import MockHttp
@@ -169,6 +171,22 @@ class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
         unittest.TestCase.setUp(self)
 
 
+class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
+
+    def setUp(self):
+        ServerLove.connectionCls.conn_classes = (None,
+                                                 ElasticStackMockHttp)
+
+        self.driver = ServerLove('foo', 'bar')
+
+        images = self.driver.list_images()
+        self.image = [i for i in images if \
+                     i.id == '679f5f44-0be7-4745-a658-cccd4334c1aa'][0]
+
+        ElasticStackTestCase.setUp(self)
+        unittest.TestCase.setUp(self)
+
+
 class ElasticStackMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('elastichosts')
@@ -201,6 +219,9 @@ class ElasticStackMockHttp(MockHttp):
         # Skalikloud image
         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
+    def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_679f5f44_0be7_4745_a658_cccd4334c1aa_gunzip(self, method, url, body, headers):
+        # ServerLove image
+        return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_info(self, method, url, body, headers):
         body = self.fixtures.load('drives_info.json')
