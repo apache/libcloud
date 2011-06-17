@@ -517,40 +517,39 @@ class NodeDriver(object):
                 raise NotImplementedError, \
                     'deploy_node not implemented for this driver'
 
-            if not kwargs.has_key('auth'):
+            if 'auth' not in kwargs:
                 kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
 
             password = kwargs['auth'].password
 
         node = self.create_node(**kwargs)
 
+        if 'generates_password' in self.features['create_node']:
+            password = node.extra.get('password')
+
         try:
-            if 'generates_password' in self.features['create_node']:
-                password = node.extra.get('password')
+            # Wait until node is up and running and has public IP assigned
+            self._wait_until_running(node=node, wait_period=3,
+                                     timeout=NODE_ONLINE_WAIT_TIMEOUT)
 
-                # Wait until node is up and running and has public IP assigned
-                node = self._wait_until_running(node=node, wait_period=3,
-                                                timeout=NODE_ONLINE_WAIT_TIMEOUT)
+            ssh_username = kwargs.get('ssh_username', 'root')
+            ssh_port = kwargs.get('ssh_port', 22)
+            ssh_timeout = kwargs.get('ssh_timeout', 10)
 
-                ssh_username = kwargs.get('ssh_username', 'root')
-                ssh_port = kwargs.get('ssh_port', 22)
-                ssh_timeout = kwargs.get('ssh_timeout', 10)
+            ssh_client = SSHClient(hostname=node.public_ip[0],
+                                   port=ssh_port, username=ssh_username,
+                                   password=password,
+                                   timeout=ssh_timeout)
 
-                ssh_client = SSHClient(hostname=node.public_ip[0],
-                                       port=ssh_port, username=ssh_username,
-                                       password=password,
-                                       timeout=ssh_timeout)
+            # Connect to the SSH server running on the node
+            ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
+                                                  timeout=SSH_CONNECT_TIMEOUT)
 
-                # Connect to the SSH server running on the node
-                ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                                      timeout=SSH_CONNECT_TIMEOUT)
-
-                # Execute the deployment task
-                node = self._run_deployment_script(task=kwargs['deploy'],
-                                                   node=node,
-                                                   ssh_client=ssh_client,
-                                                   max_tries=3)
-
+            # Execute the deployment task
+            self._run_deployment_script(task=kwargs['deploy'],
+                                        node=node,
+                                        ssh_client=ssh_client,
+                                        max_tries=3)
         except Exception, e:
             raise DeploymentError(node, e)
         return node
