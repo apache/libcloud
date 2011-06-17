@@ -152,6 +152,7 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
+    tests_require=('mock'),
     packages=[
         'libcloud',
         'libcloud.common',
