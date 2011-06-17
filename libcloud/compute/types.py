@@ -90,6 +90,7 @@ class Provider(object):
     OPSOURCE = 30
     OPENSTACK = 31
     SKALICLOUD = 32
+    SERVERLOVE = 33
 
 class NodeState(object):
     """
