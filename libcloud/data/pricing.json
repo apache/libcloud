@@ -114,7 +114,7 @@
     },
 
     "skalicloud": {
-      "small": 0.136,
+       "small": 0.136,
        "medium": 0.301,
        "large": 0.505,
        "extra-large": 0.654,
@@ -123,6 +123,12 @@
     },
 
     "serverlove": {
+       "small": 0.161,
+       "medium": 0.404,
+       "large": 0.534,
+       "extra-large": 0.615,
+       "high-cpu-medium": 0.291,
+       "high-cpu-extra-large": 0.776
     },
 
     "gogrid": {
