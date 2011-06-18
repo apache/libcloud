@@ -4,6 +4,10 @@ Changes with Apache Libcloud 0.5.1
   *) Compute:
      - Fix deploy_node functionality and make it more robust
 
+  *) Add new libcloud.compute drivers for:
+     - SkaliCloud (skalicloud.com)
+     - ServerLove (serverlove.com)
+
   *) Users can now pass file like objects to ScriptDeployment and
      SSHKeyDeployment constructor.
 
