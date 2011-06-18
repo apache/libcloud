@@ -106,7 +106,7 @@ class ScriptDeployment(Deployment):
 
         See also L{Deployment.run}
         """
-        client.put(path=self.name, chmod=755, contents=self.script)
+        client.put(path=self.name, chmod=0755, contents=self.script)
         self.stdout, self.stderr, self.exit_status = client.run(self.name)
         if self.delete:
             client.delete(self.name)
