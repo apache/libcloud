@@ -1,6 +1,16 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud 0.5.1
+  *) Compute:
+     - Fix deploy_node functionality and make it more robust
+
+  *) Users can now pass file like objects to ScriptDeployment and
+     SSHKeyDeployment constructor.
+
+  *) Amazon EC2 driver:
+     - Include node tags when calling list_nodes()
+     [Trevor Pounds]
+
   *) Rackspace driver:
       - Properly handle response errors and only throw InvalidCredsError if
         the returned status code is 401
