@@ -52,10 +52,11 @@ def _init_once():
     default.
     """
     import os
-    if 'LIBCLOUD_DEBUG' in os.environ:
-        debug_file_path = os.environ.get('LIBCLOUD_DEBUG_PATH') or \
-                          DEFAULT_LOG_PATH
-        fh = open(debug_file_path, 'a')
-        enable_debug(fh)
+    d = os.getenv('LIBCLOUD_DEBUG')
+    if d:
+        if d.isdigit():
+            d = DEFAULT_LOG_PATH
+        fo = open(d, 'a')
+        enable_debug(fo)
 
 _init_once()
