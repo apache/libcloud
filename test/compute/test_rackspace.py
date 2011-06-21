@@ -20,7 +20,7 @@ from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 from libcloud.compute.base import Node, NodeImage, NodeSize
 
-from test import MockHttp
+from test import MockHttpTestCase
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
@@ -96,7 +96,16 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
-        node = self.driver.create_node(name='racktest', image=image, size=size, shared_ip_group='group1')
+        node = self.driver.create_node(name='racktest', image=image, size=size)
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
+
+    def test_create_node_ex_shared_ip_group(self):
+        RackspaceMockHttp.type = 'EX_SHARED_IP_GROUP'
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size,
+                                       ex_shared_ip_group_id='12345')
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
@@ -190,7 +199,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEquals(True, ret)
 
 
-class RackspaceMockHttp(MockHttp):
+class RackspaceMockHttp(MockHttpTestCase):
 
     fixtures = ComputeFileFixtures('rackspace')
 
@@ -244,6 +253,13 @@ class RackspaceMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers.xml')
+        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_servers_EX_SHARED_IP_GROUP(self, method, url, body, headers):
+        # test_create_node_ex_shared_ip_group
+        # Verify that the body contains sharedIpGroupId XML element
+        self.assertTrue(body.find('sharedIpGroupId="12345"') != -1)
         body = self.fixtures.load('v1_slug_servers.xml')
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 

@@ -18,6 +18,7 @@ Rackspace driver
 import os
 
 import base64
+import warnings
 
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
@@ -232,13 +233,26 @@ class RackspaceNodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        server_elm = ET.Element(
-            'server',
-            {'xmlns': NAMESPACE,
+
+        attributes = {'xmlns': NAMESPACE,
              'name': name,
              'imageId': str(image.id),
-             'flavorId': str(size.id)}
-        )
+             'flavorId': str(size.id)
+        }
+
+        if 'ex_shared_ip_group' in kwargs:
+            # Deprecate this. Be explicit and call the variable
+            # ex_shared_ip_group_id since user needs to pass in the id, not the
+            # name.
+            warnings.warn('ex_shared_ip_group argument is deprecated. Please'
+                          + ' use ex_shared_ip_group_id')
+
+
+        if 'ex_shared_ip_group_id' in kwargs:
+            shared_ip_group_id = kwargs['ex_shared_ip_group_id']
+            attributes['sharedIpGroupId'] = shared_ip_group_id
+
+        server_elm = ET.Element('server', attributes)
 
         metadata_elm = self._metadata_to_xml(kwargs.get("ex_metadata", {}))
         if metadata_elm:
@@ -247,12 +261,6 @@ class RackspaceNodeDriver(NodeDriver):
         files_elm = self._files_to_xml(kwargs.get("ex_files", {}))
         if files_elm:
             server_elm.append(files_elm)
-
-        shared_ip_elm = self._shared_ip_group_to_xml(
-            kwargs.get("ex_shared_ip_group", None))
-        if shared_ip_elm:
-            server_elm.append(shared_ip_elm)
-
         resp = self.connection.request("/servers",
                                        method='POST',
                                        data=ET.tostring(server_elm))
@@ -530,12 +538,6 @@ class RackspaceNodeDriver(NodeDriver):
             [ip.get('addr') for ip in
              self._findall(self._findall(el, 'private')[0], 'ip')]
         )
-
-    def _shared_ip_group_to_xml(self, shared_ip_group):
-        if not shared_ip_group:
-            return None
-
-        return ET.Element('sharedIpGroupId', shared_ip_group)
 
 class RackspaceUKConnection(RackspaceConnection):
     """
