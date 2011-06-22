@@ -216,6 +216,40 @@ class NinefoldNodeDriver(NodeDriver):
                                   0, self))
         return sizes
 
+    def create_node(self, name, size, image, location=None, **kwargs):
+        if location is None:
+            location = self.list_locations()[0]
+
+        networks = self._sync_request('listNetworks')
+        network_id = networks['network'][0]['id']
+
+        success, result = self._async_request('deployVirtualMachine',
+            name=name,
+            displayname=name,
+            serviceofferingid=size.id,
+            templateid=image.id,
+            zoneid=location.id,
+            networkids=network_id,
+        )
+        if not success:
+            fail()
+
+        node = result['jobresult']['virtualmachine']
+
+        return Node(
+            id=node['id'],
+            name=node['displayname'],
+            state=self.NODE_STATE_MAP[node['state']],
+            public_ip=[],
+            private_ip=[x['ipaddress'] for x in node['nic']],
+            driver=self,
+            extra={
+                'zoneid': location.id,
+                'ip_addresses': [],
+                'forwarding_rules': [],
+            }
+        )
+
     def destroy_node(self, node):
         success, _ = self._async_request('destroyVirtualMachine', id=node.id)
         return sucess
