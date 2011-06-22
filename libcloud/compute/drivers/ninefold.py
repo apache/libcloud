@@ -15,6 +15,51 @@ from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import MalformedResponseError, NodeState
 
+class NinefoldComputeNode(Node):
+    def ex_allocate_public_ip(self):
+        return self.driver.ex_allocate_public_ip(self)
+
+    def ex_release_public_ip(self, address):
+        return self.driver.ex_release_public_ip(self, address)
+
+    def ex_add_ip_forwarding_rule(self, address, protocol, start_port,
+                                  end_port=None):
+        return self.driver.ex_add_ip_forwarding_rule(self, address, protocol,
+                                                     start_port, end_port)
+
+    def ex_delete_ip_forwarding_rule(self, rule):
+        return self.driver.ex_delete_ip_forwarding_rule(self, rule)
+
+class NinefoldComputeAddress(object):
+    def __init__(self, node, id, address):
+        self.node = node
+        self.id = id
+        self.address = address
+
+    def release(self):
+        self.node.ex_release_public_ip(self)
+
+    def __str__(self):
+        return self.address
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
+class NinefoldComputeForwardingRule(object):
+    def __init__(self, node, id, address, protocol, start_port, end_port=None):
+        self.node = node
+        self.id = id
+        self.address = address
+        self.protocol = protocol
+        self.start_port = start_port
+        self.end_port = end_port
+
+    def delete(self):
+        self.node.ex_delete_ip_forwarding_rule(self)
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
 class NinefoldComputeResponse(Response):
     def parse_body(self):
         try:
@@ -126,18 +171,40 @@ class NinefoldNodeDriver(NodeDriver):
                 continue
             vm_id = addr['virtualmachineid']
             if vm_id not in public_ips:
-                public_ips[vm_id] = []
-            public_ips[vm_id].append(addr['ipaddress'])
+                public_ips[vm_id] = {}
+            public_ips[vm_id][addr['ipaddress']] = addr['id']
 
         nodes = []
 
-        for vm in vms['virtualmachine']:
-            nodes.append(Node(id=vm['id'],
-                              name=vm.get('displayname', None),
-                              state=self.NODE_STATE_MAP[vm['state']],
-                              public_ip=public_ips.get(vm['id'], []),
-                              private_ip=[x['ipaddress'] for x in vm['nic']],
-                              driver=self))
+        for vm in vms.get('virtualmachine', []):
+            node = NinefoldComputeNode(
+                id=vm['id'],
+                name=vm.get('displayname', None),
+                state=self.NODE_STATE_MAP[vm['state']],
+                public_ip=public_ips.get(vm['id'], {}).keys(),
+                private_ip=[x['ipaddress'] for x in vm['nic']],
+                driver=self,
+                extra={
+                    'zoneid': vm['zoneid'],
+                }
+            )
+
+            addrs = public_ips.get(vm['id'], {}).items()
+            addrs = [NinefoldComputeAddress(node, v, k) for k, v in addrs]
+            node.extra['ip_addresses'] = addrs
+
+            rules = []
+            for addr in addrs:
+                result = self._sync_request('listIpForwardingRules')
+                for r in result.get('ipforwardingrule', []):
+                    rule = NinefoldComputeForwardingRule(node, r['id'], addr,
+                                                         r['protocol'].upper(),
+                                                         r['startport'],
+                                                         r['endport'])
+                    rules.append(rule)
+            node.extra['ip_forwarding_rules'] = rules
+
+            nodes.append(node)
 
         return nodes
 
