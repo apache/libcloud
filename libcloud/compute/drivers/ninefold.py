@@ -65,7 +65,7 @@ class NinefoldNodeDriver(NodeDriver):
     name = 'Ninefold'
     connectionCls = NinefoldComputeConnection
 
-    def _api_request(self, command, **kwargs):
+    def _sync_request(self, command, **kwargs):
         kwargs['command'] = command
         result = self.connection.request(self.API_PATH, params=kwargs).object
         command = command.lower() + 'response'
@@ -74,14 +74,24 @@ class NinefoldNodeDriver(NodeDriver):
                 "Unknown response format",
                 body=result.body,
                 driver=NinefoldNodeDriver)
-        return result[command]
+        result = result[command]
+        return result
 
-    def _job_result(self, job_id):
-        result = {}
+    def _async_request(self, command, **kwargs):
+        result = self._sync_request(command, **kwargs)
+        job_id = result['jobid']
+        success = True
+
         while result.get('jobstatus', 0) == 0:
             time.sleep(1)
-            result = self._api_request('queryAsyncJobResult', jobid=job_id)
-        return self.JOB_STATUS_MAP[result['jobstatus']]
+            result = self._sync_request('queryAsyncJobResult', jobid=job_id)
+
+        if result['jobstatus'] == 2:
+            success = False
+        else:
+            result = result['jobresult']
+
+        return success, result
 
     def list_images(self, location=None):
         args = {
@@ -89,7 +99,7 @@ class NinefoldNodeDriver(NodeDriver):
         }
         if location is not None:
             args['zoneid'] = location.id
-        imgs = self._api_request('listTemplates', **args)
+        imgs = self._sync_request('listTemplates', **args)
         images = []
         for img in imgs['template']:
             images.append(NodeImage(img['id'], img['name'], self, {
@@ -100,15 +110,15 @@ class NinefoldNodeDriver(NodeDriver):
         return images
 
     def list_locations(self):
-        locs = self._api_request('listZones')
+        locs = self._sync_request('listZones')
         locations = []
         for loc in locs['zone']:
             locations.append(NodeLocation(loc['id'], loc['name'], 'AU', self))
         return locations
 
     def list_nodes(self):
-        vms = self._api_request('listVirtualMachines')
-        addrs = self._api_request('listPublicIpAddresses')
+        vms = self._sync_request('listVirtualMachines')
+        addrs = self._sync_request('listPublicIpAddresses')
 
         public_ips = {}
         for addr in addrs['publicipaddress']:
@@ -132,7 +142,7 @@ class NinefoldNodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        szs = self._api_request('listServiceOfferings')
+        szs = self._sync_request('listServiceOfferings')
         sizes = []
         for sz in szs['serviceoffering']:
             sizes.append(NodeSize(sz['id'], sz['name'], sz['memory'], 0, 0,
@@ -140,9 +150,9 @@ class NinefoldNodeDriver(NodeDriver):
         return sizes
 
     def destroy_node(self, node):
-        result = self._api_request('destroyVirtualMachine', id=node.id)
-        return self._job_result(result['jobid'])
+        success, _ = self._async_request('destroyVirtualMachine', id=node.id)
+        return sucess
 
     def reboot_node(self, node):
-        result = self._api_request('rebootVirtualMachine', id=node.id)
-        return self._job_result(result['jobid'])
+        success, _ = self._async_request('rebootVirtualMachine', id=node.id)
+        return success
