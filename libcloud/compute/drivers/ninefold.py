@@ -257,3 +257,54 @@ class NinefoldNodeDriver(NodeDriver):
     def reboot_node(self, node):
         success, _ = self._async_request('rebootVirtualMachine', id=node.id)
         return success
+
+    def ex_allocate_public_ip(self, node):
+        zoneid = node.extra['zoneid']
+        success, addr = self._async_request('associateIpAddress', zoneid=zoneid)
+        if not success:
+            return None
+        addr = addr['ipaddress']
+        result = self._sync_request('enableStaticNat', virtualmachineid=node.id,
+                                   ipaddressid=addr['id'])
+        if result.get('success', '').lower() != 'true':
+            return None
+
+        node.public_ip.append(addr['ipaddress'])
+        addr = NinefoldComputeAddress(node, addr['id'], addr['ipaddress'])
+        node.extra['ip_addresses'].append(addr)
+        return addr
+
+    def ex_release_public_ip(self, node, address):
+        node.extra['ip_addresses'].remove(address)
+        node.public_ip.remove(address.address)
+
+        self._async_request('disableStaticNat', ipaddressid=address.id)
+        success, _ = self._async_request('disassociateIpAddress',
+                                         id=address.id)
+        return success
+
+    def ex_add_ip_forwarding_rule(self, node, address, protocol,
+                                  start_port, end_port=None):
+        protocol = protocol.upper()
+        if protocol not in ('TCP', 'UDP'):
+            return None
+
+        args = {
+            'ipaddressid': address.id,
+            'protocol': protocol,
+            'startport': int(start_port)
+        }
+        if end_port is not None:
+            args['endport'] = int(end_port)
+
+        success, result = self._async_request('createIpForwardingRule', **args)
+        result = result['ipforwardingrule']
+        rule = NinefoldComputeForwardingRule(node, result['id'], address,
+                                             protocol, start_port, end_port)
+        node.extra['ip_forwarding_rules'].append(rule)
+        return rule
+
+    def ex_delete_ip_forwarding_rule(self, node, rule):
+        node.extra['ip_forwarding_rules'].remove(rule)
+        success, _ = self._async_request('deleteIpForwardingRule', id=rule.id)
+        return success
