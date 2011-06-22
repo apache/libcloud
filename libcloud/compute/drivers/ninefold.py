@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import hmac
+import time
 import urllib
 
 try:
@@ -54,6 +55,11 @@ class NinefoldNodeDriver(NodeDriver):
         'Stopped': NodeState.TERMINATED,
         'Stopping': NodeState.TERMINATED
     }
+    JOB_STATUS_MAP = {
+        0: None,
+        1: True,
+        2: False,
+    }
 
     type = Provider.NINEFOLD
     name = 'Ninefold'
@@ -69,6 +75,13 @@ class NinefoldNodeDriver(NodeDriver):
                 body=result.body,
                 driver=NinefoldNodeDriver)
         return result[command]
+
+    def _job_result(self, job_id):
+        result = {}
+        while result.get('jobstatus', 0) == 0:
+            time.sleep(1)
+            result = self._api_request('queryAsyncJobResult', jobid=job_id)
+        return self.JOB_STATUS_MAP[result['jobstatus']]
 
     def list_images(self, location=None):
         args = {
@@ -125,3 +138,11 @@ class NinefoldNodeDriver(NodeDriver):
             sizes.append(NodeSize(sz['id'], sz['name'], sz['memory'], 0, 0,
                                   0, self))
         return sizes
+
+    def destroy_node(self, node):
+        result = self._api_request('destroyVirtualMachine', id=node.id)
+        return self._job_result(result['jobid'])
+
+    def reboot_node(self, node):
+        result = self._api_request('rebootVirtualMachine', id=node.id)
+        return self._job_result(result['jobid'])
