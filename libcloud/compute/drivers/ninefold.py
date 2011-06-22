@@ -48,12 +48,15 @@ class NinefoldComputeConnection(ConnectionUserAndKey):
 class NinefoldNodeDriver(NodeDriver):
     API_PATH = '/compute/v1.0/'
 
-    NODE_STATE_MAP = { 'Running': NodeState.RUNNING,
-                       'Starting': NodeState.REBOOTING,
-                       'Stopped': NodeState.TERMINATED,
-                       'Stopping': NodeState.TERMINATED }
+    NODE_STATE_MAP = {
+        'Running': NodeState.RUNNING,
+        'Starting': NodeState.REBOOTING,
+        'Stopped': NodeState.TERMINATED,
+        'Stopping': NodeState.TERMINATED
+    }
 
     type = Provider.NINEFOLD
+    name = 'Ninefold'
     connectionCls = NinefoldComputeConnection
 
     def _api_request(self, command, **kwargs):
