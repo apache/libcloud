@@ -252,7 +252,7 @@ class NinefoldNodeDriver(NodeDriver):
 
     def destroy_node(self, node):
         success, _ = self._async_request('destroyVirtualMachine', id=node.id)
-        return sucess
+        return success
 
     def reboot_node(self, node):
         success, _ = self._async_request('rebootVirtualMachine', id=node.id)
