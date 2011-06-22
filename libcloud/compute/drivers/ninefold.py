@@ -9,7 +9,8 @@ except:
     import simplejson as json
 
 from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.compute.base import Node, NodeDriver
+from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
+                                  NodeSize
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import MalformedResponseError, NodeState
 
@@ -59,6 +60,31 @@ class NinefoldNodeDriver(NodeDriver):
         kwargs['command'] = command
         return self.connection.request(self.API_PATH, params=kwargs).object
 
+    def list_images(self, location=None):
+        args = {
+            'templatefilter': 'executable'
+        }
+        if location is not None:
+            args['zoneid'] = location.id
+        imgs = self._api_request('listTemplates', **args)
+        imgs = imgs['listtemplatesresponse']['template']
+        images = []
+        for img in imgs:
+            images.append(NodeImage(img['id'], img['name'], self, {
+                'hypervisor': img['hypervisor'],
+                'format': img['format'],
+                'os': img['ostypename'],
+            }))
+        return images
+
+    def list_locations(self):
+        locs = self._api_request('listZones')
+        locs = locs['listzonesresponse']['zone']
+        locations = []
+        for loc in locs:
+            locations.append(NodeLocation(loc['id'], loc['name'], 'AU', self))
+        return locations
+
     def list_nodes(self):
         vms = self._api_request('listVirtualMachines')
         vms = vms['listvirtualmachinesresponse']['virtualmachine']
@@ -82,6 +108,15 @@ class NinefoldNodeDriver(NodeDriver):
                               state=self.NODE_STATE_MAP[vm['state']],
                               public_ip=public_ips.get(vm['id'], []),
                               private_ip=[x['ipaddress'] for x in vm['nic']],
-                              driver=self.connection.driver))
+                              driver=self))
 
         return nodes
+
+    def list_sizes(self, location=None):
+        szs = self._api_request('listServiceOfferings')
+        szs = szs['listserviceofferingsresponse']['serviceoffering']
+        sizes = []
+        for sz in szs:
+            sizes.append(NodeSize(sz['id'], sz['name'], sz['memory'], 0, 0,
+                                  0, self))
+        return sizes
