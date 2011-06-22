@@ -58,7 +58,14 @@ class NinefoldNodeDriver(NodeDriver):
 
     def _api_request(self, command, **kwargs):
         kwargs['command'] = command
-        return self.connection.request(self.API_PATH, params=kwargs).object
+        result = self.connection.request(self.API_PATH, params=kwargs).object
+        command = command.lower() + 'response'
+        if command not in result:
+            raise MalformedResponseError(
+                "Unknown response format",
+                body=result.body,
+                driver=NinefoldNodeDriver)
+        return result[command]
 
     def list_images(self, location=None):
         args = {
@@ -67,9 +74,8 @@ class NinefoldNodeDriver(NodeDriver):
         if location is not None:
             args['zoneid'] = location.id
         imgs = self._api_request('listTemplates', **args)
-        imgs = imgs['listtemplatesresponse']['template']
         images = []
-        for img in imgs:
+        for img in imgs['template']:
             images.append(NodeImage(img['id'], img['name'], self, {
                 'hypervisor': img['hypervisor'],
                 'format': img['format'],
@@ -79,20 +85,17 @@ class NinefoldNodeDriver(NodeDriver):
 
     def list_locations(self):
         locs = self._api_request('listZones')
-        locs = locs['listzonesresponse']['zone']
         locations = []
-        for loc in locs:
+        for loc in locs['zone']:
             locations.append(NodeLocation(loc['id'], loc['name'], 'AU', self))
         return locations
 
     def list_nodes(self):
         vms = self._api_request('listVirtualMachines')
-        vms = vms['listvirtualmachinesresponse']['virtualmachine']
         addrs = self._api_request('listPublicIpAddresses')
-        addrs = addrs['listpublicipaddressesresponse']['publicipaddress']
 
         public_ips = {}
-        for addr in addrs:
+        for addr in addrs['publicipaddress']:
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
@@ -102,7 +105,7 @@ class NinefoldNodeDriver(NodeDriver):
 
         nodes = []
 
-        for vm in vms:
+        for vm in vms['virtualmachine']:
             nodes.append(Node(id=vm['id'],
                               name=vm.get('displayname', None),
                               state=self.NODE_STATE_MAP[vm['state']],
@@ -114,9 +117,8 @@ class NinefoldNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         szs = self._api_request('listServiceOfferings')
-        szs = szs['listserviceofferingsresponse']['serviceoffering']
         sizes = []
-        for sz in szs:
+        for sz in szs['serviceoffering']:
             sizes.append(NodeSize(sz['id'], sz['name'], sz['memory'], 0, 0,
                                   0, self))
         return sizes
