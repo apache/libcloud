@@ -26,6 +26,14 @@ class CloudStackResponse(Response):
 class CloudStackConnection(ConnectionUserAndKey):
     responseCls = CloudStackResponse
 
+    def _make_signature(self, params):
+        signature = [(k.lower(), v) for k, v in params.items()]
+        signature.sort(key=lambda x: x[0])
+        signature = urllib.urlencode(signature)
+        signature = signature.lower().replace('+', '%20')
+        signature = hmac.new(self.key, msg=signature, digestmod=hashlib.sha1)
+        return base64.b64encode(signature.digest())
+
     def add_default_params(self, params):
         params['apiKey'] = self.user_id
         params['response'] = 'json'
@@ -33,12 +41,7 @@ class CloudStackConnection(ConnectionUserAndKey):
         return params
 
     def pre_connect_hook(self, params, headers):
-        signature = [(k.lower(), v) for k, v in params.items()]
-        signature.sort(key=lambda x: x[0])
-        signature = urllib.urlencode(signature)
-        signature = signature.lower().replace('+', '%20')
-        signature = hmac.new(self.key, msg=signature, digestmod=hashlib.sha1)
-        params['signature'] = base64.b64encode(signature.digest())
+        params['signature'] = self._make_signature(params)
 
         return params, headers
 
