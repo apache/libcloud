@@ -16,6 +16,8 @@
 """
 Amazon EC2 driver
 """
+from __future__ import with_statement
+
 import base64
 import hmac
 import os
@@ -452,8 +454,10 @@ class EC2NodeDriver(NodeDriver):
         @param keyfile: The filename with path of the public key to import.
 
         """
+        with open(os.path.expanduser(keyfile)) as fh:
+            content = fh.read()
 
-        base64key = base64.b64encode(open(os.path.expanduser(keyfile)).read())
+        base64key = base64.b64encode(content)
 
         params = {'Action': 'ImportKeyPair',
                   'KeyName': name,
