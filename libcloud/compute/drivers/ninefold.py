@@ -72,7 +72,6 @@ class NinefoldComputeResponse(Response):
         return body
 
 class NinefoldComputeConnection(ConnectionUserAndKey):
-    host = 'api.ninefold.com'
     responseCls = NinefoldComputeResponse
 
     def add_default_params(self, params):
@@ -92,7 +91,9 @@ class NinefoldComputeConnection(ConnectionUserAndKey):
         return params, headers
 
 class NinefoldNodeDriver(NodeDriver):
-    API_PATH = '/compute/v1.0/'
+    host = 'api.ninefold.com'
+    path = '/compute/v1.0/'
+    async_poll_frequency = 1
 
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
@@ -100,25 +101,25 @@ class NinefoldNodeDriver(NodeDriver):
         'Stopped': NodeState.TERMINATED,
         'Stopping': NodeState.TERMINATED
     }
-    JOB_STATUS_MAP = {
-        0: None,
-        1: True,
-        2: False,
-    }
 
     type = Provider.NINEFOLD
     name = 'Ninefold'
     connectionCls = NinefoldComputeConnection
 
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+        host = host or self.host
+        super(NinefoldNodeDriver, self).__init__(key, secret, secure, host,
+                                                 port)
+
     def _sync_request(self, command, **kwargs):
         kwargs['command'] = command
-        result = self.connection.request(self.API_PATH, params=kwargs).object
+        result = self.connection.request(self.path, params=kwargs).object
         command = command.lower() + 'response'
         if command not in result:
             raise MalformedResponseError(
                 "Unknown response format",
                 body=result.body,
-                driver=NinefoldNodeDriver)
+                driver=self)
         result = result[command]
         return result
 
@@ -127,9 +128,11 @@ class NinefoldNodeDriver(NodeDriver):
         job_id = result['jobid']
         success = True
 
-        while result.get('jobstatus', 0) == 0:
-            time.sleep(1)
+        while True:
             result = self._sync_request('queryAsyncJobResult', jobid=job_id)
+            if result.get('jobstatus', 0) == 0:
+                continue
+            time.sleep(self.async_poll_frequency)
 
         if result['jobstatus'] == 2:
             success = False
