@@ -100,6 +100,43 @@ class NinefoldComputeConnection(ConnectionUserAndKey):
 
         return params, headers
 
+    def _sync_request(self, command, **kwargs):
+        "Make a synchronous API request. These return immediately."
+
+        kwargs['command'] = command
+        result = self.request(self.driver.path, params=kwargs).object
+        command = command.lower() + 'response'
+        if command not in result:
+            raise MalformedResponseError(
+                "Unknown response format",
+                body=result.body,
+                driver=self.driver)
+        result = result[command]
+        return result
+
+    def _async_request(self, command, **kwargs):
+        """Make an asynchronous API request.
+
+        These requests return a job_id which must be polled until it
+        completes."""
+
+        result = self._sync_request(command, **kwargs)
+        job_id = result['jobid']
+        success = True
+
+        while True:
+            result = self._sync_request('queryAsyncJobResult', jobid=job_id)
+            if result.get('jobstatus', 0) == 0:
+                continue
+            time.sleep(self.async_poll_frequency)
+
+        if result['jobstatus'] == 2:
+            success = False
+        else:
+            result = result['jobresult']
+
+        return success, result
+
 class NinefoldNodeDriver(NodeDriver):
     """Driver for Ninefold's Compute platform.
 
@@ -130,41 +167,10 @@ class NinefoldNodeDriver(NodeDriver):
                                                  port)
 
     def _sync_request(self, command, **kwargs):
-        "Make a synchronous API request. These return immediately."
-
-        kwargs['command'] = command
-        result = self.connection.request(self.path, params=kwargs).object
-        command = command.lower() + 'response'
-        if command not in result:
-            raise MalformedResponseError(
-                "Unknown response format",
-                body=result.body,
-                driver=self)
-        result = result[command]
-        return result
+        return self.connection._sync_request(command, **kwargs)
 
     def _async_request(self, command, **kwargs):
-        """Make an asynchronous API request.
-
-        These requests return a job_id which must be polled until it
-        completes."""
-
-        result = self._sync_request(command, **kwargs)
-        job_id = result['jobid']
-        success = True
-
-        while True:
-            result = self._sync_request('queryAsyncJobResult', jobid=job_id)
-            if result.get('jobstatus', 0) == 0:
-                continue
-            time.sleep(self.async_poll_frequency)
-
-        if result['jobstatus'] == 2:
-            success = False
-        else:
-            result = result['jobresult']
-
-        return success, result
+        return self.connection._async_request(command, **kwargs)
 
     def list_images(self, location=None):
         args = {
