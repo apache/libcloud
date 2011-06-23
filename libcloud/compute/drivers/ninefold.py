@@ -16,21 +16,29 @@ from libcloud.compute.providers import Provider
 from libcloud.compute.types import MalformedResponseError, NodeState
 
 class NinefoldComputeNode(Node):
+    "Subclass of Node so we can expose our extension methods."
+
     def ex_allocate_public_ip(self):
+        "Allocate a public IP and bind it to this node."
         return self.driver.ex_allocate_public_ip(self)
 
     def ex_release_public_ip(self, address):
+        "Release a public IP that this node holds."
         return self.driver.ex_release_public_ip(self, address)
 
     def ex_add_ip_forwarding_rule(self, address, protocol, start_port,
                                   end_port=None):
+        "Add a NAT/firewall forwarding rule for a port or ports."
         return self.driver.ex_add_ip_forwarding_rule(self, address, protocol,
                                                      start_port, end_port)
 
     def ex_delete_ip_forwarding_rule(self, rule):
+        "Delete a NAT/firewall rule."
         return self.driver.ex_delete_ip_forwarding_rule(self, rule)
 
 class NinefoldComputeAddress(object):
+    "A public IP address."
+
     def __init__(self, node, id, address):
         self.node = node
         self.id = id
@@ -46,6 +54,8 @@ class NinefoldComputeAddress(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 class NinefoldComputeForwardingRule(object):
+    "A NAT/firewall forwarding rule."
+
     def __init__(self, node, id, address, protocol, start_port, end_port=None):
         self.node = node
         self.id = id
@@ -91,6 +101,14 @@ class NinefoldComputeConnection(ConnectionUserAndKey):
         return params, headers
 
 class NinefoldNodeDriver(NodeDriver):
+    """Driver for Ninefold's Compute platform.
+
+    @cvar host: The host where the API can be reached.
+    @cvar path: The path where the API can be reached.
+    @cvar async_poll_frequency: How often (in seconds) to poll for async
+                                job completion.
+    @type async_poll_frequency: C{int}"""
+
     host = 'api.ninefold.com'
     path = '/compute/v1.0/'
     async_poll_frequency = 1
@@ -112,6 +130,8 @@ class NinefoldNodeDriver(NodeDriver):
                                                  port)
 
     def _sync_request(self, command, **kwargs):
+        "Make a synchronous API request. These return immediately."
+
         kwargs['command'] = command
         result = self.connection.request(self.path, params=kwargs).object
         command = command.lower() + 'response'
@@ -124,6 +144,11 @@ class NinefoldNodeDriver(NodeDriver):
         return result
 
     def _async_request(self, command, **kwargs):
+        """Make an asynchronous API request.
+
+        These requests return a job_id which must be polled until it
+        completes."""
+
         result = self._sync_request(command, **kwargs)
         job_id = result['jobid']
         success = True
@@ -262,6 +287,8 @@ class NinefoldNodeDriver(NodeDriver):
         return success
 
     def ex_allocate_public_ip(self, node):
+        "Allocate a public IP and bind it to a node."
+
         zoneid = node.extra['zoneid']
         success, addr = self._async_request('associateIpAddress', zoneid=zoneid)
         if not success:
@@ -278,6 +305,8 @@ class NinefoldNodeDriver(NodeDriver):
         return addr
 
     def ex_release_public_ip(self, node, address):
+        "Release a public IP."
+
         node.extra['ip_addresses'].remove(address)
         node.public_ip.remove(address.address)
 
@@ -288,6 +317,8 @@ class NinefoldNodeDriver(NodeDriver):
 
     def ex_add_ip_forwarding_rule(self, node, address, protocol,
                                   start_port, end_port=None):
+        "Add a NAT/firewall forwarding rule."
+
         protocol = protocol.upper()
         if protocol not in ('TCP', 'UDP'):
             return None
@@ -308,6 +339,8 @@ class NinefoldNodeDriver(NodeDriver):
         return rule
 
     def ex_delete_ip_forwarding_rule(self, node, rule):
+        "Remove a NAT/firewall forwading rule."
+
         node.extra['ip_forwarding_rules'].remove(rule)
         success, _ = self._async_request('deleteIpForwardingRule', id=rule.id)
         return success
