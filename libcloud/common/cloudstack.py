@@ -71,9 +71,9 @@ class CloudStackConnection(ConnectionUserAndKey):
 
         while True:
             result = self._sync_request('queryAsyncJobResult', jobid=job_id)
-            if result.get('jobstatus', 0) == 0:
-                continue
-            time.sleep(self.async_poll_frequency)
+            if result.get('jobstatus', 0) != 0:
+                break
+            time.sleep(self.driver.async_poll_frequency)
 
         if result['jobstatus'] == 2:
             success = False
