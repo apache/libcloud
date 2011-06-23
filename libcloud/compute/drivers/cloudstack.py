@@ -187,7 +187,7 @@ class CloudStackNodeDriver(NodeDriver):
         if not success:
             fail()
 
-        node = result['jobresult']['virtualmachine']
+        node = result['virtualmachine']
 
         return Node(
             id=node['id'],
