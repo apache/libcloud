@@ -49,14 +49,14 @@ class CloudStackConnection(ConnectionUserAndKey):
         "Make a synchronous API request. These return immediately."
 
         kwargs['command'] = command
-        result = self.request(self.driver.path, params=kwargs).object
+        result = self.request(self.driver.path, params=kwargs)
         command = command.lower() + 'response'
-        if command not in result:
+        if command not in result.object:
             raise MalformedResponseError(
                 "Unknown response format",
                 body=result.body,
                 driver=self.driver)
-        result = result[command]
+        result = result.object[command]
         return result
 
     def _async_request(self, command, **kwargs):
