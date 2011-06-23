@@ -78,6 +78,16 @@ class CloudStackCommonTest(unittest.TestCase):
                     'zoneid': 23,
                     'networkids': 42
                  }, 'gHTo7mYmadZ+zluKHzlEKb1i/QU='
+            ), (
+                {
+                    'command': 'deployVirtualMachine',
+                    'name': 'fred',
+                    'displayname': 'George+Ringo',
+                    'serviceofferingid': 5,
+                    'templateid': 17,
+                    'zoneid': 23,
+                    'networkids': 42
+                 }, 'tAgfrreI1ZvWlWLClD3gu4+aKv4='
             )
         ]
 
