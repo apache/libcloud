@@ -10,7 +10,7 @@ except:
     import simplejson as json
 
 from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.compute.types import MalformedResponseError
+from libcloud.common.types import MalformedResponseError
 
 class CloudStackResponse(Response):
     def parse_body(self):
