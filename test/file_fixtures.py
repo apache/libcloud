@@ -14,6 +14,7 @@
 # limitations under the License.
 
 # Helper class for loading large fixture data
+from __future__ import with_statement
 
 import os
 
@@ -32,7 +33,9 @@ class FileFixtures(object):
     def load(self, file):
         path = os.path.join(self.root, file)
         if os.path.exists(path):
-            return open(path, 'r').read()
+            with open(path, 'r') as fh:
+                content = fh.read()
+            return content
         else:
             raise IOError(path)
 
