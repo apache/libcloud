@@ -20,8 +20,10 @@ libcloud provides a unified interface to the cloud computing resources.
 """
 
 __all__ = ["__version__", "enable_debug"]
+__version__ = '0.5.1'
 
-__version__ = "0.5.1"
+DEFAULT_LOG_PATH = '/tmp/libcloud_debug.log'
+
 
 def enable_debug(fo):
     """
@@ -35,7 +37,9 @@ def enable_debug(fo):
                                LoggingHTTPSConnection)
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
-    ConnectionKey.conn_classes = (LoggingHTTPConnection, LoggingHTTPSConnection)
+    ConnectionKey.conn_classes = (LoggingHTTPConnection,
+                                  LoggingHTTPSConnection)
+
 
 def _init_once():
     """
@@ -48,11 +52,11 @@ def _init_once():
     default.
     """
     import os
-    d = os.getenv("LIBCLOUD_DEBUG")
+    d = os.getenv('LIBCLOUD_DEBUG')
     if d:
         if d.isdigit():
-            d = "/tmp/libcloud_debug.log"
-        fo = open(d, "a")
+            d = DEFAULT_LOG_PATH
+        fo = open(d, 'a')
         enable_debug(fo)
 
 _init_once()
