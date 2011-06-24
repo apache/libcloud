@@ -21,7 +21,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
 
     def list_balancers(self):
         balancers = self._sync_request('listLoadBalancerRules')
-        balancers = balancers['loadbalancerrule']
+        balancers = balancers.get('loadbalancerrule', [])
         return [self._to_balancer(balancer) for balancer in balancers]
 
     def get_balancer(self, balancer_id):
