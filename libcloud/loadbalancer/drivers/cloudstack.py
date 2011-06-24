@@ -31,6 +31,56 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
             raise Exception("no such load balancer: " + str(balancer_id))
         return self._to_balancer(balancer[0])
 
+    def create_balancer(self, name, members, protocol='http', port=80,
+                        algorithm=DEFAULT_ALGORITHM, location=None,
+                        private_port=None):
+        if location is None:
+            locations = self._sync_request('listZones')
+            location = locations['zone'][0]['id']
+        else:
+            location = location.id
+        if private_port is None:
+            private_port = port
+
+        success, result = self._async_request('associateIpAddress',
+                                              zoneid=location)
+        if not success:
+            raise Exception(result)
+        public_ip = result['ipaddress']
+
+        result = self._sync_request('createLoadBalancerRule',
+            algorithm=self._ALGORITHM_TO_VALUE_MAP[algorithm],
+            name=name,
+            privateport=private_port,
+            publicport=port,
+            publicipid=public_ip['id'],
+        )
+
+        balancer = self._to_balancer(result['loadbalancer'])
+
+        for member in members:
+            balancer.attach_member(member)
+
+        return balancer
+
+    def destroy_balancer(self, balancer):
+        self._async_request('deleteLoadBalancerRule', id=balancer.id)
+        self._async_request('disassociateIpAddress',
+                            id=balancer.ex_public_ip_id)
+
+    def balancer_attach_member(self, balancer, member):
+        member.port = balancer.ex_private_port
+        success, _ = self._async_request('assignToLoadBalancerRule',
+                                         id=balancer.id,
+                                         virtualmachineids=member.id)
+        return success
+
+    def balancer_detach_member(self, balancer, member):
+        success, _ = self._async_request('removeFromLoadBalancerRule',
+                                         id=balancer.id,
+                                         virtualmachineids=member.id)
+        return success
+
     def balancer_list_members(self, balancer):
         members = self._sync_request('listLoadBalancerRuleInstances',
                                      id=balancer.id)
@@ -47,6 +97,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
             driver=self.connection.driver
         )
         balancer.ex_private_port = obj['privateport']
+        balancer.ex_public_ip_id = obj['publicipid']
         return balancer
 
     def _to_member(self, obj, port):
