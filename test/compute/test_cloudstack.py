@@ -24,10 +24,22 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.driver.type = -1
         CloudStackMockHttp.fixture_tag = 'default'
 
-    def test_create_node_failure(self):
+    def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         CloudStackMockHttp.fixture_tag = 'deployfail'
+        try:
+            node = self.driver.create_node(name='node-name',
+                                           image=image,
+                                           size=size)
+        except:
+            return
+        self.assertTrue(False)
+
+    def test_create_node_delayed_failure(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        CloudStackMockHttp.fixture_tag = 'deployfail2'
         try:
             node = self.driver.create_node(name='node-name',
                                            image=image,
