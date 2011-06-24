@@ -83,7 +83,7 @@ class Driver(object):
     _ALGORITHM_TO_VALUE_MAP = {}
     _VALUE_TO_ALGORITHM_MAP = {}
 
-    def __init__(self, key, secret=None, secure=True):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
         self.key = key
         self.secret = secret
         args = [self.key]
@@ -92,6 +92,12 @@ class Driver(object):
             args.append(self.secret)
 
         args.append(secure)
+
+        if host != None:
+            args.append(host)
+
+        if port != None:
+            args.append(port)
 
         self.connection = self.connectionCls(*args)
         self.connection.driver = self
