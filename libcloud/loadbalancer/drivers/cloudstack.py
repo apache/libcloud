@@ -6,6 +6,8 @@ from libcloud.loadbalancer.types import State, LibcloudLBImmutableError
 from libcloud.utils import reverse_dict
 
 class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
+    """Driver for CloudStack load balancers."""
+
     _VALUE_TO_ALGORITHM_MAP = {
         'roundrobin': Algorithm.ROUND_ROBIN,
         'leastconn': Algorithm.LEAST_CONNECTIONS
@@ -17,6 +19,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     }
 
     def list_protocols(self):
+        """We don't actually have any protocol awareness beyond TCP."""
         return [ 'tcp' ]
 
     def list_balancers(self):
