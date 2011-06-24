@@ -23,6 +23,8 @@ class CloudStackResponse(Response):
                 driver=self.connection.driver)
         return body
 
+    parse_error = parse_body
+
 class CloudStackConnection(ConnectionUserAndKey):
     responseCls = CloudStackResponse
 

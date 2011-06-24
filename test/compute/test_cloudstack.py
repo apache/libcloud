@@ -32,7 +32,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
             node = self.driver.create_node(name='node-name',
                                            image=image,
                                            size=size)
-        except DeploymentError:
+        except:
             return
         self.assertTrue(False)
 

@@ -1,7 +1,7 @@
 from libcloud.common.cloudstack import CloudStackConnection
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
                                   NodeSize
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import DeploymentError, NodeState
 
 class CloudStackNode(Node):
     "Subclass of Node so we can expose our extension methods."
@@ -185,7 +185,7 @@ class CloudStackNodeDriver(NodeDriver):
             networkids=network_id,
         )
         if not success:
-            fail()
+            raise Exception(result)
 
         node = result['virtualmachine']
 
