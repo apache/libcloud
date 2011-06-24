@@ -48,8 +48,9 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     @type driver_name: C{str}
     @param driver_name: Driver name
 
-    @return C{dict} Dictionary with pricing where a key name iz size ID and
-                    the value is a price.
+    @rtype: C{dict}
+    @return: Dictionary with pricing where a key name is size ID and
+             the value is a price.
     """
     if not driver_type in [ 'compute', 'storage' ]:
         raise AttributeError('Invalid driver type: %s', driver_type)
@@ -98,7 +99,8 @@ def get_size_price(driver_type, driver_name, size_id):
     @param size_id: Unique size ID (can be an integer or a string - depends on
                     the driver)
 
-    @return C{int} Size price.
+    @rtype: C{int}
+    @return: Size price.
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
     price = float(pricing[size_id])
