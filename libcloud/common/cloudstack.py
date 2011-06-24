@@ -78,11 +78,9 @@ class CloudStackConnection(ConnectionUserAndKey):
             time.sleep(self.driver.async_poll_frequency)
 
         if result['jobstatus'] == 2:
-            success = False
-        else:
-            result = result['jobresult']
+            raise Exception(result)
 
-        return success, result
+        return result['jobresult']
 
 class CloudStackDriverMixIn(object):
     host = None

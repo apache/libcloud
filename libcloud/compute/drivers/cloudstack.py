@@ -160,7 +160,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         networks = self._sync_request('listNetworks')
         network_id = networks['network'][0]['id']
 
-        success, result = self._async_request('deployVirtualMachine',
+        result = self._async_request('deployVirtualMachine',
             name=name,
             displayname=name,
             serviceofferingid=size.id,
@@ -168,8 +168,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             zoneid=location.id,
             networkids=network_id,
         )
-        if not success:
-            raise Exception(result)
 
         node = result['virtualmachine']
 
@@ -188,20 +186,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         )
 
     def destroy_node(self, node):
-        success, _ = self._async_request('destroyVirtualMachine', id=node.id)
-        return success
+        self._async_request('destroyVirtualMachine', id=node.id)
+        return True
 
     def reboot_node(self, node):
-        success, _ = self._async_request('rebootVirtualMachine', id=node.id)
-        return success
+        self._async_request('rebootVirtualMachine', id=node.id)
+        return True
 
     def ex_allocate_public_ip(self, node):
         "Allocate a public IP and bind it to a node."
 
         zoneid = node.extra['zoneid']
-        success, addr = self._async_request('associateIpAddress', zoneid=zoneid)
-        if not success:
-            return None
+        addr = self._async_request('associateIpAddress', zoneid=zoneid)
         addr = addr['ipaddress']
         result = self._sync_request('enableStaticNat', virtualmachineid=node.id,
                                    ipaddressid=addr['id'])
@@ -220,9 +216,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node.public_ip.remove(address.address)
 
         self._async_request('disableStaticNat', ipaddressid=address.id)
-        success, _ = self._async_request('disassociateIpAddress',
-                                         id=address.id)
-        return success
+        self._async_request('disassociateIpAddress', id=address.id)
+        return True
 
     def ex_add_ip_forwarding_rule(self, node, address, protocol,
                                   start_port, end_port=None):
@@ -240,7 +235,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if end_port is not None:
             args['endport'] = int(end_port)
 
-        success, result = self._async_request('createIpForwardingRule', **args)
+        result = self._async_request('createIpForwardingRule', **args)
         result = result['ipforwardingrule']
         rule = CloudStackForwardingRule(node, result['id'], address,
                                         protocol, start_port, end_port)
@@ -251,5 +246,5 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         "Remove a NAT/firewall forwading rule."
 
         node.extra['ip_forwarding_rules'].remove(rule)
-        success, _ = self._async_request('deleteIpForwardingRule', id=rule.id)
-        return success
+        self._async_request('deleteIpForwardingRule', id=rule.id)
+        return True

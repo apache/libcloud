@@ -42,10 +42,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         if private_port is None:
             private_port = port
 
-        success, result = self._async_request('associateIpAddress',
-                                              zoneid=location)
-        if not success:
-            raise Exception(result)
+        result = self._async_request('associateIpAddress', zoneid=location)
         public_ip = result['ipaddress']
 
         result = self._sync_request('createLoadBalancerRule',
@@ -70,16 +67,14 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
 
     def balancer_attach_member(self, balancer, member):
         member.port = balancer.ex_private_port
-        success, _ = self._async_request('assignToLoadBalancerRule',
-                                         id=balancer.id,
-                                         virtualmachineids=member.id)
-        return success
+        self._async_request('assignToLoadBalancerRule', id=balancer.id,
+                            virtualmachineids=member.id)
+        return True
 
     def balancer_detach_member(self, balancer, member):
-        success, _ = self._async_request('removeFromLoadBalancerRule',
-                                         id=balancer.id,
-                                         virtualmachineids=member.id)
-        return success
+        self._async_request('removeFromLoadBalancerRule', id=balancer.id,
+                            virtualmachineids=member.id)
+        return True
 
     def balancer_list_members(self, balancer):
         members = self._sync_request('listLoadBalancerRuleInstances',
