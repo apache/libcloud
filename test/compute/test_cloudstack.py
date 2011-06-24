@@ -9,6 +9,7 @@ except:
     import simplejson as json
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
+from libcloud.compute.types import DeploymentError
 
 from test import MockHttpTestCase
 from test.compute import TestCaseMixin
@@ -21,9 +22,23 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.driver = CloudStackNodeDriver('apikey', 'secret')
         self.driver.path = '/test/path'
         self.driver.type = -1
+        CloudStackMockHttp.fixture_tag = 'default'
+
+    def test_create_node_failure(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        CloudStackMockHttp.fixture_tag = 'deployfail'
+        try:
+            node = self.driver.create_node(name='node-name',
+                                           image=image,
+                                           size=size)
+        except DeploymentError:
+            return
+        self.assertTrue(False)
 
 class CloudStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('cloudstack')
+    fixture_tag = 'default'
 
     def _load_fixture(self, fixture):
         body = self.fixtures.load(fixture)
@@ -48,7 +63,8 @@ class CloudStackMockHttp(MockHttpTestCase):
         if hasattr(self, '_cmd_' + command):
             return getattr(self, '_cmd_' + command)(**query)
         else:
-            body, obj = self._load_fixture(command + '_default.json')
+            fixture = command + '_' + self.fixture_tag + '.json'
+            body, obj = self._load_fixture(fixture)
             return (httplib.OK, body, obj, httplib.responses[httplib.OK])
 
     def _cmd_queryAsyncJobResult(self, jobid):
