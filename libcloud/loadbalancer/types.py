@@ -29,6 +29,7 @@ class LibcloudLBImmutableError(LibcloudLBError): pass
 class Provider(object):
     RACKSPACE_US = 0
     GOGRID = 1
+    NINEFOLD = 2
 
 class State(object):
     """
