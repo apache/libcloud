@@ -1,4 +1,5 @@
-from libcloud.common.cloudstack import CloudStackConnection
+from libcloud.common.cloudstack import CloudStackConnection, \
+                                       CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
                                   NodeSize
 from libcloud.compute.types import DeploymentError, NodeState
@@ -58,7 +59,7 @@ class CloudStackForwardingRule(object):
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
 
-class CloudStackNodeDriver(NodeDriver):
+class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
 
     @cvar host: The host where the API can be reached.
@@ -67,29 +68,12 @@ class CloudStackNodeDriver(NodeDriver):
                                 job completion.
     @type async_poll_frequency: C{int}"""
 
-    host = None
-    path = None
-    async_poll_frequency = 1
-
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.TERMINATED,
         'Stopping': NodeState.TERMINATED
     }
-
-    connectionCls = CloudStackConnection
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        host = host or self.host
-        super(CloudStackNodeDriver, self).__init__(key, secret, secure, host,
-                                                   port)
-
-    def _sync_request(self, command, **kwargs):
-        return self.connection._sync_request(command, **kwargs)
-
-    def _async_request(self, command, **kwargs):
-        return self.connection._async_request(command, **kwargs)
 
     def list_images(self, location=None):
         args = {

@@ -83,3 +83,21 @@ class CloudStackConnection(ConnectionUserAndKey):
             result = result['jobresult']
 
         return success, result
+
+class CloudStackDriverMixIn(object):
+    host = None
+    path = None
+    async_poll_frequency = 1
+
+    connectionCls = CloudStackConnection
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+        host = host or self.host
+        super(CloudStackDriverMixIn, self).__init__(key, secret, secure, host,
+                                                    port)
+
+    def _sync_request(self, command, **kwargs):
+        return self.connection._sync_request(command, **kwargs)
+
+    def _async_request(self, command, **kwargs):
+        return self.connection._async_request(command, **kwargs)
