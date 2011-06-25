@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import unittest
 
 import libcloud.pricing
@@ -96,4 +97,7 @@ class PricingTestCase(unittest.TestCase):
         libcloud.pricing.set_pricing(driver_type='compute', driver_name='foo',
                                      pricing={'foo': 1})
         self.assertTrue('foo' in libcloud.pricing.PRICING_DATA['compute'])
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())
 
