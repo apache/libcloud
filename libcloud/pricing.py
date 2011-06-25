@@ -32,6 +32,8 @@ PRICING_DATA = {
     'storage': {}
 }
 
+VALID_PRICING_DRIVER_TYPES = [ 'compute', 'storage' ]
+
 def get_pricing_file_path(file_path=None):
     pricing_directory = os.path.dirname(os.path.abspath(__file__))
     pricing_file_path = pjoin(pricing_directory, PRICING_FILE_PATH)
@@ -52,7 +54,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     @return: Dictionary with pricing where a key name is size ID and
              the value is a price.
     """
-    if not driver_type in [ 'compute', 'storage' ]:
+    if not driver_type in VALID_PRICING_DRIVER_TYPES:
         raise AttributeError('Invalid driver type: %s', driver_type)
 
     if driver_name in PRICING_DATA[driver_type]:
@@ -64,10 +66,15 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     with open(pricing_file_path) as fp:
         content = fp.read()
 
-    pricing = json.loads(content)[driver_name]
+    pricing_data = json.loads(content)
+    size_pricing = pricing_data[driver_type][driver_name]
 
-    PRICING_DATA[driver_type][driver_name] = pricing
-    return pricing
+    for driver_type in VALID_PRICING_DRIVER_TYPES:
+        pricing = pricing_data.get(driver_type, None)
+        if pricing:
+            PRICING_DATA[driver_type] = pricing
+
+    return size_pricing
 
 def set_pricing(driver_type, driver_name, pricing):
     """
