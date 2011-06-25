@@ -36,8 +36,6 @@ from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 
-in_development_warning('libcloud.storage.drivers.s3')
-
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60
 
