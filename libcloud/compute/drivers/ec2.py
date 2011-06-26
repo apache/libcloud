@@ -831,6 +831,7 @@ class EC2NodeDriver(NodeDriver):
 
         for node in nodes:
             self.ex_create_tags(node=node, tags={'Name': kwargs['name']})
+            node.name = kwargs['name']
 
         if len(nodes) == 1:
             return nodes[0]
