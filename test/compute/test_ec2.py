@@ -87,6 +87,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node = self.driver.create_node(name='foo', image=image, size=size,
                                        location=location)
         self.assertEqual(node.id, 'i-2ba64342')
+        self.assertEqual(node.name, 'foo')
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
