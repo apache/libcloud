@@ -298,11 +298,18 @@ class EC2NodeDriver(NodeDriver):
         except KeyError:
             state = NodeState.UNKNOWN
 
+        instance_id = findtext(element=element, xpath='instanceId',
+                               namespace=NAMESPACE)
+        tags = dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
+                    findtext(element=item, xpath='value', namespace=NAMESPACE))
+                    for item in findall(element=element, xpath='tagSet/item', namespace=NAMESPACE))
+
+        name = tags.get('Name', instance_id)
+
         n = Node(
             id=findtext(element=element, xpath='instanceId',
                         namespace=NAMESPACE),
-            name=findtext(element=element, xpath='instanceId',
-                          namespace=NAMESPACE),
+            name=name,
             state=state,
             public_ip=[findtext(element=element, xpath='ipAddress',
                                 namespace=NAMESPACE)],
@@ -342,10 +349,7 @@ class EC2NodeDriver(NodeDriver):
                 'clienttoken' : findattr(element=element, xpath="clientToken",
                                          namespace=NAMESPACE),
                 'groups': groups,
-                'tags':
-                    dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
-                          findtext(element=item, xpath='value', namespace=NAMESPACE))
-                           for item in findall(element=element, xpath='tagSet/item', namespace=NAMESPACE))
+                'tags': tags,
             }
         )
         return n
@@ -830,8 +834,10 @@ class EC2NodeDriver(NodeDriver):
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            self.ex_create_tags(node=node, tags={'Name': kwargs['name']})
+            tags =  {'Name': kwargs['name']}
+            self.ex_create_tags(node=node, tags=tags)
             node.name = kwargs['name']
+            node.extra.update({'tags': tags})
 
         if len(nodes) == 1:
             return nodes[0]

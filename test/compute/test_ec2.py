@@ -43,6 +43,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='foo', image=image, size=size)
         self.assertEqual(node.id, 'i-2ba64342')
+        self.assertEqual(node.name, 'foo')
+        self.assertEqual(node.extra['tags']['Name'], 'foo')
+        self.assertEqual(len(node.extra['tags']), 1)
 
     def test_create_node_idempotent(self):
         EC2MockHttp.type = 'idempotent'
@@ -93,10 +96,18 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node = self.driver.list_nodes()[0]
         public_ips = sorted(node.public_ip)
         self.assertEqual(node.id, 'i-4382922a')
+        self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ip), 2)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
         self.assertEqual(public_ips[1], '1.2.3.5')
+
+    def test_list_nodes_with_name_tag(self):
+        EC2MockHttp.type = 'WITH_TAGS'
+        node = self.driver.list_nodes()[0]
+        public_ips = sorted(node.public_ip)
+        self.assertEqual(node.id, 'i-8474834a')
+        self.assertEqual(node.name, 'foobar1')
 
     def test_list_location(self):
         locations = self.driver.list_locations()
@@ -238,6 +249,10 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('describe_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _WITH_TAGS_DescribeInstances(self, method, url, body, headers):
+        body = self.fixtures.load('describe_instances_with_tags.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _DescribeAvailabilityZones(self, method, url, body, headers):
         body = self.fixtures.load('describe_availability_zones.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -279,6 +294,10 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeAddresses(self, method, url, body, headers):
+        body = self.fixtures.load('describe_addresses_multi.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _WITH_TAGS_DescribeAddresses(self, method, url, body, headers):
         body = self.fixtures.load('describe_addresses_multi.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
