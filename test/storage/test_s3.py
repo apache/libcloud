@@ -105,6 +105,20 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.container.name, 'test_container')
         self.assertTrue('owner' in obj.meta_data)
 
+    def test_list_container_objects_iterator_has_more(self):
+        S3MockHttp.type = 'ITERATOR'
+        container = Container(name='test_container', extra={},
+                              driver=self.driver)
+        objects = self.driver.list_container_objects(container=container)
+
+        obj = [o for o in objects if o.name == '1.zip'][0]
+        self.assertEqual(obj.hash, '4397da7a7649e8085de9916c240e8166')
+        self.assertEqual(obj.size, 1234567)
+        self.assertEqual(obj.container.name, 'test_container')
+
+        self.assertTrue(obj in objects)
+        self.assertEqual(len(objects), 5)
+
     def test_get_container_doesnt_exist(self):
         S3MockHttp.type = 'list_containers'
         try:
@@ -458,6 +472,19 @@ class S3MockHttp(StorageMockHttp):
                 body,
                 self.base_headers,
                 httplib.responses[httplib.OK])
+
+    def _test_container_ITERATOR(self, method, url, body, headers):
+        if url.find('3.zip') == -1:
+            # First part of the response (first 3 objects)
+            body = self.fixtures.load('list_container_objects_not_exhausted1.xml')
+        else:
+            body = self.fixtures.load('list_container_objects_not_exhausted2.xml')
+
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
 
     def _test2_test_list_containers(self, method, url, body, headers):
         # test_get_object

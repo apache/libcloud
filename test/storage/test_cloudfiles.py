@@ -90,6 +90,18 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(obj.size, 1160520)
         self.assertEqual(obj.container.name, 'test_container')
 
+    def test_list_container_objects_iterator(self):
+        CloudFilesMockHttp.type = 'ITERATOR'
+        container = Container(
+            name='test_container', extra={}, driver=self.driver)
+        objects = self.driver.list_container_objects(container=container)
+        self.assertEqual(len(objects), 5)
+
+        obj = [o for o in objects if o.name == 'foo-test-1'][0]
+        self.assertEqual(obj.hash, '16265549b5bda64ecdaa5156de4c97cc')
+        self.assertEqual(obj.size, 1160520)
+        self.assertEqual(obj.container.name, 'test_container')
+
     def test_get_container(self):
         container = self.driver.get_container(container_name='test_container')
         self.assertEqual(container.name, 'test_container')
@@ -485,8 +497,12 @@ class CloudFilesMockHttp(StorageMockHttp):
         headers = copy.deepcopy(self.base_headers)
         if method == 'GET':
             # list_container_objects
-            body = self.fixtures.load('list_container_objects.json')
-            status_code = httplib.OK
+            if url.find('marker') == -1:
+                body = self.fixtures.load('list_container_objects.json')
+                status_code = httplib.OK
+            else:
+                body = ''
+                status_code = httplib.NO_CONTENT
         elif method == 'HEAD':
             # get_container
             body = self.fixtures.load('list_container_objects_empty.json')
@@ -494,6 +510,22 @@ class CloudFilesMockHttp(StorageMockHttp):
             headers.update({ 'x-container-object-count': 800,
                              'x-container-bytes-used': 1234568
                            })
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_test_container_ITERATOR(self, method, url, body, headers):
+        headers = copy.deepcopy(self.base_headers)
+        # list_container_objects
+        if url.find('foo-test-3') != -1:
+            body = self.fixtures.load('list_container_objects_not_exhausted2.json')
+            status_code = httplib.OK
+        elif url.find('foo-test-5') != -1:
+            body = ''
+            status_code = httplib.NO_CONTENT
+        else:
+            # First request
+            body = self.fixtures.load('list_container_objects_not_exhausted1.json')
+            status_code = httplib.OK
+
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_test_container_not_found(

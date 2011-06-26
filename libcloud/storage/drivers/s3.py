@@ -35,6 +35,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
+from libcloud.common.types import LazyList
 
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60
@@ -173,14 +174,8 @@ class S3StorageDriver(StorageDriver):
                             driver=self)
 
     def list_container_objects(self, container):
-        response = self.connection.request('/%s' % (container.name))
-        if response.status == httplib.OK:
-            objects = self._to_objs(obj=response.object,
-                                       xpath='Contents', container=container)
-            return objects
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status),
-                            driver=self)
+        value_dict = { 'container': container }
+        return LazyList(get_more=self._get_more, value_dict=value_dict)
 
     def get_container(self, container_name):
         # This is very inefficient, but afaik it's the only way to do it
@@ -327,6 +322,32 @@ class S3StorageDriver(StorageDriver):
     def _clean_object_name(self, name):
         name = urllib.quote(name)
         return name
+
+    def _get_more(self, last_key, value_dict):
+        container = value_dict['container']
+        params = {}
+
+        if last_key:
+            params['marker'] = last_key
+
+        response = self.connection.request('/%s' % (container.name),
+                                           params=params)
+
+        if response.status == httplib.OK:
+            objects = self._to_objs(obj=response.object,
+                                       xpath='Contents', container=container)
+            is_truncated = response.object.findtext(fixxpath(xpath='IsTruncated',
+                                                   namespace=NAMESPACE)).lower()
+            exhausted = (is_truncated == 'false')
+
+            if (len(objects) > 0):
+                last_key = objects[-1].name
+            else:
+                last_key = None
+            return objects, last_key, exhausted
+
+        raise LibcloudError('Unexpected status code: %s' % (response.status),
+                            driver=self)
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
