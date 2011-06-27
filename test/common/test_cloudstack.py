@@ -46,14 +46,16 @@ class CloudStackCommonTest(unittest.TestCase):
 
     def test_async_request_successful(self):
         self.driver.path = '/async/success'
-        success, result = self.connection._async_request('fake')
-        self.assertTrue(success)
+        result = self.connection._async_request('fake')
         self.assertEqual(result, {'fake': 'result'})
 
     def test_async_request_unsuccessful(self):
         self.driver.path = '/async/fail'
-        success, _ = self.connection._async_request('fake')
-        self.assertFalse(success)
+        try:
+            self.connection._async_request('fake')
+        except:
+            return
+        self.assertFalse(True)
 
     def test_async_request_delayed(self):
         global async_delay
