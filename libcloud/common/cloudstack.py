@@ -28,6 +28,10 @@ class CloudStackResponse(Response):
 class CloudStackConnection(ConnectionUserAndKey):
     responseCls = CloudStackResponse
 
+    ASYNC_PENDING = 0
+    ASYNC_SUCCESS = 1
+    ASYNC_FAILURE = 2
+
     def _make_signature(self, params):
         signature = [(k.lower(), v) for k, v in params.items()]
         signature.sort(key=lambda x: x[0])
@@ -76,11 +80,12 @@ class CloudStackConnection(ConnectionUserAndKey):
 
         while True:
             result = self._sync_request('queryAsyncJobResult', jobid=job_id)
-            if result.get('jobstatus', 0) != 0:
+            status = result.get('jobstatus', self.ASYNC_PENDING)
+            if status != self.ASYNC_PENDING:
                 break
             time.sleep(self.driver.async_poll_frequency)
 
-        if result['jobstatus'] == 2:
+        if result['jobstatus'] == self.ASYNC_FAILURE:
             raise Exception(result)
 
         return result['jobresult']
