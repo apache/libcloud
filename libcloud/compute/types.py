@@ -110,6 +110,16 @@ class NodeState(object):
     PENDING = 3
     UNKNOWN = 4
 
+class Architecture(object):
+    """
+    Image and size architectures.
+
+    @cvar I386: i386 (32 bt)
+    @cvar X86_64: x86_64 (64 bit)
+    """
+    I386 = 0
+    X86_X64 = 1
+
 class DeploymentError(LibcloudError):
     """
     Exception used when a Deployment Task failed.

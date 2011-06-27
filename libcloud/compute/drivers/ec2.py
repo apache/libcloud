@@ -31,7 +31,8 @@ from xml.etree import ElementTree as ET
 from libcloud.utils import fixxpath, findtext, findattr, findall
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.aws import AWSBaseResponse
-from libcloud.common.types import InvalidCredsError, MalformedResponseError, LibcloudError
+from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
+                                   LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
@@ -129,15 +130,16 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
-}
+    }
 
-CLUSTER_INSTANCES_IDS = [ 'cg1.4xlarge', 'cc1.4xlarge' ]
+CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge']
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+
 
 class EC2NodeLocation(NodeLocation):
     def __init__(self, id, name, country, driver, availability_zone):
@@ -150,10 +152,12 @@ class EC2NodeLocation(NodeLocation):
                 % (self.id, self.name, self.country,
                    self.availability_zone.name, self.driver.name))
 
+
 class EC2Response(AWSBaseResponse):
     """
     EC2 specific response parsing and error handling.
     """
+
     def parse_error(self):
         err_list = []
         # Okay, so for Eucalyptus, you can get a 403, with no body,
@@ -165,7 +169,8 @@ class EC2Response(AWSBaseResponse):
         try:
             body = ET.XML(self.body)
         except:
-            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=EC2NodeDriver)
+            raise MalformedResponseError("Failed to parse XML",
+                                         body=self.body, driver=EC2NodeDriver)
 
         for err in body.findall('Errors/Error'):
             code, message = err.getchildren()
@@ -182,6 +187,7 @@ class EC2Response(AWSBaseResponse):
                 raise IdempotentParamError(err_list[-1])
         return "\n".join(err_list)
 
+
 class EC2Connection(ConnectionUserAndKey):
     """
     Repersents a single connection to the EC2 Endpoint
@@ -197,7 +203,8 @@ class EC2Connection(ConnectionUserAndKey):
         params['Version'] = API_VERSION
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                             time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key, self.action)
+        params['Signature'] = self._get_aws_auth_param(params, self.key,
+                                                       self.action)
         return params
 
     def _get_aws_auth_param(self, params, secret_key, path='/'):
@@ -225,12 +232,14 @@ class EC2Connection(ConnectionUserAndKey):
         )
         return b64_hmac
 
+
 class ExEC2AvailabilityZone(object):
     """
     Extension class which stores information about an EC2 availability zone.
 
     Note: This class is EC2 specific.
     """
+
     def __init__(self, name, zone_state, region_name):
         self.name = name
         self.zone_state = zone_state
@@ -240,6 +249,7 @@ class ExEC2AvailabilityZone(object):
         return (('<ExEC2AvailabilityZone: name=%s, zone_state=%s, '
                  'region_name=%s>')
                 % (self.name, self.zone_state, self.region_name))
+
 
 class EC2NodeDriver(NodeDriver):
     """
@@ -281,28 +291,38 @@ class EC2NodeDriver(NodeDriver):
 
     def _get_terminate_boolean(self, element):
         status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
-        return any([ term_status == status
-                     for term_status
-                     in ('shutting-down', 'terminated') ])
+        return any([term_status == status
+                    for term_status
+                    in ('shutting-down', 'terminated')])
 
     def _to_nodes(self, object, xpath, groups=None):
-        return [ self._to_node(el, groups=groups)
-                 for el in object.findall(fixxpath(xpath=xpath, namespace=NAMESPACE)) ]
+        return [self._to_node(el, groups=groups)
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
 
     def _to_node(self, element, groups=None):
         try:
             state = self.NODE_STATE_MAP[
-                findattr(element=element, xpath="instanceState/name",
-                         namespace=NAMESPACE)
+                    findattr(element=element, xpath="instanceState/name",
+                             namespace=NAMESPACE)
             ]
         except KeyError:
             state = NodeState.UNKNOWN
 
+        instance_id = findtext(element=element, xpath='instanceId',
+                               namespace=NAMESPACE)
+        tags = dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
+                     findtext(element=item, xpath='value',
+                              namespace=NAMESPACE))
+        for item in findall(element=element, xpath='tagSet/item',
+                            namespace=NAMESPACE))
+
+        name = tags.get('Name', instance_id)
+
         n = Node(
             id=findtext(element=element, xpath='instanceId',
                         namespace=NAMESPACE),
-            name=findtext(element=element, xpath='instanceId',
-                          namespace=NAMESPACE),
+            name=name,
             state=state,
             public_ip=[findtext(element=element, xpath='ipAddress',
                                 namespace=NAMESPACE)],
@@ -315,46 +335,46 @@ class EC2NodeDriver(NodeDriver):
                 'instanceId': findattr(element=element, xpath="instanceId",
                                        namespace=NAMESPACE),
                 'imageId': findattr(element=element, xpath="imageId",
-                                   namespace=NAMESPACE),
-                'private_dns': findattr(element=element, xpath="privateDnsName",
+                                    namespace=NAMESPACE),
+                'private_dns': findattr(element=element,
+                                        xpath="privateDnsName",
                                         namespace=NAMESPACE),
                 'status': findattr(element=element, xpath="instanceState/name",
                                    namespace=NAMESPACE),
                 'keyname': findattr(element=element, xpath="keyName",
                                     namespace=NAMESPACE),
-                'launchindex': findattr(element=element, xpath="amiLaunchIndex",
+                'launchindex': findattr(element=element,
+                                        xpath="amiLaunchIndex",
                                         namespace=NAMESPACE),
                 'productcode':
                     [p.text for p in findall(element=element,
-                       xpath="productCodesSet/item/productCode",
-                       namespace=NAMESPACE
-                     )],
+                                    xpath="productCodesSet/item/productCode",
+                                    namespace=NAMESPACE
+                    )],
                 'instancetype': findattr(element=element, xpath="instanceType",
                                          namespace=NAMESPACE),
                 'launchdatetime': findattr(element=element, xpath="launchTime",
                                            namespace=NAMESPACE),
-                'availability': findattr(element, xpath="placement/availabilityZone",
+                'availability': findattr(element,
+                                         xpath="placement/availabilityZone",
                                          namespace=NAMESPACE),
                 'kernelid': findattr(element=element, xpath="kernelId",
                                      namespace=NAMESPACE),
                 'ramdiskid': findattr(element=element, xpath="ramdiskId",
                                       namespace=NAMESPACE),
-                'clienttoken' : findattr(element=element, xpath="clientToken",
-                                         namespace=NAMESPACE),
+                'clienttoken': findattr(element=element, xpath="clientToken",
+                                        namespace=NAMESPACE),
                 'groups': groups,
-                'tags':
-                    dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
-                          findtext(element=item, xpath='value', namespace=NAMESPACE))
-                           for item in findall(element=element, xpath='tagSet/item', namespace=NAMESPACE))
+                'tags': tags
             }
         )
         return n
 
     def _to_images(self, object):
-        return [ self._to_image(el)
-                 for el in object.findall(
-                    fixxpath(xpath='imagesSet/item', namespace=NAMESPACE)
-                 ) ]
+        return [self._to_image(el)
+                for el in object.findall(
+            fixxpath(xpath='imagesSet/item', namespace=NAMESPACE)
+        )]
 
     def _to_image(self, element):
         n = NodeImage(id=findtext(element=element, xpath='imageId',
@@ -365,14 +385,15 @@ class EC2NodeDriver(NodeDriver):
         return n
 
     def list_nodes(self):
-        params = {'Action': 'DescribeInstances' }
-        elem=self.connection.request(self.path, params=params).object
-        nodes=[]
+        params = {'Action': 'DescribeInstances'}
+        elem = self.connection.request(self.path, params=params).object
+        nodes = []
         for rs in findall(element=elem, xpath='reservationSet/item',
                           namespace=NAMESPACE):
-            groups=[g.findtext('')
-                        for g in findall(element=rs, xpath='groupSet/item/groupId',
-                                         namespace=NAMESPACE)]
+            groups = [g.findtext('')
+                      for g in findall(element=rs,
+                                       xpath='groupSet/item/groupId',
+                                       namespace=NAMESPACE)]
             nodes += self._to_nodes(rs, 'instancesSet/item', groups)
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
@@ -381,19 +402,18 @@ class EC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        # Cluster instances are currently only available in the US - N. Virginia Region
-        include_cluser_instances = self.region_name == 'us-east-1'
-        sizes = self._get_sizes(include_cluser_instances =
-                                include_cluser_instances)
-
+        # Cluster instances are currently only available
+        # in the US - N. Virginia Region
+        include_ci = self.region_name == 'us-east-1'
+        sizes = self._get_sizes(include_cluser_instances=include_ci)
         return sizes
 
     def _get_sizes(self, include_cluser_instances=False):
         sizes = []
         for key, values in self._instance_types.iteritems():
-            if not include_cluser_instances and \
+            if not include_cluser_instances and\
                key in CLUSTER_INSTANCES_IDS:
-               continue
+                continue
             attributes = copy.deepcopy(values)
             attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(NodeSize(driver=self, **attributes))
@@ -408,7 +428,8 @@ class EC2NodeDriver(NodeDriver):
 
     def list_locations(self):
         locations = []
-        for index, availability_zone in enumerate(self.ex_list_availability_zones()):
+        for index, availability_zone in \
+            enumerate(self.ex_list_availability_zones()):
             locations.append(EC2NodeLocation(index,
                                              self.friendly_name,
                                              self.country,
@@ -430,16 +451,16 @@ class EC2NodeDriver(NodeDriver):
         params = {
             'Action': 'CreateKeyPair',
             'KeyName': name,
-        }
+            }
         response = self.connection.request(self.path, params=params).object
         key_material = findtext(element=response, xpath='keyMaterial',
-                                      namespace=NAMESPACE)
+                                namespace=NAMESPACE)
         key_fingerprint = findtext(element=response, xpath='keyFingerprint',
                                    namespace=NAMESPACE)
         return {
             'keyMaterial': key_material,
             'keyFingerprint': key_fingerprint,
-        }
+            }
 
     def ex_import_keypair(self, name, keyfile):
         """imports a new public key
@@ -465,13 +486,14 @@ class EC2NodeDriver(NodeDriver):
         }
 
         response = self.connection.request(self.path, params=params).object
-        key_name = findtext(element=response, xpath='keyName', namespace=NAMESPACE)
+        key_name = findtext(element=response, xpath='keyName',
+                            namespace=NAMESPACE)
         key_fingerprint = findtext(element=response, xpath='keyFingerprint',
                                    namespace=NAMESPACE)
         return {
-                'keyName': key_name,
-                'keyFingerprint': key_fingerprint,
-        }
+            'keyName': key_name,
+            'keyFingerprint': key_fingerprint,
+            }
 
     def ex_describe_keypairs(self, name):
         """Describes a keypiar by name
@@ -491,7 +513,7 @@ class EC2NodeDriver(NodeDriver):
         key_name = findattr(element=response, xpath='keySet/item/keyName',
                             namespace=NAMESPACE)
         return {
-                'keyName': key_name
+            'keyName': key_name
         }
 
     def ex_create_security_group(self, name, description):
@@ -500,7 +522,8 @@ class EC2NodeDriver(NodeDriver):
         @note: This is a non-standard extension API, and only works for EC2.
 
         @type name: C{str}
-        @param name: The name of the security group to Create. This must be unique.
+        @param name: The name of the security group to Create.
+                     This must be unique.
 
         @type description: C{str}
         @param description: Human readable description of a Security Group.
@@ -579,7 +602,8 @@ class EC2NodeDriver(NodeDriver):
                                          params=params.copy()).object
 
         availability_zones = []
-        for element in findall(element=result, xpath='availabilityZoneInfo/item',
+        for element in findall(element=result,
+                               xpath='availabilityZoneInfo/item',
                                namespace=NAMESPACE):
             name = findtext(element=element, xpath='zoneName',
                             namespace=NAMESPACE)
@@ -606,12 +630,12 @@ class EC2NodeDriver(NodeDriver):
 
         @return dict Node tags
         """
-        params = { 'Action': 'DescribeTags',
-                   'Filter.0.Name': 'resource-id',
-                   'Filter.0.Value.0': node.id,
-                   'Filter.1.Name': 'resource-type',
-                   'Filter.1.Value.0': 'instance',
-                   }
+        params = {'Action': 'DescribeTags',
+                  'Filter.0.Name': 'resource-id',
+                  'Filter.0.Value.0': node.id,
+                  'Filter.1.Name': 'resource-type',
+                  'Filter.1.Value.0': 'instance',
+                  }
 
         result = self.connection.request(self.path,
                                          params=params.copy()).object
@@ -620,7 +644,8 @@ class EC2NodeDriver(NodeDriver):
         for element in findall(element=result, xpath='tagSet/item',
                                namespace=NAMESPACE):
             key = findtext(element=element, xpath='key', namespace=NAMESPACE)
-            value = findtext(element=element, xpath='value', namespace=NAMESPACE)
+            value = findtext(element=element,
+                             xpath='value', namespace=NAMESPACE)
 
             tags[key] = value
         return tags
@@ -637,8 +662,8 @@ class EC2NodeDriver(NodeDriver):
         if not tags:
             return
 
-        params = { 'Action': 'CreateTags',
-                   'ResourceId.0': node.id }
+        params = {'Action': 'CreateTags',
+                  'ResourceId.0': node.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
@@ -658,8 +683,8 @@ class EC2NodeDriver(NodeDriver):
         if not tags:
             return
 
-        params = { 'Action': 'DeleteTags',
-                   'ResourceId.0': node.id }
+        params = {'Action': 'DeleteTags',
+                  'ResourceId.0': node.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
@@ -675,23 +700,24 @@ class EC2NodeDriver(NodeDriver):
         @param nodes: List of C{Node} instances
 
         @return dict Dictionary where a key is a node ID and the value is a
-                     list with the Elastic IP addresses associated with this node.
+                     list with the Elastic IP addresses associated with
+                     this node.
         """
         if not nodes:
             return {}
 
-        params = { 'Action': 'DescribeAddresses' }
+        params = {'Action': 'DescribeAddresses'}
 
         if len(nodes) == 1:
-           params.update({
-                  'Filter.0.Name': 'instance-id',
-                  'Filter.0.Value.0': nodes[0].id
-           })
+            params.update({
+                'Filter.0.Name': 'instance-id',
+                'Filter.0.Value.0': nodes[0].id
+            })
 
         result = self.connection.request(self.path,
                                          params=params.copy()).object
 
-        node_instance_ids = [ node.id for node in nodes ]
+        node_instance_ids = [node.id for node in nodes]
         nodes_elastic_ip_mappings = {}
 
         for node_id in node_instance_ids:
@@ -737,7 +763,7 @@ class EC2NodeDriver(NodeDriver):
         attributes = attributes or {}
         attributes.update({'InstanceId': node.id})
 
-        params = { 'Action': 'ModifyInstanceAttribute' }
+        params = {'Action': 'ModifyInstanceAttribute'}
         params.update(attributes)
 
         result = self.connection.request(self.path,
@@ -763,9 +789,10 @@ class EC2NodeDriver(NodeDriver):
             current_instance_type = node.extra['instancetype']
 
             if current_instance_type == new_size.id:
-                raise ValueError('New instance size is the same as the current one')
+                raise ValueError('New instance size is the same as' +
+                                 'the current one')
 
-        attributes = { 'InstanceType.Value': new_size.id }
+        attributes = {'InstanceType.Value': new_size.id}
         return self.ex_modify_instance_attribute(node, attributes)
 
     def create_node(self, **kwargs):
@@ -797,8 +824,8 @@ class EC2NodeDriver(NodeDriver):
         params = {
             'Action': 'RunInstances',
             'ImageId': image.id,
-            'MinCount': kwargs.get('ex_mincount','1'),
-            'MaxCount': kwargs.get('ex_maxcount','1'),
+            'MinCount': kwargs.get('ex_mincount', '1'),
+            'MaxCount': kwargs.get('ex_maxcount', '1'),
             'InstanceType': size.id
         }
 
@@ -806,15 +833,16 @@ class EC2NodeDriver(NodeDriver):
             if not isinstance(kwargs['ex_securitygroup'], list):
                 kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
             for sig in range(len(kwargs['ex_securitygroup'])):
-                params['SecurityGroup.%d' % (sig+1,)]  = kwargs['ex_securitygroup'][sig]
+                params['SecurityGroup.%d' % (sig + 1,)] = \
+                            kwargs['ex_securitygroup'][sig]
 
         if 'location' in kwargs:
-            availability_zone = getattr(kwargs['location'], 'availability_zone',
-                                        None)
+            availability_zone = getattr(kwargs['location'],
+                                        'availability_zone', None)
             if availability_zone:
                 if availability_zone.region_name != self.region_name:
                     raise AttributeError('Invalid availability zone: %s'
-                                         % (availability_zone.name))
+                    % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
 
         if 'ex_keyname' in kwargs:
@@ -830,7 +858,10 @@ class EC2NodeDriver(NodeDriver):
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            self.ex_create_tags(node=node, tags={'Name': kwargs['name']})
+            tags = {'Name': kwargs['name']}
+            self.ex_create_tags(node=node, tags=tags)
+            node.name = kwargs['name']
+            node.extra.update({'tags': tags})
 
         if len(nodes) == 1:
             return nodes[0]
@@ -855,18 +886,23 @@ class EC2NodeDriver(NodeDriver):
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
 
+
 class IdempotentParamError(LibcloudError):
     """
-    Request used the same client token as a previous, but non-identical request.
+    Request used the same client token as a previous,
+    but non-identical request.
     """
+
     def __str__(self):
         return repr(self.value)
+
 
 class EC2EUConnection(EC2Connection):
     """
     Connection class for EC2 in the Western Europe Region
     """
     host = EC2_EU_WEST_HOST
+
 
 class EC2EUNodeDriver(EC2NodeDriver):
     """
@@ -881,12 +917,14 @@ class EC2EUNodeDriver(EC2NodeDriver):
     connectionCls = EC2EUConnection
     _instance_types = EC2_EU_WEST_INSTANCE_TYPES
 
+
 class EC2USWestConnection(EC2Connection):
     """
     Connection class for EC2 in the Western US Region
     """
 
     host = EC2_US_WEST_HOST
+
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
@@ -901,6 +939,7 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     connectionCls = EC2USWestConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
+
 class EC2APSEConnection(EC2Connection):
     """
     Connection class for EC2 in the Southeast Asia Pacific Region
@@ -908,12 +947,14 @@ class EC2APSEConnection(EC2Connection):
 
     host = EC2_AP_SOUTHEAST_HOST
 
+
 class EC2APNEConnection(EC2Connection):
     """
     Connection class for EC2 in the Northeast Asia Pacific Region
     """
 
     host = EC2_AP_NORTHEAST_HOST
+
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
@@ -928,6 +969,7 @@ class EC2APSENodeDriver(EC2NodeDriver):
     connectionCls = EC2APSEConnection
     _instance_types = EC2_AP_SOUTHEAST_INSTANCE_TYPES
 
+
 class EC2APNENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Northeast Asia Pacific Region
@@ -941,12 +983,14 @@ class EC2APNENodeDriver(EC2NodeDriver):
     connectionCls = EC2APNEConnection
     _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
 
+
 class EucConnection(EC2Connection):
     """
     Connection class for Eucalyptus
     """
 
     host = None
+
 
 class EucNodeDriver(EC2NodeDriver):
     """
@@ -957,41 +1001,44 @@ class EucNodeDriver(EC2NodeDriver):
     connectionCls = EucConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
-    def __init__(self, key, secret=None, secure=True, host=None, path=None, port=None):
+    def __init__(self, key, secret=None, secure=True, host=None,
+                 path=None, port=None):
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
             path = "/services/Eucalyptus"
         self.path = path
 
     def list_locations(self):
-        raise NotImplementedError, \
-            'list_locations not implemented for this driver'
+        raise NotImplementedError(
+                'list_locations not implemented for this driver')
+
 
 # Nimbus clouds have 3 EC2-style instance types but their particular RAM
 # allocations are configured by the admin
 NIMBUS_INSTANCE_TYPES = {
     'm1.small': {
-        'id' : 'm1.small',
+        'id': 'm1.small',
         'name': 'Small Instance',
         'ram': None,
         'disk': None,
         'bandwidth': None,
-    },
+        },
     'm1.large': {
-        'id' : 'm1.large',
+        'id': 'm1.large',
         'name': 'Large Instance',
         'ram': None,
         'disk': None,
         'bandwidth': None,
-    },
+        },
     'm1.xlarge': {
-        'id' : 'm1.xlarge',
+        'id': 'm1.xlarge',
         'name': 'Extra Large Instance',
         'ram': None,
         'disk': None,
         'bandwidth': None,
-    },
-}
+        },
+    }
+
 
 class NimbusConnection(EC2Connection):
     """
@@ -999,6 +1046,7 @@ class NimbusConnection(EC2Connection):
     """
 
     host = None
+
 
 class NimbusNodeDriver(EC2NodeDriver):
     """

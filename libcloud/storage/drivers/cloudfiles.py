@@ -33,6 +33,7 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
+from libcloud.common.types import LazyList
 
 from libcloud.common.rackspace import (
     AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
@@ -161,15 +162,8 @@ class CloudFilesStorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def list_container_objects(self, container):
-        response = self.connection.request('/%s' % (container.name))
-
-        if response.status == httplib.NO_CONTENT:
-            # Empty or inexistent container
-            return []
-        elif response.status == httplib.OK:
-            return self._to_object_list(json.loads(response.body), container)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        value_dict = { 'container': container }
+        return LazyList(get_more=self._get_more, value_dict=value_dict)
 
     def get_container(self, container_name):
         response = self.connection.request('/%s' % (container_name),
@@ -351,6 +345,30 @@ class CloudFilesStorageDriver(StorageDriver):
             return { 'container_count': int(container_count),
                       'object_count': int(object_count),
                       'bytes_used': int(bytes_used) }
+
+        raise LibcloudError('Unexpected status code: %s' % (response.status))
+
+    def _get_more(self, last_key, value_dict):
+        container = value_dict['container']
+        params = {}
+
+        if last_key:
+            params['marker'] = last_key
+
+        response = self.connection.request('/%s' % (container.name),
+                                          params=params)
+
+        if response.status == httplib.NO_CONTENT:
+            # Empty or inexistent container
+            return [], None, True
+        elif response.status == httplib.OK:
+            objects = self._to_object_list(json.loads(response.body), container)
+
+            # TODO: Is this really needed?
+            if len(objects) == 0:
+                return [], None, True
+
+            return objects, objects[-1].name, False
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 

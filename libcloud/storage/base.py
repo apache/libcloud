@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Provides base classes for working with storage
+"""
+
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
@@ -179,6 +183,11 @@ class StorageDriver(object):
         self.connection.connect()
 
     def list_containters(self):
+        """
+        Return a list of containers.
+
+        @return: A list of Container instances.
+        """
         raise NotImplementedError(
             'list_containers not implemented for this driver')
 
@@ -189,7 +198,7 @@ class StorageDriver(object):
         @type container: C{Container}
         @param container: Container instance
 
-        @return A list of Object instances.
+        @return: A list of Object instances.
         """
         raise NotImplementedError(
             'list_objects not implemented for this driver')
@@ -213,7 +222,7 @@ class StorageDriver(object):
         @type container: C{Container}
         @param container: Container instance
 
-        @return A CDN URL for this container.
+        @return: A CDN URL for this container.
         """
         raise NotImplementedError(
             'get_container_cdn_url not implemented for this driver')
@@ -240,7 +249,7 @@ class StorageDriver(object):
         @type obj: C{Object}
         @param obj: Object instance
 
-        @return A CDN URL for this object.
+        @return: A CDN URL for this object.
         """
         raise NotImplementedError(
             'get_object_cdn_url not implemented for this driver')
@@ -257,21 +266,22 @@ class StorageDriver(object):
         """
         Download an object to the specified destination path.
 
-        @type obj; C{Object}
+        @type obj: C{Object}
         @param obj: Object instance.
 
         @type destination_path: C{str}
-        @type destination_path: Full path to a file or a directory where the
+        @param destination_path: Full path to a file or a directory where the
                                 incoming file will be saved.
 
         @type overwrite_existing: C{bool}
-        @type overwrite_existing: True to overwrite an existing file, defaults to False.
+        @param overwrite_existing: True to overwrite an existing file, defaults to False.
 
         @type delete_on_failure: C{bool}
         @param delete_on_failure: True to delete a partially downloaded file if
         the download was not successful (hash mismatch / file size).
 
-        @return C{bool} True if an object has been successfully downloaded, False
+        @rtype: C{bool}
+        @return: True if an object has been successfully downloaded, False
         otherwise.
         """
         raise NotImplementedError(
@@ -351,7 +361,7 @@ class StorageDriver(object):
         @type container_name: C{str}
         @param container_name: Container name.
 
-        @return C{Container} instance on success.
+        @return: C{Container} instance on success.
         """
         raise NotImplementedError(
             'create_container not implemented for this driver')
@@ -363,7 +373,8 @@ class StorageDriver(object):
         @type container: C{Container}
         @param container: Container instance
 
-        @return C{bool} True on success, False otherwise.
+        @rtype: C{bool}
+        @return: True on success, False otherwise.
         """
         raise NotImplementedError(
             'delete_container not implemented for this driver')
@@ -389,7 +400,8 @@ class StorageDriver(object):
         @param success_status_code: Status code which represents a successful
                                     transfer (defaults to httplib.OK)
 
-        @return C{bool} True on success, False otherwise.
+        @rtype: C{bool}
+        @return: True on success, False otherwise.
         """
         success_status_code = success_status_code or httplib.OK
 
@@ -428,7 +440,8 @@ class StorageDriver(object):
         @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (defaults to L{libcloud.storage.base.CHUNK_SIZE}, 8kb)
 
-        @return C{bool} True on success, False otherwise.
+        @rtype: C{bool}
+        @return: True on success, False otherwise.
         """
 
         chunk_size = chunk_size or CHUNK_SIZE
@@ -546,9 +559,10 @@ class StorageDriver(object):
         @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
 
-        @return C{tuple} First item is a boolean indicator of success, second
-                         one is the uploaded data MD5 hash and the third one
-                         is the number of transferred bytes.
+        @rtype: C{tuple}
+        @return: First item is a boolean indicator of success, second
+                 one is the uploaded data MD5 hash and the third one
+                 is the number of transferred bytes.
         """
 
         chunk_size = chunk_size or CHUNK_SIZE
@@ -612,9 +626,10 @@ class StorageDriver(object):
         @param response: An object which implements an iterator interface (File
                          object, etc.)
 
-        @return C{tuple} First item is a boolean indicator of success, second
-                         one is the uploaded data MD5 hash and the third one
-                         is the number of transferred bytes.
+        @rtype: C{tuple}
+        @return: First item is a boolean indicator of success, second
+                 one is the uploaded data MD5 hash and the third one
+                 is the number of transferred bytes.
         """
         with open (file_path, 'rb') as file_handle:
             success, data_hash, bytes_transferred = (

@@ -41,6 +41,7 @@ def read_version_string():
     return version
 
 class TestCommand(Command):
+    description = "run test suite"
     user_options = []
 
     def initialize_options(self):
@@ -102,6 +103,7 @@ class TestCommand(Command):
         return not res.wasSuccessful()
 
 class ApiDocsCommand(Command):
+    description = "generate API documentation"
     user_options = []
 
     def initialize_options(self):
@@ -123,6 +125,7 @@ class ApiDocsCommand(Command):
         )
 
 class CoverageCommand(Command):
+    description = "run test suite and generate coverage report"
     user_options = []
 
     def initialize_options(self):
