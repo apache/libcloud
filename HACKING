@@ -36,6 +36,13 @@ Using The Git-SVN Bridge (For Committers)
 Testing
 =======
 
+ To run the libcloud test suite you need to have the following extra
+ dependencies installed:
+
+ * mock (pip install mock)
+ * coverage (pip install coverage) - you only need this library if you
+   want to generate a test coverage report
+
  Libcloud includes an example secrets.py file at:
   test/secrets.py-dist
 
@@ -63,9 +70,13 @@ Testing
 
   OK
 
+ To generate test coverage report run:
+
+  libcloud$ PYTHONPATH=. python setup.py coverage
+
 Making a release
 =======
- 
+
  We have a script that runs the required setup.py commands and then hashes
  and signs the files.  To run it:
 
