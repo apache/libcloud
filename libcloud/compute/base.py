@@ -16,6 +16,7 @@
 """
 Provides base classes for working with drivers
 """
+
 import time
 import hashlib
 import os
@@ -33,12 +34,14 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from libcloud.common.base import LibcloudHTTPConnection
 from libcloud.common.types import LibcloudError
 
+
 # How long to wait for the node to come online after creating it
-NODE_ONLINE_WAIT_TIMEOUT = 10*60
+NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
 
 # How long to try connecting to a remote SSH server when running a deployment
 # script.
-SSH_CONNECT_TIMEOUT=5*60
+SSH_CONNECT_TIMEOUT = 5 * 60
+
 
 __all__ = [
     "Node",
@@ -56,6 +59,7 @@ __all__ = [
     "LibcloudHTTPSConnection",
     "LibcloudHTTPConnection"
     ]
+
 
 class Node(object):
     """
@@ -112,10 +116,7 @@ class Node(object):
         self.private_ip = private_ip
         self.driver = driver
         self.uuid = self.get_uuid()
-        if not extra:
-            self.extra = {}
-        else:
-            self.extra = extra
+        self.extra = extra or {}
 
     def get_uuid(self):
         """Unique hash for this node
@@ -138,7 +139,7 @@ class Node(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1("%s:%d" % (self.id,self.driver.type)).hexdigest()
+        return hashlib.sha1("%s:%d" % (self.id, self.driver.type)).hexdigest()
 
     def reboot(self):
         """Reboot this node
@@ -257,13 +258,12 @@ class NodeImage(object):
         self.id = str(id)
         self.name = name
         self.driver = driver
-        if not extra:
-            self.extra = {}
-        else:
-            self.extra = extra
+        self.extra = extra or {}
+
     def __repr__(self):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
                 % (self.id, self.name, self.driver.name))
+
 
 class NodeLocation(object):
     """
@@ -281,9 +281,11 @@ class NodeLocation(object):
         self.name = name
         self.country = country
         self.driver = driver
+
     def __repr__(self):
         return (('<NodeLocation: id=%s, name=%s, country=%s, driver=%s>')
                 % (self.id, self.name, self.country, self.driver.name))
+
 
 class NodeAuthSSHKey(object):
     """
@@ -297,12 +299,14 @@ class NodeAuthSSHKey(object):
     >>> k = NodeAuthSSHKey(pubkey)
     >>> k
     <NodeAuthSSHKey>
-
     """
+
     def __init__(self, pubkey):
         self.pubkey = pubkey
+
     def __repr__(self):
         return '<NodeAuthSSHKey>'
+
 
 class NodeAuthPassword(object):
     """
@@ -310,8 +314,10 @@ class NodeAuthPassword(object):
     """
     def __init__(self, password):
         self.password = password
+
     def __repr__(self):
         return '<NodeAuthPassword>'
+
 
 class NodeDriver(object):
     """
@@ -403,8 +409,8 @@ class NodeDriver(object):
 
         @return: The newly created L{Node}.
         """
-        raise NotImplementedError, \
-            'create_node not implemented for this driver'
+        raise NotImplementedError(
+            'create_node not implemented for this driver')
 
     def destroy_node(self, node):
         """Destroy a node.
@@ -414,65 +420,67 @@ class NodeDriver(object):
 
         @return: C{bool} True if the destroy was successful, otherwise False
         """
-        raise NotImplementedError, \
-            'destroy_node not implemented for this driver'
+        raise NotImplementedError(
+            'destroy_node not implemented for this driver')
 
     def reboot_node(self, node):
         """
         Reboot a node.
         @return: C{bool} True if the reboot was successful, otherwise False
         """
-        raise NotImplementedError, \
-            'reboot_node not implemented for this driver'
+        raise NotImplementedError(
+            'reboot_node not implemented for this driver')
 
     def list_nodes(self):
         """
         List all nodes
         @return: C{list} of L{Node} objects
         """
-        raise NotImplementedError, \
-            'list_nodes not implemented for this driver'
+        raise NotImplementedError(
+            'list_nodes not implemented for this driver')
 
     def list_images(self, location=None):
         """
         List images on a provider
         @return: C{list} of L{NodeImage} objects
         """
-        raise NotImplementedError, \
-            'list_images not implemented for this driver'
+        raise NotImplementedError(
+            'list_images not implemented for this driver')
 
     def list_sizes(self, location=None):
         """
         List sizes on a provider
         @return: C{list} of L{NodeSize} objects
         """
-        raise NotImplementedError, \
-            'list_sizes not implemented for this driver'
+        raise NotImplementedError(
+            'list_sizes not implemented for this driver')
 
     def list_locations(self):
         """
         List data centers for a provider
         @return: C{list} of L{NodeLocation} objects
         """
-        raise NotImplementedError, \
-            'list_locations not implemented for this driver'
+        raise NotImplementedError(
+            'list_locations not implemented for this driver')
 
     def deploy_node(self, **kwargs):
         """
         Create a new node, and start deployment.
 
-        Depends on a Provider Driver supporting either using a specific password
-        or returning a generated password.
+        Depends on a Provider Driver supporting either using a specific
+        password or returning a generated password.
 
         This function may raise a L{DeploymentException}, if a create_node
         call was successful, but there is a later error (like SSH failing or
         timing out).  This exception includes a Node object which you may want
         to destroy if incomplete deployments are not desirable.
 
-        @keyword    deploy: Deployment to run once machine is online and availble to SSH.
+        @keyword    deploy: Deployment to run once machine is online and
+                            availble to SSH.
         @type       deploy: L{Deployment}
 
-        @keyword    ssh_username: Optional name of the account which is used when connecting to
+        @keyword    ssh_username: Optional name of the account which is used
+                                  when connecting to
                                   SSH server (default is root)
         @type       ssh_username: C{str}
 
@@ -490,7 +498,8 @@ class NodeDriver(object):
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
-        >>> from libcloud.deployment import ScriptDeployment, MultiStepDeployment
+        >>> from libcloud.deployment import ScriptDeployment
+        >>> from libcloud.deployment import MultiStepDeployment
         >>> from libcloud.compute.base import NodeAuthSSHKey
         >>> driver = DummyNodeDriver(0)
         >>> key = NodeAuthSSHKey('...') # read from file
@@ -511,11 +520,12 @@ class NodeDriver(object):
         password = None
 
         if 'create_node' not in self.features:
-            raise NotImplementedError, 'deploy_node not implemented for this driver'
+            raise NotImplementedError(
+                    'deploy_node not implemented for this driver')
         elif 'generates_password' not in self.features["create_node"]:
             if 'password' not in self.features["create_node"]:
-                raise NotImplementedError, \
-                    'deploy_node not implemented for this driver'
+                raise NotImplementedError(
+                    'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
                 kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
@@ -561,8 +571,8 @@ class NodeDriver(object):
         @keyword    node: Node instance.
         @type       node: C{Node}
 
-        @keyword    wait_period: How many seconds to between each loop iteration
-                                 (default is 3)
+        @keyword    wait_period: How many seconds to between each loop
+                                 iteration (default is 3)
         @type       wait_period: C{int}
 
         @keyword    timeout: How many seconds to wait before timing out
@@ -603,8 +613,8 @@ class NodeDriver(object):
 
     def _ssh_client_connect(self, ssh_client, timeout=300):
         """
-        Try to connect to the remote SSH server. If a connection times out or is
-        refused it is retried up to timeout number of seconds.
+        Try to connect to the remote SSH server. If a connection times out or
+        is refused it is retried up to timeout number of seconds.
 
         @keyword    ssh_client: A configured SSHClient instance
         @type       ssh_client: C{SSHClient}
@@ -680,15 +690,15 @@ def is_private_subnet(ip):
 
     @return: C{bool} if the specified IP address is private.
     """
-    priv_subnets = [ {'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
-                     {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
-                     {'subnet': '192.168.0.0', 'mask': '255.255.0.0'} ]
+    priv_subnets = [{'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
+                    {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
+                    {'subnet': '192.168.0.0', 'mask': '255.255.0.0'}]
 
-    ip = struct.unpack('I',socket.inet_aton(ip))[0]
+    ip = struct.unpack('I', socket.inet_aton(ip))[0]
 
     for network in priv_subnets:
-        subnet = struct.unpack('I',socket.inet_aton(network['subnet']))[0]
-        mask = struct.unpack('I',socket.inet_aton(network['mask']))[0]
+        subnet = struct.unpack('I', socket.inet_aton(network['subnet']))[0]
+        mask = struct.unpack('I', socket.inet_aton(network['mask']))[0]
 
         if (ip & mask) == (subnet & mask):
             return True
