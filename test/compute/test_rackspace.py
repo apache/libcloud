@@ -18,13 +18,19 @@ import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
+from libcloud.compute.drivers.rackspace import OpenStackResponse
+from libcloud.compute.drivers.rackspace import OpenStackNodeDriver as OpenStack
 from libcloud.compute.base import Node, NodeImage, NodeSize
+from libcloud.pricing import set_pricing
 
-from test import MockHttpTestCase
+from test import MockHttp, MockResponse, MockHttpTestCase
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
 from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
+from test.secrets import NOVA_USERNAME, NOVA_API_KEY, NOVA_HOST, NOVA_PORT
+from test.secrets import NOVA_SECURE
+
 
 class RackspaceTests(unittest.TestCase, TestCaseMixin):
 
@@ -78,7 +84,8 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(ret), 1)
         node = ret[0]
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
-        self.assertEqual(node.extra.get('metadata').get('somekey'), 'somevalue')
+        self.assertEqual(node.extra.get('metadata').get('somekey'),
+                         'somevalue')
         RackspaceMockHttp.type = None
 
     def test_list_sizes(self):
@@ -94,16 +101,20 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[11].extra['serverId'], '91221')
 
     def test_create_node(self):
-        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
-        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
     def test_create_node_ex_shared_ip_group(self):
         RackspaceMockHttp.type = 'EX_SHARED_IP_GROUP'
-        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
-        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size,
                                        ex_shared_ip_group_id='12345')
         self.assertEqual(node.name, 'racktest')
@@ -111,24 +122,27 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
 
     def test_create_node_with_metadata(self):
         RackspaceMockHttp.type = 'METADATA'
-        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
-        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
-        metadata = { 'a': 'b', 'c': 'd' }
-        files = { '/file1': 'content1', '/file2': 'content2' }
-        node = self.driver.create_node(name='racktest', image=image, size=size, metadata=metadata, files=files)
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
+        metadata = {'a': 'b', 'c': 'd'}
+        files = {'/file1': 'content1', '/file2': 'content2'}
+        node = self.driver.create_node(name='racktest', image=image, size=size,
+                                       metadata=metadata, files=files)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
         self.assertEqual(node.extra.get('metadata'), metadata)
 
     def test_reboot_node(self):
-        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
-                    driver=self.driver)
+        node = Node(id=72258, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         ret = node.reboot()
         self.assertTrue(ret is True)
 
     def test_destroy_node(self):
-        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
-                    driver=self.driver)
+        node = Node(id=72258, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         ret = node.destroy()
         self.assertTrue(ret is True)
 
@@ -138,8 +152,8 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue("absolute" in limits)
 
     def test_ex_save_image(self):
-        node = Node(id=444222, name=None, state=None, public_ip=None, private_ip=None,
-                driver=self.driver)
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         image = self.driver.ex_save_image(node, "imgtest")
         self.assertEqual(image.name, "imgtest")
         self.assertEqual(image.id, "12345")
@@ -304,6 +318,108 @@ class RackspaceMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_3445_ips_public_67_23_21_133(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+
+class OpenStackResponseTestCase(unittest.TestCase):
+    XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
+
+    def test_simple_xml_content_type_handling(self):
+        http_response = MockResponse(200, OpenStackResponseTestCase.XML, headers={'content-type': 'application/xml'})
+        body = OpenStackResponse(http_response).parse_body()
+
+        self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
+
+    def test_extended_xml_content_type_handling(self):
+        http_response = MockResponse(200,
+                                     OpenStackResponseTestCase.XML,
+                                     headers={'content-type': 'application/xml; charset=UTF-8'})
+        body = OpenStackResponse(http_response).parse_body()
+
+        self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
+
+    def test_non_xml_content_type_handling(self):
+        RESPONSE_BODY = "Accepted"
+
+        http_response = MockResponse(202, RESPONSE_BODY, headers={'content-type': 'text/html'})
+        body = OpenStackResponse(http_response).parse_body()
+
+        self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
+
+
+class OpenStackTests(unittest.TestCase):
+    def setUp(self):
+        OpenStack.connectionCls.conn_classes = (OpenStackMockHttp, None)
+        OpenStackMockHttp.type = None
+        self.driver = OpenStack(NOVA_USERNAME, NOVA_API_KEY, NOVA_SECURE,
+                                NOVA_HOST, NOVA_PORT)
+
+    def test_destroy_node(self):
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
+                    driver=self.driver)
+        ret = node.destroy()
+        self.assertTrue(ret is True, 'Unsuccessful node destroying')
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 8, 'Wrong sizes count')
+
+        for size in sizes:
+            self.assertTrue(isinstance(size.price, float),
+                            'Wrong size price type')
+            self.assertEqual(size.price, 0,
+                             'Size price should be zero by default')
+
+    def test_list_sizes_with_specified_pricing(self):
+        pricing = dict((str(i), i) for i in range(1, 9))
+
+        set_pricing(driver_type='compute', driver_name='openstack',
+                    pricing=pricing)
+
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 8, 'Wrong sizes count')
+
+        for size in sizes:
+            self.assertTrue(isinstance(size.price, float),
+                            'Wrong size price type')
+            self.assertEqual(size.price, pricing[size.id],
+                             'Size price should be zero by default')
+
+
+class OpenStackMockHttp(MockHttp):
+    def _v1_0(self, method, url, body, headers):
+        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
+                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
+        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _v1_0_slug_servers_72258(self, method, url, body, headers):
+        if method != "DELETE":
+            raise NotImplemented
+        # only used by destroy node()
+        return (httplib.ACCEPTED,
+                "202 Accepted\n\nThe request is accepted for processing.\n\n   ",
+                {'date': 'Thu, 09 Jun 2011 10:51:53 GMT', 'content-length': '58',
+                 'content-type': 'text/html; charset=UTF-8'},
+                httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_flavors_detail(self, method, url, body, headers):
+        body = """<flavors xmlns="http://docs.rackspacecloud.com/servers/api/v1.0">
+                    <flavor disk="40" id="3" name="m1.medium" ram="4096"/>
+                    <flavor disk="20" id="2" name="m1.small" ram="2048"/>
+                    <flavor disk="80" id="4" name="m1.large" ram="8192"/>
+                    <flavor disk="0" id="6" name="s1" ram="256"/>
+                    <flavor disk="0" id="7" name="s1.swap" ram="256"/>
+                    <flavor disk="0" id="1" name="m1.tiny" ram="512"/>
+                    <flavor disk="10" id="8" name="s1.tiny" ram="512"/>
+                    <flavor disk="160" id="5" name="m1.xlarge" ram="16384"/>
+                </flavors>
+                """
+        return (httplib.OK, body,
+                {'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529', 'content-type': 'application/xml'},
+                httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
