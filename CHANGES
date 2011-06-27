@@ -1,5 +1,27 @@
                                                         -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud [in development]
+  *) Compute:
+     - Fix node name and tags handling in the EC2 driver
+     [Wiktor Kolodziej]
+     - Fix pricing and response handling in the OpenStack driver
+     [Andrey Zhuchkov]
+
+    *) Add new libcloud.compute drivers for:
+        - NineFold (ninefold.com)
+
+    *) Storage:
+       - Fix handling of the containers with a lot of objects.
+       Now a LazyList object is returned when user calls
+       list_container_objects() method and this object transparently
+       handles pagination.
+       [Danny Clark, Wiktor Kolodziej]
+
+    *) Load-balancer:
+
+    *) Add new libcloud.loadbalancer drivers for:
+        - NineFold (ninefold.com)
+
 Changes with Apache Libcloud 0.5.1
   *) Compute:
      - Fix deploy_node functionality and make it more robust
