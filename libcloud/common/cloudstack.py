@@ -48,7 +48,8 @@ class CloudStackConnection(ConnectionUserAndKey):
         return params, headers
 
     def _sync_request(self, command, **kwargs):
-        "Make a synchronous API request. These return immediately."
+        """This method handles synchronous calls which are generally fast
+           information retrieval requests and thus return 'quickly'."""
 
         kwargs['command'] = command
         result = self.request(self.driver.path, params=kwargs)
@@ -62,10 +63,12 @@ class CloudStackConnection(ConnectionUserAndKey):
         return result
 
     def _async_request(self, command, **kwargs):
-        """Make an asynchronous API request.
+        """This method handles asynchronous calls which are generally
+           requests for the system to do something and can thus take time.
 
-        These requests return a job_id which must be polled until it
-        completes."""
+           In these cases the initial call will either fail fast and return
+           an error, or it can return a job ID.  We then poll for the status
+           of the job ID which can either be pending, successful or failed."""
 
         result = self._sync_request(command, **kwargs)
         job_id = result['jobid']
