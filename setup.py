@@ -20,16 +20,19 @@ from distutils.core import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
+from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
 import libcloud.utils
 libcloud.utils.SHOW_DEPRECATION_WARNING = False
+
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
 TEST_PATHS = [ 'test', 'test/compute', 'test/storage' , 'test/loadbalancer']
 DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy' ]
+
 
 def read_version_string():
     version = None
@@ -54,6 +57,15 @@ class TestCommand(Command):
         pass
 
     def run(self):
+        try:
+            import mock
+            mock
+        except ImportError:
+            print 'Missing "mock" library. mock is library is needed ' + \
+                  'to run the tests. You can install it using pip: ' + \
+                  'pip install mock'
+            sys.exit(1)
+
         status = self._run_tests()
         sys.exit(status)
 
@@ -100,6 +112,32 @@ class TestCommand(Command):
         t = TextTestRunner(verbosity = 2)
         res = t.run(tests)
         return not res.wasSuccessful()
+
+
+class Pep8Command(Command):
+    description = "run pep8 script"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            import pep8
+            pep8
+        except ImportError:
+            print 'Missing "pep8" library. You can install it using pip: ' + \
+                  'pip install pep8'
+            sys.exit(1)
+
+        cwd = os.getcwd()
+        retcode = call(('/usr/local/bin/pep8 %s/libcloud/ %s/test/' %
+                (cwd, cwd)).split(' '))
+        sys.exit(retcode)
+
 
 class ApiDocsCommand(Command):
     description = "generate API documentation"
@@ -176,6 +214,7 @@ setup(
     url='http://libcloud.apache.org/',
     cmdclass={
         'test': TestCommand,
+        'pep8': Pep8Command,
         'apidocs': ApiDocsCommand,
         'coverage': CoverageCommand
     },
