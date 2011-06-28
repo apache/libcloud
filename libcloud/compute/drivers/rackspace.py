@@ -23,7 +23,7 @@ import warnings
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.pricing import get_pricing
+from libcloud.pricing import get_pricing, get_size_price, PRICING_DATA
 from libcloud.common.base import Response
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
@@ -33,7 +33,8 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.rackspace import (
     AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
 
-NAMESPACE='http://docs.rackspacecloud.com/servers/api/v1.0'
+
+NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 
 class RackspaceResponse(Response):
@@ -53,6 +54,7 @@ class RackspaceResponse(Response):
                 body=self.body,
                 driver=RackspaceNodeDriver)
         return body
+
     def parse_error(self):
         # TODO: fixup, Rackspace only uses response codes really!
         try:
@@ -62,10 +64,10 @@ class RackspaceResponse(Response):
                 "Failed to parse XML",
                 body=self.body, driver=RackspaceNodeDriver)
         try:
-            text = "; ".join([ err.text or ''
-                               for err in
-                               body.getiterator()
-                               if err.text])
+            text = "; ".join([err.text or ''
+                              for err in
+                              body.getiterator()
+                              if err.text])
         except ExpatError:
             text = self.body
         return '%s %s %s' % (self.status, self.error, text)
@@ -85,7 +87,8 @@ class RackspaceConnection(RackspaceBaseConnection):
         self.api_version = 'v1.0'
         self.accept_format = 'application/xml'
 
-    def request(self, action, params=None, data='', headers=None, method='GET'):
+    def request(self, action, params=None, data='', headers=None,
+                method='GET'):
         if not headers:
             headers = {}
         if not params:
@@ -145,31 +148,34 @@ class RackspaceNodeDriver(NodeDriver):
 
     features = {"create_node": ["generates_password"]}
 
-    NODE_STATE_MAP = { 'BUILD': NodeState.PENDING,
-                       'REBUILD': NodeState.PENDING,
-                       'ACTIVE': NodeState.RUNNING,
-                       'SUSPENDED': NodeState.TERMINATED,
-                       'QUEUE_RESIZE': NodeState.PENDING,
-                       'PREP_RESIZE': NodeState.PENDING,
-                       'VERIFY_RESIZE': NodeState.RUNNING,
-                       'PASSWORD': NodeState.PENDING,
-                       'RESCUE': NodeState.PENDING,
-                       'REBUILD': NodeState.PENDING,
-                       'REBOOT': NodeState.REBOOTING,
-                       'HARD_REBOOT': NodeState.REBOOTING,
-                       'SHARE_IP': NodeState.PENDING,
-                       'SHARE_IP_NO_CONFIG': NodeState.PENDING,
-                       'DELETE_IP': NodeState.PENDING,
-                       'UNKNOWN': NodeState.UNKNOWN}
+    NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
+                      'REBUILD': NodeState.PENDING,
+                      'ACTIVE': NodeState.RUNNING,
+                      'SUSPENDED': NodeState.TERMINATED,
+                      'QUEUE_RESIZE': NodeState.PENDING,
+                      'PREP_RESIZE': NodeState.PENDING,
+                      'VERIFY_RESIZE': NodeState.RUNNING,
+                      'PASSWORD': NodeState.PENDING,
+                      'RESCUE': NodeState.PENDING,
+                      'REBUILD': NodeState.PENDING,
+                      'REBOOT': NodeState.REBOOTING,
+                      'HARD_REBOOT': NodeState.REBOOTING,
+                      'SHARE_IP': NodeState.PENDING,
+                      'SHARE_IP_NO_CONFIG': NodeState.PENDING,
+                      'DELETE_IP': NodeState.PENDING,
+                      'UNKNOWN': NodeState.UNKNOWN}
 
     def list_nodes(self):
-        return self._to_nodes(self.connection.request('/servers/detail').object)
+        return self._to_nodes(self.connection.request('/servers/detail')
+                                             .object)
 
     def list_sizes(self, location=None):
-        return self._to_sizes(self.connection.request('/flavors/detail').object)
+        return self._to_sizes(self.connection.request('/flavors/detail')
+                                             .object)
 
     def list_images(self, location=None):
-        return self._to_images(self.connection.request('/images/detail').object)
+        return self._to_images(self.connection.request('/images/detail')
+                                              .object)
 
     def list_locations(self):
         """Lists available locations
@@ -185,7 +191,7 @@ class RackspaceNodeDriver(NodeDriver):
         if not name:
             name = node.name
 
-        body = { 'xmlns': NAMESPACE,
+        body = {'xmlns': NAMESPACE,
                  'name': name}
 
         if password != None:
@@ -227,7 +233,8 @@ class RackspaceNodeDriver(NodeDriver):
         @keyword    ex_metadata: Key/Value metadata to associate with a node
         @type       ex_metadata: C{dict}
 
-        @keyword    ex_files:   File Path => File contents to create on the node
+        @keyword    ex_files:   File Path => File contents to create on
+                                the node
         @type       ex_files:   C{dict}
         """
         name = kwargs['name']
@@ -246,7 +253,6 @@ class RackspaceNodeDriver(NodeDriver):
             # name.
             warnings.warn('ex_shared_ip_group argument is deprecated. Please'
                           + ' use ex_shared_ip_group_id')
-
 
         if 'ex_shared_ip_group_id' in kwargs:
             shared_ip_group_id = kwargs['ex_shared_ip_group_id']
@@ -317,8 +323,8 @@ class RackspaceNodeDriver(NodeDriver):
         elm = ET.Element(
             'shareIp',
             {'xmlns': NAMESPACE,
-             'sharedIpGroupId' : group_id,
-             'configureServer' : str_configure}
+             'sharedIpGroupId': group_id,
+             'configureServer': str_configure}
         )
 
         uri = '/servers/%s/ips/public/%s' % (node_id, ip)
@@ -347,7 +353,7 @@ class RackspaceNodeDriver(NodeDriver):
 
         metadata_elm = ET.Element('metadata')
         for k, v in metadata.items():
-            meta_elm = ET.SubElement(metadata_elm, 'meta', {'key': str(k) })
+            meta_elm = ET.SubElement(metadata_elm, 'meta', {'key': str(k)})
             meta_elm.text = str(v)
 
         return metadata_elm
@@ -401,7 +407,7 @@ class RackspaceNodeDriver(NodeDriver):
 
     def _to_nodes(self, object):
         node_elements = self._findall(object, 'server')
-        return [ self._to_node(el) for el in node_elements ]
+        return [self._to_node(el) for el in node_elements]
 
     def _fixxpath(self, xpath):
         # ElementTree wants namespaces in its xpaths, so here we add them.
@@ -417,7 +423,7 @@ class RackspaceNodeDriver(NodeDriver):
         def get_meta_dict(el):
             d = {}
             for meta in el:
-                d[meta.get('key')] =  meta.text
+                d[meta.get('key')] = meta.text
             return d
 
         public_ip = get_ips(self._findall(el,
@@ -447,23 +453,23 @@ class RackspaceNodeDriver(NodeDriver):
 
     def _to_sizes(self, object):
         elements = self._findall(object, 'flavor')
-        return [ self._to_size(el) for el in elements ]
+        return [self._to_size(el) for el in elements]
 
     def _to_size(self, el):
         s = NodeSize(id=el.get('id'),
                      name=el.get('name'),
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
-                     bandwidth=None, # XXX: needs hardcode
-                     price=self._get_size_price(el.get('id')), # Hardcoded,
+                     bandwidth=None,  # XXX: needs hardcode
+                     price=self._get_size_price(el.get('id')),  # Hardcoded,
                      driver=self.connection.driver)
         return s
 
     def _to_images(self, object):
         elements = self._findall(object, "image")
-        return [ self._to_image(el)
-                 for el in elements
-                 if el.get('status') == 'ACTIVE' ]
+        return [self._to_image(el)
+                for el in elements
+                if el.get('status') == 'ACTIVE']
 
     def _to_image(self, el):
         i = NodeImage(id=el.get('id'),
@@ -493,7 +499,7 @@ class RackspaceNodeDriver(NodeDriver):
             return {el.get('name'): el.get('value')}
 
         limits = self.connection.request("/limits").object
-        rate = [ _to_rate(el) for el in self._findall(limits, 'rate/limit') ]
+        rate = [_to_rate(el) for el in self._findall(limits, 'rate/limit')]
         absolute = {}
         for item in self._findall(limits, 'absolute/limit'):
             absolute.update(_to_absolute(item))
@@ -539,11 +545,13 @@ class RackspaceNodeDriver(NodeDriver):
              self._findall(self._findall(el, 'private')[0], 'ip')]
         )
 
+
 class RackspaceUKConnection(RackspaceConnection):
     """
     Connection class for the Rackspace UK driver
     """
     auth_host = AUTH_HOST_UK
+
 
 class RackspaceUKNodeDriver(RackspaceNodeDriver):
     """Driver for Rackspace in the UK (London)
@@ -555,13 +563,51 @@ class RackspaceUKNodeDriver(RackspaceNodeDriver):
     def list_locations(self):
         return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
 
+
+class OpenStackResponse(RackspaceResponse):
+
+    def has_content_type(self, content_type):
+        content_type_header = dict([(key, value) for key, value in
+                                    self.headers.items()
+                                    if key.lower() == 'content-type'])
+        if not content_type_header:
+            return False
+
+        content_type_value = content_type_header['content-type'].lower()
+
+        return content_type_value.find(content_type.lower()) > -1
+
+    def parse_body(self):
+        if not self.has_content_type('application/xml') or not self.body:
+            return self.body
+
+        try:
+            return ET.XML(self.body)
+        except:
+            raise MalformedResponseError(
+                'Failed to parse XML',
+                body=self.body,
+                driver=RackspaceNodeDriver)
+
+
 class OpenStackConnection(RackspaceConnection):
+
+    responseCls = OpenStackResponse
 
     def __init__(self, user_id, key, secure, host, port):
         super(OpenStackConnection, self).__init__(user_id, key, secure=secure)
         self.auth_host = host
         self.port = (port, port)
 
+
 class OpenStackNodeDriver(RackspaceNodeDriver):
     name = 'OpenStack'
     connectionCls = OpenStackConnection
+
+    def _get_size_price(self, size_id):
+        if 'openstack' not in PRICING_DATA['compute']:
+            return 0.0
+
+        return get_size_price(driver_type='compute',
+                              driver_name='openstack',
+                              size_id=size_id)
