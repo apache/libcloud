@@ -382,7 +382,7 @@ class ConnectionKey(object):
                 self.connection.putrequest(method, url)
 
                 for key, value in headers.iteritems():
-                    self.connection.putheader(key, value)
+                    self.connection.putheader(key, str(value))
 
                 self.connection.endheaders()
             else:
