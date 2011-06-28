@@ -23,6 +23,8 @@ from libcloud.utils import reverse_dict
 class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     """Driver for CloudStack load balancers."""
 
+    api_name = 'cloudstack_lb'
+
     _VALUE_TO_ALGORITHM_MAP = {
         'roundrobin': Algorithm.ROUND_ROBIN,
         'leastconn': Algorithm.LEAST_CONNECTIONS

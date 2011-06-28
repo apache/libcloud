@@ -24,4 +24,4 @@ class NinefoldLBDriver(CloudStackLBDriver):
     path = '/compute/v1.0/'
 
     type = Provider.NINEFOLD
-    name = 'Ninefold'
+    name = 'Ninefold LB'

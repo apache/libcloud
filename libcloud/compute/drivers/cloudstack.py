@@ -83,6 +83,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                 job completion.
     @type async_poll_frequency: C{int}"""
 
+    api_name = 'cloudstack'
+
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
