@@ -25,7 +25,8 @@ from xml.etree import ElementTree
 from libcloud.storage.base import Container
 from libcloud.storage.types import ContainerAlreadyExistsError, \
                                    ContainerDoesNotExistError, \
-                                   ContainerIsNotEmptyError
+                                   ContainerIsNotEmptyError, \
+                                   ObjectDoesNotExistError
 from libcloud.storage.drivers.atmos import AtmosDriver
 
 from test import StorageMockHttp, MockRawResponse
@@ -138,6 +139,29 @@ class AtmosTests(unittest.TestCase):
         else:
             self.fail('Container is not empty but an exception was not thrown')
 
+    def test_get_object_success(self):
+        obj = self.driver.get_object(container_name='test_container',
+                                     object_name='test_object')
+        self.assertEqual(obj.container.name, 'test_container')
+        self.assertEqual(obj.size, 555)
+        self.assertEqual(obj.hash, '6b21c4a111ac178feacf9ec9d0c71f17')
+        self.assertEqual(obj.extra['object_id'],
+                         '322dce3763aadc41acc55ef47867b8d74e45c31d6643')
+        self.assertEqual(
+            obj.extra['last_modified'], 'Tue, 25 Jan 2011 22:01:49 GMT')
+        self.assertEqual(obj.meta_data['foo-bar'], 'test 1')
+        self.assertEqual(obj.meta_data['bar-foo'], 'test 2')
+
+
+    def test_get_object_not_found(self):
+        try:
+            self.driver.get_object(container_name='test_container',
+                                   object_name='not_found')
+        except ObjectDoesNotExistError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
 class AtmosMockHttp(StorageMockHttp):
     fixtures = StorageFileFixtures('atmos')
 
@@ -212,6 +236,39 @@ class AtmosMockHttp(StorageMockHttp):
         body = self.fixtures.load('not_empty.xml')
         return (httplib.BAD_REQUEST, body, {},
                 httplib.responses[httplib.BAD_REQUEST])
+
+    def _rest_namespace_test_container_test_object_metadata_system(self, method,
+                                                                   url, body,
+                                                                   headers):
+        meta = {
+            'objectid': '322dce3763aadc41acc55ef47867b8d74e45c31d6643',
+            'size': '555',
+            'mtime': '2011-01-25T22:01:49Z'
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_container_test_object_metadata_user(self, method,
+                                                                 url, body,
+                                                                 headers):
+        meta = {
+            'md5': '6b21c4a111ac178feacf9ec9d0c71f17',
+            'foo-bar': 'test 1',
+            'bar-foo': 'test 2',
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_container_not_found_metadata_system(self, method,
+                                                                 url, body,
+                                                                 headers):
+        body = self.fixtures.load('not_found.xml')
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
 
 class AtmosMockRawResponse(MockRawResponse):
     pass
