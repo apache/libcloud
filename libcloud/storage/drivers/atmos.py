@@ -117,22 +117,6 @@ class AtmosDriver(StorageDriver):
         host = host or self.host
         super(AtmosDriver, self).__init__(key, secret, secure, host, port)
 
-    def _namespace_path(self, path):
-        return self.path + '/rest/namespace/' + path
-
-    def _object_path(self, object_id):
-        return self.path + '/rest/objects/' + object_id
-
-    def _emc_tag(self, tag):
-        return '{http://www.emc.com/cos/}' + tag
-
-    def _emc_meta(self, response):
-        meta = response.headers.get('x-emc-meta', '')
-        if len(meta) == 0:
-            return {}
-        meta = meta.split(', ')
-        return dict([x.split('=', 1) for x in meta])
-
     def list_containers(self):
         result = self.connection.request(self._namespace_path(''))
         entries = self._list_objects(result.object)
@@ -395,3 +379,20 @@ class AtmosDriver(StorageDriver):
                 'name': entry.find(self._emc_tag('Filename')).text
             })
         return entries
+
+    def _namespace_path(self, path):
+        return self.path + '/rest/namespace/' + path
+
+    def _object_path(self, object_id):
+        return self.path + '/rest/objects/' + object_id
+
+    @staticmethod
+    def _emc_tag(self, tag):
+        return '{http://www.emc.com/cos/}' + tag
+
+    def _emc_meta(self, response):
+        meta = response.headers.get('x-emc-meta', '')
+        if len(meta) == 0:
+            return {}
+        meta = meta.split(', ')
+        return dict([x.split('=', 1) for x in meta])
