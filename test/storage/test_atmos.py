@@ -18,9 +18,14 @@ import httplib
 import os.path
 import sys
 import unittest
+import urlparse
 
 from xml.etree import ElementTree
 
+from libcloud.storage.base import Container
+from libcloud.storage.types import ContainerAlreadyExistsError, \
+                                   ContainerDoesNotExistError, \
+                                   ContainerIsNotEmptyError
 from libcloud.storage.drivers.atmos import AtmosDriver
 
 from test import StorageMockHttp, MockRawResponse
@@ -56,8 +61,96 @@ class AtmosTests(unittest.TestCase):
         containers = self.driver.list_containers()
         self.assertEqual(len(containers), 6)
 
+    def test_list_container_objects(self):
+        container = Container(name='test_container', extra={},
+                              driver=self.driver)
+
+        AtmosMockHttp.type = 'EMPTY'
+        objects = self.driver.list_container_objects(container=container)
+        self.assertEqual(len(objects), 0)
+
+        AtmosMockHttp.type = None
+        objects = self.driver.list_container_objects(container=container)
+        self.assertEqual(len(objects), 2)
+
+        obj = [o for o in objects if o.name == 'not-a-container1'][0]
+        self.assertEqual(obj.meta_data['object_id'],
+                         '651eae32634bf84529c74eabd555fda48c7cead6')
+        self.assertEqual(obj.container.name, 'test_container')
+
+    def test_get_container(self):
+        container = self.driver.get_container(container_name='test_container')
+        self.assertEqual(container.name, 'test_container')
+        self.assertEqual(container.extra['object_id'],
+                         'b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9')
+
+    def test_get_container_not_found(self):
+        try:
+            self.driver.get_container(container_name='not_found')
+        except ContainerDoesNotExistError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_create_container_success(self):
+        container = self.driver.create_container(
+            container_name='test_create_container')
+        self.assertTrue(isinstance(container, Container))
+        self.assertEqual(container.name, 'test_create_container')
+        self.assertEqual(container.extra['object_id'],
+                         '31a27b593629a3fe59f887fd973fd953e80062ce')
+
+    def test_create_container_already_exists(self):
+        AtmosMockHttp.type = 'ALREADY_EXISTS'
+
+        try:
+            self.driver.create_container(
+                container_name='test_create_container')
+        except ContainerAlreadyExistsError:
+            pass
+        else:
+            self.fail(
+                'Container already exists but an exception was not thrown')
+
+    def test_delete_container_success(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        result = self.driver.delete_container(container=container)
+        self.assertTrue(result)
+
+    def test_delete_container_not_found(self):
+        AtmosMockHttp.type = 'NOT_FOUND'
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        try:
+            self.driver.delete_container(container=container)
+        except ContainerDoesNotExistError:
+            pass
+        else:
+            self.fail(
+                'Container does not exist but an exception was not thrown')
+
+    def test_delete_container_not_empty(self):
+        AtmosMockHttp.type = 'NOT_EMPTY'
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        try:
+            self.driver.delete_container(container=container)
+        except ContainerIsNotEmptyError:
+            pass
+        else:
+            self.fail('Container is not empty but an exception was not thrown')
+
 class AtmosMockHttp(StorageMockHttp):
     fixtures = StorageFileFixtures('atmos')
+
+    def request(self, method, url, body=None, headers=None, raw=False):
+        headers = headers or {}
+        parsed = urlparse.urlparse(url)
+        if parsed.query.startswith('metadata/'):
+            parsed = list(parsed)
+            parsed[2] = parsed[2] + '/' + parsed[4]
+            parsed[4] = ''
+            url = urlparse.urlunparse(parsed)
+        return super(AtmosMockHttp, self).request(method, url, body, headers,
+                                                  raw)
 
     def _rest_namespace_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('empty_directory_listing.xml')
@@ -66,6 +159,59 @@ class AtmosMockHttp(StorageMockHttp):
     def _rest_namespace(self, method, url, body, headers):
         body = self.fixtures.load('list_containers.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_container_EMPTY(self, method, url, body, headers):
+        body = self.fixtures.load('empty_directory_listing.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_container(self, method, url, body, headers):
+        body = self.fixtures.load('list_containers.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_container__metadata_system(self, method, url, body,
+                                                        headers):
+        headers = {
+            'x-emc-meta': 'objectid=b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9'
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_not_found__metadata_system(self, method, url, body,
+                                                   headers):
+        body = self.fixtures.load('not_found.xml')
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _rest_namespace_test_create_container(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_create_container__metadata_system(self, method,
+                                                               url, body,
+                                                               headers):
+        headers = {
+            'x-emc-meta': 'objectid=31a27b593629a3fe59f887fd973fd953e80062ce'
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_create_container_ALREADY_EXISTS(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load('already_exists.xml')
+        return (httplib.BAD_REQUEST, body, {},
+                httplib.responses[httplib.BAD_REQUEST])
+
+    def _rest_namespace_foo_bar_container(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_foo_bar_container_NOT_FOUND(self, method, url, body,
+                                                    headers):
+        body = self.fixtures.load('not_found.xml')
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _rest_namespace_foo_bar_container_NOT_EMPTY(self, method, url, body,
+                                                    headers):
+        body = self.fixtures.load('not_empty.xml')
+        return (httplib.BAD_REQUEST, body, {},
+                httplib.responses[httplib.BAD_REQUEST])
 
 class AtmosMockRawResponse(MockRawResponse):
     pass
