@@ -22,7 +22,7 @@ import urlparse
 
 from xml.etree import ElementTree
 
-from libcloud.storage.base import Container
+from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerAlreadyExistsError, \
                                    ContainerDoesNotExistError, \
                                    ContainerIsNotEmptyError, \
@@ -162,6 +162,29 @@ class AtmosTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    def test_delete_object_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        status = self.driver.delete_object(obj=obj)
+        self.assertTrue(status)
+
+    def test_delete_object_not_found(self):
+        AtmosMockHttp.type = 'NOT_FOUND'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        try:
+            self.driver.delete_object(obj=obj)
+        except ObjectDoesNotExistError:
+            pass
+        else:
+            self.fail('Object does not exist but an exception was not thrown')
+
 class AtmosMockHttp(StorageMockHttp):
     fixtures = StorageFileFixtures('atmos')
 
@@ -266,6 +289,17 @@ class AtmosMockHttp(StorageMockHttp):
     def _rest_namespace_test_container_not_found_metadata_system(self, method,
                                                                  url, body,
                                                                  headers):
+        body = self.fixtures.load('not_found.xml')
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
+                                                         body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_foo_bar_container_foo_bar_object_NOT_FOUND(self, method,
+                                                                   url, body,
+                                                                   headers):
         body = self.fixtures.load('not_found.xml')
         return (httplib.NOT_FOUND, body, {},
                 httplib.responses[httplib.NOT_FOUND])
