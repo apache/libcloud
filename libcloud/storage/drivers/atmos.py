@@ -53,13 +53,11 @@ class AtmosResponse(Response):
         return tree
 
     def parse_error(self):
-        print '>>>', repr(self.status)
         if not self.body:
             return None
         tree = ElementTree.fromstring(self.body)
         code = tree.find('Code').text
         message = tree.find('Message').text
-        print code, message
         raise AtmosError(message, code)
 
 class AtmosConnection(ConnectionUserAndKey):
@@ -101,12 +99,11 @@ class AtmosConnection(ConnectionUserAndKey):
         signature.extend([k + ':' + collapse(v) for k, v in xhdrs])
 
         signature = '\n'.join(signature)
-        print signature
         key = base64.b64decode(self.key)
         signature = hmac.new(key, signature, hashlib.sha1).digest()
 
         headers['x-emc-signature'] = base64.b64encode(signature)
-        print repr(headers)
+
         return params, headers
 
 class AtmosDriver(StorageDriver):
