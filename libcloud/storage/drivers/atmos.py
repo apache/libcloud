@@ -39,7 +39,7 @@ class AtmosError(Exception):
         self.code = int(code)
 
     def __repr__(self):
-        return '<AtmosError code=' + code + ': ' + message + '>'
+        return '<AtmosError code=' + self.code + ': ' + self.message + '>'
 
 class AtmosResponse(Response):
     def success(self):
