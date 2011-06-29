@@ -135,7 +135,7 @@ class Pep8Command(Command):
             sys.exit(1)
 
         cwd = os.getcwd()
-        retcode = call(('/usr/local/bin/pep8 %s/libcloud/ %s/test/' %
+        retcode = call(('pep8 %s/libcloud/ %s/test/' %
                 (cwd, cwd)).split(' '))
         sys.exit(retcode)
 
