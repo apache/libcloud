@@ -125,7 +125,12 @@ class AtmosDriver(StorageDriver):
 
     def get_container(self, container_name):
         path = self._namespace_path(container_name + '/?metadata/system')
-        result = self.connection.request(path)
+        try:
+            result = self.connection.request(path)
+        except Exception, e:
+            if e.args[0]['code'] != 1003:
+                raise
+            raise ContainerDoesNotExistError(e.args[0], self, container_name)
         meta = self._emc_meta(result)
         extra = {
             'object_id': meta['objectid']
