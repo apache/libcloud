@@ -86,6 +86,9 @@ class AtmosConnection(ConnectionUserAndKey):
             pathstring += '?' + urllib.urlencode(params)
         pathstring = pathstring.lower()
 
+        xhdrs = [(k, v) for k, v in headers.items() if k.startswith('x-emc-')]
+        xhdrs.sort(key=lambda x: x[0])
+
         signature = [
             self.method,
             headers.get('Content-Type', ''),
@@ -93,15 +96,10 @@ class AtmosConnection(ConnectionUserAndKey):
             headers.get('Date', ''),
             pathstring,
         ]
-
-        xhdrs = [(k, v) for k, v in headers.items() if k.startswith('x-emc-')]
-        xhdrs.sort(key=lambda x: x[0])
         signature.extend([k + ':' + collapse(v) for k, v in xhdrs])
-
         signature = '\n'.join(signature)
         key = base64.b64decode(self.key)
         signature = hmac.new(key, signature, hashlib.sha1).digest()
-
         headers['x-emc-signature'] = base64.b64encode(signature)
 
         return params, headers
