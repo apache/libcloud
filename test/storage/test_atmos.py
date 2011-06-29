@@ -229,8 +229,27 @@ class AtmosTests(unittest.TestCase):
         stream = self.driver.download_object_as_stream(obj=obj, chunk_size=None)
         self.assertTrue(hasattr(stream, '__iter__'))
 
+    def test_upload_object_success(self):
+        def upload_file(self, response, file_path, chunked=False,
+                     calculate_hash=True):
+            return True, 'hash343hhash89h932439jsaa89', 1000
+
+        old_func = AtmosDriver._upload_file
+        AtmosDriver._upload_file = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftu'
+        extra = {'meta_data': { 'some-value': 'foobar'}}
+        obj = self.driver.upload_object(file_path=file_path, container=container,
+                                        extra=extra, object_name=object_name)
+        self.assertEqual(obj.name, 'ftu')
+        self.assertEqual(obj.size, 1000)
+        self.assertTrue('some-value' in obj.meta_data)
+        AtmosDriver._upload_file = old_func
+
 class AtmosMockHttp(StorageMockHttp):
     fixtures = StorageFileFixtures('atmos')
+    upload_created = False
 
     def request(self, method, url, body=None, headers=None, raw=False):
         headers = headers or {}
@@ -348,6 +367,28 @@ class AtmosMockHttp(StorageMockHttp):
         return (httplib.NOT_FOUND, body, {},
                 httplib.responses[httplib.NOT_FOUND])
 
+    def _rest_namespace_fbc_ftu_metadata_system(self, method, url, body,
+                                                headers):
+        if not self.upload_created:
+            self.__class__.upload_created = True
+            body = self.fixtures.load('not_found.xml')
+            return (httplib.NOT_FOUND, body, {},
+                    httplib.responses[httplib.NOT_FOUND])
+
+        self.__class__.upload_created = False
+        meta = {
+            'objectid': '322dce3763aadc41acc55ef47867b8d74e45c31d6643',
+            'size': '555',
+            'mtime': '2011-01-25T22:01:49Z'
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftu_metadata_user(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
 class AtmosMockRawResponse(MockRawResponse):
     fixtures = StorageFileFixtures('atmos')
 
@@ -363,6 +404,9 @@ class AtmosMockRawResponse(MockRawResponse):
         body = self.fixtures.load('not_found.xml')
         return (httplib.NOT_FOUND, body, {},
                 httplib.responses[httplib.NOT_FOUND])
+
+    def _rest_namespace_fbc_ftu(self, method, url, body, headers):
+        return (httplib.CREATED, '', {}, httplib.responses[httplib.CREATED])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
