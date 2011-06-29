@@ -128,6 +128,8 @@ class AtmosDriver(StorageDriver):
         try:
             result = self.connection.request(path)
         except Exception, e:
+            if type(e.args[0]) is not dict:
+                raise
             if e.args[0]['code'] != 1003:
                 raise
             raise ContainerDoesNotExistError(e.args[0], self, container_name)
@@ -164,6 +166,8 @@ class AtmosDriver(StorageDriver):
             result = self.connection.request(path + '?metadata/user')
             user_meta = self._emc_meta(result)
         except Exception, e:
+            if type(e.args[0]) is not dict:
+                raise
             if e.args[0]['code'] != 1003:
                 raise
             raise ObjectDoesNotExistError(e.args[0], self, object_name)
@@ -189,6 +193,8 @@ class AtmosDriver(StorageDriver):
         try:
             self.connection.request(request_path + '?metadata/system')
         except Exception, e:
+            if type(e.args[0]) is not dict:
+                raise
             if e.args[0]['code'] != 1003:
                 raise
             method = 'POST'
