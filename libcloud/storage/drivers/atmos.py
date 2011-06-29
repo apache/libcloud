@@ -34,14 +34,6 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
 
-class AtmosError(Exception):
-    def __init__(self, message, code):
-        self.message = message
-        self.code = int(code)
-
-    def __repr__(self):
-        return '<AtmosError code=' + self.code + ': ' + self.message + '>'
-
 class AtmosResponse(Response):
     def success(self):
         return self.status in (httplib.OK, httplib.CREATED, httplib.NO_CONTENT,
@@ -57,9 +49,9 @@ class AtmosResponse(Response):
         if not self.body:
             return None
         tree = ElementTree.fromstring(self.body)
-        code = tree.find('Code').text
+        code = int(tree.find('Code').text)
         message = tree.find('Message').text
-        raise AtmosError(message, code)
+        return {'code': code, 'message': message}
 
 class AtmosConnection(ConnectionUserAndKey):
     responseCls = AtmosResponse
@@ -144,10 +136,10 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name + '/')
         try:
             result = self.connection.request(path, method='POST')
-        except AtmosError, e:
-            if e.code != 1016:
+        except Exception, e:
+            if e.args[0]['code'] != 1016:
                 raise
-            raise ContainerAlreadyExistsError(e, self, container_name)
+            raise ContainerAlreadyExistsError(e.args[0], self, container_name)
         return self.get_container(container_name)
 
     def delete_container(self, container):
@@ -166,10 +158,10 @@ class AtmosDriver(StorageDriver):
 
             result = self.connection.request(path + '?metadata/user')
             user_meta = self._emc_meta(result)
-        except AtmosError, e:
-            if e.code != 1003:
+        except Exception, e:
+            if e.args[0]['code'] != 1003:
                 raise
-            raise ObjectDoesNotExistError(e, self, object_name)
+            raise ObjectDoesNotExistError(e.args[0], self, object_name)
 
         meta_data = {
             'object_id': system_meta['objectid']
@@ -191,8 +183,8 @@ class AtmosDriver(StorageDriver):
 
         try:
             self.connection.request(request_path + '?metadata/system')
-        except AtmosError, e:
-            if e.code != 1003:
+        except Exception, e:
+            if e.args[0]['code'] != 1003:
                 raise
             method = 'POST'
 
@@ -316,7 +308,7 @@ class AtmosDriver(StorageDriver):
         try:
             self.connection.request(path, method='DELETE')
             return True
-        except AtmosError:
+        except:
             return False
 
     def list_container_objects(self, container):
