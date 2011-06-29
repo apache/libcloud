@@ -185,6 +185,50 @@ class AtmosTests(unittest.TestCase):
         else:
             self.fail('Object does not exist but an exception was not thrown')
 
+    def test_download_object_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=False,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+    def test_download_object_success_not_found(self):
+        AtmosMockRawResponse.type = 'NOT_FOUND'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container,
+                     meta_data=None,
+                     driver=self.driver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        try:
+            self.driver.download_object(
+                obj=obj,
+                destination_path=destination_path,
+                overwrite_existing=False,
+                delete_on_failure=True)
+        except ObjectDoesNotExistError:
+            pass
+        else:
+            self.fail('Object does not exist but an exception was not thrown')
+
+    def test_download_object_as_stream(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+
+        stream = self.driver.download_object_as_stream(obj=obj, chunk_size=None)
+        self.assertTrue(hasattr(stream, '__iter__'))
+
 class AtmosMockHttp(StorageMockHttp):
     fixtures = StorageFileFixtures('atmos')
 
@@ -305,7 +349,20 @@ class AtmosMockHttp(StorageMockHttp):
                 httplib.responses[httplib.NOT_FOUND])
 
 class AtmosMockRawResponse(MockRawResponse):
-    pass
+    fixtures = StorageFileFixtures('atmos')
+
+    def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
+                                                         body, headers):
+        body = 'test'
+        self._data = self._generate_random_data(1000)
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_foo_bar_container_foo_bar_object_NOT_FOUND(self, method,
+                                                                   url, body,
+                                                                   headers):
+        body = self.fixtures.load('not_found.xml')
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
