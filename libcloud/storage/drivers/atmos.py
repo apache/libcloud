@@ -187,7 +187,6 @@ class AtmosDriver(StorageDriver):
         extra = extra or {}
         request_path = container.name + '/' + object_name
         request_path = self._namespace_path(request_path)
-        print repr(request_path)
         content_type = extra.get('content_type', None)
 
         try:
@@ -327,8 +326,6 @@ class AtmosDriver(StorageDriver):
         }
         path = self._namespace_path(container.name + '/')
         result = self.connection.request(path, headers=headers)
-        print repr(result.headers)
-        print result.body
         entries = self._list_objects(result.object)
         objects = []
         for entry in entries:
