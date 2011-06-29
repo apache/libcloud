@@ -389,7 +389,7 @@ class AtmosDriver(StorageDriver):
         return self.path + '/rest/objects/' + object_id
 
     @staticmethod
-    def _emc_tag(self, tag):
+    def _emc_tag(tag):
         return '{http://www.emc.com/cos/}' + tag
 
     def _emc_meta(self, response):
