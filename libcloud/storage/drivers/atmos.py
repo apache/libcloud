@@ -318,9 +318,13 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(obj.container.name + '/' + obj.name)
         try:
             self.connection.request(path, method='DELETE')
-            return True
-        except:
-            return False
+        except Exception, e:
+            if type(e.args[0]) is not dict:
+                raise
+            if e.args[0]['code'] != 1003:
+                raise
+            raise ObjectDoesNotExistError(e.args[0], self, obj.name)
+        return True
 
     def list_container_objects(self, container):
         headers = {
