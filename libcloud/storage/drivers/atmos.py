@@ -111,6 +111,7 @@ class AtmosDriver(StorageDriver):
 
     host = None
     path = None
+    api_name = 'atmos'
 
     DEFAULT_CDN_TTL = 60 * 60 * 24 * 7 # 1 week
 
