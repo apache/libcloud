@@ -29,6 +29,7 @@ from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
 from libcloud.storage.types import ContainerAlreadyExistsError, \
                                    ContainerDoesNotExistError, \
+                                   ContainerIsNotEmptyError, \
                                    ObjectDoesNotExistError
 
 def collapse(s):
@@ -144,14 +145,25 @@ class AtmosDriver(StorageDriver):
         try:
             result = self.connection.request(path, method='POST')
         except Exception, e:
+            if type(e.args[0]) is not dict:
+                raise
             if e.args[0]['code'] != 1016:
                 raise
             raise ContainerAlreadyExistsError(e.args[0], self, container_name)
         return self.get_container(container_name)
 
     def delete_container(self, container):
-        self.connection.request(self._namespace_path(container.name + '/'),
-                                method='DELETE')
+        try:
+            self.connection.request(self._namespace_path(container.name + '/'),
+                                    method='DELETE')
+        except Exception, e:
+            if type(e.args[0]) is not dict:
+                raise
+            if e.args[0]['code'] == 1003:
+                raise ContainerDoesNotExistError(e.args[0], self,
+                                                 container.name)
+            elif e.args[0]['code'] == 1023:
+                raise ContainerIsNotEmptyError(e.args[0], self, container.name)
         return True
 
     def get_object(self, container_name, object_name):
