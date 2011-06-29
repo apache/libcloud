@@ -184,12 +184,17 @@ class AtmosDriver(StorageDriver):
                 raise
             raise ObjectDoesNotExistError(e.args[0], self, object_name)
 
-        meta_data = {
-            'object_id': system_meta['objectid']
+        last_modified = time.strptime(system_meta['mtime'],
+                                      '%Y-%m-%dT%H:%M:%SZ')
+        last_modified = time.strftime('%a, %d %b %Y %H:%M:%S GMT',
+                                      last_modified)
+        extra = {
+            'object_id': system_meta['objectid'],
+            'last_modified': last_modified
         }
-        hash = user_meta.get('md5', '')
-        return Object(object_name, int(system_meta['size']), hash, {},
-                      meta_data, container, self)
+        data_hash = user_meta.pop('md5', '')
+        return Object(object_name, int(system_meta['size']), data_hash, extra,
+                      user_meta, container, self)
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
