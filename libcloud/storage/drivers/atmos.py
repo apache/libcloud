@@ -228,18 +228,23 @@ class AtmosDriver(StorageDriver):
         bytes_transferred = result_dict['bytes_transferred']
         range_hdr = str(bytes_transferred) + '-' + str(bytes_transferred)
 
+        if extra is None:
+            meta_data = {}
+        else:
+            meta_data = extra.get('meta_data', {})
+        meta_data['md5'] = result_dict['data_hash']
+        user_meta = ', '.join([k + '=' + str(v) for k, v in meta_data.items()])
         self.connection.request(request_path + '?metadata/user', method='POST',
-                                headers={
-            'x-emc-meta': 'md5=' + result_dict['data_hash']
-        })
+                                headers={'x-emc-meta': user_meta})
         result = self.connection.request(request_path + '?metadata/system')
         meta = self._emc_meta(result)
-        meta_data = {
+        del meta_data['md5']
+        extra = {
             'object_id': meta['objectid']
         }
 
         return Object(object_name, bytes_transferred, result_dict['data_hash'],
-                      {}, meta_data, container, self)
+                      extra, meta_data, container, self)
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  extra=None):
@@ -293,15 +298,24 @@ class AtmosDriver(StorageDriver):
 
         data_hash = data_hash.hexdigest()
 
+        if extra is None:
+            meta_data = {}
+        else:
+            meta_data = extra.get('meta_data', {})
+        meta_data['md5'] = result_dict['data_hash']
+        user_meta = ', '.join([k + '=' + str(v) for k, v in meta_data.items()])
+        self.connection.request(request_path + '?metadata/user', method='POST',
+                                headers={'x-emc-meta': user_meta})
+
         result = self.connection.request(path + '?metadata/system')
 
         meta = self._emc_meta(result)
-        meta_data = {
+        extra = {
             'object_id': meta['objectid']
         }
 
-        return Object(object_name, bytes_transferred, data_hash, {}, meta_data,
-                      container, self)
+        return Object(object_name, bytes_transferred, data_hash, extra,
+                      meta_data, container, self)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                       delete_on_failure=True):
