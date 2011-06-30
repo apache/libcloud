@@ -13,32 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-        "Provider",
-        "State",
-        "LibcloudLBError",
-        "LibcloudLBImmutableError",
-        ]
+from libcloud.loadbalancer.providers import Provider
 
-from libcloud.common.types import LibcloudError
+from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 
-class LibcloudLBError(LibcloudError): pass
+class NinefoldLBDriver(CloudStackLBDriver):
+    "Driver for load balancers on Ninefold's Compute platform."
 
-class LibcloudLBImmutableError(LibcloudLBError): pass
+    host = 'api.ninefold.com'
+    path = '/compute/v1.0/'
 
-class Provider(object):
-    RACKSPACE_US = 0
-    GOGRID = 1
-    NINEFOLD = 2
-
-class State(object):
-    """
-    Standart states for a loadbalancer
-
-    @cvar RUNNING: loadbalancer is running and ready to use
-    @cvar UNKNOWN: loabalancer state is unknown
-    """
-
-    RUNNING = 0
-    PENDING = 1
-    UNKNOWN = 2
+    type = Provider.NINEFOLD
+    name = 'Ninefold LB'
