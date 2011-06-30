@@ -8,6 +8,12 @@ try:
 except:
     import simplejson as json
 
+try:
+    parse_qsl = urlparse.parse_qsl
+except AttributeError:
+    import cgi
+    parse_qsl = cgi.parse_qsl
+
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 from libcloud.compute.types import DeploymentError
 
@@ -58,7 +64,7 @@ class CloudStackMockHttp(MockHttpTestCase):
 
     def _test_path(self, method, url, body, headers):
         url = urlparse.urlparse(url)
-        query = dict(urlparse.parse_qsl(url.query))
+        query = dict(parse_qsl(url.query))
 
         self.assertTrue('apiKey' in query)
         self.assertTrue('command' in query)
