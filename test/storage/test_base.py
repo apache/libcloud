@@ -15,7 +15,10 @@
 
 import sys
 import unittest
+import hashlib
+
 from StringIO import StringIO
+from mock import Mock
 
 from libcloud.storage.base import StorageDriver
 
@@ -23,6 +26,7 @@ from test import StorageMockHttp # pylint: disable-msg=E0611
 
 class BaseStorageTests(unittest.TestCase):
     def setUp(self):
+        self.send_called = 0
         StorageDriver.connectionCls.conn_classes = (None, StorageMockHttp)
         self.driver = StorageDriver('username', 'key', host='localhost')
 
@@ -61,6 +65,36 @@ class BaseStorageTests(unittest.TestCase):
                 pass
             else:
                 self.fail('Exception was not thrown')
+
+    def test_upload_zero_bytes_long_object_via_stream(self):
+        iterator = Mock()
+        iterator.next.side_effect = StopIteration()
+
+        def mock_send(data):
+            self.send_called += 1
+
+        response = Mock()
+        response.connection.connection.send = mock_send
+
+        # Normal
+        success, data_hash, bytes_transferred = \
+                 self.driver._stream_data(response=response, iterator=iterator,
+                                          chunked=False, calculate_hash=True)
+
+        self.assertTrue(success)
+        self.assertEqual(data_hash, hashlib.md5('').hexdigest())
+        self.assertEqual(bytes_transferred, 0)
+        self.assertEqual(self.send_called, 1)
+
+        # Chunked
+        success, data_hash, bytes_transferred = \
+                 self.driver._stream_data(response=response, iterator=iterator,
+                                          chunked=True, calculate_hash=True)
+
+        self.assertTrue(success)
+        self.assertEqual(data_hash, hashlib.md5('').hexdigest())
+        self.assertEqual(bytes_transferred, 0)
+        self.assertEqual(self.send_called, 5)
 
 
 if __name__ == '__main__':

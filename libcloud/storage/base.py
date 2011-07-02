@@ -581,8 +581,18 @@ class StorageDriver(object):
         try:
             chunk = generator.next()
         except StopIteration:
-            # No data?
-            return False, None, None
+            # Special case when StopIteration is thrown on the first iteration -
+            # create a 0-byte long object
+            chunk = ''
+            if chunked:
+                response.connection.connection.send('%X\r\n' %
+                                                   (len(chunk)))
+                response.connection.connection.send(chunk)
+                response.connection.connection.send('\r\n')
+                response.connection.connection.send('0\r\n\r\n')
+            else:
+                response.connection.connection.send(chunk)
+            return True, data_hash.hexdigest(), bytes_transferred
 
         while len(chunk) > 0:
             try:
