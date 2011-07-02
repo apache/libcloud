@@ -27,7 +27,7 @@ from os.path import join as pjoin
 
 from libcloud import utils
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionKey
+from libcloud.common.base import ConnectionUserAndKey
 from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
@@ -156,7 +156,7 @@ class StorageDriver(object):
     A base StorageDriver to derive from.
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionUserAndKey
     name = None
     hash_type = 'md5'
 
@@ -507,6 +507,10 @@ class StorageDriver(object):
 
         if file_path and not os.path.exists(file_path):
           raise OSError('File %s does not exist' % (file_path))
+
+        if iterator is not None and not hasattr(iterator, 'next'):
+            raise AttributeError('iterator object must implement next() ' +
+                                 'method.')
 
         if not content_type:
             if file_path:
