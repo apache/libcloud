@@ -316,9 +316,6 @@ class StorageDriver(object):
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
-
-        @type verify_hash: C{boolean}
-        @param verify_hash: True to do a file integrity check.
         """
         raise NotImplementedError(
             'upload_object not implemented for this driver')
@@ -338,6 +335,9 @@ class StorageDriver(object):
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+
+        Note: This dictionary must contain a 'content_type' key which represents
+        a content type of the stored object.
         """
         raise NotImplementedError(
             'upload_object_via_stream not implemented for this driver')
