@@ -126,9 +126,9 @@ class Container(object):
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None, verify_hash=True):
+    def upload_object(self, file_path, object_name, extra=None):
         return self.driver.upload_object(
-            file_path, self, object_name, extra, verify_hash)
+            file_path, self, object_name, extra)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None):
         return self.driver.upload_object_via_stream(
