@@ -302,9 +302,9 @@ class AtmosDriver(StorageDriver):
             meta_data = {}
         else:
             meta_data = extra.get('meta_data', {})
-        meta_data['md5'] = result_dict['data_hash']
+        meta_data['md5'] = data_hash
         user_meta = ', '.join([k + '=' + str(v) for k, v in meta_data.items()])
-        self.connection.request(request_path + '?metadata/user', method='POST',
+        self.connection.request(path + '?metadata/user', method='POST',
                                 headers={'x-emc-meta': user_meta})
 
         result = self.connection.request(path + '?metadata/system')
