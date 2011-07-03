@@ -27,7 +27,7 @@ from os.path import join as pjoin
 
 from libcloud import utils
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionKey
+from libcloud.common.base import ConnectionUserAndKey
 from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
@@ -126,9 +126,9 @@ class Container(object):
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None, verify_hash=True):
+    def upload_object(self, file_path, object_name, extra=None):
         return self.driver.upload_object(
-            file_path, self, object_name, extra, verify_hash)
+            file_path, self, object_name, extra)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None):
         return self.driver.upload_object_via_stream(
@@ -156,7 +156,7 @@ class StorageDriver(object):
     A base StorageDriver to derive from.
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionUserAndKey
     name = None
     hash_type = 'md5'
 
@@ -316,9 +316,6 @@ class StorageDriver(object):
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
-
-        @type verify_hash: C{boolean}
-        @param verify_hash: True to do a file integrity check.
         """
         raise NotImplementedError(
             'upload_object not implemented for this driver')
@@ -338,6 +335,9 @@ class StorageDriver(object):
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+
+        Note: This dictionary must contain a 'content_type' key which represents
+        a content type of the stored object.
         """
         raise NotImplementedError(
             'upload_object_via_stream not implemented for this driver')
@@ -508,6 +508,10 @@ class StorageDriver(object):
         if file_path and not os.path.exists(file_path):
           raise OSError('File %s does not exist' % (file_path))
 
+        if iterator is not None and not hasattr(iterator, 'next'):
+            raise AttributeError('iterator object must implement next() ' +
+                                 'method.')
+
         if not content_type:
             if file_path:
                 name = file_path
@@ -577,8 +581,18 @@ class StorageDriver(object):
         try:
             chunk = generator.next()
         except StopIteration:
-            # No data?
-            return False, None, None
+            # Special case when StopIteration is thrown on the first iteration -
+            # create a 0-byte long object
+            chunk = ''
+            if chunked:
+                response.connection.connection.send('%X\r\n' %
+                                                   (len(chunk)))
+                response.connection.connection.send(chunk)
+                response.connection.connection.send('\r\n')
+                response.connection.connection.send('0\r\n\r\n')
+            else:
+                response.connection.connection.send(chunk)
+            return True, data_hash.hexdigest(), bytes_transferred
 
         while len(chunk) > 0:
             try:

@@ -12,33 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__all__ = [
-        "Provider",
-        "State",
-        "LibcloudLBError",
-        "LibcloudLBImmutableError",
-        ]
-
-from libcloud.common.types import LibcloudError
-
-class LibcloudLBError(LibcloudError): pass
-
-class LibcloudLBImmutableError(LibcloudLBError): pass
-
-class Provider(object):
-    RACKSPACE_US = 0
-    GOGRID = 1
-    NINEFOLD = 2
-
-class State(object):
-    """
-    Standart states for a loadbalancer
-
-    @cvar RUNNING: loadbalancer is running and ready to use
-    @cvar UNKNOWN: loabalancer state is unknown
-    """
-
-    RUNNING = 0
-    PENDING = 1
-    UNKNOWN = 2
