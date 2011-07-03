@@ -22,12 +22,16 @@ import urlparse
 
 from xml.etree import ElementTree
 
+import libcloud.utils
+
+from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerAlreadyExistsError, \
                                    ContainerDoesNotExistError, \
                                    ContainerIsNotEmptyError, \
                                    ObjectDoesNotExistError
 from libcloud.storage.drivers.atmos import AtmosDriver
+from libcloud.storage.drivers.dummy import DummyIterator
 
 from test import StorageMockHttp, MockRawResponse
 from test.file_fixtures import StorageFileFixtures
@@ -38,6 +42,7 @@ class AtmosTests(unittest.TestCase):
         AtmosDriver.connectionCls.rawResponseCls = AtmosMockRawResponse
         AtmosDriver.path = ''
         AtmosMockHttp.type = None
+        AtmosMockHttp.upload_created = False
         AtmosMockRawResponse.type = None
         self.driver = AtmosDriver('dummy', base64.b64encode('dummy'))
         self._remove_test_file()
@@ -236,20 +241,117 @@ class AtmosTests(unittest.TestCase):
 
         old_func = AtmosDriver._upload_file
         AtmosDriver._upload_file = upload_file
-        file_path = os.path.abspath(__file__)
+        path = os.path.abspath(__file__)
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftu'
         extra = {'meta_data': { 'some-value': 'foobar'}}
-        obj = self.driver.upload_object(file_path=file_path, container=container,
+        obj = self.driver.upload_object(file_path=path, container=container,
                                         extra=extra, object_name=object_name)
         self.assertEqual(obj.name, 'ftu')
         self.assertEqual(obj.size, 1000)
         self.assertTrue('some-value' in obj.meta_data)
         AtmosDriver._upload_file = old_func
 
-class AtmosMockHttp(StorageMockHttp):
+    def test_upload_object_no_content_type(self):
+        def no_content_type(name):
+            return None, None
+
+        old_func = libcloud.utils.guess_file_mime_type
+        libcloud.utils.guess_file_mime_type = no_content_type
+        file_path = os.path.abspath(__file__)
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftu'
+        try:
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name)
+        except AttributeError:
+            pass
+        else:
+            self.fail(
+                'File content type not provided'
+                ' but an exception was not thrown')
+        finally:
+            libcloud.utils.guess_file_mime_type = old_func
+
+    def test_upload_object_error(self):
+        def dummy_content_type(name):
+            return 'application/zip', None
+
+        def send(instance):
+            raise Exception('')
+
+        old_func1 = libcloud.utils.guess_file_mime_type
+        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func2 = AtmosMockHttp.send
+        AtmosMockHttp.send = send
+
+        file_path = os.path.abspath(__file__)
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftu'
+        try:
+            self.driver.upload_object(
+                file_path=file_path,
+                container=container,
+                object_name=object_name)
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Timeout while uploading but an exception was not thrown')
+        finally:
+            libcloud.utils.guess_file_mime_type = old_func1
+            AtmosMockHttp.send = old_func2
+
+    def test_upload_object_nonexistent_file(self):
+        def dummy_content_type(name):
+            return 'application/zip', None
+
+        old_func = libcloud.utils.guess_file_mime_type
+        libcloud.utils.guess_file_mime_type = dummy_content_type
+
+        file_path = os.path.abspath(__file__ + '.inexistent')
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftu'
+        try:
+            self.driver.upload_object(
+                file_path=file_path,
+                container=container,
+                object_name=object_name)
+        except OSError:
+            pass
+        else:
+            self.fail('Inesitent but an exception was not thrown')
+        finally:
+            libcloud.utils.guess_file_mime_type = old_func
+
+    def test_upload_object_via_stream(self):
+        def dummy_content_type(name):
+            return 'application/zip', None
+
+        old_func = libcloud.utils.guess_file_mime_type
+        libcloud.utils.guess_file_mime_type = dummy_content_type
+
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftsd'
+        iterator = DummyIterator(data=['2', '3', '5'])
+        try:
+            self.driver.upload_object_via_stream(container=container,
+                                                 object_name=object_name,
+                                                 iterator=iterator)
+        finally:
+            libcloud.utils.guess_file_mime_type = old_func
+
+class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')
     upload_created = False
+
+    def __init__(self, *args, **kwargs):
+        unittest.TestCase.__init__(self)
+
+        if kwargs.get('host', None) and kwargs.get('port', None):
+            StorageMockHttp.__init__(self, *args, **kwargs)
+
+    def runTest(self):
+        pass
 
     def request(self, method, url, body=None, headers=None, raw=False):
         headers = headers or {}
@@ -387,7 +489,29 @@ class AtmosMockHttp(StorageMockHttp):
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftu_metadata_user(self, method, url, body, headers):
+        self.assertTrue('x-emc-meta' in headers)
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsd(self, method, url, body, headers):
+        self.assertTrue('Range' in headers)
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsd_metadata_user(self, method, url, body,
+                                               headers):
+        self.assertTrue('x-emc-meta' in headers)
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsd_metadata_system(self, method, url, body,
+                                                 headers):
+        meta = {
+            'objectid': '322dce3763aadc41acc55ef47867b8d74e45c31d6643',
+            'size': '555',
+            'mtime': '2011-01-25T22:01:49Z'
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
 class AtmosMockRawResponse(MockRawResponse):
     fixtures = StorageFileFixtures('atmos')
