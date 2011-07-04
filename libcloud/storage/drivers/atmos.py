@@ -71,6 +71,11 @@ class AtmosConnection(ConnectionUserAndKey):
         return headers
 
     def pre_connect_hook(self, params, headers):
+        headers['x-emc-signature'] = self._calculate_signature(params, headers)
+
+        return params, headers
+
+    def _calculate_signature(self, params, headers):
         pathstring = self.action
         if pathstring.startswith(self.driver.path):
             pathstring = pathstring[len(self.driver.path):]
@@ -94,9 +99,7 @@ class AtmosConnection(ConnectionUserAndKey):
         signature = '\n'.join(signature)
         key = base64.b64decode(self.key)
         signature = hmac.new(key, signature, hashlib.sha1).digest()
-        headers['x-emc-signature'] = base64.b64encode(signature)
-
-        return params, headers
+        return base64.b64encode(signature)
 
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
