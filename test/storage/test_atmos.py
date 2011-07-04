@@ -30,7 +30,7 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
                                    ContainerDoesNotExistError, \
                                    ContainerIsNotEmptyError, \
                                    ObjectDoesNotExistError
-from libcloud.storage.drivers.atmos import AtmosDriver
+from libcloud.storage.drivers.atmos import AtmosConnection, AtmosDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
 from test import StorageMockHttp, MockRawResponse
@@ -339,6 +339,40 @@ class AtmosTests(unittest.TestCase):
                                                  iterator=iterator)
         finally:
             libcloud.utils.guess_file_mime_type = old_func
+
+    def test_signature_algorithm(self):
+        test_uid = 'fredsmagicuid'
+        test_key = base64.b64encode('ssssshhhhhmysecretkey')
+        test_date = 'Mon, 04 Jul 2011 07:39:19 GMT'
+        test_values = [
+            ('GET', '/rest/namespace/foo', '', {},
+                'WfSASIA25TuqO2n0aO9k/dtg6S0='),
+            ('POST', '/rest/namespace/foo', '', {},
+                'oYKdsF+1DOuUT7iX5CJCDym2EQk='),
+            ('PUT', '/rest/namespace/foo', '', {},
+                'JleF9dpSWhaT3B2swZI3s41qqs4='),
+            ('DELETE', '/rest/namespace/foo', '', {},
+                '2IX+Bd5XZF5YY+g4P59qXV1uLpo='),
+            ('GET', '/rest/namespace/foo?metata/system', '', {},
+                'zuHDEAgKM1winGnWn3WBsqnz4ks='),
+            ('POST', '/rest/namespace/foo?metadata/user', '', {
+                'x-emc-meta': 'fakemeta=fake, othermeta=faketoo'
+             }, '7sLx1nxPIRAtocfv02jz9h1BjbU='),
+        ]
+
+        class FakeDriver(object):
+            path = ''
+
+        for method, action, api_path, headers, expected in test_values:
+            c = AtmosConnection(test_uid, test_key)
+            c.method = method
+            c.action = action
+            d = FakeDriver()
+            d.path = api_path
+            c.driver = d
+            headers = c.add_default_headers(headers)
+            headers['Date'] = headers['x-emc-date'] = test_date
+            self.assertEqual(c._calculate_signature({}, headers), expected)
 
 class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')
