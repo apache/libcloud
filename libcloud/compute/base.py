@@ -23,6 +23,7 @@ import os
 import socket
 import struct
 
+import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
@@ -516,6 +517,10 @@ class NodeDriver(object):
         Deploy node is typically not overridden in subclasses.  The
         existing implementation should be able to handle most such.
         """
+        if not libcloud.compute.ssh.have_paramiko:
+            raise RuntimeError('paramiko is not installed. You can install ' +
+                               'it using pip: pip install paramiko')
+
         # TODO: support ssh keys
         password = None
 
