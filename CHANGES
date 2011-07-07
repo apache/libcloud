@@ -1,8 +1,13 @@
                                                         -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development
+
+
 Changes with Apache Libcloud 0.5.2
 
   *) Compute:
+     - New driver for serverlove.com and skalicloud.com
+       [Tomaz Muraus]
 
      - Fix node name and tag handling in the Amazon EC2 driver
        [Wiktor Kolodziej]
