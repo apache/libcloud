@@ -25,6 +25,8 @@ __all__ = [
 DRIVERS = {
         Provider.RACKSPACE_US:
             ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
+        Provider.RACKSPACE_UK:
+            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver'),
         Provider.GOGRID:
             ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
         Provider.NINEFOLD:

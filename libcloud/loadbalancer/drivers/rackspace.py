@@ -24,9 +24,10 @@ from libcloud.utils import reverse_dict
 from libcloud.common.base import Response
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import Provider, State
-from libcloud.common.rackspace import (AUTH_HOST_US,
+from libcloud.loadbalancer.types import State
+from libcloud.common.rackspace import (AUTH_HOST_US, AUTH_HOST_UK,
         RackspaceBaseConnection)
+
 
 class RackspaceResponse(Response):
 
@@ -38,6 +39,7 @@ class RackspaceResponse(Response):
             return None
         else:
             return json.loads(self.body)
+
 
 class RackspaceConnection(RackspaceBaseConnection):
     responseCls = RackspaceResponse
@@ -63,6 +65,10 @@ class RackspaceConnection(RackspaceBaseConnection):
 
         return super(RackspaceConnection, self).request(action=action,
                 params=params, data=data, method=method, headers=headers)
+
+
+class RackspaceUKConnection(RackspaceConnection):
+    auth_host = AUTH_HOST_UK
 
 
 class RackspaceLBDriver(Driver):
@@ -176,3 +182,7 @@ class RackspaceLBDriver(Driver):
                 ip=el["address"],
                 port=el["port"])
         return lbmember
+
+
+class RackspaceUKLBDriver(RackspaceLBDriver):
+    connectionCls = RackspaceUKConnection
