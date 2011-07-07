@@ -284,6 +284,27 @@ class DeploymentTests(unittest.TestCase):
         node = self.driver.deploy_node(deploy=Mock())
         self.assertEqual(self.node.id, node.id)
 
+    @patch('libcloud.compute.base.SSHClient')
+    @patch('libcloud.compute.ssh')
+    def test_exception_is_thrown_is_paramiko_is_not_available(self,
+                                                              mock_ssh_module,
+                                                              _):
+        self.driver.features = {'create_node': ['password']}
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+
+        mock_ssh_module.have_paramiko = False
+
+        try:
+            self.driver.deploy_node(deploy=Mock())
+        except RuntimeError, e:
+            self.assertTrue(str(e).find('paramiko is not installed') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+        mock_ssh_module.have_paramiko = True
+        node = self.driver.deploy_node(deploy=Mock())
+        self.assertEqual(self.node.id, node.id)
 
 class RackspaceMockHttp(MockHttp):
 
