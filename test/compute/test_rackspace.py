@@ -215,9 +215,9 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
     def test_ex_resize(self):
         node = Node(id=444222, name=None, state=None, public_ip=None,
                     private_ip=None, driver=self.driver)
-        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
-                          driver=self.driver)
-        self.assertTrue(self.driver.ex_resize(node=node, image=image))
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
+        self.assertTrue(self.driver.ex_resize(node=node, size=size))
 
     def test_ex_confirm_resize(self):
         node = Node(id=444222, name=None, state=None, public_ip=None,
