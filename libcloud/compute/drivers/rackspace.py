@@ -272,20 +272,20 @@ class RackspaceNodeDriver(NodeDriver):
                                        data=ET.tostring(server_elm))
         return self._to_node(resp.object)
 
-    def ex_resize(self, node, image):
+    def ex_resize(self, node, size):
         """
         Change an existing server flavor / scale the server up or down.
 
         @keyword    node: node to resize.
         @param      node: C{Node}
 
-        @keyword    name: new image.
-        @param      name: C{NodeImage}
+        @keyword    size: new size.
+        @param      size: C{NodeSize}
         """
         elm = ET.Element(
             'resize',
             {'xmlns': NAMESPACE,
-             'imageId': str(image.id),
+             'flavorId': str(size.id),
             }
         )
 
