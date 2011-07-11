@@ -273,6 +273,15 @@ class RackspaceNodeDriver(NodeDriver):
         return self._to_node(resp.object)
 
     def ex_resize(self, node, image):
+        """
+        Change an existing server flavor / scale the server up or down.
+
+        @keyword    node: node to resize.
+        @param      node: C{Node}
+
+        @keyword    name: new image.
+        @param      name: C{NodeImage}
+        """
         elm = ET.Element(
             'resize',
             {'xmlns': NAMESPACE,
@@ -286,6 +295,16 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 202
 
     def ex_confirm_resize(self, node):
+        """
+        Confirm a resize request which is currently in progress. If a resize
+        request is not explicitly confirmed or reverted it's automatically 
+        confirmed after 24 hours.
+
+        For more info refer to the API documentation: http://goo.gl/zjFI1
+
+        @keyword    node: node for which the resize request will be confirmed.
+        @param      node: C{Node}
+        """
         elm = ET.Element(
             'confirmResize',
             {'xmlns': NAMESPACE}
@@ -297,6 +316,16 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 204
 
     def ex_revert_resize(self, node):
+        """
+        Revert a resize request which is currently in progress.
+        All resizes are automatically confirmed after 24 hours if they have
+        not already been confirmed explicitly or reverted.
+
+        For more info refer to the API documentation: http://goo.gl/AizBu
+
+        @keyword    node: node for which the resize request will be reverted.
+        @param      node: C{Node}
+        """
         elm = ET.Element(
             'revertResize',
             {'xmlns': NAMESPACE}
