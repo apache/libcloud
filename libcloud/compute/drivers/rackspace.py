@@ -273,6 +273,13 @@ class RackspaceNodeDriver(NodeDriver):
         return self._to_node(resp.object)
 
     def ex_rebuild(self, node_id, image_id):
+        # @TODO: Remove those ifs in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
+        if isinstance(image_id, NodeImage):
+            image_id = image_id.id
+
         elm = ET.Element(
             'rebuild',
             {'xmlns': NAMESPACE,
@@ -285,12 +292,17 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 202
 
     def ex_create_ip_group(self, group_name, node_id=None):
+        # @TODO: Remove this if in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
         group_elm = ET.Element(
             'sharedIpGroup',
             {'xmlns': NAMESPACE,
              'name': group_name,
             }
         )
+
         if node_id:
             ET.SubElement(group_elm,
                 'server',
@@ -315,6 +327,10 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 204
 
     def ex_share_ip(self, group_id, node_id, ip, configure_node=True):
+        # @TODO: Remove this if in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
         if configure_node:
             str_configure = 'true'
         else:
@@ -335,6 +351,10 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 202
 
     def ex_unshare_ip(self, node_id, ip):
+        # @TODO: Remove this if in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
         uri = '/servers/%s/ips/public/%s' % (node_id, ip)
 
         resp = self.connection.request(uri,
@@ -342,6 +362,10 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 202
 
     def ex_list_ip_addresses(self, node_id):
+        # @TODO: Remove this if in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
         uri = '/servers/%s/ips' % node_id
         resp = self.connection.request(uri,
                                        method='GET')
@@ -390,6 +414,10 @@ class RackspaceNodeDriver(NodeDriver):
         return resp.status == 202
 
     def ex_get_node_details(self, node_id):
+        # @TODO: Remove this if in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
         uri = '/servers/%s' % (node_id)
         resp = self.connection.request(uri, method='GET')
         if resp.status == 404:
