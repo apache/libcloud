@@ -272,6 +272,41 @@ class RackspaceNodeDriver(NodeDriver):
                                        data=ET.tostring(server_elm))
         return self._to_node(resp.object)
 
+    def ex_resize(self, node, image):
+        elm = ET.Element(
+            'resize',
+            {'xmlns': NAMESPACE,
+             'imageId': str(image.id),
+            }
+        )
+
+        resp = self.connection.request("/servers/%s/action" % (node.id),
+                                       method='POST',
+                                       data=ET.tostring(elm))
+        return resp.status == 202
+
+    def ex_confirm_resize(self, node):
+        elm = ET.Element(
+            'confirmResize',
+            {'xmlns': NAMESPACE}
+        )
+
+        resp = self.connection.request("/servers/%s/action" % (node.id),
+                                       method='POST',
+                                       data=ET.tostring(elm))
+        return resp.status == 204
+
+    def ex_revert_resize(self, node):
+        elm = ET.Element(
+            'revertResize',
+            {'xmlns': NAMESPACE}
+        )
+
+        resp = self.connection.request("/servers/%s/action" % (node.id),
+                                       method='POST',
+                                       data=ET.tostring(elm))
+        return resp.status == 204
+
     def ex_rebuild(self, node_id, image_id):
         # @TODO: Remove those ifs in 0.6
         if isinstance(node_id, Node):

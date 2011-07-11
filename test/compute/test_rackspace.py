@@ -212,6 +212,23 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.ex_unshare_ip('3445', '67.23.21.133')
         self.assertEquals(True, ret)
 
+    def test_ex_resize(self):
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        self.assertTrue(self.driver.ex_resize(node=node, image=image))
+
+    def test_ex_confirm_resize(self):
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
+        self.assertTrue(self.driver.ex_confirm_resize(node=node))
+
+    def test_ex_revert_resize(self):
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
+        self.assertTrue(self.driver.ex_revert_resize(node=node))
+
 
 class RackspaceMockHttp(MockHttpTestCase):
 
@@ -318,6 +335,17 @@ class RackspaceMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_3445_ips_public_67_23_21_133(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_servers_444222_action(self, method, url, body, headers):
+        if body.find('resize') != -1:
+            # test_ex_resize_server
+            return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
+        elif body.find('confirmResize') != -1:
+            # test_ex_confirm_resize
+            return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+        elif body.find('revertResize') != -1:
+            # test_ex_revert_resize
+            return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
 
 
 class OpenStackResponseTestCase(unittest.TestCase):
