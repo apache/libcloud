@@ -48,6 +48,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
         inherited httplib.HTTPSConnection connect()
         """
         self.verify = libcloud.security.VERIFY_SSL_CERT
+        self.strict = libcloud.security.VERIFY_SSL_CERT_STRICT
 
         if self.verify:
             self._setup_ca_cert()
@@ -71,10 +72,13 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
             # use first available certificate
             self.ca_cert = ca_certs_available[0]
         else:
-            # no certificates found; toggle verify to False
-            warnings.warn(libcloud.security.CA_CERTS_UNAVAILABLE_MSG)
-            self.ca_cert = None
-            self.verify = False
+            if self.strict:
+                raise RuntimeError(libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
+            else:
+                # no certificates found; toggle verify to False
+                warnings.warn(libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
+                self.ca_cert = None
+                self.verify = False
 
     def connect(self):
         """Connect
