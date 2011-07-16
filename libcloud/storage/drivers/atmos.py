@@ -116,11 +116,9 @@ class AtmosDriver(StorageDriver):
 
     def list_containers(self):
         result = self.connection.request(self._namespace_path(''))
-        entries = self._list_objects(result.object)
+        entries = self._list_objects(result.object, object_type='directory')
         containers = []
         for entry in entries:
-            if entry['type'] != 'directory':
-                continue
             extra = {
                 'object_id': entry['id']
             }
@@ -367,11 +365,9 @@ class AtmosDriver(StorageDriver):
         }
         path = self._namespace_path(container.name + '/')
         result = self.connection.request(path, headers=headers)
-        entries = self._list_objects(result.object)
+        entries = self._list_objects(result.object, object_type='regular')
         objects = []
         for entry in entries:
-            if entry['type'] != 'regular':
-                continue
             metadata = {
                 'object_id': entry['id']
             }
@@ -408,14 +404,16 @@ class AtmosDriver(StorageDriver):
         path = self.path + path
         return urlparse.urlunparse((protocol, self.host, path, '', params, ''))
 
-    def _list_objects(self, tree):
+    def _list_objects(self, tree, object_type=None):
         listing = tree.find(self._emc_tag('DirectoryList'))
         entries = []
         for entry in listing.findall(self._emc_tag('DirectoryEntry')):
             file_type = entry.find(self._emc_tag('FileType')).text
+            if object_type is not None and object_type != file_type:
+                continue
             entries.append({
                 'id': entry.find(self._emc_tag('ObjectID')).text,
-                'type': entry.find(self._emc_tag('FileType')).text,
+                'type': file_type,
                 'name': entry.find(self._emc_tag('Filename')).text
             })
         return entries
