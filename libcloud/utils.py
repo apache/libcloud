@@ -22,7 +22,7 @@ SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.6.0'
 
-def read_in_chunks(iterator, chunk_size=None):
+def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     """
     Return a generator which yields data in chunks.
 
@@ -32,6 +32,10 @@ def read_in_chunks(iterator, chunk_size=None):
 
     @type chunk_size: C{int}
     @param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
+
+    @type fill_size: C{bool}
+    @param fill_size: If True, make sure chunks are chunk_size in length
+                      (except for last chunk).
     """
 
     if isinstance(iterator, (file, HTTPResponse)):
@@ -41,13 +45,30 @@ def read_in_chunks(iterator, chunk_size=None):
         get_data = iterator.next
         args = ()
 
-    while True:
-        chunk = str(get_data(*args))
+    data = ''
+    empty = False
 
-        if len(chunk) == 0:
+    while not empty or len(data) > 0:
+        if not empty:
+            try:
+                chunk = str(get_data(*args))
+                if len(chunk) > 0:
+                    data += chunk
+                else:
+                    empty = True
+            except StopIteration:
+                empty = True
+
+        if len(data) == 0:
             raise StopIteration
 
-        yield chunk
+        if fill_size:
+            if empty or len(data) >= chunk_size:
+                yield data[:chunk_size]
+                data = data[chunk_size:]
+        else:
+            yield data
+            data = ''
 
 def guess_file_mime_type(file_path):
     filename = os.path.basename(file_path)

@@ -247,23 +247,7 @@ class AtmosDriver(StorageDriver):
             iterator = iter(iterator)
 
         data_hash = hashlib.md5()
-
-        def chunkify(source):
-            data = ''
-            empty = False
-
-            while not empty or len(data) > 0:
-                if empty or len(data) >= CHUNK_SIZE:
-                    yield data[:CHUNK_SIZE]
-                    data = data[CHUNK_SIZE:]
-                else:
-                    try:
-                        data += source.next()
-                    except StopIteration:
-                        empty = True
-
-        generator = chunkify(iterator)
-
+        generator = utils.read_in_chunks(iterator, CHUNK_SIZE, True)
         bytes_transferred = 0
         try:
             chunk = generator.next()
