@@ -371,15 +371,18 @@ class AtmosDriver(StorageDriver):
             ('uid', self.key),
             ('expires', expiry),
         ]
-
-        key = base64.b64decode(self.secret)
-        signature = '\n'.join(['GET', path.lower(), self.key, expiry])
-        signature = hmac.new(key, signature, hashlib.sha1).digest()
-        params.append(('signature', base64.b64encode(signature)))
+        params.append(('signature', self._cdn_signature(path, params)))
 
         params = urllib.urlencode(params)
         path = self.path + path
         return urlparse.urlunparse((protocol, self.host, path, '', params, ''))
+
+    def _cdn_signature(self, path, params):
+        key = base64.b64decode(self.secret)
+        signature = '\n'.join(['GET', path.lower(), self.key, expiry])
+        signature = hmac.new(key, signature, hashlib.sha1).digest()
+
+        return base64.b64encode(signature)
 
     def _list_objects(self, tree, object_type=None):
         listing = tree.find(self._emc_tag('DirectoryList'))
