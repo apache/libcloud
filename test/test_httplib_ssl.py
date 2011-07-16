@@ -97,15 +97,29 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
     def test_setup_verify(self):
         # @TODO: catch warnings
+        # non-strict mode,s hould just emit a warning
         libcloud.security.VERIFY_SSL_CERT = True
+        libcloud.security.VERIFY_SSL_CERT_STRICT = False
         self.httplib_object._setup_verify()
 
+        # strict mode, should throw a runtime error
+        libcloud.security.VERIFY_SSL_CERT = True
+        libcloud.security.VERIFY_SSL_CERT_STRICT = True
+        try:
+            self.httplib_object._setup_verify()
+        except:
+            pass
+        else:
+            self.fail('Exception not thrown')
+
         libcloud.security.VERIFY_SSL_CERT = False
+        libcloud.security.VERIFY_SSL_CERT_STRICT = False
         self.httplib_object._setup_verify()
 
     def test_setup_ca_cert(self):
         # @TODO: catch warnings
         self.httplib_object.verify = False
+        self.httplib_object.strict = False
         self.httplib_object._setup_ca_cert()
 
         self.assertEqual(self.httplib_object.ca_cert, None)

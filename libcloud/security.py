@@ -24,6 +24,7 @@ Usage:
 """
 # For backward compatibility this option is disabled by default
 VERIFY_SSL_CERT = False
+VERIFY_SSL_CERT_STRICT = True
 
 # File containing one or more PEM-encoded CA certificates
 # concatenated together
@@ -41,9 +42,13 @@ CA_CERTS_PATH = [
     '/opt/local/share/curl/curl-ca-bundle.crt',
 ]
 
-CA_CERTS_UNAVAILABLE_MSG = (
+CA_CERTS_UNAVAILABLE_WARNING_MSG = (
     'Warning: No CA Certificates were found in CA_CERTS_PATH. '
     'Toggling VERIFY_SSL_CERT to False.'
+)
+
+CA_CERTS_UNAVAILABLE_ERROR_MSG = (
+    'No CA Certificates were found in CA_CERTS_PATH. '
 )
 
 VERIFY_SSL_DISABLED_MSG = (

@@ -24,6 +24,7 @@ except ImportError:
 
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
+from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 
 from test import MockHttp
 from test.file_fixtures import LoadBalancerFileFixtures
@@ -96,6 +97,16 @@ class RackspaceLBTests(unittest.TestCase):
         ret = balancer.detach_member(member)
 
         self.assertTrue(ret)
+
+
+class RackspaceUKLBTests(RackspaceLBTests):
+
+    def setUp(self):
+        RackspaceLBDriver.connectionCls.conn_classes = (None,
+                RackspaceLBMockHttp)
+        RackspaceLBMockHttp.type = None
+        self.driver = RackspaceUKLBDriver('user', 'key')
+
 
 class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')

@@ -215,9 +215,11 @@ class DeploymentTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     @patch('libcloud.compute.base.SSHClient')
-    def test_deploy_node_success(self, _):
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_success(self, mock_ssh_module, _):
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
+        mock_ssh_module.have_paramiko = True
 
         deploy = Mock()
 
@@ -225,9 +227,12 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node.id, node.id)
 
     @patch('libcloud.compute.base.SSHClient')
-    def test_deploy_node_exception_run_deployment_script(self, _):
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_exception_run_deployment_script(self, mock_ssh_module,
+                                                         _):
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
+        mock_ssh_module.have_paramiko = True
 
         deploy = Mock()
         deploy.run = Mock()
@@ -241,9 +246,13 @@ class DeploymentTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     @patch('libcloud.compute.base.SSHClient')
-    def test_deploy_node_exception_ssh_client_connect(self, ssh_client):
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_exception_ssh_client_connect(self, mock_ssh_module,
+                                                      ssh_client):
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
+
+        mock_ssh_module.have_paramiko = True
 
         deploy = Mock()
         ssh_client.side_effect = IOError('bar')
@@ -255,8 +264,10 @@ class DeploymentTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
-    def test_deploy_node_depoy_node_not_implemented(self):
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_depoy_node_not_implemented(self, mock_ssh_module):
         self.driver.features = {'create_node': []}
+        mock_ssh_module.have_paramiko = True
 
         try:
             self.driver.deploy_node(deploy=Mock())
@@ -275,8 +286,10 @@ class DeploymentTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     @patch('libcloud.compute.base.SSHClient')
-    def test_deploy_node_password_auth(self, _):
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_password_auth(self, mock_ssh_module, _):
         self.driver.features = {'create_node': ['password']}
+        mock_ssh_module.have_paramiko = True
 
         self.driver.create_node = Mock()
         self.driver.create_node.return_value = self.node
@@ -284,6 +297,27 @@ class DeploymentTests(unittest.TestCase):
         node = self.driver.deploy_node(deploy=Mock())
         self.assertEqual(self.node.id, node.id)
 
+    @patch('libcloud.compute.base.SSHClient')
+    @patch('libcloud.compute.ssh')
+    def test_exception_is_thrown_is_paramiko_is_not_available(self,
+                                                              mock_ssh_module,
+                                                              _):
+        self.driver.features = {'create_node': ['password']}
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+
+        mock_ssh_module.have_paramiko = False
+
+        try:
+            self.driver.deploy_node(deploy=Mock())
+        except RuntimeError, e:
+            self.assertTrue(str(e).find('paramiko is not installed') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+        mock_ssh_module.have_paramiko = True
+        node = self.driver.deploy_node(deploy=Mock())
+        self.assertEqual(self.node.id, node.id)
 
 class RackspaceMockHttp(MockHttp):
 
