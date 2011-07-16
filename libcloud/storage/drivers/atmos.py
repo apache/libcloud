@@ -35,6 +35,11 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
 
+class AtmosError(Exception):
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+
 class AtmosResponse(Response):
     def success(self):
         return self.status in (httplib.OK, httplib.CREATED, httplib.NO_CONTENT,
@@ -52,7 +57,7 @@ class AtmosResponse(Response):
         tree = ElementTree.fromstring(self.body)
         code = int(tree.find('Code').text)
         message = tree.find('Message').text
-        return {'code': code, 'message': message}
+        raise AtmosError(code, message)
 
 class AtmosConnection(ConnectionUserAndKey):
     responseCls = AtmosResponse
@@ -129,12 +134,10 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name + '/?metadata/system')
         try:
             result = self.connection.request(path)
-        except Exception, e:
-            if type(e.args[0]) is not dict:
+        except AtmosError, e:
+            if e.code != 1003:
                 raise
-            if e.args[0]['code'] != 1003:
-                raise
-            raise ContainerDoesNotExistError(e.args[0], self, container_name)
+            raise ContainerDoesNotExistError(e, self, container_name)
         meta = self._emc_meta(result)
         extra = {
             'object_id': meta['objectid']
@@ -145,26 +148,21 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name + '/')
         try:
             result = self.connection.request(path, method='POST')
-        except Exception, e:
-            if type(e.args[0]) is not dict:
+        except AtmosError, e:
+            if e.code != 1016:
                 raise
-            if e.args[0]['code'] != 1016:
-                raise
-            raise ContainerAlreadyExistsError(e.args[0], self, container_name)
+            raise ContainerAlreadyExistsError(e, self, container_name)
         return self.get_container(container_name)
 
     def delete_container(self, container):
         try:
             self.connection.request(self._namespace_path(container.name + '/'),
                                     method='DELETE')
-        except Exception, e:
-            if type(e.args[0]) is not dict:
-                raise
-            if e.args[0]['code'] == 1003:
-                raise ContainerDoesNotExistError(e.args[0], self,
-                                                 container.name)
-            elif e.args[0]['code'] == 1023:
-                raise ContainerIsNotEmptyError(e.args[0], self, container.name)
+        except AtmosError, e:
+            if e.code == 1003:
+                raise ContainerDoesNotExistError(e, self, container.name)
+            elif e.code == 1023:
+                raise ContainerIsNotEmptyError(e, self, container.name)
         return True
 
     def get_object(self, container_name, object_name):
@@ -178,12 +176,10 @@ class AtmosDriver(StorageDriver):
 
             result = self.connection.request(path + '?metadata/user')
             user_meta = self._emc_meta(result)
-        except Exception, e:
-            if type(e.args[0]) is not dict:
+        except AtmosError, e:
+            if e.code != 1003:
                 raise
-            if e.args[0]['code'] != 1003:
-                raise
-            raise ObjectDoesNotExistError(e.args[0], self, object_name)
+            raise ObjectDoesNotExistError(e, self, object_name)
 
         last_modified = time.strptime(system_meta['mtime'],
                                       '%Y-%m-%dT%H:%M:%SZ')
@@ -210,10 +206,8 @@ class AtmosDriver(StorageDriver):
 
         try:
             self.connection.request(request_path + '?metadata/system')
-        except Exception, e:
-            if type(e.args[0]) is not dict:
-                raise
-            if e.args[0]['code'] != 1003:
+        except AtmosError, e:
+            if e.code != 1003:
                 raise
             method = 'POST'
 
@@ -350,12 +344,10 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(obj.container.name + '/' + obj.name)
         try:
             self.connection.request(path, method='DELETE')
-        except Exception, e:
-            if type(e.args[0]) is not dict:
+        except AtmosError, e:
+            if e.code != 1003:
                 raise
-            if e.args[0]['code'] != 1003:
-                raise
-            raise ObjectDoesNotExistError(e.args[0], self, obj.name)
+            raise ObjectDoesNotExistError(e, self, obj.name)
         return True
 
     def list_container_objects(self, container):
