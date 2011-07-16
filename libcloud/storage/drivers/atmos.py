@@ -221,7 +221,6 @@ class AtmosDriver(StorageDriver):
 
         response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
-        range_hdr = str(bytes_transferred) + '-' + str(bytes_transferred)
 
         if extra is None:
             meta_data = {}
