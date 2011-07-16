@@ -25,6 +25,7 @@ from xml.etree import ElementTree
 
 from libcloud import utils
 from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.types import LazyList
 
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
 from libcloud.storage.types import ContainerAlreadyExistsError, \
@@ -336,21 +337,8 @@ class AtmosDriver(StorageDriver):
         return True
 
     def list_container_objects(self, container):
-        headers = {
-            'x-emc-include-meta': '1',
-            #'x-emc-system-tags': 'size',
-        }
-        path = self._namespace_path(container.name + '/')
-        result = self.connection.request(path, headers=headers)
-        entries = self._list_objects(result.object, object_type='regular')
-        objects = []
-        for entry in entries:
-            metadata = {
-                'object_id': entry['id']
-            }
-            objects.append(Object(entry['name'], 0, '', {}, metadata, container,
-                                  self))
-        return objects
+        value_dict = {'container': container}
+        return LazyList(get_more=self._get_more, value_dict=value_dict)
 
     def enable_object_cdn(self, obj):
         return True
@@ -414,3 +402,16 @@ class AtmosDriver(StorageDriver):
             return {}
         meta = meta.split(', ')
         return dict([x.split('=', 1) for x in meta])
+
+    def _get_more(self, last_key, value_dict):
+        container = value_dict['container']
+        headers = {'x-emc-include-meta': '1'}
+        path = self._namespace_path(container.name + '/')
+        result = self.connection.request(path, headers=headers)
+        entries = self._list_objects(result.object, object_type='regular')
+        objects = []
+        for entry in entries:
+            metadata = {'object_id': entry['id']}
+            objects.append(Object(entry['name'], 0, '', {}, metadata, container,
+                                  self))
+        return objects, None, True
