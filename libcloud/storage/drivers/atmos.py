@@ -234,7 +234,8 @@ class AtmosDriver(StorageDriver):
         meta = self._emc_meta(result)
         del meta_data['md5']
         extra = {
-            'object_id': meta['objectid']
+            'object_id': meta['objectid'],
+            'meta_data': meta_data,
         }
 
         return Object(object_name, bytes_transferred, result_dict['data_hash'],
@@ -305,7 +306,8 @@ class AtmosDriver(StorageDriver):
 
         meta = self._emc_meta(result)
         extra = {
-            'object_id': meta['objectid']
+            'object_id': meta['objectid'],
+            'meta_data': meta_data,
         }
 
         return Object(object_name, bytes_transferred, data_hash, extra,
