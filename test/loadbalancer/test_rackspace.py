@@ -26,7 +26,7 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 
-from test import MockHttp
+from test import MockHttpTestCase
 from test.file_fixtures import LoadBalancerFileFixtures
 
 class RackspaceLBTests(unittest.TestCase):
@@ -108,7 +108,7 @@ class RackspaceUKLBTests(RackspaceLBTests):
         self.driver = RackspaceUKLBDriver('user', 'key')
 
 
-class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
+class RackspaceLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
 
     def _v1_0(self, method, url, body, headers):
