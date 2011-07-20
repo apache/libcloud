@@ -102,23 +102,32 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(result, 'aaaaaaaaaa')
 
     def test_read_in_chunks_filelike(self):
-        class FakeFile(file):
-            def __init__(self):
-                self.remaining = 500
+            class FakeFile(file):
+                def __init__(self):
+                    self.remaining = 500
 
-            def read(self, size):
-                self.remaining -= 1
-                if self.remaining == 0:
-                    return ''
-                return 'b' * size
+                def read(self, size):
+                    self.remaining -= 1
+                    if self.remaining == 0:
+                        return ''
+                    return 'b' * (size + 1)
 
-        for result in libcloud.utils.read_in_chunks(FakeFile(), chunk_size=10,
-                                                    fill_size=False):
-            self.assertEqual(result, 'bbbbbbbbbb')
+            for index, result in enumerate(libcloud.utils.read_in_chunks(
+                                           FakeFile(), chunk_size=10,
+                                           fill_size=False)):
+                self.assertEqual(result, 'b' * 11)
 
-        for result in libcloud.utils.read_in_chunks(FakeFile(), chunk_size=10,
-                                                    fill_size=True):
-            self.assertEqual(result, 'bbbbbbbbbb')
+            self.assertEqual(index, 498)
+
+            for index, result in enumerate(libcloud.utils.read_in_chunks(
+                                           FakeFile(), chunk_size=10,
+                                           fill_size=True)):
+                if index != 548:
+                    self.assertEqual(result, 'b' * 10)
+                else:
+                    self.assertEqual(result, 'b' * 9)
+
+            self.assertEqual(index, 548)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
