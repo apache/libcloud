@@ -88,5 +88,46 @@ class TestUtils(unittest.TestCase):
         libcloud.utils.in_development_warning('test_module')
         self.assertEqual(len(WARNINGS_BUFFER), 1)
 
+    def test_read_in_chunks_iterator(self):
+        def iterator():
+            for x in range(0, 1000):
+                yield 'aa'
+
+        for result in libcloud.utils.read_in_chunks(iterator(), chunk_size=10,
+                                                    fill_size=False):
+            self.assertEqual(result, 'aa')
+
+        for result in libcloud.utils.read_in_chunks(iterator(), chunk_size=10,
+                                                    fill_size=True):
+            self.assertEqual(result, 'aaaaaaaaaa')
+
+    def test_read_in_chunks_filelike(self):
+            class FakeFile(file):
+                def __init__(self):
+                    self.remaining = 500
+
+                def read(self, size):
+                    self.remaining -= 1
+                    if self.remaining == 0:
+                        return ''
+                    return 'b' * (size + 1)
+
+            for index, result in enumerate(libcloud.utils.read_in_chunks(
+                                           FakeFile(), chunk_size=10,
+                                           fill_size=False)):
+                self.assertEqual(result, 'b' * 11)
+
+            self.assertEqual(index, 498)
+
+            for index, result in enumerate(libcloud.utils.read_in_chunks(
+                                           FakeFile(), chunk_size=10,
+                                           fill_size=True)):
+                if index != 548:
+                    self.assertEqual(result, 'b' * 10)
+                else:
+                    self.assertEqual(result, 'b' * 9)
+
+            self.assertEqual(index, 548)
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
