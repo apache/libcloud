@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-OpenNebula driver
+OpenNebula driver. Compatible with OpenNebula 1.4
 """
 
 from base64 import b64encode
