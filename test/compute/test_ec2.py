@@ -17,8 +17,9 @@ import unittest
 import httplib
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
-from libcloud.compute.drivers.ec2 import NimbusNodeDriver
-from libcloud.compute.drivers.ec2 import EC2APNENodeDriver, IdempotentParamError
+from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
+from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
+from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
 from test import MockHttp, LibcloudTestCase
@@ -26,6 +27,7 @@ from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
 from test.secrets import EC2_ACCESS_ID, EC2_SECRET
+
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
@@ -241,6 +243,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         result = self.driver.ex_change_node_size(node=node, new_size=size)
         self.assertTrue(result)
 
+
 class EC2MockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('ec2')
@@ -309,6 +312,39 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('create_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+
+class EucMockHttp(EC2MockHttp):
+    fixtures = ComputeFileFixtures('ec2')
+
+    def _services_Eucalyptus_DescribeInstances(self, method, url, body,
+                                               headers):
+        return self._DescribeInstances(method, url, body, headers)
+
+    def _services_Eucalyptus_DescribeImages(self, method, url, body,
+                                            headers):
+        return self._DescribeImages(method, url, body, headers)
+
+    def _services_Eucalyptus_DescribeAddresses(self, method, url, body,
+                                               headers):
+        return self._DescribeAddresses(method, url, body, headers)
+
+    def _services_Eucalyptus_RebootInstances(self, method, url, body,
+                                             headers):
+        return self._RebootInstances(method, url, body, headers)
+
+    def _services_Eucalyptus_TerminateInstances(self, method, url, body,
+                                                headers):
+        return self._TerminateInstances(method, url, body, headers)
+
+    def _services_Eucalyptus_RunInstances(self, method, url, body,
+                                          headers):
+        return self._RunInstances(method, url, body, headers)
+
+    def _services_Eucalyptus_CreateTags(self, method, url, body,
+                                        headers):
+        return self._CreateTags(method, url, body, headers)
+
+
 class EC2APSETests(EC2Tests):
     def setUp(self):
         EC2APSENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
@@ -316,12 +352,14 @@ class EC2APSETests(EC2Tests):
         EC2MockHttp.type = None
         self.driver = EC2APSENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
 
+
 class EC2APNETests(EC2Tests):
     def setUp(self):
         EC2APNENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
         self.driver = EC2APNENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+
 
 class NimbusTests(EC2Tests):
     def setUp(self):
@@ -377,6 +415,27 @@ class NimbusTests(EC2Tests):
        node = self.driver.list_nodes()[0]
        self.driver.ex_create_tags(node=node, tags={'foo': 'bar'})
        self.assertExecutedMethodCount(0)
+
+
+class EucTests(LibcloudTestCase, TestCaseMixin):
+    def setUp(self):
+        EucNodeDriver.connectionCls.conn_classes = (None, EucMockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+        self.driver = EucNodeDriver(EC2_ACCESS_ID, EC2_SECRET,
+                host="some.eucalyptus.com")
+
+    def test_list_locations_response(self):
+        try:
+            self.driver.list_locations()
+        except Exception:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_list_location(self):
+        pass
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
