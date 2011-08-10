@@ -692,6 +692,15 @@ class EC2NodeDriver(NodeDriver):
         self.connection.request(self.path,
                                 params=params.copy()).object
 
+    def _add_instance_filter(self, params, node):
+        """
+        Add instance filter to the provided params dictionary.
+        """
+        params.update({
+            'Filter.0.Name': 'instance-id',
+            'Filter.0.Value.0': node.id
+        })
+
     def ex_describe_addresses(self, nodes):
         """
         Return Elastic IP addresses for all the nodes in the provided list.
@@ -709,10 +718,7 @@ class EC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeAddresses'}
 
         if len(nodes) == 1:
-            params.update({
-                'Filter.0.Name': 'instance-id',
-                'Filter.0.Value.0': nodes[0].id
-            })
+            self._add_instance_filter(params, nodes[0])
 
         result = self.connection.request(self.path,
                                          params=params.copy()).object
@@ -1012,6 +1018,12 @@ class EucNodeDriver(EC2NodeDriver):
         raise NotImplementedError(
                 'list_locations not implemented for this driver')
 
+    def _add_instance_filter(self, params, node):
+        """
+        Eucalyptus driver doesn't support filtering on instance id so this is a
+        no-op.
+        """
+        pass
 
 # Nimbus clouds have 3 EC2-style instance types but their particular RAM
 # allocations are configured by the admin
