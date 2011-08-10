@@ -30,6 +30,7 @@ from test.secrets import EC2_ACCESS_ID, EC2_SECRET
 
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
+    image_name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
 
     def setUp(self):
         EC2MockHttp.test = self
@@ -40,9 +41,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
-                          name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
+                          name=self.image_name,
                           driver=self.driver)
-        size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
         node = self.driver.create_node(name='foo', image=image, size=size)
         self.assertEqual(node.id, 'i-2ba64342')
         self.assertEqual(node.name, 'foo')
@@ -52,9 +54,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_create_node_idempotent(self):
         EC2MockHttp.type = 'idempotent'
         image = NodeImage(id='ami-be3adfd7',
-                          name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
+                          name=self.image_name,
                           driver=self.driver)
-        size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
         token = 'testclienttoken'
         node = self.driver.create_node(name='foo', image=image, size=size,
                 ex_clienttoken=token)
@@ -66,15 +69,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         #    If you repeat the request with the same client token, but change
         #    another request parameter, Amazon EC2 returns an
         #    IdempotentParameterMismatch error.
-
         # In our case, changing the parameter doesn't actually matter since we
         # are forcing the error response fixture.
         EC2MockHttp.type = 'idempotent_mismatch'
 
         idem_error = None
+        # different count
         try:
             self.driver.create_node(name='foo', image=image, size=size,
-                    ex_mincount='2', ex_maxcount='2', # different count
+                    ex_mincount='2', ex_maxcount='2',
                     ex_clienttoken=token)
         except IdempotentParamError, e:
             idem_error = e
@@ -82,7 +85,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_create_node_no_availability_zone(self):
         image = NodeImage(id='ami-be3adfd7',
-                          name='ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml',
+                          name=self.image_name,
                           driver=self.driver)
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
                         driver=self.driver)
@@ -129,7 +132,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_sizes(self):
         region_old = self.driver.region_name
 
-        names = [ ('ec2_us_east', 'us-east-1'),
+        names = [('ec2_us_east', 'us-east-1'),
                   ('ec2_us_west', 'us-west-1'),
                   ('ec2_eu_west', 'eu-west-1'),
                   ('ec2_ap_southeast', 'ap-southeast-1'),
@@ -410,11 +413,11 @@ class NimbusTests(EC2Tests):
         self.assertEqual(node.extra['tags'], {'user_key0': 'user_val0', 'user_key1': 'user_val1'})
 
     def test_ex_create_tags(self):
-       # Nimbus doesn't support creating tags so this one should be a
-       # passthrough
-       node = self.driver.list_nodes()[0]
-       self.driver.ex_create_tags(node=node, tags={'foo': 'bar'})
-       self.assertExecutedMethodCount(0)
+        # Nimbus doesn't support creating tags so this one should be a
+        # passthrough
+        node = self.driver.list_nodes()[0]
+        self.driver.ex_create_tags(node=node, tags={'foo': 'bar'})
+        self.assertExecutedMethodCount(0)
 
 
 class EucTests(LibcloudTestCase, TestCaseMixin):
