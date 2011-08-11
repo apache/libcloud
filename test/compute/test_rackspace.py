@@ -97,8 +97,19 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_images(self):
         ret = self.driver.list_images()
-        self.assertEqual(ret[10].extra['serverId'], None)
-        self.assertEqual(ret[11].extra['serverId'], '91221')
+        expected = {10: {'serverId': None,
+                         'status': 'ACTIVE',
+                         'created': '2009-07-20T09:14:37-05:00',
+                         'updated': '2009-07-20T09:14:37-05:00',
+                         'progress': None},
+                    11: {'serverId': '91221',
+                         'status': 'ACTIVE',
+                         'created': '2009-11-29T20:22:09-06:00',
+                         'updated': '2009-11-29T20:24:08-06:00',
+                         'progress': '100'}}
+        for ret_idx, extra in expected.items():
+            for key, value in extra.items():
+                self.assertEqual(ret[ret_idx].extra[key], value)
 
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',

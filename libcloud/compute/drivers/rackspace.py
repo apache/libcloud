@@ -297,7 +297,7 @@ class RackspaceNodeDriver(NodeDriver):
     def ex_confirm_resize(self, node):
         """
         Confirm a resize request which is currently in progress. If a resize
-        request is not explicitly confirmed or reverted it's automatically 
+        request is not explicitly confirmed or reverted it's automatically
         confirmed after 24 hours.
 
         For more info refer to the API documentation: http://goo.gl/zjFI1
@@ -565,9 +565,13 @@ class RackspaceNodeDriver(NodeDriver):
 
     def _to_image(self, el):
         i = NodeImage(id=el.get('id'),
-                     name=el.get('name'),
-                     driver=self.connection.driver,
-                     extra={'serverId': el.get('serverId')})
+                      name=el.get('name'),
+                      driver=self.connection.driver,
+                      extra={'updated': el.get('updated'),
+                             'created': el.get('created'),
+                             'status': el.get('status'),
+                             'serverId': el.get('serverId'),
+                             'progress': el.get('progress')})
         return i
 
     def ex_limits(self):
