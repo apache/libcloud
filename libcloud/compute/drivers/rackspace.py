@@ -37,32 +37,43 @@ from libcloud.common.rackspace import (
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 
-class RackspaceResponse(Response):
+class OpenStackResponse(Response):
 
     def success(self):
         i = int(self.status)
         return i >= 200 and i <= 299
 
+    def has_content_type(self, content_type):
+        content_type_header = dict([(key, value) for key, value in
+                                    self.headers.items()
+                                    if key.lower() == 'content-type'])
+        if not content_type_header:
+            return False
+
+        content_type_value = content_type_header['content-type'].lower()
+
+        return content_type_value.find(content_type.lower()) > -1
+
     def parse_body(self):
-        if not self.body:
-            return None
+        if not self.has_content_type('application/xml') or not self.body:
+            return self.body
+
         try:
-            body = ET.XML(self.body)
+            return ET.XML(self.body)
         except:
             raise MalformedResponseError(
-                "Failed to parse XML",
+                'Failed to parse XML',
                 body=self.body,
-                driver=RackspaceNodeDriver)
-        return body
+                driver=OpenStackNodeDriver)
 
     def parse_error(self):
-        # TODO: fixup, Rackspace only uses response codes really!
+        # TODO: fixup; only uses response codes really!
         try:
             body = ET.XML(self.body)
         except:
             raise MalformedResponseError(
                 "Failed to parse XML",
-                body=self.body, driver=RackspaceNodeDriver)
+                body=self.body, driver=OpenStackNodeDriver)
         try:
             text = "; ".join([err.text or ''
                               for err in
@@ -73,19 +84,21 @@ class RackspaceResponse(Response):
         return '%s %s %s' % (self.status, self.error, text)
 
 
-class RackspaceConnection(RackspaceBaseConnection):
-    """
-    Connection class for the Rackspace driver
-    """
+# TODO: Make an OpenStackBaseConnection (or maybe this turns into that).
+class OpenStackConnection(RackspaceBaseConnection):
 
-    responseCls = RackspaceResponse
-    auth_host = AUTH_HOST_US
+    responseCls = OpenStackResponse
+    auth_host = None
     _url_key = "server_url"
 
-    def __init__(self, user_id, key, secure=True):
-        super(RackspaceConnection, self).__init__(user_id, key, secure)
+    def __init__(self, user_id, key, secure, host=None, port=None):
+        super(OpenStackConnection, self).__init__(user_id, key, secure=secure)
         self.api_version = 'v1.0'
         self.accept_format = 'application/xml'
+        if host is not None:
+            self.auth_host = host
+        if port is not None:
+            self.port = (port, port)
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -100,37 +113,16 @@ class RackspaceConnection(RackspaceBaseConnection):
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
             params['cache-busting'] = os.urandom(8).encode('hex')
-        return super(RackspaceConnection, self).request(
+        return super(OpenStackConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers
         )
 
 
-class RackspaceSharedIpGroup(object):
+class OpenStackNodeDriver(NodeDriver):
     """
-    Shared IP group info.
-    """
-
-    def __init__(self, id, name, servers=None):
-        self.id = str(id)
-        self.name = name
-        self.servers = servers
-
-
-class RackspaceNodeIpAddresses(object):
-    """
-    List of public and private IP addresses of a Node.
-    """
-
-    def __init__(self, public_addresses, private_addresses):
-        self.public_addresses = public_addresses
-        self.private_addresses = private_addresses
-
-
-class RackspaceNodeDriver(NodeDriver):
-    """
-    Rackspace node driver.
+    OpenStack node driver.
 
     Extra node attributes:
         - password: root password, available after create.
@@ -138,13 +130,11 @@ class RackspaceNodeDriver(NodeDriver):
         - imageId: id of image
         - flavorId: id of flavor
     """
-    connectionCls = RackspaceConnection
-    type = Provider.RACKSPACE
+    connectionCls = OpenStackConnection
+    type = Provider.OPENSTACK
+    # TODO: api_name = 'openstack' - where is this referenced?
     api_name = 'rackspace'
-    name = 'Rackspace'
-
-    _rackspace_prices = get_pricing(driver_type='compute',
-                                    driver_name='rackspace')
+    name = 'OpenStack'
 
     features = {"create_node": ["generates_password"]}
 
@@ -176,14 +166,7 @@ class RackspaceNodeDriver(NodeDriver):
     def list_images(self, location=None):
         return self._to_images(self.connection.request('/images/detail')
                                               .object)
-
-    def list_locations(self):
-        """Lists available locations
-
-        Locations cannot be set or retrieved via the API, but currently
-        there are two locations, DFW and ORD.
-        """
-        return [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
+    # TODO: def list_locations: Is there an OpenStack way to do this? Rackspace-specific docstring says no.
 
     def _change_password_or_name(self, node, name=None, password=None):
         uri = '/servers/%s' % (node.id)
@@ -227,7 +210,7 @@ class RackspaceNodeDriver(NodeDriver):
         return self._change_password_or_name(node, name=name)
 
     def create_node(self, **kwargs):
-        """Create a new rackspace node
+        """Create a new node
 
         See L{NodeDriver.create_node} for more keyword args.
         @keyword    ex_metadata: Key/Value metadata to associate with a node
@@ -552,8 +535,8 @@ class RackspaceNodeDriver(NodeDriver):
                      name=el.get('name'),
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
-                     bandwidth=None,  # XXX: needs hardcode
-                     price=self._get_size_price(el.get('id')),  # Hardcoded,
+                     bandwidth=None, # XXX: needs hardcode
+                     price=self._get_size_price(el.get('id')), # Hardcoded,
                      driver=self.connection.driver)
         return s
 
@@ -629,17 +612,88 @@ class RackspaceNodeDriver(NodeDriver):
                        for s in self._findall(servers_el[0], 'server')]
         else:
             servers = None
-        return RackspaceSharedIpGroup(id=el.get('id'),
+        return OpenStackSharedIpGroup(id=el.get('id'),
                                       name=el.get('name'),
                                       servers=servers)
 
     def _to_ip_addresses(self, el):
-        return RackspaceNodeIpAddresses(
+        return OpenStackNodeIpAddresses(
             [ip.get('addr') for ip in
              self._findall(self._findall(el, 'public')[0], 'ip')],
             [ip.get('addr') for ip in
              self._findall(self._findall(el, 'private')[0], 'ip')]
         )
+
+    def _get_size_price(self, size_id):
+        if 'openstack' not in PRICING_DATA['compute']:
+            return 0.0
+
+        return get_size_price(driver_type='compute',
+                              driver_name='openstack',
+                              size_id=size_id)
+
+
+# Is RackspaceResponse needed? parse_body seems enough like parent.
+class RackspaceResponse(OpenStackResponse):
+
+    def parse_body(self):
+        if not self.body:
+            return None
+        try:
+            body = ET.XML(self.body)
+        except:
+            raise MalformedResponseError(
+                "Failed to parse XML",
+                body=self.body,
+                driver=RackspaceNodeDriver)
+        return body
+
+
+class RackspaceConnection(OpenStackConnection):
+    """
+    Connection class for the Rackspace driver
+    """
+
+    responseCls = RackspaceResponse
+    auth_host = AUTH_HOST_US
+
+
+class OpenStackSharedIpGroup(object):
+    """
+    Shared IP group info.
+    """
+
+    def __init__(self, id, name, servers=None):
+        self.id = str(id)
+        self.name = name
+        self.servers = servers
+
+
+class OpenStackNodeIpAddresses(object):
+    """
+    List of public and private IP addresses of a Node.
+    """
+
+    def __init__(self, public_addresses, private_addresses):
+        self.public_addresses = public_addresses
+        self.private_addresses = private_addresses
+
+
+class RackspaceNodeDriver(OpenStackNodeDriver):
+    name = 'Rackspace'
+    connectionCls = RackspaceConnection
+    type = Provider.RACKSPACE
+
+    _rackspace_prices = get_pricing(driver_type='compute',
+                                    driver_name='rackspace')
+
+    def list_locations(self):
+        """Lists available locations
+
+        Locations cannot be set or retrieved via the API, but currently
+        there are two locations, DFW and ORD.
+        """
+        return [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
 
 
 class RackspaceUKConnection(RackspaceConnection):
@@ -658,52 +712,3 @@ class RackspaceUKNodeDriver(RackspaceNodeDriver):
 
     def list_locations(self):
         return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
-
-
-class OpenStackResponse(RackspaceResponse):
-
-    def has_content_type(self, content_type):
-        content_type_header = dict([(key, value) for key, value in
-                                    self.headers.items()
-                                    if key.lower() == 'content-type'])
-        if not content_type_header:
-            return False
-
-        content_type_value = content_type_header['content-type'].lower()
-
-        return content_type_value.find(content_type.lower()) > -1
-
-    def parse_body(self):
-        if not self.has_content_type('application/xml') or not self.body:
-            return self.body
-
-        try:
-            return ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                'Failed to parse XML',
-                body=self.body,
-                driver=RackspaceNodeDriver)
-
-
-class OpenStackConnection(RackspaceConnection):
-
-    responseCls = OpenStackResponse
-
-    def __init__(self, user_id, key, secure, host, port):
-        super(OpenStackConnection, self).__init__(user_id, key, secure=secure)
-        self.auth_host = host
-        self.port = (port, port)
-
-
-class OpenStackNodeDriver(RackspaceNodeDriver):
-    name = 'OpenStack'
-    connectionCls = OpenStackConnection
-
-    def _get_size_price(self, size_id):
-        if 'openstack' not in PRICING_DATA['compute']:
-            return 0.0
-
-        return get_size_price(driver_type='compute',
-                              driver_name='openstack',
-                              size_id=size_id)
