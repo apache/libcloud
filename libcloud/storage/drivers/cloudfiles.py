@@ -36,7 +36,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.types import LazyList
 
 from libcloud.common.rackspace import (
-    AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
+    AUTH_HOST_US, AUTH_HOST_UK, OpenStackBaseConnection)
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
@@ -82,7 +82,7 @@ class CloudFilesResponse(Response):
 class CloudFilesRawResponse(CloudFilesResponse, RawResponse):
     pass
 
-class CloudFilesConnection(RackspaceBaseConnection):
+class CloudFilesConnection(OpenStackBaseConnection):
     """
     Base connection class for the Cloudfiles driver.
     """

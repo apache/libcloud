@@ -26,7 +26,7 @@ from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.loadbalancer.types import State
 from libcloud.common.rackspace import (AUTH_HOST_US, AUTH_HOST_UK,
-        RackspaceBaseConnection)
+        OpenStackBaseConnection)
 
 
 class RackspaceResponse(Response):
@@ -41,7 +41,7 @@ class RackspaceResponse(Response):
             return json.loads(self.body)
 
 
-class RackspaceConnection(RackspaceBaseConnection):
+class RackspaceConnection(OpenStackBaseConnection):
     responseCls = RackspaceResponse
     auth_host = AUTH_HOST_US
     _url_key = "lb_url"

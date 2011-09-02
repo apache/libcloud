@@ -26,18 +26,18 @@ AUTH_HOST_UK = 'lon.auth.api.rackspacecloud.com'
 AUTH_API_VERSION = 'v1.0'
 
 __all__ = [
-    "RackspaceBaseConnection",
+    "OpenStackBaseConnection",
     "AUTH_HOST_US",
     "AUTH_HOST_UK"
     ]
 
-class RackspaceBaseConnection(ConnectionUserAndKey):
+class OpenStackBaseConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure):
         self.cdn_management_url = None
         self.storage_url = None
         self.auth_token = None
         self.__host = None
-        super(RackspaceBaseConnection, self).__init__(
+        super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure)
 
     def add_default_headers(self, headers):
@@ -76,7 +76,7 @@ class RackspaceBaseConnection(ConnectionUserAndKey):
 
     def _populate_hosts_and_request_paths(self):
         """
-        Rackspace uses a separate host for API calls which is only provided
+        OpenStack uses a separate host for API calls which is only provided
         after an initial authentication request. If we haven't made that
         request yet, do it here. Otherwise, just return the management host.
         """

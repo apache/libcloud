@@ -31,7 +31,7 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 from libcloud.common.rackspace import (
-    AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
+    AUTH_HOST_US, AUTH_HOST_UK, OpenStackBaseConnection)
 
 
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
@@ -84,8 +84,7 @@ class OpenStackResponse(Response):
         return '%s %s %s' % (self.status, self.error, text)
 
 
-# TODO: Make an OpenStackBaseConnection (or maybe this turns into that).
-class OpenStackConnection(RackspaceBaseConnection):
+class OpenStackConnection(OpenStackBaseConnection):
 
     responseCls = OpenStackResponse
     auth_host = None
