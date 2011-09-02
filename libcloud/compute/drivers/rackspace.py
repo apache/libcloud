@@ -29,9 +29,10 @@ from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.common.openstack import OpenStackBaseConnection
 
 from libcloud.common.rackspace import (
-    AUTH_HOST_US, AUTH_HOST_UK, OpenStackBaseConnection)
+    AUTH_HOST_US, AUTH_HOST_UK)
 
 
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
