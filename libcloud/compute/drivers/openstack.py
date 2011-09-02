@@ -92,17 +92,13 @@ class OpenStackResponse(Response):
 class OpenStackConnection(OpenStackBaseConnection):
 
     responseCls = OpenStackResponse
-    auth_host = None
     _url_key = "server_url"
 
     def __init__(self, user_id, key, secure, host=None, port=None):
-        super(OpenStackConnection, self).__init__(user_id, key, secure=secure)
+        super(OpenStackConnection, self).__init__(
+            user_id, key, secure=secure, host=host, port=port)
         self.api_version = 'v1.0'
         self.accept_format = 'application/xml'
-        if host is not None:
-            self.auth_host = host
-        if port is not None:
-            self.port = (port, port)
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):

@@ -28,11 +28,18 @@ __all__ = [
     ]
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
-    def __init__(self, user_id, key, secure):
+
+    auth_host = None
+
+    def __init__(self, user_id, key, secure, host=None, port=None):
         self.cdn_management_url = None
         self.storage_url = None
         self.auth_token = None
-        self.__host = None
+        if host is not None:
+            self.auth_host = host
+        if port is not None:
+            self.port = (port, port)
+
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure)
 
