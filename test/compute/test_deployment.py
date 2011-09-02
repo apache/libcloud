@@ -43,7 +43,7 @@ class MockClient(BaseSSHClient):
         self.stderr = ''
         self.exit_status = 0
 
-    def put(self,  path, contents, chmod=755):
+    def put(self, path, contents, chmod=755):
         return contents
 
     def run(self, name):
@@ -321,7 +321,7 @@ class DeploymentTests(unittest.TestCase):
 
 class RackspaceMockHttp(MockHttp):
 
-    fixtures = ComputeFileFixtures('rackspace')
+    fixtures = ComputeFileFixtures('openstack')
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):
