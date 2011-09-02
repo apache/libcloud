@@ -132,8 +132,7 @@ class OpenStackNodeDriver(NodeDriver):
     """
     connectionCls = OpenStackConnection
     type = Provider.OPENSTACK
-    # TODO: api_name = 'openstack' - where is this referenced?
-    api_name = 'rackspace'
+    api_name = 'openstack'
     name = 'OpenStack'
 
     features = {"create_node": ["generates_password"]}
