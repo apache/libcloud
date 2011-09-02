@@ -21,8 +21,8 @@ from urllib2 import urlparse
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.compute.types import InvalidCredsError, MalformedResponseError
 
-AUTH_HOST_US='auth.api.rackspacecloud.com'
-AUTH_HOST_UK='lon.auth.api.rackspacecloud.com'
+AUTH_HOST_US = 'auth.api.rackspacecloud.com'
+AUTH_HOST_UK = 'lon.auth.api.rackspacecloud.com'
 AUTH_API_VERSION = 'v1.0'
 
 __all__ = [
