@@ -24,7 +24,6 @@ from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
-from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
 from test import MockHttp

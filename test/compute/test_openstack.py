@@ -16,18 +16,14 @@ import sys
 import unittest
 import httplib
 
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 from libcloud.compute.drivers.rackspace import OpenStackResponse
 from libcloud.compute.drivers.rackspace import OpenStackNodeDriver as OpenStack
-from libcloud.compute.base import Node, NodeImage, NodeSize
+from libcloud.compute.base import Node
 from libcloud.pricing import set_pricing
 
-from test import MockHttp, MockResponse, MockHttpTestCase
-from test.compute import TestCaseMixin
+from test import MockResponse, MockHttpTestCase
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
 from test.secrets import NOVA_USERNAME, NOVA_API_KEY, NOVA_HOST, NOVA_PORT
 from test.secrets import NOVA_SECURE
 
