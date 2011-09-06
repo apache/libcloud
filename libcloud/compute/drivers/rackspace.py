@@ -26,28 +26,12 @@ from libcloud.common.rackspace import (
     AUTH_HOST_US, AUTH_HOST_UK)
 
 
-# Is RackspaceResponse needed? parse_body seems enough like parent.
-class RackspaceResponse(OpenStackResponse):
-
-    def parse_body(self):
-        if not self.body:
-            return None
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse XML",
-                body=self.body,
-                driver=RackspaceNodeDriver)
-        return body
-
-
 class RackspaceConnection(OpenStackConnection):
     """
     Connection class for the Rackspace driver
     """
 
-    responseCls = RackspaceResponse
+    responseCls = OpenStackResponse
     auth_host = AUTH_HOST_US
 
 

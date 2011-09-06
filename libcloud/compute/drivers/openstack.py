@@ -54,16 +54,17 @@ class OpenStackResponse(Response):
         return content_type_value.find(content_type.lower()) > -1
 
     def parse_body(self):
-        if not self.has_content_type('application/xml') or not self.body:
-            return self.body
+        if self.has_content_type('application/xml'):
+            try:
+                return ET.XML(self.body)
+            except:
+                raise MalformedResponseError(
+                    'Failed to parse XML',
+                    body=self.body,
+                    driver=OpenStackNodeDriver)
 
-        try:
-            return ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                'Failed to parse XML',
-                body=self.body,
-                driver=OpenStackNodeDriver)
+        else:
+            return self.body
 
     def parse_error(self):
         # TODO: fixup; only uses response codes really!
