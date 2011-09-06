@@ -143,9 +143,6 @@ class RackspaceNodeDriver(NodeDriver):
     api_name = 'rackspace'
     name = 'Rackspace'
 
-    _rackspace_prices = get_pricing(driver_type='compute',
-                                    driver_name='rackspace')
-
     features = {"create_node": ["generates_password"]}
 
     NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
