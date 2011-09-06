@@ -17,7 +17,6 @@ Rackspace driver
 """
 from xml.etree import ElementTree as ET
 
-from libcloud.pricing import get_pricing
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import Provider
 from libcloud.compute.base import NodeLocation
@@ -56,9 +55,6 @@ class RackspaceNodeDriver(OpenStackNodeDriver):
     name = 'Rackspace'
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
-
-    _rackspace_prices = get_pricing(driver_type='compute',
-                                    driver_name='rackspace')
 
     def list_locations(self):
         """Lists available locations
