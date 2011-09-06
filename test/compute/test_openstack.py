@@ -21,7 +21,7 @@ from libcloud.compute.drivers.rackspace import OpenStackNodeDriver as OpenStack
 from libcloud.compute.base import Node
 from libcloud.pricing import set_pricing
 
-from test import MockResponse, MockHttpTestCase
+from test import MockResponse, MockHttpTestCase, XML_HEADERS
 from test.file_fixtures import ComputeFileFixtures
 
 from test.secrets import NOVA_USERNAME, NOVA_API_KEY, NOVA_HOST, NOVA_PORT
@@ -94,7 +94,6 @@ class OpenStackTests(unittest.TestCase):
 
 
 class OpenStackMockHttp(MockHttpTestCase):
-
     fixtures = ComputeFileFixtures('openstack')
 
     # fake auth token response
@@ -120,15 +119,15 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_detail_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_empty.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_METADATA(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_metadata.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_images(self, method, url, body, headers):
         if method != "POST":
@@ -136,26 +135,26 @@ class OpenStackMockHttp(MockHttpTestCase):
         # this is currently used for creation of new image with
         # POST request, don't handle GET to avoid possible confusion
         body = self.fixtures.load('v1_slug_images_post.xml')
-        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_images_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_images_detail.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers.xml')
-        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_EX_SHARED_IP_GROUP(self, method, url, body, headers):
         # test_create_node_ex_shared_ip_group
         # Verify that the body contains sharedIpGroupId XML element
         self.assertTrue(body.find('sharedIpGroupId="12345"') != -1)
         body = self.fixtures.load('v1_slug_servers.xml')
-        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_METADATA(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_metadata.xml')
-        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_72258_action(self, method, url, body, headers):
         if method != "POST" or body[:8] != "<reboot ":
@@ -165,7 +164,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_limits(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_limits.xml')
-        return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_72258(self, method, url, body, headers):
         if method != "DELETE":
@@ -175,7 +174,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_72258_ips(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_ips.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_shared_ip_groups_5467(self, method, url, body, headers):
         if method != 'DELETE':
@@ -186,11 +185,11 @@ class OpenStackMockHttp(MockHttpTestCase):
 
         fixture = 'v1_slug_shared_ip_group.xml' if method == 'POST' else 'v1_slug_shared_ip_groups.xml'
         body = self.fixtures.load(fixture)
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_shared_ip_groups_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_shared_ip_groups_detail.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_3445_ips_public_67_23_21_133(self, method, url, body, headers):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
@@ -208,9 +207,9 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_flavors_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_flavors_detail.xml')
-        return (httplib.OK, body,
-                {'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529', 'content-type': 'application/xml'},
-                httplib.responses[httplib.OK])
+        headers = XML_HEADERS.copy()
+        headers.update({'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529'})
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
