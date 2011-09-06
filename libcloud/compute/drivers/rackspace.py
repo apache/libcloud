@@ -55,6 +55,7 @@ class RackspaceNodeDriver(OpenStackNodeDriver):
     name = 'Rackspace'
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
+    api_name = 'rackspace'
 
     def list_locations(self):
         """Lists available locations

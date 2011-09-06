@@ -27,6 +27,7 @@ from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
 
 
 class RackspaceTests(unittest.TestCase, TestCaseMixin):
+    should_have_pricing = True
 
     def setUp(self):
         Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)

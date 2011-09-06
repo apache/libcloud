@@ -14,8 +14,10 @@
 # limitations under the License.
 
 from libcloud.compute.base import Node, NodeImage, NodeLocation
+from libcloud.pricing import get_pricing
 
 class TestCaseMixin(object):
+    should_have_pricing = False
 
     def test_list_nodes_response(self):
         nodes = self.driver.list_nodes()
@@ -38,7 +40,6 @@ class TestCaseMixin(object):
         self.assertTrue(isinstance(images, list))
         for image in images:
             self.assertTrue(isinstance(image, NodeImage))
-
 
     def test_list_locations_response(self):
         locations = self.driver.list_locations()
@@ -66,6 +67,19 @@ class TestCaseMixin(object):
         node = self.driver.list_nodes()[0]
         ret = self.driver.reboot_node(node)
         self.assertTrue(isinstance(ret, bool))
+
+    def test_get_pricing_success(self):
+        if not self.should_have_pricing:
+            return None
+
+        driver_type = 'compute'
+        try:
+            get_pricing(driver_type=driver_type, driver_name=self.driver.api_name)
+        except KeyError:
+            self.fail("No {driver_type!r} pricing info for {driver}.".format(
+                driver=self.driver.__class__.__name__,
+                driver_type=driver_type,
+            ))
 
 if __name__ == "__main__":
     import doctest
