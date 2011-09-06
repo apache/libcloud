@@ -207,8 +207,8 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_flavors_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_flavors_detail.xml')
-        headers = XML_HEADERS.copy()
-        headers.update({'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529'})
+        headers = {'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529'}
+        headers.update(XML_HEADERS)
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
 
