@@ -49,14 +49,8 @@ class OpenStackResponse(Response):
         return i >= 200 and i <= 299
 
     def has_content_type(self, content_type):
-        content_type_header = dict([(key, value) for key, value in
-                                    self.headers.items()
-                                    if key.lower() == 'content-type'])
-        if not content_type_header:
-            return False
-
-        content_type_value = content_type_header['content-type'].lower()
-
+        content_type_value = self.headers.get('content-type') or ''
+        content_type_value = content_type_value.lower()
         return content_type_value.find(content_type.lower()) > -1
 
     def parse_body(self):
