@@ -69,7 +69,7 @@ class OpenStackTests(unittest.TestCase):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 8, 'Wrong sizes count')
+        self.assertEqual(len(sizes), 7, 'Wrong sizes count')
 
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
@@ -84,7 +84,7 @@ class OpenStackTests(unittest.TestCase):
                     pricing=pricing)
 
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 8, 'Wrong sizes count')
+        self.assertEqual(len(sizes), 7, 'Wrong sizes count')
 
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
@@ -207,17 +207,7 @@ class OpenStackMockHttp(MockHttpTestCase):
             return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_flavors_detail(self, method, url, body, headers):
-        body = """<flavors xmlns="http://docs.rackspacecloud.com/servers/api/v1.0">
-                    <flavor disk="40" id="3" name="m1.medium" ram="4096"/>
-                    <flavor disk="20" id="2" name="m1.small" ram="2048"/>
-                    <flavor disk="80" id="4" name="m1.large" ram="8192"/>
-                    <flavor disk="0" id="6" name="s1" ram="256"/>
-                    <flavor disk="0" id="7" name="s1.swap" ram="256"/>
-                    <flavor disk="0" id="1" name="m1.tiny" ram="512"/>
-                    <flavor disk="10" id="8" name="s1.tiny" ram="512"/>
-                    <flavor disk="160" id="5" name="m1.xlarge" ram="16384"/>
-                </flavors>
-                """
+        body = self.fixtures.load('v1_slug_flavors_detail.xml')
         return (httplib.OK, body,
                 {'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529', 'content-type': 'application/xml'},
                 httplib.responses[httplib.OK])

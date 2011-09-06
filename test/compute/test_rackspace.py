@@ -14,7 +14,6 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
@@ -30,12 +29,12 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
     should_have_pricing = True
 
     def setUp(self):
-        Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
-        RackspaceMockHttp.type = None
+        Rackspace.connectionCls.conn_classes = (None, OpenStackMockHttp)
+        OpenStackMockHttp.type = None
         self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
 
     def test_auth(self):
-        RackspaceMockHttp.type = 'UNAUTHORIZED'
+        OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
         except InvalidCredsError, e:
@@ -44,7 +43,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_auth_missing_key(self):
-        RackspaceMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
+        OpenStackMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
             self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
         except MalformedResponseError, e:
@@ -53,7 +52,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_auth_server_error(self):
-        RackspaceMockHttp.type = 'INTERNAL_SERVER_ERROR'
+        OpenStackMockHttp.type = 'INTERNAL_SERVER_ERROR'
         try:
             self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
         except MalformedResponseError, e:
@@ -62,10 +61,10 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_list_nodes(self):
-        RackspaceMockHttp.type = 'EMPTY'
+        OpenStackMockHttp.type = 'EMPTY'
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 0)
-        RackspaceMockHttp.type = None
+        OpenStackMockHttp.type = None
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
@@ -74,14 +73,14 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
-        RackspaceMockHttp.type = 'METADATA'
+        OpenStackMockHttp.type = 'METADATA'
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
         self.assertEqual(node.extra.get('metadata').get('somekey'),
                          'somevalue')
-        RackspaceMockHttp.type = None
+        OpenStackMockHttp.type = None
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -116,7 +115,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
     def test_create_node_ex_shared_ip_group(self):
-        RackspaceMockHttp.type = 'EX_SHARED_IP_GROUP'
+        OpenStackMockHttp.type = 'EX_SHARED_IP_GROUP'
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
                           driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None,
@@ -127,7 +126,7 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
     def test_create_node_with_metadata(self):
-        RackspaceMockHttp.type = 'METADATA'
+        OpenStackMockHttp.type = 'METADATA'
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
                           driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None,
@@ -234,13 +233,6 @@ class RackspaceTests(unittest.TestCase, TestCaseMixin):
         node = Node(id=444222, name=None, state=None, public_ip=None,
                     private_ip=None, driver=self.driver)
         self.assertTrue(self.driver.ex_revert_resize(node=node))
-
-
-class RackspaceMockHttp(OpenStackMockHttp):
-
-    def _v1_0_slug_flavors_detail(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_flavors_detail.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
