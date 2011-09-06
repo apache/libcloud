@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os.path
 import sys
 import unittest
 
 import libcloud.pricing
+
+PRICING_FILE_PATH = os.path.join(os.path.dirname(__file__), 'pricing_test.json')
 
 class PricingTestCase(unittest.TestCase):
 
@@ -25,7 +28,7 @@ class PricingTestCase(unittest.TestCase):
 
         pricing = libcloud.pricing.get_pricing(driver_type='compute',
                                                driver_name='foo',
-                                               pricing_file_path='test/pricing_test.json')
+                                               pricing_file_path=PRICING_FILE_PATH)
         self.assertEqual(pricing['1'], 1.0)
         self.assertEqual(pricing['2'], 2.0)
 
@@ -55,7 +58,7 @@ class PricingTestCase(unittest.TestCase):
     def test_get_pricing_not_in_cache(self):
         try:
             libcloud.pricing.get_pricing(driver_type='compute', driver_name='inexistent',
-                                         pricing_file_path='test/pricing_test.json')
+                                         pricing_file_path=PRICING_FILE_PATH)
         except KeyError:
             pass
         else:
