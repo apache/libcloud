@@ -28,15 +28,21 @@ class RackspaceTests(OpenStackTests):
     should_list_locations = True
     should_have_pricing = True
 
+    driver_type = Rackspace
+    driver_args = (
+        RACKSPACE_USER,
+        RACKSPACE_KEY,
+    )
+
     def setUp(self):
         Rackspace.connectionCls.conn_classes = (None, OpenStackMockHttp)
         OpenStackMockHttp.type = None
-        self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        self.driver = self.create_driver()
 
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
-            self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+            self.driver = self.create_driver()
         except InvalidCredsError, e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
@@ -45,7 +51,7 @@ class RackspaceTests(OpenStackTests):
     def test_auth_missing_key(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
-            self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+            self.driver = self.create_driver()
         except MalformedResponseError, e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
@@ -54,7 +60,7 @@ class RackspaceTests(OpenStackTests):
     def test_auth_server_error(self):
         OpenStackMockHttp.type = 'INTERNAL_SERVER_ERROR'
         try:
-            self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+            self.driver = self.create_driver()
         except MalformedResponseError, e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:

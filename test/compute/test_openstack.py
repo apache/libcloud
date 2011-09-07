@@ -58,11 +58,23 @@ class OpenStackResponseTestCase(unittest.TestCase):
 class OpenStackTests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
+    driver_type = OpenStack
+    driver_args = (
+        NOVA_USERNAME,
+        NOVA_API_KEY,
+        NOVA_SECURE,
+        NOVA_HOST,
+        NOVA_PORT,
+    )
+
+    @classmethod
+    def create_driver(self):
+        return self.driver_type(*self.driver_args)
+
     def setUp(self):
         OpenStack.connectionCls.conn_classes = (OpenStackMockHttp, None)
         OpenStackMockHttp.type = None
-        self.driver = OpenStack(NOVA_USERNAME, NOVA_API_KEY, NOVA_SECURE,
-                                NOVA_HOST, NOVA_PORT)
+        self.driver = self.create_driver()
         clear_pricing_data()
 
     def test_destroy_node(self):
