@@ -72,7 +72,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
         return self.driver_type(*self.driver_args)
 
     def setUp(self):
-        OpenStack.connectionCls.conn_classes = (OpenStackMockHttp, None)
+        self.driver_type.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
         OpenStackMockHttp.type = None
         self.driver = self.create_driver()
         clear_pricing_data()

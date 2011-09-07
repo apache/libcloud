@@ -34,11 +34,6 @@ class RackspaceTests(OpenStackTests):
         RACKSPACE_KEY,
     )
 
-    def setUp(self):
-        Rackspace.connectionCls.conn_classes = (None, OpenStackMockHttp)
-        OpenStackMockHttp.type = None
-        self.driver = self.create_driver()
-
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
