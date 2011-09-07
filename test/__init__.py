@@ -21,6 +21,9 @@ from cStringIO import StringIO
 from urllib2 import urlparse
 from cgi import parse_qs
 
+XML_HEADERS = {'content-type': 'application/xml'}
+
+
 class LibcloudTestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         self._visited_urls = []
@@ -90,11 +93,11 @@ class MockResponse(object):
 
 class BaseMockHttpObject(object):
     def _get_method_name(self, type, use_param, qs, path):
-        meth_name = path.replace('/','_').replace('.', '_').replace('-','_')
+        meth_name = path.replace('/', '_').replace('.', '_').replace('-', '_')
         if type:
             meth_name = '%s_%s' % (meth_name, self.type)
         if use_param:
-            param = qs[self.use_param][0].replace('.', '_').replace('-','_')
+            param = qs[self.use_param][0].replace('.', '_').replace('-', '_')
             meth_name = '%s_%s' % (meth_name, param)
         return meth_name
 
