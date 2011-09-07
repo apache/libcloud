@@ -15,9 +15,6 @@
 """
 Rackspace driver
 """
-from xml.etree import ElementTree as ET
-
-from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import Provider
 from libcloud.compute.base import NodeLocation
 from libcloud.compute.drivers.openstack import OpenStackConnection, OpenStackNodeDriver, OpenStackResponse
