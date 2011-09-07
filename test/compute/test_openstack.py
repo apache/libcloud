@@ -19,7 +19,7 @@ import httplib
 from libcloud.compute.drivers.rackspace import OpenStackResponse
 from libcloud.compute.drivers.rackspace import OpenStackNodeDriver as OpenStack
 from libcloud.compute.base import Node
-from libcloud.pricing import set_pricing
+from libcloud.pricing import set_pricing, clear_pricing_data
 
 from test import MockResponse, MockHttpTestCase, XML_HEADERS
 from test.file_fixtures import ComputeFileFixtures
@@ -60,6 +60,7 @@ class OpenStackTests(unittest.TestCase):
         OpenStackMockHttp.type = None
         self.driver = OpenStack(NOVA_USERNAME, NOVA_API_KEY, NOVA_SECURE,
                                 NOVA_HOST, NOVA_PORT)
+        clear_pricing_data()
 
     def test_destroy_node(self):
         node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
