@@ -26,6 +26,7 @@ from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
 
 
 class RackspaceTests(unittest.TestCase, TestCaseMixin):
+    should_list_locations = True
     should_have_pricing = True
 
     def setUp(self):

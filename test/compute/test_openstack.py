@@ -55,6 +55,8 @@ class OpenStackResponseTestCase(unittest.TestCase):
 
 
 class OpenStackTests(unittest.TestCase):
+    should_list_locations = False
+
     def setUp(self):
         OpenStack.connectionCls.conn_classes = (OpenStackMockHttp, None)
         OpenStackMockHttp.type = None

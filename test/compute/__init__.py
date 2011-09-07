@@ -17,6 +17,7 @@ from libcloud.compute.base import Node, NodeImage, NodeLocation
 from libcloud.pricing import get_pricing
 
 class TestCaseMixin(object):
+    should_list_locations = True
     should_have_pricing = False
 
     def test_list_nodes_response(self):
@@ -42,6 +43,9 @@ class TestCaseMixin(object):
             self.assertTrue(isinstance(image, NodeImage))
 
     def test_list_locations_response(self):
+        if not self.should_list_locations:
+            return None
+
         locations = self.driver.list_locations()
         self.assertTrue(isinstance(locations, list))
         for dc in locations:
