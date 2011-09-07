@@ -23,6 +23,7 @@ from libcloud.pricing import set_pricing, clear_pricing_data
 
 from test import MockResponse, MockHttpTestCase, XML_HEADERS
 from test.file_fixtures import ComputeFileFixtures
+from test.compute import TestCaseMixin
 
 from test.secrets import NOVA_USERNAME, NOVA_API_KEY, NOVA_HOST, NOVA_PORT
 from test.secrets import NOVA_SECURE
@@ -54,7 +55,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
         self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
 
 
-class OpenStackTests(unittest.TestCase):
+class OpenStackTests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
     def setUp(self):

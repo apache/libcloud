@@ -19,13 +19,12 @@ from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 from libcloud.compute.base import Node, NodeImage, NodeSize
 
-from test.compute.test_openstack import OpenStackMockHttp
-from test.compute import TestCaseMixin
+from test.compute.test_openstack import OpenStackTests, OpenStackMockHttp
 
 from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
 
 
-class RackspaceTests(unittest.TestCase, TestCaseMixin):
+class RackspaceTests(OpenStackTests):
     should_list_locations = True
     should_have_pricing = True
 
