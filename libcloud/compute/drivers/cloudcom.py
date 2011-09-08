@@ -25,3 +25,7 @@ class CloudComNodeDriver(CloudStackNodeDriver):
 
     type = Provider.CLOUDCOM
     name = 'CloudCom'
+    
+    def __init__(self, key, secret=None, secure=False, host=None, port=None):
+        host = host or self.host
+        super(CloudComNodeDriver, self).__init__(key, secret, secure, host, port)
