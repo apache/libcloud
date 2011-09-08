@@ -91,6 +91,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.rackspace', 'OpenStackNodeDriver'),
     Provider.NINEFOLD:
         ('libcloud.compute.drivers.ninefold', 'NinefoldNodeDriver'),
+    Provider.CLOUDCOM:
+        ('libcloud.compute.drivers.cloudcom', 'CloudComNodeDriver'),
 }
 
 def get_driver(provider):
