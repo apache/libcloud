@@ -24,8 +24,9 @@
 
 try:
     import secrets
-except:
-    pass
+except ImportError:
+    secrets = None
+
 import sys; sys.path.append('..')
 
 from libcloud.compute.types import Provider
@@ -34,7 +35,7 @@ from libcloud.providers import get_driver
 from pprint import pprint
 
 def main(argv):
-    """Main EC2 Demo
+    """Main Compute Demo
 
     When invoked from the command line, it will connect using secrets.py
     (see secrets.py.dist for setup instructions), and perform the following
@@ -44,15 +45,11 @@ def main(argv):
     - List available images (up to 10)
     - List available sizes (up to 10)
     """
-    # Load EC2 driver
-    EC2Driver = get_driver(Provider.EC2_US_EAST)
+    driver = get_demo_driver()
 
-    # Instantiate with Access ID and Secret Key
-    # (see secrets.py.dist)
     try:
-        ec2 = EC2Driver(secrets.EC2_ACCESS_ID, secrets.EC2_SECRET_KEY)
         print ">> Loading nodes..."
-        nodes = ec2.list_nodes()
+        nodes = driver.list_nodes()
         pprint(nodes)
     except NameError, e:
         print ">> Fatal Error: %s" % e
@@ -61,68 +58,52 @@ def main(argv):
     except Exception, e:
         print ">> Fatal error: %s" % e
         return 1
-    
+
     print ">> Loading images... (showing up to 10)"
-    images = ec2.list_images()
+    images = driver.list_images()
     pprint(images[:10])
 
     print ">> Loading sizes... (showing up to 10)"
-    sizes = ec2.list_sizes()
+    sizes = driver.list_sizes()
     pprint(sizes[:10])
 
     return 0
 
-def get_ec2(**kwargs):
-    """An easy way to play with the EC2 Driver in Interactive Mode
+def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
+    """An easy way to play with a driver interactively.
 
-    # Load credentials from secrets.py
-    >>> from ec2demo import get_ec2
-    >>> ec2 = get_ec2()
+    # Load credentials from secrets.py:
+    >>> from compute_demo import get_demo_driver
+    >>> driver = get_demo_driver('RACKSPACE')
 
-    # Or, provide credentials
-    >>> from ec2demo import get_ec2
-    >>> ec2 = get_ec2(access_id='xxx', secret_key='yyy')
+    # Or, provide credentials:
+    >>> from compute_demo import get_demo_driver
+    >>> driver = get_demo_driver('RACKSPACE', 'username', 'api_key')
+    # Note that these parameters vary by driver ^^^
 
-    # Do things
-    >>> ec2.load_nodes()
-    >>> images = ec2.load_images()
-    >>> sizes = ec2.load_sizes()
-    """
-    access_id = kwargs.get('access_id', secrets.EC2_ACCESS_ID)
-    secret_key = kwargs.get('secret_key', secrets.EC2_SECRET_KEY)
+    # Do things like the demo:
+    >>> driver.load_nodes()
+    >>> images = driver.load_images()
+    >>> sizes = driver.load_sizes()
     
-    EC2Driver = get_driver(Provider.EC2_US_EAST)
-    return EC2Driver(access_id, secret_key)
-
-def create_demo(ec2):
-    """Create EC2 Node Demo
-
-    >>> from ec2demo import get_ec2, create_demo
-    >>> ec2 = get_ec2()
-    >>> node = create_demo(ec2)
-    >>> node
-    <Node: uuid=9d1..., name=i-7b1fa910, state=3, public_ip=[''], ...>
-
-    And to destroy the node:
-
+    # And maybe do more than that:
+    >>> node = driver.create_node(
+            name='my_first_node',
+            image=images[0],
+            size=sizes[0],
+        )
     >>> node.destroy()
-
-    If you've accidentally quit and need to destroy the node:
-
-    >>> from ec2demo import get_ec2
-    >>> nodes = ec2.list_nodes()
-    >>> nodes[0].destroy() # assuming it's the first node
     """
-    images = ec2.list_images()
-    image = [image for image in images if 'ami' in image.id][0]
-    sizes = ec2.list_sizes()
-    size = sizes[0]
+    provider_name = provider_name.upper()
 
-    # Note, name is ignored by EC2
-    node = ec2.create_node(name='create_image_demo',
-                           image=image,
-                           size=size)
-    return node
+    DriverClass = get_driver(getattr(Provider, provider_name))
+
+    if not args:
+        args = getattr(secrets, provider_name + '_PARAMS', ())
+    if not kwargs:
+        kwargs = getattr(secrets, provider_name + '_KEYWORD_PARAMS', {})
+
+    return DriverClass(*args, **kwargs)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
