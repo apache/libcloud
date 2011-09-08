@@ -34,41 +34,6 @@ from libcloud.providers import get_driver
 
 from pprint import pprint
 
-def main(argv):
-    """Main Compute Demo
-
-    When invoked from the command line, it will connect using secrets.py
-    (see secrets.py.dist for setup instructions), and perform the following
-    tasks:
-
-    - List current nodes
-    - List available images (up to 10)
-    - List available sizes (up to 10)
-    """
-    driver = get_demo_driver()
-
-    try:
-        print ">> Loading nodes..."
-        nodes = driver.list_nodes()
-        pprint(nodes)
-    except NameError, e:
-        print ">> Fatal Error: %s" % e
-        print "   (Hint: modify secrets.py.dist)"
-        return 1
-    except Exception, e:
-        print ">> Fatal error: %s" % e
-        return 1
-
-    print ">> Loading images... (showing up to 10)"
-    images = driver.list_images()
-    pprint(images[:10])
-
-    print ">> Loading sizes... (showing up to 10)"
-    sizes = driver.list_sizes()
-    pprint(sizes[:10])
-
-    return 0
-
 def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
     """An easy way to play with a driver interactively.
 
@@ -104,6 +69,41 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
         kwargs = getattr(secrets, provider_name + '_KEYWORD_PARAMS', {})
 
     return DriverClass(*args, **kwargs)
+
+def main(argv):
+    """Main Compute Demo
+
+    When invoked from the command line, it will connect using secrets.py
+    (see secrets.py.dist for setup instructions), and perform the following
+    tasks:
+
+    - List current nodes
+    - List available images (up to 10)
+    - List available sizes (up to 10)
+    """
+    driver = get_demo_driver()
+
+    try:
+        print ">> Loading nodes..."
+        nodes = driver.list_nodes()
+        pprint(nodes)
+    except NameError, e:
+        print ">> Fatal Error: %s" % e
+        print "   (Hint: modify secrets.py.dist)"
+        return 1
+    except Exception, e:
+        print ">> Fatal error: %s" % e
+        return 1
+
+    print ">> Loading images... (showing up to 10)"
+    images = driver.list_images()
+    pprint(images[:10])
+
+    print ">> Loading sizes... (showing up to 10)"
+    sizes = driver.list_sizes()
+    pprint(sizes[:10])
+
+    return 0
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
