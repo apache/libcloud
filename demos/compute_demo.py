@@ -29,6 +29,7 @@ except ImportError:
 
 import sys; sys.path.append('..')
 
+from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider
 from libcloud.providers import get_driver
 
@@ -68,7 +69,12 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
     if not kwargs:
         kwargs = getattr(secrets, provider_name + '_KEYWORD_PARAMS', {})
 
-    return DriverClass(*args, **kwargs)
+    try:
+        return DriverClass(*args, **kwargs)
+    except InvalidCredsError:
+        raise InvalidCredsError(
+            'Invalid credentials - valid values should be put in secrets.py'
+        )
 
 def main(argv):
     """Main Compute Demo
