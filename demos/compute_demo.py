@@ -27,7 +27,11 @@ try:
 except ImportError:
     secrets = None
 
-import sys; sys.path.append('..')
+import os.path
+import sys
+
+# Add parent dir of this file's dir to sys.path (OS-agnostically)
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider
