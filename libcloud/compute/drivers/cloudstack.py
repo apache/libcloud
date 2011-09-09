@@ -60,7 +60,7 @@ class CloudStackAddress(object):
 class CloudStackForwardingRule(object):
     "A NAT/firewall forwarding rule."
 
-    def __init__(self, node, id, address, protocol, start_port, end_port=None):
+    def __init__(self, node, id, address, protocol, start_port, end_port=None, state=None):
         self.node = node
         self.id = id
         self.address = address

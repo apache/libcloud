@@ -15,7 +15,22 @@
 
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node
-from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
+from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, CloudStackAddress, CloudStackForwardingRule
+
+
+class CloudComForwardingRule(CloudStackForwardingRule):
+
+    def __init__(self, node, id, address, protocol, public_port, private_port, public_end_port=None, private_end_port=None, state=None):
+        self.node = node
+        self.id = id
+        self.address = address
+        self.protocol = protocol
+        self.public_port = public_port
+        self.public_end_port = public_end_port
+        self.private_port = private_port
+        self.private_end_port = private_end_port
+        self.state = state
+
 
 class CloudComNodeDriver(CloudStackNodeDriver):
     "Driver for Ninefold's Compute platform."
@@ -63,3 +78,65 @@ class CloudComNodeDriver(CloudStackNodeDriver):
                    'password': node['password'],
                    }
                 )
+    
+    
+    def ex_add_ip_forwarding_rule(self, node, address, protocol,
+                                  public_port, private_port,
+                                  public_end_port=None, private_end_port=None, openfirewall=True):
+        "Add a NAT/firewall forwarding rule."
+
+        protocol = protocol.upper()
+        if protocol not in ('TCP', 'UDP'):
+            return None
+
+        args = {
+            'ipaddressid': address.id,
+            'protocol': protocol,
+            'publicport': int(public_port),
+            'privateport': int(private_port),
+            'virtualmachineid': node.id,
+            'openfirewall': openfirewall,
+        }
+
+        if public_end_port is not None:
+            args['publicendport'] = int(public_end_port)
+        if private_end_port is not None:
+            args['privateendport'] = int(private_end_port)
+
+        result = self._async_request('createPortForwardingRule', **args)
+        result = result['portforwardingrule']
+        adresses = self.ex_list_public_ip()
+        rule = CloudComForwardingRule(node=node,
+                                      id=result['id'],
+                                      address=filter(lambda addr: addr.address == result['ipaddress'], adresses)[0],
+                                      protocol=result['protocol'],
+                                      public_port=result['publicport'],
+                                      private_port=result['privateport'],
+                                      public_end_port=result.get('publicendport', None),
+                                      private_end_port=result.get('privateendport', None),
+                                      state=result['state']
+                                    )
+        node.extra['ip_forwarding_rules'].append(rule)
+        return rule
+    
+    
+    def ex_list_public_ip(self):
+        addresses = self._sync_request('listPublicIpAddresses')
+        return [CloudStackAddress(None, addr['id'], addr['ipaddress']) for addr in addresses['publicipaddress']]
+
+
+    def ex_list_ip_forwarding_rule(self):
+        rules = self._sync_request('listPortForwardingRules')['portforwardingrule']
+        adresses = self.ex_list_public_ip()
+        nodes = self.list_nodes()
+        return [CloudComForwardingRule(node=filter(lambda node: int(node.id) == rule['virtualmachineid'], nodes)[0],
+                                      id=rule['id'],
+                                      address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+                                      protocol=rule['protocol'],
+                                      public_port=rule['publicport'],
+                                      private_port=rule['privateport'],
+                                      public_end_port=rule.get('publicendport', None),
+                                      private_end_port=rule.get('privateendport', None),
+                                      state=rule['state']
+                                        ) for rule in rules]
+
