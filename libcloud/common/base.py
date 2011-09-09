@@ -193,8 +193,8 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
-            self.log.write(pre +
+            pre = "# -------- begin %d request ----------\n" % id(self)
+            self.log.write(pre + 
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return LibcloudHTTPSConnection.request(self, method, url, body, headers)
@@ -215,8 +215,8 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
-            self.log.write(pre +
+            pre = "# -------- begin %d request ----------\n" % id(self)
+            self.log.write(pre + 
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return LibcloudHTTPConnection.request(self, method, url,
@@ -375,6 +375,7 @@ class ConnectionKey(object):
         # Removed terrible hack...this a less-bad hack that doesn't execute a
         # request twice, but it's still a hack.
         self.connect(host=host)
+        print "URL=%s" % url
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?

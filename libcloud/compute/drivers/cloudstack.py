@@ -173,17 +173,15 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def create_node(self, name, size, image, location=None, **kwargs):
         if location is None:
             location = self.list_locations()[0]
-
         networks = self._sync_request('listNetworks')
         network_id = networks['network'][0]['id']
-
         result = self._async_request('deployVirtualMachine',
             name=name,
             displayname=name,
-            serviceofferingid=size.id,
-            templateid=image.id,
-            zoneid=location.id,
-            networkids=network_id,
+            serviceOfferingId=size.id,
+            templateId=image.id,
+            zoneId=location.id,
+            networkIds=network_id,
         )
 
         node = result['virtualmachine']
