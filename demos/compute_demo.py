@@ -73,7 +73,7 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
         return DriverClass(*args, **kwargs)
     except InvalidCredsError:
         raise InvalidCredsError(
-            'Invalid credentials - valid values should be put in secrets.py'
+            'valid values should be put in secrets.py'
         )
 
 def main(argv):
@@ -87,29 +87,24 @@ def main(argv):
     - List available images (up to 10)
     - List available sizes (up to 10)
     """
-    driver = get_demo_driver()
+    try:
+        driver = get_demo_driver()
+    except InvalidCredsError as ex:
+        print("Invalid Credentials: {ex.value}".format(ex=ex))
+        return 1
 
     try:
-        print ">> Loading nodes..."
-        nodes = driver.list_nodes()
-        pprint(nodes)
-    except NameError, e:
-        print ">> Fatal Error: %s" % e
-        print "   (Hint: modify secrets.py.dist)"
+        print(">> Loading nodes...")
+        pprint(driver.list_nodes())
+
+        print(">> Loading images... (showing up to 10)")
+        pprint(driver.list_images()[:10])
+
+        print(">> Loading sizes... (showing up to 10)")
+        pprint(driver.list_sizes()[:10])
+    except Exception as ex:
+        print("A fatal error occurred: {ex}".format(ex=ex))
         return 1
-    except Exception, e:
-        print ">> Fatal error: %s" % e
-        return 1
-
-    print ">> Loading images... (showing up to 10)"
-    images = driver.list_images()
-    pprint(images[:10])
-
-    print ">> Loading sizes... (showing up to 10)"
-    sizes = driver.list_sizes()
-    pprint(sizes[:10])
-
-    return 0
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
