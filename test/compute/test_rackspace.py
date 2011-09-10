@@ -18,7 +18,7 @@ import unittest
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 from test.compute.test_openstack import OpenStackTests
 
-from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
+from test.secrets import RACKSPACE_PARAMS
 
 
 class RackspaceTests(OpenStackTests):
@@ -26,10 +26,7 @@ class RackspaceTests(OpenStackTests):
     should_have_pricing = True
 
     driver_type = RackspaceNodeDriver
-    driver_args = (
-        RACKSPACE_USER,
-        RACKSPACE_KEY,
-    )
+    driver_args = RACKSPACE_PARAMS
 
 
 if __name__ == '__main__':

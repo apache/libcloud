@@ -18,21 +18,21 @@ import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.opsource import OpsourceNodeDriver as Opsource
-from libcloud.compute.drivers.opsource import OpsourceAPIException, OpsourceNetwork
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeAuthPassword, NodeLocation
+from libcloud.compute.drivers.opsource import OpsourceAPIException
+from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 
 from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import OPSOURCE_USER, OPSOURCE_PASS
+from test.secrets import OPSOURCE_PARAMS
 
 class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         Opsource.connectionCls.conn_classes = (None, OpsourceMockHttp)
         OpsourceMockHttp.type = None
-        self.driver = Opsource(OPSOURCE_USER, OPSOURCE_PASS)
+        self.driver = Opsource(*OPSOURCE_PARAMS)
 
     def test_invalid_creds(self):
         OpsourceMockHttp.type = 'UNAUTHORIZED'
@@ -60,7 +60,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         node = Node(id='11', name=None, state=None,
                     public_ip=None, private_ip=None, driver=self.driver)
         try:
-            ret = node.reboot()
+            node.reboot()
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
@@ -76,7 +76,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         node = Node(id='11', name=None, state=None,
                     public_ip=None, private_ip=None, driver=self.driver)
         try:
-            ret = node.destroy()
+            node.destroy()
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
@@ -84,7 +84,6 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
     def test_create_node_response(self):
         rootPw = NodeAuthPassword('pass123')
         image = self.driver.list_images()[0]
-        location = self.driver.list_locations()[0]
         network = self.driver.ex_list_networks()[0]
         node = self.driver.create_node(name='test2', image=image, auth=rootPw,
                                 ex_description='test2 node', ex_network=network,
@@ -103,7 +102,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         node = Node(id='11', name=None, state=None,
                     public_ip=None, private_ip=None, driver=self.driver)
         try:
-            ret = self.driver.ex_shutdown_graceful(node)
+            self.driver.ex_shutdown_graceful(node)
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
@@ -119,7 +118,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         node = Node(id='11', name=None, state=None,
                     public_ip=None, private_ip=None, driver=self.driver)
         try:
-            ret = self.driver.ex_start_node(node)
+            self.driver.ex_start_node(node)
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
@@ -135,7 +134,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         node = Node(id='11', name=None, state=None,
                     public_ip=None, private_ip=None, driver=self.driver)
         try:
-            ret = self.driver.ex_power_off(node)
+            self.driver.ex_power_off(node)
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)

@@ -30,7 +30,7 @@ from test import MockHttp, XML_HEADERS
 from test.file_fixtures import ComputeFileFixtures
 from mock import Mock, patch
 
-from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
+from test.secrets import RACKSPACE_PARAMS
 
 class MockDeployment(Deployment):
     def run(self, node, client):
@@ -56,7 +56,7 @@ class DeploymentTests(unittest.TestCase):
     def setUp(self):
         Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
-        self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        self.driver = Rackspace(*RACKSPACE_PARAMS)
         self.driver.features = {'create_node': ['generates_password']}
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
                    public_ip=['1.2.3.4'], private_ip='1.2.3.5',
