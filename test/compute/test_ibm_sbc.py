@@ -22,7 +22,7 @@ from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
-from test.secrets import IBM_USER, IBM_SECRET
+from test.secrets import IBM_PARAMS
 
 class IBMTests(unittest.TestCase, TestCaseMixin):
     """
@@ -32,7 +32,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         IBM.connectionCls.conn_classes = (None, IBMMockHttp)
         IBMMockHttp.type = None
-        self.driver = IBM(IBM_USER, IBM_SECRET)
+        self.driver = IBM(*IBM_PARAMS)
 
     def test_auth(self):
         IBMMockHttp.type = 'UNAUTHORIZED'
@@ -89,7 +89,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                       size=size,
                                       location=location,
                                       publicKey='MyPublicKey',
-                                      configurationData = {
+                                      configurationData={
                                            'insight_admin_password': 'myPassword1',
                                            'db2_admin_password': 'myPassword2',
                                            'report_user_password': 'myPassword3'})
@@ -105,7 +105,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                           size=size,
                                           location=location,
                                           publicKey='MyPublicKey',
-                                          configurationData = {
+                                          configurationData={
                                                'insight_admin_password': 'myPassword1',
                                                'db2_admin_password': 'myPassword2',
                                                'report_user_password': 'myPassword3'})

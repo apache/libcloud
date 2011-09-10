@@ -25,7 +25,7 @@ from libcloud.compute.base import Node, NodeImage, NodeSize
 from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
-from test.secrets import SLICEHOST_KEY
+from test.secrets import SLICEHOST_PARAMS
 
 class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
@@ -33,7 +33,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
         Slicehost.connectionCls.conn_classes = (None, SlicehostMockHttp)
         SlicehostMockHttp.type = None
-        self.driver = Slicehost(SLICEHOST_KEY)
+        self.driver = Slicehost(*SLICEHOST_PARAMS)
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()

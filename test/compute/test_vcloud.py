@@ -25,7 +25,7 @@ from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import TERREMARK_USER, TERREMARK_SECRET
+from test.secrets import VCLOUD_PARAMS
 
 class TerremarkTests(unittest.TestCase, TestCaseMixin):
 
@@ -33,11 +33,11 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
         VCloudNodeDriver.connectionCls.host = "test"
         VCloudNodeDriver.connectionCls.conn_classes = (None, TerremarkMockHttp)
         TerremarkMockHttp.type = None
-        self.driver = TerremarkDriver(TERREMARK_USER, TERREMARK_SECRET)
+        self.driver = TerremarkDriver(*VCLOUD_PARAMS)
 
     def test_list_images(self):
         ret = self.driver.list_images()
-        self.assertEqual(ret[0].id,'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
+        self.assertEqual(ret[0].id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()

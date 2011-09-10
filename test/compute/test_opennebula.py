@@ -26,13 +26,13 @@ from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import OPENNEBULA_USER, OPENNEBULA_KEY
+from test.secrets import OPENNEBULA_PARAMS
 
 class OpenNebulaTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         OpenNebulaNodeDriver.connectionCls.conn_classes = (None, OpenNebulaMockHttp)
-        self.driver = OpenNebulaNodeDriver(OPENNEBULA_USER, OPENNEBULA_KEY)
+        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS)
 
     def test_create_node(self):
         image = NodeImage(id=1, name='UbuntuServer9.04-Contextualized', driver=self.driver)

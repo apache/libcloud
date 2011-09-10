@@ -26,7 +26,7 @@ from test import MockHttp, LibcloudTestCase
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import EC2_ACCESS_ID, EC2_SECRET
+from test.secrets import EC2_PARAMS
 
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
@@ -37,7 +37,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-        self.driver = EC2NodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+        self.driver = EC2NodeDriver(*EC2_PARAMS)
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
@@ -110,7 +110,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_nodes_with_name_tag(self):
         EC2MockHttp.type = 'WITH_TAGS'
         node = self.driver.list_nodes()[0]
-        public_ips = sorted(node.public_ip)
         self.assertEqual(node.id, 'i-8474834a')
         self.assertEqual(node.name, 'foobar1')
 
@@ -353,7 +352,7 @@ class EC2APSETests(EC2Tests):
         EC2APSENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-        self.driver = EC2APSENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+        self.driver = EC2APSENodeDriver(*EC2_PARAMS)
 
 
 class EC2APNETests(EC2Tests):
@@ -361,7 +360,7 @@ class EC2APNETests(EC2Tests):
         EC2APNENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-        self.driver = EC2APNENodeDriver(EC2_ACCESS_ID, EC2_SECRET)
+        self.driver = EC2APNENodeDriver(*EC2_PARAMS)
 
 
 class NimbusTests(EC2Tests):
@@ -369,8 +368,8 @@ class NimbusTests(EC2Tests):
         NimbusNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-        self.driver = NimbusNodeDriver(EC2_ACCESS_ID, EC2_SECRET,
-                host="some.nimbuscloud.com")
+        self.driver = NimbusNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
+                                       host='some.nimbuscloud.com')
 
     def test_ex_describe_addresses_for_node(self):
         # overridden from EC2Tests -- Nimbus doesn't support elastic IPs.
@@ -425,8 +424,8 @@ class EucTests(LibcloudTestCase, TestCaseMixin):
         EucNodeDriver.connectionCls.conn_classes = (None, EucMockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-        self.driver = EucNodeDriver(EC2_ACCESS_ID, EC2_SECRET,
-                host="some.eucalyptus.com")
+        self.driver = EucNodeDriver(key=EC2_PARAMS[0], secret=EC2_PARAMS[1],
+                                    host='some.eucalyptus.com')
 
     def test_list_locations_response(self):
         try:

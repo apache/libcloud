@@ -23,19 +23,19 @@ from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import ECP_USER_NAME, ECP_PASSWORD
+from test.secrets import ECP_PARAMS
 
 class ECPTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         ECPNodeDriver.connectionCls.conn_classes = (None,
                                                             ECPMockHttp)
-        self.driver = ECPNodeDriver(ECP_USER_NAME, ECP_PASSWORD)
+        self.driver = ECPNodeDriver(*ECP_PARAMS)
 
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(len(nodes),2)
+        self.assertEqual(len(nodes), 2)
         node = nodes[0]
         self.assertEqual(node.id, '1')
         self.assertEqual(node.name, 'dummy-1')
@@ -45,20 +45,20 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes),3)
+        self.assertEqual(len(sizes), 3)
         size = sizes[0]
-        self.assertEqual(size.id,'1')
-        self.assertEqual(size.ram,512)
-        self.assertEqual(size.disk,0)
-        self.assertEqual(size.bandwidth,0)
-        self.assertEqual(size.price,0)
+        self.assertEqual(size.id, '1')
+        self.assertEqual(size.ram, 512)
+        self.assertEqual(size.disk, 0)
+        self.assertEqual(size.bandwidth, 0)
+        self.assertEqual(size.price, 0)
 
     def test_list_images(self):
         images = self.driver.list_images()
-        self.assertEqual(len(images),2)
-        self.assertEqual(images[0].name,"centos54: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0].name, "centos54: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
         self.assertEqual(images[0].id, "1")
-        self.assertEqual(images[1].name,"centos54 two: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
+        self.assertEqual(images[1].name, "centos54 two: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
         self.assertEqual(images[1].id, "2")
 
     def test_reboot_node(self):
@@ -93,11 +93,11 @@ class ECPMockHttp(MockHttp):
         if method == 'GET':
             body = self.fixtures.load('vm_1_get.json')
         if method == 'POST':
-            if body.find('delete',0):
+            if body.find('delete', 0):
                 body = self.fixtures.load('vm_1_action_delete.json')
-            if body.find('stop',0):
+            if body.find('stop', 0):
                 body = self.fixtures.load('vm_1_action_stop.json')
-            if body.find('start',0):
+            if body.find('start', 0):
                 body = self.fixtures.load('vm_1_action_start.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

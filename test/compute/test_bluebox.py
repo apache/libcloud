@@ -23,13 +23,13 @@ from libcloud.compute.types import NodeState
 
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
-from test.secrets import BLUEBOX_CUSTOMER_ID, BLUEBOX_API_KEY
+from test.secrets import BLUEBOX_PARAMS
 
 class BlueboxTest(unittest.TestCase):
 
     def setUp(self):
         Bluebox.connectionCls.conn_classes = (None, BlueboxMockHttp)
-        self.driver = Bluebox(BLUEBOX_CUSTOMER_ID, BLUEBOX_API_KEY)
+        self.driver = Bluebox(*BLUEBOX_PARAMS)
 
     def test_create_node(self):
         node = self.driver.create_node(
