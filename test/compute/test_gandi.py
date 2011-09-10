@@ -26,7 +26,7 @@ from libcloud.compute.types import NodeState
 from xml.etree import ElementTree as ET
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
-from test.secrets import GANDI_USER
+from test.secrets import GANDI_PARAMS
 
 class MockGandiTransport(xmlrpclib.Transport):
 
@@ -48,11 +48,11 @@ class GandiTests(unittest.TestCase):
     node_name = 'test2'
     def setUp(self):
         Gandi.connectionCls.proxyCls.transportCls = [MockGandiTransport, MockGandiTransport]
-        self.driver = Gandi(GANDI_USER)
+        self.driver = Gandi(*GANDI_PARAMS)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
-        self.assertTrue(len(nodes)>0)
+        self.assertTrue(len(nodes) > 0)
 
     def test_list_locations(self):
         loc = filter(lambda x: 'france' in x.country.lower(), self.driver.list_locations())[0]
@@ -61,11 +61,11 @@ class GandiTests(unittest.TestCase):
     def test_list_images(self):
         loc = filter(lambda x: 'france' in x.country.lower(), self.driver.list_locations())[0]
         images = self.driver.list_images(loc)
-        self.assertTrue(len(images)>2)
+        self.assertTrue(len(images) > 2)
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertTrue(len(sizes)>=1)
+        self.assertTrue(len(sizes) >= 1)
 
     def test_destroy_node_running(self):
         nodes = self.driver.list_nodes()
@@ -93,7 +93,7 @@ class GandiTests(unittest.TestCase):
         img = filter(lambda x: '5' in x.name, images)[0]
         # Get a configuration size
         size = self.driver.list_sizes()[0]
-        node = self.driver.create_node(name=self.node_name,login=login,password=passwd,image=img,location=loc,size=size)
+        node = self.driver.create_node(name=self.node_name, login=login, password=passwd, image=img, location=loc, size=size)
         self.assertEqual(node.name, self.node_name)
 
 class GandiMockHttp(MockHttp):

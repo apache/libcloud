@@ -25,8 +25,7 @@ from test import MockResponse, MockHttpTestCase, XML_HEADERS
 from test.file_fixtures import ComputeFileFixtures
 from test.compute import TestCaseMixin
 
-from test.secrets import NOVA_USERNAME, NOVA_API_KEY, NOVA_HOST, NOVA_PORT
-from test.secrets import NOVA_SECURE
+from test.secrets import OPENSTACK_PARAMS
 
 
 class OpenStackResponseTestCase(unittest.TestCase):
@@ -59,13 +58,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
     driver_type = OpenStackNodeDriver
-    driver_args = (
-        NOVA_USERNAME,
-        NOVA_API_KEY,
-        NOVA_SECURE,
-        NOVA_HOST,
-        NOVA_PORT,
-    )
+    driver_args = OPENSTACK_PARAMS
 
     @classmethod
     def create_driver(self):

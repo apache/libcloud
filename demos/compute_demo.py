@@ -84,8 +84,8 @@ def main(argv):
     """Main Compute Demo
 
     When invoked from the command line, it will connect using secrets.py
-    (see secrets.py.dist for setup instructions), and perform the following
-    tasks:
+    (see secrets.py-dist for instructions and examples), and perform the
+    following tasks:
 
     - List current nodes
     - List available images (up to 10)

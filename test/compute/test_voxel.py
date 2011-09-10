@@ -23,7 +23,7 @@ from libcloud.compute.types import InvalidCredsError
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
 
-from test.secrets import VOXEL_KEY, VOXEL_SECRET
+from test.secrets import VOXEL_PARAMS
 
 class VoxelTest(unittest.TestCase):
 
@@ -31,7 +31,7 @@ class VoxelTest(unittest.TestCase):
 
         Voxel.connectionCls.conn_classes = (None, VoxelMockHttp)
         VoxelMockHttp.type = None
-        self.driver = Voxel(VOXEL_KEY, VOXEL_SECRET)
+        self.driver = Voxel(*VOXEL_PARAMS)
 
     def test_auth_failed(self):
         VoxelMockHttp.type = 'UNAUTHORIZED'
