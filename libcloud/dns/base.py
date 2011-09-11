@@ -15,7 +15,7 @@
 
 __all__ = [
     'Zone',
-    'Host',
+    'Record',
     'DNSDriver'
 ]
 
@@ -34,7 +34,7 @@ class Zone(object):
         @param domain: The name of the domain.
 
         @type ttl: C{int}
-        @param ttl: Default TTL for host records in this zone (in seconds).
+        @param ttl: Default TTL for records in this zone (in seconds).
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
@@ -48,8 +48,8 @@ class Zone(object):
         self.extra = extra or {}
         self.driver = driver
 
-    def list_hosts(self):
-        self.driver.list_hosts(zone=self)
+    def list_records(self):
+        self.driver.list_records(zone=self)
 
     def delete(self):
         return self.driver.delete_zone(zone=self)
@@ -59,15 +59,15 @@ class Zone(object):
                 (self.domain, self.ttl, self.driver.name))
 
 
-class Host(object):
+class Record(object):
     """
-    Zone host / resource.
+    Zone record / resource.
     """
 
     def __init__(self, id, name, type, data, extra, zone, driver):
         """
         @type id: C{str}
-        @param id: Host id
+        @param id: Record id
 
         @type name: C{str}
         @param name: Hostname or FQDN.
@@ -96,14 +96,14 @@ class Host(object):
         self.driver = driver
 
     def update(self, name, type, data, extra):
-        return self.driver.update_host(host=self, name=name, type=type,
+        return self.driver.update_record(record=self, name=name, type=type,
                                        data=data, extra=extra)
 
     def delete(self):
-        return self.driver.delete_host(host=self)
+        return self.driver.delete_record(record=self)
 
     def __repr__(self):
-        return ('<Host: zone=%s, name=%s, data=%s provider=%s ...>' %
+        return ('<Record: zone=%s, name=%s, data=%s provider=%s ...>' %
                 (self.zone, self.name, self.data, self.driver.name))
 
 
@@ -121,17 +121,17 @@ class DNSDriver(object):
         raise NotImplementedError(
             'list_zones not implemented for this driver')
 
-    def list_hosts(self, zone):
+    def list_records(self, zone):
         """
-        Return a list of hosts for the provided zone.
+        Return a list of records for the provided zone.
 
         @type zone: C{Zone}
-        @param zone: Zone to list hosts for.
+        @param zone: Zone to list records for.
 
-        @return: A list of C{Host} instances.
+        @return: A list of C{Record} instances.
         """
         raise NotImplementedError(
-            'list_hosts not implemented for this driver')
+            'list_records not implemented for this driver')
 
     def create_zone(self, type='master', ttl=None, extra=None):
         """
@@ -149,9 +149,9 @@ class DNSDriver(object):
         raise NotImplementedError(
             'create_zone not implemented for this driver')
 
-    def create_host(self, name, type, data, extra=None):
+    def create_record(self, name, type, data, extra=None):
         """
-        Create a new host record.
+        Create a new record.
 
         @param name: C{string}
         @type name: Hostname or FQDN.
@@ -166,14 +166,14 @@ class DNSDriver(object):
         @param extra: (optional) Extra attributes (driver specific).
         """
         raise NotImplementedError(
-            'create_host not implemented for this driver')
+            'create_record not implemented for this driver')
 
-    def update_host(self, host, name, type, data, extra):
+    def update_record(self, record, name, type, data, extra):
         """
-        Update an existing host record.
+        Update an existing record.
 
-        @param host: C{Host}
-        @type host: Host to update.
+        @param record: C{Record}
+        @type record: Record to update.
 
         @param name: C{string}
         @type name: Hostname or FQDN.
@@ -188,13 +188,13 @@ class DNSDriver(object):
         @param extra: (optional) Extra attributes (driver specific).
         """
         raise NotImplementedError(
-            'update_host not implemented for this driver')
+            'update_record not implemented for this driver')
 
     def delete_zone(self, zone):
         """
         Delete a zone.
 
-        Note: This will delete all the hosts belonging to this zone.
+        Note: This will delete all the records belonging to this zone.
 
         @param zone: C{Zone}
         @type zone: Zone to delete.
@@ -202,12 +202,12 @@ class DNSDriver(object):
         raise NotImplementedError(
             'delete_zone not implemented for this driver')
 
-    def delete_host(self, host):
+    def delete_record(self, record):
         """
-        Delete a host record.
+        Delete a record.
 
-        @param host: C{Host}
-        @type host: Host to delete.
+        @param record: C{Record}
+        @type record: Record to delete.
         """
         raise NotImplementedError(
-            'delete_host not implemented for this driver')
+            'delete_record not implemented for this driver')
