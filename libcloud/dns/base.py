@@ -19,6 +19,7 @@ __all__ = [
     'DNSDriver'
 ]
 
+
 class Zone(object):
     """
     DNS zone.
@@ -41,22 +42,14 @@ class Zone(object):
         @type driver: C{DNSDriver}
         @param driver: DNSDriver instance.
         """
-
         self.id = str(id) if id else None
         self.domain = domain
         self.ttl = ttl or None
         self.extra = extra or {}
         self.driver = driver
 
-    def list(self):
-        return self.driver.list_zones()
-
-    def create(self, type='master', ttl=None):
-        """
-        master, slave
-        ttl - Default TTL for records
-        """
-        return self.driver.create_zone(type=type, ttl=ttl)
+    def list_hosts(self):
+        self.driver.list_hosts(zone=self)
 
     def delete(self):
         return self.driver.delete_zone(zone=self)
@@ -79,7 +72,6 @@ class Host(object):
         @type name: C{str}
         @param name: Hostname or FQDN.
 
-
         @type type: C{RecordType}
         @param type: DNS record type (A, AAAA, ...).
 
@@ -95,23 +87,17 @@ class Host(object):
         @type driver: C{DNSDriver}
         @param driver: DNSDriver instance.
         """
-
         self.id = str(id) if id else None
         self.name = name
         self.type = type
         self.data = data
         self.extra = extra or {}
+        self.zone = zone
         self.driver = driver
 
-    def list(self):
-        return self.driver.list_hosts()
-
-    def create(self, name, type, data, extra):
-        return self.driver.create_host(name=name, type=type, data=data, extra=extra)
-
     def update(self, name, type, data, extra):
-       return self.driver.update_host(host=self, name=name, type=type,
-                                      data=data, extra=extra)
+        return self.driver.update_host(host=self, name=name, type=type,
+                                       data=data, extra=extra)
 
     def delete(self):
         return self.driver.delete_host(host=self)
@@ -127,29 +113,99 @@ class DNSDriver(object):
     """
 
     def list_zones(self):
+        """
+        Return a list of zones.
+
+        @return: A list of C{Zone} instances.
+        """
         raise NotImplementedError(
             'list_zones not implemented for this driver')
 
-    def list_hosts(self):
+    def list_hosts(self, zone):
+        """
+        Return a list of hosts for the provided zone.
+
+        @type zone: C{Zone}
+        @param zone: Zone to list hosts for.
+
+        @return: A list of C{Host} instances.
+        """
         raise NotImplementedError(
             'list_hosts not implemented for this driver')
 
-    def create_zone(self, type='master', ttl=None):
+    def create_zone(self, type='master', ttl=None, extra=None):
+        """
+        @type type: C{string}
+        @param type: Zone type (master / slave).
+
+        @param ttl: C{int}
+        @param ttl: (optional) TTL for new records.
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
+        """
         raise NotImplementedError(
             'create_zone not implemented for this driver')
 
-    def create_host(self, name, type, data, extra):
+    def create_host(self, name, type, data, extra=None):
+        """
+        Create a new host record.
+
+        @param name: C{string}
+        @type name: Hostname or FQDN.
+
+        @type type: C{RecordType}
+        @param type: DNS record type (A, AAAA, ...).
+
+        @type data: C{str}
+        @param data: Data for the record (depends on the record type).
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
+        """
         raise NotImplementedError(
             'create_host not implemented for this driver')
 
     def update_host(self, host, name, type, data, extra):
+        """
+        Update an existing host record.
+
+        @param host: C{Host}
+        @type host: Host to update.
+
+        @param name: C{string}
+        @type name: Hostname or FQDN.
+
+        @type type: C{RecordType}
+        @param type: DNS record type (A, AAAA, ...).
+
+        @type data: C{str}
+        @param data: Data for the record (depends on the record type).
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
+        """
         raise NotImplementedError(
             'update_host not implemented for this driver')
 
     def delete_zone(self, zone):
+        """
+        Delete a zone.
+
+        Note: This will delete all the hosts belonging to this zone.
+
+        @param zone: C{Zone}
+        @type zone: Zone to delete.
+        """
         raise NotImplementedError(
             'delete_zone not implemented for this driver')
 
     def delete_host(self, host):
+        """
+        Delete a host record.
+
+        @param host: C{Host}
+        @type host: Host to delete.
+        """
         raise NotImplementedError(
             'delete_host not implemented for this driver')
