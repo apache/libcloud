@@ -25,13 +25,16 @@ class Zone(object):
     DNS zone.
     """
 
-    def __init__(self, id, domain, ttl, extra, driver):
+    def __init__(self, id, domain, type, ttl, extra, driver):
         """
         @type id: C{str}
         @param id: Zone id.
 
         @type domain: C{str}
         @param domain: The name of the domain.
+
+        @type type: C{string}
+        @param type: Zone type (master, slave).
 
         @type ttl: C{int}
         @param ttl: Default TTL for records in this zone (in seconds).
@@ -44,12 +47,16 @@ class Zone(object):
         """
         self.id = str(id) if id else None
         self.domain = domain
+        self.type = type
         self.ttl = ttl or None
         self.extra = extra or {}
         self.driver = driver
 
     def list_records(self):
         self.driver.list_records(zone=self)
+
+    def create_record(self, name, type, data, extra=None):
+        self.driver.create_record(name=name, type=type, data=data, extra=extra)
 
     def delete(self):
         return self.driver.delete_zone(zone=self)
@@ -151,9 +158,12 @@ class DNSDriver(object):
         raise NotImplementedError(
             'get_record not implemented for this driver')
 
-    def create_zone(self, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
         """
         Create a new zone.
+
+        @type domain: C{string}
+        @param domain: Zone domain name.
 
         @type type: C{string}
         @param type: Zone type (master / slave).
@@ -167,12 +177,15 @@ class DNSDriver(object):
         raise NotImplementedError(
             'create_zone not implemented for this driver')
 
-    def create_record(self, name, type, data, extra=None):
+    def create_record(self, name, zone, type, data, extra=None):
         """
         Create a new record.
 
         @param name: C{string}
         @type name: Hostname or FQDN.
+
+        @type zone: C{Zone}
+        @param zone: Zone where the requested record is created.
 
         @type type: C{RecordType}
         @param type: DNS record type (A, AAAA, ...).
