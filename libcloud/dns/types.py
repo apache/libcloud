@@ -13,8 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.common.types import LibcloudError
+
 __all__ = [
-    'RecordType'
+    'RecordType',
+    'ZoneError',
+    'ZoneDoesNotExistError',
+    'ZoneAlreadyExistsError',
+    'RecordError',
+    'RecordDoesNotExistError',
+    'RecordAlreadyExistsError'
 ]
 
 
@@ -33,3 +41,45 @@ class RecordType(object):
     SOA = 8
     SPF = 9
     SRV = 10
+
+
+class ZoneError(LibcloudError):
+    error_type = 'ZoneError'
+
+    def __init__(self, value, driver, zone_id):
+        self.zone_id = zone_id
+        super(ZoneError, self).__init__(value=value, driver=driver)
+
+    def __str__(self):
+        return ('<%s in %s, zone_id=%s, value=%s>' %
+                (self.error_type, repr(self.driver),
+                 self.zone_id, self.value))
+
+
+class ZoneDoesNotExistError(ZoneError):
+    error_type = 'ZoneDoesNotExistError'
+
+
+class ZoneAlreadyExistsError(ZoneError):
+    error_type = 'ZoneAlreadyExistsError'
+
+
+class RecordError(LibcloudError):
+    error_type = 'RecordError'
+
+    def __init__(self, value, driver, record_id):
+        self.record_id = record_id
+        super(RecordError, self).__init__(value=value, driver=driver)
+
+    def __str__(self):
+        return ('<%s in %s, record_id=%s, value=%s>' %
+                (self.error_type, repr(self.driver),
+                 self.record_id, self.value))
+
+
+class RecordDoesNotExistError(RecordError):
+    error_type = 'RecordDoesNotExistError'
+
+
+class RecordAlreadyExistsError(RecordError):
+    error_type = 'RecordAlreadyExistsError'
