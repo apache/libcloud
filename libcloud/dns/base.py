@@ -135,6 +135,8 @@ class DNSDriver(object):
 
     def create_zone(self, type='master', ttl=None, extra=None):
         """
+        Create a new zone.
+
         @type type: C{string}
         @param type: Zone type (master / slave).
 
