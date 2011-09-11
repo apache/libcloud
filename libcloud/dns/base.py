@@ -133,6 +133,24 @@ class DNSDriver(object):
         raise NotImplementedError(
             'list_records not implemented for this driver')
 
+    def get_zone(self, zone_id):
+        """
+        Return a Zone instance.
+
+        @return: C{Zone} instance.
+        """
+        raise NotImplementedError(
+            'get_zone not implemented for this driver')
+
+    def get_record(self, zone_id, record_id):
+        """
+        Return a Record instance.
+
+        @return: C{Record} instance.
+        """
+        raise NotImplementedError(
+            'get_record not implemented for this driver')
+
     def create_zone(self, type='master', ttl=None, extra=None):
         """
         Create a new zone.
