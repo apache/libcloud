@@ -110,8 +110,8 @@ class Record(object):
         return self.driver.delete_record(record=self)
 
     def __repr__(self):
-        return ('<Record: zone=%s, name=%s, data=%s provider=%s ...>' %
-                (self.zone, self.name, self.data, self.driver.name))
+        return ('<Record: zone=%s, name=%s, data=%s, provider=%s ...>' %
+                (self.zone.id, self.name, self.data, self.driver.name))
 
 
 class DNSDriver(object):
