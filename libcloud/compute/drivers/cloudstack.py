@@ -120,7 +120,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         addrs = self._sync_request('listPublicIpAddresses')
 
         public_ips = {}
-        for addr in addrs['publicipaddress']:
+        for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
@@ -140,6 +140,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 driver=self,
                 extra={
                     'zoneid': vm['zoneid'],
+                    'ip_forwarding_rules': [],
                 }
             )
 
@@ -178,10 +179,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         result = self._async_request('deployVirtualMachine',
             name=name,
             displayname=name,
-            serviceOfferingId=size.id,
-            templateId=image.id,
-            zoneId=location.id,
-            networkIds=network_id,
+            serviceofferingid=size.id,
+            templateid=image.id,
+            zoniId=location.id,
+            networkids=network_id,
         )
 
         node = result['virtualmachine']

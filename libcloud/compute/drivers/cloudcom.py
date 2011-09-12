@@ -16,6 +16,7 @@
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, CloudStackAddress, CloudStackForwardingRule
+from libcloud.common.types import MalformedResponseError
 
 
 class CloudComForwardingRule(CloudStackForwardingRule):
@@ -35,18 +36,19 @@ class CloudComForwardingRule(CloudStackForwardingRule):
 class CloudComNodeDriver(CloudStackNodeDriver):
     "Driver for Ninefold's Compute platform."
 
-    host = '72.52.126.24'
+    host = '72.52.126.25'
     path = '/client/api'
 
     type = Provider.CLOUDCOM
     name = 'CloudCom'
     
+    api_name = 'cloudcom'
+    
     def __init__(self, key, secret=None, secure=False, host=None, port=None):
         host = host or self.host
         super(CloudComNodeDriver, self).__init__(key, secret, secure, host, port)
 
-
-    def create_node(self, name, size, image, location=None, **kwargs):
+    def create_node(self, size, image, location=None, **kwargs):
         if location is None:
             location = self.list_locations()[0]
         network_id = kwargs.pop('network_id', None)
@@ -54,12 +56,11 @@ class CloudComNodeDriver(CloudStackNodeDriver):
             networks = self._sync_request('listNetworks')
             network_id = networks['network'][0]['id']
         result = self._async_request('deployVirtualMachine',
-                                     name=name,
-                                     displayname=name,
                                      serviceOfferingId=size.id,
                                      templateId=image.id,
                                      zoneId=location.id,
                                      networkIds=network_id,
+                                     kwargs,
                                     )
 
         node = result['virtualmachine']
@@ -75,7 +76,7 @@ class CloudComNodeDriver(CloudStackNodeDriver):
                    'zoneid': location.id,
                    'ip_addresses': [],
                    'forwarding_rules': [],
-                   'password': node['password'],
+                   'password': node.get('password', ''),
                    }
                 )
     
@@ -139,4 +140,22 @@ class CloudComNodeDriver(CloudStackNodeDriver):
                                       private_end_port=rule.get('privateendport', None),
                                       state=rule['state']
                                         ) for rule in rules]
-
+    
+    def ex_create_keypair(self, name):
+        keypair = self._sync_request('createSSHKeyPair', name=name)
+        return keypair['keypair']
+    
+    def ex_list_keypair(self, name=None):
+        if name is None:
+            keypair_list = self._sync_request('listSSHKeyPairs')
+        else:
+            keypair_list = self._sync_request('listSSHKeyPairs', name=name)
+        return keypair_list['keypair']
+    
+    def ex_import_keypair(self, name, publickey):
+        keypair = self._sync_request('registerSSHKeyPair', name=name, publickey=publickey)
+        return keypair['keypair']
+    
+    def ex_delete_keypair(self, name):
+        keypair = self._sync_request('deleteSSHKeyPair', name=name)
+        return keypair['success']
