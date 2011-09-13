@@ -320,7 +320,7 @@ class DeploymentTests(unittest.TestCase):
 
 class RackspaceMockHttp(MockHttp):
 
-    fixtures = ComputeFileFixtures('openstack')
+    fixtures = ComputeFileFixtures('rackspace')
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):
