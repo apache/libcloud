@@ -23,7 +23,7 @@ from novaclient import v1_0, v1_1  # Populates attributes of novaclient module
 v1_0, v1_1  # Silence pyflakes
 
 from libcloud.compute.types import Provider
-from libcloud.compute.base import Node, NodeState, NodeDriver
+from libcloud.compute.base import Node, NodeState, NodeSize, NodeDriver
 
 url_version_pattern = re.compile(r'\/v(\d+(?:\.\d+)+)\/?$')
 
@@ -81,6 +81,9 @@ class OpenStackNodeDriver(NodeDriver):
     def list_nodes(self):
         return self._to_nodes(self.client.servers.list())
 
+    def list_sizes(self):
+        return self._to_sizes(self.client.flavors.list())
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
@@ -99,4 +102,20 @@ class OpenStackNodeDriver(NodeDriver):
                 uri=[link['href'] for link in nova_node.links if link['rel'] == 'self'][0],
                 metadata=nova_node.metadata,
             ),
+        )
+
+    def _to_sizes(self, nova_flavors):
+        return [self._to_size(nova_flavor) for nova_flavor in nova_flavors]
+
+    def _to_size(self, nova_flavor, price=None, bandwidth=None):
+        # if provider-specific subclasses can get better values for
+        # price/bandwidth, then can pass them in when they super().
+        return NodeSize(
+            id=nova_flavor.id,
+            name=nova_flavor.name,
+            ram=nova_flavor.ram,
+            disk=nova_flavor.disk,
+            bandwidth=bandwidth,
+            price=price,
+            driver=self,
         )
