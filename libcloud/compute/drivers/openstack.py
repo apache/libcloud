@@ -32,6 +32,7 @@ class OpenStackNodeDriver(NodeDriver):
 
     name = 'OpenStack'
     type = Provider.OPENSTACK
+    api_version = None
     features = {
         'create_node': ['generates_password'],
     }
@@ -56,12 +57,16 @@ class OpenStackNodeDriver(NodeDriver):
     }
 
     def __init__(self, username, api_key, project_id, auth_url, timeout=None, api_version=None):
-        if not api_version:
+        if not api_version and not self.api_version:
+            # If not specified in call or class, try to guess from URL.
             match = url_version_pattern.search(auth_url)
             if match:
                 api_version = match.groups()[0]
 
-        if not api_version:
+        if api_version:
+            self.api_version = api_version
+
+        if not self.api_version:
             raise RuntimeError('Unable to determine OpenStack API version')
 
         try:
