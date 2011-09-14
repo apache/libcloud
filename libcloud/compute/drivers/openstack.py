@@ -20,6 +20,7 @@ import re
 
 import novaclient
 from novaclient import v1_0, v1_1  # Populates attributes of novaclient module
+v1_0, v1_1  # Silence pyflakes
 
 from libcloud.compute.types import Provider
 from libcloud.compute.base import Node, NodeState, NodeDriver
