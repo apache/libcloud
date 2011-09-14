@@ -20,9 +20,9 @@ import time
 import urllib
 
 try:
-    import json
-except:
     import simplejson as json
+except:
+    import json
 
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import MalformedResponseError

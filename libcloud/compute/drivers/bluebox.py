@@ -27,9 +27,9 @@ import urllib
 import base64
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.compute.providers import Provider

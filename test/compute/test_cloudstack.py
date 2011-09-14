@@ -4,9 +4,9 @@ import unittest
 import urlparse
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 try:
     parse_qsl = urlparse.parse_qsl

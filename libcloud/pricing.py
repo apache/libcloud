@@ -18,9 +18,9 @@ A class which handles loading the pricing files.
 """
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 import os.path
 from os.path import join as pjoin
