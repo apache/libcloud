@@ -82,7 +82,7 @@ class OpenStackNodeDriver(NodeDriver):
         return self._to_nodes(self.client.servers.list())
 
     def _to_nodes(self, nova_nodes):
-        return [self._to_node(nova_node) for nova_node in self.client.servers.list()]
+        return [self._to_node(nova_node) for nova_node in nova_nodes]
 
     def _to_node(self, nova_node):
         return Node(
