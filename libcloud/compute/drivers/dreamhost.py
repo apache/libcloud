@@ -17,9 +17,9 @@ DreamHost Driver
 """
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 import copy
 

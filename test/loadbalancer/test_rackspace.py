@@ -18,9 +18,9 @@ import sys
 import unittest
 
 try:
-    import json
-except ImportError:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver

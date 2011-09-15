@@ -17,9 +17,9 @@ import unittest
 import httplib
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.dreamhost import DreamhostNodeDriver

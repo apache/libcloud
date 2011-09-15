@@ -25,9 +25,9 @@ import os
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.compute.base import NodeDriver, NodeSize, NodeLocation
