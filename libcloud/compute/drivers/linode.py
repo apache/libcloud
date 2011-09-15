@@ -32,9 +32,9 @@ import os
 from copy import copy
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.base import ConnectionKey, Response
 from libcloud.common.types import InvalidCredsError, MalformedResponseError

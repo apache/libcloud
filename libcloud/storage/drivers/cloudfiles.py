@@ -17,9 +17,9 @@ import httplib
 import urllib
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.utils import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError

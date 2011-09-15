@@ -24,9 +24,9 @@ import base64
 import httplib
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
