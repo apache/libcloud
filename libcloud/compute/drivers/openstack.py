@@ -89,6 +89,20 @@ class OpenStackNodeDriver(NodeDriver):
     def list_images(self):
         return self._to_images(self.client.images.findall(status='ACTIVE'))
 
+    def create_node(self, name, size, image, ex_metadata=None, ex_files=None):
+        if ex_metadata is None:
+            ex_metadata = {}
+        if ex_files is None:
+            ex_files = {}
+
+        return self._to_node(self.client.servers.create(
+            name,
+            image.id,
+            size.id,
+            meta=ex_metadata,
+            files=ex_files,
+        ))
+
     def ex_set_password(self, node, password):
         self._to_nova_node(node).change_password(password)
         node.extra['password'] = password
