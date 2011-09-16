@@ -159,6 +159,9 @@ class OpenStackNodeDriver(NodeDriver):
 
         return node
 
+    def ex_save_image(self, node, name, metadata=None):
+        self.client.servers.create_image(node.id, name, metadata)
+
     def ex_list_floating_ips(self):
         return self._to_floating_ips(self.client.floating_ips.list())
 
