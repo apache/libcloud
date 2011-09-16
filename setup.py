@@ -34,6 +34,7 @@ TEST_PATHS = ['test', 'test/common', 'test/compute', 'test/storage',
 DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy' ]
 
+pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 def read_version_string():
     version = None
@@ -78,8 +79,6 @@ class TestCommand(Command):
             print "  cp test/secrets.py-dist test/secrets.py"
             sys.exit(1)
 
-        pre_python26 = (sys.version_info[0] == 2
-                        and sys.version_info[1] < 6)
         if pre_python26:
             missing = []
             # test for dependencies
@@ -184,8 +183,10 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
+requires = ['python_novaclient']
+# pre-2.6 will need the ssl PyPI package, as well as simplejson
+if pre_python26:
+    requires.extend(['ssl', 'simplejson'])
 
 setup(
     name='apache-libcloud',
@@ -193,7 +194,7 @@ setup(
     description='A unified interface into many cloud server providers',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    requires=([], ['ssl', 'simplejson'],)[pre_python26],
+    requires=requires,
     packages=[
         'libcloud',
         'libcloud.common',
