@@ -135,6 +135,21 @@ class OpenStackNodeDriver(NodeDriver):
 
         return node
 
+    def ex_list_floating_ips(self):
+        return self._to_floating_ips(self.client.floating_ips.list())
+
+    def ex_create_floating_ip(self):
+        return self._to_floating_ip(self.client.floating_ips.create())
+
+    def ex_delete_floating_ip(self, floating_ip):
+        self.client.floating_ips.delete(floating_ip.id)
+
+    def ex_add_floating_ip(self, node, floating_ip):
+        self.client.servers.add_floating_ip(node.id, floating_ip.address)
+
+    def ex_remove_floating_ip(self, node, floating_ip):
+        self.client.servers.remove_floating_ip(node.id, floating_ip.address)
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
@@ -190,3 +205,27 @@ class OpenStackNodeDriver(NodeDriver):
                 metadata=nova_image.metadata,
             ),
         )
+
+    def _to_floating_ips(self, nova_floating_ips):
+        return [
+            self._to_floating_ip(nova_floating_ip)
+            for nova_floating_ip in nova_floating_ips
+        ]
+
+    def _to_floating_ip(self, nova_floating_ip):
+        # Wraps instantiation so subclasses can override easily if needed, as
+        # well as to match pattern elsewhere.
+        # TODO: Fix init args when structure is known. See the class for more.
+        return OpenStackFloatingIP(
+            address=nova_floating_ip.address,
+        )
+
+
+class OpenStackFloatingIP(object):
+    # TODO: Though the admin guide describes FloatingIPs, the API docs don't
+    # describe their data at this time, nor does novaclient's class implement
+    # any details. When we know more, this object and instantiations need to
+    # be fleshed out. Even the "address" part is an assumption.
+
+    def __init__(self, address):
+        self.address = address
