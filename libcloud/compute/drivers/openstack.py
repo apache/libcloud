@@ -89,6 +89,10 @@ class OpenStackNodeDriver(NodeDriver):
     def list_images(self):
         return self._to_images(self.client.images.findall(status='ACTIVE'))
 
+    def ex_set_password(self, node, password):
+        self._to_nova_node(node).change_password(password)
+        node.extra['password'] = password
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
@@ -108,6 +112,9 @@ class OpenStackNodeDriver(NodeDriver):
                 metadata=nova_node.metadata,
             ),
         )
+
+    def _to_nova_node(self, node):
+        return self.client.servers.get(node.id)
 
     def _to_sizes(self, nova_flavors):
         return [self._to_size(nova_flavor) for nova_flavor in nova_flavors]
