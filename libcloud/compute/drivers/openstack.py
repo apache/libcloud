@@ -123,6 +123,18 @@ class OpenStackNodeDriver(NodeDriver):
     def ex_revert_resize(self, node):
         self.client.servers.revert_resize(node.id)
 
+    def ex_rebuild(self, node, size, password=None):
+        # TODO: Oddly, you can set password during rebuild but not during create.
+        # This should be brought up with OpenStack devs.
+        node = self._to_node(
+            self.client.servers.rebuild(node.id, size.id, password=password)
+        )
+
+        if password is not None:
+            node.extra['password'] = password
+
+        return node
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
