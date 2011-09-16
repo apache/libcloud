@@ -111,6 +111,18 @@ class OpenStackNodeDriver(NodeDriver):
         self._to_nova_node(node).update(name=name)
         node.name = name
 
+    def ex_resize(self, node, size):
+        # Old RS driver returned False for failure instead of raising an exception.
+        # Should we fix that behavior and use exception handling instead (like the
+        # non-ex operations do)? Exceptions cleaner for now - await feedback.
+        self._to_nova_node(node).resize(size.id)
+
+    def ex_confirm_resize(self, node):
+        self._to_nova_node(node).confirm_resize()
+
+    def ex_revert_resize(self, node):
+        self._to_nova_node(node).revert_resize()
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
