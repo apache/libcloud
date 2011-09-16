@@ -103,25 +103,20 @@ class OpenStackNodeDriver(NodeDriver):
     def list_images(self):
         return self._to_images(self.client.images.findall(status='ACTIVE'))
 
-    def create_node(self, name, size, image, ex_metadata=None, ex_files=None):
-        if ex_metadata is None:
-            ex_metadata = {}
-        if ex_files is None:
-            ex_files = {}
-
+    def create_node(self, name, size, image, metadata=None, files=None):
         return self._to_node(self.client.servers.create(
             name,
             image.id,
             size.id,
-            meta=ex_metadata,
-            files=ex_files,
+            meta=metadata,
+            files=files,
         ))
 
     def destroy_node(self, node):
         self.client.servers.delete(node.id)
 
     def reboot_node(self, node, hard=False):
-        reboot_type = [self.REBOOT_SOFT, self.REBOOT_HARD][hard]
+        reboot_type = (self.REBOOT_SOFT, self.REBOOT_HARD)[hard]
         self.client.servers.reboot(node.id, reboot_type)
 
     def ex_get_node(self, node_id):
