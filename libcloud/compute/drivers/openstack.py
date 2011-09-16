@@ -78,6 +78,8 @@ class OpenStackNodeDriver(NodeDriver):
                 'API version %s is not supported by this OpenStack driver' % (api_version,)
             )
 
+        self.REBOOT_HARD = version_module.servers.REBOOT_HARD
+        self.REBOOT_SOFT = version_module.servers.REBOOT_SOFT
         self.client = version_module.client.Client(username, api_key, project_id, auth_url, timeout)
 
     def list_nodes(self):
@@ -102,6 +104,10 @@ class OpenStackNodeDriver(NodeDriver):
             meta=ex_metadata,
             files=ex_files,
         ))
+
+    def reboot_node(self, node, hard=False):
+        reboot_type = [self.REBOOT_SOFT, self.REBOOT_HARD][hard]
+        self.client.servers.reboot(node.id, reboot_type)
 
     def ex_set_password(self, node, password):
         self.client.servers.change_password(node.id, password)
