@@ -93,6 +93,10 @@ class OpenStackNodeDriver(NodeDriver):
         self._to_nova_node(node).change_password(password)
         node.extra['password'] = password
 
+    def ex_set_server_name(self, node, name):
+        self._to_nova_node(node).update(name=name)
+        node.name = name
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
