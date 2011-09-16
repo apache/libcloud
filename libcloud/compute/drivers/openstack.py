@@ -58,6 +58,18 @@ class OpenStackNodeDriver(NodeDriver):
         'UNKNOWN': NodeState.UNKNOWN,
     }
 
+    QUOTA_TYPES = [
+        'cores',
+        'floating_ips',
+        'gigabytes',
+        'injected_file_content_bytes',
+        'injected_files',
+        'instances',
+        'metadata_items',
+        'ram',
+        'volumes',
+    ]
+
     def __init__(self, username, api_key, project_id, auth_url, timeout=None, api_version=None):
         if not api_version and not self.api_version:
             # If not specified in call or class, try to guess from URL.
@@ -161,6 +173,16 @@ class OpenStackNodeDriver(NodeDriver):
 
     def ex_remove_floating_ip(self, node, floating_ip):
         self.client.servers.remove_floating_ip(node.id, floating_ip.address)
+
+    def ex_quotas(self, project_id=None):
+        if project_id is None:
+            project_id = self.client.client.projectid
+        nova_quotas = self.client.quotas.get(project_id)
+
+        quotas_dict = {}
+        for quota_type in self.QUOTA_TYPES:
+            quotas_dict[quota_type] = getattr(nova_quotas, quota_type, None)
+        return quotas_dict
 
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
