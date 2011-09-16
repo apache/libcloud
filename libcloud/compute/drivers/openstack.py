@@ -101,12 +101,15 @@ class OpenStackNodeDriver(NodeDriver):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
     def _to_node(self, nova_node):
+        public_ip = nova_node.networks.get('public')
+        private_ip = nova_node.networks.get('private')
+
         return Node(
             id=nova_node.id,
             name=nova_node.name,
             state=self.NODE_STATE_MAP.get(nova_node.status, NodeState.UNKNOWN),
-            public_ip=nova_node.networks['public'],
-            private_ip=nova_node.networks['private'],
+            public_ip=public_ip,
+            private_ip=private_ip,
             driver=self,
             extra=dict(
                 hostId=nova_node.hostId,
