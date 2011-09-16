@@ -105,9 +105,15 @@ class OpenStackNodeDriver(NodeDriver):
             files=ex_files,
         ))
 
+    def destroy_node(self, node):
+        self.client.servers.delete(node.id)
+
     def reboot_node(self, node, hard=False):
         reboot_type = [self.REBOOT_SOFT, self.REBOOT_HARD][hard]
         self.client.servers.reboot(node.id, reboot_type)
+
+    def ex_get_node(self, node_id):
+        return self._to_node(self.client.servers.get(node_id))
 
     def ex_set_password(self, node, password):
         self.client.servers.change_password(node.id, password)
