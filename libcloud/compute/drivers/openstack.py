@@ -187,6 +187,14 @@ class OpenStackNodeDriver(NodeDriver):
             quotas_dict[quota_type] = getattr(nova_quotas, quota_type, None)
         return quotas_dict
 
+    # TODO: Things to consider with libcloud devs:
+    #    - Should we expose SSH keypair management the API provides?
+    #    - Ditto for security groups?
+    #    - How about zones? OS-side implementation seems incomplete, at
+    #      least in novaclient.
+    #    - There appears to be no way to get the initial password after node
+    #      creation.
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
