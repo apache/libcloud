@@ -23,7 +23,9 @@ from novaclient import v1_0, v1_1  # Populates attributes of novaclient module
 v1_0, v1_1  # Silence pyflakes
 
 from libcloud.compute.types import Provider
-from libcloud.compute.base import Node, NodeState, NodeSize, NodeDriver
+from libcloud.compute.base import (
+    Node, NodeState, NodeSize, NodeDriver, NodeImage
+)
 
 url_version_pattern = re.compile(r'\/v(\d+(?:\.\d+)+)\/?$')
 
@@ -84,6 +86,9 @@ class OpenStackNodeDriver(NodeDriver):
     def list_sizes(self):
         return self._to_sizes(self.client.flavors.list())
 
+    def list_images(self):
+        return self._to_images(self.client.images.findall(status='ACTIVE'))
+
     def _to_nodes(self, nova_nodes):
         return [self._to_node(nova_node) for nova_node in nova_nodes]
 
@@ -118,4 +123,21 @@ class OpenStackNodeDriver(NodeDriver):
             bandwidth=bandwidth,
             price=price,
             driver=self,
+        )
+
+    def _to_images(self, nova_images):
+        return [self._to_image(nova_image) for nova_image in nova_images]
+
+    def _to_image(self, nova_image):
+        return NodeImage(
+            id=nova_image.id,
+            name=nova_image.name,
+            driver=self,
+            extra=dict(
+                updated=nova_image.updated,
+                created=nova_image.created,
+                status=nova_image.status,
+                progress=nova_image.progress,
+                metadata=nova_image.metadata,
+            ),
         )
