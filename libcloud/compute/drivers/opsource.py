@@ -368,6 +368,11 @@ class OpsourceNodeDriver(NodeDriver):
         #      because opsource allows multiple nodes to have the same name
         return filter(lambda x: x.name == name, self.list_nodes())[-1]
 
+    def ex_is_server_started(self, node):
+        body = conn.connection.request_with_orgId('server/%s' %node.id).object
+        result = findtext(body, 'isStarted', SERVER_NS)
+        return result == 'true'
+
     def reboot_node(self, node):
         """reboots the node"""
         body = self.connection.request_with_orgId('server/%s?restart' % node.id).object
