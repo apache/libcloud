@@ -356,15 +356,17 @@ class OpsourceNodeDriver(NodeDriver):
         return list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
 
     def destroy_node(self, node):
-        body = self.connection.request_with_orgId('server/%s?delete' %
+        self.connection.request_with_orgId('server/%s?delete' %
                                                   (node.id)).object
 
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+    def ex_is_server_started(self, node):
+        body = self.connection.request_with_orgId('server/%s' %node.id).object
+        result = findtext(body, 'isStarted', SERVER_NS)
+        return result == 'true'
 
     def reboot_node(self, node):
-        body = self.connection.request_with_orgId('server/%s?restart' %
-                                                 (node.id)).object
+        """reboots the node"""
+        body = self.connection.request_with_orgId('server/%s?restart' % node.id).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
