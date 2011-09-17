@@ -22,7 +22,7 @@ from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
 from test import MockResponse, MockHttpTestCase, XML_HEADERS
-from test.file_fixtures import ComputeFileFixtures
+from test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from test.compute import TestCaseMixin
 
 from test.secrets import OPENSTACK_PARAMS
@@ -66,6 +66,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
+        self.driver_type.connectionCls.auth_url = "https://auth.api.example.com/v1.1/"
         OpenStackMockHttp.type = None
         self.driver = self.create_driver()
         clear_pricing_data()
@@ -292,6 +293,8 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
 
 class OpenStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack')
+    auth_fixtures = OpenStackFixtures()
+    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):
@@ -407,6 +410,22 @@ class OpenStackMockHttp(MockHttpTestCase):
         headers = {'date': 'Tue, 14 Jun 2011 09:43:55 GMT', 'content-length': '529'}
         headers.update(XML_HEADERS)
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_1__auth(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v1_1__auth.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1__auth_UNAUTHORIZED(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v1_1__auth_unauthorized.json')
+        return  (httplib.UNAUTHORIZED, body, self.json_content_headers, httplib.responses[httplib.UNAUTHORIZED])
+
+    def _v1_1__auth_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v1_1__auth_mssing_token.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1__auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
+        return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>",  {'content-type': 'text/html'}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
+
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
 from test import MockHttp, XML_HEADERS
-from test.file_fixtures import ComputeFileFixtures
+from test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from mock import Mock, patch
 
 from test.secrets import RACKSPACE_PARAMS
@@ -321,6 +321,11 @@ class DeploymentTests(unittest.TestCase):
 class RackspaceMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('openstack')
+    auth_fixtures = OpenStackFixtures()
+
+    def _v1_1__auth(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v1_1__auth.json')
+        return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):

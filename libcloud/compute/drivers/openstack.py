@@ -89,9 +89,9 @@ class OpenStackConnection(OpenStackBaseConnection):
     responseCls = OpenStackResponse
     _url_key = "server_url"
 
-    def __init__(self, user_id, key, secure, host=None, port=None):
+    def __init__(self, user_id, key, secure=True, host=None, port=None, ex_force_base_url=None):
         super(OpenStackConnection, self).__init__(
-            user_id, key, secure=secure, host=host, port=port)
+            user_id, key, host=host, port=port, ex_force_base_url=ex_force_base_url)
         self.api_version = 'v1.0'
         self.accept_format = 'application/xml'
 
@@ -101,9 +101,7 @@ class OpenStackConnection(OpenStackBaseConnection):
             headers = {}
         if not params:
             params = {}
-        # Due to first-run authentication request, we may not have a path
-        if self.server_url:
-            action = self.server_url + action
+
         if method in ("POST", "PUT"):
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
@@ -148,6 +146,16 @@ class OpenStackNodeDriver(NodeDriver):
                       'SHARE_IP_NO_CONFIG': NodeState.PENDING,
                       'DELETE_IP': NodeState.PENDING,
                       'UNKNOWN': NodeState.UNKNOWN}
+
+    def __init__(self, *args, **kwargs):
+        self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
+        super(OpenStackNodeDriver, self).__init__(*args, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        if self._ex_force_base_url:
+            return {'ex_force_base_url': self._ex_force_base_url}
+        return {}
+
 
     def list_nodes(self):
         return self._to_nodes(self.connection.request('/servers/detail')

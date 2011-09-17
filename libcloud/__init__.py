@@ -32,12 +32,12 @@ def enable_debug(fo):
     @param fo: Where to append debugging information
     @type fo: File like object, only write operations are used.
     """
-    from libcloud.base import (ConnectionKey,
+    from libcloud.common.base import (Connection,
                                LoggingHTTPConnection,
                                LoggingHTTPSConnection)
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
-    ConnectionKey.conn_classes = (LoggingHTTPConnection,
+    Connection.conn_classes = (LoggingHTTPConnection,
                                   LoggingHTTPSConnection)
 
 

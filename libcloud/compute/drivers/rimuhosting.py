@@ -28,8 +28,6 @@ from libcloud.compute.base import NodeImage, NodeAuthPassword
 
 API_CONTEXT = '/r'
 API_HOST = 'rimuhosting.com'
-API_PORT = (80,443)
-API_SECURE = True
 
 class RimuHostingException(Exception):
     """
@@ -78,7 +76,7 @@ class RimuHostingConnection(ConnectionKey):
 
     api_context = API_CONTEXT
     host = API_HOST
-    port = API_PORT
+    port = 443
     responseCls = RimuHostingResponse
 
     def __init__(self, key, secure=True):
@@ -113,8 +111,8 @@ class RimuHostingNodeDriver(NodeDriver):
     name = 'RimuHosting'
     connectionCls = RimuHostingConnection
 
-    def __init__(self, key, host=API_HOST, port=API_PORT,
-                 api_context=API_CONTEXT, secure=API_SECURE):
+    def __init__(self, key, host=API_HOST, port=443,
+                 api_context=API_CONTEXT, secure=True):
         # Pass in some extra vars so that
         self.key = key
         self.secure = secure

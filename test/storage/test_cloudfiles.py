@@ -33,7 +33,7 @@ from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
 from test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
-from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
+from test.file_fixtures import StorageFileFixtures, OpenStackFixtures # pylint: disable-msg=E0611
 
 current_hash = None
 
@@ -426,6 +426,7 @@ class CloudFilesTests(unittest.TestCase):
 class CloudFilesMockHttp(StorageMockHttp):
 
     fixtures = StorageFileFixtures('cloudfiles')
+    auth_fixtures = OpenStackFixtures()
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
 
     # fake auth token response
@@ -624,6 +625,11 @@ class CloudFilesMockHttp(StorageMockHttp):
             status_code = httplib.NOT_FOUND
 
         return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_1__auth(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v1_1__auth.json')
+        return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
+
 
 class CloudFilesMockRawResponse(MockRawResponse):
 
