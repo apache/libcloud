@@ -382,10 +382,13 @@ class NodeDriver(object):
         if port != None:
             args.append(port)
 
-        self.connection = self.connectionCls(*args)
+        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
 
         self.connection.driver = self
         self.connection.connect()
+
+    def _ex_connection_class_kwargs(self):
+        return {}
 
     def create_node(self, **kwargs):
         """Create a new node instance.

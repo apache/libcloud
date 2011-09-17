@@ -17,10 +17,10 @@
 Common settings for Rackspace Cloud Servers and Cloud Files
 """
 
-AUTH_HOST_US = 'auth.api.rackspacecloud.com'
-AUTH_HOST_UK = 'lon.auth.api.rackspacecloud.com'
+AUTH_URL_US = 'https://auth.api.rackspacecloud.com/v1.1/'
+AUTH_URL_UK = 'https://lon.auth.api.rackspacecloud.com/v1.1/'
 
 __all__ = [
-    "AUTH_HOST_US",
-    "AUTH_HOST_UK",
+    "AUTH_URL_US",
+    "AUTH_URL_UK",
     ]

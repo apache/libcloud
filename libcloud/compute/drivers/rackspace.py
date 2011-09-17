@@ -20,7 +20,7 @@ from libcloud.compute.base import NodeLocation
 from libcloud.compute.drivers.openstack import OpenStackConnection, OpenStackNodeDriver, OpenStackResponse
 
 from libcloud.common.rackspace import (
-    AUTH_HOST_US, AUTH_HOST_UK)
+    AUTH_URL_US, AUTH_URL_UK)
 
 
 class RackspaceConnection(OpenStackConnection):
@@ -29,7 +29,7 @@ class RackspaceConnection(OpenStackConnection):
     """
 
     responseCls = OpenStackResponse
-    auth_host = AUTH_HOST_US
+    auth_url = AUTH_URL_US
 
 
 class RackspaceNodeDriver(OpenStackNodeDriver):
@@ -51,7 +51,7 @@ class RackspaceUKConnection(RackspaceConnection):
     """
     Connection class for the Rackspace UK driver
     """
-    auth_host = AUTH_HOST_UK
+    auth_url = AUTH_URL_UK
 
 
 class RackspaceUKNodeDriver(RackspaceNodeDriver):

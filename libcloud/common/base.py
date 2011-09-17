@@ -19,8 +19,10 @@ import StringIO
 import ssl
 
 from pipes import quote as pquote
+import urlparse
 
 import libcloud
+from libcloud.common.types import LibcloudError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from httplib import HTTPConnection as LibcloudHTTPConnection
@@ -222,7 +224,7 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
         return LibcloudHTTPConnection.request(self, method, url,
                                                body, headers)
 
-class ConnectionKey(object):
+class Connection(object):
     """
     A Base Connection class to derive from.
     """
@@ -233,26 +235,57 @@ class ConnectionKey(object):
     rawResponseCls = RawResponse
     connection = None
     host = '127.0.0.1'
-    port = (80, 443)
+    port = 443
     secure = 1
     driver = None
     action = None
 
-    def __init__(self, key, secure=True, host=None, force_port=None):
-        """
-        Initialize `user_id` and `key`; set `secure` to an C{int} based on
-        passed value.
-        """
-        self.key = key
+    def __init__(self, secure=True, host=None, port=None, url=None):
         self.secure = secure and 1 or 0
         self.ua = []
+
+        self.request_path = ''
+
         if host:
             self.host = host
 
-        if force_port:
-            self.port = (force_port, force_port)
+        if port != None:
+            self.port = port
+        else:
+            if self.secure == 1:
+                self.port = 443
+            else:
+                self.port = 80
 
-    def connect(self, host=None, port=None):
+        if url:
+            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(url)
+
+    def _tuple_from_url(self, url):
+        secure = 1
+        port = None
+        scheme, netloc, request_path, param, query, fragment = urlparse.urlparse(url)
+
+        if scheme not in ['http', 'https']:
+            raise LibcloudError('Invalid scheme: %s in url %s' % (scheme, url))
+
+        if scheme == "http":
+            secure = 0
+
+        if ":" in netloc:
+            netloc, port = netloc.rsplit(":")
+            port = port
+
+        if not port:
+            if scheme == "http":
+                port = 80
+            else:
+                port = 443
+
+        host = netloc
+
+        return (host, port, secure, request_path)
+
+    def connect(self, host=None, port=None, base_url = None):
         """
         Establish a connection with the API server.
 
@@ -264,17 +297,21 @@ class ConnectionKey(object):
 
         @returns: A connection
         """
-        host = host or self.host
+        # prefer the attribute base_url if its set or sent
+        connection = None
+        secure = self.secure
 
-        # port might be included in service url, so pick it if it's present
-        if ":" in host:
-            host, port = host.split(":")
+        if getattr(self, 'base_url', None) and base_url == None:
+            (host, port, secure, request_path) = self._tuple_from_url(self.base_url)
+        elif base_url != None:
+            (host, port, secure, request_path) = self._tuple_from_url(base_url)
         else:
-            port = port or self.port[self.secure]
+            host = host or self.host
+            port = port or self.port
 
         kwargs = {'host': host, 'port': int(port)}
 
-        connection = self.conn_classes[self.secure](**kwargs)
+        connection = self.conn_classes[secure](**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
@@ -307,8 +344,7 @@ class ConnectionKey(object):
                 data='',
                 headers=None,
                 method='GET',
-                raw=False,
-                host=None):
+                raw=False):
         """
         Request a given `action`.
 
@@ -337,10 +373,6 @@ class ConnectionKey(object):
                      and use the rawResponseCls class. This is used with
                      storage API when uploading a file.
 
-        @type host: C{str}
-        @param host: To which host to send the request. If not specified,
-                     self.host is used.
-
         @return: An instance of type I{responseCls}
         """
         if params is None:
@@ -348,6 +380,7 @@ class ConnectionKey(object):
         if headers is None:
             headers = {}
 
+        action = self.morph_action_hook(action)
         self.action = action
         self.method = method
         # Extend default parameters
@@ -356,8 +389,7 @@ class ConnectionKey(object):
         headers = self.add_default_headers(headers)
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
-        host = host or self.host
-        headers.update({'Host': host})
+        headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '' and data != None:
             data = self.encode_data(data)
@@ -374,7 +406,7 @@ class ConnectionKey(object):
 
         # Removed terrible hack...this a less-bad hack that doesn't execute a
         # request twice, but it's still a hack.
-        self.connect(host=host)
+        self.connect()
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
@@ -398,6 +430,9 @@ class ConnectionKey(object):
 
         response.connection = self
         return response
+
+    def morph_action_hook(self, action):
+        return self.request_path  + action
 
     def add_default_params(self, params):
         """
@@ -438,6 +473,18 @@ class ConnectionKey(object):
         Override in a provider's subclass.
         """
         return data
+    
+class ConnectionKey(Connection):
+    """
+    A Base Connection class to derive from, which includes a
+    """
+    def __init__(self, key, secure=True, host=None, port=None, url=None):
+        """
+        Initialize `user_id` and `key`; set `secure` to an C{int} based on
+        passed value.
+        """
+        super(ConnectionKey, self).__init__(secure=secure, host=host, port=port, url=url)
+        self.key = key
 
 class ConnectionUserAndKey(ConnectionKey):
     """
@@ -446,6 +493,7 @@ class ConnectionUserAndKey(ConnectionKey):
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None):
-        super(ConnectionUserAndKey, self).__init__(key, secure, host, port)
+    def __init__(self, user_id, key, secure=True, host=None, port=None, url=None):
+        super(ConnectionUserAndKey, self).__init__(key, secure=secure,
+                                                   host=host, port=port, url=url)
         self.user_id = user_id
