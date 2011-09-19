@@ -38,13 +38,13 @@ class Response(object):
     status = httplib.OK
     headers = {}
     error = None
-    connection = None
 
-    def __init__(self, response):
+    def __init__(self, response, connection=None):
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
 
         if not self.success():
             raise Exception(self.parse_error())
@@ -84,12 +84,13 @@ class Response(object):
 
 class RawResponse(Response):
 
-    def __init__(self, response=None):
+    def __init__(self, response=None, connection=None):
         self._status = None
         self._response = None
         self._headers = {}
         self._error = None
         self._reason = None
+        self.connection = connection
 
     @property
     def response(self):
@@ -424,12 +425,9 @@ class Connection(object):
             raise ssl.SSLError(str(e))
 
         if raw:
-            response = self.rawResponseCls()
+            return self.rawResponseCls(connection=self)
         else:
-            response = self.responseCls(self.connection.getresponse())
-
-        response.connection = self
-        return response
+            return self.responseCls(self.connection.getresponse(), connection=self)
 
     def morph_action_hook(self, action):
         return self.request_path  + action

@@ -86,7 +86,7 @@ class LinodeResponse(Response):
 
     libcloud does not take advantage of batching, so a response will always
     reflect the above format.  A few weird quirks are caught here as well."""
-    def __init__(self, response):
+    def __init__(self, response, connection=None):
         """Instantiate a LinodeResponse from the HTTP response
 
         @keyword response: The raw response returned by urllib
@@ -95,6 +95,7 @@ class LinodeResponse(Response):
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
         self.invalid = LinodeException(0xFF,
                                        "Invalid JSON received from server")
 
