@@ -30,57 +30,29 @@ AUTH_API_VERSION = 'v1.0'
 
 __all__ = [
     "OpenStackBaseConnection",
-    "OpenStackAuthConnection",
+    "OpenStackAuthConnection_v1_0",
     ]
 
+class OpenStackAuthResponse_v1_0(Response):
+    # TODO: Any reason Response's couldn't be this way?
+    def success(self):
+        return 200 <= self.status <= 299
 
 # @TODO: Refactor for re-use by other openstack drivers
-class OpenStackAuthResponse(Response):
-    def success(self):
-        return True
+class OpenStackAuthConnection_v1_0(ConnectionUserAndKey):
 
-    def parse_body(self):
-        if not self.body:
-            return None
-
-        if 'content-type' in self.headers:
-            key = 'content-type'
-        elif 'Content-Type' in self.headers:
-            key = 'Content-Type'
-        else:
-            raise LibcloudError('Missing content-type header', driver=OpenStackAuthConnection)
-
-        content_type = self.headers[key]
-        if content_type.find(';') != -1:
-            content_type = content_type.split(';')[0]
-
-        if content_type == 'application/json':
-            try:
-                data = json.loads(self.body)
-            except:
-                raise MalformedResponseError('Failed to parse JSON',
-                                             body=self.body,
-                                             driver=OpenStackAuthConnection)
-        elif content_type == 'text/plain':
-            data = self.body
-        else:
-            data = self.body
-
-        return data
-
-class OpenStackAuthConnection(ConnectionUserAndKey):
-
-    responseCls = OpenStackAuthResponse
+    responseCls = OpenStackAuthResponse_v1_0
     name = 'OpenStack Auth'
 
-    def __init__(self, parent_conn, auth_url, user_id, key):
+    def __init__(self, parent_conn, auth_url, user_id, key, tenant_id=None):
         self.parent_conn = parent_conn
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
 
-        super(OpenStackAuthConnection, self).__init__(
+        super(OpenStackAuthConnection_v1_0, self).__init__(
             user_id, key, url=auth_url)
 
+        self.tenant_id = tenant_id
         self.auth_url = auth_url
         self.urls = {}
         self.driver = self.parent_conn.driver
@@ -91,39 +63,49 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return headers
 
     def authenticate(self):
-        reqbody = json.dumps({'credentials': {'username': self.user_id, 'key': self.key}})
-        resp = self.request("/auth",
-                    data=reqbody,
-                    headers={
-                        'X-Auth-User': self.user_id,
-                        'X-Auth-Key': self.key,
-                    },
-                    method='POST')
+        headers = {
+            'X-Auth-User': self.user_id,
+            'X-Auth-Key': self.key,
+        }
+        if self.tenant_id:
+            headers['X-Auth-Project-Id'] = self.tenant_id
+
+        resp = self.request("/auth", headers=headers)
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
-        elif resp.status != httplib.OK:
+
+        elif resp.status in (httplib.OK, httplib.NO_CONTENT):
+            self.auth_token = resp.headers.get('x-auth-token') or resp.headers.get('X-Auth-Token')
+            # TODO: Investigate down-casing entire headers dict in Response
+            self.urls = dict([
+                (name.lower(), url)
+                for name, url in resp.headers.items()
+                if name.lower().endswith('-url')
+            ])
+
+        else:
             raise MalformedResponseError('Malformed response',
                     body='code: %s body:%s' % (resp.status, resp.body),
                     driver=self.driver)
-        else:
-            try:
-                body = json.loads(resp.body)
-            except Exception, e:
-                raise MalformedResponseError('Failed to parse JSON', e)
-            try:
-                self.auth_token = body['auth']['token']['id']
-                self.urls = body['auth']['serviceCatalog']
-            except KeyError, e:
-                raise MalformedResponseError('Auth JSON response is missing required elements', e)
+
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
 
     auth_url = None
+    tenant_id = None
 
-    def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, auth_url='', ex_force_base_url=None):
+    def __init__(self,
+        user_id,
+        key,
+        secure=True,
+        host=None,
+        port=None,
+        auth_url=None,
+        tenant_id=None,
+        ex_force_base_url=None,
+    ):
         self.server_url = None
         self.cdn_management_url = None
         self.storage_url = None
@@ -131,6 +113,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self.auth_token = None
         if auth_url:
             self.auth_url = auth_url
+        if tenant_id:
+            self.tenant_id = tenant_id
         self._force_base_url = ex_force_base_url
         super(OpenStackBaseConnection, self).__init__(
             user_id, key)
@@ -162,18 +146,9 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             value = getattr(self, url_key, None)
         return value
 
-    def _get_default_region(self, arr):
-        if len(arr):
-            for i in arr:
-                if i.get('v1Default', False):
-                    return i['publicURL']
-            # uber lame
-            return arr[0]
-        return None
-
-    def request(self, **kwargs):
+    def request(self, action, **kwargs):
         self._populate_hosts_and_request_paths()
-        return super(OpenStackBaseConnection, self).request(**kwargs)
+        return super(OpenStackBaseConnection, self).request(action, **kwargs)
 
     def _populate_hosts_and_request_paths(self):
         """
@@ -185,17 +160,16 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             if self.auth_url == None:
                 raise LibcloudError('OpenStack instance must have auth_url set')
 
-            osa = OpenStackAuthConnection(self, self.auth_url, self.user_id, self.key)
+            osa = OpenStackAuthConnection_v1_0(self, self.auth_url, self.user_id, self.key, tenant_id=self.tenant_id)
 
             # may throw InvalidCreds, etc
             osa.authenticate()
 
             self.auth_token = osa.auth_token
+            self.server_url = osa.urls.get('x-server-management-url', None)
+            self.cdn_management_url = osa.urls.get('x-cdn-management-url', None)
+            self.storage_url = osa.urls.get('x-storage-url', None)
 
-            # TODO: Multi-region support
-            self.server_url = self._get_default_region(osa.urls.get('cloudServers', []))
-            self.cdn_management_url = self._get_default_region(osa.urls.get('cloudFilesCDN', []))
-            self.storage_url = self._get_default_region(osa.urls.get('cloudFiles', []))
             # TODO: this is even more broken, the service catalog does NOT show load
             # balanacers :(  You must hard code in the Rackspace Load balancer URLs...
             self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
