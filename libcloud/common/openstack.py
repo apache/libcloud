@@ -123,12 +123,14 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     auth_url = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, ex_force_base_url=None):
+                 host=None, port=None, auth_url='', ex_force_base_url=None):
         self.server_url = None
         self.cdn_management_url = None
         self.storage_url = None
         self.lb_url = None
         self.auth_token = None
+        if auth_url:
+            self.auth_url = auth_url
         self._force_base_url = ex_force_base_url
         super(OpenStackBaseConnection, self).__init__(
             user_id, key)

@@ -49,12 +49,16 @@ class OpenStackNodeDriverBase(NodeDriver):
         'UNKNOWN': NodeState.UNKNOWN,
     }
 
-    def __init__(self, username, api_key, ex_force_base_url=None):
+    def __init__(self, username, api_key, auth_url=None, ex_force_base_url=None):
+        if auth_url:
+            self._auth_url = auth_url
         self._ex_force_base_url = ex_force_base_url
         NodeDriver.__init__(self, username, secret=api_key)
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
+        if self._auth_url:
+            kwargs['auth_url'] = self._auth_url
         if self._ex_force_base_url:
             kwargs['ex_force_base_url'] = self._ex_force_base_url
         return kwargs
