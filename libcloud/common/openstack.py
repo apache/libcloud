@@ -70,7 +70,7 @@ class OpenStackAuthConnection_v1_0(ConnectionUserAndKey):
         if self.tenant_id:
             headers['X-Auth-Project-Id'] = self.tenant_id
 
-        resp = self.request("/auth", headers=headers)
+        resp = self.request("/", headers=headers)
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
