@@ -158,8 +158,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         if not value:
             self._populate_hosts_and_request_paths()
             value = getattr(self, url_key, None)
-        if self._force_base_url != None:
-            value = self._force_base_url
         return value
 
     def _get_default_region(self, arr):
