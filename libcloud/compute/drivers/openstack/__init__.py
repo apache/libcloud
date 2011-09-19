@@ -56,7 +56,7 @@ class OpenStackResponse(Response):
 
 
 class OpenStackConnection(OpenStackBaseConnection):
-    # Unhappy naming - this class, named per the pattern in compute drivers
+    # Unhappy naming - this class, named per the pattern in compute drivers,
     # is inheriting from a common (non-service-specific) base class.
 
     responseCls = OpenStackResponse
@@ -66,10 +66,12 @@ class OpenStackConnection(OpenStackBaseConnection):
 
 class OpenStackNodeDriverBase(NodeDriver):
 
+    connectionCls = OpenStackConnection
     name = 'OpenStack'
     api_name = 'openstack'
     type = Provider.OPENSTACK
     _auth_url = None
+    _tenant_id = None
     features = {
         'create_node': ['generates_password'],
     }
@@ -93,9 +95,11 @@ class OpenStackNodeDriverBase(NodeDriver):
         'UNKNOWN': NodeState.UNKNOWN,
     }
 
-    def __init__(self, username, api_key, auth_url=None, ex_force_base_url=None):
+    def __init__(self, username, api_key, auth_url=None, tenant_id=None, ex_force_base_url=None):
         if auth_url:
             self._auth_url = auth_url
+        if tenant_id:
+            self._tenant_id = tenant_id
         self._ex_force_base_url = ex_force_base_url
         NodeDriver.__init__(self, username, secret=api_key)
 
@@ -103,6 +107,8 @@ class OpenStackNodeDriverBase(NodeDriver):
         kwargs = {}
         if self._auth_url:
             kwargs['auth_url'] = self._auth_url
+        if self._tenant_id:
+            kwargs['tenant_id'] = self._tenant_id
         if self._ex_force_base_url:
             kwargs['ex_force_base_url'] = self._ex_force_base_url
         return kwargs
