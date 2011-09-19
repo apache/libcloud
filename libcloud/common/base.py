@@ -196,7 +196,7 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
+            pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
@@ -218,7 +218,7 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
+            pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
@@ -286,7 +286,7 @@ class Connection(object):
 
         return (host, port, secure, request_path)
 
-    def connect(self, host=None, port=None, base_url = None):
+    def connect(self, host=None, port=None, base_url=None):
         """
         Establish a connection with the API server.
 
@@ -430,7 +430,7 @@ class Connection(object):
             return self.responseCls(self.connection.getresponse(), connection=self)
 
     def morph_action_hook(self, action):
-        return self.request_path  + action
+        return self.request_path + action
 
     def add_default_params(self, params):
         """
@@ -471,7 +471,7 @@ class Connection(object):
         Override in a provider's subclass.
         """
         return data
-    
+
 class ConnectionKey(Connection):
     """
     A Base Connection class to derive from, which includes a

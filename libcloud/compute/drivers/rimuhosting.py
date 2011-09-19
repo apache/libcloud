@@ -82,7 +82,7 @@ class RimuHostingConnection(ConnectionKey):
 
     def __init__(self, key, secure=True):
         # override __init__ so that we can set secure of False for testing
-        ConnectionKey.__init__(self,key,secure)
+        ConnectionKey.__init__(self, key, secure)
 
     def add_default_headers(self, headers):
         # We want JSON back from the server. Could be application/xml
@@ -117,16 +117,16 @@ class RimuHostingNodeDriver(NodeDriver):
         # Pass in some extra vars so that
         self.key = key
         self.secure = secure
-        self.connection = self.connectionCls(key ,secure)
+        self.connection = self.connectionCls(key, secure)
         self.connection.host = host
         self.connection.api_context = api_context
         self.connection.port = port
         self.connection.driver = self
         self.connection.connect()
 
-    def _order_uri(self, node,resource):
+    def _order_uri(self, node, resource):
         # Returns the order uri with its resourse appended.
-        return "/orders/%s/%s" % (node.id,resource)
+        return "/orders/%s/%s" % (node.id, resource)
 
     # TODO: Get the node state.
     def _to_node(self, order):
@@ -143,7 +143,7 @@ class RimuHostingNodeDriver(NodeDriver):
                        'monthly_recurring_fee': order.get('billing_info').get('monthly_recurring_fee')})
         return n
 
-    def _to_size(self,plan):
+    def _to_size(self, plan):
         return NodeSize(
             id=plan['pricing_plan_code'],
             name=plan['pricing_plan_description'],
@@ -154,7 +154,7 @@ class RimuHostingNodeDriver(NodeDriver):
             driver=self.connection.driver
         )
 
-    def _to_image(self,image):
+    def _to_image(self, image):
         return NodeImage(id=image['distro_code'],
             name=image['distro_description'],
             driver=self.connection.driver)
@@ -189,15 +189,15 @@ class RimuHostingNodeDriver(NodeDriver):
         # PUT the state of RESTARTING to restart a VPS.
         # All data is encoded as JSON
         data = {'reboot_request':{'running_state':'RESTARTING'}}
-        uri = self._order_uri(node,'vps/running-state')
-        self.connection.request(uri,data=json.dumps(data),method='PUT')
+        uri = self._order_uri(node, 'vps/running-state')
+        self.connection.request(uri, data=json.dumps(data), method='PUT')
         # XXX check that the response was actually successful
         return True
 
     def destroy_node(self, node):
         # Shutdown a VPS.
-        uri = self._order_uri(node,'vps')
-        self.connection.request(uri,method='DELETE')
+        uri = self._order_uri(node, 'vps')
+        self.connection.request(uri, method='DELETE')
         # XXX check that the response was actually successful
         return True
 

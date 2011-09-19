@@ -79,7 +79,7 @@ class VoxelConnection(ConnectionUserAndKey):
 
     def add_default_params(self, params):
         params["key"] = self.user_id
-        params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
+        params["timestamp"] = datetime.datetime.utcnow().isoformat() + "+0000"
 
         for param in params.keys():
             if params[param] is None:
@@ -93,7 +93,7 @@ class VoxelConnection(ConnectionUserAndKey):
         for key in keys:
             if params[key]:
                 if not params[key] is None:
-                    md5.update("%s%s"% (key, params[key]))
+                    md5.update("%s%s" % (key, params[key]))
                 else:
                     md5.update(key)
         params['api_sig'] = md5.hexdigest()
@@ -121,7 +121,7 @@ class VoxelNodeDriver(NodeDriver):
     name = 'Voxel VoxCLOUD'
 
     def _initialize_instance_types():
-        for cpus in range(1,14):
+        for cpus in range(1, 14):
             if cpus == 1:
                 name = "Single CPU"
             else:
@@ -129,7 +129,7 @@ class VoxelNodeDriver(NodeDriver):
             id = "%dcpu" % cpus
             ram = cpus * RAM_PER_CPU
 
-            VOXEL_INSTANCE_TYPES[id]= {
+            VOXEL_INSTANCE_TYPES[id] = {
                          'id': id,
                          'name': name,
                          'ram': ram,
@@ -229,12 +229,12 @@ class VoxelNodeDriver(NodeDriver):
 
         if self._getstatus(object):
             return Node(
-                id = object.findtext("device/id"),
-                name = kwargs["name"],
-                state = NODE_STATE_MAP[object.findtext("device/status")],
-                public_ip = kwargs.get("publicip", None),
-                private_ip = kwargs.get("privateip", None),
-                driver = self.connection.driver
+                id=object.findtext("device/id"),
+                name=kwargs["name"],
+                state=NODE_STATE_MAP[object.findtext("device/status")],
+                public_ip=kwargs.get("publicip", None),
+                private_ip=kwargs.get("privateip", None),
+                driver=self.connection.driver
             )
         else:
             return None
@@ -286,23 +286,23 @@ class VoxelNodeDriver(NodeDriver):
                 public_ip = private_ip = None
                 ipassignments = element.findall("ipassignments/ipassignment")
                 for ip in ipassignments:
-                    if ip.attrib["type"] =="frontend":
+                    if ip.attrib["type"] == "frontend":
                         public_ip = ip.text
                     elif ip.attrib["type"] == "backend":
                         private_ip = ip.text
 
-                nodes.append(Node(id= element.attrib['id'],
+                nodes.append(Node(id=element.attrib['id'],
                                  name=element.attrib['label'],
                                  state=state,
-                                 public_ip= public_ip,
-                                 private_ip= private_ip,
+                                 public_ip=public_ip,
+                                 private_ip=private_ip,
                                  driver=self.connection.driver))
         return nodes
 
     def _to_images(self, object):
         images = []
         for element in object.findall("images/image"):
-            images.append(NodeImage(id = element.attrib["id"],
-                                    name = element.attrib["summary"],
-                                    driver = self.connection.driver))
+            images.append(NodeImage(id=element.attrib["id"],
+                                    name=element.attrib["summary"],
+                                    driver=self.connection.driver))
         return images

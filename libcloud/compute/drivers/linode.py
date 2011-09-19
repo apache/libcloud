@@ -606,7 +606,7 @@ def _izip_longest(*args, **kwds):
     http://docs.python.org/library/itertools.html#itertools.izip
     """
     fillvalue = kwds.get('fillvalue')
-    def sentinel(counter = ([fillvalue]*(len(args)-1)).pop):
+    def sentinel(counter=([fillvalue]*(len(args) - 1)).pop):
         yield counter() # yields the fillvalue, or raises IndexError
     fillers = itertools.repeat(fillvalue)
     iters = [itertools.chain(it, sentinel(), fillers) for it in args]
