@@ -27,9 +27,9 @@ from libcloud.pricing import get_size_price, PRICING_DATA
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeSize, NodeImage
-from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.compute.drivers.openstack import OpenStackNodeDriverBase
 from libcloud.compute.drivers.openstack import OpenStackResponse as OpenStackResponseBase
+from libcloud.compute.drivers.openstack import OpenStackConnection as OpenStackConnectionBase
 
 __all__ = [
     'OpenStackResponse',
@@ -76,10 +76,9 @@ class OpenStackResponse(OpenStackResponseBase):
         return '%s %s %s' % (self.status, self.error, text)
 
 
-class OpenStackConnection(OpenStackBaseConnection):
+class OpenStackConnection(OpenStackConnectionBase):
 
     responseCls = OpenStackResponse
-    _url_key = "server_url"
     api_version = 'v1.0'
     accept_format = 'application/xml'
 

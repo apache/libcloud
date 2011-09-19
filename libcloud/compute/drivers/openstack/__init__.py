@@ -23,6 +23,7 @@ except ImportError:
 
 from libcloud.common.types import MalformedResponseError
 from libcloud.common.base import Response
+from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.compute.types import Provider
 from libcloud.compute.base import NodeState, NodeDriver
 
@@ -52,6 +53,15 @@ class OpenStackResponse(Response):
             self.error,
             ';'.join([fault_data['message'] for fault_data in self.parse_body().values()]),
         )
+
+
+class OpenStackConnection(OpenStackBaseConnection):
+    # Unhappy naming - this class, named per the pattern in compute drivers
+    # is inheriting from a common (non-service-specific) base class.
+
+    responseCls = OpenStackResponse
+    _url_key = "server_url"
+    accept_format = 'application/json'
 
 
 class OpenStackNodeDriverBase(NodeDriver):
