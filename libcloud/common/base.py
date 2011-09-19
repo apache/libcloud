@@ -299,7 +299,6 @@ class Connection(object):
         @returns: A connection
         """
         # prefer the attribute base_url if its set or sent
-        connection = None
         secure = self.secure
 
         if getattr(self, 'base_url', None) and base_url == None:
@@ -390,7 +389,6 @@ class Connection(object):
         headers = self.add_default_headers(headers)
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
-        headers.update({'Host': self.host})
         # Encode data if necessary
         if data != '' and data != None:
             data = self.encode_data(data)
