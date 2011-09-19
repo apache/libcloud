@@ -61,7 +61,7 @@ class OpenStackResponse(Response):
                 raise MalformedResponseError(
                     'Failed to parse XML',
                     body=self.body,
-                    driver=OpenStackNodeDriver)
+                    driver=self.connection.driver)
 
         else:
             return self.body
