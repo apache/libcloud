@@ -26,10 +26,10 @@ from xml.parsers.expat import ExpatError
 from libcloud.pricing import get_size_price, PRICING_DATA
 from libcloud.common.base import Response
 from libcloud.common.types import MalformedResponseError
-from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeSize, NodeImage
+from libcloud.compute.types import NodeState
+from libcloud.compute.base import Node, NodeSize, NodeImage
 from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.compute.drivers.openstack import OpenStackNodeDriverBase
 
 __all__ = [
     'OpenStackResponse',
@@ -113,7 +113,7 @@ class OpenStackConnection(OpenStackBaseConnection):
         )
 
 
-class OpenStackNodeDriver(NodeDriver):
+class OpenStackNodeDriver(OpenStackNodeDriverBase):
     """
     OpenStack node driver.
 
@@ -124,38 +124,6 @@ class OpenStackNodeDriver(NodeDriver):
         - flavorId: id of flavor
     """
     connectionCls = OpenStackConnection
-    type = Provider.OPENSTACK
-    api_name = 'openstack'
-    name = 'OpenStack'
-
-    features = {"create_node": ["generates_password"]}
-
-    NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
-                      'REBUILD': NodeState.PENDING,
-                      'ACTIVE': NodeState.RUNNING,
-                      'SUSPENDED': NodeState.TERMINATED,
-                      'QUEUE_RESIZE': NodeState.PENDING,
-                      'PREP_RESIZE': NodeState.PENDING,
-                      'VERIFY_RESIZE': NodeState.RUNNING,
-                      'PASSWORD': NodeState.PENDING,
-                      'RESCUE': NodeState.PENDING,
-                      'REBUILD': NodeState.PENDING,
-                      'REBOOT': NodeState.REBOOTING,
-                      'HARD_REBOOT': NodeState.REBOOTING,
-                      'SHARE_IP': NodeState.PENDING,
-                      'SHARE_IP_NO_CONFIG': NodeState.PENDING,
-                      'DELETE_IP': NodeState.PENDING,
-                      'UNKNOWN': NodeState.UNKNOWN}
-
-    def __init__(self, *args, **kwargs):
-        self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
-        super(OpenStackNodeDriver, self).__init__(*args, **kwargs)
-
-    def _ex_connection_class_kwargs(self):
-        if self._ex_force_base_url:
-            return {'ex_force_base_url': self._ex_force_base_url}
-        return {}
-
 
     def list_nodes(self):
         return self._to_nodes(self.connection.request('/servers/detail')
