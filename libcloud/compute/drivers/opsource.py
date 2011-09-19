@@ -106,6 +106,10 @@ class OpsourceResponse(XmlResponse):
             raise OpsourceAPIException(code,
                 message,
                 driver=OpsourceNodeDriver)
+        if self.status == 400:
+            code = findtext(body, 'resultCode', GENERAL_NS)
+            message = findtext(body, 'resultDetail', GENERAL_NS)
+            raise OpsourceAPIException(code, message, driver=OpsourceNodeDriver)
 
         return self.body
 
@@ -362,6 +366,12 @@ class OpsourceNodeDriver(NodeDriver):
     def ex_is_server_started(self, node):
         body = self.connection.request_with_orgId('server/%s' %node.id).object
         result = findtext(body, 'isStarted', SERVER_NS)
+        return result == 'true'
+
+
+    def ex_is_server_deployed(self, node):
+        body = self.connection.request_with_orgId('server/%s' %node.id).object
+        result = findtext(body, 'isDeployed', SERVER_NS)
         return result == 'true'
 
     def reboot_node(self, node):
