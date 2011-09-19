@@ -104,8 +104,8 @@ class OpsourceResponse(Response):
             raise MalformedResponseError("Failed to parse XML", body=self.body, driver=OpsourceNodeDriver)
 
         if self.status == 400:
-            code = findtext(body, 'resultCode', SERVER_NS)
-            message = findtext(body, 'resultDetail', SERVER_NS)
+            code = findtext(body, 'resultCode', GENERAL_NS)
+            message = findtext(body, 'resultDetail', GENERAL_NS)
             raise OpsourceAPIException(code, message, driver=OpsourceNodeDriver)
 
         return self.body
@@ -369,8 +369,14 @@ class OpsourceNodeDriver(NodeDriver):
         return filter(lambda x: x.name == name, self.list_nodes())[-1]
 
     def ex_is_server_started(self, node):
-        body = conn.connection.request_with_orgId('server/%s' %node.id).object
+        body = self.connection.request_with_orgId('server/%s' %node.id).object
         result = findtext(body, 'isStarted', SERVER_NS)
+        return result == 'true'
+
+
+    def ex_is_server_deployed(self, node):
+        body = self.connection.request_with_orgId('server/%s' %node.id).object
+        result = findtext(body, 'isDeployed', SERVER_NS)
         return result == 'true'
 
     def reboot_node(self, node):
