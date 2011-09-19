@@ -80,12 +80,8 @@ class OpenStackConnection(OpenStackBaseConnection):
 
     responseCls = OpenStackResponse
     _url_key = "server_url"
-
-    def __init__(self, user_id, key, secure=True, host=None, port=None, auth_url='', ex_force_base_url=None):
-        super(OpenStackConnection, self).__init__(
-            user_id, key, host=host, port=port, auth_url=auth_url, ex_force_base_url=ex_force_base_url)
-        self.api_version = 'v1.0'
-        self.accept_format = 'application/xml'
+    api_version = 'v1.0'
+    accept_format = 'application/xml'
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
