@@ -24,12 +24,12 @@ from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
 from libcloud.pricing import get_size_price, PRICING_DATA
-from libcloud.common.base import Response
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeSize, NodeImage
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.compute.drivers.openstack import OpenStackNodeDriverBase
+from libcloud.compute.drivers.openstack import OpenStackResponse as OpenStackResponseBase
 
 __all__ = [
     'OpenStackResponse',
@@ -42,16 +42,8 @@ __all__ = [
 NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 
-class OpenStackResponse(Response):
-
-    def success(self):
-        i = int(self.status)
-        return i >= 200 and i <= 299
-
-    def has_content_type(self, content_type):
-        content_type_value = self.headers.get('content-type') or ''
-        content_type_value = content_type_value.lower()
-        return content_type_value.find(content_type.lower()) > -1
+class OpenStackResponse(OpenStackResponseBase):
+    # Note that the 1.0 driver is XML-based, hence these overrides.
 
     def parse_body(self):
         if self.has_content_type('application/xml'):

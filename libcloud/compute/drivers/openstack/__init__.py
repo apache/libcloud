@@ -16,8 +16,42 @@
 OpenStack Nova driver base class and factory.
 """
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
+from libcloud.common.types import MalformedResponseError
+from libcloud.common.base import Response
 from libcloud.compute.types import Provider
 from libcloud.compute.base import NodeState, NodeDriver
+
+
+class OpenStackResponse(Response):
+
+    def success(self):
+        status = int(self.status)
+        return status >= 200 and status <= 299
+
+    def has_content_type(self, content_type):
+        content_type_value = self.headers.get('content-type') or ''
+        content_type_value = content_type_value.lower()
+        return content_type_value.find(content_type.lower()) > -1
+
+    def parse_body(self):
+        try:
+            if not self.has_content_type('application/json'):
+                raise ValueError
+            return json.loads(self.body)
+        except ValueError:
+            raise MalformedResponseError('Invalid JSON Response', body=self.body, driver=self.connection.driver)
+
+    def parse_error(self):
+        return '%s %s; %s' % (
+            self.status,
+            self.error,
+            ';'.join([fault_data['message'] for fault_data in self.parse_body().values()]),
+        )
 
 
 class OpenStackNodeDriverBase(NodeDriver):
