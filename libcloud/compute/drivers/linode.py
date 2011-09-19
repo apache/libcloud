@@ -528,6 +528,7 @@ class LinodeNodeDriver(NodeDriver):
             country = None
             if "USA" in dc["LOCATION"]: country = "US"
             elif "UK" in dc["LOCATION"]: country = "GB"
+            elif "JP" in dc["LOCATION"]: country = "JP"
             else: country = "??"
             nl.append(NodeLocation(dc["DATACENTERID"],
                                    dc["LOCATION"],
