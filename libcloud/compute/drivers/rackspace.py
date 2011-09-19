@@ -17,7 +17,7 @@ Rackspace driver
 """
 from libcloud.compute.types import Provider
 from libcloud.compute.base import NodeLocation
-from libcloud.compute.drivers.openstack import OpenStackConnection, OpenStackNodeDriver, OpenStackResponse
+from libcloud.compute.drivers.openstack.v1_0 import OpenStackConnection, OpenStackNodeDriver, OpenStackResponse
 
 from libcloud.common.rackspace import (
     AUTH_URL_US, AUTH_URL_UK)
