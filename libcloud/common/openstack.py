@@ -116,6 +116,9 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.auth_token
         headers['Accept'] = self.accept_format
+        if hasattr(self, 'content_type'):
+            headers['Content-Type'] = self.content_type
+
         return headers
 
     def morph_action(self, action):

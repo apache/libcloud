@@ -80,18 +80,15 @@ class OpenStackConnection(OpenStackConnectionBase):
 
     responseCls = OpenStackResponse
     accept_format = 'application/xml'
+    content_type = 'application/xml; charset=UTF-8'
 
-    def request(self, action, params=None, data='', headers=None,
-                method='GET'):
-        if not headers:
-            headers = {}
-        if not params:
-            params = {}
+    def request(self, action, params=None, data='', headers=None, method='GET'):
+        params = params or {}
 
-        if method in ("POST", "PUT"):
-            headers = {'Content-Type': 'application/xml; charset=UTF-8'}
+        # Note: can't move this bit baseward because it breaks the 1.1 server.
         if method == "GET":
             params['cache-busting'] = os.urandom(8).encode('hex')
+
         return super(OpenStackConnection, self).request(
             action=action,
             params=params, data=data,
