@@ -29,6 +29,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
 
+
 class RackspaceResponse(Response):
 
     def success(self):
@@ -45,11 +46,6 @@ class RackspaceConnection(OpenStackBaseConnection):
     responseCls = RackspaceResponse
     auth_url = AUTH_URL_US
     _url_key = "lb_url"
-
-    def __init__(self, user_id, key, secure=True):
-        super(RackspaceConnection, self).__init__(user_id, key, secure)
-        self.api_version = 'v1.0'
-        self.accept_format = 'application/json'
 
     def request(self, action, params=None, data='', headers=None, method='GET'):
         if not headers:

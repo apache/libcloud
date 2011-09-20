@@ -80,8 +80,10 @@ class CloudFilesResponse(Response):
 
         return data
 
+
 class CloudFilesRawResponse(CloudFilesResponse, RawResponse):
     pass
+
 
 class CloudFilesConnection(OpenStackBaseConnection):
     """
@@ -92,11 +94,6 @@ class CloudFilesConnection(OpenStackBaseConnection):
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
     _url_key = "storage_url"
-
-    def __init__(self, user_id, key, secure=True):
-        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure)
-        self.api_version = API_VERSION
-        self.accept_format = 'application/json'
 
     def request(self, action, params=None, data='', headers=None, method='GET',
                 raw=False, cdn_request=False):
@@ -502,6 +499,7 @@ class CloudFilesStorageDriver(StorageDriver):
                      meta_data=meta_data, container=container, driver=self)
         return obj
 
+
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     """
     Cloudfiles storage driver for the US endpoint.
@@ -510,6 +508,7 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     type = Provider.CLOUDFILES_US
     name = 'CloudFiles (US)'
     connectionCls = CloudFilesUSConnection
+
 
 class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     """
