@@ -613,8 +613,9 @@ class OpenStackNodeDriver(NodeDriver):
         @keyword    image: the image to be deleted
         @param      image: L{Image}
         """
-        return self.connection.request("/images/%s"%image.id,
-                    method="DELETE")
+        uri = '/images/%s' % image.id
+        resp = self.connection.request(uri, method='DELETE')
+        return resp.status == 204
 
     def _to_shared_ip_group(self, el):
         servers_el = self._findall(el, 'servers')
