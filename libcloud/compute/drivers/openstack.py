@@ -32,14 +32,14 @@ from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.common.openstack import OpenStackBaseConnection
 
 __all__ = [
-    'OpenStackResponse',
-    'OpenStackConnection',
-    'OpenStackNodeDriver',
-    'OpenStackSharedIpGroup',
-    'OpenStackNodeIpAddresses',
+    'OpenStack_1_0_Response',
+    'OpenStack_1_0_Connection',
+    'OpenStack_1_0_NodeDriver',
+    'OpenStack_1_0_SharedIpGroup',
+    'OpenStack_1_0_NodeIpAddresses',
     ]
 
-class OpenStackResponse(Response):
+class OpenStack_1_0_Response(Response):
 
     def success(self):
         i = int(self.status)
@@ -58,7 +58,7 @@ class OpenStackResponse(Response):
                 raise MalformedResponseError(
                     'Failed to parse XML',
                     body=self.body,
-                    driver=OpenStackNodeDriver)
+                    driver=OpenStack_1_0_NodeDriver)
 
         else:
             return self.body
@@ -70,7 +70,7 @@ class OpenStackResponse(Response):
         except:
             raise MalformedResponseError(
                 "Failed to parse XML",
-                body=self.body, driver=OpenStackNodeDriver)
+                body=self.body, driver=OpenStack_1_0_NodeDriver)
         try:
             text = "; ".join([err.text or ''
                               for err in
@@ -81,9 +81,9 @@ class OpenStackResponse(Response):
         return '%s %s %s' % (self.status, self.error, text)
 
 
-class OpenStackConnection(OpenStackBaseConnection):
+class OpenStack_1_0_Connection(OpenStackBaseConnection):
 
-    responseCls = OpenStackResponse
+    responseCls = OpenStack_1_0_Response
     _url_key = "server_url"
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
@@ -91,7 +91,7 @@ class OpenStackConnection(OpenStackBaseConnection):
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None):
-        super(OpenStackConnection, self).__init__(
+        super(OpenStack_1_0_Connection, self).__init__(
             user_id, key, host=host, port=port,
             ex_force_base_url=ex_force_base_url,
             ex_force_auth_url=ex_force_auth_url,
@@ -110,14 +110,14 @@ class OpenStackConnection(OpenStackBaseConnection):
             headers = {'Content-Type': 'application/xml; charset=UTF-8'}
         if method == "GET":
             params['cache-busting'] = os.urandom(8).encode('hex')
-        return super(OpenStackConnection, self).request(
+        return super(OpenStack_1_0_Connection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers
         )
 
 
-class OpenStackNodeDriver(NodeDriver):
+class OpenStack_1_0_NodeDriver(NodeDriver):
     """
     OpenStack node driver.
 
@@ -127,7 +127,7 @@ class OpenStackNodeDriver(NodeDriver):
         - imageId: id of image
         - flavorId: id of flavor
     """
-    connectionCls = OpenStackConnection
+    connectionCls = OpenStack_1_0_Connection
     type = Provider.OPENSTACK
     api_name = 'openstack'
     name = 'OpenStack'
@@ -156,7 +156,7 @@ class OpenStackNodeDriver(NodeDriver):
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
         self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
-        super(OpenStackNodeDriver, self).__init__(*args, **kwargs)
+        super(OpenStack_1_0_NodeDriver, self).__init__(*args, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         rv = {}
@@ -626,12 +626,12 @@ class OpenStackNodeDriver(NodeDriver):
                        for s in self._findall(servers_el[0], 'server')]
         else:
             servers = None
-        return OpenStackSharedIpGroup(id=el.get('id'),
+        return OpenStack_1_0_SharedIpGroup(id=el.get('id'),
                                       name=el.get('name'),
                                       servers=servers)
 
     def _to_ip_addresses(self, el):
-        return OpenStackNodeIpAddresses(
+        return OpenStack_1_0_NodeIpAddresses(
             [ip.get('addr') for ip in
              self._findall(self._findall(el, 'public')[0], 'ip')],
             [ip.get('addr') for ip in
@@ -647,7 +647,7 @@ class OpenStackNodeDriver(NodeDriver):
                               size_id=size_id)
 
 
-class OpenStackSharedIpGroup(object):
+class OpenStack_1_0_SharedIpGroup(object):
     """
     Shared IP group info.
     """
@@ -658,7 +658,7 @@ class OpenStackSharedIpGroup(object):
         self.servers = servers
 
 
-class OpenStackNodeIpAddresses(object):
+class OpenStack_1_0_NodeIpAddresses(object):
     """
     List of public and private IP addresses of a Node.
     """

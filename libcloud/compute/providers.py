@@ -88,7 +88,7 @@ DRIVERS = {
     Provider.OPSOURCE:
         ('libcloud.compute.drivers.opsource', 'OpsourceNodeDriver'),
     Provider.OPENSTACK:
-        ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver'),
+        ('libcloud.compute.drivers.openstack', 'OpenStack_1_0_NodeDriver'),
     Provider.NINEFOLD:
         ('libcloud.compute.drivers.ninefold', 'NinefoldNodeDriver'),
 }

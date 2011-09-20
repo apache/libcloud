@@ -17,7 +17,7 @@ import unittest
 import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.drivers.rackspace import OpenStackNodeDriver, OpenStackResponse
+from libcloud.compute.drivers.rackspace import OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
@@ -33,7 +33,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
 
     def test_simple_xml_content_type_handling(self):
         http_response = MockResponse(200, OpenStackResponseTestCase.XML, headers={'content-type': 'application/xml'})
-        body = OpenStackResponse(http_response).parse_body()
+        body = OpenStack_1_0_Response(http_response).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
@@ -41,7 +41,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
         http_response = MockResponse(200,
                                      OpenStackResponseTestCase.XML,
                                      headers={'content-type': 'application/xml; charset=UTF-8'})
-        body = OpenStackResponse(http_response).parse_body()
+        body = OpenStack_1_0_Response(http_response).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
@@ -49,7 +49,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
         RESPONSE_BODY = "Accepted"
 
         http_response = MockResponse(202, RESPONSE_BODY, headers={'content-type': 'text/html'})
-        body = OpenStackResponse(http_response).parse_body()
+        body = OpenStack_1_0_Response(http_response).parse_body()
 
         self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
 
@@ -57,7 +57,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
 class OpenStackTests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
-    driver_type = OpenStackNodeDriver
+    driver_type = OpenStack_1_0_NodeDriver
     driver_args = OPENSTACK_PARAMS
 
     @classmethod

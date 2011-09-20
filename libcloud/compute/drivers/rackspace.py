@@ -17,23 +17,23 @@ Rackspace driver
 """
 from libcloud.compute.types import Provider
 from libcloud.compute.base import NodeLocation
-from libcloud.compute.drivers.openstack import OpenStackConnection, OpenStackNodeDriver, OpenStackResponse
+from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection, OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 
 from libcloud.common.rackspace import (
     AUTH_URL_US, AUTH_URL_UK)
 
 
-class RackspaceConnection(OpenStackConnection):
+class RackspaceConnection(OpenStack_1_0_Connection):
     """
     Connection class for the Rackspace driver
     """
 
-    responseCls = OpenStackResponse
+    responseCls = OpenStack_1_0_Response
     auth_url = AUTH_URL_US
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 
-class RackspaceNodeDriver(OpenStackNodeDriver):
+class RackspaceNodeDriver(OpenStack_1_0_NodeDriver):
     name = 'Rackspace'
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
