@@ -21,6 +21,8 @@ try:
 except ImportError:
     import json
 
+import httplib
+
 from libcloud.common.types import MalformedResponseError
 from libcloud.common.base import Response
 from libcloud.common.openstack import OpenStackBaseConnection
@@ -40,6 +42,9 @@ class OpenStackResponse(Response):
         return content_type_value.find(content_type.lower()) > -1
 
     def parse_body(self):
+        if not self.body or self.status == httplib.NO_CONTENT:
+            return None
+
         try:
             if not self.has_content_type('application/json'):
                 raise ValueError
