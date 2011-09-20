@@ -95,6 +95,13 @@ class OpenStackConnection(OpenStackConnectionBase):
             method=method, headers=headers
         )
 
+    def encode_data(self, data):
+        if isinstance(data, basestring):
+            # Already encoded. One oddball method (_node_action). :P
+            return data
+        else:
+            return ET.tostring(data)
+
 
 class OpenStackNodeDriver(OpenStackNodeDriverBase):
     """
@@ -135,8 +142,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
 
         server_elm = ET.Element('server', body)
 
-        resp = self.connection.request(
-            uri, method='PUT', data=ET.tostring(server_elm))
+        resp = self.connection.request(uri, method='PUT', data=server_elm)
 
         if resp.status == 204 and password != None:
             node.extra['password'] = password
@@ -203,9 +209,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
         files_elm = self._files_to_xml(kwargs.get("ex_files", {}))
         if files_elm:
             server_elm.append(files_elm)
-        resp = self.connection.request("/servers",
-                                       method='POST',
-                                       data=ET.tostring(server_elm))
+        resp = self.connection.request("/servers", method='POST', data=server_elm)
         return self._to_node(resp.object)
 
     def ex_resize(self, node, size):
@@ -227,7 +231,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
 
         resp = self.connection.request("/servers/%s/action" % (node.id),
                                        method='POST',
-                                       data=ET.tostring(elm))
+                                       data=elm)
         return resp.status == 202
 
     def ex_confirm_resize(self, node):
@@ -248,7 +252,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
 
         resp = self.connection.request("/servers/%s/action" % (node.id),
                                        method='POST',
-                                       data=ET.tostring(elm))
+                                       data=elm)
         return resp.status == 204
 
     def ex_revert_resize(self, node):
@@ -269,7 +273,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
 
         resp = self.connection.request("/servers/%s/action" % (node.id),
                                        method='POST',
-                                       data=ET.tostring(elm))
+                                       data=elm)
         return resp.status == 204
 
     def ex_rebuild(self, node_id, image_id):
@@ -288,7 +292,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
         )
         resp = self.connection.request("/servers/%s/action" % node_id,
                                        method='POST',
-                                       data=ET.tostring(elm))
+                                       data=elm)
         return resp.status == 202
 
     def ex_create_ip_group(self, group_name, node_id=None):
@@ -309,9 +313,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
                 {'id': node_id}
             )
 
-        resp = self.connection.request('/shared_ip_groups',
-                                       method='POST',
-                                       data=ET.tostring(group_elm))
+        resp = self.connection.request('/shared_ip_groups', method='POST', data=group_elm)
         return self._to_shared_ip_group(resp.object)
 
     def ex_list_ip_groups(self, details=False):
@@ -345,9 +347,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
 
         uri = '/servers/%s/ips/public/%s' % (node_id, ip)
 
-        resp = self.connection.request(uri,
-                                       method='PUT',
-                                       data=ET.tostring(elm))
+        resp = self.connection.request(uri, method='PUT', data=elm)
         return resp.status == 202
 
     def ex_unshare_ip(self, node_id, ip):
@@ -556,7 +556,7 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
 
         return self._to_image(self.connection.request("/images",
                     method="POST",
-                    data=ET.tostring(image_elm)).object)
+                    data=image_elm).object)
 
     def _to_shared_ip_group(self, el):
         servers_el = self._findall(el, 'servers')

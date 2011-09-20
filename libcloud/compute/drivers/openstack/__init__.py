@@ -63,6 +63,9 @@ class OpenStackConnection(OpenStackBaseConnection):
     _url_key = "server_url"
     content_type = 'application/json; charset=UTF-8'
 
+    def encode_data(self, data):
+        return json.dumps(data)
+
 
 class OpenStackNodeDriverBase(NodeDriver):
 
