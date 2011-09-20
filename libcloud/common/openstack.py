@@ -21,13 +21,6 @@ from urllib2 import urlparse
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import LibcloudError, InvalidCredsError, MalformedResponseError
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-AUTH_API_VERSION = 'v1.0'
-
 __all__ = [
     "OpenStackBaseConnection",
     "OpenStackAuthConnection_v1_0",
@@ -95,6 +88,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     auth_url = None
     tenant_id = None
+    accept_format = 'application/json' # Just a default
 
     def __init__(self,
         user_id,

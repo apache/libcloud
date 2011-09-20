@@ -61,7 +61,6 @@ class OpenStackConnection(OpenStackBaseConnection):
 
     responseCls = OpenStackResponse
     _url_key = "server_url"
-    accept_format = 'application/json'
 
 
 class OpenStackNodeDriverBase(NodeDriver):

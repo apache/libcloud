@@ -79,7 +79,6 @@ class OpenStackResponse(OpenStackResponseBase):
 class OpenStackConnection(OpenStackConnectionBase):
 
     responseCls = OpenStackResponse
-    api_version = 'v1.0'
     accept_format = 'application/xml'
 
     def request(self, action, params=None, data='', headers=None,
