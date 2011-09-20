@@ -89,9 +89,15 @@ class OpenStackConnection(OpenStackBaseConnection):
     responseCls = OpenStackResponse
     _url_key = "server_url"
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None, ex_force_base_url=None):
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 ex_force_base_url=None,
+                 ex_force_auth_url=None,
+                 ex_force_auth_version=None):
         super(OpenStackConnection, self).__init__(
-            user_id, key, host=host, port=port, ex_force_base_url=ex_force_base_url)
+            user_id, key, host=host, port=port,
+            ex_force_base_url=ex_force_base_url,
+            ex_force_auth_url=ex_force_auth_url,
+            ex_force_auth_version=ex_force_auth_version)
         self.api_version = 'v1.0'
         self.accept_format = 'application/xml'
 
@@ -149,12 +155,19 @@ class OpenStackNodeDriver(NodeDriver):
 
     def __init__(self, *args, **kwargs):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
+        self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
+        self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
         super(OpenStackNodeDriver, self).__init__(*args, **kwargs)
 
     def _ex_connection_class_kwargs(self):
+        rv = {}
         if self._ex_force_base_url:
-            return {'ex_force_base_url': self._ex_force_base_url}
-        return {}
+            rv['ex_force_base_url'] = self._ex_force_base_url
+        if self._ex_force_auth_url:
+            rv['ex_force_auth_url'] = self._ex_force_auth_url
+        if self._ex_force_auth_version:
+            rv['ex_force_auth_version'] = self._ex_force_auth_version
+        return rv
 
 
     def list_nodes(self):
