@@ -17,7 +17,7 @@ OpenStack Nova 1.1 driver
 '''
 
 from libcloud.compute.base import Node, NodeState, NodeSize, NodeImage
-from libcloud.compute.drivers.openstack import OpenStackNodeDriverBase
+from libcloud.compute.drivers.openstack import OpenStackNodeDriver as OpenStackNodeDriverBase
 
 
 class OpenStackNodeDriver(OpenStackNodeDriverBase):

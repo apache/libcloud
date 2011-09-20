@@ -21,6 +21,7 @@ try:
 except ImportError:
     import json
 
+import sys
 import httplib
 
 from libcloud.common.types import MalformedResponseError
@@ -72,7 +73,7 @@ class OpenStackConnection(OpenStackBaseConnection):
         return json.dumps(data)
 
 
-class OpenStackNodeDriverBase(NodeDriver):
+class OpenStackNodeDriver(NodeDriver):
 
     connectionCls = OpenStackConnection
     name = 'OpenStack'
@@ -103,7 +104,32 @@ class OpenStackNodeDriverBase(NodeDriver):
         'UNKNOWN': NodeState.UNKNOWN,
     }
 
-    def __init__(self, username, api_key, auth_url=None, tenant_id=None, ex_force_base_url=None):
+    def __new__(cls, *args, **kwargs):
+
+        if cls is OpenStackNodeDriver:
+            # This base class is a factory
+
+            version = kwargs.pop('version', None) # TODO: Would it be unwise to have a default version?
+
+            if not version:
+                raise TypeError('An OpenStack "version" argument is required.')
+
+            ver_mod_name = 'libcloud.compute.drivers.openstack.v%s' % (version.replace('.', '_'),)
+            try:
+                __import__(ver_mod_name)
+            except ImportError:
+                raise NotImplementedError(
+                    'API version %s is not supported by this OpenStack driver' % (version,)
+                )
+
+            ver_mod = sys.modules[ver_mod_name]
+
+            cls = ver_mod.OpenStackNodeDriver
+
+        return object.__new__(cls)
+
+    def __init__(self, username, api_key, auth_url=None, tenant_id=None, ex_force_base_url=None, version=None):
+        # version is there because the sig must be compatible with __new__, but it's ignored.
         if auth_url:
             self._auth_url = auth_url
         if tenant_id:

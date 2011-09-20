@@ -27,7 +27,7 @@ from libcloud.pricing import get_size_price, PRICING_DATA
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeSize, NodeImage
-from libcloud.compute.drivers.openstack import OpenStackNodeDriverBase
+from libcloud.compute.drivers.openstack import OpenStackNodeDriver as OpenStackNodeDriverBase
 from libcloud.compute.drivers.openstack import OpenStackResponse as OpenStackResponseBase
 from libcloud.compute.drivers.openstack import OpenStackConnection as OpenStackConnectionBase
 
