@@ -560,6 +560,7 @@ class OpsourceNodeDriver(NodeDriver):
     def ex_create_acl_rule(self, name, position, network, action, protocol, _type, port1, port2=None):
         """Create a ACL rule in a particular network
         """
+        #XXX Pending: Add ability to add IP-range/address specific ACL rules
         acl_elm = ET.Element('AclRule', {'xmlns': NETWORK_NS})
         ET.SubElement(acl_elm, "name").text = name
         ET.SubElement(acl_elm, "position").text = position
