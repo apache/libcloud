@@ -30,6 +30,7 @@ class RackspaceConnection(OpenStackConnection):
 
     responseCls = OpenStackResponse
     auth_url = AUTH_URL_US
+    XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 
 class RackspaceNodeDriver(OpenStackNodeDriver):
