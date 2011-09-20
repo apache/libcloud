@@ -85,6 +85,7 @@ class OpenStackConnection(OpenStackBaseConnection):
 
     responseCls = OpenStackResponse
     _url_key = "server_url"
+    XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  ex_force_base_url=None,
@@ -154,6 +155,7 @@ class OpenStackNodeDriver(NodeDriver):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
+        self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
         super(OpenStackNodeDriver, self).__init__(*args, **kwargs)
 
     def _ex_connection_class_kwargs(self):
