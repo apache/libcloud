@@ -607,6 +607,21 @@ class OpenStackNodeDriver(NodeDriver):
                     method="POST",
                     data=ET.tostring(image_elm)).object)
 
+    def ex_delete_image(self, image):
+        """Delete an image for node.
+    
+        @keyword    image: the image to be deleted
+        @param      image: L{Image}
+        """
+        image_elm = ET.Element(
+           'image',
+            {'xmlns': NAMESPACE,
+                'imageId': image.id}
+        )
+        return self._to_image(self.connection.request("/images",
+                    method="DELETE",
+                    data=ET.tostring(image_elm)))
+
     def _to_shared_ip_group(self, el):
         servers_el = self._findall(el, 'servers')
         if servers_el:
