@@ -39,9 +39,6 @@ __all__ = [
     'OpenStackNodeIpAddresses',
     ]
 
-NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
-
-
 class OpenStackResponse(Response):
 
     def success(self):
@@ -189,7 +186,7 @@ class OpenStackNodeDriver(NodeDriver):
         if not name:
             name = node.name
 
-        body = {'xmlns': NAMESPACE,
+        body = {'xmlns': self.XML_NAMESPACE,
                  'name': name}
 
         if password != None:
@@ -239,7 +236,7 @@ class OpenStackNodeDriver(NodeDriver):
         image = kwargs['image']
         size = kwargs['size']
 
-        attributes = {'xmlns': NAMESPACE,
+        attributes = {'xmlns': self.XML_NAMESPACE,
              'name': name,
              'imageId': str(image.id),
              'flavorId': str(size.id)
@@ -282,7 +279,7 @@ class OpenStackNodeDriver(NodeDriver):
         """
         elm = ET.Element(
             'resize',
-            {'xmlns': NAMESPACE,
+            {'xmlns': self.XML_NAMESPACE,
              'flavorId': str(size.id),
             }
         )
@@ -305,7 +302,7 @@ class OpenStackNodeDriver(NodeDriver):
         """
         elm = ET.Element(
             'confirmResize',
-            {'xmlns': NAMESPACE}
+            {'xmlns': self.XML_NAMESPACE}
         )
 
         resp = self.connection.request("/servers/%s/action" % (node.id),
@@ -326,7 +323,7 @@ class OpenStackNodeDriver(NodeDriver):
         """
         elm = ET.Element(
             'revertResize',
-            {'xmlns': NAMESPACE}
+            {'xmlns': self.XML_NAMESPACE}
         )
 
         resp = self.connection.request("/servers/%s/action" % (node.id),
@@ -344,7 +341,7 @@ class OpenStackNodeDriver(NodeDriver):
 
         elm = ET.Element(
             'rebuild',
-            {'xmlns': NAMESPACE,
+            {'xmlns': self.XML_NAMESPACE,
              'imageId': image_id,
             }
         )
@@ -360,7 +357,7 @@ class OpenStackNodeDriver(NodeDriver):
 
         group_elm = ET.Element(
             'sharedIpGroup',
-            {'xmlns': NAMESPACE,
+            {'xmlns': self.XML_NAMESPACE,
              'name': group_name,
             }
         )
@@ -400,7 +397,7 @@ class OpenStackNodeDriver(NodeDriver):
 
         elm = ET.Element(
             'shareIp',
-            {'xmlns': NAMESPACE,
+            {'xmlns': self.XML_NAMESPACE,
              'sharedIpGroupId': group_id,
              'configureServer': str_configure}
         )
@@ -490,7 +487,7 @@ class OpenStackNodeDriver(NodeDriver):
         if isinstance(body, list):
             attr = ' '.join(['%s="%s"' % (item[0], item[1])
                              for item in body[1:]])
-            body = '<%s xmlns="%s" %s/>' % (body[0], NAMESPACE, attr)
+            body = '<%s xmlns="%s" %s/>' % (body[0], self.XML_NAMESPACE, attr)
         uri = '/servers/%s/action' % (node.id)
         resp = self.connection.request(uri, method='POST', data=body)
         return resp
@@ -501,7 +498,7 @@ class OpenStackNodeDriver(NodeDriver):
 
     def _fixxpath(self, xpath):
         # ElementTree wants namespaces in its xpaths, so here we add them.
-        return "/".join(["{%s}%s" % (NAMESPACE, e) for e in xpath.split("/")])
+        return "/".join(["{%s}%s" % (self.XML_NAMESPACE, e) for e in xpath.split("/")])
 
     def _findall(self, element, xpath):
         return element.findall(self._fixxpath(xpath))
@@ -611,7 +608,7 @@ class OpenStackNodeDriver(NodeDriver):
 
         image_elm = ET.Element(
                 'image',
-                {'xmlns': NAMESPACE,
+                {'xmlns': self.XML_NAMESPACE,
                     'name': name,
                     'serverId': node.id}
         )
