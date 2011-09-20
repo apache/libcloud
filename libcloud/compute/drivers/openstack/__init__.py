@@ -107,12 +107,12 @@ class OpenStackNodeDriver(NodeDriver):
     def __new__(cls, *args, **kwargs):
 
         if cls is OpenStackNodeDriver:
-            # This base class is a factory
+            # This base class is a factory.
 
-            version = kwargs.pop('version', None) # TODO: Would it be unwise to have a default version?
+            version = kwargs.get('version', None) # TODO: Would it be unwise to have a default version?
 
             if not version:
-                raise TypeError('An OpenStack "version" argument is required.')
+                raise TypeError('An OpenStack "version" keyword argument is required.')
 
             ver_mod_name = 'libcloud.compute.drivers.openstack.v%s' % (version.replace('.', '_'),)
             try:
@@ -123,7 +123,6 @@ class OpenStackNodeDriver(NodeDriver):
                 )
 
             ver_mod = sys.modules[ver_mod_name]
-
             cls = ver_mod.OpenStackNodeDriver
 
         return object.__new__(cls)
