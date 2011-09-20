@@ -73,7 +73,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     responseCls = OpenStackAuthResponse
     name = 'OpenStack Auth'
 
-    def __init__(self, parent_conn, auth_url, user_id, key):
+    def __init__(self, parent_conn, auth_url, auth_version, user_id, key):
         self.parent_conn = parent_conn
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
@@ -81,6 +81,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         super(OpenStackAuthConnection, self).__init__(
             user_id, key, url=auth_url)
 
+        self.auth_version = auth_version
         self.auth_url = auth_url
         self.urls = {}
         self.driver = self.parent_conn.driver
@@ -91,13 +92,45 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return headers
 
     def authenticate(self):
-        reqbody = json.dumps({'credentials': {'username': self.user_id, 'key': self.key}})
-        resp = self.request("/auth",
-                    data=reqbody,
+        if self.auth_version == "1.0":
+            return self.authenticate_1_0()
+        elif self.auth_version == "1.1":
+            return self.authenticate_1_1()
+        else:
+            raise LibcloudError('Unsupported Auth Version requested')
+
+    def authenticate_1_0(self):
+        resp = self.request("/",
                     headers={
                         'X-Auth-User': self.user_id,
                         'X-Auth-Key': self.key,
                     },
+                    method='GET')
+
+        if resp.status == httplib.UNAUTHORIZED:
+            # HTTP UNAUTHORIZED (401): auth failed
+            raise InvalidCredsError()
+        elif resp.status != httplib.NO_CONTENT:
+            raise MalformedResponseError('Malformed response',
+                    body='code: %s body:%s headers:%s' % (resp.status, resp.body, resp.headers),
+                    driver=self.driver)
+        else:
+            headers = resp.headers
+            # emulate the auth 1.1 URL list
+            self.urls = {}
+            self.urls['cloudServers'] = [{'publicURL': headers.get('x-server-management-url', None)}]
+            self.urls['cloudFilesCDN'] = [{'publicURL': headers.get('x-cdn-management-url', None)}]
+            self.urls['cloudFiles'] = [{'publicURL': headers.get('x-storage-url', None)}]
+            self.auth_token = headers.get('x-auth-token', None)
+
+            if not self.auth_token:
+                raise MalformedResponseError('Missing X-Auth-Token in response headers')
+
+    def authenticate_1_1(self):
+        reqbody = json.dumps({'credentials': {'username': self.user_id, 'key': self.key}})
+        resp = self.request("/auth",
+                    data=reqbody,
+                    headers={},
                     method='POST')
 
         if resp.status == httplib.UNAUTHORIZED:
@@ -123,13 +156,18 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     auth_url = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, ex_force_base_url=None):
+                 host=None, port=None,
+                 ex_force_base_url=None,
+                 ex_force_auth_url=None,
+                 ex_force_auth_version='1.1'):
         self.server_url = None
         self.cdn_management_url = None
         self.storage_url = None
         self.lb_url = None
         self.auth_token = None
         self._force_base_url = ex_force_base_url
+        self._ex_force_auth_url = ex_force_auth_url
+        self._auth_version = ex_force_auth_version
         super(OpenStackBaseConnection, self).__init__(
             user_id, key)
 
@@ -168,7 +206,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 if i.get('v1Default', False):
                     return i['publicURL']
             # uber lame
-            return arr[0]
+            return arr[0]['publicURL']
         return None
 
     def request(self, **kwargs):
@@ -182,10 +220,15 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         request yet, do it here. Otherwise, just return the management host.
         """
         if not self.auth_token:
-            if self.auth_url == None:
+            aurl = self.auth_url 
+
+            if self._ex_force_auth_url != None:
+                aurl = self._ex_force_auth_url
+
+            if aurl == None :
                 raise LibcloudError('OpenStack instance must have auth_url set')
 
-            osa = OpenStackAuthConnection(self, self.auth_url, self.user_id, self.key)
+            osa = OpenStackAuthConnection(self, aurl, self._auth_version, self.user_id, self.key)
 
             # may throw InvalidCreds, etc
             osa.authenticate()
