@@ -108,6 +108,24 @@ class OpenStackNodeDriver(OpenStackNodeDriverBase):
             '/servers/%s' % (node.id,), method='PUT', data=dict(server=node_updates)
         )
 
+    def ex_get_node(self, node_id):
+        return self._to_node(self.connection.request('/servers/%s' % (node_id,)).object['server'])
+
+    def ex_get_size(self, size_id):
+        return self._to_size(self.connection.request('/flavors/%s' % (size_id,)).object['flavor'])
+
+    def ex_get_image(self, image_id):
+        return self._to_image(self.connection.request('/images/%s' % (image_id,)).object['image'])
+
+    def ex_delete_image(self, image):
+        self.connection.request('/images/%s' % (image.id,), method='DELETE')
+
+    def ex_quotas(self, tenant_id=None):
+        if tenant_id is None:
+            tenant_id = self.connection.tenant_id
+
+        return self.connection.request('/os-quota-sets/%s' % (tenant_id,)).object['quota_set']
+
     def _node_action(self, node, action, **params):
         params = params or None
         self.connection.request('/servers/%s/action' % (node.id,), method='POST', data={action: params})
