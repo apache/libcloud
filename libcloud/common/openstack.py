@@ -159,7 +159,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  host=None, port=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
-                 ex_force_auth_version='1.1'):
+                 ex_force_auth_version=None):
         self.server_url = None
         self.cdn_management_url = None
         self.storage_url = None
@@ -168,6 +168,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._auth_version = ex_force_auth_version
+
+        if not self._auth_version:
+            self._auth_version = '1.1'
+
         super(OpenStackBaseConnection, self).__init__(
             user_id, key)
 
