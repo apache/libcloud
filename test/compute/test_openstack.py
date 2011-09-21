@@ -194,6 +194,12 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.name, "imgtest")
         self.assertEqual(image.id, "12345")
 
+    def test_ex_delete_image(self):
+        image = NodeImage(id=333111, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        ret = self.driver.ex_delete_image(image)
+        self.assertTrue(ret)
+
     def test_ex_list_ip_addresses(self):
         ret = self.driver.ex_list_ip_addresses(node_id=72258)
         self.assertEquals(2, len(ret.public_addresses))
@@ -328,6 +334,13 @@ class OpenStackMockHttp(MockHttpTestCase):
     def _v1_0_slug_servers_detail_METADATA(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_metadata.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_images_333111(self, method, url, body, headers):
+        if method != "DELETE":
+            raise NotImplemented
+        # this is currently used for deletion of an image
+        # as such it should not accept GET/POST
+        return(httplib.NO_CONTENT,"","",httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_images(self, method, url, body, headers):
         if method != "POST":
