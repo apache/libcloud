@@ -21,6 +21,7 @@ import httplib
 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi
+from libcloud.common.gandi import GandiException
 from libcloud.compute.types import NodeState
 
 from xml.etree import ElementTree as ET
@@ -116,26 +117,36 @@ class GandiTests(unittest.TestCase):
     def test_ex_attach_interface(self):
         ifaces = self.driver.ex_list_interfaces()
         nodes = self.driver.list_nodes()
-        res = self.driver.ex_attach_interface(ifaces[0], nodes[0])
+        res = self.driver.ex_node_attach_interface(nodes[0], ifaces[0])
         self.assertTrue(res)
 
     def test_ex_detach_interface(self):
         ifaces = self.driver.ex_list_interfaces()
         nodes = self.driver.list_nodes()
-        res = self.driver.ex_detach_interface(ifaces[0], nodes[0])
+        res = self.driver.ex_node_detach_interface(nodes[0], ifaces[0])
         self.assertTrue(res)
 
     def test_ex_attach_disk(self):
         disks = self.driver.ex_list_disks()
         nodes = self.driver.list_nodes()
-        res = self.driver.ex_attach_disk(disks[0], nodes[0])
+        res = self.driver.ex_node_attach_disk(nodes[0], disks[0])
         self.assertTrue(res)
 
     def test_ex_detach_disk(self):
         disks = self.driver.ex_list_disks()
         nodes = self.driver.list_nodes()
-        res = self.driver.ex_detach_disk(disks[0], nodes[0])
+        res = self.driver.ex_node_detach_disk(nodes[0], disks[0])
         self.assertTrue(res)
+
+    def test_ex_snapshot_disk(self):
+        disks = self.driver.ex_list_disks()
+        self.assertTrue(self.driver.ex_snapshot_disk(disks[2]))
+        self.assertRaises(GandiException,
+            self.driver.ex_snapshot_disk, disks[0])
+
+    def test_ex_update_disk(self):
+        disks = self.driver.ex_list_disks()
+        self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
 
 
 class GandiMockHttp(MockHttp):
@@ -208,6 +219,14 @@ class GandiMockHttp(MockHttp):
 
     def _xmlrpc_2_0__vm_disk_detach(self, method, url, body, headers):
             body = self.fixtures.load('disk_detach.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__disk_create_from(self, method, url, body, headers):
+            body = self.fixtures.load('disk_create_from.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__disk_update(self, method, url, body, headers):
+            body = self.fixtures.load('disk_update.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

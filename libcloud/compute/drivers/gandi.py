@@ -15,6 +15,8 @@
 """
 Gandi driver for compute
 """
+from datetime import datetime
+
 from libcloud.common.gandi import BaseGandiDriver, GandiException, \
     NetworkInterface, IPAddress, Disk
 from libcloud.compute.types import NodeState
@@ -323,30 +325,68 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         disks = []
         return self._to_disks(res)
 
-    def ex_attach_disk(self, disk, node):
+    def ex_node_attach_disk(self, node, disk):
         """Specific method to attach a disk to a node"""
-        op = self.connection.request('vm.disk_attach', int(node.id), int(disk.id))
+        op = self.connection.request('vm.disk_attach',
+            int(node.id), int(disk.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
-    def ex_detach_disk(self, disk, node):
+    def ex_node_detach_disk(self, node, disk):
         """Specific method to detach a disk from a node"""
-        op = self.connection.request('vm.disk_detach', int(node.id), int(disk.id))
+        op = self.connection.request('vm.disk_detach',
+            int(node.id), int(disk.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
-    def ex_attach_interface(self, iface, node):
+    def ex_node_attach_interface(self, node, iface):
         """Specific method to attach an interface to a node"""
-        op = self.connection.request('vm.iface_attach', int(node.id), int(iface.id))
+        op = self.connection.request('vm.iface_attach',
+            int(node.id), int(iface.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
-    def ex_detach_interface(self, iface, node):
+    def ex_node_detach_interface(self, node, iface):
         """Specific method to detach an interface from a node"""
-        op = self.connection.request('vm.iface_detach', int(node.id), int(iface.id))
+        op = self.connection.request('vm.iface_detach',
+            int(node.id), int(iface.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_snapshot_disk(self, disk, name=None):
+        """Specific method to make a snapshot of a disk"""
+        if not disk.extra.get('can_snapshot'):
+            raise GandiException(1021, "Disk %s can't snapshot" % disk.id)
+        if not name:
+            suffix = datetime.today().strftime("%Y%m%d")
+            name = "%s_%s" % (disk.name, suffix)
+        op = self.connection.request('disk.create_from',
+            {
+                'name': name,
+                'type': 'snapshot',
+            },
+            int(disk.id),
+            )
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_update_disk(self, disk, new_size=None, new_name=None):
+        """Specific method to update size or name of a disk
+        WARNING: if a server is attached it'll be rebooted
+        """
+        params = {}
+        if new_size:
+            params.update({'size': new_size})
+        if new_name:
+            params.update({'name': new_name})
+        op = self.connection.request('disk.update',
+            int(disk.id),
+            params)
         if self._wait_operation(op['id']):
             return True
         return False
