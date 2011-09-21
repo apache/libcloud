@@ -363,7 +363,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             raise GandiException(1021, "Disk %s can't snapshot" % disk.id)
         if not name:
             suffix = datetime.today().strftime("%Y%m%d")
-            name = "%s_%s" % (disk.name, suffix)
+            name = "snap_%s" % (suffix)
         op = self.connection.request('disk.create_from',
             {
                 'name': name,
