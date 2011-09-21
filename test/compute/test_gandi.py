@@ -105,6 +105,38 @@ class GandiTests(unittest.TestCase):
             password=passwd, image=img, location=loc, size=size)
         self.assertEqual(node.name, self.node_name)
 
+    def test_ex_list_disks(self):
+        disks = self.driver.ex_list_disks()
+        self.assertTrue(len(disks) > 0)
+
+    def test_ex_list_interfaces(self):
+        ifaces = self.driver.ex_list_interfaces()
+        self.assertTrue(len(ifaces) > 0)
+
+    def test_ex_attach_interface(self):
+        ifaces = self.driver.ex_list_interfaces()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_attach_interface(ifaces[0], nodes[0])
+        self.assertTrue(res)
+
+    def test_ex_detach_interface(self):
+        ifaces = self.driver.ex_list_interfaces()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_detach_interface(ifaces[0], nodes[0])
+        self.assertTrue(res)
+
+    def test_ex_attach_disk(self):
+        disks = self.driver.ex_list_disks()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_attach_disk(disks[0], nodes[0])
+        self.assertTrue(res)
+
+    def test_ex_detach_disk(self):
+        disks = self.driver.ex_list_disks()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_detach_disk(disks[0], nodes[0])
+        self.assertTrue(res)
+
 
 class GandiMockHttp(MockHttp):
 
@@ -153,6 +185,30 @@ class GandiMockHttp(MockHttp):
     def _xmlrpc_2_0__vm_stop(self, method, url, body, headers):
         body = self.fixtures.load('vm_stop.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__iface_list(self, method, url, body, headers):
+        body = self.fixtures.load('iface_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__disk_list(self, method, url, body, headers):
+        body = self.fixtures.load('disk_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_iface_attach(self, method, url, body, headers):
+        body = self.fixtures.load('iface_attach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_iface_detach(self, method, url, body, headers):
+            body = self.fixtures.load('iface_detach.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_disk_attach(self, method, url, body, headers):
+        body = self.fixtures.load('disk_attach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_disk_detach(self, method, url, body, headers):
+            body = self.fixtures.load('disk_detach.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
