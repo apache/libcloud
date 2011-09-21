@@ -31,12 +31,17 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.common.openstack import OpenStackBaseConnection
 
+ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
+
 __all__ = [
     'OpenStack_1_0_Response',
     'OpenStack_1_0_Connection',
     'OpenStack_1_0_NodeDriver',
     'OpenStack_1_0_SharedIpGroup',
     'OpenStack_1_0_NodeIpAddresses',
+    'OpenStack_1_1_Response',
+    'OpenStack_1_1_Connection',
+    'OpenStack_1_1_NodeDriver',
     ]
 
 class OpenStack_1_0_Response(Response):
@@ -666,3 +671,198 @@ class OpenStack_1_0_NodeIpAddresses(object):
     def __init__(self, public_addresses, private_addresses):
         self.public_addresses = public_addresses
         self.private_addresses = private_addresses
+
+
+class OpenStack_1_1_Response(Response):
+
+    def success(self):
+        i = int(self.status)
+        return i >= 200 and i <= 299
+
+    def has_content_type(self, content_type):
+        content_type_value = self.headers.get('content-type') or ''
+        content_type_value = content_type_value.lower()
+        return content_type_value.find(content_type.lower()) > -1
+
+    def parse_body(self):
+        if self.has_content_type('application/xml'):
+            try:
+                return ET.XML(self.body)
+            except:
+                raise MalformedResponseError(
+                    'Failed to parse XML',
+                    body=self.body,
+                    driver=OpenStack_1_0_NodeDriver)
+
+        else:
+            return self.body
+
+    def parse_error(self):
+        # TODO: fixup; only uses response codes really!
+        try:
+            body = ET.XML(self.body)
+        except:
+            raise MalformedResponseError(
+                "Failed to parse XML",
+                body=self.body, driver=OpenStack_1_0_NodeDriver)
+        try:
+            text = "; ".join([err.text or ''
+                              for err in
+                              body.getiterator()
+                              if err.text])
+        except ExpatError:
+            text = self.body
+        return '%s %s %s' % (self.status, self.error, text)
+
+class OpenStack_1_1_Connection(OpenStackBaseConnection):
+
+    responseCls = OpenStack_1_1_Response
+    _url_key = "server_url"
+    XML_NAMESPACE = 'http://docs.openstack.org/compute/api/v1.1'
+
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 ex_force_base_url=None,
+                 ex_force_auth_url=None,
+                 ex_force_auth_version=None):
+        super(OpenStack_1_1_Connection, self).__init__(
+            user_id, key, host=host, port=port,
+            ex_force_base_url=ex_force_base_url,
+            ex_force_auth_url=ex_force_auth_url,
+            ex_force_auth_version=ex_force_auth_version)
+        self.api_version = 'v1.1'
+        self.accept_format = 'application/xml'
+
+    def request(self, action, params=None, data='', headers=None,
+                method='GET'):
+        if not headers:
+            headers = {}
+        if not params:
+            params = {}
+
+        if method in ("POST", "PUT"):
+            headers = {'Content-Type': 'application/xml; charset=UTF-8'}
+        if method == "GET":
+            params['cache-busting'] = os.urandom(8).encode('hex')
+        return super(OpenStack_1_1_Connection, self).request(
+            action=action,
+            params=params, data=data,
+            method=method, headers=headers
+        )
+
+
+class OpenStack_1_1_NodeDriver(NodeDriver):
+    """
+    OpenStack node driver.
+    """
+    connectionCls = OpenStack_1_1_Connection
+    type = Provider.OPENSTACK
+    api_name = 'openstack'
+    name = 'OpenStack'
+
+    features = {"create_node": ["generates_password"]}
+
+    def __init__(self, *args, **kwargs):
+        self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
+        self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
+        self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
+        self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
+        super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
+
+
+    def _ex_connection_class_kwargs(self):
+        rv = {}
+        if self._ex_force_base_url:
+            rv['ex_force_base_url'] = self._ex_force_base_url
+        if self._ex_force_auth_url:
+            rv['ex_force_auth_url'] = self._ex_force_auth_url
+        if self._ex_force_auth_version:
+            rv['ex_force_auth_version'] = self._ex_force_auth_version
+        return rv
+
+    def _fixxpath(self, xpath):
+        # ElementTree wants namespaces in its xpaths, so here we add them.
+        return "/".join(["{%s}%s" % (self.XML_NAMESPACE, e) for e in xpath.split("/")])
+
+    def _findall(self, element, xpath):
+        return element.findall(self._fixxpath(xpath))
+
+    def list_nodes(self):
+        return self._to_nodes(self.connection.request('/servers/detail')
+                                             .object)
+
+    def _to_nodes(self, obj):
+        node_elements = self._findall(obj, 'server')
+        return [self._to_node(el) for el in node_elements]
+
+    def _to_node(self, el):
+        """
+        <ns0:server xmlns:ns0="http://docs.openstack.org/compute/api/v1.1" xmlns:ns1="http://www.w3.org/2005/Atom" accessIPv4="" accessIPv6="" created="2011-08-16T20:43:13Z" hostId="d4fafd12143bbdbc6591cc1d88e35802410d9d2fdb1695f87f956099" id="7602" name="lucytest" progress="100" status="ACTIVE" tenantId="rs-reach-project" updated="2011-09-20T07:51:28Z" userId="rs-reach" uuid="baa94c2f-b665-47b1-9770-75ed39e92f01">
+          <ns0:image id="7">
+            <ns1:link href="http://alpha.ord.servers.api.rackspacecloud.com/rs-reach-project/images/7" rel="bookmark"/>
+          </ns0:image>
+          <ns0:flavor id="1">
+            <ns1:link href="http://alpha.ord.servers.api.rackspacecloud.com/rs-reach-project/flavors/1" rel="bookmark"/>
+          </ns0:flavor>
+          <ns0:metadata/>
+          <ns0:addresses>
+            <ns0:network id="public">
+              <ns0:ip addr="50.57.94.30" version="4"/>
+              <ns0:ip addr="2001:4801:7808:52:16:3eff:fe66:c89e" version="6"/>
+            </ns0:network>
+            <ns0:network id="private">
+              <ns0:ip addr="10.182.64.29" version="4"/>
+              <ns0:ip addr="fec0:4801:7808:52:16:3eff:fe50:13b9" version="6"/>
+            </ns0:network>
+          </ns0:addresses>
+          <ns1:link href="http://alpha.ord.servers.api.rackspacecloud.com/v1.1/rs-reach-project/servers/7602" rel="self"/>
+          <ns1:link href="http://alpha.ord.servers.api.rackspacecloud.com/rs-reach-project/servers/7602" rel="bookmark"/>
+        </ns0:server>
+        """
+
+        def get_ips(networks):
+            rv = []
+            for network in networks:
+                rv.extend([ip.get('addr') for ip in network])
+            return rv
+
+        def get_meta_dict(el):
+            d = {}
+            for meta in el:
+                d[meta.get('key')] = meta.text
+            return d
+
+        def get_network(el, network_type):
+            rv = []
+            elems = self._findall(el, 'addresses/network')
+            for x in elems:
+                if x.get('id') ==  network_type:
+                    rv.append(x)
+            return rv
+
+        public_ip = get_ips(get_network(el, 'public'))
+        private_ip = get_ips(get_network(el, 'private'))
+        metadata = get_meta_dict(self._findall(el, 'metadata/meta'))
+
+        selfurl = "https://%s%s/servers/%s" % (self.connection.host, self.connection.request_path, el.get('id'))
+        # prefer the atom link if we can find it, over our hacky url built above
+        for x in el.findall('{%s}link' % ATOM_NAMESPACE):
+            if x.get('rel') == "self":
+                selfurl = x.get('href')
+                break
+
+        n = Node(id=el.get('id'),
+                 name=el.get('name'),
+                 state=self.NODE_STATE_MAP.get(
+                     el.get('status'), NodeState.UNKNOWN),
+                 public_ip=public_ip,
+                 private_ip=private_ip,
+                 driver=self.connection.driver,
+                 extra={
+                    'password': el.get('adminPass'),
+                    'hostId': el.get('hostId'),
+                    'imageId': el.get('imageId'),
+                    'flavorId': el.get('flavorId'),
+                    'uri': selfurl,
+                    'metadata': metadata,
+                 })
+        return n
