@@ -28,6 +28,11 @@ class RackspaceTests(OpenStackTests):
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_PARAMS
 
+    def test_list_sizes_pricing(self):
+        sizes = self.driver.list_sizes()
+
+        for size in sizes:
+            self.assertTrue(size.price > 0)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -649,12 +649,12 @@ class OpenStack_1_0_NodeDriver(NodeDriver):
         )
 
     def _get_size_price(self, size_id):
-        if 'openstack' not in PRICING_DATA['compute']:
+        try:
+            return get_size_price(driver_type='compute',
+                                  driver_name=self.api_name,
+                                  size_id=size_id)
+        except KeyError:
             return 0.0
-
-        return get_size_price(driver_type='compute',
-                              driver_name='openstack',
-                              size_id=size_id)
 
 
 class OpenStack_1_0_SharedIpGroup(object):
