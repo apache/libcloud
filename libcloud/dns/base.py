@@ -20,6 +20,10 @@ __all__ = [
 ]
 
 
+from libcloud.common.base import ConnectionUserAndKey
+from libcloud.dns.types import RecordType
+
+
 class Zone(object):
     """
     DNS zone.
@@ -110,14 +114,41 @@ class Record(object):
         return self.driver.delete_record(record=self)
 
     def __repr__(self):
-        return ('<Record: zone=%s, name=%s, data=%s, provider=%s ...>' %
-                (self.zone.id, self.name, self.data, self.driver.name))
+        return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s '
+                '...>' %
+                (self.zone.id, self.name, RecordType.__repr__(self.type),
+                 self.data, self.driver.name))
 
 
 class DNSDriver(object):
     """
     DNS driver.
     """
+    connectionCls = ConnectionUserAndKey
+    name = None
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+        # TODO: Refactor into BaseDriver class
+        self.key = key
+        self.secret = secret
+        self.secure = secure
+        args = [self.key]
+
+        if self.secret != None:
+            args.append(self.secret)
+
+        args.append(secure)
+
+        if host != None:
+            args.append(host)
+
+        if port != None:
+            args.append(port)
+
+        self.connection = self.connectionCls(*args)
+
+        self.connection.driver = self
+        self.connection.connect()
 
     def list_zones(self):
         """
@@ -242,3 +273,12 @@ class DNSDriver(object):
         """
         raise NotImplementedError(
             'delete_record not implemented for this driver')
+
+    def _string_to_record_type(self, string):
+        """
+        Return a string representation of a DNS record type to a
+        libcloud RecordType ENUM.
+        """
+        string = string.upper()
+        record_type = getattr(RecordType, string)
+        return record_type
