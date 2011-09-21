@@ -278,10 +278,15 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
-            self.assertEqual(size.price, 0,
-                             'Size price should be zero by default')
+
+            if self.driver.api_name == 'openstack':
+                self.assertEqual(size.price, 0,
+                                 'Size price should be zero by default')
 
     def test_list_sizes_with_specified_pricing(self):
+        if self.driver.api_name != 'openstack':
+            return
+
         pricing = dict((str(i), i) for i in range(1, 9))
 
         set_pricing(driver_type='compute', driver_name='openstack',
@@ -293,8 +298,7 @@ class OpenStackTests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
-            self.assertEqual(size.price, pricing[size.id],
-                             'Size price should be zero by default')
+            self.assertEqual(float(size.price), float(pricing[size.id]))
 
 
 class OpenStackMockHttp(MockHttpTestCase):
