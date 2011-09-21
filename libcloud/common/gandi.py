@@ -17,6 +17,7 @@ Gandi driver base classes
 """
 
 import time
+import hashlib
 import xmlrpclib
 
 import libcloud
@@ -145,3 +146,89 @@ class BaseGandiDriver(object):
 
             time.sleep(check_interval)
         return False
+
+
+class BaseObject(object):
+    """Base class for objects not conventional"""
+
+    uuid_prefix = ''
+
+    def __init__(self, id, state, driver):
+        self.id = str(id) if id else None
+        self.state = state
+        self.driver = driver
+        self.uuid = self.get_uuid()
+
+    def get_uuid(self):
+        """Unique hash for this object
+
+        @return: C{string}
+
+        The hash is a function of an SHA1 hash of prefix, the object's ID and
+        its driver which means that it should be unique between all
+        interfaces.
+        TODO : to review
+        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+        >>> driver = DummyNodeDriver(0)
+        >>> vif = driver.create_interface()
+        >>> vif.get_uuid()
+        'd3748461511d8b9b0e0bfa0d4d3383a619a2bb9f'
+
+        Note, for example, that this example will always produce the
+        same UUID!
+        """
+        return hashlib.sha1("%s:%s:%d" % \
+            (self.uuid_prefix, self.id, self.driver.type)).hexdigest()
+
+
+class IPAddress(BaseObject):
+    """
+    Provide a common interface for ip addresses
+    """
+
+    uuid_prefix = 'inet:'
+
+    def __init__(self, id, state, inet, driver, version=4, extra=None):
+        BaseObject.__init__(self, id, state, driver)
+        self.inet = inet
+        self.version = version
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<IPAddress: id=%s, address=%s, state=%s, driver=%s ...>')
+                % (self.id, self.inet, self.state, self.driver.name))
+
+
+class NetworkInterface(BaseObject):
+    """
+    Provide a common interface for network interfaces
+    """
+
+    uuid_prefix = 'if:'
+
+    def __init__(self, id, state, mac_address, driver,
+            ips=None, node_id=None, extra=None):
+        BaseObject.__init__(self, id, state, driver)
+        self.mac = mac_address
+        self.ips = ips or {}
+        self.node_id = node_id
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<Interface: id=%s, mac=%s, state=%s, driver=%s ...>')
+                % (self.id, self.mac, self.state, self.driver.name))
+
+
+class Disk(BaseObject):
+    """
+    Gandi disk component
+    """
+    def __init__(self, id, state, name, driver, size, extra=None):
+        BaseObject.__init__(self, id, state, driver)
+        self.name = name
+        self.size = size
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
+            % (self.id, self.name, self.state, self.size, self.driver.name))

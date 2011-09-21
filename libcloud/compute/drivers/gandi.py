@@ -15,10 +15,12 @@
 """
 Gandi driver for compute
 """
-from libcloud.common.gandi import BaseGandiDriver, GandiException
+from libcloud.common.gandi import BaseGandiDriver, GandiException, \
+    NetworkInterface, IPAddress, Disk
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+
 
 NODE_STATE_MAP = {
     'running': NodeState.RUNNING,
@@ -258,3 +260,93 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def list_locations(self):
         res = self.connection.request("datacenter.list")
         return [self._to_loc(l) for l in res]
+
+    def _to_iface(self, iface):
+        ips = []
+        for ip in iface.get('ips'):
+            new_ip = IPAddress(
+                ip['id'],
+                NODE_STATE_MAP.get(
+                    ip['state'],
+                    NodeState.UNKNOWN
+                ),
+                ip['ip'],
+                self.connection.driver,
+                version=ip.get('version'),
+                extra={'reverse': ip['reverse']}
+                )
+            ips.append(new_ip)
+        return NetworkInterface(
+            iface['id'],
+            NODE_STATE_MAP.get(
+                iface['state'],
+                NodeState.UNKNOWN
+            ),
+            mac_address=None,
+            driver=self.connection.driver,
+            ips=ips,
+            node_id=iface.get('vm_id'),
+            extra={'bandwidth': iface['bandwidth']},
+        )
+
+    def _to_ifaces(self, ifaces):
+        return [self._to_iface(i) for i in ifaces]
+
+    def ex_list_interfaces(self):
+        """Specific method to list network interfaces"""
+        ifaces = self.connection.request('iface.list')
+        ips = self.connection.request('ip.list')
+        for iface in ifaces:
+            iface['ips'] = filter(lambda i: i['iface_id'] == iface['id'], ips)
+        return self._to_ifaces(ifaces)
+
+    def _to_disk(self, element):
+        disk = Disk(
+            id=element['id'],
+            state=NODE_STATE_MAP.get(
+                element['state'],
+                NodeState.UNKNOWN
+            ),
+            name=element['name'],
+            driver=self.connection.driver,
+            size=element['size'],
+            extra={'can_snapshot': element['can_snapshot']}
+        )
+        return disk
+
+    def _to_disks(self, elements):
+        return [self._to_disk(el) for el in elements]
+
+    def ex_list_disks(self):
+        """Specific method to list all disk"""
+        res = self.connection.request('disk.list', {})
+        disks = []
+        return self._to_disks(res)
+
+    def ex_attach_disk(self, disk, node):
+        """Specific method to attach a disk to a node"""
+        op = self.connection.request('vm.disk_attach', int(node.id), int(disk.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_detach_disk(self, disk, node):
+        """Specific method to detach a disk from a node"""
+        op = self.connection.request('vm.disk_detach', int(node.id), int(disk.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_attach_interface(self, iface, node):
+        """Specific method to attach an interface to a node"""
+        op = self.connection.request('vm.iface_attach', int(node.id), int(iface.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_detach_interface(self, iface, node):
+        """Specific method to detach an interface from a node"""
+        op = self.connection.request('vm.iface_detach', int(node.id), int(iface.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
