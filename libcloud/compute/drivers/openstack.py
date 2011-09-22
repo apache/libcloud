@@ -800,7 +800,8 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
         return [
             self._to_image(api_image)
             for api_image
-            in self.connection.request('/images/detail?status=ACTIVE').object['images']
+            in self.connection.request('/images/detail').object['images']
+            if api_image['status'] == u'ACTIVE'
         ]
 
     def create_node(self, name, size, image, metadata=None, files=None):
