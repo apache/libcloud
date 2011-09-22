@@ -213,7 +213,6 @@ class IBMNodeDriver(NodeDriver):
         return status == 200
     def ex_list_keypairs(self):
         """List Key pairs"""
-        url = REST_BASE + '/keys'
         return self._to_keypairs(self.connection.request(action = REST_BASE + '/keys' , method = 'GET').object)
 
     def _to_keypairs(self, object):
