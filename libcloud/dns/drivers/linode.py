@@ -55,7 +55,15 @@ class LinodeDNSDriver(DNSDriver):
 
     def list_records(self, zone):
         params = {'api_action': 'domain.resource.list', 'DOMAINID': zone.id}
-        data = self.connection.request(API_ROOT, params=params).objects[0]
+
+        try:
+            data = self.connection.request(API_ROOT, params=params).objects[0]
+        except LinodeException, e:
+            # TODO: Refactor LinodeException, args[0] should be error_id
+            if e.args[0] == 5:
+                raise ZoneDoesNotExistError(value='', driver=self,
+                                            zone_id=zone.id)
+
         records = self._to_records(items=data, zone=zone)
         return records
 
