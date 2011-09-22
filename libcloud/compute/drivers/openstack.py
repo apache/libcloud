@@ -24,6 +24,7 @@ except ImportError:
 import os
 
 import base64
+import httplib
 import warnings
 
 from xml.etree import ElementTree as ET
@@ -691,6 +692,9 @@ class OpenStack_1_1_Response(Response):
         return content_type_value.find(content_type.lower()) > -1
 
     def parse_body(self):
+        if self.status == httplib.NO_CONTENT or not self.body:
+            return None
+
         if self.has_content_type('application/json'):
             try:
                 return json.loads(self.body)
@@ -704,7 +708,6 @@ class OpenStack_1_1_Response(Response):
             return self.body
 
     def parse_error(self):
-        # TODO: fixup; only uses response codes really!
         text = self.body
 
         if self.has_content_type('application/json'):
