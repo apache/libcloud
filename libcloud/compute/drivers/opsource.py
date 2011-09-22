@@ -503,6 +503,16 @@ class OpsourceNodeDriver(NodeDriver):
 
     def ex_create_network_with_location(self, name, location, description = None):
         """Create a network within which a server will be created eventually
+        @keyword    name:   Name of the network (required)
+        @type       name:   C{str}
+
+        @keyword    location:   Datacenter Location(required)
+        @type       location:   C{location}
+
+        @keyword    description:  Description of the network
+        @type       description:  C{string}
+
+        @return: The newly created L{OpsourceNetwork}.
         """
         network_elm = ET.Element('NewNetworkWithLocation', {'xmlns': NETWORK_NS})
         ET.SubElement(network_elm, "name").text = name
@@ -545,6 +555,13 @@ class OpsourceNodeDriver(NodeDriver):
 
     def ex_create_nat_rule(self, network, private_ip):
         """Create a NAT rule in a particular network
+        @keyword    name:   Network (required)
+        @type       name:   L{OpsourceNetwork}
+
+        @keyword    private_ip:   Private IP Address of the Node(required)
+        @type       private_ip:   C{string}
+
+        @return: The newly created NAT rule L{OpsourceNATRule}.
         """
         nat_elm = ET.Element('NatRule', {'xmlns': NETWORK_NS})
         ET.SubElement(nat_elm, "name").text = private_ip
@@ -557,8 +574,33 @@ class OpsourceNodeDriver(NodeDriver):
 
         return filter(lambda x: x.name == private_ip, self.ex_list_nat_rules(network.id))[0]
  
-    def ex_create_acl_rule(self, name, position, network, action, protocol, _type, port1, port2=None):
+    def ex_create_acl_rule(self, name, position, network, action, protocol, _type, start_port, end_port=None):
         """Create a ACL rule in a particular network
+        @keyword    name:   Name for the ACL Rule (required)
+        @type       name:   C{String}
+
+        @keyword    position:   Position for the ACL Rule in the list(required)
+        @type       position:   C{String}
+
+        @keyword    network:   Network in which the ACL Rule is to be created(required)
+        @type       network:   C{OpsourceNetwork}
+
+        @keyword    action:   Port Action - PERMIT/DENY (required)
+        @type       action:   C{String}
+
+        @keyword    protocol:   Protocol for Communition - TCP/UDP/IP (required)
+        @type       protocol:   C{String}
+
+        @keyword    _type:   Type of Port Rule (required)
+        @type       _type:   C{String}
+
+        @keyword    start_port:   Start of the Port Range(required)
+        @type       start_port:   C{String}
+
+        @keyword    end_port:   End of the Port Range
+        @type       name:   C{String}
+
+        @return: The newly created ACL rule L{OpsourceACLRule}.
         """
         #XXX Pending: Add ability to add IP-range/address specific ACL rules
         acl_elm = ET.Element('AclRule', {'xmlns': NETWORK_NS})
@@ -568,16 +610,16 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(acl_elm, "protocol").text = protocol
         port_elm = ET.SubElement(acl_elm, 'portRange')
         ET.SubElement(port_elm, "type").text = _type
-        ET.SubElement(port_elm, "port1").text = port1
+        ET.SubElement(port_elm, "port1").text = start_port
         if port2:
-            ET.SubElement(port_elm, "port2").text = port2
+            ET.SubElement(port_elm, "port2").text = end_port
 
         self.connection.request_with_orgId('network/%s/aclrule' %network.id, 
                                            method='POST',
                                            data=ET.tostring(acl_elm)
                                            ).object
  
-        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network.id))[0]
+        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network))[0]
 
     def ex_get_location_by_id(self, id):
         location = None
