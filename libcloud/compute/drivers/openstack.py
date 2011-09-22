@@ -844,13 +844,9 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
         if metadata:
             optional_params['metadata'] = metadata
 
-        # Note: At this time, the docs say this should be "image={'id': image.id}".
-        # Educating guessing turned up the actual working syntax here.
         self._node_action(node, 'rebuild', imageRef=image.id, **optional_params)
 
     def ex_resize(self, node, size):
-        # Note: At this time, the docs say this should be "flavor={'id': image.id}".
-        # Educating guessing turned up the actual working syntax here.
         self._node_action(node, 'resize', flavorRef=size.id)
 
     def ex_confirm_resize(self, node):
