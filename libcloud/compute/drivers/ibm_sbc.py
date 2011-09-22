@@ -175,6 +175,43 @@ class IBMNodeDriver(NodeDriver):
     def list_locations(self):
         return self._to_locations(self.connection.request(REST_BASE + '/locations').object)
 
+    def ex_create_keypair(self, name):
+        """Creates a new keypair
+
+        @note: This is a non-standard extension API, and
+               only works for IBM SmartCloud.
+
+        @type name: C{str}
+        @param name: The name of the keypair to Create. This must be
+                     unique.
+        """
+        params = {
+            'name': name
+            }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        response = self.connection.request(action = REST_BASE + '/keys' , data=params, method = 'POST', headers = headers).object
+        private_key = response.findall('PrivateKey')[0]
+        key_material = private_key.findtext('KeyMaterial')
+        
+        return {
+            'keyMaterial': key_material,
+            }
+
+    def ex_delete_keypair(self, name):
+        """Delete an existing keypair
+
+        @note: This is a non-standard extension API, and
+               only works for IBM SmartCloud.
+
+        @type name: C{str}
+        @param name: The name of the keypair to delete.
+        """
+        url = REST_BASE + '/keys/%s' %name
+        status = int(self.connection.request(action = url, method='DELETE').status)
+        return status == 200
+
     def _to_nodes(self, object):
         return [ self._to_node(instance) for instance in object.findall('Instance') ]
 
