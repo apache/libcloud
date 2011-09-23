@@ -32,7 +32,8 @@ PROJECT_BASE_DIR = 'http://libcloud.apache.org'
 TEST_PATHS = ['test', 'test/common', 'test/compute', 'test/storage',
               'test/loadbalancer', 'test/dns']
 DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
-                     'libcloud.storage.drivers.dummy' ]
+                     'libcloud.storage.drivers.dummy',
+                     'libcloud.dns.drivers.dummy' ]
 
 
 def read_version_string():
