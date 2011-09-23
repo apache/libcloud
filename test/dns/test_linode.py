@@ -18,13 +18,13 @@ import unittest
 
 from libcloud.common.linode import LinodeException
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
+from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.linode import LinodeDNSDriver
 
-from test import MockHttp # pylint: disable-msg=E0611
-from test.file_fixtures import DNSFileFixtures # pylint: disable-msg=E0611
+from test import MockHttp
+from test.file_fixtures import DNSFileFixtures
 from test.secrets import DNS_PARAMS_LINODE
 
-DOES_NOT_EXIST_ERROR = '{"ERRORARRAY":[{"ERRORCODE":5,"ERRORMESSAGE":"Object not found"}],"DATA":{},"ACTION":"domain.resource.list"}'
 
 class LinodeTests(unittest.TestCase):
     def setUp(self):
@@ -60,7 +60,8 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '75.127.96.245')
-        self.assertHasKeys(record.extra, ['protocol', 'ttl_sec', 'port', 'weight'])
+        self.assertHasKeys(record.extra, ['protocol', 'ttl_sec', 'port',
+                                          'weight'])
 
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
@@ -100,7 +101,8 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '75.127.96.245')
-        self.assertHasKeys(record.extra, ['protocol', 'ttl_sec', 'port', 'weight'])
+        self.assertHasKeys(record.extra, ['protocol', 'ttl_sec', 'port',
+                                          'weight'])
 
     def test_get_record_zone_does_not_exist(self):
         LinodeMockHttp.type = 'GET_RECORD_ZONE_DOES_NOT_EXIST'
@@ -140,22 +142,63 @@ class LinodeTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_create_record_success(self):
-        pass
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(name='www', zone=zone,
+                                           type=RecordType.A, data='127.0.0.1')
+
+        self.assertEqual(record.id, '28537')
+        self.assertEqual(record.name, 'www')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.data, '127.0.0.1')
 
     def test_update_record_success(self):
-        pass
+        zone = self.driver.list_zones()[0]
+        record = self.driver.list_records(zone=zone)[0]
+        record2 = self.driver.update_record(record=record, name='www',
+                                            type=RecordType.AAAA, data='::1')
 
-    def test_delete_record_success(self):
-        pass
-
-    def test_delete_record_does_not_exist(self):
-        pass
+        self.assertEqual(record2.id, '28537')
+        self.assertEqual(record2.name, 'www')
+        self.assertEqual(record2.zone, record.zone)
+        self.assertEqual(record2.type, RecordType.AAAA)
+        self.assertEqual(record2.data, '::1')
 
     def test_delete_zone_success(self):
-        pass
+        zone = self.driver.list_zones()[0]
+        status = self.driver.delete_zone(zone=zone)
+        self.assertTrue(status)
 
     def test_delete_zone_does_not_exist(self):
-        pass
+        zone = self.driver.list_zones()[0]
+
+        LinodeMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+
+        try:
+            self.driver.delete_zone(zone=zone)
+        except ZoneDoesNotExistError, e:
+            self.assertEqual(e.zone_id, zone.id)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_delete_record_success(self):
+        zone = self.driver.list_zones()[0]
+        record = self.driver.list_records(zone=zone)[0]
+        status = self.driver.delete_record(record=record)
+        self.assertTrue(status)
+
+    def test_delete_record_does_not_exist(self):
+        zone = self.driver.list_zones()[0]
+        record = self.driver.list_records(zone=zone)[0]
+
+        LinodeMockHttp.type = 'RECORD_DOES_NOT_EXIST'
+
+        try:
+            self.driver.delete_record(record=record)
+        except RecordDoesNotExistError, e:
+            self.assertEqual(e.record_id, record.id)
+        else:
+            self.fail('Exception was not thrown')
 
 
 class LinodeMockHttp(MockHttp):
@@ -169,15 +212,17 @@ class LinodeMockHttp(MockHttp):
         body = self.fixtures.load('resource_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _ZONE_DOES_NOT_EXIST_domain_resource_list(self, method, url, body, headers):
-        body = DOES_NOT_EXIST_ERROR
+    def _ZONE_DOES_NOT_EXIST_domain_resource_list(self, method, url, body,
+                                                  headers):
+        body = self.fixtures.load('resource_list_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _GET_ZONE_domain_list(self, method, url, body, headers):
         body = self.fixtures.load('get_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_ZONE_DOES_NOT_EXIST_domain_list(self, method, url, body, headers):
+    def _GET_ZONE_DOES_NOT_EXIST_domain_list(self, method, url, body,
+                                             headers):
         body = self.fixtures.load('get_zone_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -189,11 +234,13 @@ class LinodeMockHttp(MockHttp):
         body = self.fixtures.load('get_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_list(self, method, url, body, headers):
+    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_list(self, method, url, body,
+                                                    headers):
         body = self.fixtures.load('get_zone_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_list(self, method, url, body, headers):
+    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_list(self, method, url, body,
+                                                      headers):
         body = self.fixtures.load('get_record_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -203,6 +250,31 @@ class LinodeMockHttp(MockHttp):
 
     def _VALIDATION_ERROR_domain_create(self, method, url, body, headers):
         body = self.fixtures.load('create_domain_validation_error.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _domain_resource_create(self, method, url, body, headers):
+        body = self.fixtures.load('create_resource.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _domain_resource_update(self, method, url, body, headers):
+        body = self.fixtures.load('update_resource.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _domain_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_domain.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ZONE_DOES_NOT_EXIST_domain_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_domain_does_not_exist.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _domain_resource_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_resource.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _RECORD_DOES_NOT_EXIST_domain_resource_delete(self, method, url, body,
+                                                      headers):
+        body = self.fixtures.load('delete_resource_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
