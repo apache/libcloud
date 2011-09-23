@@ -122,12 +122,12 @@ class LinodeDNSDriver(DNSDriver):
                                         valid_keys=VALID_RECORD_EXTRA_PARAMS,
                                         extra=extra)
 
-        data = self.connection.request(API_ROOT, params=params).objects[0]
-        record = Record(id=data['ResourceID'], name=name, type=type,
+        result = self.connection.request(API_ROOT, params=params).objects[0]
+        record = Record(id=result['ResourceID'], name=name, type=type,
                         data=data, extra=merged, zone=zone, driver=self)
         return record
 
-    def update_record(self, record, name, type, data, extra):
+    def update_record(self, record, name, type, data, extra=None):
         """
         Update an existing record.
 
@@ -140,8 +140,8 @@ class LinodeDNSDriver(DNSDriver):
                                         valid_keys=VALID_RECORD_EXTRA_PARAMS,
                                         extra=extra)
 
-        data = self.connection.request(API_ROOT, params=params).objects[0]
-        record = Record(id=data['ResourceID'], name=name, type=type,
+        result = self.connection.request(API_ROOT, params=params).objects[0]
+        record = Record(id=result['ResourceID'], name=name, type=type,
                         data=data, extra=merged, zone=record.zone, driver=self)
         return record
 
