@@ -108,7 +108,7 @@ class LinodeTests(unittest.TestCase):
         try:
             record = self.driver.get_record(zone_id='444', record_id='28536')
         except ZoneDoesNotExistError:
-            self.assertEqual(e.zone_id, '4444')
+            pass
         else:
             self.fail('Exception was not thrown')
 
@@ -118,7 +118,7 @@ class LinodeTests(unittest.TestCase):
         try:
             record = self.driver.get_record(zone_id='444', record_id='28536')
         except ZoneDoesNotExistError:
-            self.assertEqual(e.zone_id, '4444')
+            pass
         else:
             self.fail('Exception was not thrown')
 
