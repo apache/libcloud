@@ -32,9 +32,10 @@ VOXEL_API_HOST = "api.voxel.net"
 
 class VoxelResponse(Response):
 
-    def __init__(self, response):
+    def __init__(self, response, connection):
         self.parsed = None
-        super(VoxelResponse, self).__init__(response)
+        super(VoxelResponse, self).__init__(response=response,
+                                            connection=connection)
 
     def parse_body(self):
         if not self.body:

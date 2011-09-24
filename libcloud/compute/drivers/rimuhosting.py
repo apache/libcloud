@@ -41,11 +41,12 @@ class RimuHostingException(Exception):
         return "<RimuHostingException '%s'>" % (self.args[0])
 
 class RimuHostingResponse(Response):
-    def __init__(self, response):
+    def __init__(self, response, connection):
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
 
         if self.success():
             self.object = self.parse_body()

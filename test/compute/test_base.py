@@ -38,7 +38,7 @@ class BaseTests(unittest.TestCase):
         NodeImage(id=0, name=0, driver=FakeDriver())
 
     def test_base_response(self):
-        Response(MockResponse(status=200, body='foo'))
+        Response(MockResponse(status=200, body='foo'), ConnectionKey('foo'))
 
     def test_base_node_driver(self):
         NodeDriver('foo')
