@@ -221,7 +221,7 @@ class MockRawResponse(BaseMockHttpObject):
     type = None
     responseCls = MockResponse
 
-    def __init__(self):
+    def __init__(self, connection):
         super(MockRawResponse, self).__init__()
         self._data = []
         self._current_item = 0
@@ -230,6 +230,7 @@ class MockRawResponse(BaseMockHttpObject):
         self._response = None
         self._headers = None
         self._reason = None
+        self.connection = connection
 
     def next(self):
         if self._current_item == len(self._data):
