@@ -46,13 +46,29 @@ class LinodeDNSResponse(LinodeResponse):
     def _make_excp(self, error):
         result = super(LinodeDNSResponse, self)._make_excp(error)
         if isinstance(result, LinodeException) and result.code == 5:
-            # TODO
-            pass
+            context = self.connection.context
+
+            if context['resource'] == 'zone':
+                result = ZoneDoesNotExistError(value='',
+                                            driver=self.connection.driver,
+                                            zone_id=context['id'])
+
+            elif context['resource'] == 'record':
+                result = RecordDoesNotExistError(value='',
+                                            driver=self.connection.driver,
+                                            record_id=context['id'])
         return result
 
 
 class LinodeDNSConnection(LinodeConnection):
     responseCls = LinodeDNSResponse
+
+    def __init__(self, *args, **kwargs):
+        super(LinodeDNSConnection, self).__init__(*args, **kwargs)
+        self.context = {}
+
+    def set_context(self, context):
+        self.context = context
 
 
 class LinodeDNSDriver(DNSDriver):
@@ -69,13 +85,9 @@ class LinodeDNSDriver(DNSDriver):
     def list_records(self, zone):
         params = {'api_action': 'domain.resource.list', 'DOMAINID': zone.id}
 
-        try:
-            data = self.connection.request(API_ROOT, params=params).objects[0]
-        except LinodeException, e:
-            if e.code == 5:
-                raise ZoneDoesNotExistError(value='', driver=self,
-                                            zone_id=zone.id)
-
+        self.connection.set_context(context={'resource': 'zone',
+                                             'id': zone.id})
+        data = self.connection.request(API_ROOT, params=params).objects[0]
         records = self._to_records(items=data, zone=zone)
         return records
 
@@ -160,12 +172,9 @@ class LinodeDNSDriver(DNSDriver):
     def delete_zone(self, zone):
         params = {'api_action': 'domain.delete', 'DomainID': zone.id}
 
-        try:
-            data = self.connection.request(API_ROOT, params=params).objects[0]
-        except LinodeException, e:
-            if e.code == 5:
-                raise ZoneDoesNotExistError(value='', driver=self,
-                                            zone_id=zone.id)
+        self.connection.set_context(context={'resource': 'zone',
+                                             'id': zone.id})
+        data = self.connection.request(API_ROOT, params=params).objects[0]
 
         return 'DomainID' in data
 
@@ -173,13 +182,9 @@ class LinodeDNSDriver(DNSDriver):
         params = {'api_action': 'domain.resource.delete',
                   'DomainID': record.zone.id, 'ResourceID': record.id}
 
-        try:
-            data = self.connection.request(API_ROOT, params=params).objects[0]
-        except LinodeException, e:
-            # TODO: Refactor LinodeException, args[0] should be error_id
-            if e.code == 5:
-                raise RecordDoesNotExistError(value='', driver=self,
-                                              record_id=record.id)
+        self.connection.set_context(context={'resource': 'record',
+                                             'id': record.id})
+        data = self.connection.request(API_ROOT, params=params).objects[0]
 
         return 'ResourceID' in data
 
