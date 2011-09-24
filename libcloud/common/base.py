@@ -40,11 +40,12 @@ class Response(object):
     error = None
     connection = None
 
-    def __init__(self, response):
+    def __init__(self, response, connection):
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
 
         if not self.success():
             raise Exception(self.parse_error())
@@ -84,12 +85,14 @@ class Response(object):
 
 class RawResponse(Response):
 
-    def __init__(self, response=None):
+    def __init__(self, connection):
         self._status = None
         self._response = None
         self._headers = {}
         self._error = None
         self._reason = None
+        self.connection = connection
+
 
     @property
     def response(self):
@@ -424,11 +427,11 @@ class Connection(object):
             raise ssl.SSLError(str(e))
 
         if raw:
-            response = self.rawResponseCls()
+            response = self.rawResponseCls(connection=self)
         else:
-            response = self.responseCls(self.connection.getresponse())
+            response = self.responseCls(response=self.connection.getresponse(),
+                                        connection=self)
 
-        response.connection = self
         return response
 
     def morph_action_hook(self, action):

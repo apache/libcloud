@@ -33,7 +33,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
 
     def test_simple_xml_content_type_handling(self):
         http_response = MockResponse(200, OpenStackResponseTestCase.XML, headers={'content-type': 'application/xml'})
-        body = OpenStack_1_0_Response(http_response).parse_body()
+        body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
@@ -41,7 +41,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
         http_response = MockResponse(200,
                                      OpenStackResponseTestCase.XML,
                                      headers={'content-type': 'application/xml; charset=UTF-8'})
-        body = OpenStack_1_0_Response(http_response).parse_body()
+        body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
@@ -49,7 +49,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
         RESPONSE_BODY = "Accepted"
 
         http_response = MockResponse(202, RESPONSE_BODY, headers={'content-type': 'text/html'})
-        body = OpenStack_1_0_Response(http_response).parse_body()
+        body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
 
