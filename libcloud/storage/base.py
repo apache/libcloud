@@ -27,7 +27,7 @@ from os.path import join as pjoin
 
 from libcloud import utils
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
@@ -151,7 +151,7 @@ class Container(object):
         return ('<Container: name=%s, provider=%s>'
                 % (self.name, self.driver.name))
 
-class StorageDriver(object):
+class StorageDriver(BaseDriver):
     """
     A base StorageDriver to derive from.
     """
@@ -161,26 +161,8 @@ class StorageDriver(object):
     hash_type = 'md5'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        self.key = key
-        self.secret = secret
-        self.secure = secure
-        args = [self.key]
-
-        if self.secret != None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args)
-
-        self.connection.driver = self
-        self.connection.connect()
+      super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                          host=host, port=port)
 
     def list_containters(self):
         """

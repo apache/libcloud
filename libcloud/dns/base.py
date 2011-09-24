@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
 
 
@@ -120,7 +120,7 @@ class Record(object):
                  self.data, self.driver.name))
 
 
-class DNSDriver(object):
+class DNSDriver(BaseDriver):
     """
     DNS driver.
     """
@@ -128,27 +128,8 @@ class DNSDriver(object):
     name = None
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        # TODO: Refactor into BaseDriver class
-        self.key = key
-        self.secret = secret
-        self.secure = secure
-        args = [self.key]
-
-        if self.secret != None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args)
-
-        self.connection.driver = self
-        self.connection.connect()
+      super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                      host=host, port=port)
 
     def list_zones(self):
         """
