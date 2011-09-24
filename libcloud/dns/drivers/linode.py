@@ -19,7 +19,7 @@ __all__ = [
 
 
 from libcloud.common.linode import (API_ROOT, LinodeException,
-                                    LinodeConnection,
+                                    LinodeConnection, LinodeResponse,
                                     LINODE_PLAN_IDS)
 from libcloud.common.linode import API_HOST, API_ROOT, LinodeException
 from libcloud.dns.types import Provider, RecordType
@@ -42,10 +42,23 @@ RECORD_TYPE_MAP = {
 }
 
 
+class LinodeDNSResponse(LinodeResponse):
+    def _make_excp(self, error):
+        result = super(LinodeDNSResponse, self)._make_excp(error)
+        if isinstance(result, LinodeException) and result.code == 5:
+            # TODO
+            pass
+        return result
+
+
+class LinodeDNSConnection(LinodeConnection):
+    responseCls = LinodeDNSResponse
+
+
 class LinodeDNSDriver(DNSDriver):
     type = Provider.LINODE
     name = 'Linode DNS'
-    connectionCls = LinodeConnection
+    connectionCls = LinodeDNSConnection
 
     def list_zones(self):
         params = {'api_action': 'domain.list'}
@@ -59,8 +72,7 @@ class LinodeDNSDriver(DNSDriver):
         try:
             data = self.connection.request(API_ROOT, params=params).objects[0]
         except LinodeException, e:
-            # TODO: Refactor LinodeException, args[0] should be error_id
-            if e.args[0] == 5:
+            if e.code == 5:
                 raise ZoneDoesNotExistError(value='', driver=self,
                                             zone_id=zone.id)
 
@@ -151,8 +163,7 @@ class LinodeDNSDriver(DNSDriver):
         try:
             data = self.connection.request(API_ROOT, params=params).objects[0]
         except LinodeException, e:
-            # TODO: Refactor LinodeException, args[0] should be error_id
-            if e.args[0] == 5:
+            if e.code == 5:
                 raise ZoneDoesNotExistError(value='', driver=self,
                                             zone_id=zone.id)
 
@@ -166,7 +177,7 @@ class LinodeDNSDriver(DNSDriver):
             data = self.connection.request(API_ROOT, params=params).objects[0]
         except LinodeException, e:
             # TODO: Refactor LinodeException, args[0] should be error_id
-            if e.args[0] == 5:
+            if e.code == 5:
                 raise RecordDoesNotExistError(value='', driver=self,
                                               record_id=record.id)
 
