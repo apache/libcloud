@@ -500,3 +500,57 @@ class ConnectionUserAndKey(ConnectionKey):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
                                                    host=host, port=port, url=url)
         self.user_id = user_id
+
+
+class BaseDriver(object):
+    """
+    Base driver class from which other classes can inherit from.
+    """
+
+    connectionCls = ConnectionKey
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+        """
+        @keyword    key:    API key or username to used
+        @type       key:    str
+
+        @keyword    secret: Secret password to be used
+        @type       secret: str
+
+        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
+                            only support HTTPS, and it is on by default.
+        @type       secure: bool
+
+        @keyword    host: Override hostname used for connections.
+        @type       host: str
+
+        @keyword    port: Override port used for connections.
+        @type       port: int
+        """
+        self.key = key
+        self.secret = secret
+        self.secure = secure
+        args = [self.key]
+
+        if self.secret is not None:
+            args.append(self.secret)
+
+        args.append(secure)
+
+        if host is not None:
+            args.append(host)
+
+        if port is not None:
+            args.append(port)
+
+        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
+
+        self.connection.driver = self
+        self.connection.connect()
+
+    def _ex_connection_class_kwargs(self):
+        """
+        Return extra connection keyword arguments which are passed to the
+        Connection class constructor.
+        """
+        return {}
