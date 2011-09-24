@@ -53,10 +53,16 @@ class LinodeException(Exception):
     API documentation.  All Linode API errors are a numeric code and a
     human-readable description.
     """
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+        self.args = (code, message)
+
     def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
+        return "(%u) %s" % (self.code, self.message)
+
     def __repr__(self):
-        return "<LinodeException code %u '%s'>" % (self.args[0], self.args[1])
+        return "<LinodeException code %u '%s'>" % (self.code, self.message)
 
 
 class LinodeResponse(Response):
