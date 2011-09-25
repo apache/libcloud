@@ -18,6 +18,7 @@ __all__ = [
 ]
 
 
+from libcloud.utils import merge_valid_keys, get_new_obj
 from libcloud.common.linode import (API_ROOT, LinodeException,
                                     LinodeConnection, LinodeResponse,
                                     LINODE_PLAN_IDS)
@@ -126,9 +127,9 @@ class LinodeDNSDriver(DNSDriver):
         if ttl:
             params['TTL_sec'] = ttl
 
-        merged = self._merge_valid_keys(params=params,
-                                        valid_keys=VALID_ZONE_EXTRA_PARAMS,
-                                        extra=extra)
+        merged = merge_valid_keys(params=params,
+                                  valid_keys=VALID_ZONE_EXTRA_PARAMS,
+                                  extra=extra)
         data = self.connection.request(API_ROOT, params=params).objects[0]
         zone = Zone(id=data['DomainID'], domain=domain, type=type, ttl=ttl,
                     extra=merged, driver=self)
@@ -140,8 +141,7 @@ class LinodeDNSDriver(DNSDriver):
 
         API docs: http://www.linode.com/api/dns/domain.update
         """
-        params = {'api_action': 'domain.update', 'DomainID': zone.id,
-                  'Type': type}
+        params = {'api_action': 'domain.update', 'DomainID': zone.id}
 
         if type:
             params['Type'] = type
@@ -152,14 +152,14 @@ class LinodeDNSDriver(DNSDriver):
         if ttl:
             params['TTL_sec'] = ttl
 
-        merged = self._merge_valid_keys(params=params,
-                                        valid_keys=VALID_ZONE_EXTRA_PARAMS,
-                                        extra=extra)
+        merged = merge_valid_keys(params=params,
+                                  valid_keys=VALID_ZONE_EXTRA_PARAMS,
+                                  extra=extra)
         data = self.connection.request(API_ROOT, params=params).objects[0]
-        updated_zone = self._get_new_obj(obj=zone, klass=Zone,
-                                         attributes={'domain': domain,
-                                         'type': type, 'ttl': ttl,
-                                         'extra': merged})
+        updated_zone = get_new_obj(obj=zone, klass=Zone,
+                                  attributes={'domain': domain,
+                                              'type': type, 'ttl': ttl,
+                                              'extra': merged})
         return updated_zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -170,9 +170,9 @@ class LinodeDNSDriver(DNSDriver):
         """
         params = {'api_action': 'domain.resource.create', 'DomainID': zone.id,
                   'Name': name, 'Target': data, 'Type': RECORD_TYPE_MAP[type]}
-        merged = self._merge_valid_keys(params=params,
-                                        valid_keys=VALID_RECORD_EXTRA_PARAMS,
-                                        extra=extra)
+        merged = merge_valid_keys(params=params,
+                                  valid_keys=VALID_RECORD_EXTRA_PARAMS,
+                                  extra=extra)
 
         result = self.connection.request(API_ROOT, params=params).objects[0]
         record = Record(id=result['ResourceID'], name=name, type=type,
@@ -188,9 +188,9 @@ class LinodeDNSDriver(DNSDriver):
         params = {'api_action': 'domain.resource.update',
                   'ResourceID': record.id, 'DomainID': record.zone.id,
                   'Name': name, 'Target': data, 'Type': RECORD_TYPE_MAP[type]}
-        merged = self._merge_valid_keys(params=params,
-                                        valid_keys=VALID_RECORD_EXTRA_PARAMS,
-                                        extra=extra)
+        merged = merge_valid_keys(params=params,
+                                  valid_keys=VALID_RECORD_EXTRA_PARAMS,
+                                  extra=extra)
 
         result = self.connection.request(API_ROOT, params=params).objects[0]
         record = Record(id=result['ResourceID'], name=name, type=type,
@@ -215,57 +215,6 @@ class LinodeDNSDriver(DNSDriver):
         data = self.connection.request(API_ROOT, params=params).objects[0]
 
         return 'ResourceID' in data
-
-    def _merge_valid_keys(self, params, valid_keys, extra):
-        """
-        Merge valid keys from extra into params dictionary and return
-        dictionary with keys which have been merged.
-
-        Note: params is modified in place.
-        """
-        merged = {}
-        if not extra:
-            return merged
-
-        for key in valid_keys:
-            if key in extra:
-                params[key] = extra[key]
-                merged[key] = extra[key]
-
-        return merged
-
-    def _get_new_obj(self, obj, klass, attributes):
-        """
-        Pass attributes from the existing object 'obj' and attributes
-        dictionary to a 'klass' constructor.
-        Attributes from 'attributes' dictionary are only passed to the
-        constructor if they are not None.
-        """
-        kwargs = {}
-        for key, value in obj.__dict__.items():
-            if isinstance(value, dict):
-                kwargs[key] = value.copy()
-            elif isinstance(value, (tuple, list)):
-                kwargs[key] = value[:]
-            else:
-                kwargs[key] = value
-
-        for key, value in attributes.items():
-            if value is None:
-                continue
-
-            if isinstance(value, dict):
-                kwargs_value = kwargs.get(key, {})
-                for key1, value2 in value.items():
-                    if value2 is None:
-                        continue
-
-                    kwargs_value[key1] = value2
-                kwargs[key] = kwargs_value
-            else:
-                kwargs[key] = value
-
-        return klass(**kwargs)
 
     def _to_zones(self, items):
         """
