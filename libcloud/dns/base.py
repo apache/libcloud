@@ -62,6 +62,10 @@ class Zone(object):
     def create_record(self, name, type, data, extra=None):
         self.driver.create_record(name=name, type=type, data=data, extra=extra)
 
+    def update(self, domain, type='master', ttl=None, extra=None):
+        self.driver.update_zone(zone=self, domain=domain, type=type, ttl=ttl,
+                                extra=extra)
+
     def delete(self):
         return self.driver.delete_zone(zone=self)
 
@@ -108,7 +112,7 @@ class Record(object):
 
     def update(self, name, type, data, extra):
         return self.driver.update_record(record=self, name=name, type=type,
-                                       data=data, extra=extra)
+                                         data=data, extra=extra)
 
     def delete(self):
         return self.driver.delete_record(record=self)
@@ -188,6 +192,28 @@ class DNSDriver(BaseDriver):
         """
         raise NotImplementedError(
             'create_zone not implemented for this driver')
+
+    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
+        """
+        Update en existing zone.
+
+        @type zone: C{Zone}
+        @param zone: Zone to update.
+
+        @type domain: C{string}
+        @param domain: Zone domain name.
+
+        @type type: C{string}
+        @param type: Zone type (master / slave).
+
+        @param ttl: C{int}
+        @param ttl: (optional) TTL for new records.
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
+        """
+        raise NotImplementedError(
+            'update_zone not implemented for this driver')
 
     def create_record(self, name, zone, type, data, extra=None):
         """
