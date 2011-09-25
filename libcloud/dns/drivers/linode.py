@@ -134,6 +134,34 @@ class LinodeDNSDriver(DNSDriver):
                     extra=merged, driver=self)
         return zone
 
+    def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
+        """
+        Update an existing zone.
+
+        API docs: http://www.linode.com/api/dns/domain.update
+        """
+        params = {'api_action': 'domain.update', 'DomainID': zone.id,
+                  'Type': type}
+
+        if type:
+            params['Type'] = type
+
+        if domain:
+            params['Domain'] = domain
+
+        if ttl:
+            params['TTL_sec'] = ttl
+
+        merged = self._merge_valid_keys(params=params,
+                                        valid_keys=VALID_ZONE_EXTRA_PARAMS,
+                                        extra=extra)
+        data = self.connection.request(API_ROOT, params=params).objects[0]
+        updated_zone = self._get_new_obj(obj=zone, klass=Zone,
+                                         attributes={'domain': domain,
+                                         'type': type, 'ttl': ttl,
+                                         'extra': merged})
+        return updated_zone
+
     def create_record(self, name, zone, type, data, extra=None):
         """
         Create a new record.
@@ -206,6 +234,39 @@ class LinodeDNSDriver(DNSDriver):
 
         return merged
 
+    def _get_new_obj(self, obj, klass, attributes):
+        """
+        Pass attributes from the existing object 'obj' and attributes
+        dictionary to a 'klass' constructor.
+        Attributes from 'attributes' dictionary are only passed to the
+        constructor if they are not None.
+        """
+        kwargs = {}
+        for key, value in obj.__dict__.items():
+            if isinstance(value, dict):
+                kwargs[key] = value.copy()
+            elif isinstance(value, (tuple, list)):
+                kwargs[key] = value[:]
+            else:
+                kwargs[key] = value
+
+        for key, value in attributes.items():
+            if value is None:
+                continue
+
+            if isinstance(value, dict):
+                kwargs_value = kwargs.get(key, {})
+                for key1, value2 in value.items():
+                    if value2 is None:
+                        continue
+
+                    kwargs_value[key1] = value2
+                kwargs[key] = kwargs_value
+            else:
+                kwargs[key] = value
+
+        return klass(**kwargs)
+
     def _to_zones(self, items):
         """
         Convert a list of items to the Zone objects.
@@ -221,7 +282,7 @@ class LinodeDNSDriver(DNSDriver):
         """
         Build an Zone object from the item dictionary.
         """
-        extra = {'soa_email': item['SOA_EMAIL'], 'status': item['STATUS'],
+        extra = {'SOA_Email': item['SOA_EMAIL'], 'status': item['STATUS'],
                   'description': item['DESCRIPTION']}
         zone = Zone(id=item['DOMAINID'], domain=item['DOMAIN'],
                     type=item['TYPE'], ttl=item['TTL_SEC'], extra=extra,
