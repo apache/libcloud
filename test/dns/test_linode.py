@@ -48,7 +48,7 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'linode.com')
         self.assertEqual(zone.ttl, None)
-        self.assertHasKeys(zone.extra, ['description', 'soa_email', 'status'])
+        self.assertHasKeys(zone.extra, ['description', 'SOA_Email', 'status'])
 
     def test_list_records_success(self):
         zone = self.driver.list_zones()[0]
@@ -82,7 +82,7 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'linode.com')
         self.assertEqual(zone.ttl, None)
-        self.assertHasKeys(zone.extra, ['description', 'soa_email', 'status'])
+        self.assertHasKeys(zone.extra, ['description', 'SOA_Email', 'status'])
 
     def test_get_zone_does_not_exist(self):
         LinodeMockHttp.type = 'GET_ZONE_DOES_NOT_EXIST'
@@ -140,6 +140,25 @@ class LinodeTests(unittest.TestCase):
             pass
         else:
             self.fail('Exception was not thrown')
+
+    def test_update_zone_success(self):
+        zone = self.driver.list_zones()[0]
+        updated_zone = self.driver.update_zone(zone=zone,
+                                               domain='libcloud.org',
+                                               ttl=10,
+                                               extra={'SOA_Email':
+                                                      'bar@libcloud.org'})
+
+        self.assertEqual(zone.extra['SOA_Email'], 'dns@example.com')
+
+        self.assertEqual(updated_zone.id, zone.id)
+        self.assertEqual(updated_zone.domain, 'libcloud.org')
+        self.assertEqual(updated_zone.type, zone.type)
+        self.assertEqual(updated_zone.ttl, 10)
+        self.assertEqual(updated_zone.extra['SOA_Email'], 'bar@libcloud.org')
+        self.assertEqual(updated_zone.extra['status'], zone.extra['status'])
+        self.assertEqual(updated_zone.extra['description'],
+                         zone.extra['description'])
 
     def test_create_record_success(self):
         zone = self.driver.list_zones()[0]
@@ -250,6 +269,10 @@ class LinodeMockHttp(MockHttp):
 
     def _VALIDATION_ERROR_domain_create(self, method, url, body, headers):
         body = self.fixtures.load('create_domain_validation_error.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _domain_update(self, method, url, body, headers):
+        body = self.fixtures.load('update_domain.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _domain_resource_create(self, method, url, body, headers):
