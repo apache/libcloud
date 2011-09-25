@@ -132,8 +132,8 @@ class DNSDriver(BaseDriver):
     name = None
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
-      super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                      host=host, port=port)
+        super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                        host=host, port=port)
 
     def list_zones(self):
         """
