@@ -174,14 +174,17 @@ class LinodeTests(unittest.TestCase):
     def test_update_record_success(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[0]
-        record2 = self.driver.update_record(record=record, name='www',
-                                            type=RecordType.AAAA, data='::1')
+        updated_record = self.driver.update_record(record=record, name='www',
+                                                   type=RecordType.AAAA,
+                                                   data='::1')
 
-        self.assertEqual(record2.id, '28537')
-        self.assertEqual(record2.name, 'www')
-        self.assertEqual(record2.zone, record.zone)
-        self.assertEqual(record2.type, RecordType.AAAA)
-        self.assertEqual(record2.data, '::1')
+        self.assertEqual(record.data, '75.127.96.245')
+
+        self.assertEqual(updated_record.id, record.id)
+        self.assertEqual(updated_record.name, 'www')
+        self.assertEqual(updated_record.zone, record.zone)
+        self.assertEqual(updated_record.type, RecordType.AAAA)
+        self.assertEqual(updated_record.data, '::1')
 
     def test_delete_zone_success(self):
         zone = self.driver.list_zones()[0]
