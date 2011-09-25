@@ -179,23 +179,35 @@ class LinodeDNSDriver(DNSDriver):
                         data=data, extra=merged, zone=zone, driver=self)
         return record
 
-    def update_record(self, record, name, type, data, extra=None):
+    def update_record(self, record, name=None, type=None, data=None,
+                      extra=None):
         """
         Update an existing record.
 
         API docs: http://www.linode.com/api/dns/domain.resource.update
         """
         params = {'api_action': 'domain.resource.update',
-                  'ResourceID': record.id, 'DomainID': record.zone.id,
-                  'Name': name, 'Target': data, 'Type': RECORD_TYPE_MAP[type]}
+                  'ResourceID': record.id, 'DomainID': record.zone.id}
+
+        if name:
+            params['Name'] = name
+
+        if data:
+            params['Target'] = data
+
+        if type:
+            params['Type'] = RECORD_TYPE_MAP[type]
+
         merged = merge_valid_keys(params=params,
                                   valid_keys=VALID_RECORD_EXTRA_PARAMS,
                                   extra=extra)
 
         result = self.connection.request(API_ROOT, params=params).objects[0]
-        record = Record(id=result['ResourceID'], name=name, type=type,
-                        data=data, extra=merged, zone=record.zone, driver=self)
-        return record
+        updated_record = get_new_obj(obj=record, klass=Record,
+                                     attributes={'name': name, 'data': data,
+                                                 'type': type,
+                                                 'extra': merged})
+        return updated_record
 
     def delete_zone(self, zone):
         params = {'api_action': 'domain.delete', 'DomainID': zone.id}
