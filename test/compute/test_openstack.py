@@ -28,18 +28,18 @@ from test.compute import TestCaseMixin
 from test.secrets import OPENSTACK_PARAMS
 
 
-class OpenStackResponseTestCase(unittest.TestCase):
+class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
     XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
 
     def test_simple_xml_content_type_handling(self):
-        http_response = MockResponse(200, OpenStackResponseTestCase.XML, headers={'content-type': 'application/xml'})
+        http_response = MockResponse(200, OpenStack_1_0_ResponseTestCase.XML, headers={'content-type': 'application/xml'})
         body = OpenStack_1_0_Response(http_response).parse_body()
 
         self.assertTrue(hasattr(body, 'tag'), "Body should be parsed as XML")
 
     def test_extended_xml_content_type_handling(self):
         http_response = MockResponse(200,
-                                     OpenStackResponseTestCase.XML,
+                                     OpenStack_1_0_ResponseTestCase.XML,
                                      headers={'content-type': 'application/xml; charset=UTF-8'})
         body = OpenStack_1_0_Response(http_response).parse_body()
 
@@ -54,7 +54,7 @@ class OpenStackResponseTestCase(unittest.TestCase):
         self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
 
 
-class OpenStackTests(unittest.TestCase, TestCaseMixin):
+class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
     driver_type = OpenStack_1_0_NodeDriver
