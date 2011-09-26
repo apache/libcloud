@@ -17,7 +17,7 @@ import unittest
 import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.drivers.rackspace import OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
+from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
