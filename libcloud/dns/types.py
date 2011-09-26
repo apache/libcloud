@@ -16,6 +16,7 @@
 from libcloud.common.types import LibcloudError
 
 __all__ = [
+    'Provider',
     'RecordType',
     'ZoneError',
     'ZoneDoesNotExistError',
@@ -24,6 +25,11 @@ __all__ = [
     'RecordDoesNotExistError',
     'RecordAlreadyExistsError'
 ]
+
+
+class Provider(object):
+    DUMMY = 0
+    LINODE = 1
 
 
 class RecordType(object):
@@ -41,6 +47,11 @@ class RecordType(object):
     SOA = 8
     SPF = 9
     SRV = 10
+
+    @classmethod
+    def __repr__(self, value):
+        reverse = dict((v, k) for k, v in RecordType.__dict__.items())
+        return reverse[value]
 
 
 class ZoneError(LibcloudError):

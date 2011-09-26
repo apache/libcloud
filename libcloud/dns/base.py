@@ -20,6 +20,10 @@ __all__ = [
 ]
 
 
+from libcloud.common.base import ConnectionUserAndKey, BaseDriver
+from libcloud.dns.types import RecordType
+
+
 class Zone(object):
     """
     DNS zone.
@@ -57,6 +61,10 @@ class Zone(object):
 
     def create_record(self, name, type, data, extra=None):
         self.driver.create_record(name=name, type=type, data=data, extra=extra)
+
+    def update(self, domain, type='master', ttl=None, extra=None):
+        self.driver.update_zone(zone=self, domain=domain, type=type, ttl=ttl,
+                                extra=extra)
 
     def delete(self):
         return self.driver.delete_zone(zone=self)
@@ -104,20 +112,28 @@ class Record(object):
 
     def update(self, name, type, data, extra):
         return self.driver.update_record(record=self, name=name, type=type,
-                                       data=data, extra=extra)
+                                         data=data, extra=extra)
 
     def delete(self):
         return self.driver.delete_record(record=self)
 
     def __repr__(self):
-        return ('<Record: zone=%s, name=%s, data=%s, provider=%s ...>' %
-                (self.zone.id, self.name, self.data, self.driver.name))
+        return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s '
+                '...>' %
+                (self.zone.id, self.name, RecordType.__repr__(self.type),
+                 self.data, self.driver.name))
 
 
-class DNSDriver(object):
+class DNSDriver(BaseDriver):
     """
     DNS driver.
     """
+    connectionCls = ConnectionUserAndKey
+    name = None
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+        super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                        host=host, port=port)
 
     def list_zones(self):
         """
@@ -176,6 +192,28 @@ class DNSDriver(object):
         """
         raise NotImplementedError(
             'create_zone not implemented for this driver')
+
+    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
+        """
+        Update en existing zone.
+
+        @type zone: C{Zone}
+        @param zone: Zone to update.
+
+        @type domain: C{string}
+        @param domain: Zone domain name.
+
+        @type type: C{string}
+        @param type: Zone type (master / slave).
+
+        @param ttl: C{int}
+        @param ttl: (optional) TTL for new records.
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
+        """
+        raise NotImplementedError(
+            'update_zone not implemented for this driver')
 
     def create_record(self, name, zone, type, data, extra=None):
         """
@@ -242,3 +280,12 @@ class DNSDriver(object):
         """
         raise NotImplementedError(
             'delete_record not implemented for this driver')
+
+    def _string_to_record_type(self, string):
+        """
+        Return a string representation of a DNS record type to a
+        libcloud RecordType ENUM.
+        """
+        string = string.upper()
+        record_type = getattr(RecordType, string)
+        return record_type

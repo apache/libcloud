@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionKey
+from libcloud.common.base import ConnectionKey, BaseDriver
 from libcloud.common.types import LibcloudError
 
 __all__ = [
@@ -71,7 +71,7 @@ class LoadBalancer(object):
                 self.name, self.state))
 
 
-class Driver(object):
+class Driver(BaseDriver):
     """
     A base LBDriver class to derive from
 
@@ -84,24 +84,8 @@ class Driver(object):
     _VALUE_TO_ALGORITHM_MAP = {}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        self.key = key
-        self.secret = secret
-        args = [self.key]
-
-        if self.secret is not None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args)
-        self.connection.driver = self
-        self.connection.connect()
+        super(Driver, self).__init__(key=key, secret=secret, secure=secure,
+                                     host=host, port=port)
 
     def list_protocols(self):
         """

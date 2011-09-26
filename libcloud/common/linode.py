@@ -53,10 +53,16 @@ class LinodeException(Exception):
     API documentation.  All Linode API errors are a numeric code and a
     human-readable description.
     """
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+        self.args = (code, message)
+
     def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
+        return "(%u) %s" % (self.code, self.message)
+
     def __repr__(self):
-        return "<LinodeException code %u '%s'>" % (self.args[0], self.args[1])
+        return "<LinodeException code %u '%s'>" % (self.code, self.message)
 
 
 class LinodeResponse(Response):
@@ -73,7 +79,7 @@ class LinodeResponse(Response):
 
     libcloud does not take advantage of batching, so a response will always
     reflect the above format.  A few weird quirks are caught here as well."""
-    def __init__(self, response):
+    def __init__(self, response, connection):
         """Instantiate a LinodeResponse from the HTTP response
 
         @keyword response: The raw response returned by urllib
@@ -82,6 +88,7 @@ class LinodeResponse(Response):
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
         self.invalid = LinodeException(0xFF,
                                        "Invalid JSON received from server")
 

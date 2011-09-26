@@ -631,6 +631,16 @@ class OpenStack_1_0_NodeDriver(NodeDriver):
                     method="POST",
                     data=ET.tostring(image_elm)).object)
 
+    def ex_delete_image(self, image):
+        """Delete an image for node.
+
+        @keyword    image: the image to be deleted
+        @param      image: L{NodeImage}
+        """
+        uri = '/images/%s' % image.id
+        resp = self.connection.request(uri, method='DELETE')
+        return resp.status == 204
+
     def _to_shared_ip_group(self, el):
         servers_el = self._findall(el, 'servers')
         if servers_el:
@@ -651,12 +661,12 @@ class OpenStack_1_0_NodeDriver(NodeDriver):
         )
 
     def _get_size_price(self, size_id):
-        if 'openstack' not in PRICING_DATA['compute']:
+        try:
+            return get_size_price(driver_type='compute',
+                                  driver_name=self.api_name,
+                                  size_id=size_id)
+        except KeyError:
             return 0.0
-
-        return get_size_price(driver_type='compute',
-                              driver_name='openstack',
-                              size_id=size_id)
 
 
 class OpenStack_1_0_SharedIpGroup(object):

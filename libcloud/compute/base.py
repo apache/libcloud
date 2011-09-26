@@ -31,6 +31,7 @@ from libcloud.compute.ssh import SSHClient
 # @@TR: are the imports below part of the public api for this
 # module? They aren't used in here ...
 from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
+from libcloud.common.base import BaseDriver
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from libcloud.common.base import LibcloudHTTPConnection
 from libcloud.common.types import LibcloudError
@@ -320,7 +321,7 @@ class NodeAuthPassword(object):
         return '<NodeAuthPassword>'
 
 
-class NodeDriver(object):
+class NodeDriver(BaseDriver):
     """
     A base NodeDriver class to derive from
 
@@ -349,46 +350,8 @@ class NodeDriver(object):
     NODE_STATE_MAP = {}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        """
-        @keyword    key:    API key or username to used
-        @type       key:    str
-
-        @keyword    secret: Secret password to be used
-        @type       secret: str
-
-        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
-                            only support HTTPS, and it is on by default.
-        @type       secure: bool
-
-        @keyword    host: Override hostname used for connections.
-        @type       host: str
-
-        @keyword    port: Override port used for connections.
-        @type       port: int
-        """
-        self.key = key
-        self.secret = secret
-        self.secure = secure
-        args = [self.key]
-
-        if self.secret != None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
-
-        self.connection.driver = self
-        self.connection.connect()
-
-    def _ex_connection_class_kwargs(self):
-        return {}
+      super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                       host=host, port=port)
 
     def create_node(self, **kwargs):
         """Create a new node instance.

@@ -40,11 +40,12 @@ class Response(object):
     error = None
     connection = None
 
-    def __init__(self, response):
+    def __init__(self, response, connection):
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
 
         if not self.success():
             raise Exception(self.parse_error())
@@ -84,12 +85,14 @@ class Response(object):
 
 class RawResponse(Response):
 
-    def __init__(self, response=None):
+    def __init__(self, connection):
         self._status = None
         self._response = None
         self._headers = {}
         self._error = None
         self._reason = None
+        self.connection = connection
+
 
     @property
     def response(self):
@@ -424,11 +427,11 @@ class Connection(object):
             raise ssl.SSLError(str(e))
 
         if raw:
-            response = self.rawResponseCls()
+            response = self.rawResponseCls(connection=self)
         else:
-            response = self.responseCls(self.connection.getresponse())
+            response = self.responseCls(response=self.connection.getresponse(),
+                                        connection=self)
 
-        response.connection = self
         return response
 
     def morph_action_hook(self, action):
@@ -497,3 +500,57 @@ class ConnectionUserAndKey(ConnectionKey):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
                                                    host=host, port=port, url=url)
         self.user_id = user_id
+
+
+class BaseDriver(object):
+    """
+    Base driver class from which other classes can inherit from.
+    """
+
+    connectionCls = ConnectionKey
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+        """
+        @keyword    key:    API key or username to used
+        @type       key:    str
+
+        @keyword    secret: Secret password to be used
+        @type       secret: str
+
+        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
+                            only support HTTPS, and it is on by default.
+        @type       secure: bool
+
+        @keyword    host: Override hostname used for connections.
+        @type       host: str
+
+        @keyword    port: Override port used for connections.
+        @type       port: int
+        """
+        self.key = key
+        self.secret = secret
+        self.secure = secure
+        args = [self.key]
+
+        if self.secret is not None:
+            args.append(self.secret)
+
+        args.append(secure)
+
+        if host is not None:
+            args.append(host)
+
+        if port is not None:
+            args.append(port)
+
+        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
+
+        self.connection.driver = self
+        self.connection.connect()
+
+    def _ex_connection_class_kwargs(self):
+        """
+        Return extra connection keyword arguments which are passed to the
+        Connection class constructor.
+        """
+        return {}
