@@ -712,7 +712,7 @@ class OpenStack_1_1_Response(Response):
                 raise MalformedResponseError(
                     'Failed to parse JSON',
                     body=self.body,
-                    driver=OpenStack_1_0_NodeDriver)
+                    driver=OpenStack_1_1_NodeDriver)
 
         else:
             return self.body
