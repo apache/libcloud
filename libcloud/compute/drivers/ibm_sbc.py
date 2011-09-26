@@ -201,6 +201,16 @@ class IBMNodeDriver(NodeDriver):
         url = REST_BASE + '/keys/%s' %name
         status = int(self.connection.request(action = url, method='DELETE').status)
         return status == 200
+    def ex_list_keypairs(self):
+        """List Key pairs"""
+        url = REST_BASE + '/keys'
+        return self._to_keypairs(self.connection.request(action = REST_BASE + '/keys' , method = 'GET').object)
+
+    def _to_keypairs(self, object):
+        return [ self._to_keypair(keypair) for keypair in object.findall('PublicKey')]
+
+    def _to_keypair(self, object):
+         return NodeAuthSSHKey(object.findtext('KeyName'))
 
     def _to_nodes(self, object):
         return [ self._to_node(instance) for instance in object.findall('Instance') ]
