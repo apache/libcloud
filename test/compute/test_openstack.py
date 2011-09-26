@@ -17,7 +17,10 @@ import unittest
 import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
-from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
+from libcloud.compute.drivers.openstack import (
+    OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
+    OpenStack_1_1_NodeDriver
+)
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
@@ -426,6 +429,247 @@ class OpenStackMockHttp(MockHttpTestCase):
     def _v1_1__auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
         return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>",  {'content-type': 'text/html'}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
 
+class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
+    should_list_locations = False
+
+    driver_type = OpenStack_1_1_NodeDriver
+    driver_args = OPENSTACK_PARAMS
+
+    @classmethod
+    def create_driver(self):
+        return self.driver_type(*self.driver_args, ex_force_auth_version='1.0')
+
+    def setUp(self):
+        self.driver_type.connectionCls.conn_classes = (OpenStack_1_1_MockHttp, OpenStack_1_1_MockHttp)
+        self.driver_type.connectionCls.auth_url = "https://auth.api.example.com/v1.0/"
+        OpenStack_1_1_MockHttp.type = None
+        self.driver = self.create_driver()
+        clear_pricing_data()
+        self.node = self.driver.list_nodes()[0]
+
+    def test_list_nodes(self):
+        nodes = self.driver.list_nodes()
+        self.assertEqual(len(nodes), 2)
+        node = nodes[0]
+        self.assertEqual('67.23.10.132', node.public_ip[0])
+        self.assertEqual('10.176.42.16', node.private_ip[0])
+        self.assertEqual(node.extra.get('flavorId'), '52415800-8b69-11e0-9b19-734f216543fd')
+        self.assertEqual(node.extra.get('imageId'), '52415800-8b69-11e0-9b19-734f6f006e54')
+        self.assertEqual(node.extra.get('metadata')['Server Label'], 'Web Head 1')
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 2, 'Wrong sizes count')
+
+        for size in sizes:
+            self.assertTrue(isinstance(size.price, float),
+                            'Wrong size price type')
+            self.assertEqual(size.price, 0,
+                             'Size price should be zero by default')
+
+    def test_list_sizes_with_specified_pricing(self):
+        pricing = {
+            '52415800-8b69-11e0-9b19-734f1195ff37': 10.0,
+            '52415800-8b69-11e0-9b19-734f216543fd': 20.0,
+        }
+
+        set_pricing(driver_type='compute', driver_name='openstack', pricing=pricing)
+
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 2, 'Wrong sizes count')
+
+        for size in sizes:
+            self.assertTrue(isinstance(size.price, float),
+                            'Wrong size price type')
+            self.assertEqual(size.price, pricing[size.id],
+                             'Size price should match')
+
+    def test_list_images(self):
+        images = self.driver.list_images()
+        self.assertEqual(len(images), 1, 'Wrong images count')
+
+        image = images[0]
+        self.assertEqual(image.id, '52415800-8b69-11e0-9b19-734f6f006e54')
+        self.assertEqual(image.name, 'CentOS 5.2')
+        self.assertEqual(image.extra['updated'], '2010-10-10T12:00:00Z')
+        self.assertEqual(image.extra['created'], '2010-08-10T12:00:00Z')
+        self.assertEqual(image.extra['status'], 'ACTIVE')
+        self.assertEqual(image.extra['metadata']['ImageType'], 'Gold')
+
+    def test_create_node(self):
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size)
+        self.assertEqual(node.id, '52415800-8b69-11e0-9b19-734f565bc83b')
+        self.assertEqual(node.name, 'new-server-test')
+        self.assertEqual(node.extra['password'], 'GFf1j9aP')
+        self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
+
+    def test_destroy_node(self):
+        self.assertTrue(self.node.destroy())
+
+    def test_reboot_node(self):
+        self.assertTrue(self.node.reboot())
+
+    def test_ex_set_password(self):
+        try:
+            self.driver.ex_set_password(self.node, 'New1&53jPass')
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_rebuild(self):
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        try:
+            self.driver.ex_rebuild(self.node, image)
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_resize(self):
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
+        try:
+            self.driver.ex_resize(self.node, size)
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_confirm_resize(self):
+        try:
+            self.driver.ex_confirm_resize(self.node)
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_revert_resize(self):
+        try:
+            self.driver.ex_revert_resize(self.node)
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_save_image(self):
+        try:
+            self.driver.ex_save_image(self.node, 'new_image')
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_update_node(self):
+        old_node = Node(
+            id='52415800-8b69-11e0-9b19-734f565bc83b',
+            name=None, state=None, public_ip=None, private_ip=None, driver=self.driver,
+        )
+
+        new_node = self.driver.ex_update_node(old_node, name='Bob')
+
+        self.assertTrue(new_node)
+
+    def test_ex_get_node(self):
+        node_id = '52415800-8b69-11e0-9b19-734f000004d2'
+        node = self.driver.ex_get_node(node_id)
+        self.assertEqual(node.id, node_id)
+        self.assertEqual(node.name, 'sample-server')
+
+    def test_ex_get_size(self):
+        size_id = '52415800-8b69-11e0-9b19-734f1195ff37'
+        size = self.driver.ex_get_size(size_id)
+        self.assertEqual(size.id, size_id)
+        self.assertEqual(size.name, '256 MB Server')
+
+    def test_ex_get_image(self):
+        image_id = '52415800-8b69-11e0-9b19-734f5736d2a2'
+        image = self.driver.ex_get_image(image_id)
+        self.assertEqual(image.id, image_id)
+        self.assertEqual(image.name, 'My Server Backup')
+
+    def test_ex_delete_image(self):
+        image = NodeImage(id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)
+        try:
+            self.driver.ex_delete_image(image)
+        except Exception as e:
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_quotas(self):
+        quotas = self.driver.ex_quotas('aTenantId')
+        self.assertEqual(quotas['cores'], 50)
+        self.assertEqual(quotas['gigabytes'], 500)
+        self.assertEqual(quotas['instances'], 25)
+        self.assertEqual(quotas['ram'], 102400)
+
+
+class OpenStack_1_1_MockHttp(MockHttpTestCase):
+    fixtures = ComputeFileFixtures('openstack_v1.1')
+    auth_fixtures = OpenStackFixtures()
+    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _v1_0_(self, method, url, body, headers):
+        headers = {
+            'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+            'x-server-management-url': 'https://api.example.com/v1.1/slug',
+        }
+        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _servers_detail(self, method, url, body, headers):
+        body = self.fixtures.load('_servers_detail.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _flavors_detail(self, method, url, body, headers):
+        body = self.fixtures.load('_flavors_detail.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _images_detail(self, method, url, body, headers):
+        body = self.fixtures.load('_images_detail.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _servers(self, method, url, body, headers):
+        body = self.fixtures.load('_servers.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _servers_52415800_8b69_11e0_9b19_734f6af67565_action(self, method, url, body, headers):
+        if method != "POST":
+            self.fail('HTTP method other than POST to action URL')
+
+        return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+    def _servers_52415800_8b69_11e0_9b19_734f6af67565(self, method, url, body, headers):
+        if method == "DELETE":
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        else:
+            raise NotImplemented
+
+    def _servers_52415800_8b69_11e0_9b19_734f000004d2(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_52415800-8b69-11e0-9b19-734f000004d2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplemented
+
+    def _servers_52415800_8b69_11e0_9b19_734f565bc83b(self, method, url, body, headers):
+        if method == "PUT":
+            body = self.fixtures.load('_servers_52415800-8b69-11e0-9b19-734f565bc83b.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplemented
+
+    def _flavors_52415800_8b69_11e0_9b19_734f1195ff37(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_flavors_52415800-8b69-11e0-9b19-734f1195ff37.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplemented
+
+    def _images_52415800_8b69_11e0_9b19_734f5736d2a2(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_52415800-8b69-11e0-9b19-734f5736d2a2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplemented
+
+    def _images_26365521_8c62_11f9_2c33_283d153ecc3a(self, method, url, body, headers):
+        if method == "DELETE":
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        else:
+            raise NotImplemented
+
+    def _os_quota_sets_aTenantId(self, method, url, body, headers):
+        body = self.fixtures.load('_os_quota_sets_aTenantId.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
