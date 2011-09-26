@@ -724,7 +724,7 @@ class OpenStack_1_1_Response(Response):
             try:
                 text = ';'.join([fault_data['message'] for fault_data in self.parse_body().values()])
             except MalformedResponseError:
-                pass
+                raise
 
         return '%s %s %s' % (self.status, self.error, text)
 
