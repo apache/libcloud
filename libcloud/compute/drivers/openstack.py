@@ -865,8 +865,10 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
 
     def ex_update_node(self, node, **node_updates):
         # At this time, only name is supported, but this signature covers the future.
-        self.connection.request(
-            '/servers/%s' % (node.id,), method='PUT', data=dict(server=node_updates)
+        return self._to_node(
+            self.connection.request(
+                '/servers/%s' % (node.id,), method='PUT', data=dict(server=node_updates)
+            ).object['server']
         )
 
     def ex_get_node(self, node_id):
