@@ -827,10 +827,12 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
         )
 
     def destroy_node(self, node):
-        self.connection.request('/servers/%s' % (node.id,), method='DELETE')
+        response = self.connection.request('/servers/%s' % (node.id,), method='DELETE')
+        return response.status == httplib.ACCEPTED
 
     def reboot_node(self, node, hard=False):
-        self._node_action(node, 'reboot', type=('SOFT', 'HARD')[hard])
+        response = self._node_action(node, 'reboot', type=('SOFT', 'HARD')[hard])
+        return response.status == httplib.ACCEPTED
 
     def ex_set_password(self, node, password):
         self._node_action(node, 'changePassword', adminPass=password)
@@ -886,7 +888,7 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
 
     def _node_action(self, node, action, **params):
         params = params or None
-        self.connection.request('/servers/%s/action' % (node.id,), method='POST', data={action: params})
+        return self.connection.request('/servers/%s/action' % (node.id,), method='POST', data={action: params})
 
     def _to_node(self, api_node):
         return Node(
