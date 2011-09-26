@@ -911,6 +911,9 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
     def _to_size(self, api_flavor, price=None, bandwidth=None):
         # if provider-specific subclasses can get better values for
         # price/bandwidth, then can pass them in when they super().
+        if not price:
+            price = self._get_size_price(api_flavor['id'])
+
         return NodeSize(
             id=api_flavor['id'],
             name=api_flavor['name'],
@@ -934,3 +937,13 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
                 metadata=api_image.get('metadata'),
             ),
         )
+
+    def _get_size_price(self, size_id):
+            try:
+                return get_size_price(
+                    driver_type='compute',
+                    driver_name=self.api_name,
+                    size_id=size_id,
+                )
+            except KeyError:
+                return(0.0)
