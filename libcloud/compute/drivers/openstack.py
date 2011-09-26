@@ -935,7 +935,7 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
                 updated=api_image['updated'],
                 created=api_image['created'],
                 status=api_image['status'],
-                progress=api_image['progress'],
+                progress=api_image.get('progress'),
                 metadata=api_image.get('metadata'),
             ),
         )
