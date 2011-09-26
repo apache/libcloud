@@ -721,10 +721,7 @@ class OpenStack_1_1_Response(Response):
         text = self.body
 
         if self.has_content_type('application/json'):
-            try:
-                text = ';'.join([fault_data['message'] for fault_data in self.parse_body().values()])
-            except MalformedResponseError:
-                raise
+            text = ';'.join([fault_data['message'] for fault_data in self.parse_body().values()])
 
         return '%s %s %s' % (self.status, self.error, text)
 
