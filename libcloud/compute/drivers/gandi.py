@@ -271,7 +271,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
     def _to_iface(self, iface):
         ips = []
-        for ip in iface.get('ips'):
+        for ip in iface.get('ips', []):
             new_ip = IPAddress(
                 ip['id'],
                 NODE_STATE_MAP.get(
