@@ -19,7 +19,7 @@ from datetime import datetime
 
 from libcloud.common.gandi import BaseGandiDriver, GandiException, \
     NetworkInterface, IPAddress, Disk
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
@@ -43,6 +43,12 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     Gandi node driver
 
     """
+    api_name = 'gandi'
+    friendly_name = 'Gandi.net'
+    country = 'FR'
+    type = Provider.GANDI
+    # TODO : which features to enable ?
+    features = {}
 
     def _node_info(self, id):
         try:

@@ -21,6 +21,7 @@ import hashlib
 import xmlrpclib
 
 import libcloud
+from libcloud.common.base import ConnectionKey
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, \
     NodeLocation, NodeSize, NodeImage
@@ -70,38 +71,26 @@ class GandiProxy(xmlrpclib.ServerProxy):
         )
 
 
-class GandiConnection(object):
+class GandiConnection(ConnectionKey):
     """
     Connection class for the Gandi driver
     """
 
     proxyCls = GandiProxy
-    driver = 'gandi'
 
-    def __init__(self, user, password=None):
-        self.ua = []
-
-        # Connect only with an api_key generated on website
-        self.api_key = user
+    def __init__(self, key, password=None):
+        super(GandiConnection, self).__init__(key)
+        self.driver = BaseGandiDriver
 
         try:
             self._proxy = self.proxyCls(self._user_agent())
         except xmlrpclib.Fault, e:
             raise GandiException(1000, e)
 
-    def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (
-                libcloud.__version__,
-                self.driver,
-                "".join([" (%s)" % x for x in self.ua]))
-
-    def user_agent_append(self, s):
-        self.ua.append(s)
-
     def request(self, method, *args):
         """ Request xmlrpc method with given args"""
         try:
-            return getattr(self._proxy, method)(self.api_key, *args)
+            return getattr(self._proxy, method)(self.key, *args)
         except xmlrpclib.Fault, e:
             raise GandiException(1001, e)
 
@@ -113,12 +102,6 @@ class BaseGandiDriver(object):
     """
     connectionCls = GandiConnection
     name = 'Gandi'
-    api_name = 'gandi'
-    friendly_name = 'Gandi.net'
-    country = 'FR'
-    type = Provider.GANDI
-    # TODO : which features to enable ?
-    features = {}
 
     def __init__(self, key, secret=None, secure=False):
         self.key = key
@@ -189,7 +172,7 @@ class IPAddress(BaseObject):
     uuid_prefix = 'inet:'
 
     def __init__(self, id, state, inet, driver, version=4, extra=None):
-        BaseObject.__init__(self, id, state, driver)
+        super(IPAddress, self).__init__(id, state, driver)
         self.inet = inet
         self.version = version
         self.extra = extra or {}
@@ -208,7 +191,7 @@ class NetworkInterface(BaseObject):
 
     def __init__(self, id, state, mac_address, driver,
             ips=None, node_id=None, extra=None):
-        BaseObject.__init__(self, id, state, driver)
+        super(NetworkInterface, self).__init__(id, state, driver)
         self.mac = mac_address
         self.ips = ips or {}
         self.node_id = node_id
@@ -224,7 +207,7 @@ class Disk(BaseObject):
     Gandi disk component
     """
     def __init__(self, id, state, name, driver, size, extra=None):
-        BaseObject.__init__(self, id, state, driver)
+        super(Disk, self).__init__(id, state, driver)
         self.name = name
         self.size = size
         self.extra = extra or {}
