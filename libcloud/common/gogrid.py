@@ -16,14 +16,9 @@
 import hashlib
 import time
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import NodeLocation
 
 HOST = 'api.gogrid.com'
@@ -36,7 +31,7 @@ __all__ = ["GoGridResponse",
         "BaseGoGridDriver",
 ]
 
-class GoGridResponse(Response):
+class GoGridResponse(JsonResponse):
 
     def __init__(self, *args, **kwargs):
        self.driver = BaseGoGridDriver
@@ -50,19 +45,14 @@ class GoGridResponse(Response):
         if not self.body:
             return None
         try:
-            return json.loads(self.body)['status'] == 'success'
+            return self.parse_body()['status'] == 'success'
         except ValueError:
             raise MalformedResponseError('Malformed reply',
                     body=self.body, driver=self.driver)
 
-    def parse_body(self):
-        if not self.body:
-            return None
-        return json.loads(self.body)
-
     def parse_error(self):
         try:
-            return json.loads(self.body)["list"][0]['message']
+            return self.parse_body()["list"][0]["message"]
         except (ValueError, KeyError):
             return None
 

@@ -13,18 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from xml.etree import ElementTree as ET
+from libcloud.common.base import XmlResponse
 
-from libcloud.common.base import Response
-from libcloud.common.types import MalformedResponseError
-
-class AWSBaseResponse(Response):
-    def parse_body(self):
-        if not self.body:
-            return None
-
-        try:
-          body = ET.XML(self.body)
-        except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body)
-        return body
+class AWSBaseResponse(XmlResponse): pass
