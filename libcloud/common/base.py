@@ -18,11 +18,17 @@ import urllib
 import StringIO
 import ssl
 
+from xml.etree import ElementTree as ET
 from pipes import quote as pquote
 import urlparse
 
+try:
+    import simplejson as json
+except:
+    import json
+
 import libcloud
-from libcloud.common.types import LibcloudError
+from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from httplib import HTTPConnection as LibcloudHTTPConnection
@@ -82,6 +88,41 @@ class Response(object):
         @return: C{True} or C{False}
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
+
+
+class JsonResponse(Response):
+    """
+    A Base JSON Response class to derive from.
+    """
+    def parse_body(self):
+        try:
+            body = json.loads(self.body)
+        except:
+            raise MalformedResponseError(
+                "Failed to parse JSON",
+                body=self.body,
+                driver=self.connection.driver)
+        return body
+
+    parse_error = parse_body
+
+
+class XmlResponse(Response):
+    """
+    A Base XML Response class to derive from.
+    """
+    def parse_body(self):
+        if not self.body:
+            return None
+
+        try:
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseError("Failed to parse XML", body=self.body)
+        return body
+
+    parse_error = parse_body
+
 
 class RawResponse(Response):
 
