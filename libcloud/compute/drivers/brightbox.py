@@ -18,7 +18,7 @@ Brightbox Driver
 import httplib
 import base64
 
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
@@ -31,18 +31,18 @@ except ImportError:
 API_VERSION = '1.0'
 
 
-class BrightboxResponse(Response):
+class BrightboxResponse(JsonResponse):
     def success(self):
         return self.status >= 200 and self.status < 400
 
     def parse_body(self):
         if self.headers['content-type'].split('; ')[0] == 'application/json' and len(self.body) > 0:
-            return json.loads(self.body)
+            return super(BrightboxResponse, self).parse_body()
         else:
             return self.body
 
     def parse_error(self):
-        return json.loads(self.body)['error']
+        return super(BrightboxResponse, self).parse_body()['error']
 
 
 class BrightboxConnection(ConnectionUserAndKey):

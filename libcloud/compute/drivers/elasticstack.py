@@ -28,8 +28,8 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node
 from libcloud.compute.base import NodeImage
@@ -111,7 +111,7 @@ class ElasticStackException(Exception):
         return "<ElasticStackException '%s'>" % (self.args[0])
 
 
-class ElasticStackResponse(Response):
+class ElasticStackResponse(JsonResponse):
     def success(self):
         if self.status == 401:
             raise InvalidCredsError()
@@ -121,15 +121,7 @@ class ElasticStackResponse(Response):
     def parse_body(self):
         if not self.body:
             return self.body
-
-        try:
-            data = json.loads(self.body)
-        except:
-            raise MalformedResponseError('Failed to parse JSON',
-                                         body=self.body,
-                                         driver=ElasticStackBaseNodeDriver)
-
-        return data
+        return super(ElasticStackResponse, self).parse_body()
 
     def parse_error(self):
         error_header = self.headers.get('x-elastic-error', '')

@@ -26,14 +26,10 @@ import copy
 import urllib
 import base64
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState, InvalidCredsError
+from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
@@ -83,12 +79,12 @@ NODE_STATE_MAP = { 'queued': NodeState.PENDING,
                    'error': NodeState.TERMINATED,
                    'unknown': NodeState.UNKNOWN }
 
-class BlueboxResponse(Response):
+class BlueboxResponse(JsonResponse):
     def parse_body(self):
         try:
-            js = json.loads(self.body)
+            js = super(BlueboxResponse, self).parse_body()
             return js
-        except ValueError:
+        except MalformedResponseError:
             return self.body
 
     def parse_error(self):

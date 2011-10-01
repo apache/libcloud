@@ -24,7 +24,7 @@ import urlparse
 from xml.etree import ElementTree
 
 from libcloud import utils
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LazyList
 
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
@@ -41,21 +41,17 @@ class AtmosError(Exception):
         self.code = code
         self.message = message
 
-class AtmosResponse(Response):
+class AtmosResponse(XmlResponse):
     def success(self):
         return self.status in (httplib.OK, httplib.CREATED, httplib.NO_CONTENT,
                                httplib.PARTIAL_CONTENT)
 
-    def parse_body(self):
-        if not self.body:
-            return None
-        tree = ElementTree.fromstring(self.body)
-        return tree
-
     def parse_error(self):
-        if not self.body:
+        tree = self.parse_body()
+
+        if tree is None:
             return None
-        tree = ElementTree.fromstring(self.body)
+
         code = int(tree.find('Code').text)
         message = tree.find('Message').text
         raise AtmosError(code, message)

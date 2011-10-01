@@ -16,14 +16,9 @@
 DreamHost Driver
 """
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 import copy
 
-from libcloud.common.base import ConnectionKey, Response
+from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver, NodeSize
 from libcloud.compute.base import NodeImage
@@ -81,13 +76,13 @@ class DreamhostAPIException(Exception):
         return "<DreamhostException '%s'>" % (self.args[0])
 
 
-class DreamhostResponse(Response):
+class DreamhostResponse(JsonResponse):
     """
     Response class for DreamHost PS
     """
 
     def parse_body(self):
-        resp = json.loads(self.body)
+        resp = super(DreamhostResponse, self).parse_body()
         if resp['result'] != 'success':
             raise Exception(self._api_parse_error(resp))
         return resp['data']
