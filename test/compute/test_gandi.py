@@ -21,12 +21,14 @@ import httplib
 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi
+from libcloud.common.gandi import GandiException
 from libcloud.compute.types import NodeState
 
 from xml.etree import ElementTree as ET
 from test import MockHttp
 from test.file_fixtures import ComputeFileFixtures
 from test.secrets import GANDI_PARAMS
+
 
 class MockGandiTransport(xmlrpclib.Transport):
 
@@ -43,11 +45,14 @@ class MockGandiTransport(xmlrpclib.Transport):
             response = self.parse_response(resp.body)
         return response
 
+
 class GandiTests(unittest.TestCase):
 
     node_name = 'test2'
+
     def setUp(self):
-        Gandi.connectionCls.proxyCls.transportCls = [MockGandiTransport, MockGandiTransport]
+        Gandi.connectionCls.proxyCls.transportCls = \
+            [MockGandiTransport, MockGandiTransport]
         self.driver = Gandi(*GANDI_PARAMS)
 
     def test_list_nodes(self):
@@ -55,11 +60,13 @@ class GandiTests(unittest.TestCase):
         self.assertTrue(len(nodes) > 0)
 
     def test_list_locations(self):
-        loc = filter(lambda x: 'france' in x.country.lower(), self.driver.list_locations())[0]
+        loc = filter(lambda x: 'france' in x.country.lower(),
+            self.driver.list_locations())[0]
         self.assertEqual(loc.country, 'France')
 
     def test_list_images(self):
-        loc = filter(lambda x: 'france' in x.country.lower(), self.driver.list_locations())[0]
+        loc = filter(lambda x: 'france' in x.country.lower(),
+            self.driver.list_locations())[0]
         images = self.driver.list_images(loc)
         self.assertTrue(len(images) > 2)
 
@@ -84,17 +91,63 @@ class GandiTests(unittest.TestCase):
 
     def test_create_node(self):
         login = 'libcloud'
-        passwd = ''.join(random.choice(string.letters + string.digits) for i in xrange(10))
+        passwd = ''.join(random.choice(string.letters + string.digits)
+            for i in xrange(10))
         # Get france datacenter
-        loc = filter(lambda x: 'france' in x.country.lower(), self.driver.list_locations())[0]
+        loc = filter(lambda x: 'france' in x.country.lower(),
+            self.driver.list_locations())[0]
         # Get a debian image
         images = self.driver.list_images(loc)
         images = [x for x in images if x.name.lower().startswith('debian')]
         img = filter(lambda x: '5' in x.name, images)[0]
         # Get a configuration size
         size = self.driver.list_sizes()[0]
-        node = self.driver.create_node(name=self.node_name, login=login, password=passwd, image=img, location=loc, size=size)
+        node = self.driver.create_node(name=self.node_name, login=login,
+            password=passwd, image=img, location=loc, size=size)
         self.assertEqual(node.name, self.node_name)
+
+    def test_ex_list_disks(self):
+        disks = self.driver.ex_list_disks()
+        self.assertTrue(len(disks) > 0)
+
+    def test_ex_list_interfaces(self):
+        ifaces = self.driver.ex_list_interfaces()
+        self.assertTrue(len(ifaces) > 0)
+
+    def test_ex_attach_interface(self):
+        ifaces = self.driver.ex_list_interfaces()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_node_attach_interface(nodes[0], ifaces[0])
+        self.assertTrue(res)
+
+    def test_ex_detach_interface(self):
+        ifaces = self.driver.ex_list_interfaces()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_node_detach_interface(nodes[0], ifaces[0])
+        self.assertTrue(res)
+
+    def test_ex_attach_disk(self):
+        disks = self.driver.ex_list_disks()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_node_attach_disk(nodes[0], disks[0])
+        self.assertTrue(res)
+
+    def test_ex_detach_disk(self):
+        disks = self.driver.ex_list_disks()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_node_detach_disk(nodes[0], disks[0])
+        self.assertTrue(res)
+
+    def test_ex_snapshot_disk(self):
+        disks = self.driver.ex_list_disks()
+        self.assertTrue(self.driver.ex_snapshot_disk(disks[2]))
+        self.assertRaises(GandiException,
+            self.driver.ex_snapshot_disk, disks[0])
+
+    def test_ex_update_disk(self):
+        disks = self.driver.ex_list_disks()
+        self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
+
 
 class GandiMockHttp(MockHttp):
 
@@ -143,6 +196,38 @@ class GandiMockHttp(MockHttp):
     def _xmlrpc_2_0__vm_stop(self, method, url, body, headers):
         body = self.fixtures.load('vm_stop.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__iface_list(self, method, url, body, headers):
+        body = self.fixtures.load('iface_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__disk_list(self, method, url, body, headers):
+        body = self.fixtures.load('disk_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_iface_attach(self, method, url, body, headers):
+        body = self.fixtures.load('iface_attach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_iface_detach(self, method, url, body, headers):
+            body = self.fixtures.load('iface_detach.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_disk_attach(self, method, url, body, headers):
+        body = self.fixtures.load('disk_attach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__vm_disk_detach(self, method, url, body, headers):
+            body = self.fixtures.load('disk_detach.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__disk_create_from(self, method, url, body, headers):
+            body = self.fixtures.load('disk_create_from.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_2_0__disk_update(self, method, url, body, headers):
+            body = self.fixtures.load('disk_update.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
