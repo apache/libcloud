@@ -38,6 +38,7 @@ class Provider(object):
     @cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
     @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     @cvar NINEFOLD: Ninefold
+    @cvar GOOGLE_STORAGE Google Storage
     """
     DUMMY = 0
     CLOUDFILES_US = 1
@@ -48,6 +49,7 @@ class Provider(object):
     S3_AP_SOUTHEAST = 6
     S3_AP_NORTHEAST = 7
     NINEFOLD = 8
+    GOOGLE_STORAGE = 9
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
