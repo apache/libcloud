@@ -184,8 +184,11 @@ def dict2str(data):
 
     return result
 
-def fixxpath(xpath, namespace):
+def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
+    if not namespace:
+        return xpath
+
     return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
 def findtext(element, xpath, namespace):
