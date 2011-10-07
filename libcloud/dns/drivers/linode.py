@@ -64,13 +64,6 @@ class LinodeDNSResponse(LinodeResponse):
 class LinodeDNSConnection(LinodeConnection):
     responseCls = LinodeDNSResponse
 
-    def __init__(self, *args, **kwargs):
-        super(LinodeDNSConnection, self).__init__(*args, **kwargs)
-        self.context = {}
-
-    def set_context(self, context):
-        self.context = context
-
 
 class LinodeDNSDriver(DNSDriver):
     type = Provider.LINODE
