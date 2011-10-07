@@ -191,13 +191,13 @@ def fixxpath(xpath, namespace=None):
 
     return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
-def findtext(element, xpath, namespace):
+def findtext(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findattr(element, xpath, namespace):
+def findattr(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findall(element, xpath, namespace):
+def findall(element, xpath, namespace=None):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
 
 def reverse_dict(dictionary):
