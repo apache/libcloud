@@ -30,6 +30,7 @@ __all__ = [
 class Provider(object):
     DUMMY = 0
     LINODE = 1
+    ZERIGO = 2
 
 
 class RecordType(object):
