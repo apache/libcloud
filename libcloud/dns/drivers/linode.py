@@ -239,8 +239,8 @@ class LinodeDNSDriver(DNSDriver):
         extra = {'SOA_Email': item['SOA_EMAIL'], 'status': item['STATUS'],
                   'description': item['DESCRIPTION']}
         zone = Zone(id=item['DOMAINID'], domain=item['DOMAIN'],
-                    type=item['TYPE'], ttl=item['TTL_SEC'], extra=extra,
-                    driver=self)
+                    type=item['TYPE'], ttl=item['TTL_SEC'], driver=self,
+                    extra=extra)
         return zone
 
     def _to_records(self, items, zone=None):
@@ -262,6 +262,6 @@ class LinodeDNSDriver(DNSDriver):
                   'port': item['PORT'], 'weight': item['WEIGHT']}
         type = self._string_to_record_type(item['TYPE'])
         record = Record(id=item['RESOURCEID'], name=item['NAME'], type=type,
-                        data=item['TARGET'], extra=extra, zone=zone,
-                        driver=self)
+                        data=item['TARGET'], zone=zone, driver=self,
+                        extra=extra)
         return record
