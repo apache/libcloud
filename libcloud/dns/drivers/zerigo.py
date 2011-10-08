@@ -58,6 +58,20 @@ RECORD_TYPE_MAP = {
 }
 
 
+class ZerigoError(LibcloudError):
+    def __init__(self, code, errors):
+        self.code = code
+        self.errors = errors or []
+
+    def __str__(self):
+        return 'Errors: %s' % (', '.join(self.errors))
+
+    def __repr__(self):
+        return ('<ZerigoError response code=%s, errors count=%s>' %
+                                                          (self.code,
+                                                           len(self.errors)))
+
+
 class ZerigoDNSResponse(Response):
     def parse_body(self):
         if not self.body or (self.body and not self.body.strip()):
@@ -82,6 +96,18 @@ class ZerigoDNSResponse(Response):
             if context['resource'] == 'zone':
                 raise ZoneDoesNotExistError(value='', driver=self,
                                             zone_id=context['id'])
+        elif status != 503:
+            try:
+                body = ET.XML(self.body)
+            except:
+                raise MalformedResponseError('Failed to parse XML',
+                                             body=self.body)
+
+            errors = []
+            for error in findall(element=body, xpath='error'):
+                errors.append(error.text)
+
+            raise ZerigoError(code=status, errors=errors)
 
         return self.body
 
