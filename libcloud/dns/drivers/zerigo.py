@@ -18,26 +18,40 @@ __all__ = [
 ]
 
 
+import copy
 import base64
+import httplib
 
 from xml.etree import ElementTree as ET
 
 from libcloud.utils import fixxpath, findtext, findattr, findall
+from libcloud.utils import merge_valid_keys, get_new_obj
 from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
+from libcloud.common.types import MalformedResponseError
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
-
 
 API_HOST = 'ns.zerigo.com'
 API_VERSION = '1.1'
 API_ROOT = '/api/%s/' % (API_VERSION)
 
+VALID_ZONE_EXTRA_PARAMS = ['notes', 'tag-list', 'ns1', 'slave-nameservers']
+VALID_RECORD_EXTRA_PARAMS = ['notes', 'ttl', 'priority']
+
+RECORD_TYPE_MAP = {
+    RecordType.A: 'A',
+    RecordType.AAAA: 'AAAA',
+    RecordType.CNAME: 'CNAME',
+    RecordType.TXT: 'TXT',
+    RecordType.SRV: 'SRV',
+}
+
 
 class ZerigoDNSResponse(Response):
     def parse_body(self):
-        if not self.body:
+        if not self.body or (self.body and not self.body.strip()):
             return None
 
         try:
@@ -131,34 +145,129 @@ class ZerigoDNSDriver(DNSDriver):
         https://www.zerigo.com/docs/apis/dns/1.1/zones/create
         """
         path = API_ROOT + 'zones.xml'
+        zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
+                                       extra=extra)
+        data = self.connection.request(action=path,
+                                       data=ET.tostring(zone_elem),
+                                       method='POST').object
+        zone = self._to_zone(elem=data)
+        return zone
 
+    def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
+        """
+        Update an existing zone.
+
+        Provider API docs:
+        https://www.zerigo.com/docs/apis/dns/1.1/zones/update
+        """
+        if domain:
+            raise LibcloudError('Domain cannot be changed', driver=self)
+
+        path = API_ROOT + 'zones/%s.xml' % (zone.id)
+        zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
+                                       extra=extra)
+        response = self.connection.request(action=path,
+                                       data=ET.tostring(zone_elem),
+                                       method='PUT')
+        assert response.status == httplib.OK
+
+        merged = merge_valid_keys(params=copy.deepcopy(zone.extra),
+                                  valid_keys=VALID_ZONE_EXTRA_PARAMS,
+                                  extra=extra)
+        updated_zone = get_new_obj(obj=zone, klass=Zone,
+                                   attributes={'type': type,
+                                               'ttl': ttl,
+                                               'extra': merged})
+        return updated_zone
+
+    def create_record(self, name, zone, type, data, extra=None):
+        """
+        Create a new record.
+
+        Provider API docs:
+        https://www.zerigo.com/docs/apis/dns/1.1/hosts/create
+        """
+        path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
+        record_elem = self._to_record_elem(name=name, type=type, data=data,
+                                           extra=extra)
+        response = self.connection.request(action=path,
+                                           data=ET.tostring(record_elem),
+                                           method='POST')
+        assert response.status == httplib.CREATED
+        record = self._to_record(elem=response.object, zone=zone)
+        return record
+
+    def update_record(self, record, name=None, type=None, data=None,
+                      extra=None):
+        path = API_ROOT + 'hosts/%s.xml' % (record.id)
+        record_elem = self._to_record_elem(name=name, type=type, data=data,
+                                           extra=extra)
+        response = self.connection.request(action=path,
+                                           data=ET.tostring(record_elem),
+                                           method='PUT')
+        assert response.status == httplib.OK
+
+        merged = merge_valid_keys(params=copy.deepcopy(record.extra),
+                                  valid_keys=VALID_RECORD_EXTRA_PARAMS,
+                                  extra=extra)
+        updated_record = get_new_obj(obj=record, klass=Record,
+                                     attributes={'type': type,
+                                                 'data': data,
+                                                 'extra': merged})
+        return updated_record
+
+    def delete_zone(self, zone):
+        path = API_ROOT + 'zones/%s.xml' % (zone.id)
+        response = self.connection.request(action=path, method='DELETE')
+        return response.status == httplib.OK
+
+    def delete_record(self, record):
+        path = API_ROOT + 'hosts/%s.xml' % (record.id)
+        response = self.connection.request(action=path, method='DELETE')
+        return response.status == httplib.OK
+
+    def ex_get_zone_by_domain(self, domain):
+        """
+        Retrieve a zone object by the domain name.
+        """
+        path = API_ROOT + 'zones/%s.xml' % (domain)
+        self.connection.set_context({'resource': 'zone', 'id': domain})
+        data = self.connection.request(path).object
+        zone = self._to_zone(elem=data)
+        return zone
+
+    def _to_zone_elem(self, domain=None, type=None, ttl=None, extra=None):
         zone_elem = ET.Element('zone', {})
-        domain_elem = ET.SubElement(zone_elem, 'domain')
-        domain_elem.text = domain
-        ns_type_elem = ET.SubElement(zone_elem, 'ns-type')
 
-        if type == 'master':
-            ns_type_elem.text = 'pri_sec'
-        elif type == 'slave':
-            if not extra or 'ns1' not in extra:
-                raise LibcloudError('ns1 extra attribute is required when ' +
-                                    'zone type is slave', driver=self)
+        if domain:
+            domain_elem = ET.SubElement(zone_elem, 'domain')
+            domain_elem.text = domain
 
-            ns_type_elem.text = 'sec'
-            ns1_elem = ET.SubElement(zone_elem, 'ns1')
-            ns1_elem.text = extra['ns1']
-        elif type == 'std_master':
-            # TODO: Each driver should provide supported zone types
-            # Slave name servers are elsewhere
-            if not extra or 'slave-nameservers' not in extra:
-                raise LibcloudError('slave-nameservers extra attribute is ' +
-                                    'required whenzone type is std_master',
-                                    driver=self)
+        if type:
+            ns_type_elem = ET.SubElement(zone_elem, 'ns-type')
 
-            ns_type_elem.text = 'pri'
-            slave_nameservers_elem = ET.SubElement(zone_elem,
-                                                  'slave-nameservers')
-            slave_nameservers_elem.text = extra['slave-nameservers']
+            if type == 'master':
+                ns_type_elem.text = 'pri_sec'
+            elif type == 'slave':
+                if not extra or 'ns1' not in extra:
+                    raise LibcloudError('ns1 extra attribute is required ' +
+                                        'when zone type is slave', driver=self)
+
+                ns_type_elem.text = 'sec'
+                ns1_elem = ET.SubElement(zone_elem, 'ns1')
+                ns1_elem.text = extra['ns1']
+            elif type == 'std_master':
+                # TODO: Each driver should provide supported zone types
+                # Slave name servers are elsewhere
+                if not extra or 'slave-nameservers' not in extra:
+                    raise LibcloudError('slave-nameservers extra ' +
+                                        'attribute is required whenzone ' +
+                                        'type is std_master', driver=self)
+
+                ns_type_elem.text = 'pri'
+                slave_nameservers_elem = ET.SubElement(zone_elem,
+                                                      'slave-nameservers')
+                slave_nameservers_elem.text = extra['slave-nameservers']
 
         if ttl:
             default_ttl_elem = ET.SubElement(zone_elem, 'default-ttl')
@@ -170,11 +279,41 @@ class ZerigoDNSDriver(DNSDriver):
             tags_elem = ET.SubElement(zone_elem, 'tag-list')
             tags_elem.text = ' '.join(tags)
 
-        data = self.connection.request(action=path,
-                                       data=ET.tostring(zone_elem),
-                                       method='POST').object
-        zone = self._to_zone(elem=data)
-        return zone
+        return zone_elem
+
+    def _to_record_elem(self, name=None, type=None, data=None, extra=None):
+        record_elem = ET.Element('host', {})
+
+        if name:
+            name_elem = ET.SubElement(record_elem, 'hostname')
+            name_elem.text = name
+
+        if type:
+            type_elem = ET.SubElement(record_elem, 'host-type')
+            type_elem.text = RECORD_TYPE_MAP[type]
+
+        if data:
+            data_elem = ET.SubElement(record_elem, 'data')
+            data_elem.text = data
+
+        if extra:
+            if 'ttl' in extra:
+                ttl_elem = ET.SubElement(record_elem, 'ttl',
+                                         {'type': 'integer'})
+                ttl_elem.text = str(extra['ttl'])
+
+            if 'priority' in extra:
+                # Only MX and SRV records support priority
+                priority_elem = ET.SubElement(record_elem, 'priority',
+                                              {'type': 'integer'})
+
+                priority_elem.text = str(extra['priority'])
+
+            if 'notes' in extra:
+                notes_elem = ET.SubElement(record_elem, 'notes')
+                notes_elem.text = extra['notes']
+
+        return record_elem
 
     def _to_zones(self, elem):
         zones = []
