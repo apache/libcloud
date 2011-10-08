@@ -44,8 +44,14 @@ RECORD_TYPE_MAP = {
     RecordType.A: 'A',
     RecordType.AAAA: 'AAAA',
     RecordType.CNAME: 'CNAME',
+    RecordType.MX: 'MX',
+    RecordType.REDIRECT: 'REDIRECT',
     RecordType.TXT: 'TXT',
     RecordType.SRV: 'SRV',
+    RecordType.NAPTR: 'NAPTR',
+    RecordType.NS: 'NS',
+    RecordType.PTR: 'PTR',
+    RecordType.SPF: 'SPF',
 }
 
 
