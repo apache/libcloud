@@ -28,7 +28,7 @@ from libcloud.utils import fixxpath, findtext, findattr, findall
 from libcloud.utils import merge_valid_keys, get_new_obj
 from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.types import MalformedResponseError, LazyList
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
@@ -39,6 +39,9 @@ API_ROOT = '/api/%s/' % (API_VERSION)
 
 VALID_ZONE_EXTRA_PARAMS = ['notes', 'tag-list', 'ns1', 'slave-nameservers']
 VALID_RECORD_EXTRA_PARAMS = ['notes', 'ttl', 'priority']
+
+# Number of items per page (maximum limit is 1000)
+ITEMS_PER_PAGE = 100
 
 RECORD_TYPE_MAP = {
     RecordType.A: 'A',
@@ -115,19 +118,46 @@ class ZerigoDNSDriver(DNSDriver):
     connectionCls = ZerigoDNSConnection
 
     def list_zones(self):
-        # TODO: Use LazyList
-        path = API_ROOT + 'zones.xml'
-        data = self.connection.request(path).object
-        zones = self._to_zones(elem=data)
-        return zones
+        value_dict = {'type': 'zones'}
+        return LazyList(get_more=self._get_more, value_dict=value_dict)
 
     def list_records(self, zone):
-        # TODO: Use LazyList
-        path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        data = self.connection.request(path).object
-        records = self._to_records(elem=data, zone=zone)
-        return records
+        value_dict = {'type': 'records', 'zone': zone}
+        return LazyList(get_more=self._get_more, value_dict=value_dict)
+
+    def _get_more(self, last_key, value_dict):
+        # Note: last_key in this case really is a "last_page".
+        # TODO: Update base driver and change last_key to something more
+        # generic - e.g. marker
+        params = {}
+        params['per_page'] = ITEMS_PER_PAGE
+        params['page'] = last_key + 1 if last_key else 1
+        transform_func_kwargs = {}
+
+        if value_dict['type'] == 'zones':
+            path = API_ROOT + 'zones.xml'
+            response = self.connection.request(path)
+            transform_func = self._to_zones
+        elif value_dict['type'] == 'records':
+            zone = value_dict['zone']
+            path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
+            self.connection.set_context({'resource': 'zone', 'id': zone.id})
+            response = self.connection.request(path, params=params)
+            transform_func = self._to_records
+            transform_func_kwargs['zone'] = value_dict['zone']
+
+        exhausted = False
+        result_count = int(response.headers['x-query-count'])
+        transform_func_kwargs['elem'] = response.object
+
+        if (params['page'] * ITEMS_PER_PAGE) >= result_count:
+            exhausted = True
+
+        if response.status == httplib.OK:
+            items = transform_func(**transform_func_kwargs)
+            return items, params['page'], exhausted
+        else:
+            return [], None, True
 
     def get_zone(self, zone_id):
         path = API_ROOT + 'zones/%s.xml' % (zone_id)
