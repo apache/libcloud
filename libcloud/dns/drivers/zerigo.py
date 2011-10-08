@@ -125,40 +125,6 @@ class ZerigoDNSDriver(DNSDriver):
         value_dict = {'type': 'records', 'zone': zone}
         return LazyList(get_more=self._get_more, value_dict=value_dict)
 
-    def _get_more(self, last_key, value_dict):
-        # Note: last_key in this case really is a "last_page".
-        # TODO: Update base driver and change last_key to something more
-        # generic - e.g. marker
-        params = {}
-        params['per_page'] = ITEMS_PER_PAGE
-        params['page'] = last_key + 1 if last_key else 1
-        transform_func_kwargs = {}
-
-        if value_dict['type'] == 'zones':
-            path = API_ROOT + 'zones.xml'
-            response = self.connection.request(path)
-            transform_func = self._to_zones
-        elif value_dict['type'] == 'records':
-            zone = value_dict['zone']
-            path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
-            self.connection.set_context({'resource': 'zone', 'id': zone.id})
-            response = self.connection.request(path, params=params)
-            transform_func = self._to_records
-            transform_func_kwargs['zone'] = value_dict['zone']
-
-        exhausted = False
-        result_count = int(response.headers['x-query-count'])
-        transform_func_kwargs['elem'] = response.object
-
-        if (params['page'] * ITEMS_PER_PAGE) >= result_count:
-            exhausted = True
-
-        if response.status == httplib.OK:
-            items = transform_func(**transform_func_kwargs)
-            return items, params['page'], exhausted
-        else:
-            return [], None, True
-
     def get_zone(self, zone_id):
         path = API_ROOT + 'zones/%s.xml' % (zone_id)
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
@@ -411,3 +377,37 @@ class ZerigoDNSDriver(DNSDriver):
         record = Record(id=id, name=name, type=type, data=data,
                         zone=zone, driver=self, extra=extra)
         return record
+
+    def _get_more(self, last_key, value_dict):
+        # Note: last_key in this case really is a "last_page".
+        # TODO: Update base driver and change last_key to something more
+        # generic - e.g. marker
+        params = {}
+        params['per_page'] = ITEMS_PER_PAGE
+        params['page'] = last_key + 1 if last_key else 1
+        transform_func_kwargs = {}
+
+        if value_dict['type'] == 'zones':
+            path = API_ROOT + 'zones.xml'
+            response = self.connection.request(path)
+            transform_func = self._to_zones
+        elif value_dict['type'] == 'records':
+            zone = value_dict['zone']
+            path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
+            self.connection.set_context({'resource': 'zone', 'id': zone.id})
+            response = self.connection.request(path, params=params)
+            transform_func = self._to_records
+            transform_func_kwargs['zone'] = value_dict['zone']
+
+        exhausted = False
+        result_count = int(response.headers['x-query-count'])
+        transform_func_kwargs['elem'] = response.object
+
+        if (params['page'] * ITEMS_PER_PAGE) >= result_count:
+            exhausted = True
+
+        if response.status == httplib.OK:
+            items = transform_func(**transform_func_kwargs)
+            return items, params['page'], exhausted
+        else:
+            return [], None, True
