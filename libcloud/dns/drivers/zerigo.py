@@ -250,11 +250,13 @@ class ZerigoDNSDriver(DNSDriver):
 
     def delete_zone(self, zone):
         path = API_ROOT + 'zones/%s.xml' % (zone.id)
+        self.connection.set_context({'resource': 'zone', 'id': zone.id})
         response = self.connection.request(action=path, method='DELETE')
         return response.status == httplib.OK
 
     def delete_record(self, record):
         path = API_ROOT + 'hosts/%s.xml' % (record.id)
+        self.connection.set_context({'resource': 'record', 'id': record.id})
         response = self.connection.request(action=path, method='DELETE')
         return response.status == httplib.OK
 
