@@ -36,7 +36,7 @@ VALID_RECORD_EXTRA_PARAMS = ['Priority', 'Weight', 'Port', 'Protocol',
 
 RECORD_TYPE_MAP = {
     RecordType.A: 'A',
-    RecordType.AAAA: 'AAAAA',
+    RecordType.AAAA: 'AAAA',
     RecordType.CNAME: 'CNAME',
     RecordType.TXT: 'TXT',
     RecordType.SRV: 'SRV',
