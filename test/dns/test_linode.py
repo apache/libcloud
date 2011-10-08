@@ -261,11 +261,10 @@ class LinodeMockHttp(MockHttp):
         body = self.fixtures.load('get_zone_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_resource_list(self, method, url, body,
-                                                    headers):
+    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_resource_list(self, method, url,
+                                                             body, headers):
         body = self.fixtures.load('get_record_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
 
     def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_list(self, method, url, body,
                                                       headers):
@@ -277,7 +276,6 @@ class LinodeMockHttp(MockHttp):
                                                                headers):
         body = self.fixtures.load('get_record_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
 
     def _domain_create(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
