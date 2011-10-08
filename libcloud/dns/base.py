@@ -29,7 +29,7 @@ class Zone(object):
     DNS zone.
     """
 
-    def __init__(self, id, domain, type, ttl, extra, driver):
+    def __init__(self, id, domain, type, ttl, driver, extra=None):
         """
         @type id: C{str}
         @param id: Zone id.
@@ -43,18 +43,18 @@ class Zone(object):
         @type ttl: C{int}
         @param ttl: Default TTL for records in this zone (in seconds).
 
-        @type extra: C{dict}
-        @param extra: (optional) Extra attributes (driver specific).
-
         @type driver: C{DNSDriver}
         @param driver: DNSDriver instance.
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
         """
         self.id = str(id) if id else None
         self.domain = domain
         self.type = type
         self.ttl = ttl or None
-        self.extra = extra or {}
         self.driver = driver
+        self.extra = extra or {}
 
     def list_records(self):
         self.driver.list_records(zone=self)
@@ -79,7 +79,7 @@ class Record(object):
     Zone record / resource.
     """
 
-    def __init__(self, id, name, type, data, extra, zone, driver):
+    def __init__(self, id, name, type, data, zone, driver, extra=None):
         """
         @type id: C{str}
         @param id: Record id
@@ -93,22 +93,22 @@ class Record(object):
         @type data: C{str}
         @param data: Data for the record (depends on the record type).
 
-        @type extra: C{dict}
-        @param extra: (optional) Extra attributes (driver specific).
-
         @type zone: C{Zone}
         @param zone: Zone instance.
 
         @type driver: C{DNSDriver}
         @param driver: DNSDriver instance.
+
+        @type extra: C{dict}
+        @param extra: (optional) Extra attributes (driver specific).
         """
         self.id = str(id) if id else None
         self.name = name
         self.type = type
         self.data = data
-        self.extra = extra or {}
         self.zone = zone
         self.driver = driver
+        self.extra = extra or {}
 
     def update(self, name, type, data, extra):
         return self.driver.update_record(record=self, name=name, type=type,
