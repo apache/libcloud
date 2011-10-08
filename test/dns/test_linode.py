@@ -118,8 +118,8 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
 
         try:
-            record = self.driver.get_record(zone_id='444', record_id='28536')
-        except ZoneDoesNotExistError:
+            record = self.driver.get_record(zone_id='4441', record_id='28536')
+        except RecordDoesNotExistError:
             pass
         else:
             self.fail('Exception was not thrown')
@@ -261,10 +261,23 @@ class LinodeMockHttp(MockHttp):
         body = self.fixtures.load('get_zone_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_list(self, method, url, body,
-                                                      headers):
+    def _GET_RECORD_ZONE_DOES_NOT_EXIST_domain_resource_list(self, method, url, body,
+                                                    headers):
         body = self.fixtures.load('get_record_does_not_exist.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_list(self, method, url, body,
+                                                      headers):
+        body = self.fixtures.load('get_zone.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _GET_RECORD_RECORD_DOES_NOT_EXIST_domain_resource_list(self, method,
+                                                               url, body,
+                                                               headers):
+        body = self.fixtures.load('get_record_does_not_exist.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
     def _domain_create(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
