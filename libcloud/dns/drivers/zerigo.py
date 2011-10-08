@@ -96,6 +96,9 @@ class ZerigoDNSResponse(Response):
             if context['resource'] == 'zone':
                 raise ZoneDoesNotExistError(value='', driver=self,
                                             zone_id=context['id'])
+            elif context['resource'] == 'record':
+                raise RecordDoesNotExistError(value='', driver=self,
+                                              record_id=context['id'])
         elif status != 503:
             try:
                 body = ET.XML(self.body)
@@ -160,6 +163,7 @@ class ZerigoDNSDriver(DNSDriver):
 
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
+        self.connection.set_context({'resource': 'record', 'id': record_id})
         path = API_ROOT + 'hosts/%s.xml' % (record_id)
         data = self.connection.request(path).object
         record = self._to_record(elem=data, zone=zone)
@@ -426,7 +430,7 @@ class ZerigoDNSDriver(DNSDriver):
             transform_func_kwargs['zone'] = value_dict['zone']
 
         exhausted = False
-        result_count = int(response.headers['x-query-count'])
+        result_count = int(response.headers.get('x-query-count', 0))
         transform_func_kwargs['elem'] = response.object
 
         if (params['page'] * ITEMS_PER_PAGE) >= result_count:
