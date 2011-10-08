@@ -57,14 +57,15 @@ class Zone(object):
         self.extra = extra or {}
 
     def list_records(self):
-        self.driver.list_records(zone=self)
+        return self.driver.list_records(zone=self)
 
     def create_record(self, name, type, data, extra=None):
-        self.driver.create_record(name=name, type=type, data=data, extra=extra)
+        return self.driver.create_record(name=name, zone=self, type=type,
+                                         data=data, extra=extra)
 
     def update(self, domain, type='master', ttl=None, extra=None):
-        self.driver.update_zone(zone=self, domain=domain, type=type, ttl=ttl,
-                                extra=extra)
+        return self.driver.update_zone(zone=self, domain=domain, type=type,
+                                       ttl=ttl, extra=extra)
 
     def delete(self):
         return self.driver.delete_zone(zone=self)
