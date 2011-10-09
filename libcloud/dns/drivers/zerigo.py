@@ -83,6 +83,9 @@ class ZerigoDNSResponse(Response):
             raise MalformedResponseError('Failed to parse XML', body=self.body)
         return body
 
+    def success(self):
+        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
+
     def parse_error(self):
         status = int(self.status)
 
@@ -268,6 +271,16 @@ class ZerigoDNSDriver(DNSDriver):
         self.connection.set_context({'resource': 'zone', 'id': domain})
         data = self.connection.request(path).object
         zone = self._to_zone(elem=data)
+        return zone
+
+    def ex_force_slave_axfr(self, zone):
+        """
+        Force a zone transfer.
+        """
+        path = API_ROOT + 'zones/%s/force_slave_axfr.xml' % (zone.id)
+        self.connection.set_context({'resource': 'zone', 'id': zone.id})
+        response = self.connection.request(path, method='POST')
+        assert response.status == httplib.ACCEPTED
         return zone
 
     def _to_zone_elem(self, domain=None, type=None, ttl=None, extra=None):
