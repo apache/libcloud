@@ -38,8 +38,6 @@ from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.common.openstack import OpenStackBaseConnection
 
-ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
-
 __all__ = [
     'OpenStack_1_0_Response',
     'OpenStack_1_0_Connection',
@@ -50,6 +48,26 @@ __all__ = [
     'OpenStack_1_1_Connection',
     'OpenStack_1_1_NodeDriver',
     ]
+
+
+ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
+
+OPENSTACK_NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
+                            'REBUILD': NodeState.PENDING,
+                            'ACTIVE': NodeState.RUNNING,
+                            'SUSPENDED': NodeState.TERMINATED,
+                            'QUEUE_RESIZE': NodeState.PENDING,
+                            'PREP_RESIZE': NodeState.PENDING,
+                            'VERIFY_RESIZE': NodeState.RUNNING,
+                            'PASSWORD': NodeState.PENDING,
+                            'RESCUE': NodeState.PENDING,
+                            'REBUILD': NodeState.PENDING,
+                            'REBOOT': NodeState.REBOOTING,
+                            'HARD_REBOOT': NodeState.REBOOTING,
+                            'SHARE_IP': NodeState.PENDING,
+                            'SHARE_IP_NO_CONFIG': NodeState.PENDING,
+                            'DELETE_IP': NodeState.PENDING,
+                            'UNKNOWN': NodeState.UNKNOWN}
 
 class OpenStack_Response(Response):
 
@@ -143,7 +161,6 @@ class OpenStack_1_0_Connection(OpenStackComputeConnection):
     accept_format = 'application/xml'
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
-
 class OpenStack_1_0_NodeDriver(NodeDriver):
     """
     OpenStack node driver.
@@ -161,22 +178,7 @@ class OpenStack_1_0_NodeDriver(NodeDriver):
 
     features = {"create_node": ["generates_password"]}
 
-    NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
-                      'REBUILD': NodeState.PENDING,
-                      'ACTIVE': NodeState.RUNNING,
-                      'SUSPENDED': NodeState.TERMINATED,
-                      'QUEUE_RESIZE': NodeState.PENDING,
-                      'PREP_RESIZE': NodeState.PENDING,
-                      'VERIFY_RESIZE': NodeState.RUNNING,
-                      'PASSWORD': NodeState.PENDING,
-                      'RESCUE': NodeState.PENDING,
-                      'REBUILD': NodeState.PENDING,
-                      'REBOOT': NodeState.REBOOTING,
-                      'HARD_REBOOT': NodeState.REBOOTING,
-                      'SHARE_IP': NodeState.PENDING,
-                      'SHARE_IP_NO_CONFIG': NodeState.PENDING,
-                      'DELETE_IP': NodeState.PENDING,
-                      'UNKNOWN': NodeState.UNKNOWN}
+    NODE_STATE_MAP = OPENSTACK_NODE_STATE_MAP
 
     def __init__(self, *args, **kwargs):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
@@ -734,7 +736,7 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
 
     features = {"create_node": ["generates_password"]}
 
-    NODE_STATE_MAP = OpenStack_1_0_NodeDriver.NODE_STATE_MAP
+    NODE_STATE_MAP = OPENSTACK_NODE_STATE_MAP
 
     def __init__(self, *args, **kwargs):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
