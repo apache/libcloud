@@ -51,7 +51,9 @@ __all__ = [
     'OpenStack_1_1_NodeDriver',
     ]
 
-class OpenStack_1_0_Response(Response):
+class OpenStack_Response(Response):
+
+    node_driver = None
 
     def success(self):
         i = int(self.status)
@@ -63,6 +65,9 @@ class OpenStack_1_0_Response(Response):
         return content_type_value.find(content_type.lower()) > -1
 
     def parse_body(self):
+        if self.status == httplib.NO_CONTENT or not self.body:
+            return None
+
         if self.has_content_type('application/xml'):
             try:
                 return ET.XML(self.body)
@@ -70,28 +75,43 @@ class OpenStack_1_0_Response(Response):
                 raise MalformedResponseError(
                     'Failed to parse XML',
                     body=self.body,
-                    driver=OpenStack_1_0_NodeDriver)
+                    driver=self.node_driver)
 
+        elif self.has_content_type('application/json'):
+            try:
+                return json.loads(self.body)
+            except:
+                raise MalformedResponseError(
+                    'Failed to parse JSON',
+                    body=self.body,
+                    driver=self.node_driver)
         else:
             return self.body
 
     def parse_error(self):
-        # TODO: fixup; only uses response codes really!
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse XML",
-                body=self.body, driver=OpenStack_1_0_NodeDriver)
-        try:
-            text = "; ".join([err.text or ''
-                              for err in
-                              body.getiterator()
-                              if err.text])
-        except ExpatError:
-            text = self.body
+        text = None
+        body = self.parse_body()
+
+        if self.has_content_type('application/xml'):
+            text = "; ".join([err.text or '' for err in body.getiterator() if err.text])
+        elif self.has_content_type('application/json'):
+            text = ';'.join([fault_data['message'] for fault_data in body.values()])
+        else:
+            # while we hope a response is always one of xml or json, we have seen html or text
+            # in the past, its not clear we can really do something to make it more
+            # readable here, so we will just pass it along as the whole response body in
+            # the text variable.
+            text = body
+
         return '%s %s %s' % (self.status, self.error, text)
 
+
+class OpenStack_1_0_Response(OpenStack_Response):
+
+    def __init__(self, *args, **kwargs):
+        # done because of a circular reference from NodeDriver -> Connection -> Response
+        self.node_driver = OpenStack_1_0_NodeDriver
+        super(OpenStack_1_0_Response, self).__init__(*args, **kwargs)
 
 class OpenStack_1_0_Connection(OpenStackBaseConnection):
 
@@ -690,40 +710,13 @@ class OpenStack_1_0_NodeIpAddresses(object):
         self.private_addresses = private_addresses
 
 
-class OpenStack_1_1_Response(Response):
+class OpenStack_1_1_Response(OpenStack_Response):
 
-    def success(self):
-        i = int(self.status)
-        return i >= 200 and i <= 299
+    def __init__(self, *args, **kwargs):
+        # done because of a circular reference from NodeDriver -> Connection -> Response
+        self.node_driver = OpenStack_1_1_NodeDriver
+        super(OpenStack_1_1_Response, self).__init__(*args, **kwargs)
 
-    def has_content_type(self, content_type):
-        content_type_value = self.headers.get('content-type') or ''
-        content_type_value = content_type_value.lower()
-        return content_type_value.find(content_type.lower()) > -1
-
-    def parse_body(self):
-        if self.status == httplib.NO_CONTENT or not self.body:
-            return None
-
-        if self.has_content_type('application/json'):
-            try:
-                return json.loads(self.body)
-            except:
-                raise MalformedResponseError(
-                    'Failed to parse JSON',
-                    body=self.body,
-                    driver=OpenStack_1_1_NodeDriver)
-
-        else:
-            return self.body
-
-    def parse_error(self):
-        text = self.body
-
-        if self.has_content_type('application/json'):
-            text = ';'.join([fault_data['message'] for fault_data in self.parse_body().values()])
-
-        return '%s %s %s' % (self.status, self.error, text)
 
 class OpenStack_1_1_Connection(OpenStackBaseConnection):
 
