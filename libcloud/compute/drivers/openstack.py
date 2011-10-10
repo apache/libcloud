@@ -189,6 +189,15 @@ class OpenStackNodeDriver(NodeDriver):
         # or the documentation to agree.
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
+    def ex_soft_reboot_node(self, node):
+        return self._reboot_node(node, reboot_type='SOFT')
+
+    def ex_hard_reboot_node(self, node):
+        return self._reboot_node(node, reboot_type='HARD')
+
+    def reboot_node(self, node):
+        return self._reboot_node(node, reboot_type='HARD')
+
 class OpenStack_1_0_Response(OpenStack_Response):
 
     def __init__(self, *args, **kwargs):
@@ -508,16 +517,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         resp = self._node_action(node, ['reboot', ('type', reboot_type)])
         return resp.status == 202
 
-    def ex_soft_reboot_node(self, node):
-        return self._reboot_node(node, reboot_type='SOFT')
-
-    def ex_hard_reboot_node(self, node):
-        return self._reboot_node(node, reboot_type='HARD')
-
-    def reboot_node(self, node):
-        return self._reboot_node(node, reboot_type='HARD')
-
-
     def _node_action(self, node, body):
         if isinstance(body, list):
             attr = ' '.join(['%s="%s"' % (item[0], item[1])
@@ -770,6 +769,30 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             rv.append(self._to_image(image))
         return rv
 
+    def _create_args_to_params(self, node, kwargs):
+        server_params = {
+            'name': kwargs.get('name'),
+            'metadata': kwargs.get('ex_metadata', {}),
+            'personality': self._files_to_personality(kwargs.get("ex_files", {}))
+        }
+
+        if kwargs.has_key('name'):
+            server_params['name'] = kwargs.get('name')
+        else:
+            server_params['name'] = node.name
+
+        if kwargs.has_key('image'):
+            server_params['imageRef'] = kwargs.get('image').id
+        else:
+            server_params['imageRef'] = node.extra['imageId']
+
+        if kwargs.has_key('size'):
+            server_params['flavorRef'] = kwargs.get('size').id
+        else:
+            server_params['flavorRef'] = node.extra['flavorId']
+
+        return server_params
+
     def create_node(self, **kwargs):
         """Create a new node
 
@@ -782,13 +805,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @type       ex_files:   C{dict}
         """
 
-        server_params = {
-            'name': kwargs['name'],
-            'imageRef': kwargs['image'].id, # TODO: wrong
-            'flavorRef': kwargs['size'].id, # TODO: wrong
-            'metadata': kwargs.get('ex_metadata', {}),
-            'personality': self._files_to_personality(kwargs.get("ex_files", {}))
-        }
+        server_params = self._create_args_to_params(None, kwargs)
 
         resp = self.connection.request("/servers",
                                        method='POST',
@@ -804,23 +821,17 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         return rv
 
-    def reboot_node(self, node, hard=False):
-        response = self._node_action(node, 'reboot', type=('SOFT', 'HARD')[hard])
-        return response.status == httplib.ACCEPTED
+    def _reboot_node(self, node, reboot_type='SOFT'):
+        resp = self._node_action(node, 'reboot', type=reboot_type)
+        return resp.status == httplib.ACCEPTED
 
     def ex_set_password(self, node, password):
         self._node_action(node, 'changePassword', adminPass=password)
         node.extra['password'] = password
 
-    def ex_rebuild(self, node, image, name=None, metadata=None):
-        # TODO: "personality" support.        
-        optional_params = {}
-        if name:
-            optional_params['name'] = name
-        if metadata:
-            optional_params['metadata'] = metadata
-
-        self._node_action(node, 'rebuild', imageRef=image.id, **optional_params)
+    def ex_rebuild(self, node, **kwargs):
+        server_params = self._create_args_to_params(node, kwargs)
+        self._node_action(node, 'rebuild', **server_params)
 
     def ex_resize(self, node, size):
         self._node_action(node, 'resize', flavorRef=size.id)

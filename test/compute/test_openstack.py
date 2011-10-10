@@ -537,7 +537,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_rebuild(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         try:
-            self.driver.ex_rebuild(self.node, image)
+            self.driver.ex_rebuild(self.node, image=image)
         except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
