@@ -840,11 +840,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def ex_delete_image(self, image):
         self.connection.request('/images/%s' % (image.id,), method='DELETE')
 
-    def ex_quotas(self, tenant_id):
-        # Before long at all, libcloud's OpenStack auth will support a tenant ID. At that time, the
-        # auth'd tenant will make a sensible default for this call, but for now it has to be explicit.
-        return self.connection.request('/os-quota-sets/%s' % (tenant_id,)).object['quota_set']
-
     def _node_action(self, node, action, **params):
         params = params or None
         return self.connection.request('/servers/%s/action' % (node.id,), method='POST', data={action: params})
