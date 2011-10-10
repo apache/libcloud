@@ -180,6 +180,15 @@ class OpenStackNodeDriver(NodeDriver):
 
         return self._to_node_from_obj(resp.object)
 
+    def destroy_node(self, node):
+        uri = '/servers/%s' % (node.id)
+        resp = self.connection.request(uri, method='DELETE')
+        # The OpenStack and Rackspace documentation both say this API will return a 204,
+        # but in-fact, everyone everywhere agrees it actually returns a 202, so we are
+        # going to accept either, and someday, someone will fix either the implementation
+        # or the documentation to agree.
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
 class OpenStack_1_0_Response(OpenStack_Response):
 
     def __init__(self, *args, **kwargs):
@@ -508,10 +517,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     def reboot_node(self, node):
         return self._reboot_node(node, reboot_type='HARD')
 
-    def destroy_node(self, node):
-        uri = '/servers/%s' % (node.id)
-        resp = self.connection.request(uri, method='DELETE')
-        return resp.status == 202
 
     def _node_action(self, node, body):
         if isinstance(body, list):
@@ -798,10 +803,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             rv.append({'path': k, 'contents': base64.b64encode(v)})
 
         return rv
-
-    def destroy_node(self, node):
-        response = self.connection.request('/servers/%s' % (node.id,), method='DELETE')
-        return response.status == httplib.ACCEPTED
 
     def reboot_node(self, node, hard=False):
         response = self._node_action(node, 'reboot', type=('SOFT', 'HARD')[hard])
