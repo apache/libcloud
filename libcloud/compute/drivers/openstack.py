@@ -106,30 +106,7 @@ class OpenStack_Response(Response):
         return '%s %s %s' % (self.status, self.error, text)
 
 
-class OpenStack_1_0_Response(OpenStack_Response):
-
-    def __init__(self, *args, **kwargs):
-        # done because of a circular reference from NodeDriver -> Connection -> Response
-        self.node_driver = OpenStack_1_0_NodeDriver
-        super(OpenStack_1_0_Response, self).__init__(*args, **kwargs)
-
-class OpenStack_1_0_Connection(OpenStackBaseConnection):
-
-    responseCls = OpenStack_1_0_Response
-    _url_key = "server_url"
-    XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
-
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 ex_force_base_url=None,
-                 ex_force_auth_url=None,
-                 ex_force_auth_version=None):
-        super(OpenStack_1_0_Connection, self).__init__(
-            user_id, key, host=host, port=port,
-            ex_force_base_url=ex_force_base_url,
-            ex_force_auth_url=ex_force_auth_url,
-            ex_force_auth_version=ex_force_auth_version)
-        self.api_version = 'v1.0'
-        self.accept_format = 'application/xml'
+class OpenStackComputeConnection(OpenStackBaseConnection):
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -139,14 +116,32 @@ class OpenStack_1_0_Connection(OpenStackBaseConnection):
             params = {}
 
         if method in ("POST", "PUT"):
-            headers = {'Content-Type': 'application/xml; charset=UTF-8'}
+            headers = {'Content-Type': self.default_content_type}
+
         if method == "GET":
             params['cache-busting'] = os.urandom(8).encode('hex')
-        return super(OpenStack_1_0_Connection, self).request(
+
+        return super(OpenStackComputeConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers
         )
+
+
+
+class OpenStack_1_0_Response(OpenStack_Response):
+
+    def __init__(self, *args, **kwargs):
+        # done because of a circular reference from NodeDriver -> Connection -> Response
+        self.node_driver = OpenStack_1_0_NodeDriver
+        super(OpenStack_1_0_Response, self).__init__(*args, **kwargs)
+
+class OpenStack_1_0_Connection(OpenStackComputeConnection):
+    responseCls = OpenStack_1_0_Response
+    _url_key = "server_url"
+    default_content_type =  'application/xml; charset=UTF-8'
+    accept_format = 'application/xml'
+    XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
 
 class OpenStack_1_0_NodeDriver(NodeDriver):
@@ -296,6 +291,7 @@ class OpenStack_1_0_NodeDriver(NodeDriver):
         files_elm = self._files_to_xml(kwargs.get("ex_files", {}))
         if files_elm:
             server_elm.append(files_elm)
+
         resp = self.connection.request("/servers",
                                        method='POST',
                                        data=ET.tostring(server_elm))
@@ -718,39 +714,11 @@ class OpenStack_1_1_Response(OpenStack_Response):
         super(OpenStack_1_1_Response, self).__init__(*args, **kwargs)
 
 
-class OpenStack_1_1_Connection(OpenStackBaseConnection):
-
+class OpenStack_1_1_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_1_Response
     _url_key = "server_url"
-
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 ex_force_base_url=None,
-                 ex_force_auth_url=None,
-                 ex_force_auth_version=None):
-        super(OpenStack_1_1_Connection, self).__init__(
-            user_id, key, host=host, port=port,
-            ex_force_base_url=ex_force_base_url,
-            ex_force_auth_url=ex_force_auth_url,
-            ex_force_auth_version=ex_force_auth_version)
-        self.api_version = 'v1.1'
-        self.accept_format = 'application/json'
-
-    def request(self, action, params=None, data='', headers=None,
-                method='GET'):
-        if not headers:
-            headers = {}
-        if not params:
-            params = {}
-
-        if method in ("POST", "PUT"):
-            headers = {'Content-Type': 'application/json; charset=UTF-8'}
-        if method == "GET":
-            params['cache-busting'] = os.urandom(8).encode('hex')
-        return super(OpenStack_1_1_Connection, self).request(
-            action=action,
-            params=params, data=data,
-            method=method, headers=headers
-        )
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
 
     def encode_data(self, data):
         return json.dumps(data)
