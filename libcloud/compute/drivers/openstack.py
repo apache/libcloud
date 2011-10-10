@@ -157,6 +157,14 @@ class OpenStackNodeDriver(NodeDriver):
             rv['ex_force_auth_version'] = self._ex_force_auth_version
         return rv
 
+    def list_nodes(self):
+        return self._to_nodes(self.connection.request('/servers/detail')
+                                             .object)
+
+    def list_sizes(self, location=None):
+        return self._to_sizes(self.connection.request('/flavors/detail')
+                                             .object)
+
 
 class OpenStack_1_0_Response(OpenStack_Response):
 
@@ -199,14 +207,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         super(OpenStack_1_0_NodeDriver, self).__init__(*args, **kwargs)
 
 
-
-    def list_nodes(self):
-        return self._to_nodes(self.connection.request('/servers/detail')
-                                             .object)
-
-    def list_sizes(self, location=None):
-        return self._to_sizes(self.connection.request('/flavors/detail')
-                                             .object)
 
     def list_images(self, location=None):
         return self._to_images(self.connection.request('/images/detail')
@@ -746,17 +746,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
 
-    def list_nodes(self):
-        return [
-            self._to_node(api_server)
-            for api_server in self.connection.request('/servers/detail').object['servers']
-        ]
+    def _to_nodes(self, obj):
+        servers = obj['servers']
+        return [self._to_node(server) for server in servers]
 
-    def list_sizes(self):
-        return [
-            self._to_size(api_flavor)
-            for api_flavor in self.connection.request('/flavors/detail').object['flavors']
-        ]
+    def _to_sizes(self, obj):
+        flavors = obj['flavors']
+        return [self._to_size(flavor) for flavor in flavors]
 
     def list_images(self):
         return [
