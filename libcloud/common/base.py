@@ -246,6 +246,7 @@ class Connection(object):
     def __init__(self, secure=True, host=None, port=None, url=None):
         self.secure = secure and 1 or 0
         self.ua = []
+        self.context = {}
 
         self.request_path = ''
 
@@ -262,6 +263,9 @@ class Connection(object):
 
         if url:
             (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(url)
+
+    def set_context(self, context):
+        self.context = context
 
     def _tuple_from_url(self, url):
         secure = 1

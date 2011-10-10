@@ -30,6 +30,7 @@ __all__ = [
 class Provider(object):
     DUMMY = 0
     LINODE = 1
+    ZERIGO = 2
 
 
 class RecordType(object):
@@ -47,6 +48,9 @@ class RecordType(object):
     SOA = 8
     SPF = 9
     SRV = 10
+    PTR = 11
+    NAPTR = 12
+    REDIRECT = 13
 
     @classmethod
     def __repr__(self, value):

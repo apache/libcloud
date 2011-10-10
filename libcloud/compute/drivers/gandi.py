@@ -13,149 +13,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Gandi driver
+Gandi driver for compute
 """
+from datetime import datetime
 
-import time
-import xmlrpclib
+from libcloud.common.gandi import BaseGandiDriver, GandiException, \
+    NetworkInterface, IPAddress, Disk
+from libcloud.compute.types import NodeState, Provider
+from libcloud.compute.base import Node, NodeDriver
+from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
-import libcloud
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, NodeImage
-
-# Global constants
-API_VERSION = '2.0'
-API_PREFIX = "https://rpc.gandi.net/xmlrpc/%s/" % API_VERSION
-
-DEFAULT_TIMEOUT = 600   # operation pooling max seconds
-DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
 
 NODE_STATE_MAP = {
     'running': NodeState.RUNNING,
     'halted': NodeState.TERMINATED,
     'paused': NodeState.TERMINATED,
-    'locked' : NodeState.TERMINATED,
-    'being_created' : NodeState.PENDING,
-    'invalid' : NodeState.UNKNOWN,
-    'legally_locked' : NodeState.PENDING,
-    'deleted' : NodeState.TERMINATED
+    'locked': NodeState.TERMINATED,
+    'being_created': NodeState.PENDING,
+    'invalid': NodeState.UNKNOWN,
+    'legally_locked': NodeState.PENDING,
+    'deleted': NodeState.TERMINATED
 }
 
 NODE_PRICE_HOURLY_USD = 0.02
 
-class GandiException(Exception):
-    """
-    Exception class for Gandi driver
-    """
-    def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
-    def __repr__(self):
-        return "<GandiException code %u '%s'>" % (self.args[0], self.args[1])
 
-class GandiSafeTransport(xmlrpclib.SafeTransport):
-    pass
-
-class GandiTransport(xmlrpclib.Transport):
-    pass
-
-class GandiProxy(xmlrpclib.ServerProxy):
-    transportCls = (GandiTransport, GandiSafeTransport)
-
-    def __init__(self,user_agent, verbose=0):
-        cls = self.transportCls[0]
-        if API_PREFIX.startswith("https://"):
-            cls = self.transportCls[1]
-        t = cls(use_datetime=0)
-        t.user_agent = user_agent
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri="%s" % (API_PREFIX),
-            transport=t,
-            verbose=verbose,
-            allow_none=True
-        )
-
-class GandiConnection(object):
-    """
-    Connection class for the Gandi driver
-    """
-
-    proxyCls = GandiProxy
-    driver = 'gandi'
-
-    def __init__(self, user, password=None):
-        self.ua = []
-
-        # Connect only with an api_key generated on website
-        self.api_key = user
-
-        try:
-            self._proxy = self.proxyCls(self._user_agent())
-        except xmlrpclib.Fault, e:
-            raise GandiException(1000, e)
-
-    def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (
-                libcloud.__version__,
-                self.driver,
-                "".join([" (%s)" % x for x in self.ua]))
-
-    def user_agent_append(self, s):
-        self.ua.append(s)
-
-    def request(self,method,*args):
-        """ Request xmlrpc method with given args"""
-        try:
-            return getattr(self._proxy, method)(self.api_key,*args)
-        except xmlrpclib.Fault, e:
-            raise GandiException(1001, e)
-
-
-class GandiNodeDriver(NodeDriver):
+class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     """
     Gandi node driver
 
     """
-    connectionCls = GandiConnection
-    name = 'Gandi'
     api_name = 'gandi'
     friendly_name = 'Gandi.net'
     country = 'FR'
     type = Provider.GANDI
     # TODO : which features to enable ?
-    features = { }
+    features = {}
 
-    def __init__(self, key, secret=None, secure=False):
-        self.key = key
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret)
-        self.connection.driver = self
-
-    # Specific methods for gandi
-    def _wait_operation(self, id, timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL):
-        """ Wait for an operation to succeed"""
-
-        for i in range(0, timeout, check_interval):
-            try:
-                op = self.connection.request('operation.info', int(id))
-
-                if op['step'] == 'DONE':
-                    return True
-                if op['step'] in  ['ERROR','CANCEL']:
-                    return False
-            except (KeyError, IndexError):
-                pass
-            except Exception, e:
-                raise GandiException(1002, e)
-
-            time.sleep(check_interval)
-        return False
-
-    def _node_info(self,id):
+    def _node_info(self, id):
         try:
-            obj = self.connection.request('vm.info',int(id))
+            obj = self.connection.request('vm.info', int(id))
             return obj
-        except Exception,e:
+        except Exception, e:
             raise GandiException(1003, e)
         return None
 
@@ -172,9 +71,9 @@ class GandiNodeDriver(NodeDriver):
             private_ip='',
             driver=self,
             extra={
-                'ai_active' : vm.get('ai_active'),
-                'datacenter_id' : vm.get('datacenter_id'),
-                'description' : vm.get('description')
+                'ai_active': vm.get('ai_active'),
+                'datacenter_id': vm.get('datacenter_id'),
+                'description': vm.get('description')
             }
         )
 
@@ -193,9 +92,9 @@ class GandiNodeDriver(NodeDriver):
         return nodes
 
     def reboot_node(self, node):
-        op = self.connection.request('vm.reboot',int(node.id))
+        op = self.connection.request('vm.reboot', int(node.id))
         op_res = self._wait_operation(op['id'])
-        vm = self.connection.request('vm.info',int(node.id))
+        vm = self.connection.request('vm.info', int(node.id))
         if vm['state'] == 'running':
             return True
         return False
@@ -204,18 +103,18 @@ class GandiNodeDriver(NodeDriver):
         vm = self._node_info(node.id)
         if vm['state'] == 'running':
             # Send vm_stop and wait for accomplish
-            op_stop = self.connection.request('vm.stop',int(node.id))
+            op_stop = self.connection.request('vm.stop', int(node.id))
             if not self._wait_operation(op_stop['id']):
                 raise GandiException(1010, 'vm.stop failed')
         # Delete
-        op = self.connection.request('vm.delete',int(node.id))
+        op = self.connection.request('vm.delete', int(node.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
     def deploy_node(self, **kwargs):
-        raise NotImplementedError, \
-            'deploy_node not implemented for gandi driver'
+        raise NotImplementedError(
+            'deploy_node not implemented for gandi driver')
 
     def create_node(self, **kwargs):
         """Create a new Gandi node
@@ -234,7 +133,7 @@ class GandiNodeDriver(NodeDriver):
                             (required)
         @type       size:   L{NodeSize}
 
-        @keyword    login:  user name to create for login on this machine (required)
+        @keyword    login:  user name to create for login on machine (required)
         @type       login: String
 
         @keyword    password: password for user that'll be created (required)
@@ -245,17 +144,20 @@ class GandiNodeDriver(NodeDriver):
         """
 
         if kwargs.get('login') is None or kwargs.get('password') is None:
-            raise GandiException(1020, 'login and password must be defined for node creation')
+            raise GandiException(1020,
+                'login and password must be defined for node creation')
 
         location = kwargs.get('location')
-        if location and isinstance(location,NodeLocation):
+        if location and isinstance(location, NodeLocation):
             dc_id = int(location.id)
         else:
-            raise GandiException(1021, 'location must be a subclass of NodeLocation')
+            raise GandiException(1021,
+                'location must be a subclass of NodeLocation')
 
         size = kwargs.get('size')
-        if not size and not isinstance(size,NodeSize):
-            raise GandiException(1022, 'size must be a subclass of NodeSize')
+        if not size and not isinstance(size, NodeSize):
+            raise GandiException(1022,
+                'size must be a subclass of NodeSize')
 
         src_disk_id = int(kwargs['image'].id)
 
@@ -271,20 +173,21 @@ class GandiNodeDriver(NodeDriver):
             'password': kwargs['password'],  # TODO : use NodeAuthPassword
             'memory': int(size.ram),
             'cores': int(size.id),
-            'bandwidth' : int(size.bandwidth),
-            'ip_version':  kwargs.get('inet_family',4),
+            'bandwidth': int(size.bandwidth),
+            'ip_version':  kwargs.get('inet_family', 4),
             }
 
         # Call create_from helper api. Return 3 operations : disk_create,
         # iface_create,vm_create
-        (op_disk,op_iface,op_vm) = self.connection.request(
+        (op_disk, op_iface, op_vm) = self.connection.request(
             'vm.create_from',
-            vm_spec,disk_spec,src_disk_id
+            vm_spec, disk_spec, src_disk_id
         )
 
         # We wait for vm_create to finish
         if self._wait_operation(op_vm['id']):
-            # after successful operation, get ip information thru first interface
+            # after successful operation, get ip information
+            # thru first interface
             node = self._node_info(op_vm['vm_id'])
             ifaces = node.get('ifaces')
             if len(ifaces) > 0:
@@ -305,10 +208,10 @@ class GandiNodeDriver(NodeDriver):
     def list_images(self, location=None):
         try:
             if location:
-                filtering = { 'datacenter_id' : int(location.id) }
+                filtering = {'datacenter_id': int(location.id)}
             else:
                 filtering = {}
-            images = self.connection.request('image.list', filtering )
+            images = self.connection.request('image.list', filtering)
             return [self._to_image(i) for i in images]
         except Exception, e:
             raise GandiException(1011, e)
@@ -340,8 +243,8 @@ class GandiNodeDriver(NodeDriver):
             if available_res['servers'] < 1:
                 # No server quota, no way
                 return shares
-            for i in range(1,max_core + 1):
-                share = {id:i}
+            for i in range(1, max_core + 1):
+                share = {id: i}
                 share_is_available = True
                 for k in ['memory', 'disk', 'bandwidth']:
                     if share_def[k] * i > available_res[k]:
@@ -351,7 +254,7 @@ class GandiNodeDriver(NodeDriver):
                         share[k] = share_def[k] * i
                 if share_is_available:
                     nb_core = i
-                    shares.append(self._to_size(nb_core,share))
+                    shares.append(self._to_size(nb_core, share))
             return shares
 
     def _to_loc(self, loc):
@@ -365,3 +268,131 @@ class GandiNodeDriver(NodeDriver):
     def list_locations(self):
         res = self.connection.request("datacenter.list")
         return [self._to_loc(l) for l in res]
+
+    def _to_iface(self, iface):
+        ips = []
+        for ip in iface.get('ips', []):
+            new_ip = IPAddress(
+                ip['id'],
+                NODE_STATE_MAP.get(
+                    ip['state'],
+                    NodeState.UNKNOWN
+                ),
+                ip['ip'],
+                self.connection.driver,
+                version=ip.get('version'),
+                extra={'reverse': ip['reverse']}
+                )
+            ips.append(new_ip)
+        return NetworkInterface(
+            iface['id'],
+            NODE_STATE_MAP.get(
+                iface['state'],
+                NodeState.UNKNOWN
+            ),
+            mac_address=None,
+            driver=self.connection.driver,
+            ips=ips,
+            node_id=iface.get('vm_id'),
+            extra={'bandwidth': iface['bandwidth']},
+        )
+
+    def _to_ifaces(self, ifaces):
+        return [self._to_iface(i) for i in ifaces]
+
+    def ex_list_interfaces(self):
+        """Specific method to list network interfaces"""
+        ifaces = self.connection.request('iface.list')
+        ips = self.connection.request('ip.list')
+        for iface in ifaces:
+            iface['ips'] = filter(lambda i: i['iface_id'] == iface['id'], ips)
+        return self._to_ifaces(ifaces)
+
+    def _to_disk(self, element):
+        disk = Disk(
+            id=element['id'],
+            state=NODE_STATE_MAP.get(
+                element['state'],
+                NodeState.UNKNOWN
+            ),
+            name=element['name'],
+            driver=self.connection.driver,
+            size=element['size'],
+            extra={'can_snapshot': element['can_snapshot']}
+        )
+        return disk
+
+    def _to_disks(self, elements):
+        return [self._to_disk(el) for el in elements]
+
+    def ex_list_disks(self):
+        """Specific method to list all disk"""
+        res = self.connection.request('disk.list', {})
+        disks = []
+        return self._to_disks(res)
+
+    def ex_node_attach_disk(self, node, disk):
+        """Specific method to attach a disk to a node"""
+        op = self.connection.request('vm.disk_attach',
+            int(node.id), int(disk.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_node_detach_disk(self, node, disk):
+        """Specific method to detach a disk from a node"""
+        op = self.connection.request('vm.disk_detach',
+            int(node.id), int(disk.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_node_attach_interface(self, node, iface):
+        """Specific method to attach an interface to a node"""
+        op = self.connection.request('vm.iface_attach',
+            int(node.id), int(iface.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_node_detach_interface(self, node, iface):
+        """Specific method to detach an interface from a node"""
+        op = self.connection.request('vm.iface_detach',
+            int(node.id), int(iface.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_snapshot_disk(self, disk, name=None):
+        """Specific method to make a snapshot of a disk"""
+        if not disk.extra.get('can_snapshot'):
+            raise GandiException(1021, "Disk %s can't snapshot" % disk.id)
+        if not name:
+            suffix = datetime.today().strftime("%Y%m%d")
+            name = "snap_%s" % (suffix)
+        op = self.connection.request('disk.create_from',
+            {
+                'name': name,
+                'type': 'snapshot',
+            },
+            int(disk.id),
+            )
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def ex_update_disk(self, disk, new_size=None, new_name=None):
+        """Specific method to update size or name of a disk
+        WARNING: if a server is attached it'll be rebooted
+        """
+        params = {}
+        if new_size:
+            params.update({'size': new_size})
+        if new_name:
+            params.update({'name': new_name})
+        op = self.connection.request('disk.update',
+            int(disk.id),
+            params)
+        if self._wait_operation(op['id']):
+            return True
+        return False

@@ -36,7 +36,7 @@ VALID_RECORD_EXTRA_PARAMS = ['Priority', 'Weight', 'Port', 'Protocol',
 
 RECORD_TYPE_MAP = {
     RecordType.A: 'A',
-    RecordType.AAAA: 'AAAAA',
+    RecordType.AAAA: 'AAAA',
     RecordType.CNAME: 'CNAME',
     RecordType.TXT: 'TXT',
     RecordType.SRV: 'SRV',
@@ -63,13 +63,6 @@ class LinodeDNSResponse(LinodeResponse):
 
 class LinodeDNSConnection(LinodeConnection):
     responseCls = LinodeDNSResponse
-
-    def __init__(self, *args, **kwargs):
-        super(LinodeDNSConnection, self).__init__(*args, **kwargs)
-        self.context = {}
-
-    def set_context(self, context):
-        self.context = context
 
 
 class LinodeDNSDriver(DNSDriver):
@@ -246,8 +239,8 @@ class LinodeDNSDriver(DNSDriver):
         extra = {'SOA_Email': item['SOA_EMAIL'], 'status': item['STATUS'],
                   'description': item['DESCRIPTION']}
         zone = Zone(id=item['DOMAINID'], domain=item['DOMAIN'],
-                    type=item['TYPE'], ttl=item['TTL_SEC'], extra=extra,
-                    driver=self)
+                    type=item['TYPE'], ttl=item['TTL_SEC'], driver=self,
+                    extra=extra)
         return zone
 
     def _to_records(self, items, zone=None):
@@ -269,6 +262,6 @@ class LinodeDNSDriver(DNSDriver):
                   'port': item['PORT'], 'weight': item['WEIGHT']}
         type = self._string_to_record_type(item['TYPE'])
         record = Record(id=item['RESOURCEID'], name=item['NAME'], type=type,
-                        data=item['TARGET'], extra=extra, zone=zone,
-                        driver=self)
+                        data=item['TARGET'], zone=zone, driver=self,
+                        extra=extra)
         return record

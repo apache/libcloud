@@ -184,17 +184,20 @@ def dict2str(data):
 
     return result
 
-def fixxpath(xpath, namespace):
+def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
+    if not namespace:
+        return xpath
+
     return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
-def findtext(element, xpath, namespace):
+def findtext(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findattr(element, xpath, namespace):
+def findattr(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findall(element, xpath, namespace):
+def findall(element, xpath, namespace=None):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
 
 def reverse_dict(dictionary):
