@@ -145,6 +145,17 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             method=method, headers=headers
         )
 
+class OpenStackNodeDriver(NodeDriver):
+
+    def _ex_connection_class_kwargs(self):
+        rv = {}
+        if self._ex_force_base_url:
+            rv['ex_force_base_url'] = self._ex_force_base_url
+        if self._ex_force_auth_url:
+            rv['ex_force_auth_url'] = self._ex_force_auth_url
+        if self._ex_force_auth_version:
+            rv['ex_force_auth_version'] = self._ex_force_auth_version
+        return rv
 
 
 class OpenStack_1_0_Response(OpenStack_Response):
@@ -161,7 +172,7 @@ class OpenStack_1_0_Connection(OpenStackComputeConnection):
     accept_format = 'application/xml'
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
-class OpenStack_1_0_NodeDriver(NodeDriver):
+class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     """
     OpenStack node driver.
 
@@ -187,15 +198,6 @@ class OpenStack_1_0_NodeDriver(NodeDriver):
         self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
         super(OpenStack_1_0_NodeDriver, self).__init__(*args, **kwargs)
 
-    def _ex_connection_class_kwargs(self):
-        rv = {}
-        if self._ex_force_base_url:
-            rv['ex_force_base_url'] = self._ex_force_base_url
-        if self._ex_force_auth_url:
-            rv['ex_force_auth_url'] = self._ex_force_auth_url
-        if self._ex_force_auth_version:
-            rv['ex_force_auth_version'] = self._ex_force_auth_version
-        return rv
 
 
     def list_nodes(self):
@@ -725,7 +727,7 @@ class OpenStack_1_1_Connection(OpenStackComputeConnection):
     def encode_data(self, data):
         return json.dumps(data)
 
-class OpenStack_1_1_NodeDriver(NodeDriver):
+class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     """
     OpenStack node driver.
     """
@@ -743,16 +745,6 @@ class OpenStack_1_1_NodeDriver(NodeDriver):
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
-
-    def _ex_connection_class_kwargs(self):
-        rv = {}
-        if self._ex_force_base_url:
-            rv['ex_force_base_url'] = self._ex_force_base_url
-        if self._ex_force_auth_url:
-            rv['ex_force_auth_url'] = self._ex_force_auth_url
-        if self._ex_force_auth_version:
-            rv['ex_force_auth_version'] = self._ex_force_auth_version
-        return rv
 
     def list_nodes(self):
         return [
