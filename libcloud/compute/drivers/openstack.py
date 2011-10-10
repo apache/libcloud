@@ -28,9 +28,8 @@ import httplib
 import warnings
 
 from xml.etree import ElementTree as ET
-from xml.parsers.expat import ExpatError
 
-from libcloud.pricing import get_size_price, PRICING_DATA
+from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
