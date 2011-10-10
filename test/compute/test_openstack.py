@@ -577,9 +577,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertTrue(new_node)
 
-    def test_ex_get_node(self):
+    def test_ex_get_node_details(self):
         node_id = '52415800-8b69-11e0-9b19-734f000004d2'
-        node = self.driver.ex_get_node(node_id)
+        node = self.driver.ex_get_node_details(node_id)
         self.assertEqual(node.id, node_id)
         self.assertEqual(node.name, 'sample-server')
 
@@ -601,13 +601,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.driver.ex_delete_image(image)
         except Exception as e:
             self.fail('An error was raised: ' + repr(e))
-
-    def test_ex_quotas(self):
-        quotas = self.driver.ex_quotas('aTenantId')
-        self.assertEqual(quotas['cores'], 50)
-        self.assertEqual(quotas['gigabytes'], 500)
-        self.assertEqual(quotas['instances'], 25)
-        self.assertEqual(quotas['ram'], 102400)
 
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):

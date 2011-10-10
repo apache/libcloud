@@ -168,6 +168,18 @@ class OpenStackNodeDriver(NodeDriver):
         return self._to_images(self.connection.request('/images/detail')
                                               .object, ex_filter_active)
 
+    def ex_get_node_details(self, node_id):
+        # @TODO: Remove this if in 0.6
+        if isinstance(node_id, Node):
+            node_id = node_id.id
+
+        uri = '/servers/%s' % (node_id)
+        resp = self.connection.request(uri, method='GET')
+        if resp.status == 404:
+            return None
+
+        return self._to_node_from_obj(resp.object)
+
 class OpenStack_1_0_Response(OpenStack_Response):
 
     def __init__(self, *args, **kwargs):
@@ -501,17 +513,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request(uri, method='DELETE')
         return resp.status == 202
 
-    def ex_get_node_details(self, node_id):
-        # @TODO: Remove this if in 0.6
-        if isinstance(node_id, Node):
-            node_id = node_id.id
-
-        uri = '/servers/%s' % (node_id)
-        resp = self.connection.request(uri, method='GET')
-        if resp.status == 404:
-            return None
-        return self._to_node(resp.object)
-
     def _node_action(self, node, body):
         if isinstance(body, list):
             attr = ' '.join(['%s="%s"' % (item[0], item[1])
@@ -531,6 +532,9 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
     def _findall(self, element, xpath):
         return element.findall(self._fixxpath(xpath))
+
+    def _to_node_from_obj(self, obj):
+        return self._to_node(self._findall(obj, 'server')[0])
 
     def _to_node(self, el):
         def get_ips(el):
@@ -761,27 +765,39 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             rv.append(self._to_image(image))
         return rv
 
-    def create_node(self, name, size, image, metadata=None, files=None):
-        # TODO: should we ref images and flavors by link instead of id? It
-        # opens up the theoretical possibility of remote images and such.
-        # TODO: "personality" support.
-        # TODO: "reservation_id" support.
-        # TODO: "security_groups" support.
-        server_params = dict(
-            name=name,
-            flavorRef=str(size.id),
-            imageRef=str(image.id),
-        )
-        if metadata:
-            server_params['metadata'] = metadata
-        if files:
-            server_params['files'] = files
+    def create_node(self, **kwargs):
+        """Create a new node
 
-        return self._to_node(
-            self.connection.request(
-                '/servers', method='POST', data=dict(server=server_params)
-            ).object['server']
-        )
+        See L{NodeDriver.create_node} for more keyword args.
+        @keyword    ex_metadata: Key/Value metadata to associate with a node
+        @type       ex_metadata: C{dict}
+
+        @keyword    ex_files:   File Path => File contents to create on
+                                the node
+        @type       ex_files:   C{dict}
+        """
+
+        server_params = {
+            'name': kwargs['name'],
+            'imageRef': kwargs['image'].id, # TODO: wrong
+            'flavorRef': kwargs['size'].id, # TODO: wrong
+            'metadata': kwargs.get('ex_metadata', {}),
+            'personality': self._files_to_personality(kwargs.get("ex_files", {}))
+        }
+
+        resp = self.connection.request("/servers",
+                                       method='POST',
+                                       data={'server': server_params})
+
+        return self._to_node(resp.object['server'])
+
+    def _files_to_personality(self, files):
+        rv = []
+
+        for k, v in files.items():
+            rv.append({'path': k, 'contents': base64.b64encode(v)})
+
+        return rv
 
     def destroy_node(self, node):
         response = self.connection.request('/servers/%s' % (node.id,), method='DELETE')
@@ -828,9 +844,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             ).object['server']
         )
 
-    def ex_get_node(self, node_id):
-        return self._to_node(self.connection.request('/servers/%s' % (node_id,)).object['server'])
-
     def ex_get_size(self, size_id):
         return self._to_size(self.connection.request('/flavors/%s' % (size_id,)).object['flavor'])
 
@@ -843,6 +856,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _node_action(self, node, action, **params):
         params = params or None
         return self.connection.request('/servers/%s/action' % (node.id,), method='POST', data={action: params})
+
+    def _to_node_from_obj(self, obj):
+        return self._to_node(obj['server'])
 
     def _to_node(self, api_node):
         return Node(
