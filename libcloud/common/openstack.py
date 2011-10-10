@@ -229,7 +229,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             if self._ex_force_auth_url != None:
                 aurl = self._ex_force_auth_url
 
-            if aurl == None :
+            if aurl == None:
                 raise LibcloudError('OpenStack instance must have auth_url set')
 
             osa = OpenStackAuthConnection(self, aurl, self._auth_version, self.user_id, self.key)
