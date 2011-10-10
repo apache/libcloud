@@ -164,6 +164,9 @@ class OpenStackNodeDriver(NodeDriver):
         return self._to_sizes(self.connection.request('/flavors/detail')
                                              .object)
 
+    def list_images(self, location=None, ex_filter_active=True):
+        return self._to_images(self.connection.request('/images/detail')
+                                              .object, ex_filter_active)
 
 class OpenStack_1_0_Response(OpenStack_Response):
 
@@ -204,13 +207,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
         self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
         super(OpenStack_1_0_NodeDriver, self).__init__(*args, **kwargs)
-
-
-
-    def list_images(self, location=None):
-        return self._to_images(self.connection.request('/images/detail')
-                                              .object)
-    # TODO: def list_locations: Is there an OpenStack way to do this? Rackspace-specific docstring says no.
 
     def _change_password_or_name(self, node, name=None, password=None):
         uri = '/servers/%s' % (node.id)
@@ -585,11 +581,14 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                      driver=self.connection.driver)
         return s
 
-    def _to_images(self, object):
+    def _to_images(self, object, ex_filter_active):
         elements = self._findall(object, "image")
-        return [self._to_image(el)
-                for el in elements
-                if el.get('status') == 'ACTIVE']
+        rv = []
+        for el in elements:
+            if ex_filter_active and el.get('status') != 'ACTIVE':
+                continue
+            rv.append(self._to_image(el))
+        return rv
 
     def _to_image(self, el):
         i = NodeImage(id=el.get('id'),
@@ -753,13 +752,14 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         flavors = obj['flavors']
         return [self._to_size(flavor) for flavor in flavors]
 
-    def list_images(self):
-        return [
-            self._to_image(api_image)
-            for api_image
-            in self.connection.request('/images/detail').object['images']
-            if api_image['status'] == u'ACTIVE'
-        ]
+    def _to_images(self, obj, ex_filter_active):
+        images = obj['images']
+        rv = []
+        for image in images:
+            if ex_filter_active and image.get('status') != 'ACTIVE':
+                continue
+            rv.append(self._to_image(image))
+        return rv
 
     def create_node(self, name, size, image, metadata=None, files=None):
         # TODO: should we ref images and flavors by link instead of id? It
