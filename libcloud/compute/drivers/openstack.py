@@ -784,12 +784,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if kwargs.has_key('image'):
             server_params['imageRef'] = kwargs.get('image').id
         else:
-            server_params['imageRef'] = node.extra['imageId']
+            server_params['imageRef'] = node.extra.get('imageId')
 
         if kwargs.has_key('size'):
             server_params['flavorRef'] = kwargs.get('size').id
         else:
-            server_params['flavorRef'] = node.extra['flavorId']
+            server_params['flavorRef'] = node.extra.get('flavorId')
 
         return server_params
 
@@ -826,33 +826,48 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return resp.status == httplib.ACCEPTED
 
     def ex_set_password(self, node, password):
-        self._node_action(node, 'changePassword', adminPass=password)
+        resp = self._node_action(node, 'changePassword', adminPass=password)
         node.extra['password'] = password
+        return resp.status == httplib.ACCEPTED
 
     def ex_rebuild(self, node, **kwargs):
         server_params = self._create_args_to_params(node, kwargs)
-        self._node_action(node, 'rebuild', **server_params)
+        resp = self._node_action(node, 'rebuild', **server_params)
+        return resp.status == httplib.ACCEPTED
 
     def ex_resize(self, node, size):
-        self._node_action(node, 'resize', flavorRef=size.id)
+        resp = self._node_action(node, 'resize', flavorRef=size.id)
+        return resp.status == httplib.ACCEPTED
 
     def ex_confirm_resize(self, node):
-        self._node_action(node, 'confirmResize')
+        resp = self._node_action(node, 'confirmResize')
+        return resp.status == httplib.NO_CONTENT
 
     def ex_revert_resize(self, node):
-        self._node_action(node, 'revertResize')
+        resp = self._node_action(node, 'revertResize')
+        return resp.status == httplib.ACCEPTED
 
     def ex_save_image(self, node, name, metadata=None):
         optional_params = {}
         if metadata:
             optional_params['metadata'] = metadata
-        self._node_action(node, 'createImage', name=name, **optional_params)
+        resp = self._node_action(node, 'createImage', name=name, **optional_params)
+        # TODO: concevt location header into NodeImage object
+        return resp.status == httplib.NO_CONTENT
+
+    def ex_set_server_name(self, node, name):
+        """
+        Sets the Node's name.
+        """
+        return self.ex_update_node(node, name=name)
 
     def ex_update_node(self, node, **node_updates):
-        # At this time, only name is supported, but this signature covers the future.
+        # Currently only setting the name is supported in OpenStack, but we leave
+        # the function signature prepared to support metadata or other fields in the future.
+        potential_data = self._create_args_to_params(node, node_updates)
         return self._to_node(
             self.connection.request(
-                '/servers/%s' % (node.id,), method='PUT', data=dict(server=node_updates)
+                '/servers/%s' % (node.id,), method='PUT', data={'name': potential_data['name']}
             ).object['server']
         )
 
