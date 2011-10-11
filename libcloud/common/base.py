@@ -396,7 +396,14 @@ class Connection(object):
         headers = self.add_default_headers(headers)
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
-        headers.update({'Host': self.host})
+
+        p = int(self.port)
+
+        if p not in (80, 443):
+            headers.update({'Host': "%s:%d" % (self.host, p)})
+        else:
+            headers.update({'Host': self.host})
+
         # Encode data if necessary
         if data != '' and data != None:
             data = self.encode_data(data)
