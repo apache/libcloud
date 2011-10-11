@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-OpenNebula driver. Compatible with OpenNebula 1.4
+OpenNebula driver.
 """
 
 from base64 import b64encode
@@ -197,7 +197,12 @@ class OpenNebulaNodeDriver(NodeDriver):
 
         networks = []
         for element in compute.findall("NIC"):
-            networks.append(element.attrib["ip"])
+            ip = element.element.attrib.get('ip', None)
+
+            if ip is None:
+                ip = element.findtext("IP")
+
+            networks.append(ip)
 
         return Node(id=compute.findtext("ID"),
                     name=compute.findtext("NAME"),
