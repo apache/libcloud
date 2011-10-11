@@ -290,7 +290,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         if self.driver.api_name != 'openstack':
             return
 
-        pricing = dict((str(i), i) for i in range(1, 9))
+        pricing = dict((str(i), i) for i in range(1, 8))
 
         set_pricing(driver_type='compute', driver_name='openstack',
                     pricing=pricing)
@@ -344,14 +344,14 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_images_333111(self, method, url, body, headers):
         if method != "DELETE":
-            raise NotImplemented
+            raise NotImplementedError()
         # this is currently used for deletion of an image
         # as such it should not accept GET/POST
         return(httplib.NO_CONTENT,"","",httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_images(self, method, url, body, headers):
         if method != "POST":
-            raise NotImplemented
+            raise NotImplementedError()
         # this is currently used for creation of new image with
         # POST request, don't handle GET to avoid possible confusion
         body = self.fixtures.load('v1_slug_images_post.xml')
@@ -378,7 +378,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_72258_action(self, method, url, body, headers):
         if method != "POST" or body[:8] != "<reboot ":
-            raise NotImplemented
+            raise NotImplementedError()
         # only used by reboot() right now, but we will need to parse body someday !!!!
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
@@ -388,7 +388,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers_72258(self, method, url, body, headers):
         if method != "DELETE":
-            raise NotImplemented
+            raise NotImplementedError()
         # only used by destroy node()
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
@@ -398,7 +398,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_shared_ip_groups_5467(self, method, url, body, headers):
         if method != 'DELETE':
-            raise NotImplemented
+            raise NotImplementedError()
         return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_shared_ip_groups(self, method, url, body, headers):
@@ -462,21 +462,26 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         OpenStack_1_1_MockHttp.type = None
         self.driver = self.create_driver()
         clear_pricing_data()
-        self.node = self.driver.list_nodes()[0]
+        self.node = self.driver.list_nodes()[1]
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 2)
         node = nodes[0]
-        self.assertEqual('67.23.10.132', node.public_ip[0])
-        self.assertEqual('10.176.42.16', node.private_ip[0])
-        self.assertEqual(node.extra.get('flavorId'), '52415800-8b69-11e0-9b19-734f216543fd')
-        self.assertEqual(node.extra.get('imageId'), '52415800-8b69-11e0-9b19-734f6f006e54')
-        self.assertEqual(node.extra.get('metadata')['Server Label'], 'Web Head 1')
+
+        self.assertEqual('12065', node.id)
+        self.assertEqual('50.57.94.35', node.public_ip[0])
+        self.assertEqual('2001:4801:7808:52:16:3eff:fe47:788a', node.public_ip[1])
+        self.assertEqual('10.182.64.34', node.private_ip[0])
+        self.assertEqual('fec0:4801:7808:52:16:3eff:fe60:187d', node.private_ip[1])
+
+        self.assertEqual(node.extra.get('flavorId'), '2')
+        self.assertEqual(node.extra.get('imageId'), '7')
+        self.assertEqual(node.extra.get('metadata'), {})
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 2, 'Wrong sizes count')
+        self.assertEqual(len(sizes), 8, 'Wrong sizes count')
 
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
@@ -485,15 +490,13 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                              'Size price should be zero by default')
 
     def test_list_sizes_with_specified_pricing(self):
-        pricing = {
-            '52415800-8b69-11e0-9b19-734f1195ff37': 10.0,
-            '52415800-8b69-11e0-9b19-734f216543fd': 20.0,
-        }
+
+        pricing = dict((str(i), i*5.0) for i in range(1, 9))
 
         set_pricing(driver_type='compute', driver_name='openstack', pricing=pricing)
 
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 2, 'Wrong sizes count')
+        self.assertEqual(len(sizes), 8, 'Wrong sizes count')
 
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
@@ -503,15 +506,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_list_images(self):
         images = self.driver.list_images()
-        self.assertEqual(len(images), 1, 'Wrong images count')
+        self.assertEqual(len(images), 13, 'Wrong images count')
 
         image = images[0]
-        self.assertEqual(image.id, '52415800-8b69-11e0-9b19-734f6f006e54')
-        self.assertEqual(image.name, 'CentOS 5.2')
-        self.assertEqual(image.extra['updated'], '2010-10-10T12:00:00Z')
-        self.assertEqual(image.extra['created'], '2010-08-10T12:00:00Z')
+        self.assertEqual(image.id, '13')
+        self.assertEqual(image.name, 'Windows 2008 SP2 x86 (B24)')
+        self.assertEqual(image.extra['updated'], '2011-08-06T18:14:02Z')
+        self.assertEqual(image.extra['created'], '2011-08-06T18:13:11Z')
         self.assertEqual(image.extra['status'], 'ACTIVE')
-        self.assertEqual(image.extra['metadata']['ImageType'], 'Gold')
+        self.assertEqual(image.extra['metadata']['os_type'], 'windows')
 
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
@@ -564,43 +567,49 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_save_image(self):
         try:
             self.driver.ex_save_image(self.node, 'new_image')
-        except Exception as e:
-            self.fail('An error was raised: ' + repr(e))
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('An expected error was not raised')
 
     def test_ex_update_node(self):
         old_node = Node(
-            id='52415800-8b69-11e0-9b19-734f565bc83b',
+            id='12064',
             name=None, state=None, public_ip=None, private_ip=None, driver=self.driver,
         )
 
         new_node = self.driver.ex_update_node(old_node, name='Bob')
 
         self.assertTrue(new_node)
+        self.assertEqual('Bob', new_node.name)
+        self.assertEqual('50.57.94.30', new_node.public_ip[0])
 
     def test_ex_get_node_details(self):
-        node_id = '52415800-8b69-11e0-9b19-734f000004d2'
+        node_id = '12064'
         node = self.driver.ex_get_node_details(node_id)
-        self.assertEqual(node.id, node_id)
-        self.assertEqual(node.name, 'sample-server')
+        self.assertEqual(node.id, '12064')
+        self.assertEqual(node.name, 'lc-test')
 
     def test_ex_get_size(self):
-        size_id = '52415800-8b69-11e0-9b19-734f1195ff37'
+        size_id = '7'
         size = self.driver.ex_get_size(size_id)
         self.assertEqual(size.id, size_id)
-        self.assertEqual(size.name, '256 MB Server')
+        self.assertEqual(size.name, '15.5GB slice')
 
     def test_ex_get_image(self):
-        image_id = '52415800-8b69-11e0-9b19-734f5736d2a2'
+        image_id = '13'
         image = self.driver.ex_get_image(image_id)
         self.assertEqual(image.id, image_id)
-        self.assertEqual(image.name, 'My Server Backup')
+        self.assertEqual(image.name, 'Windows 2008 SP2 x86 (B24)')
 
     def test_ex_delete_image(self):
         image = NodeImage(id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)
         try:
             self.driver.ex_delete_image(image)
-        except Exception as e:
-            self.fail('An error was raised: ' + repr(e))
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('An expected error was not raised')
 
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):
@@ -631,55 +640,55 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         body = self.fixtures.load('_servers.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _servers_52415800_8b69_11e0_9b19_734f6af67565_action(self, method, url, body, headers):
+    def _servers_12065_action(self, method, url, body, headers):
         if method != "POST":
             self.fail('HTTP method other than POST to action URL')
 
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
-    def _servers_52415800_8b69_11e0_9b19_734f6af67565(self, method, url, body, headers):
+    def _servers_12064_action(self, method, url, body, headers):
+        if method != "POST":
+            self.fail('HTTP method other than POST to action URL')
+
+        return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+    def _servers_12065(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         else:
-            raise NotImplemented
+            raise NotImplementedError()
 
-    def _servers_52415800_8b69_11e0_9b19_734f000004d2(self, method, url, body, headers):
+    def _servers_12064(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load('_servers_52415800-8b69-11e0-9b19-734f000004d2.json')
+            body = self.fixtures.load('_servers_12064.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-        else:
-            raise NotImplemented
-
-    def _servers_52415800_8b69_11e0_9b19_734f565bc83b(self, method, url, body, headers):
-        if method == "PUT":
-            body = self.fixtures.load('_servers_52415800-8b69-11e0-9b19-734f565bc83b.json')
+        elif method == "PUT":
+            body = self.fixtures.load('_servers_12064_updated_name_bob.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "DELETE":
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         else:
-            raise NotImplemented
+            raise NotImplementedError()
 
-    def _flavors_52415800_8b69_11e0_9b19_734f1195ff37(self, method, url, body, headers):
+    def _flavors_7(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load('_flavors_52415800-8b69-11e0-9b19-734f1195ff37.json')
+            body = self.fixtures.load('_flavors_7.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
-            raise NotImplemented
+            raise NotImplementedError()
 
-    def _images_52415800_8b69_11e0_9b19_734f5736d2a2(self, method, url, body, headers):
+    def _images_13(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load('_images_52415800-8b69-11e0-9b19-734f5736d2a2.json')
+            body = self.fixtures.load('_images_13.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
-            raise NotImplemented
+            raise NotImplementedError()
 
-    def _images_26365521_8c62_11f9_2c33_283d153ecc3a(self, method, url, body, headers):
+    def _images_DELETEUUID(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         else:
-            raise NotImplemented
-
-    def _os_quota_sets_aTenantId(self, method, url, body, headers):
-        body = self.fixtures.load('_os_quota_sets_aTenantId.json')
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            raise NotImplementedError()
 
 
 if __name__ == '__main__':

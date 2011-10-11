@@ -848,6 +848,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return resp.status == httplib.ACCEPTED
 
     def ex_save_image(self, node, name, metadata=None):
+        # This has not yet been implemented by OpenStack 1.1
+        raise NotImplementedError()
+
         optional_params = {}
         if metadata:
             optional_params['metadata'] = metadata
@@ -867,7 +870,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         potential_data = self._create_args_to_params(node, node_updates)
         return self._to_node(
             self.connection.request(
-                '/servers/%s' % (node.id,), method='PUT', data={'name': potential_data['name']}
+                '/servers/%s' % (node.id,), method='PUT', data={'server': {'name': potential_data['name']}}
             ).object['server']
         )
 
@@ -878,6 +881,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_image(self.connection.request('/images/%s' % (image_id,)).object['image'])
 
     def ex_delete_image(self, image):
+        # This has not yet been implemented by OpenStack 1.1
+        raise NotImplementedError()
+
         resp = self.connection.request('/images/%s' % (image.id,), method='DELETE')
         return resp.status == httplib.ACCEPTED
 
@@ -912,7 +918,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         # if provider-specific subclasses can get better values for
         # price/bandwidth, then can pass them in when they super().
         if not price:
-            price = self._get_size_price(api_flavor['id'])
+            price = self._get_size_price(str(api_flavor['id']))
 
         return NodeSize(
             id=api_flavor['id'],
