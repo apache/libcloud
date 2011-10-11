@@ -164,9 +164,9 @@ class OpenStackNodeDriver(NodeDriver):
         return self._to_sizes(self.connection.request('/flavors/detail')
                                              .object)
 
-    def list_images(self, location=None, ex_filter_active=True):
+    def list_images(self, location=None, ex_only_active=True):
         return self._to_images(self.connection.request('/images/detail')
-                                              .object, ex_filter_active)
+                                              .object, ex_only_active)
 
     def ex_get_node_details(self, node_id):
         # @TODO: Remove this if in 0.6
@@ -175,7 +175,7 @@ class OpenStackNodeDriver(NodeDriver):
 
         uri = '/servers/%s' % (node_id)
         resp = self.connection.request(uri, method='GET')
-        if resp.status == 404:
+        if resp.status == httplib.NOT_FOUND:
             return None
 
         return self._to_node_from_obj(resp.object)
@@ -589,11 +589,11 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                      driver=self.connection.driver)
         return s
 
-    def _to_images(self, object, ex_filter_active):
+    def _to_images(self, object, ex_only_active):
         elements = self._findall(object, "image")
         rv = []
         for el in elements:
-            if ex_filter_active and el.get('status') != 'ACTIVE':
+            if ex_only_active and el.get('status') != 'ACTIVE':
                 continue
             rv.append(self._to_image(el))
         return rv
@@ -760,11 +760,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         flavors = obj['flavors']
         return [self._to_size(flavor) for flavor in flavors]
 
-    def _to_images(self, obj, ex_filter_active):
+    def _to_images(self, obj, ex_only_active):
         images = obj['images']
         rv = []
         for image in images:
-            if ex_filter_active and image.get('status') != 'ACTIVE':
+            if ex_only_active and image.get('status') != 'ACTIVE':
                 continue
             rv.append(self._to_image(image))
         return rv
