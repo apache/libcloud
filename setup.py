@@ -205,6 +205,8 @@ setup(
         'libcloud.drivers',
         'libcloud.loadbalancer',
         'libcloud.loadbalancer.drivers',
+        'libcloud.dns',
+        'libcloud.dns.drivers'
     ],
     package_dir={
         'libcloud': 'libcloud',
