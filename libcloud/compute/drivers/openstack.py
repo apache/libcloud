@@ -46,6 +46,7 @@ __all__ = [
     'OpenStack_1_1_Response',
     'OpenStack_1_1_Connection',
     'OpenStack_1_1_NodeDriver',
+    'OpenStackDriver'
     ]
 
 
@@ -67,6 +68,9 @@ OPENSTACK_NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
                             'SHARE_IP_NO_CONFIG': NodeState.PENDING,
                             'DELETE_IP': NodeState.PENDING,
                             'UNKNOWN': NodeState.UNKNOWN}
+
+DEFAULT_API_VERSION = '1.1'
+API_VERSION_HANDLERS = {}
 
 class OpenStack_Response(Response):
 
@@ -146,6 +150,21 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
 
 class OpenStackNodeDriver(NodeDriver):
 
+    @classmethod
+    def register_api_version(cls, version):
+        API_VERSION_HANDLERS[version] = cls
+
+    def __new__(cls, *args, **kwargs):
+        if cls is OpenStackNodeDriver:
+            version = str(kwargs.get('ex_force_api_version', DEFAULT_API_VERSION))
+            try:
+                cls = API_VERSION_HANDLERS[version]
+            except KeyError:
+                raise NotImplementedError(
+                    "No OpenStackNodeDriver found for API version %s" % (version)
+                )
+        return super(OpenStackNodeDriver, cls).__new__(cls) 
+    
     def _ex_connection_class_kwargs(self):
         rv = {}
         if self._ex_force_base_url:
@@ -235,6 +254,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version', None))
         self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
         super(OpenStack_1_0_NodeDriver, self).__init__(*args, **kwargs)
 
@@ -750,6 +770,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version', None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
 
     def _to_nodes(self, obj):
@@ -953,3 +974,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 )
             except KeyError:
                 return(0.0)
+
+OpenStack_1_0_NodeDriver.register_api_version('1.0')
+OpenStack_1_1_NodeDriver.register_api_version('1.1')
