@@ -24,8 +24,9 @@ Changes with Apache Libcloud 0.6.0-beta
 
   *) Compute:
 
-     - Support for 1.1 API and many other improvements in the OpenStack driver
-       [Paul Querna, Mike Nerone]
+     - Support for 1.1 API and many other improvements in the OpenStack driver ;
+       LIBCLOUD-83
+       [Mike Nerone, Paul Querna, Brad Morgan, Tomaz Muraus]
 
      - Add some extra methods to the Gandi.net driver ; LIBCLOUD-115
        [Aymeric Barantal]
