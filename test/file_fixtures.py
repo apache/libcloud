@@ -23,7 +23,7 @@ FIXTURES_ROOT = {
     'storage': 'storage/fixtures',
     'loadbalancer': 'loadbalancer/fixtures',
     'dns': 'dns/fixtures',
-    'openstack': 'openstack/fixtures',
+    'openstack': 'compute/fixtures/openstack',
 }
 
 class FileFixtures(object):
