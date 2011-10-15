@@ -520,7 +520,8 @@ class BaseDriver(object):
 
     connectionCls = ConnectionKey
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=None):
         """
         @keyword    key:    API key or username to used
         @type       key:    str
@@ -537,6 +538,11 @@ class BaseDriver(object):
 
         @keyword    port: Override port used for connections.
         @type       port: int
+
+        @keyword    api_version: Optional API version. Only used by drivers
+                                 which support multiple API versions.
+        @type       api_version: str
+
         """
         self.key = key
         self.secret = secret
