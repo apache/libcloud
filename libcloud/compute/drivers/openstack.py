@@ -70,7 +70,6 @@ OPENSTACK_NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
                             'UNKNOWN': NodeState.UNKNOWN}
 
 DEFAULT_API_VERSION = '1.1'
-API_VERSION_HANDLERS = {}
 
 class OpenStack_Response(Response):
 
@@ -150,21 +149,19 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
 
 class OpenStackNodeDriver(NodeDriver):
 
-    @classmethod
-    def register_api_version(cls, version):
-        API_VERSION_HANDLERS[version] = cls
-
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, key, secret=None, secure=True, host=None, port=None,
+                 api_version=DEFAULT_API_VERSION, **kwargs):
         if cls is OpenStackNodeDriver:
-            version = str(kwargs.get('ex_force_api_version', DEFAULT_API_VERSION))
-            try:
-                cls = API_VERSION_HANDLERS[version]
-            except KeyError:
+            if api_version == '1.0':
+                cls = OpenStack_1_0_NodeDriver
+            elif api_version == '1.1':
+                cls = OpenStack_1_1_NodeDriver
+            else:
                 raise NotImplementedError(
-                    "No OpenStackNodeDriver found for API version %s" % (version)
+                    "No OpenStackNodeDriver found for API version %s" % (api_version)
                 )
-        return super(OpenStackNodeDriver, cls).__new__(cls) 
-    
+        return super(OpenStackNodeDriver, cls).__new__(cls)
+
     def _ex_connection_class_kwargs(self):
         rv = {}
         if self._ex_force_base_url:
@@ -974,6 +971,3 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 )
             except KeyError:
                 return(0.0)
-
-OpenStack_1_0_NodeDriver.register_api_version('1.0')
-OpenStack_1_1_NodeDriver.register_api_version('1.1')
