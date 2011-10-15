@@ -68,7 +68,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
     @classmethod
     def create_driver(self):
-        self.driver_type = self.driver_klass
+        if self is not OpenStack_1_0_FactoryMethodTests:
+            self.driver_type = self.driver_klass
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
@@ -468,7 +469,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     @classmethod
     def create_driver(self):
-        self.driver_type = self.driver_klass
+        if self is not OpenStack_1_1_FactoryMethodTests:
+            self.driver_type = self.driver_klass
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
