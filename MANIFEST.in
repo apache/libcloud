@@ -6,6 +6,7 @@ include CONTRIBUTORS
 include CHANGES
 include HACKING
 include README
+include tox.ini
 include libcloud/data/pricing.json
 prune test/secrets.py
 include demos/*
@@ -15,6 +16,8 @@ include test/secrets.py-dist
 include test/compute/*.py
 include test/storage/*.py
 include test/loadbalancer/*.py
+include test/dns/*.py
 include test/compute/fixtures/*/*
 include test/storage/fixtures/*/*
 include test/loadbalancer/fixtures/*/*
+include test/dns/fixtures/*/*
