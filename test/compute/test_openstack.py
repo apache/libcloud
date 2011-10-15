@@ -316,6 +316,14 @@ class OpenStack_1_0_FactoryMethodTests(OpenStack_1_0_Tests):
     driver_type = get_driver(Provider.OPENSTACK)
     driver_args = OPENSTACK_PARAMS + ('1.0',)
 
+    def test_factory_method_invalid_version(self):
+        try:
+            self.driver_type(*(OPENSTACK_PARAMS + ('15.5',)))
+        except NotImplementedError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+
 
 class OpenStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack')
@@ -634,6 +642,7 @@ class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
     driver_args = OPENSTACK_PARAMS + ('1.1',)
+
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack_v1.1')
