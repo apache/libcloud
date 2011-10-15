@@ -25,6 +25,7 @@ class RackspaceTests(OpenStack_1_0_Tests):
     should_list_locations = True
     should_have_pricing = True
 
+    driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_PARAMS
 

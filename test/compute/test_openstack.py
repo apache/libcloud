@@ -17,6 +17,8 @@ import unittest
 import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.compute.types import Provider
+from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
     OpenStack_1_1_NodeDriver
@@ -60,16 +62,18 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
 class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
-    driver_type = OpenStack_1_0_NodeDriver
+    driver_klass = OpenStack_1_0_NodeDriver
     driver_args = OPENSTACK_PARAMS
+    driver_kwargs = {}
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(*self.driver_args)
+        self.driver_type = self.driver_klass
+        return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_type.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
-        self.driver_type.connectionCls.auth_url = "https://auth.api.example.com/v1.1/"
+        self.driver_klass.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.1/"
         OpenStackMockHttp.type = None
         self.driver = self.create_driver()
         clear_pricing_data()
@@ -304,6 +308,14 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
             self.assertEqual(float(size.price), float(pricing[size.id]))
 
 
+class OpenStack_1_0_FactoryMethodTests(OpenStack_1_0_Tests):
+    should_list_locations = False
+
+    driver_klass = OpenStack_1_0_NodeDriver
+    driver_type = get_driver(Provider.OPENSTACK)
+    driver_args = OPENSTACK_PARAMS + ('1.0',)
+
+
 class OpenStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack')
     auth_fixtures = OpenStackFixtures()
@@ -449,16 +461,19 @@ class OpenStackMockHttp(MockHttpTestCase):
 class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
+    driver_klass = OpenStack_1_1_NodeDriver
     driver_type = OpenStack_1_1_NodeDriver
     driver_args = OPENSTACK_PARAMS
+    driver_kwargs = {'ex_force_auth_version': '1.0'}
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(*self.driver_args, ex_force_auth_version='1.0')
+        self.driver_type = self.driver_klass
+        return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_type.connectionCls.conn_classes = (OpenStack_1_1_MockHttp, OpenStack_1_1_MockHttp)
-        self.driver_type.connectionCls.auth_url = "https://auth.api.example.com/v1.0/"
+        self.driver_klass.connectionCls.conn_classes = (OpenStack_1_1_MockHttp, OpenStack_1_1_MockHttp)
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.0/"
         OpenStack_1_1_MockHttp.type = None
         self.driver = self.create_driver()
         clear_pricing_data()
@@ -611,6 +626,12 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('An expected error was not raised')
 
+class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
+    should_list_locations = False
+
+    driver_klass = OpenStack_1_1_NodeDriver
+    driver_type = get_driver(Provider.OPENSTACK)
+    driver_args = OPENSTACK_PARAMS + ('1.1',)
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack_v1.1')
