@@ -16,15 +16,16 @@ import sys
 import unittest
 
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
-from test.compute.test_openstack import OpenStackTests
+from test.compute.test_openstack import OpenStack_1_0_Tests
 
 from test.secrets import RACKSPACE_PARAMS
 
 
-class RackspaceTests(OpenStackTests):
+class RackspaceTests(OpenStack_1_0_Tests):
     should_list_locations = True
     should_have_pricing = True
 
+    driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_PARAMS
 
