@@ -6,6 +6,7 @@ include CONTRIBUTORS
 include CHANGES
 include HACKING
 include README
+include tox.ini
 include libcloud/data/pricing.json
 prune test/secrets.py
 include demos/*
