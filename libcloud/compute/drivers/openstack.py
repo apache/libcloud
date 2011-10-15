@@ -71,6 +71,7 @@ OPENSTACK_NODE_STATE_MAP = {'BUILD': NodeState.PENDING,
 
 DEFAULT_API_VERSION = '1.1'
 
+
 class OpenStack_Response(Response):
 
     node_driver = None
@@ -113,14 +114,16 @@ class OpenStack_Response(Response):
         body = self.parse_body()
 
         if self.has_content_type('application/xml'):
-            text = "; ".join([err.text or '' for err in body.getiterator() if err.text])
+            text = "; ".join([err.text or '' for err in body.getiterator()
+                              if err.text])
         elif self.has_content_type('application/json'):
-            text = ';'.join([fault_data['message'] for fault_data in body.values()])
+            text = ';'.join([fault_data['message'] for fault_data
+                             in body.values()])
         else:
-            # while we hope a response is always one of xml or json, we have seen html or text
-            # in the past, its not clear we can really do something to make it more
-            # readable here, so we will just pass it along as the whole response body in
-            # the text variable.
+            # while we hope a response is always one of xml or json, we have
+            # seen html or text in the past, its not clear we can really do
+            # something to make it more readable here, so we will just pass
+            # it along as the whole response body in the text variable.
             text = body
 
         return '%s %s %s' % (self.status, self.error, text)
@@ -147,6 +150,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             method=method, headers=headers
         )
 
+
 class OpenStackNodeDriver(NodeDriver):
 
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
@@ -158,7 +162,8 @@ class OpenStackNodeDriver(NodeDriver):
                 cls = OpenStack_1_1_NodeDriver
             else:
                 raise NotImplementedError(
-                    "No OpenStackNodeDriver found for API version %s" % (api_version)
+                    "No OpenStackNodeDriver found for API version %s" %
+                    (api_version)
                 )
         return super(OpenStackNodeDriver, cls).__new__(cls)
 
@@ -199,10 +204,11 @@ class OpenStackNodeDriver(NodeDriver):
     def destroy_node(self, node):
         uri = '/servers/%s' % (node.id)
         resp = self.connection.request(uri, method='DELETE')
-        # The OpenStack and Rackspace documentation both say this API will return a 204,
-        # but in-fact, everyone everywhere agrees it actually returns a 202, so we are
-        # going to accept either, and someday, someone will fix either the implementation
-        # or the documentation to agree.
+        # The OpenStack and Rackspace documentation both say this API will
+        # return a 204, but in-fact, everyone everywhere agrees it actually
+        # returns a 202, so we are going to accept either, and someday,
+        # someone will fix either the implementation or the documentation to
+        # agree.
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_soft_reboot_node(self, node):
@@ -214,19 +220,23 @@ class OpenStackNodeDriver(NodeDriver):
     def reboot_node(self, node):
         return self._reboot_node(node, reboot_type='HARD')
 
+
 class OpenStack_1_0_Response(OpenStack_Response):
 
     def __init__(self, *args, **kwargs):
-        # done because of a circular reference from NodeDriver -> Connection -> Response
+        # done because of a circular reference from
+        # NodeDriver -> Connection -> Response
         self.node_driver = OpenStack_1_0_NodeDriver
         super(OpenStack_1_0_Response, self).__init__(*args, **kwargs)
+
 
 class OpenStack_1_0_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_0_Response
     _url_key = "server_url"
-    default_content_type =  'application/xml; charset=UTF-8'
+    default_content_type = 'application/xml; charset=UTF-8'
     accept_format = 'application/xml'
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
+
 
 class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     """
@@ -251,7 +261,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
-        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version', None))
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
+                                                    None))
         self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
         super(OpenStack_1_0_NodeDriver, self).__init__(*args, **kwargs)
 
@@ -549,7 +560,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
     def _fixxpath(self, xpath):
         # ElementTree wants namespaces in its xpaths, so here we add them.
-        return "/".join(["{%s}%s" % (self.XML_NAMESPACE, e) for e in xpath.split("/")])
+        return "/".join(["{%s}%s" % (self.XML_NAMESPACE, e) for e
+                         in xpath.split("/")])
 
     def _findall(self, element, xpath):
         return element.findall(self._fixxpath(xpath))
@@ -601,8 +613,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                      name=el.get('name'),
                      ram=int(el.get('ram')),
                      disk=int(el.get('disk')),
-                     bandwidth=None, # XXX: needs hardcode
-                     price=self._get_size_price(el.get('id')), # Hardcoded,
+                     # XXX: needs hardcode
+                     bandwidth=None,
+                     # Hardcoded
+                     price=self._get_size_price(el.get('id')),
                      driver=self.connection.driver)
         return s
 
@@ -736,7 +750,8 @@ class OpenStack_1_0_NodeIpAddresses(object):
 class OpenStack_1_1_Response(OpenStack_Response):
 
     def __init__(self, *args, **kwargs):
-        # done because of a circular reference from NodeDriver -> Connection -> Response
+        # done because of a circular reference from
+        # NodeDriver -> Connection -> Response
         self.node_driver = OpenStack_1_1_NodeDriver
         super(OpenStack_1_1_Response, self).__init__(*args, **kwargs)
 
@@ -749,6 +764,7 @@ class OpenStack_1_1_Connection(OpenStackComputeConnection):
 
     def encode_data(self, data):
         return json.dumps(data)
+
 
 class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     """
@@ -766,8 +782,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def __init__(self, *args, **kwargs):
         self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
         self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
-        self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
-        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version', None))
+        self._ex_force_auth_version = kwargs.pop('ex_force_auth_version',
+                                                 None)
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
+                                                    None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
 
     def _to_nodes(self, obj):
@@ -791,20 +809,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         server_params = {
             'name': kwargs.get('name'),
             'metadata': kwargs.get('ex_metadata', {}),
-            'personality': self._files_to_personality(kwargs.get("ex_files", {}))
+            'personality': self._files_to_personality(kwargs.get("ex_files",
+                                                                 {}))
         }
 
-        if kwargs.has_key('name'):
+        if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
         else:
             server_params['name'] = node.name
 
-        if kwargs.has_key('image'):
+        if 'image' in kwargs:
             server_params['imageRef'] = kwargs.get('image').id
         else:
             server_params['imageRef'] = node.extra.get('imageId')
 
-        if kwargs.has_key('size'):
+        if 'size' in kwargs:
             server_params['flavorRef'] = kwargs.get('size').id
         else:
             server_params['flavorRef'] = node.extra.get('flavorId')
@@ -872,7 +891,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         optional_params = {}
         if metadata:
             optional_params['metadata'] = metadata
-        resp = self._node_action(node, 'createImage', name=name, **optional_params)
+        resp = self._node_action(node, 'createImage', name=name,
+                                 **optional_params)
         # TODO: concevt location header into NodeImage object
         return resp.status == httplib.NO_CONTENT
 
@@ -883,31 +903,39 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self.ex_update_node(node, name=name)
 
     def ex_update_node(self, node, **node_updates):
-        # Currently only setting the name is supported in OpenStack, but we leave
-        # the function signature prepared to support metadata or other fields in the future.
+        # Currently only setting the name is supported in OpenStack, but we
+        # leave the function signature prepared to support metadata or other
+        # fields in the future.
         potential_data = self._create_args_to_params(node, node_updates)
         return self._to_node(
             self.connection.request(
-                '/servers/%s' % (node.id,), method='PUT', data={'server': {'name': potential_data['name']}}
+                '/servers/%s' % (node.id,), method='PUT',
+                data={'server': {'name': potential_data['name']}}
             ).object['server']
         )
 
     def ex_get_size(self, size_id):
-        return self._to_size(self.connection.request('/flavors/%s' % (size_id,)).object['flavor'])
+        return self._to_size(self.connection.request('/flavors/%s' %
+                                                     (size_id,))
+                   .object['flavor'])
 
     def ex_get_image(self, image_id):
-        return self._to_image(self.connection.request('/images/%s' % (image_id,)).object['image'])
+        return self._to_image(self.connection.request('/images/%s' %
+                                                      (image_id,))
+                   .object['image'])
 
     def ex_delete_image(self, image):
         # This has not yet been implemented by OpenStack 1.1
         raise NotImplementedError()
 
-        resp = self.connection.request('/images/%s' % (image.id,), method='DELETE')
+        resp = self.connection.request('/images/%s' % (image.id,),
+                                       method='DELETE')
         return resp.status == httplib.ACCEPTED
 
     def _node_action(self, node, action, **params):
         params = params or None
-        return self.connection.request('/servers/%s/action' % (node.id,), method='POST', data={action: params})
+        return self.connection.request('/servers/%s/action' % (node.id,),
+                                       method='POST', data={action: params})
 
     def _to_node_from_obj(self, obj):
         return self._to_node(obj['server'])
@@ -916,17 +944,22 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return Node(
             id=api_node['id'],
             name=api_node['name'],
-            state=self.NODE_STATE_MAP.get(api_node['status'], NodeState.UNKNOWN),
-            public_ip=[addr_desc['addr'] for addr_desc in api_node['addresses'].get('public', [])],
-            private_ip=[addr_desc['addr'] for addr_desc in api_node['addresses'].get('private', [])],
+            state=self.NODE_STATE_MAP.get(api_node['status'],
+                                          NodeState.UNKNOWN),
+            public_ip=[addr_desc['addr'] for addr_desc in
+                       api_node['addresses'].get('public', [])],
+            private_ip=[addr_desc['addr'] for addr_desc in
+                        api_node['addresses'].get('private', [])],
             driver=self,
             extra=dict(
                 hostId=api_node['hostId'],
-                # Docs says "tenantId", but actual is "tenant_id". *sigh* Best handle both.
+                # Docs says "tenantId", but actual is "tenant_id". *sigh*
+                # Best handle both.
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
                 imageId=api_node['image']['id'],
                 flavorId=api_node['flavor']['id'],
-                uri=(link['href'] for link in api_node['links'] if link['rel'] == 'self').next(),
+                uri=(link['href'] for link in api_node['links'] if
+                     link['rel'] == 'self').next(),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass'),
             ),
