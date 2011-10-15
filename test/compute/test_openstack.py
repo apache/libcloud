@@ -559,14 +559,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_set_password(self):
         try:
             self.driver.ex_set_password(self.node, 'New1&53jPass')
-        except Exception as e:
+        except Exception, e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_rebuild(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         try:
             self.driver.ex_rebuild(self.node, image=image)
-        except Exception as e:
+        except Exception, e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_resize(self):
@@ -574,19 +574,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                         driver=self.driver)
         try:
             self.driver.ex_resize(self.node, size)
-        except Exception as e:
+        except Exception, e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_confirm_resize(self):
         try:
             self.driver.ex_confirm_resize(self.node)
-        except Exception as e:
+        except Exception, e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_revert_resize(self):
         try:
             self.driver.ex_revert_resize(self.node)
-        except Exception as e:
+        except Exception, e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_save_image(self):
