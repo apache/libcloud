@@ -3,7 +3,7 @@
 Changes with Apache Libcloud in development:
  /
 
-Changes with Apache Libcloud 0.6.0-beta
+Changes with Apache Libcloud 0.6.0-beta1
 
   *) General:
 
@@ -14,7 +14,7 @@ Changes with Apache Libcloud 0.6.0-beta
       [Geoff Greer]
 
     - Update compute demo and change the syntax of test credentials stored in
-      test/secrets.py-dist; LIBCLOUD-111
+      test/secrets.py-dist ; LIBCLOUD-111
       [Mike Nerone]
 
     - Enable SSL certificate verification by default and throw an exception
@@ -35,12 +35,13 @@ Changes with Apache Libcloud 0.6.0-beta
        [David Busby]
 
      - Linode driver now supports new 'Japan' location
+       [Jed Smith]
 
      - Rackspace driver now inherits from the OpenStack one instead of doing
        it vice versa.; LIBCLOUD-110
        [Mike Nerone]
 
-     - Properly populate NodeImge "details" dictionary in the Rackspace
+     - Properly populate NodeImage "details" dictionary in the Rackspace
        compute driver.; LIBCLOUD-107
        [Lucy Mendel]
 
@@ -55,12 +56,12 @@ Changes with Apache Libcloud 0.6.0-beta
        the Rackspace compute driver.
        [Tomaz Muraus]
 
-     - Throw an exception in deploy_node if paramiko is not available
+     - Throw an exception in deploy_node if paramiko library is not
+       available
        [Tomaz Muraus]
 
-
-     - Fix chmod argument value which is
-       pased to the sftpclient.put method; GITHUB-17
+     - Fix chmod argument value which is pased to the sftpclient.put
+       method; GITHUB-17
        [John Carr]
 
      - New driver for Ninefold.com; LIBCLOUD-98
@@ -74,7 +75,12 @@ Changes with Apache Libcloud 0.6.0-beta
      - New driver for Ninefold.com; GITHUB-19
        [Benno Rice]
 
-     - Allow users to upload 0-bytes large (empty) objects
+     - Fix a bug in uploading an object with some versions of Python 2.7
+       where httplib library doesn't automatically call str() on the
+       header values.
+       [Tomaz Muraus]
+
+     - Allow users to upload (create) 0-bytes large (empty) objects
        [Tomaz Muraus]
 
   *) Load-balancer:
