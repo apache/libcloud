@@ -20,7 +20,7 @@ libcloud provides a unified interface to the cloud computing resources.
 """
 
 __all__ = ["__version__", "enable_debug"]
-__version__ = '0.6.0-beta'
+__version__ = '0.6.0-beta1'
 
 DEFAULT_LOG_PATH = '/tmp/libcloud_debug.log'
 
