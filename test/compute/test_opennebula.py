@@ -28,16 +28,20 @@ from test.file_fixtures import ComputeFileFixtures
 
 from test.secrets import OPENNEBULA_PARAMS
 
-class OpenNebulaTests(unittest.TestCase, TestCaseMixin):
+
+class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        OpenNebulaNodeDriver.connectionCls.conn_classes = (None, OpenNebulaMockHttp)
-        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS)
+        OpenNebulaNodeDriver.connectionCls.conn_classes = (None,
+                                                           OpenNebulaMockHttp)
+        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('1.4',))
 
     def test_create_node(self):
-        image = NodeImage(id=1, name='UbuntuServer9.04-Contextualized', driver=self.driver)
+        image = NodeImage(id=1, name='UbuntuServer9.04-Contextualized',
+                          driver=self.driver)
         size = NodeSize(1, 'small', None, None, None, None, driver=self.driver)
-        node = self.driver.create_node(name='MyCompute', image=image, size=size)
+        node = self.driver.create_node(name='MyCompute', image=image,
+                                       size=size)
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'MyCompute')
 
@@ -61,9 +65,9 @@ class OpenNebulaTests(unittest.TestCase, TestCaseMixin):
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 3)
-        self.assertTrue('small' in [ s.name for s in sizes])
-        self.assertTrue('medium' in [ s.name for s in sizes])
-        self.assertTrue('large' in [ s.name for s in sizes])
+        self.assertTrue('small' in [s.name for s in sizes])
+        self.assertTrue('medium' in [s.name for s in sizes])
+        self.assertTrue('large' in [s.name for s in sizes])
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -71,6 +75,7 @@ class OpenNebulaTests(unittest.TestCase, TestCaseMixin):
         image = images[0]
         self.assertEqual(image.id, '1')
         self.assertEqual(image.name, 'UbuntuServer9.04-Contextualized')
+
 
 class OpenNebulaMockHttp(MockHttp):
 
@@ -83,7 +88,8 @@ class OpenNebulaMockHttp(MockHttp):
 
         if method == 'POST':
             body = self.fixtures.load('compute.xml')
-            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+            return (httplib.CREATED, body, {},
+                    httplib.responses[httplib.CREATED])
 
     def _storage(self, method, url, body, headers):
         if method == 'GET':
@@ -97,11 +103,13 @@ class OpenNebulaMockHttp(MockHttp):
 
         if method == 'PUT':
             body = ""
-            return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
 
         if method == 'DELETE':
             body = ""
-            return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
 
     def _compute_15(self, method, url, body, headers):
         if method == 'GET':
