@@ -74,13 +74,13 @@ class SoftLayerTests(unittest.TestCase):
 class SoftLayerMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('softlayer')
 
-    def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(
+    def _xmlrpc_v3__SoftLayer_Account_getVirtualGuests(
         self, method, url, body, headers):
 
         body = self.fixtures.load('v3_SoftLayer_Account_getVirtualGuests.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
+    def _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters(
         self, method, url, body, headers):
 
         body = self.fixtures.load(
