@@ -76,6 +76,13 @@
         <revision>0.5.2</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>0.6.0-beta1</name>
+        <created>2011-10-19</created>
+        <revision>0.6.0-beta1</revision>
+      </Version>
+  </release>
 
     <repository>
       <SVNRepository>
