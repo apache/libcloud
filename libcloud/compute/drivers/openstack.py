@@ -46,7 +46,7 @@ __all__ = [
     'OpenStack_1_1_Response',
     'OpenStack_1_1_Connection',
     'OpenStack_1_1_NodeDriver',
-    'OpenStackDriver'
+    'OpenStackNodeDriver'
     ]
 
 
