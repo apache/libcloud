@@ -1,7 +1,13 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud in development:
- /
+  *) Compute:
+
+     - Fix API endpoint URL in the Softlayer driver
+       [Tomaz Muraus]
+
+     - Add support for OpenNebula 3.0 API ; LIBCLOUD-120
+       [Hutson Betts]
 
 Changes with Apache Libcloud 0.6.0-beta1
 
