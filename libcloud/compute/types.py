@@ -55,6 +55,7 @@ class Provider(object):
     @cvar BLUEBOX: Bluebox
     @cvar OPSOURCE: Opsource Cloud
     @cvar NINEFOLD: Ninefold
+    @cvar TERREMARK: Terremark
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -93,6 +94,7 @@ class Provider(object):
     SKALICLOUD = 32
     SERVERLOVE = 33
     NINEFOLD = 34
+    TERREMARK = 35
 
 class NodeState(object):
     """
