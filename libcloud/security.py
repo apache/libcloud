@@ -22,8 +22,8 @@ Usage:
     # optional
     libcloud.security.CA_CERTS_PATH.append("/path/to/cacert.txt")
 """
-# For backward compatibility this option is disabled by default
-VERIFY_SSL_CERT = False
+
+VERIFY_SSL_CERT = True
 VERIFY_SSL_CERT_STRICT = True
 
 # File containing one or more PEM-encoded CA certificates
