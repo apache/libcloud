@@ -266,7 +266,7 @@ class NodeImage(object):
 
     def __repr__(self):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
-                % (self.id, self.name, self.driver.name))
+                % (self.id, self.name, self.driver.name, self.extra))
 
 
 class NodeLocation(object):
