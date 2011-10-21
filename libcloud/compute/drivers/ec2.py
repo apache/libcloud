@@ -381,7 +381,40 @@ class EC2NodeDriver(NodeDriver):
                                   namespace=NAMESPACE),
                       name=findtext(element=element, xpath='imageLocation',
                                     namespace=NAMESPACE),
-                      driver=self.connection.driver)
+                      driver=self.connection.driver,
+                      extra={
+                          'state': findattr(element=element,
+                                            xpath="imageState",
+                                            namespace=NAMESPACE),
+                          'ownerid': findattr(element=element,
+                                        xpath="imageOwnerId",
+                                        namespace=NAMESPACE),
+                          'owneralias': findattr(element=element,
+                                        xpath="imageOwnerAlias",
+                                        namespace=NAMESPACE),
+                          'ispublic': findattr(element=element,
+                                        xpath="isPublic",
+                                        namespace=NAMESPACE),
+                          'architecture': findattr(element=element,
+                                        xpath="architecture",
+                                        namespace=NAMESPACE),
+                          'imagetype': findattr(element=element,
+                                        xpath="imageType",
+                                        namespace=NAMESPACE),
+                          'platform': findattr(element=element,
+                                        xpath="platform",
+                                        namespace=NAMESPACE),
+                          'rootdevicetype': findattr(element=element,
+                                        xpath="rootDeviceType",
+                                        namespace=NAMESPACE),
+                          'virtualizationtype': findattr(element=element,
+                                        xpath="virtualizationType",
+                                        namespace=NAMESPACE),
+                          'hypervisor': findattr(element=element,
+                                        xpath="hypervisor",
+                                        namespace=NAMESPACE)
+                      }
+        )
         return n
 
     def list_nodes(self):
