@@ -103,6 +103,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ip), 2)
+        self.assertEqual(node.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
+        self.assertTrue('instancetype' in node.extra)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
         self.assertEqual(public_ips[1], '1.2.3.5')
