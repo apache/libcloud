@@ -77,6 +77,24 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.name, 'UbuntuServer9.04-Contextualized')
 
 
+class OpenNebula_3_0_Tests(unittest.TestCase):
+
+    def setUp(self):
+        OpenNebulaNodeDriver.connectionCls.conn_classes = (None,
+                                                           OpenNebulaMockHttp)
+        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.0',))
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        names = [s.name for s in sizes]
+        self.assertEqual(len(sizes), 4)
+        self.assertTrue('small' in names)
+        self.assertTrue('medium' in names)
+        self.assertTrue('large' in names)
+        self.assertTrue('custom' in names)
+        self.assertEqual([s for s in sizes if s.id == '3'][0].cpu, 8)
+
+
 class OpenNebulaMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('opennebula')

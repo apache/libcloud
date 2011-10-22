@@ -73,6 +73,24 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         return headers
 
 
+class OpenNebulaNodeSize(NodeSize):
+
+    def __init__(self, id, name, ram, disk, bandwidth, price, driver,
+                 cpu=None, vcpu=None):
+        self.cpu = cpu
+        self.vcpu = vcpu
+        super(OpenNebulaNodeSize, self).__init__(id=id, name=name, ram=ram,
+                                                 disk=disk,
+                                                 bandwidth=bandwidth,
+                                                 price=price, driver=driver)
+
+    def __repr__(self):
+        return (('<NodeSize: id=%s, name=%s, ram=%s, disk=%s, bandwidth=%s, '
+                 'price=%s, driver=%s, cpu=%s ...>')
+                % (self.id, self.name, self.ram, self.disk, self.bandwidth,
+                   self.price, self.driver.name, self.cpu))
+
+
 class OpenNebulaNodeDriver(NodeDriver):
     """
     OpenNebula node driver
@@ -112,27 +130,27 @@ class OpenNebulaNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         return [
-          NodeSize(id=1,
-                   name="small",
-                   ram=None,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
-          NodeSize(id=2,
-                   name="medium",
-                   ram=None,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
-          NodeSize(id=3,
-                   name="large",
-                   ram=None,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
+            OpenNebulaNodeSize(id=1,
+                name='small',
+                ram=None,
+                disk=None,
+                bandwidth=None,
+                price=None,
+                driver=self),
+            OpenNebulaNodeSize(id=2,
+                name='medium',
+                ram=None,
+                disk=None,
+                bandwidth=None,
+                price=None,
+                driver=self),
+            OpenNebulaNodeSize(id=3,
+                name='large',
+                ram=None,
+                disk=None,
+                bandwidth=None,
+                price=None,
+                driver=self),
         ]
 
     def list_nodes(self):
@@ -279,6 +297,42 @@ class OpenNebula_3_0_NodeDriver(OpenNebulaNodeDriver):
                                        data=xml).object
 
         return self._to_node(node)
+
+    def list_sizes(self, location=None):
+        return [
+          OpenNebulaNodeSize(id=1,
+                   name='small',
+                   ram=1024,
+                   cpu=1,
+                   disk=None,
+                   bandwidth=None,
+                   price=None,
+                   driver=self),
+          OpenNebulaNodeSize(id=2,
+                   name='medium',
+                   ram=4096,
+                   cpu=4,
+                   disk=None,
+                   bandwidth=None,
+                   price=None,
+                   driver=self),
+          OpenNebulaNodeSize(id=3,
+                   name='large',
+                   ram=8192,
+                   cpu=8,
+                   disk=None,
+                   bandwidth=None,
+                   price=None,
+                   driver=self),
+          OpenNebulaNodeSize(id=4,
+                   name='custom',
+                   ram=0,
+                   cpu=0,
+                   disk=None,
+                   bandwidth=None,
+                   price=None,
+                   driver=self),
+        ]
 
     def _to_images(self, object):
         images = []
