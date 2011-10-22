@@ -1,6 +1,17 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud in development:
+
+  *) General:
+
+     - Modify ParamikoSSHClient.connect so it supports authentication using a
+       key file ; LIBCLOUD-116
+       [Jay Doane]
+
+     - User must now explicitly specify a path when using LIBCLOUD_DEBUG
+       environment variable ; LIBCLOUD-95.
+       [daveb, Tomaz Muraus]
+
   *) Compute:
 
      - Fix API endpoint URL in the Softlayer driver
@@ -8,6 +19,10 @@ Changes with Apache Libcloud in development:
 
      - Add support for OpenNebula 3.0 API ; LIBCLOUD-120
        [Hutson Betts]
+
+     - Add more attributes to the extra dictionary in the EC2 driver ;
+       GITHUB-31
+       [Juan Carlos Moreno]
 
 Changes with Apache Libcloud 0.6.0-beta1
 
