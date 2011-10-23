@@ -118,11 +118,6 @@ class ElasticStackResponse(JsonResponse):
 
         return self.status >= 200 and self.status <= 299
 
-    def parse_body(self):
-        if not self.body:
-            return self.body
-        return super(ElasticStackResponse, self).parse_body()
-
     def parse_error(self):
         error_header = self.headers.get('x-elastic-error', '')
         return 'X-Elastic-Error: %s (%s)' % (error_header, self.body.strip())

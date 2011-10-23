@@ -27,15 +27,6 @@ from libcloud.compute.base import NodeSize, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import Node, is_private_subnet
 
 class SlicehostResponse(XmlResponse):
-
-    def parse_body(self):
-        # length of 1 can't be valid XML, but on destroy node,
-        # slicehost returns a 1 byte response with a "Content-Type:
-        # application/xml" header. booya.
-        if not self.body or len(self.body) <= 1:
-            return None
-        return super(SlicehostResponse, self).parse_body()
-
     def parse_error(self):
         if self.status == 401:
             raise InvalidCredsError(self.body)

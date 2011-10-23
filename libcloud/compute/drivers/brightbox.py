@@ -36,7 +36,7 @@ class BrightboxResponse(JsonResponse):
         return self.status >= 200 and self.status < 400
 
     def parse_body(self):
-        if self.headers['content-type'].split('; ')[0] == 'application/json' and len(self.body) > 0:
+        if self.headers['content-type'].split('; ')[0] == 'application/json':
             return super(BrightboxResponse, self).parse_body()
         else:
             return self.body

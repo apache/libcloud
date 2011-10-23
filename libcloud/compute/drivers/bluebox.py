@@ -80,13 +80,6 @@ NODE_STATE_MAP = { 'queued': NodeState.PENDING,
                    'unknown': NodeState.UNKNOWN }
 
 class BlueboxResponse(JsonResponse):
-    def parse_body(self):
-        try:
-            js = super(BlueboxResponse, self).parse_body()
-            return js
-        except MalformedResponseError:
-            return self.body
-
     def parse_error(self):
         if int(self.status) == 401:
             if not self.body:
