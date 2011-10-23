@@ -20,7 +20,7 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionKey, Response
+from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
@@ -40,7 +40,7 @@ class RimuHostingException(Exception):
     def __repr__(self):
         return "<RimuHostingException '%s'>" % (self.args[0])
 
-class RimuHostingResponse(Response):
+class RimuHostingResponse(JsonResponse):
     def __init__(self, response, connection):
         self.body = response.read()
         self.status = response.status
@@ -55,17 +55,15 @@ class RimuHostingResponse(Response):
         if self.status == 403:
             raise InvalidCredsError()
         return True
+
     def parse_body(self):
         try:
-            js = json.loads(self.body)
+            js = super(RimuHostingResponse, self).parse_body()
             if js[js.keys()[0]]['response_type'] == "ERROR":
                 raise RimuHostingException(
                     js[js.keys()[0]]['human_readable_message']
                 )
             return js[js.keys()[0]]
-        except ValueError:
-            raise RimuHostingException('Could not parse body: %s'
-                                       % (self.body))
         except KeyError:
             raise RimuHostingException('Could not parse body: %s'
                                        % (self.body))

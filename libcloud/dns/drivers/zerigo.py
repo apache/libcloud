@@ -26,7 +26,7 @@ from xml.etree import ElementTree as ET
 
 from libcloud.utils import fixxpath, findtext, findattr, findall
 from libcloud.utils import merge_valid_keys, get_new_obj
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError, LazyList
 from libcloud.dns.types import Provider, RecordType
@@ -72,17 +72,7 @@ class ZerigoError(LibcloudError):
                                                            len(self.errors)))
 
 
-class ZerigoDNSResponse(Response):
-    def parse_body(self):
-        if not self.body or (self.body and not self.body.strip()):
-            return None
-
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError('Failed to parse XML', body=self.body)
-        return body
-
+class ZerigoDNSResponse(XmlResponse):
     def success(self):
         return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 

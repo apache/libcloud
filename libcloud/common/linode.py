@@ -13,13 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-from libcloud.common.base import ConnectionKey, Response
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.base import ConnectionKey, JsonResponse
+from libcloud.common.types import InvalidCredsError
 
 __all__ = [
     'API_HOST',
@@ -65,7 +60,7 @@ class LinodeException(Exception):
         return "<LinodeException code %u '%s'>" % (self.code, self.message)
 
 
-class LinodeResponse(Response):
+class LinodeResponse(JsonResponse):
     """Linode API response
 
     Wraps the HTTP response returned by the Linode API, which should be JSON in
@@ -106,10 +101,7 @@ class LinodeResponse(Response):
         None and errorarray will indicate an invalid JSON exception.
 
         @return: C{list} of objects and C{list} of errors"""
-        try:
-            js = json.loads(self.body)
-        except:
-            raise MalformedResponseError("Failed to parse JSON", body=self.body)
+        js = super(LinodeResponse, self).parse_body()
 
         try:
             if isinstance(js, dict):

@@ -19,9 +19,7 @@ Voxel VoxCloud driver
 import datetime
 import hashlib
 
-from xml.etree import ElementTree as ET
-
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
@@ -30,7 +28,7 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 VOXEL_API_HOST = "api.voxel.net"
 
-class VoxelResponse(Response):
+class VoxelResponse(XmlResponse):
 
     def __init__(self, response, connection):
         self.parsed = None
@@ -41,7 +39,7 @@ class VoxelResponse(Response):
         if not self.body:
             return None
         if not self.parsed:
-            self.parsed = ET.XML(self.body)
+            self.parsed = super(VoxelResponse, self).parse_body()
         return self.parsed
 
     def parse_error(self):
@@ -49,7 +47,7 @@ class VoxelResponse(Response):
         if not self.body:
             return None
         if not self.parsed:
-            self.parsed = ET.XML(self.body)
+            self.parsed = super(VoxelResponse, self).parse_body()
         for err in self.parsed.findall('err'):
             code = err.get('code')
             err_list.append("(%s) %s" % (code, err.get('msg')))
@@ -64,7 +62,7 @@ class VoxelResponse(Response):
 
     def success(self):
         if not self.parsed:
-            self.parsed = ET.XML(self.body)
+            self.parsed = super(VoxelResponse, self).parse_body()
         stat = self.parsed.get('stat')
         if stat != "ok":
             return False

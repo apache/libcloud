@@ -19,26 +19,10 @@ import hmac
 import time
 import urllib
 
-try:
-    import simplejson as json
-except:
-    import json
-
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.common.types import MalformedResponseError
 
-class CloudStackResponse(Response):
-    def parse_body(self):
-        try:
-            body = json.loads(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse JSON",
-                body=self.body,
-                driver=self.connection.driver)
-        return body
-
-    parse_error = parse_body
+class CloudStackResponse(JsonResponse): pass
 
 class CloudStackConnection(ConnectionUserAndKey):
     responseCls = CloudStackResponse
