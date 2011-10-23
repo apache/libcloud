@@ -45,9 +45,10 @@ class Response(object):
     headers = {}
     error = None
     connection = None
+    parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = response.read()
+        self.body = response.read().strip()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
@@ -95,6 +96,9 @@ class JsonResponse(Response):
     A Base JSON Response class to derive from.
     """
     def parse_body(self):
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
+
         try:
             body = json.loads(self.body)
         except:
@@ -112,13 +116,15 @@ class XmlResponse(Response):
     A Base XML Response class to derive from.
     """
     def parse_body(self):
-        if not self.body:
-            return None
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
 
         try:
           body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML", body=self.body)
+          raise MalformedResponseError("Failed to parse XML",
+                                       body=self.body,
+                                       driver=self.connection.driver)
         return body
 
     parse_error = parse_body
