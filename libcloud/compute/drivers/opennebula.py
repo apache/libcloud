@@ -15,6 +15,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+OpenNebula Driver
+"""
 
 try:
     import simplejson as json
@@ -24,7 +27,7 @@ except ImportError:
 from xml.etree import ElementTree as ET
 from base64 import b64encode
 import hashlib
-import sys
+import httplib
 
 from libcloud.compute.base import NodeState, NodeDriver, Node, NodeLocation
 from libcloud.common.base import ConnectionUserAndKey, Response
@@ -40,6 +43,9 @@ DEFAULT_API_VERSION = '3.0'
 
 
 class OpenNebulaResponse(Response):
+    """
+    Response class for the OpenNebula driver.
+    """
 
     def success(self):
         i = int(self.status)
@@ -51,14 +57,14 @@ class OpenNebulaResponse(Response):
         return ET.XML(self.body)
 
     def parse_error(self):
-        if int(self.status) == 401:
+        if int(self.status) == httplib.UNAUTHORIZED:
             raise InvalidCredsError(self.body)
         return self.body
 
 
 class OpenNebulaConnection(ConnectionUserAndKey):
     """
-    Connection class for the OpenNebula driver
+    Connection class for the OpenNebula driver.
     """
 
     host = API_HOST
@@ -68,7 +74,7 @@ class OpenNebulaConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         pass_sha1 = hashlib.sha1(self.key).hexdigest()
-        headers['Authorization'] = ("Basic %s" % b64encode("%s:%s" %
+        headers['Authorization'] = ('Basic %s' % b64encode('%s:%s' %
                                                 (self.user_id, pass_sha1)))
         return headers
 
@@ -91,27 +97,49 @@ class OpenNebulaNodeSize(NodeSize):
                    self.price, self.driver.name, self.cpu))
 
 
+class OpenNebulaNetwork(object):
+    """
+    A virtual network.
+
+    NodeNetwork objects are analogous to physical switches connecting 2
+    or more physical nodes together.
+
+    Apart from name and id, there is no further standard information;
+    other parameters are stored in a driver specific "extra" variable
+    """
+
+    def __init__(self, id, name, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<OpenNebulaNetwork: id=%s, name=%s, driver=%s ...>')
+                % (self.id, self.name, self.driver.name))
+
+
 class OpenNebulaNodeDriver(NodeDriver):
     """
-    OpenNebula node driver
+    OpenNebula node driver.
     """
 
     connectionCls = OpenNebulaConnection
-    type = Provider.OPENNEBULA
     name = 'OpenNebula'
+    type = Provider.OPENNEBULA
 
     NODE_STATE_MAP = {
-        'pending': NodeState.PENDING,
-        'hold': NodeState.PENDING,
-        'prolog': NodeState.PENDING,
-        'running': NodeState.RUNNING,
-        'migrate': NodeState.PENDING,
-        'epilog': NodeState.TERMINATED,
-        'stopped': NodeState.TERMINATED,
-        'suspended': NodeState.PENDING,
-        'failed': NodeState.TERMINATED,
-        'unknown': NodeState.UNKNOWN,
-        'done': NodeState.TERMINATED,
+        'PENDING': NodeState.PENDING,
+        'HOLD': NodeState.PENDING,
+        'PROLOG': NodeState.PENDING,
+        'RUNNING': NodeState.RUNNING,
+        'MIGRATE': NodeState.PENDING,
+        'EPILOG': NodeState.TERMINATED,
+        'STOPPED': NodeState.TERMINATED,
+        'SUSPENDED': NodeState.PENDING,
+        'FAILED': NodeState.TERMINATED,
+        'UNKNOWN': NodeState.UNKNOWN,
+        'DONE': NodeState.TERMINATED
     }
 
     def __new__(cls, key, secret=None, api_version=DEFAULT_API_VERSION,
@@ -124,8 +152,7 @@ class OpenNebulaNodeDriver(NodeDriver):
             else:
                 raise NotImplementedError(
                     "No OpenNebulaNodeDriver found for API version %s" %
-                    (api_version)
-                )
+                    (api_version))
             return super(OpenNebulaNodeDriver, cls).__new__(cls)
 
     def list_sizes(self, location=None):
@@ -204,28 +231,52 @@ class OpenNebulaNodeDriver(NodeDriver):
 
         return self._to_node(node)
 
+    def ex_list_networks(self, location=None):
+        """
+        List virtual networks on a provider
+        @return: C{list} of L{OpenNebulaNetwork} objects
+        """
+        return self._to_networks(self.connection.request('/network').object)
+
     def _to_images(self, object):
         images = []
-        for element in object.findall("DISK"):
-            image_id = element.attrib["href"].partition("/storage/")[2]
-            image = self.connection.request(("/storage/%s" % (
+        for element in object.findall('DISK'):
+            image_id = element.attrib['href'].partition('/storage/')[2]
+            image = self.connection.request(('/storage/%s' % (
                                              image_id))).object
             images.append(self._to_image(image))
 
         return images
 
     def _to_image(self, image):
-        return NodeImage(id=image.findtext("ID"),
-                         name=image.findtext("NAME"),
+        return NodeImage(id=image.findtext('ID'),
+                         name=image.findtext('NAME'),
                          driver=self.connection.driver,
-                         extra={"size": image.findtext("SIZE"),
-                                "url": image.findtext("URL")})
+                         extra={'size': image.findtext('SIZE'),
+                                'url': image.findtext('URL')})
+
+    def _to_networks(self, object):
+        networks = []
+        for element in object.findall('NETWORK'):
+            network_id = element.attrib['href'].partition('/network/')[2]
+            network_element = self.connection.request(('/network/%s' % (
+                                             network_id))).object
+            networks.append(self._to_network(network_element))
+
+        return networks
+
+    def _to_network(self, element):
+        return OpenNebulaNetwork(id=element.findtext('ID'),
+                      name=element.findtext('NAME'),
+                      driver=self.connection.driver,
+                      extra={'address': element.findtext('ADDRESS'),
+                             'size': element.findtext('SIZE')})
 
     def _to_nodes(self, object):
         computes = []
-        for element in object.findall("COMPUTE"):
-            compute_id = element.attrib["href"].partition("/compute/")[2]
-            compute = self.connection.request(("/compute/%s" % (
+        for element in object.findall('COMPUTE'):
+            compute_id = element.attrib['href'].partition('/compute/')[2]
+            compute = self.connection.request(('/compute/%s' % (
                                                compute_id))).object
             computes.append(self._to_node(compute))
 
@@ -234,24 +285,26 @@ class OpenNebulaNodeDriver(NodeDriver):
     def _extract_networks(self, compute):
         networks = []
 
-        for element in compute.findall("NIC"):
-            ip = element.element.attrib.get('ip', None)
-
-            if ip is not None:
-                networks.append(ip)
+        network_list = compute.find('NETWORK')
+        for element in network_list.findall('NIC'):
+            networks.append(
+                OpenNebulaNetwork(id=element.attrib.get('network', None),
+                    name=None,
+                    driver=self.connection.driver,
+                    extra={'ip': element.attrib.get('ip', None)}))
 
         return networks
 
     def _to_node(self, compute):
         try:
-            state = self.NODE_STATE_MAP[compute.findtext("STATE")]
+            state = self.NODE_STATE_MAP[compute.findtext('STATE').upper()]
         except KeyError:
             state = NodeState.UNKNOWN
 
         networks = self._extract_networks(compute)
 
-        return Node(id=compute.findtext("ID"),
-                    name=compute.findtext("NAME"),
+        return Node(id=compute.findtext('ID'),
+                    name=compute.findtext('NAME'),
                     state=state,
                     public_ip=networks,
                     private_ip=[],
@@ -334,9 +387,16 @@ class OpenNebula_3_0_NodeDriver(OpenNebulaNodeDriver):
                    driver=self),
         ]
 
+    def ex_list_networks(self, location=None):
+        """
+        List virtual networks on a provider
+        @return: C{list} of L{OpenNebulaNetwork} objects
+        """
+        return self._to_networks(self.connection.request('/network').object)
+
     def _to_images(self, object):
         images = []
-        for element in object.findall("STORAGE"):
+        for element in object.findall('STORAGE'):
             image_id = element.attrib["href"].partition("/storage/")[2]
             image = self.connection.request(("/storage/%s" %
                                              (image_id))).object
@@ -345,18 +405,31 @@ class OpenNebula_3_0_NodeDriver(OpenNebulaNodeDriver):
         return images
 
     def _to_image(self, image):
-        return NodeImage(id=image.findtext("ID"),
-                         name=image.findtext("NAME"),
+        return NodeImage(id=image.findtext('ID'),
+                         name=image.findtext('NAME'),
                          driver=self.connection.driver,
-                         extra={"description": image.findtext("DESCRIPTION"),
-                                "TYPE": image.findtext("TYPE"),
-                                "size": image.findtext("SIZE"),
-                                "fstype": image.findtext("FSTYPE", None)})
+                         extra={'description': image.findtext('DESCRIPTION'),
+                                'TYPE': image.findtext('TYPE'),
+                                'size': image.findtext('SIZE'),
+                                'fstype': image.findtext('FSTYPE', None)})
 
     def _extract_networks(self, compute):
         networks = []
-        for element in compute.findall("NIC"):
-            for ip in element.findall("IP"):
-                networks.append(ip)
+
+        for element in compute.findall('NIC'):
+            network = element.find('NETWORK')
+            network_id = network.attrib['href'].partition('/network/')[2]
+
+            ips = []
+            for ip in element.findall('IP'):
+                ips.append(ip)
+
+            networks.append(
+                OpenNebulaNetwork(id=network_id,
+                         name=network.attrib['name'],
+                         driver=self.connection.driver,
+                         extra={'ip': ips,
+                                'mac': element.findtext('MAC'),
+                         }))
 
         return networks
