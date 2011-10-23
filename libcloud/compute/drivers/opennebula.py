@@ -30,11 +30,10 @@ import hashlib
 import httplib
 
 from libcloud.compute.base import NodeState, NodeDriver, Node, NodeLocation
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.compute.base import NodeImage, NodeSize
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
-from libcloud.common.base import Response
 
 API_HOST = ''
 API_PORT = (4567, 443)
@@ -42,7 +41,7 @@ API_SECURE = True
 DEFAULT_API_VERSION = '3.0'
 
 
-class OpenNebulaResponse(Response):
+class OpenNebulaResponse(XmlResponse):
     """
     Response class for the OpenNebula driver.
     """
@@ -50,11 +49,6 @@ class OpenNebulaResponse(Response):
     def success(self):
         i = int(self.status)
         return i >= 200 and i <= 299
-
-    def parse_body(self):
-        if not self.body:
-            return None
-        return ET.XML(self.body)
 
     def parse_error(self):
         if int(self.status) == httplib.UNAUTHORIZED:

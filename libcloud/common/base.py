@@ -18,11 +18,17 @@ import urllib
 import StringIO
 import ssl
 
+from xml.etree import ElementTree as ET
 from pipes import quote as pquote
 import urlparse
 
+try:
+    import simplejson as json
+except:
+    import json
+
 import libcloud
-from libcloud.common.types import LibcloudError
+from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from httplib import HTTPConnection as LibcloudHTTPConnection
@@ -39,9 +45,10 @@ class Response(object):
     headers = {}
     error = None
     connection = None
+    parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = response.read()
+        self.body = response.read().strip()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
@@ -82,6 +89,46 @@ class Response(object):
         @return: C{True} or C{False}
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
+
+
+class JsonResponse(Response):
+    """
+    A Base JSON Response class to derive from.
+    """
+    def parse_body(self):
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
+
+        try:
+            body = json.loads(self.body)
+        except:
+            raise MalformedResponseError(
+                "Failed to parse JSON",
+                body=self.body,
+                driver=self.connection.driver)
+        return body
+
+    parse_error = parse_body
+
+
+class XmlResponse(Response):
+    """
+    A Base XML Response class to derive from.
+    """
+    def parse_body(self):
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
+
+        try:
+          body = ET.XML(self.body)
+        except:
+          raise MalformedResponseError("Failed to parse XML",
+                                       body=self.body,
+                                       driver=self.connection.driver)
+        return body
+
+    parse_error = parse_body
+
 
 class RawResponse(Response):
 

@@ -23,7 +23,7 @@ from urlparse import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
@@ -198,18 +198,7 @@ class InstantiateVAppXML(object):
             {'href': self.net_href}
         )
 
-class VCloudResponse(Response):
-
-    def parse_body(self):
-        if not self.body:
-            return None
-        try:
-            return ET.XML(self.body)
-        except ExpatError, e:
-            raise Exception("%s: %s" % (e, self.parse_error()))
-
-    def parse_error(self):
-        return self.error
+class VCloudResponse(XmlResponse):
 
     def success(self):
         return self.status in (httplib.OK, httplib.CREATED,

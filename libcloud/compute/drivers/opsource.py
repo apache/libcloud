@@ -22,8 +22,7 @@ import httplib
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.utils import fixxpath, findtext, findall
 from libcloud.compute.types import NodeState, Provider
 
@@ -88,18 +87,7 @@ IPPLAN_NS = NAMESPACE_BASE + "/ipplan"
 WHITELABEL_NS = NAMESPACE_BASE + "/whitelabel"
 
 
-class OpsourceResponse(Response):
-
-    def parse_body(self):
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                'Failed to parse XML',
-                body=self.body,
-                driver=OpsourceNodeDriver)
-
-        return body
+class OpsourceResponse(XmlResponse):
 
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
@@ -107,13 +95,7 @@ class OpsourceResponse(Response):
         elif self.status == httplib.FORBIDDEN:
             raise InvalidCredsError(self.body)
 
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                'Failed to parse XML',
-                body=self.body,
-                driver=OpsourceNodeDriver)
+        body = self.parse_body()
 
         if self.status == httplib.BAD_REQUEST:
             code = findtext(body, 'resultCode', SERVER_NS)

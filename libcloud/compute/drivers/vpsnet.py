@@ -22,8 +22,8 @@ try:
 except ImportError:
     import json
 
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.types import InvalidCredsError
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver
@@ -37,13 +37,12 @@ DISK_PER_NODE = 10
 BANDWIDTH_PER_NODE = 250
 
 
-class VPSNetResponse(Response):
+class VPSNetResponse(JsonResponse):
 
     def parse_body(self):
         try:
-            js = json.loads(self.body)
-            return js
-        except ValueError:
+            return super(VPSNetResponse, self).parse_body()
+        except MalformedResponseError:
             return self.body
 
     def success(self):
@@ -54,8 +53,8 @@ class VPSNetResponse(Response):
 
     def parse_error(self):
         try:
-            errors = json.loads(self.body)['errors'][0]
-        except ValueError:
+            errors = super(VPSNetResponse, self).parse_body()['errors'][0]
+        except MalformedResponseError:
             return self.body
         else:
             return "\n".join(errors)
