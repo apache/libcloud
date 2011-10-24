@@ -67,6 +67,11 @@ GOGRID_INSTANCE_TYPES = {
                        'ram': 16384,
                        'disk': 960,
                        'bandwidth': None},
+        '24GB': {'id': '24GB',
+                       'name': '24GB',
+                       'ram': 24576,
+                       'disk': 960,
+                       'bandwidth': None},
 }
 
 
