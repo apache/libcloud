@@ -12,7 +12,15 @@ Changes with Apache Libcloud in development:
        environment variable ; LIBCLOUD-95.
        [daveb, Tomaz Muraus]
 
+     - Add new XmlResponse and JsonResponse base class and modify all the
+       driver-specific response classes to inherit from one of those two
+       classes where applicable.
+       [Caio Romão]
+
   *) Compute:
+
+     - Add 24GB size to the GoGrid driver
+       [Roman Bogorodskiy]
 
      - Fix API endpoint URL in the Softlayer driver
        [Tomaz Muraus]
