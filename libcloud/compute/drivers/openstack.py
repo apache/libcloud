@@ -910,18 +910,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Sets the Node's name.
         """
-        return self.ex_update_node(node, name=name)
+        return self._update_node(node, name=name)
+
+    def ex_set_metadata(self, node, metadata):
+        """
+        Sets the Node's metadata.
+
+        @param metadata server metadata, a dict with string keys and values
+        """
+        return self._update_node(node, metadata=metadata)
 
     def ex_update_node(self, node, **node_updates):
-        # Currently only setting the name is supported in OpenStack, but we
-        # leave the function signature prepared to support metadata or other
-        # fields in the future.
         potential_data = self._create_args_to_params(node, node_updates)
-        return self._to_node(
-            self.connection.request(
-                '/servers/%s' % (node.id,), method='PUT',
-                data={'server': {'name': potential_data['name']}})
-                   .object['server'])
+        updates = {'name': potential_data['name'],
+                   'metadata': potential_data['metadata']}
+        return self._update_node(node, **updates)
 
     def ex_get_size(self, size_id):
         return self._to_size(self.connection.request('/flavors/%s' %
@@ -945,6 +948,18 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         params = params or None
         return self.connection.request('/servers/%s/action' % (node.id,),
                                        method='POST', data={action: params})
+
+    def _update_node(self, node, **node_updates):
+        """
+        Updates the editable attributes of a server, which currently include
+        its name, metadata, and IPv4/IPv6 access addresses.
+        """
+        return self._to_node(
+            self.connection.request(
+                '/servers/%s' % (node.id,), method='PUT',
+                data={'server': node_updates}
+            ).object['server']
+        )
 
     def _to_node_from_obj(self, obj):
         return self._to_node(obj['server'])
