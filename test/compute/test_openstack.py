@@ -609,7 +609,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         except Exception, e:
             self.fail('An error was raised: ' + repr(e))
 
-
     def test_ex_update_node(self):
         old_node = Node(
             id='12064',

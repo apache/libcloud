@@ -916,11 +916,22 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Sets the Node's metadata.
 
-        @param metadata server metadata, a dict with string keys and values
+        @keyword    metadata: Key/Value metadata to associate with a node
+        @type       metadata: C{dict}
         """
         return self._update_node(node, metadata=metadata)
 
     def ex_update_node(self, node, **node_updates):
+        """
+        Update the Node's editable attributes.  Currently this driver
+        supports editing name and metadata.
+
+        @keyword    ex_metadata: Key/Value metadata to associate with a node
+        @type       ex_metadata: C{dict}
+
+        @keyword    name:   New name for the server
+        @type       name:   C{str}
+        """
         potential_data = self._create_args_to_params(node, node_updates)
         updates = {'name': potential_data['name'],
                    'metadata': potential_data['metadata']}
