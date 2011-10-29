@@ -52,9 +52,6 @@ class RackspaceDNSResponse(OpenStack_1_1_Response):
     """
 
     def parse_error(self):
-        # Holy fucking jesus,
-        # "The request could not be understood by the server due to malformed
-        # syntax." is returned if record already exists
         status = int(self.status)
         context = self.connection.context
         body = self.parse_body()
