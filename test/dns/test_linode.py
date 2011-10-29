@@ -68,7 +68,7 @@ class LinodeTests(unittest.TestCase):
 
         LinodeMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
-            records = self.driver.list_records(zone=zone)
+            self.driver.list_records(zone=zone)
         except ZoneDoesNotExistError, e:
             self.assertEqual(e.zone_id, zone.id)
         else:
@@ -88,7 +88,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'GET_ZONE_DOES_NOT_EXIST'
 
         try:
-            zone = self.driver.get_zone(zone_id='4444')
+            self.driver.get_zone(zone_id='4444')
         except ZoneDoesNotExistError, e:
             self.assertEqual(e.zone_id, '4444')
         else:
@@ -108,7 +108,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'GET_RECORD_ZONE_DOES_NOT_EXIST'
 
         try:
-            record = self.driver.get_record(zone_id='444', record_id='28536')
+            self.driver.get_record(zone_id='444', record_id='28536')
         except ZoneDoesNotExistError:
             pass
         else:
@@ -118,7 +118,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
 
         try:
-            record = self.driver.get_record(zone_id='4441', record_id='28536')
+            self.driver.get_record(zone_id='4441', record_id='28536')
         except RecordDoesNotExistError:
             pass
         else:
@@ -134,8 +134,8 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'VALIDATION_ERROR'
 
         try:
-            zone = self.driver.create_zone(domain='foo.bar.com', type='master',
-                                           ttl=None, extra=None)
+            self.driver.create_zone(domain='foo.bar.com', type='master',
+                                    ttl=None, extra=None)
         except LinodeException:
             pass
         else:
