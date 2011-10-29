@@ -19,13 +19,16 @@ import hmac
 import time
 import urllib
 
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.base import ConnectionUserAndKey, PollingConnection
+from libcloud.common.base import JsonResponse
 from libcloud.common.types import MalformedResponseError
 
 class CloudStackResponse(JsonResponse): pass
 
-class CloudStackConnection(ConnectionUserAndKey):
+class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
+    poll_interval = 1
+    request_method = '_sync_request'
 
     ASYNC_PENDING = 0
     ASYNC_SUCCESS = 1
@@ -50,6 +53,33 @@ class CloudStackConnection(ConnectionUserAndKey):
 
         return params, headers
 
+    def _async_request(self, command, **kwargs):
+        context = {'command': command, 'kwargs': kwargs}
+        result = super(CloudStackConnection, self).async_request(action=None,
+                                                               params=None,
+                                                               data=None,
+                                                               headers=None,
+                                                               method=None,
+                                                               context=context)
+        return result['jobresult']
+
+    def get_request_kwargs(self, action, params=None, data='', headers=None,
+                           method='GET', context=None):
+        return context
+
+    def get_poll_request_kwargs(self, response, context):
+        job_id = response['jobid']
+        kwargs = {'command': 'queryAsyncJobResult', 'jobid': job_id}
+        return kwargs
+
+    def has_completed(self, response):
+        status = response.get('jobstatus', self.ASYNC_PENDING)
+
+        if status == self.ASYNC_FAILURE:
+            raise Exception(status)
+
+        return status == self.ASYNC_SUCCESS
+
     def _sync_request(self, command, **kwargs):
         """This method handles synchronous calls which are generally fast
            information retrieval requests and thus return 'quickly'."""
@@ -65,34 +95,9 @@ class CloudStackConnection(ConnectionUserAndKey):
         result = result.object[command]
         return result
 
-    def _async_request(self, command, **kwargs):
-        """This method handles asynchronous calls which are generally
-           requests for the system to do something and can thus take time.
-
-           In these cases the initial call will either fail fast and return
-           an error, or it can return a job ID.  We then poll for the status
-           of the job ID which can either be pending, successful or failed."""
-
-        result = self._sync_request(command, **kwargs)
-        job_id = result['jobid']
-        success = True
-
-        while True:
-            result = self._sync_request('queryAsyncJobResult', jobid=job_id)
-            status = result.get('jobstatus', self.ASYNC_PENDING)
-            if status != self.ASYNC_PENDING:
-                break
-            time.sleep(self.driver.async_poll_frequency)
-
-        if result['jobstatus'] == self.ASYNC_FAILURE:
-            raise Exception(result)
-
-        return result['jobresult']
-
 class CloudStackDriverMixIn(object):
     host = None
     path = None
-    async_poll_frequency = 1
 
     connectionCls = CloudStackConnection
 
