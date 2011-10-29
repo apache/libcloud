@@ -63,7 +63,7 @@ class Zone(object):
         return self.driver.create_record(name=name, zone=self, type=type,
                                          data=data, extra=extra)
 
-    def update(self, domain, type='master', ttl=None, extra=None):
+    def update(self, domain=None, type=None, ttl=None, extra=None):
         return self.driver.update_zone(zone=self, domain=domain, type=type,
                                        ttl=ttl, extra=extra)
 
@@ -111,7 +111,7 @@ class Record(object):
         self.driver = driver
         self.extra = extra or {}
 
-    def update(self, name, type, data, extra):
+    def update(self, name=None, type=None, data=None, extra=None):
         return self.driver.update_record(record=self, name=name, type=type,
                                          data=data, extra=extra)
 
