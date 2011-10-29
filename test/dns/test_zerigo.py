@@ -76,7 +76,7 @@ class ZerigoTests(unittest.TestCase):
 
         ZerigoMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
-            records = list(self.driver.list_records(zone=zone))
+            list(self.driver.list_records(zone=zone))
         except ZoneDoesNotExistError, e:
             self.assertEqual(e.zone_id, zone.id)
         else:
@@ -95,7 +95,7 @@ class ZerigoTests(unittest.TestCase):
         ZerigoMockHttp.type = 'DOES_NOT_EXIST'
 
         try:
-            zone = self.driver.get_zone(zone_id='4444')
+            self.driver.get_zone(zone_id='4444')
         except ZoneDoesNotExistError, e:
             self.assertEqual(e.zone_id, '4444')
         else:
@@ -112,7 +112,7 @@ class ZerigoTests(unittest.TestCase):
         ZerigoMockHttp.type = 'ZONE_DOES_NOT_EXIST'
 
         try:
-            record = self.driver.get_record(zone_id='444', record_id='28536')
+            self.driver.get_record(zone_id='444', record_id='28536')
         except ZoneDoesNotExistError:
             pass
         else:
@@ -122,7 +122,7 @@ class ZerigoTests(unittest.TestCase):
         ZerigoMockHttp.type = 'RECORD_DOES_NOT_EXIST'
 
         try:
-            record = self.driver.get_record(zone_id='12345678',
+            self.driver.get_record(zone_id='12345678',
                                             record_id='28536')
         except RecordDoesNotExistError:
             pass
@@ -141,8 +141,8 @@ class ZerigoTests(unittest.TestCase):
         ZerigoMockHttp.type = 'CREATE_ZONE_VALIDATION_ERROR'
 
         try:
-            zone = self.driver.create_zone(domain='foo.bar.com', type='master',
-                                           ttl=10, extra=None)
+            self.driver.create_zone(domain='foo.bar.com', type='master',
+                                    ttl=10, extra=None)
         except ZerigoError, e:
             self.assertEqual(len(e.errors), 2)
             pass
@@ -169,8 +169,7 @@ class ZerigoTests(unittest.TestCase):
         zone = self.driver.list_zones()[0]
 
         try:
-            updated_zone = self.driver.update_zone(zone=zone,
-                                                   domain='libcloud.org')
+            self.driver.update_zone(zone=zone, domain='libcloud.org')
         except LibcloudError:
             pass
         else:
