@@ -246,9 +246,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             # TODO: this is even more broken, the service catalog does NOT show load
             # balanacers :(  You must hard code in the Rackspace Load balancer URLs...
             self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
+            self.dns_url = self.server_url.replace("servers", "dns")
 
             for key in ['server_url', 'storage_url', 'cdn_management_url',
-                        'lb_url']:
+                        'lb_url', 'dns_url']:
                 base_url = None
                 if self._force_base_url != None:
                     base_url = self._force_base_url
