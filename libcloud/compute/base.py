@@ -514,8 +514,8 @@ class NodeDriver(BaseDriver):
 
         try:
             # Wait until node is up and running and has public IP assigned
-            self._wait_until_running(node=node, wait_period=3,
-                                     timeout=NODE_ONLINE_WAIT_TIMEOUT)
+            node = self._wait_until_running(node=node, wait_period=3,
+                                            timeout=NODE_ONLINE_WAIT_TIMEOUT)
 
             ssh_username = kwargs.get('ssh_username', 'root')
             ssh_port = kwargs.get('ssh_port', 22)
@@ -524,6 +524,7 @@ class NodeDriver(BaseDriver):
             ssh_client = SSHClient(hostname=node.public_ip[0],
                                    port=ssh_port, username=ssh_username,
                                    password=password,
+                                   key=ssh_key_file,
                                    timeout=ssh_timeout)
 
             # Connect to the SSH server running on the node
@@ -575,9 +576,7 @@ class NodeDriver(BaseDriver):
 
             node = nodes[0]
 
-            if (node.public_ip is not None
-                and node.public_ip != ""
-                and node.state == NodeState.RUNNING):
+            if (node.public_ip and node.state == NodeState.RUNNING):
                 return node
             else:
                 time.sleep(wait_period)
