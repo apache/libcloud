@@ -22,6 +22,12 @@ libcloud provides a unified interface to the cloud computing resources.
 __all__ = ["__version__", "enable_debug"]
 __version__ = '0.6.0-beta1'
 
+try:
+    import paramiko
+    have_paramiko = True
+except ImportError:
+    pass
+
 
 def enable_debug(fo):
     """
@@ -51,5 +57,8 @@ def _init_once():
     if path:
         fo = open(path, 'a')
         enable_debug(fo)
+
+        if have_paramiko:
+            paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()
