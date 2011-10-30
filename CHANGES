@@ -17,6 +17,11 @@ Changes with Apache Libcloud in development:
        classes where applicable.
        [Caio Romão]
 
+      - Add new 'PollingConnection' class. This class can work with 'async'
+        APIs. It sends and an initial request and then periodically poll the API
+        until the job has completed or a timeout has been reached.
+        [Tomaz Muraus]
+
   *) Compute:
 
      - Add 24GB size to the GoGrid driver
@@ -31,6 +36,11 @@ Changes with Apache Libcloud in development:
      - Add more attributes to the extra dictionary in the EC2 driver ;
        GITHUB-31
        [Juan Carlos Moreno]
+
+  *) DNS:
+
+   - New drivers for Rackspace Cloud DNS (US and UK region)
+     [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.0-beta1
 
