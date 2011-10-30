@@ -898,7 +898,12 @@ class EC2NodeDriver(NodeDriver):
 
         for node in nodes:
             tags = {'Name': kwargs['name']}
-            self.ex_create_tags(node=node, tags=tags)
+
+            try:
+                self.ex_create_tags(node=node, tags=tags)
+            except Exception:
+                continue
+
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 
