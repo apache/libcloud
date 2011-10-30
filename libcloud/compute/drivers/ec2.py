@@ -319,15 +319,20 @@ class EC2NodeDriver(NodeDriver):
 
         name = tags.get('Name', instance_id)
 
+        public_ip = findtext(element=element, xpath='ipAddress',
+                              namespace=NAMESPACE)
+        public_ips = [public_ip] if public_ip else []
+        private_ip = findtext(element=element, xpath='privateIpAddress',
+                                 namespace=NAMESPACE)
+        private_ips = [private_ip] if private_ip else []
+
         n = Node(
             id=findtext(element=element, xpath='instanceId',
                         namespace=NAMESPACE),
             name=name,
             state=state,
-            public_ip=[findtext(element=element, xpath='ipAddress',
-                                namespace=NAMESPACE)],
-            private_ip=[findtext(element=element, xpath='privateIpAddress',
-                                 namespace=NAMESPACE)],
+            public_ip=public_ips,
+            private_ip=private_ips,
             driver=self.connection.driver,
             extra={
                 'dns_name': findattr(element=element, xpath="dnsName",
@@ -431,7 +436,8 @@ class EC2NodeDriver(NodeDriver):
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
-            node.public_ip.extend(nodes_elastic_ips_mappings[node.id])
+            ips = nodes_elastic_ips_mappings[node.id]
+            node.public_ip.extend(ips)
         return nodes
 
     def list_sizes(self, location=None):
