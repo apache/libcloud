@@ -37,6 +37,21 @@ Changes with Apache Libcloud in development:
        GITHUB-31
        [Juan Carlos Moreno]
 
+     - Fix IP address assignment in the EC2 driver. Don't include "None" in the
+       public_ip and private_ip Node list attribute.
+       [Tomaz Muraus]
+
+     - Make deploy_node functionality more robust and don't start deployment if
+       node public_ip attribute is an empty list.
+       [Tomaz Muraus]
+
+     - Support SSH key authentication when using deploy_node.
+       [Russell Haering, Tomaz Muraus]
+
+     - Enable deploy_node functionality in the EC2 driver using SSH key
+       authentication
+       [Russell Haering, Tomaz Muraus]
+
   *) DNS:
 
    - New drivers for Rackspace Cloud DNS (US and UK region)
