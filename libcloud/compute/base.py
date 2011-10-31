@@ -466,6 +466,10 @@ class NodeDriver(BaseDriver):
                             (optional)
         @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
 
+        @keyword    ssh_key: A path (or paths) to an SSH private key with which
+                             to attempt to authenticate. (optional)
+        @type       ssh_key: C{string} or C{list} of C{string}s
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -491,21 +495,22 @@ class NodeDriver(BaseDriver):
             raise RuntimeError('paramiko is not installed. You can install ' +
                                'it using pip: pip install paramiko')
 
-        # TODO: support ssh keys
         password = None
 
         if 'create_node' not in self.features:
             raise NotImplementedError(
                     'deploy_node not implemented for this driver')
         elif 'generates_password' not in self.features["create_node"]:
-            if 'password' not in self.features["create_node"]:
+            if 'password' not in self.features["create_node"] and \
+               'ssh_key' not in self.features["create_node"]:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
                 kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
 
-            password = kwargs['auth'].password
+            if 'ssh_key' not in kwargs:
+                password = kwargs['auth'].password
 
         node = self.create_node(**kwargs)
 
@@ -520,6 +525,7 @@ class NodeDriver(BaseDriver):
             ssh_username = kwargs.get('ssh_username', 'root')
             ssh_port = kwargs.get('ssh_port', 22)
             ssh_timeout = kwargs.get('ssh_timeout', 10)
+            ssh_key_file = kwargs.get('ssh_key', None)
 
             ssh_client = SSHClient(hostname=node.public_ip[0],
                                    port=ssh_port, username=ssh_username,

@@ -266,6 +266,7 @@ class EC2NodeDriver(NodeDriver):
     path = '/'
 
     _instance_types = EC2_US_EAST_INSTANCE_TYPES
+    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
