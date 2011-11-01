@@ -132,3 +132,4 @@ class GoogleStorageDriver(S3StorageDriver):
     connectionCls = GoogleStorageConnection
     hash_type = 'md5'
     namespace = NAMESPACE
+    supports_chunked_encoding = False
