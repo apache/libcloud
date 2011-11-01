@@ -473,8 +473,8 @@ class NodeDriver(BaseDriver):
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
-        >>> from libcloud.deployment import ScriptDeployment
-        >>> from libcloud.deployment import MultiStepDeployment
+        >>> from libcloud.compute.deployment import ScriptDeployment
+        >>> from libcloud.compute.deployment import MultiStepDeployment
         >>> from libcloud.compute.base import NodeAuthSSHKey
         >>> driver = DummyNodeDriver(0)
         >>> key = NodeAuthSSHKey('...') # read from file
