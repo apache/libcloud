@@ -149,6 +149,7 @@ class CloudFilesStorageDriver(StorageDriver):
 
     connectionCls = CloudFilesConnection
     hash_type = 'md5'
+    supports_chunked_encoding = True
 
     def list_containers(self):
         response = self.connection.request('')
