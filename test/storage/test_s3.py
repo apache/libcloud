@@ -392,7 +392,8 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(container.name, 'new_container')
 
     def test_delete_container_doesnt_exist(self):
-        container = Container(name='new_container', extra=None, driver=self)
+        container = Container(name='new_container', extra=None,
+                              driver=self.driver)
         self.mock_response_klass.type = 'DOESNT_EXIST'
         try:
             self.driver.delete_container(container=container)
@@ -402,7 +403,8 @@ class S3Tests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_delete_container_not_empty(self):
-        container = Container(name='new_container', extra=None, driver=self)
+        container = Container(name='new_container', extra=None,
+                              driver=self.driver)
         self.mock_response_klass.type = 'NOT_EMPTY'
         try:
             self.driver.delete_container(container=container)
@@ -417,7 +419,8 @@ class S3Tests(unittest.TestCase):
 
     def test_delete_container_not_found(self):
         self.mock_response_klass.type = 'NOT_FOUND'
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         try:
             self.driver.delete_container(container=container)
         except ContainerDoesNotExistError:
@@ -427,11 +430,13 @@ class S3Tests(unittest.TestCase):
 
     def test_delete_container_success(self):
         self.mock_response_klass.type = None
-        container = Container(name='new_container', extra=None, driver=self)
+        container = Container(name='new_container', extra=None,
+                              driver=self.driver)
         self.assertTrue(self.driver.delete_container(container=container))
 
     def test_download_object_success(self):
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=S3StorageDriver)
@@ -444,7 +449,8 @@ class S3Tests(unittest.TestCase):
 
     def test_download_object_invalid_file_size(self):
         self.mock_raw_response_klass.type = 'INVALID_SIZE'
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=S3StorageDriver)
@@ -457,7 +463,8 @@ class S3Tests(unittest.TestCase):
 
     def test_download_object_invalid_file_already_exists(self):
         self.mock_raw_response_klass.type = 'INVALID_SIZE'
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=S3StorageDriver)
@@ -473,7 +480,8 @@ class S3Tests(unittest.TestCase):
            self.fail('Exception was not thrown')
 
     def test_download_object_as_stream_success(self):
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
 
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
@@ -486,7 +494,8 @@ class S3Tests(unittest.TestCase):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
         # returned
         file_path = os.path.abspath(__file__)
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         object_name = 'foo_test_upload'
         try:
             self.driver.upload_object(file_path=file_path, container=container,
@@ -511,7 +520,8 @@ class S3Tests(unittest.TestCase):
         old_func = S3StorageDriver._upload_file
         S3StorageDriver._upload_file = upload_file
         file_path = os.path.abspath(__file__)
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         object_name = 'foo_test_upload'
         try:
             self.driver.upload_object(file_path=file_path, container=container,
@@ -537,7 +547,8 @@ class S3Tests(unittest.TestCase):
         old_func = S3StorageDriver._upload_file
         S3StorageDriver._upload_file = upload_file
         file_path = os.path.abspath(__file__)
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         object_name = 'foo_test_upload'
         try:
             self.driver.upload_object(file_path=file_path, container=container,
@@ -559,7 +570,8 @@ class S3Tests(unittest.TestCase):
         old_func = S3StorageDriver._upload_file
         S3StorageDriver._upload_file = upload_file
         file_path = os.path.abspath(__file__)
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         object_name = 'foo_test_upload'
         extra = {'meta_data': { 'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path, container=container,
@@ -587,7 +599,8 @@ class S3Tests(unittest.TestCase):
 
     def test_delete_object_not_found(self):
         self.mock_response_klass.type = 'NOT_FOUND'
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         obj = Object(name='foo_bar_object', size=1234, hash=None, extra=None,
                      meta_data=None, container=container, driver=self.driver)
         try:
@@ -598,7 +611,8 @@ class S3Tests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_delete_object_success(self):
-        container = Container(name='foo_bar_container', extra={}, driver=self)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
         obj = Object(name='foo_bar_object', size=1234, hash=None, extra=None,
                      meta_data=None, container=container, driver=self.driver)
 
