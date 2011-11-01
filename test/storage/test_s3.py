@@ -36,6 +36,7 @@ from test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
 from test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 from test.secrets import STORAGE_S3_PARAMS
 
+
 class S3MockHttp(StorageMockHttp):
 
     fixtures = StorageFileFixtures('s3')
@@ -84,20 +85,20 @@ class S3MockHttp(StorageMockHttp):
     def _test_container_ITERATOR(self, method, url, body, headers):
         if url.find('3.zip') == -1:
             # First part of the response (first 3 objects)
-            body = self.fixtures.load('list_container_objects_not_exhausted1.xml')
+            file_name = 'list_container_objects_not_exhausted1.xml'
         else:
-            body = self.fixtures.load('list_container_objects_not_exhausted2.xml')
+            file_name = 'list_container_objects_not_exhausted2.xml'
 
+        body = self.fixtures.load(file_name)
         return (httplib.OK,
                 body,
                 self.base_headers,
                 httplib.responses[httplib.OK])
 
-
     def _test2_test_list_containers(self, method, url, body, headers):
         # test_get_object
         body = self.fixtures.load('list_containers.xml')
-        headers = { 'content-type': 'application/zip',
+        headers = {'content-type': 'application/zip',
                     'etag': '"e31208wqsdoj329jd"',
                     'content-length': 12345,
                     }
@@ -162,7 +163,8 @@ class S3MockHttp(StorageMockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_bar_object_NOT_FOUND(self, method, url, body, headers):
+    def _foo_bar_container_foo_bar_object_NOT_FOUND(self, method, url, body,
+                                                    headers):
         # test_delete_object_not_found
         return (httplib.NOT_FOUND,
                 body,
@@ -175,6 +177,7 @@ class S3MockHttp(StorageMockHttp):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
 
 class S3MockRawResponse(MockRawResponse):
 
@@ -189,7 +192,8 @@ class S3MockRawResponse(MockRawResponse):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url, body, headers):
+    def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url,
+                                                         body, headers):
         body = ''
         headers = {}
         headers['etag'] = '"foobar"'
@@ -199,10 +203,11 @@ class S3MockRawResponse(MockRawResponse):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_test_upload_INVALID_HASH2(self, method, url, body, headers):
+    def _foo_bar_container_foo_test_upload_INVALID_HASH2(self, method, url,
+                                                         body, headers):
         # test_upload_object_invalid_hash2
         body = ''
-        headers = { 'etag': '"hash343hhash89h932439jsaa89"'}
+        headers = {'etag': '"hash343hhash89h932439jsaa89"'}
         return (httplib.OK,
                 body,
                 headers,
@@ -211,13 +216,14 @@ class S3MockRawResponse(MockRawResponse):
     def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
         # test_upload_object_success
         body = ''
-        headers = { 'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
+        headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
         return (httplib.OK,
                 body,
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url, body, headers):
+    def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url,
+                                                       body, headers):
         # test_upload_object_invalid_file_size
         body = ''
         return (httplib.OK,
@@ -225,10 +231,11 @@ class S3MockRawResponse(MockRawResponse):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_test_stream_data(self, method, url, body, headers):
+    def _foo_bar_container_foo_test_stream_data(self, method, url, body,
+                                                headers):
         # test_upload_object_via_stream
         body = ''
-        headers = { 'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
+        headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
         return (httplib.OK,
                 body,
                 headers,
@@ -246,8 +253,10 @@ class S3Tests(unittest.TestCase):
         return self.driver_type(*self.driver_args)
 
     def setUp(self):
-        self.driver_type.connectionCls.conn_classes = (None, self.mock_response_klass)
-        self.driver_type.connectionCls.rawResponseCls = self.mock_raw_response_klass
+        self.driver_type.connectionCls.conn_classes = (None,
+                                                     self.mock_response_klass)
+        self.driver_type.connectionCls.rawResponseCls = \
+                self.mock_raw_response_klass
         self.mock_response_klass.type = None
         self.mock_raw_response_klass.type = None
         self.driver = self.create_driver()
@@ -388,8 +397,9 @@ class S3Tests(unittest.TestCase):
     def test_create_container_success(self):
         # success
         self.mock_response_klass.type = None
-        container = self.driver.create_container(container_name='new_container')
-        self.assertEqual(container.name, 'new_container')
+        name = 'new_container'
+        container = self.driver.create_container(container_name=name)
+        self.assertEqual(container.name, name)
 
     def test_delete_container_doesnt_exist(self):
         container = Container(name='new_container', extra=None,
@@ -426,7 +436,8 @@ class S3Tests(unittest.TestCase):
         except ContainerDoesNotExistError:
             pass
         else:
-            self.fail('Container does not exist but an exception was not thrown')
+            self.fail('Container does not exist but an exception was not' +
+                      'thrown')
 
     def test_delete_container_success(self):
         self.mock_response_klass.type = None
@@ -475,9 +486,9 @@ class S3Tests(unittest.TestCase):
                                         overwrite_existing=False,
                                         delete_on_failure=True)
         except LibcloudError:
-           pass
+            pass
         else:
-           self.fail('Exception was not thrown')
+            self.fail('Exception was not thrown')
 
     def test_download_object_as_stream_success(self):
         container = Container(name='foo_bar_container', extra={},
@@ -487,7 +498,8 @@ class S3Tests(unittest.TestCase):
                      container=container, meta_data=None,
                      driver=S3StorageDriver)
 
-        stream = self.driver.download_object_as_stream(obj=obj, chunk_size=None)
+        stream = self.driver.download_object_as_stream(obj=obj,
+                                                       chunk_size=None)
         self.assertTrue(hasattr(stream, '__iter__'))
 
     def test_upload_object_invalid_ex_storage_class(self):
@@ -504,9 +516,8 @@ class S3Tests(unittest.TestCase):
                                       ex_storage_class='invalid-class')
         except ValueError, e:
             self.assertTrue(str(e).lower().find('invalid storage class') != -1)
-            pass
         else:
-           self.fail('Exception was not thrown')
+            self.fail('Exception was not thrown')
 
     def test_upload_object_invalid_hash1(self):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
@@ -573,8 +584,9 @@ class S3Tests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         object_name = 'foo_test_upload'
-        extra = {'meta_data': { 'some-value': 'foobar'}}
-        obj = self.driver.upload_object(file_path=file_path, container=container,
+        extra = {'meta_data': {'some-value': 'foobar'}}
+        obj = self.driver.upload_object(file_path=file_path,
+                                      container=container,
                                       object_name=object_name,
                                       extra=extra,
                                       verify_hash=True)
@@ -619,17 +631,22 @@ class S3Tests(unittest.TestCase):
         result = self.driver.delete_object(obj=obj)
         self.assertTrue(result)
 
+
 class S3USWestTests(S3Tests):
     driver_type = S3USWestStorageDriver
+
 
 class S3EUWestTests(S3Tests):
     driver_type = S3EUWestStorageDriver
 
+
 class S3APSETests(S3Tests):
     driver_type = S3APSEStorageDriver
 
+
 class S3APNETests(S3Tests):
     driver_tyoe = S3APNEStorageDriver
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
