@@ -26,7 +26,7 @@ try:
     import paramiko
     have_paramiko = True
 except ImportError:
-    pass
+    have_paramiko = False
 
 
 def enable_debug(fo):
