@@ -26,6 +26,7 @@ try:
     import paramiko
     have_paramiko = True
 except ImportError:
+    have_paramiko = False
     pass
 
 
