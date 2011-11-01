@@ -24,6 +24,7 @@ from libcloud.storage.base import StorageDriver
 
 from test import StorageMockHttp # pylint: disable-msg=E0611
 
+
 class BaseStorageTests(unittest.TestCase):
     def setUp(self):
         self.send_called = 0
@@ -46,8 +47,8 @@ class BaseStorageTests(unittest.TestCase):
         class SomeClass(object):
             pass
 
-        valid_iterators = [ Iterator(), Iterator2(), StringIO('bar') ]
-        invalid_iterators = [ 'foobar', '', False, True, 1, object() ]
+        valid_iterators = [Iterator(), Iterator2(), StringIO('bar')]
+        invalid_iterators = ['foobar', '', False, True, 1, object()]
 
         def upload_func(*args, **kwargs):
             return True, 'barfoo', 100
@@ -82,8 +83,9 @@ class BaseStorageTests(unittest.TestCase):
 
         # Normal
         success, data_hash, bytes_transferred = \
-                 self.driver1._stream_data(response=response, iterator=iterator,
-                                          chunked=False, calculate_hash=True)
+                 self.driver1._stream_data(response=response,
+                                           iterator=iterator,
+                                           chunked=False, calculate_hash=True)
 
         self.assertTrue(success)
         self.assertEqual(data_hash, hashlib.md5('').hexdigest())
@@ -92,8 +94,9 @@ class BaseStorageTests(unittest.TestCase):
 
         # Chunked
         success, data_hash, bytes_transferred = \
-                 self.driver1._stream_data(response=response, iterator=iterator,
-                                          chunked=True, calculate_hash=True)
+                 self.driver1._stream_data(response=response,
+                                           iterator=iterator,
+                                           chunked=True, calculate_hash=True)
 
         self.assertTrue(success)
         self.assertEqual(data_hash, hashlib.md5('').hexdigest())
