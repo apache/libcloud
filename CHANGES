@@ -17,10 +17,10 @@ Changes with Apache Libcloud in development:
        classes where applicable.
        [Caio Romão]
 
-      - Add new 'PollingConnection' class. This class can work with 'async'
-        APIs. It sends and an initial request and then periodically poll the API
-        until the job has completed or a timeout has been reached.
-        [Tomaz Muraus]
+     - Add new 'PollingConnection' class. This class can work with 'async'
+       APIs. It sends and an initial request and then periodically poll the API
+       until the job has completed or a timeout has been reached.
+       [Tomaz Muraus]
 
   *) Compute:
 
@@ -51,6 +51,10 @@ Changes with Apache Libcloud in development:
      - Enable deploy_node functionality in the EC2 driver using SSH key
        authentication
        [Russell Haering, Tomaz Muraus]
+
+     - Enable paramiko library debug log level if LIBCLOUD_DEBUG is used and
+       paramiko is installed.
+       [Tomaz Muraus]
 
   *) DNS:
 
