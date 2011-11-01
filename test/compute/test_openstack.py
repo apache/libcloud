@@ -598,16 +598,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('An expected error was not raised')
 
     def test_ex_set_server_name(self):
-        try:
-            self.driver.ex_set_server_name(self.node, 'new_name')
-        except Exception, e:
-            self.fail('An error was raised: ' + repr(e))
+        old_node = Node(
+            id='12062', name=None, state=None,
+            public_ip=None, private_ip=None, driver=self.driver,
+        )
+        new_node = self.driver.ex_set_server_name(old_node, 'Bob')
+        self.assertEqual('Bob', new_node.name)
 
     def test_ex_set_metadata(self):
-        try:
-            self.driver.ex_set_metadata(self.node, {'a-key': 'a-value'})
-        except Exception, e:
-            self.fail('An error was raised: ' + repr(e))
+        old_node = Node(
+            id='12063', name=None, state=None,
+            public_ip=None, private_ip=None, driver=self.driver,
+        )
+        metadata = {'doo': 'wop'}
+        new_node = self.driver.ex_set_metadata(old_node, metadata)
+        self.assertEqual(metadata, new_node.extra['metadata'])
 
     def test_ex_update_node(self):
         old_node = Node(
