@@ -160,7 +160,7 @@ class ParamikoSSHClient(BaseSSHClient):
                     # catch EEXIST consistently *sigh*
                     pass
                 sftp.chdir(part)
-        ak = sftp.file(tail,  mode='w')
+        ak = sftp.file(tail, mode='w')
         ak.write(contents)
         if chmod is not None:
             ak.chmod(chmod)
@@ -175,7 +175,7 @@ class ParamikoSSHClient(BaseSSHClient):
     def run(self, cmd):
         # based on exec_command()
         bufsize = -1
-        t =  self.client.get_transport()
+        t = self.client.get_transport()
         chan = t.open_session()
         chan.exec_command(cmd)
         stdin = chan.makefile('wb', bufsize)

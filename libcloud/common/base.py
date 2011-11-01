@@ -246,8 +246,8 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
-            self.log.write(pre +
+            pre = "# -------- begin %d request ----------\n" % id(self)
+            self.log.write(pre + 
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return LibcloudHTTPSConnection.request(self, method, url, body, headers)
@@ -268,8 +268,8 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
-            self.log.write(pre +
+            pre = "# -------- begin %d request ----------\n" % id(self)
+            self.log.write(pre + 
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return LibcloudHTTPConnection.request(self, method, url,

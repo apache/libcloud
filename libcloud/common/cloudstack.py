@@ -86,7 +86,14 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         kwargs['command'] = command
         result = self.request(self.driver.path, params=kwargs)
-        command = command.lower() + 'response'
+        #FIXME: This's bug http://cloudstack.org/forum/10-developer-and-api-support/6754-error-on-creating-keypair.html
+        command = command.lower()
+        if command == 'createsshkeypair':
+            command = 'createkeypairresponse'
+        elif command == 'deletesshkeypair':
+            command = 'deletekeypairresponse'
+        else:
+            command += 'response'
         if command not in result.object:
             raise MalformedResponseError(
                 "Unknown response format",

@@ -60,7 +60,7 @@ class CloudStackAddress(object):
 class CloudStackForwardingRule(object):
     "A NAT/firewall forwarding rule."
 
-    def __init__(self, node, id, address, protocol, start_port, end_port=None):
+    def __init__(self, node, id, address, protocol, start_port, end_port=None, state=None):
         self.node = node
         self.id = id
         self.address = address
@@ -89,7 +89,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.TERMINATED,
-        'Stopping': NodeState.TERMINATED
+        'Stopping': NodeState.TERMINATED,
+        'Destroyed': NodeState.TERMINATED,
     }
 
     def list_images(self, location=None):
@@ -120,7 +121,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         addrs = self._sync_request('listPublicIpAddresses')
 
         public_ips = {}
-        for addr in addrs['publicipaddress']:
+        for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
@@ -140,6 +141,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 driver=self,
                 extra={
                     'zoneid': vm['zoneid'],
+                    'ip_forwarding_rules': [],
                 }
             )
 
@@ -173,16 +175,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def create_node(self, name, size, image, location=None, **kwargs):
         if location is None:
             location = self.list_locations()[0]
-
         networks = self._sync_request('listNetworks')
         network_id = networks['network'][0]['id']
-
         result = self._async_request('deployVirtualMachine',
             name=name,
             displayname=name,
             serviceofferingid=size.id,
             templateid=image.id,
-            zoneid=location.id,
+            zoniId=location.id,
             networkids=network_id,
         )
 
