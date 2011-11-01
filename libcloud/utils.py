@@ -22,6 +22,7 @@ SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.6.0'
 
+
 def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     """
     Return a generator which yields data in chunks.
@@ -70,6 +71,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
             yield data
             data = ''
 
+
 def exhaust_iterator(iterator):
     """
     Exhaust an iterator and return all data returned by it.
@@ -98,10 +100,12 @@ def exhaust_iterator(iterator):
 
     return data
 
+
 def guess_file_mime_type(file_path):
     filename = os.path.basename(file_path)
     (mimetype, encoding) = mimetypes.guess_type(filename)
     return mimetype, encoding
+
 
 def deprecated_warning(module):
     if SHOW_DEPRECATION_WARNING:
@@ -111,11 +115,13 @@ def deprecated_warning(module):
                       (module, OLD_API_REMOVE_VERSION),
                       category=DeprecationWarning)
 
+
 def in_development_warning(module):
     if SHOW_IN_DEVELOPMENT_WARNING:
         warnings.warn('The module %s is in development and your are advised '
                       'against using it in production.' % (module),
                       category=FutureWarning)
+
 
 def str2dicts(data):
     """
@@ -157,9 +163,11 @@ def str2dicts(data):
     list_data = [value for value in list_data if value != {}]
     return list_data
 
+
 def str2list(data):
     """
-    Create a list of values from a whitespace and newline delimited text (keys are ignored).
+    Create a list of values from a whitespace and newline delimited text
+    (keys are ignored).
 
     For example, this:
     ip 1.2.3.4
@@ -188,9 +196,11 @@ def str2list(data):
 
     return list_data
 
+
 def dict2str(data):
     """
-    Create a string with a whitespace and newline delimited text from a dictionary.
+    Create a string with a whitespace and newline delimited text from a
+    dictionary.
 
     For example, this:
     {'cpu': '1100', 'ram': '640', 'smp': 'auto'}
@@ -212,6 +222,7 @@ def dict2str(data):
 
     return result
 
+
 def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
     if not namespace:
@@ -219,17 +230,22 @@ def fixxpath(xpath, namespace=None):
 
     return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
+
 def findtext(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
+
 
 def findattr(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
+
 def findall(element, xpath, namespace=None):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
 
+
 def reverse_dict(dictionary):
-    return dict([ (value, key) for key, value in dictionary.iteritems() ])
+    return dict([(value, key) for key, value in dictionary.iteritems()])
+
 
 def get_driver(drivers, provider):
     """
@@ -245,6 +261,7 @@ def get_driver(drivers, provider):
         return getattr(_mod, driver_name)
 
     raise AttributeError('Provider %s does not exist' % (provider))
+
 
 def merge_valid_keys(params, valid_keys, extra):
     """
@@ -263,6 +280,7 @@ def merge_valid_keys(params, valid_keys, extra):
             merged[key] = extra[key]
 
     return merged
+
 
 def get_new_obj(obj, klass, attributes):
     """
