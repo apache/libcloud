@@ -21,6 +21,7 @@ from httplib import HTTPResponse
 SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.6.0'
+CHUNK_SIZE = 8096
 
 
 def read_in_chunks(iterator, chunk_size=None, fill_size=False):
@@ -38,6 +39,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     @param fill_size: If True, make sure chunks are chunk_size in length
                       (except for last chunk).
     """
+    chunk_size = chunk_size or CHUNK_SIZE
 
     if isinstance(iterator, (file, HTTPResponse)):
         get_data = iterator.read
