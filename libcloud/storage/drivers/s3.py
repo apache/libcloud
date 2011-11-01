@@ -161,6 +161,7 @@ class S3StorageDriver(StorageDriver):
     name = 'Amazon S3 (standard)'
     connectionCls = S3Connection
     hash_type = 'md5'
+    supports_chunked_encoding = False
     ex_location_name = ''
     namespace = NAMESPACE
 
@@ -301,11 +302,17 @@ class S3StorageDriver(StorageDriver):
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  extra=None, ex_storage_class=None):
-        # Amazon S3 does not support chunked transfer encoding.
-        # Using multipart upload to "emulate" it would mean unnecessary
-        # buffering of data in memory.
-        raise NotImplementedError(
-            'upload_object_via_stream not implemented for this driver')
+        # Amazon S3 does not support chunked transfer encoding so the whole data
+        # is read into memory before uploading the object.
+        upload_func = self._upload_data
+        upload_func_kwargs = {}
+
+        return self._put_object(container=container, object_name=object_name,
+                                upload_func=upload_func,
+                                upload_func_kwargs=upload_func_kwargs,
+                                extra=extra, iterator=iterator,
+                                verify_hash=False,
+                                storage_class=ex_storage_class)
 
     def delete_object(self, obj):
         object_name = self._clean_object_name(name=obj.name)

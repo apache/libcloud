@@ -225,6 +225,15 @@ class S3MockRawResponse(MockRawResponse):
                 headers,
                 httplib.responses[httplib.OK])
 
+    def _foo_bar_container_foo_test_stream_data(self, method, url, body, headers):
+        # test_upload_object_via_stream
+        body = ''
+        headers = { 'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
 
 class S3Tests(unittest.TestCase):
     driver_type = S3StorageDriver
@@ -563,17 +572,18 @@ class S3Tests(unittest.TestCase):
         S3StorageDriver._upload_file = old_func
 
     def test_upload_object_via_stream(self):
-        try:
-            container = Container(name='foo_bar_container', extra={}, driver=self)
-            object_name = 'foo_test_stream_data'
-            iterator = DummyIterator(data=['2', '3', '5'])
-            self.driver.upload_object_via_stream(container=container,
-                                                 object_name=object_name,
-                                                 iterator=iterator)
-        except NotImplementedError:
-            pass
-        else:
-            self.fail('Exception was not thrown')
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_stream_data'
+        iterator = DummyIterator(data=['2', '3', '5'])
+        extra = {'content_type': 'text/plain'}
+        obj = self.driver.upload_object_via_stream(container=container,
+                                                   object_name=object_name,
+                                                   iterator=iterator,
+                                                   extra=extra)
+
+        self.assertEqual(obj.name, object_name)
+        self.assertEqual(obj.size, 3)
 
     def test_delete_object_not_found(self):
         self.mock_response_klass.type = 'NOT_FOUND'
