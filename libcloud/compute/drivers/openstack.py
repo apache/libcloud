@@ -912,6 +912,17 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         return self._update_node(node, name=name)
 
+    def ex_get_metadata(self, node, metadata):
+        """
+        Get a Node's metadata.
+
+        @return     Key/Value metadata to associate with a node
+        @type       C{dict}
+        """
+        return self.connection.request(
+                '/servers/%s/metadata' % (node.id,), method='GET',
+            ).object['metadata']
+
     def ex_set_metadata(self, node, metadata):
         """
         Sets the Node's metadata.
@@ -919,22 +930,23 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @keyword    metadata: Key/Value metadata to associate with a node
         @type       metadata: C{dict}
         """
-        return self._update_node(node, metadata=metadata)
+        return self.connection.request(
+                '/servers/%s/metadata' % (node.id,), method='PUT',
+                data={'metadata': metadata}
+            ).object['metadata']
 
     def ex_update_node(self, node, **node_updates):
         """
-        Update the Node's editable attributes.  Currently this driver
-        supports editing name and metadata.
+        Update the Node's editable attributes.  The OpenStack API currently
+        supports editing name and IPv4/IPv6 access addresses.
 
-        @keyword    ex_metadata: Key/Value metadata to associate with a node
-        @type       ex_metadata: C{dict}
+        The driver currently only supports updating the node name.
 
         @keyword    name:   New name for the server
         @type       name:   C{str}
         """
         potential_data = self._create_args_to_params(node, node_updates)
-        updates = {'name': potential_data['name'],
-                   'metadata': potential_data['metadata']}
+        updates = {'name': potential_data['name']}
         return self._update_node(node, **updates)
 
     def ex_get_size(self, size_id):
@@ -963,7 +975,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _update_node(self, node, **node_updates):
         """
         Updates the editable attributes of a server, which currently include
-        its name, metadata, and IPv4/IPv6 access addresses.
+        its name and IPv4/IPv6 access addresses.
         """
         return self._to_node(
             self.connection.request(
