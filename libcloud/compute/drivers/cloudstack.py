@@ -89,7 +89,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.TERMINATED,
-        'Stopping': NodeState.TERMINATED
+        'Stopping': NodeState.TERMINATED,
+        'Destroyed': NodeState.TERMINATED,
     }
 
     def list_images(self, location=None):

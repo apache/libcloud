@@ -36,7 +36,6 @@ class CloudComForwardingRule(CloudStackForwardingRule):
 class CloudComNodeDriver(CloudStackNodeDriver):
     "Driver for Ninefold's Compute platform."
 
-    host = '72.52.126.25'
     path = '/client/api'
 
     type = Provider.CLOUDCOM
@@ -60,7 +59,7 @@ class CloudComNodeDriver(CloudStackNodeDriver):
                                      templateId=image.id,
                                      zoneId=location.id,
                                      networkIds=network_id,
-                                     kwargs,
+                                     **kwargs
                                     )
 
         node = result['virtualmachine']
@@ -75,7 +74,7 @@ class CloudComNodeDriver(CloudStackNodeDriver):
             extra={
                    'zoneid': location.id,
                    'ip_addresses': [],
-                   'forwarding_rules': [],
+                   'ip_forwarding_rules': [],
                    'password': node.get('password', ''),
                    }
                 )
@@ -118,6 +117,7 @@ class CloudComNodeDriver(CloudStackNodeDriver):
                                       state=result['state']
                                     )
         node.extra['ip_forwarding_rules'].append(rule)
+        node.public_ip.append(result['ipaddress'])
         return rule
     
     
