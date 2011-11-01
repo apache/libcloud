@@ -109,6 +109,7 @@ class AtmosDriver(StorageDriver):
     host = None
     path = None
     api_name = 'atmos'
+    supports_chunked_encoding = True
 
     DEFAULT_CDN_TTL = 60 * 60 * 24 * 7 # 1 week
 
