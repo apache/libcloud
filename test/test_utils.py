@@ -18,6 +18,7 @@ import sys
 import unittest
 import warnings
 import os.path
+from StringIO import StringIO
 
 # In Python > 2.7 DeprecationWarnings are disabled by default
 warnings.simplefilter('default')
@@ -128,6 +129,32 @@ class TestUtils(unittest.TestCase):
                     self.assertEqual(result, 'b' * 9)
 
             self.assertEqual(index, 548)
+
+    def test_exhaust_iterator(self):
+        def iterator_func():
+            for x in range(0, 1000):
+                yield 'aa'
+
+        data = 'aa' * 1000
+        iterator = libcloud.utils.read_in_chunks(iterator=iterator_func())
+        result = libcloud.utils.exhaust_iterator(iterator=iterator)
+        self.assertEqual(result, data)
+
+        result = libcloud.utils.exhaust_iterator(iterator=iterator_func())
+        self.assertEqual(result, data)
+
+
+        data = '12345678990'
+        iterator = StringIO(data)
+        result = libcloud.utils.exhaust_iterator(iterator=iterator)
+        self.assertEqual(result, data)
+
+    def test_exhaust_iterator_empty_iterator(self):
+        data = ''
+        iterator = StringIO(data)
+        result = libcloud.utils.exhaust_iterator(iterator=iterator)
+        self.assertEqual(result, data)
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
