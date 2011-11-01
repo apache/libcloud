@@ -523,13 +523,26 @@ class StorageDriver(BaseDriver):
                     'File content-type could not be guessed and' +
                     ' no content_type value provided')
 
+        file_size = None
+
         if iterator:
-            headers['Transfer-Encoding'] = 'chunked'
-            upload_func_kwargs['chunked'] = True
+            if self.supports_chunked_encoding:
+                headers['Transfer-Encoding'] = 'chunked'
+                upload_func_kwargs['chunked'] = True
+            else:
+                # Chunked transfer encoding is not supported. Need to buffer all
+                # the data in memory so we can determine file size.
+                iterator = utils.read_in_chunks(iterator=iterator)
+                data = utils.exhaust_iterator(iterator=iterator)
+
+                file_size = len(data)
+                upload_func_kwargs['data'] = data
         else:
             file_size = os.path.getsize(file_path)
-            headers['Content-Length'] = file_size
             upload_func_kwargs['chunked'] = False
+
+        if file_size:
+            headers['Content-Length'] = file_size
 
         headers['Content-Type'] = content_type
         response = self.connection.request(request_path,
