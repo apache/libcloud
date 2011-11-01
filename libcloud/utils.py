@@ -70,6 +70,34 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
             yield data
             data = ''
 
+def exhaust_iterator(iterator):
+    """
+    Exhaust an iterator and return all data returned by it.
+
+    @type iterator: C{Iterator}
+    @param response: An object which implements an iterator interface
+                     or a File like object with read method.
+
+    @rtype C{str}
+    @return Data returned by the iterator.
+    """
+    data = ''
+
+    try:
+        chunk = str(iterator.next())
+    except StopIteration:
+        chunk = ''
+
+    while len(chunk) > 0:
+        data += chunk
+
+        try:
+            chunk = str(iterator.next())
+        except StopIteration:
+            chunk = ''
+
+    return data
+
 def guess_file_mime_type(file_path):
     filename = os.path.basename(file_path)
     (mimetype, encoding) = mimetypes.guess_type(filename)
