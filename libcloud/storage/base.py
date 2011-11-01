@@ -159,6 +159,7 @@ class StorageDriver(BaseDriver):
     connectionCls = ConnectionUserAndKey
     name = None
     hash_type = 'md5'
+    supports_chunked_encoding = False
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
       super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
@@ -546,6 +547,46 @@ class StorageDriver(BaseDriver):
                         'bytes_transferred': bytes_transferred }
         return result_dict
 
+    def _upload_data(self, response, data, calculate_hash=True):
+        """
+        Upload data stored in a string.
+
+        @type response: C{RawResponse}
+        @param response: RawResponse object.
+
+        @type data: C{str}
+        @param data: Data to upload.
+
+        @type calculate_hash: C{boolean}
+        @param calculate_hash: True to calculate hash of the transfered data.
+                               (defauls to True).
+
+        @rtype: C{tuple}
+        @return: First item is a boolean indicator of success, second
+                 one is the uploaded data MD5 hash and the third one
+                 is the number of transferred bytes.
+        """
+        bytes_transferred = 0
+        data_hash = None
+
+        if calculate_hash:
+            data_hash = hashlib.md5()
+            data_hash.update(data)
+
+        try:
+            response.connection.connection.send(data)
+        except Exception:
+            # TODO: let this exception propagate
+            # Timeout, etc.
+            return False, None, bytes_transferred
+
+        bytes_transferred = len(data)
+
+        if calculate_hash:
+            data_hash = data_hash.hexdigest()
+
+        return True, data_hash, bytes_transferred
+
     def _stream_data(self, response, iterator, chunked=False,
                      calculate_hash=True, chunk_size=None):
         """
@@ -557,6 +598,14 @@ class StorageDriver(BaseDriver):
         @type iterator: C{}
         @param response: An object which implements an iterator interface
                          or a File like object with read method.
+
+        @type chunked: C{boolean}
+        @param chunked: True if the chunked transfer encoding should be used
+                        (defauls to False).
+
+        @type calculate_hash: C{boolean}
+        @param calculate_hash: True to calculate hash of the transfered data.
+                               (defauls to True).
 
         @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
