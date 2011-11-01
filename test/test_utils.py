@@ -29,10 +29,12 @@ from libcloud.compute.providers import DRIVERS
 
 WARNINGS_BUFFER = []
 
+
 def show_warning(msg, cat, fname, lno, line=None):
     WARNINGS_BUFFER.append((msg, cat, fname, lno))
 
 original_func = warnings.showwarning
+
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
@@ -46,7 +48,8 @@ class TestUtils(unittest.TestCase):
 
     def test_guess_file_mime_type(self):
         file_path = os.path.abspath(__file__)
-        mimetype, encoding = libcloud.utils.guess_file_mime_type(file_path=file_path)
+        mimetype, encoding = libcloud.utils.guess_file_mime_type(
+                file_path=file_path)
 
         self.assertTrue(mimetype.find('python') != -1)
 
@@ -142,7 +145,6 @@ class TestUtils(unittest.TestCase):
 
         result = libcloud.utils.exhaust_iterator(iterator=iterator_func())
         self.assertEqual(result, data)
-
 
         data = '12345678990'
         iterator = StringIO(data)
