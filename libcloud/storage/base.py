@@ -583,7 +583,7 @@ class StorageDriver(BaseDriver):
         data_hash = None
 
         if calculate_hash:
-            data_hash = hashlib.md5()
+            data_hash = self._get_hash_function()
             data_hash.update(data)
 
         try:
@@ -633,7 +633,7 @@ class StorageDriver(BaseDriver):
 
         data_hash = None
         if calculate_hash:
-            data_hash = hashlib.md5()
+            data_hash = self._get_hash_function()
 
         generator = utils.read_in_chunks(iterator, chunk_size)
 
@@ -714,3 +714,16 @@ class StorageDriver(BaseDriver):
                     calculate_hash=calculate_hash))
 
         return success, data_hash, bytes_transferred
+
+    def _get_hash_function(self):
+        """
+        Return instantiated hash function for the hash type supported by
+        the provider.
+        """
+        try:
+            func = getattr(hashlib, self.hash_type)()
+        except AttributeError:
+            raise RuntimeError('Invalid or unsupported hash type: %s' %
+                               (self.hash_type))
+
+        return func
