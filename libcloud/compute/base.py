@@ -31,6 +31,7 @@ from libcloud.compute.ssh import SSHClient
 # @@TR: are the imports below part of the public api for this
 # module? They aren't used in here ...
 from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
+from libcloud.common.base import BaseDriver
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 from libcloud.common.base import LibcloudHTTPConnection
 from libcloud.common.types import LibcloudError
@@ -109,7 +110,7 @@ class Node(object):
     """
 
     def __init__(self, id, name, state, public_ip, private_ip,
-                 driver, extra=None):
+                 driver, size=None, image=None, extra=None):
         self.id = str(id) if id else None
         self.name = name
         self.state = state
@@ -117,6 +118,8 @@ class Node(object):
         self.private_ip = private_ip
         self.driver = driver
         self.uuid = self.get_uuid()
+        self.size = size
+        self.image = image
         self.extra = extra or {}
 
     def get_uuid(self):
@@ -320,7 +323,7 @@ class NodeAuthPassword(object):
         return '<NodeAuthPassword>'
 
 
-class NodeDriver(object):
+class NodeDriver(BaseDriver):
     """
     A base NodeDriver class to derive from
 
@@ -348,44 +351,11 @@ class NodeDriver(object):
 
     NODE_STATE_MAP = {}
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        """
-        @keyword    key:    API key or username to used
-        @type       key:    str
-
-        @keyword    secret: Secret password to be used
-        @type       secret: str
-
-        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
-                            only support HTTPS, and it is on by default.
-        @type       secure: bool
-
-        @keyword    host: Override hostname used for connections.
-        @type       host: str
-
-        @keyword    port: Override port used for connections.
-        @type       port: int
-        """
-        self.key = key
-        self.secret = secret
-        self.secure = secure
-        args = [self.key]
-
-        if self.secret != None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args)
-
-        self.connection.driver = self
-        self.connection.connect()
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=None):
+      super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                       host=host, port=port,
+                                       api_version=api_version)
 
     def create_node(self, **kwargs):
         """Create a new node instance.
@@ -496,6 +466,10 @@ class NodeDriver(object):
                             (optional)
         @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
 
+        @keyword    ssh_key: A path (or paths) to an SSH private key with which
+                             to attempt to authenticate. (optional)
+        @type       ssh_key: C{string} or C{list} of C{string}s
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -521,21 +495,22 @@ class NodeDriver(object):
             raise RuntimeError('paramiko is not installed. You can install ' +
                                'it using pip: pip install paramiko')
 
-        # TODO: support ssh keys
         password = None
 
         if 'create_node' not in self.features:
             raise NotImplementedError(
                     'deploy_node not implemented for this driver')
         elif 'generates_password' not in self.features["create_node"]:
-            if 'password' not in self.features["create_node"]:
+            if 'password' not in self.features["create_node"] and \
+               'ssh_key' not in self.features["create_node"]:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
                 kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
 
-            password = kwargs['auth'].password
+            if 'ssh_key' not in kwargs:
+                password = kwargs['auth'].password
 
         node = self.create_node(**kwargs)
 
@@ -544,16 +519,18 @@ class NodeDriver(object):
 
         try:
             # Wait until node is up and running and has public IP assigned
-            self._wait_until_running(node=node, wait_period=3,
-                                     timeout=NODE_ONLINE_WAIT_TIMEOUT)
+            node = self._wait_until_running(node=node, wait_period=3,
+                                            timeout=NODE_ONLINE_WAIT_TIMEOUT)
 
             ssh_username = kwargs.get('ssh_username', 'root')
             ssh_port = kwargs.get('ssh_port', 22)
             ssh_timeout = kwargs.get('ssh_timeout', 10)
+            ssh_key_file = kwargs.get('ssh_key', None)
 
             ssh_client = SSHClient(hostname=node.public_ip[0],
                                    port=ssh_port, username=ssh_username,
                                    password=password,
+                                   key=ssh_key_file,
                                    timeout=ssh_timeout)
 
             # Connect to the SSH server running on the node
@@ -605,9 +582,7 @@ class NodeDriver(object):
 
             node = nodes[0]
 
-            if (node.public_ip is not None
-                and node.public_ip != ""
-                and node.state == NodeState.RUNNING):
+            if (node.public_ip and node.state == NodeState.RUNNING):
                 return node
             else:
                 time.sleep(wait_period)

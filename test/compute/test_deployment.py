@@ -27,10 +27,10 @@ from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
 
 from test import MockHttp, XML_HEADERS
-from test.file_fixtures import ComputeFileFixtures
+from test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
 from mock import Mock, patch
 
-from test.secrets import RACKSPACE_USER, RACKSPACE_KEY
+from test.secrets import RACKSPACE_PARAMS
 
 class MockDeployment(Deployment):
     def run(self, node, client):
@@ -56,7 +56,7 @@ class DeploymentTests(unittest.TestCase):
     def setUp(self):
         Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
-        self.driver = Rackspace(RACKSPACE_USER, RACKSPACE_KEY)
+        self.driver = Rackspace(*RACKSPACE_PARAMS)
         self.driver.features = {'create_node': ['generates_password']}
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
                    public_ip=['1.2.3.4'], private_ip='1.2.3.5',
@@ -321,6 +321,11 @@ class DeploymentTests(unittest.TestCase):
 class RackspaceMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('openstack')
+    auth_fixtures = OpenStackFixtures()
+
+    def _v1_1__auth(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v1_1__auth.json')
+        return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):

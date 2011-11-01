@@ -23,6 +23,7 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 class TestHttpLibSSLTests(unittest.TestCase):
 
     def setUp(self):
+        libcloud.security.VERIFY_SSL_CERT = False
         self.httplib_object = LibcloudHTTPSConnection('foo.bar')
 
     def test_verify_hostname(self):

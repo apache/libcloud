@@ -162,6 +162,7 @@ class S3StorageDriver(StorageDriver):
     connectionCls = S3Connection
     hash_type = 'md5'
     ex_location_name = ''
+    namespace = NAMESPACE
 
     def list_containers(self):
         response = self.connection.request('/')
@@ -337,7 +338,7 @@ class S3StorageDriver(StorageDriver):
             objects = self._to_objs(obj=response.object,
                                        xpath='Contents', container=container)
             is_truncated = response.object.findtext(fixxpath(xpath='IsTruncated',
-                                                   namespace=NAMESPACE)).lower()
+                                                   namespace=self.namespace)).lower()
             exhausted = (is_truncated == 'false')
 
             if (len(objects) > 0):
@@ -407,21 +408,21 @@ class S3StorageDriver(StorageDriver):
 
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
-                 obj.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))]
+                 obj.findall(fixxpath(xpath=xpath, namespace=self.namespace))]
 
     def _to_objs(self, obj, xpath, container):
         return [ self._to_obj(element, container) for element in \
-                 obj.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))]
+                 obj.findall(fixxpath(xpath=xpath, namespace=self.namespace))]
 
     def _to_container(self, element):
         extra = {
             'creation_date': findtext(element=element, xpath='CreationDate',
-                                      namespace=NAMESPACE)
+                                      namespace=self.namespace)
         }
 
         container = Container(
                         name=findtext(element=element, xpath='Name',
-                                      namespace=NAMESPACE),
+                                      namespace=self.namespace),
                         extra=extra,
                         driver=self
                     )
@@ -441,19 +442,19 @@ class S3StorageDriver(StorageDriver):
 
     def _to_obj(self, element, container):
         owner_id = findtext(element=element, xpath='Owner/ID',
-                            namespace=NAMESPACE)
+                            namespace=self.namespace)
         owner_display_name = findtext(element=element,
                                       xpath='Owner/DisplayName',
-                                      namespace=NAMESPACE)
+                                      namespace=self.namespace)
         meta_data = { 'owner': { 'id': owner_id,
                                  'display_name':owner_display_name }}
 
         obj = Object(name=findtext(element=element, xpath='Key',
-                                   namespace=NAMESPACE),
+                                   namespace=self.namespace),
                      size=int(findtext(element=element, xpath='Size',
-                                       namespace=NAMESPACE)),
+                                       namespace=self.namespace)),
                      hash=findtext(element=element, xpath='ETag',
-                                   namespace=NAMESPACE).replace('"', ''),
+                                   namespace=self.namespace).replace('"', ''),
                      extra=None,
                      meta_data=meta_data,
                      container=container,

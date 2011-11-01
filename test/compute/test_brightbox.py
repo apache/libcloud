@@ -17,9 +17,9 @@ import unittest
 import httplib
 
 try:
-    import json
-except ImportError:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.brightbox import BrightboxNodeDriver
@@ -28,14 +28,14 @@ from libcloud.compute.types import NodeState
 from test import MockHttp
 from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
-from test.secrets import BRIGHTBOX_CLIENT_ID, BRIGHTBOX_CLIENT_SECRET
+from test.secrets import BRIGHTBOX_PARAMS
 
 
 class BrightboxTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         BrightboxNodeDriver.connectionCls.conn_classes = (None, BrightboxMockHttp)
         BrightboxMockHttp.type = None
-        self.driver = BrightboxNodeDriver(BRIGHTBOX_CLIENT_ID, BRIGHTBOX_CLIENT_SECRET)
+        self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS)
 
     def test_authentication(self):
         BrightboxMockHttp.type = 'INVALID_CLIENT'

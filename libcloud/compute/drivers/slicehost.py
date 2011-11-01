@@ -21,40 +21,17 @@ import socket
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.common.base import ConnectionKey, Response
-from libcloud.compute.types import (
-    NodeState, Provider, InvalidCredsError, MalformedResponseError)
+from libcloud.common.base import ConnectionKey, XmlResponse
+from libcloud.compute.types import NodeState, Provider, InvalidCredsError
 from libcloud.compute.base import NodeSize, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import Node, is_private_subnet
 
-class SlicehostResponse(Response):
-
-    def parse_body(self):
-        # length of 1 can't be valid XML, but on destroy node,
-        # slicehost returns a 1 byte response with a "Content-Type:
-        # application/xml" header. booya.
-        if not self.body or len(self.body) <= 1:
-            return None
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse XML",
-                body=self.body,
-                driver=SlicehostNodeDriver)
-        return body
-
+class SlicehostResponse(XmlResponse):
     def parse_error(self):
         if self.status == 401:
             raise InvalidCredsError(self.body)
 
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse XML",
-                body=self.body,
-                driver=SlicehostNodeDriver)
+        body = super(SlicehostResponse, self).parse_body()
         try:
             return "; ".join([ err.text
                                for err in

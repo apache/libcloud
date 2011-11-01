@@ -16,11 +16,11 @@
 RimuHosting Driver
 """
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
-from libcloud.common.base import ConnectionKey, Response
+from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
@@ -28,8 +28,6 @@ from libcloud.compute.base import NodeImage, NodeAuthPassword
 
 API_CONTEXT = '/r'
 API_HOST = 'rimuhosting.com'
-API_PORT = (80,443)
-API_SECURE = True
 
 class RimuHostingException(Exception):
     """
@@ -42,12 +40,13 @@ class RimuHostingException(Exception):
     def __repr__(self):
         return "<RimuHostingException '%s'>" % (self.args[0])
 
-class RimuHostingResponse(Response):
-    def __init__(self, response):
+class RimuHostingResponse(JsonResponse):
+    def __init__(self, response, connection):
         self.body = response.read()
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
+        self.connection = connection
 
         if self.success():
             self.object = self.parse_body()
@@ -56,17 +55,15 @@ class RimuHostingResponse(Response):
         if self.status == 403:
             raise InvalidCredsError()
         return True
+
     def parse_body(self):
         try:
-            js = json.loads(self.body)
+            js = super(RimuHostingResponse, self).parse_body()
             if js[js.keys()[0]]['response_type'] == "ERROR":
                 raise RimuHostingException(
                     js[js.keys()[0]]['human_readable_message']
                 )
             return js[js.keys()[0]]
-        except ValueError:
-            raise RimuHostingException('Could not parse body: %s'
-                                       % (self.body))
         except KeyError:
             raise RimuHostingException('Could not parse body: %s'
                                        % (self.body))
@@ -78,7 +75,7 @@ class RimuHostingConnection(ConnectionKey):
 
     api_context = API_CONTEXT
     host = API_HOST
-    port = API_PORT
+    port = 443
     responseCls = RimuHostingResponse
 
     def __init__(self, key, secure=True):
@@ -113,8 +110,8 @@ class RimuHostingNodeDriver(NodeDriver):
     name = 'RimuHosting'
     connectionCls = RimuHostingConnection
 
-    def __init__(self, key, host=API_HOST, port=API_PORT,
-                 api_context=API_CONTEXT, secure=API_SECURE):
+    def __init__(self, key, host=API_HOST, port=443,
+                 api_context=API_CONTEXT, secure=True):
         # Pass in some extra vars so that
         self.key = key
         self.secure = secure

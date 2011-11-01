@@ -266,6 +266,7 @@ class EC2NodeDriver(NodeDriver):
     path = '/'
 
     _instance_types = EC2_US_EAST_INSTANCE_TYPES
+    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -319,15 +320,20 @@ class EC2NodeDriver(NodeDriver):
 
         name = tags.get('Name', instance_id)
 
+        public_ip = findtext(element=element, xpath='ipAddress',
+                              namespace=NAMESPACE)
+        public_ips = [public_ip] if public_ip else []
+        private_ip = findtext(element=element, xpath='privateIpAddress',
+                                 namespace=NAMESPACE)
+        private_ips = [private_ip] if private_ip else []
+
         n = Node(
             id=findtext(element=element, xpath='instanceId',
                         namespace=NAMESPACE),
             name=name,
             state=state,
-            public_ip=[findtext(element=element, xpath='ipAddress',
-                                namespace=NAMESPACE)],
-            private_ip=[findtext(element=element, xpath='privateIpAddress',
-                                 namespace=NAMESPACE)],
+            public_ip=public_ips,
+            private_ip=private_ips,
             driver=self.connection.driver,
             extra={
                 'dns_name': findattr(element=element, xpath="dnsName",
@@ -381,7 +387,40 @@ class EC2NodeDriver(NodeDriver):
                                   namespace=NAMESPACE),
                       name=findtext(element=element, xpath='imageLocation',
                                     namespace=NAMESPACE),
-                      driver=self.connection.driver)
+                      driver=self.connection.driver,
+                      extra={
+                          'state': findattr(element=element,
+                                            xpath="imageState",
+                                            namespace=NAMESPACE),
+                          'ownerid': findattr(element=element,
+                                        xpath="imageOwnerId",
+                                        namespace=NAMESPACE),
+                          'owneralias': findattr(element=element,
+                                        xpath="imageOwnerAlias",
+                                        namespace=NAMESPACE),
+                          'ispublic': findattr(element=element,
+                                        xpath="isPublic",
+                                        namespace=NAMESPACE),
+                          'architecture': findattr(element=element,
+                                        xpath="architecture",
+                                        namespace=NAMESPACE),
+                          'imagetype': findattr(element=element,
+                                        xpath="imageType",
+                                        namespace=NAMESPACE),
+                          'platform': findattr(element=element,
+                                        xpath="platform",
+                                        namespace=NAMESPACE),
+                          'rootdevicetype': findattr(element=element,
+                                        xpath="rootDeviceType",
+                                        namespace=NAMESPACE),
+                          'virtualizationtype': findattr(element=element,
+                                        xpath="virtualizationType",
+                                        namespace=NAMESPACE),
+                          'hypervisor': findattr(element=element,
+                                        xpath="hypervisor",
+                                        namespace=NAMESPACE)
+                      }
+        )
         return n
 
     def list_nodes(self):
@@ -398,7 +437,8 @@ class EC2NodeDriver(NodeDriver):
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
-            node.public_ip.extend(nodes_elastic_ips_mappings[node.id])
+            ips = nodes_elastic_ips_mappings[node.id]
+            node.public_ip.extend(ips)
         return nodes
 
     def list_sizes(self, location=None):
@@ -865,7 +905,12 @@ class EC2NodeDriver(NodeDriver):
 
         for node in nodes:
             tags = {'Name': kwargs['name']}
-            self.ex_create_tags(node=node, tags=tags)
+
+            try:
+                self.ex_create_tags(node=node, tags=tags)
+            except Exception:
+                continue
+
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 

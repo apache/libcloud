@@ -17,24 +17,17 @@ Driver for the IBM Developer Cloud.
 """
 import base64, urllib
 
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeDriver, Node, NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
 
-from xml.etree import ElementTree as ET
-
 HOST = 'www-147.ibm.com'
 REST_BASE = '/computecloud/enterprise/api/rest/20100331'
 
-class IBMResponse(Response):
+class IBMResponse(XmlResponse):
     def success(self):
         return int(self.status) == 200
-
-    def parse_body(self):
-        if not self.body:
-            return None
-        return ET.XML(self.body)
 
     def parse_error(self):
         if int(self.status) == 401:

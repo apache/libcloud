@@ -1,0 +1,18 @@
+{
+   "ERRORARRAY":[],
+   "ACTION":"domain.resource.list",
+   "DATA":[
+      {
+         "PROTOCOL":"",
+         "TTL_SEC":0,
+         "PRIORITY":0,
+         "TYPE":"A",
+         "TARGET":"75.127.96.245",
+         "WEIGHT":0,
+         "RESOURCEID":28536,
+         "PORT":0,
+         "DOMAINID":5093,
+         "NAME":"www"
+      }
+   ]
+}

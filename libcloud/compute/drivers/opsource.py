@@ -15,34 +15,39 @@
 """
 Opsource Driver
 """
-import base64
 from xml.etree import ElementTree as ET
+from base64 import b64encode
+import httplib
 
-from libcloud.utils import fixxpath, findtext, findall
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.types import LibcloudError, InvalidCredsError, MalformedResponseError
-from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.common.types import LibcloudError, InvalidCredsError
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse
+from libcloud.utils import fixxpath, findtext, findall
+from libcloud.compute.types import NodeState, Provider
 
 # Roadmap / TODO:
 #
 # 0.1 - Basic functionality:  create, delete, start, stop, reboot - servers
-#                             (base OS images only, no customer images suported yet)
+#                      (base OS images only, no customer images suported yet)
 #   x implement list_nodes()
-#   x implement create_node()  (only support Base OS images, no customer images yet)
+#   x implement create_node()  (only support Base OS images,
+#                                no customer images yet)
 #   x implement reboot()
 #   x implement destroy_node()
 #   x implement list_sizes()
-#   x implement list_images()   (only support Base OS images, no customer images yet)
+#   x implement list_images()   (only support Base OS images,
+#                                 no customer images yet)
 #   x implement list_locations()
-#	x implement ex_* extension functions for opsource-specific features
+#	x implement ex_* extension functions for opsource-specific featurebody =s
 #       x ex_graceful_shutdown
 #       x ex_start_node
 #       x ex_power_off
 #       x ex_list_networks (needed for create_node())
-#   x refactor:  switch to using fixxpath() from the vcloud driver for dealing with xml namespace tags
-#   x refactor:  move some functionality from OpsourceConnection.request() method into new .request_with_orgId() method
+#   x refactor:  switch to using fixxpath() from the vcloud driver for
+#                                            dealing with xml namespace tags
+#   x refactor:  move some functionality from OpsourceConnection.request()
+#                               method into new .request_with_orgId() method
 #   x add OpsourceStatus object support to:
 #       x _to_node()
 #       x _to_network()
@@ -67,48 +72,40 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 # 1.0 - Opsource 0.9 API feature complete, tested
 
 # setup a few variables to represent all of the opsource cloud namespaces
-NAMESPACE_BASE       = "http://oec.api.opsource.net/schemas"
-ORGANIZATION_NS      = NAMESPACE_BASE + "/organization"
-SERVER_NS            = NAMESPACE_BASE + "/server"
-NETWORK_NS           = NAMESPACE_BASE + "/network"
-DIRECTORY_NS         = NAMESPACE_BASE + "/directory"
-RESET_NS             = NAMESPACE_BASE + "/reset"
-VIP_NS               = NAMESPACE_BASE + "/vip"
+NAMESPACE_BASE = "http://oec.api.opsource.net/schemas"
+ORGANIZATION_NS = NAMESPACE_BASE + "/organization"
+SERVER_NS = NAMESPACE_BASE + "/server"
+NETWORK_NS = NAMESPACE_BASE + "/network"
+DIRECTORY_NS = NAMESPACE_BASE + "/directory"
+RESET_NS = NAMESPACE_BASE + "/reset"
+VIP_NS = NAMESPACE_BASE + "/vip"
 IMAGEIMPORTEXPORT_NS = NAMESPACE_BASE + "/imageimportexport"
-DATACENTER_NS        = NAMESPACE_BASE + "/datacenter"
-SUPPORT_NS           = NAMESPACE_BASE + "/support"
-GENERAL_NS           = NAMESPACE_BASE + "/general"
-IPPLAN_NS            = NAMESPACE_BASE + "/ipplan"
-WHITELABEL_NS        = NAMESPACE_BASE + "/whitelabel"
+DATACENTER_NS = NAMESPACE_BASE + "/datacenter"
+SUPPORT_NS = NAMESPACE_BASE + "/support"
+GENERAL_NS = NAMESPACE_BASE + "/general"
+IPPLAN_NS = NAMESPACE_BASE + "/ipplan"
+WHITELABEL_NS = NAMESPACE_BASE + "/whitelabel"
 
 
-class OpsourceResponse(Response):
-
-    def parse_body(self):
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=OpsourceNodeDriver)
-        return body
+class OpsourceResponse(XmlResponse):
 
     def parse_error(self):
-        if self.status == 401:
+        if self.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsError(self.body)
+        elif self.status == httplib.FORBIDDEN:
             raise InvalidCredsError(self.body)
 
-        if self.status == 403:
-            raise InvalidCredsError(self.body)
+        body = self.parse_body()
 
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError("Failed to parse XML", body=self.body, driver=OpsourceNodeDriver)
-
-        if self.status == 400:
+        if self.status == httplib.BAD_REQUEST:
             code = findtext(body, 'resultCode', SERVER_NS)
             message = findtext(body, 'resultDetail', SERVER_NS)
-            raise OpsourceAPIException(code, message, driver=OpsourceNodeDriver)
+            raise OpsourceAPIException(code,
+                message,
+                driver=OpsourceNodeDriver)
 
         return self.body
+
 
 class OpsourceAPIException(LibcloudError):
     def __init__(self, code, msg, driver):
@@ -120,7 +117,9 @@ class OpsourceAPIException(LibcloudError):
         return "%s: %s" % (self.code, self.msg)
 
     def __repr__(self):
-        return "<OpsourceAPIException: code='%s', msg='%s'>" % (self.code, self.msg)
+        return ("<OpsourceAPIException: code='%s', msg='%s'>" %
+                (self.code, self.msg))
+
 
 class OpsourceConnection(ConnectionUserAndKey):
     """
@@ -134,44 +133,48 @@ class OpsourceConnection(ConnectionUserAndKey):
     responseCls = OpsourceResponse
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = ('Basic %s'
-                              % (base64.b64encode('%s:%s' % (self.user_id, self.key))))
+        headers['Authorization'] = ('Basic %s' % b64encode('%s:%s' %
+                                                (self.user_id, self.key)))
         return headers
 
-    def request(self, action, params=None, data='', headers=None, method='GET'):
+    def request(self, action, params=None, data='',
+                headers=None, method='GET'):
         action = "%s/%s/%s" % (self.api_path, self.api_version, action)
 
         return super(OpsourceConnection, self).request(
             action=action,
             params=params, data=data,
-            method=method, headers=headers
-        )
+            method=method, headers=headers)
 
-    def request_with_orgId(self, action, params=None, data='', headers=None, method='GET'):
+    def request_with_orgId(self, action, params=None, data='',
+                           headers=None, method='GET'):
         action = "%s/%s" % (self.get_resource_path(), action)
 
         return super(OpsourceConnection, self).request(
             action=action,
             params=params, data=data,
-            method=method, headers=headers
-        )
+            method=method, headers=headers)
 
     def get_resource_path(self):
-        """this method returns a resource path which is necessary for referencing
-           resources that require a full path instead of just an ID, such as
-           networks, and customer snapshots.
         """
-        return ("%s/%s/%s" % (self.api_path, self.api_version, self._get_orgId()))
+        This method returns a resource path which is necessary for referencing
+        resources that require a full path instead of just an ID, such as
+        networks, and customer snapshots.
+        """
+        return ("%s/%s/%s" % (self.api_path, self.api_version,
+            self._get_orgId()))
 
     def _get_orgId(self):
         """
-        send the /myaccount API request to opsource cloud and parse the 'orgId' from the
-        XML response object.  We need the orgId to use most of the other API functions
+        Send the /myaccount API request to opsource cloud and parse the
+        'orgId' from the XML response object. We need the orgId to use most
+        of the other API functions
         """
         if self._orgId == None:
             body = self.request('myaccount').object
             self._orgId = findtext(body, 'orgId', DIRECTORY_NS)
         return self._orgId
+
 
 class OpsourceStatus(object):
     """
@@ -181,7 +184,8 @@ class OpsourceStatus(object):
     """
     def __init__(self, action=None, requestTime=None, userName=None,
                 numberOfSteps=None, updateTime=None, step_name=None,
-                step_number=None, step_percentComplete=None, failureReason=None):
+                step_number=None, step_percentComplete=None,
+                failureReason=None):
         self.action = action
         self.requestTime = requestTime
         self.userName = userName
@@ -195,15 +199,17 @@ class OpsourceStatus(object):
     def __repr__(self):
         return (('<OpsourceStatus: action=%s, requestTime=%s, userName=%s, ' \
                     'numberOfSteps=%s, updateTime=%s, step_name=%s, ' \
-                    'step_number=%s, step_percentComplete=%s, failureReason=%s')
+                    'step_number=%s, step_percentComplete=%s, ' \
+                    'failureReason=%s')
                   % (self.action, self.requestTime, self.userName,
                     self.numberOfSteps, self.updateTime, self.step_name,
                     self.step_number, self.step_percentComplete,
                     self.failureReason))
 
+
 class OpsourceNetwork(object):
     """
-    Opsource network with location
+    Opsource network with location.
     """
 
     def __init__(self, id, name, description, location, privateNet,
@@ -217,53 +223,25 @@ class OpsourceNetwork(object):
         self.status = status
 
     def __repr__(self):
-        return (('<OpsourceNetwork: id=%s, name=%s, description=%s, location=%s, ' \
-                 'privateNet=%s, multicast=%s>')
+        return (('<OpsourceNetwork: id=%s, name=%s, description=%s, ' \
+                 'location=%s, privateNet=%s, multicast=%s>')
                 % (self.id, self.name, self.description, self.location,
                    self.privateNet, self.multicast))
 
 
 class OpsourceNodeDriver(NodeDriver):
     """
-    Opsource node driver
+    Opsource node driver.
     """
 
     connectionCls = OpsourceConnection
-
-    type = Provider.OPSOURCE
     name = 'Opsource'
-
+    type = Provider.OPSOURCE
     features = {"create_node": ["password"]}
 
-    def list_nodes(self):
-        nodes = self._to_nodes(self.connection.request_with_orgId('server/deployed').object)
-        nodes.extend(self._to_nodes(self.connection.request_with_orgId('server/pendingDeploy').object))
-        return nodes
-
-    def list_sizes(self, location=None):
-        return [ NodeSize(id=1,
-                  name="default",
-                  ram=0,
-                  disk=0,
-                  bandwidth=0,
-                  price=0,
-                  driver=self.connection.driver) ]
-
-    def list_images(self, location=None):
-        """return a list of available images
-            Currently only returns the default 'base OS images' provided by opsource.
-            Customer images (snapshots) are not yet supported.
-        """
-        return self._to_base_images(self.connection.request('base/image').object)
-
-    def list_locations(self):
-        """list locations (datacenters) available for instantiating servers and
-            networks.
-        """
-        return self._to_locations(self.connection.request_with_orgId('datacenter').object)
-
     def create_node(self, **kwargs):
-        """Create a new opsource node
+        """
+        Create a new opsource node
 
         Standard keyword arguments from L{NodeDriver.create_node}:
         @keyword    name:   String with a name for this new node (required)
@@ -272,7 +250,8 @@ class OpsourceNodeDriver(NodeDriver):
         @keyword    image:  OS Image to boot on node. (required)
         @type       image:  L{NodeImage}
 
-        @keyword    auth:   Initial authentication information for the node (required)
+        @keyword    auth:   Initial authentication information for the
+                            node (required)
         @type       auth:   L{NodeAuthPassword}
 
         Non-standard keyword arguments:
@@ -282,21 +261,24 @@ class OpsourceNodeDriver(NodeDriver):
         @keyword    ex_network:  Network to create the node within (required)
         @type       ex_network: L{OpsourceNetwork}
 
-        @keyword    ex_isStarted:  Start server after creation? default true (required)
+        @keyword    ex_isStarted:  Start server after creation? default
+                                   true (required)
         @type       ex_isStarted:  C{bool}
 
-        @return: The newly created L{Node}. NOTE: Opsource does not provide a way to
-                 determine the ID of the server that was just created, so the returned
-                 L{Node} is not guaranteed to be the same one that was created.  This
-                 is only the case when multiple nodes with the same name exist.
+        @return: The newly created L{Node}. NOTE: Opsource does not provide a
+                 way to determine the ID of the server that was just created,
+                 so the returned L{Node} is not guaranteed to be the same one
+                 that was created.  This is only the case when multiple nodes
+                 with the same name exist.
         """
         name = kwargs['name']
         image = kwargs['image']
 
-        # XXX:  Node sizes can be adjusted after a node is created, but cannot be
-        #       set at create time because size is part of the image definition.
+        # XXX:  Node sizes can be adjusted after a node is created, but
+        #       cannot be set at create time because size is part of the
+        #       image definition.
         password = None
-        if kwargs.has_key('auth'):
+        if 'auth' in kwargs:
             auth = kwargs.get('auth')
             if isinstance(auth, NodeAuthPassword):
                 password = auth.password
@@ -309,13 +291,15 @@ class OpsourceNodeDriver(NodeDriver):
         ex_network = kwargs.get('ex_network')
         if not isinstance(ex_network, OpsourceNetwork):
             raise ValueError('ex_network must be of OpsourceNetwork type')
-        vlanResourcePath = "%s/%s" % (self.connection.get_resource_path(), ex_network.id)
+        vlanResourcePath = "%s/%s" % (self.connection.get_resource_path(),
+                                      ex_network.id)
 
         imageResourcePath = None
-        if image.extra.has_key('resourcePath'):
+        if 'resourcePath' in image.extra:
             imageResourcePath = image.extra['resourcePath']
         else:
-            imageResourcePath = "%s/%s" % (self.connection.get_resource_path(), image.id)
+            imageResourcePath = "%s/%s" % (self.connection.get_resource_path(),
+                image.id)
 
         server_elm = ET.Element('Server', {'xmlns': SERVER_NS})
         ET.SubElement(server_elm, "name").text = name
@@ -326,59 +310,150 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "isStarted").text = str(ex_isStarted)
 
         self.connection.request_with_orgId('server',
-                                           method='POST',
-                                           data=ET.tostring(server_elm)
-                                           ).object
+                                          method='POST',
+                                          data=ET.tostring(server_elm)).object
+
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
         #      because opsource allows multiple nodes to have the same name
         return filter(lambda x: x.name == name, self.list_nodes())[-1]
 
-    def reboot_node(self, node):
-        """reboots the node"""
-        body = self.connection.request_with_orgId('server/%s?restart' % node.id).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
-
     def destroy_node(self, node):
-        """Destroys the node"""
-        body = self.connection.request_with_orgId('server/%s?delete' % node.id).object
+        body = self.connection.request_with_orgId('server/%s?delete' %
+                                                  (node.id)).object
+
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
-    def ex_start_node(self, node):
-        """Powers on an existing deployed server"""
-        body = self.connection.request_with_orgId('server/%s?start' % node.id).object
+    def reboot_node(self, node):
+        body = self.connection.request_with_orgId('server/%s?restart' %
+                                                 (node.id)).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
-    def ex_shutdown_graceful(self, node):
-        """This function will attempt to "gracefully" stop a server by initiating a
-	    shutdown sequence within the guest operating system. A successful response
-	    on this function means the system has successfully passed the
-	    request into the operating system.
+    def list_nodes(self):
+        nodes = self._to_nodes(self.connection
+            .request_with_orgId('server/deployed').object)
+        nodes.extend(self._to_nodes(self.connection
+            .request_with_orgId('server/pendingDeploy').object))
+        return nodes
+
+    def list_images(self, location=None):
         """
-        body = self.connection.request_with_orgId('server/%s?shutdown' % node.id).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
-
-    def ex_power_off(self, node):
-        """This function will abruptly power-off a server.  Unlike ex_shutdown_graceful,
-        success ensures the node will stop but some OS and application configurations may
-        be adversely affected by the equivalent of pulling the power plug out of the
-        machine.
+        return a list of available images
+            Currently only returns the default 'base OS images' provided by
+            opsource. Customer images (snapshots) are not yet supported.
         """
-        body = self.connection.request_with_orgId('server/%s?poweroff' % node.id).object
-        result = findtext(body, 'result', GENERAL_NS)
-        return result == 'SUCCESS'
+        return self._to_base_images(self.connection.request('base/image')
+                   .object)
 
-    def ex_list_networks(self):
-        """List networks deployed across all data center locations for your
+    def list_sizes(self, location=None):
+        return [
+            NodeSize(id=1,
+                name="default",
+                ram=0,
+                disk=0,
+                bandwidth=0,
+                price=0,
+                driver=self.connection.driver),
+        ]
+
+    def list_locations(self):
+        """
+        list locations (datacenters) available for instantiating servers and
+        networks.
+        """
+        return self._to_locations(self.connection
+            .request_with_orgId('datacenter').object)
+
+    def list_networks(self, location=None):
+        """
+        List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
 
         Returns a list of OpsourceNetwork objects
         """
-        return self._to_networks(self.connection.request_with_orgId('networkWithLocation').object)
+        return self._to_networks(self.connection
+            .request_with_orgId('networkWithLocation').object)
+
+    def _to_base_images(self, object):
+        images = []
+        for element in object.findall(fixxpath("ServerImage", SERVER_NS)):
+            images.append(self._to_base_image(element))
+
+        return images
+
+    def _to_base_image(self, element):
+        # Eventually we will probably need multiple _to_image() functions
+        # that parse <ServerImage> differently than <DeployedImage>.
+        # DeployedImages are customer snapshot images, and ServerImages are
+        # 'base' images provided by opsource
+        location_id = findtext(element, 'location', SERVER_NS)
+        location = self.ex_get_location_by_id(location_id)
+
+        extra = {
+            'description': findtext(element, 'description', SERVER_NS),
+            'OS_type': findtext(element, 'operatingSystem/type', SERVER_NS),
+            'OS_displayName': findtext(element, 'operatingSystem/displayName',
+                SERVER_NS),
+            'cpuCount': findtext(element, 'cpuCount', SERVER_NS),
+            'resourcePath': findtext(element, 'resourcePath', SERVER_NS),
+            'memory': findtext(element, 'memory', SERVER_NS),
+            'osStorage': findtext(element, 'osStorage', SERVER_NS),
+            'additionalStorage': findtext(element, 'additionalStorage',
+                SERVER_NS),
+            'created': findtext(element, 'created', SERVER_NS),
+            'location': location,
+        }
+
+        return NodeImage(id=str(findtext(element, 'id', SERVER_NS)),
+                     name=str(findtext(element, 'name', SERVER_NS)),
+                     extra=extra,
+                     driver=self.connection.driver)
+
+    def ex_start_node(self, node):
+        """
+        Powers on an existing deployed server
+        """
+        body = self.connection.request_with_orgId('server/%s?start' %
+            node.id).object
+        result = findtext(body, 'result', GENERAL_NS)
+        return result == 'SUCCESS'
+
+    def ex_shutdown_graceful(self, node):
+        """
+        This function will attempt to "gracefully" stop a server by
+        initiating a shutdown sequence within the guest operating system.
+        A successful response on this function means the system has
+        successfully passed the request into the operating system.
+        """
+        body = self.connection.request_with_orgId('server/%s?shutdown' %
+                                                  (node.id)).object
+        result = findtext(body, 'result', GENERAL_NS)
+        return result == 'SUCCESS'
+
+    def ex_power_off(self, node):
+        """
+        This function will abruptly power-off a server.  Unlike
+        ex_shutdown_graceful, success ensures the node will stop but some OS
+        and application configurations may be adversely affected by the
+        equivalent of pulling the power plug out of the machine.
+        """
+        body = self.connection.request_with_orgId('server/%s?poweroff' %
+            node.id).object
+        result = findtext(body, 'result', GENERAL_NS)
+        return result == 'SUCCESS'
+
+    def ex_list_networks(self):
+        """
+        List networks deployed across all data center locations for your
+        organization.  The response includes the location of each network.
+
+        Returns a list of OpsourceNetwork objects
+        """
+        response = self.connection.request_with_orgId('networkWithLocation') \
+                                  .object
+        return self._to_networks(response)
 
     def ex_get_location_by_id(self, id):
         location = None
@@ -387,8 +462,11 @@ class OpsourceNodeDriver(NodeDriver):
         return location
 
     def _to_networks(self, object):
-        node_elements = findall(object, 'network', NETWORK_NS)
-        return [ self._to_network(el) for el in node_elements ]
+        networks = []
+        for element in findall(object, 'network', NETWORK_NS):
+            networks.append(self._to_network(element))
+
+        return networks
 
     def _to_network(self, element):
         multicast = False
@@ -402,15 +480,20 @@ class OpsourceNodeDriver(NodeDriver):
 
         return OpsourceNetwork(id=findtext(element, 'id', NETWORK_NS),
                                name=findtext(element, 'name', NETWORK_NS),
-                               description=findtext(element, 'description', NETWORK_NS),
+                               description=findtext(element, 'description',
+                                   NETWORK_NS),
                                location=location,
-                               privateNet=findtext(element, 'privateNet', NETWORK_NS),
+                               privateNet=findtext(element, 'privateNet',
+                                   NETWORK_NS),
                                multicast=multicast,
                                status=status)
 
     def _to_locations(self, object):
-        node_elements = object.findall(fixxpath('datacenter', DATACENTER_NS))
-        return [ self._to_location(el) for el in node_elements ]
+        locations = []
+        for element in object.findall(fixxpath('datacenter', DATACENTER_NS)):
+            locations.append(self._to_location(element))
+
+        return locations
 
     def _to_location(self, element):
         l = NodeLocation(id=findtext(element, 'location', DATACENTER_NS),
@@ -421,12 +504,13 @@ class OpsourceNodeDriver(NodeDriver):
 
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('DeployedServer', SERVER_NS))
-        node_elements.extend(object.findall(fixxpath('PendingDeployServer', SERVER_NS)))
-        return [ self._to_node(el) for el in node_elements ]
+        node_elements.extend(object.findall(fixxpath('PendingDeployServer',
+            SERVER_NS)))
+        return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
         if findtext(element, 'isStarted', SERVER_NS) == 'true':
-             state = NodeState.RUNNING
+            state = NodeState.RUNNING
         else:
             state = NodeState.TERMINATED
 
@@ -438,12 +522,18 @@ class OpsourceNodeDriver(NodeDriver):
             'networkId': findtext(element, 'networkId', SERVER_NS),
             'machineName': findtext(element, 'machineName', SERVER_NS),
             'deployedTime': findtext(element, 'deployedTime', SERVER_NS),
-            'cpuCount': findtext(element, 'machineSpecification/cpuCount', SERVER_NS),
-            'memoryMb': findtext(element, 'machineSpecification/memoryMb', SERVER_NS),
-            'osStorageGb': findtext(element, 'machineSpecification/osStorageGb', SERVER_NS),
-            'additionalLocalStorageGb': findtext(element, 'machineSpecification/additionalLocalStorageGb', SERVER_NS),
-            'OS_type': findtext(element, 'machineSpecification/operatingSystem/type', SERVER_NS),
-            'OS_displayName': findtext(element, 'machineSpecification/operatingSystem/displayName', SERVER_NS),
+            'cpuCount': findtext(element, 'machineSpecification/cpuCount',
+                SERVER_NS),
+            'memoryMb': findtext(element, 'machineSpecification/memoryMb',
+                SERVER_NS),
+            'osStorageGb': findtext(element,
+                'machineSpecification/osStorageGb', SERVER_NS),
+            'additionalLocalStorageGb': findtext(element,
+                'machineSpecification/additionalLocalStorageGb', SERVER_NS),
+            'OS_type': findtext(element,
+                'machineSpecification/operatingSystem/type', SERVER_NS),
+            'OS_displayName': findtext(element,
+                'machineSpecification/operatingSystem/displayName', SERVER_NS),
             'status': status,
         }
 
@@ -456,46 +546,22 @@ class OpsourceNodeDriver(NodeDriver):
                  extra=extra)
         return n
 
-    def _to_base_images(self, object):
-        node_elements = object.findall(fixxpath("ServerImage", SERVER_NS))
-        return [ self._to_base_image(el) for el in node_elements ]
-
-    def _to_base_image(self, element):
-        # Eventually we will probably need multiple _to_image() functions
-        # that parse <ServerImage> differently than <DeployedImage>.
-        # DeployedImages are customer snapshot images, and ServerImages are
-        # 'base' images provided by opsource
-        location_id = findtext(element, 'location', SERVER_NS)
-        location = self.ex_get_location_by_id(location_id)
-
-        extra = {
-            'description': findtext(element, 'description', SERVER_NS),
-            'OS_type': findtext(element, 'operatingSystem/type', SERVER_NS),
-            'OS_displayName': findtext(element, 'operatingSystem/displayName', SERVER_NS),
-            'cpuCount': findtext(element, 'cpuCount', SERVER_NS),
-            'resourcePath': findtext(element, 'resourcePath', SERVER_NS),
-            'memory': findtext(element, 'memory', SERVER_NS),
-            'osStorage': findtext(element, 'osStorage', SERVER_NS),
-            'additionalStorage': findtext(element, 'additionalStorage', SERVER_NS),
-            'created': findtext(element, 'created', SERVER_NS),
-            'location': location,
-        }
-
-        i = NodeImage(id=str(findtext(element, 'id', SERVER_NS)),
-                     name=str(findtext(element, 'name', SERVER_NS)),
-                     extra=extra,
-                     driver=self.connection.driver)
-        return i
-
     def _to_status(self, element):
         if element == None:
             return OpsourceStatus()
         s = OpsourceStatus(action=findtext(element, 'action', SERVER_NS),
-                          requestTime=findtext(element, 'requestTime', SERVER_NS),
-                          userName=findtext(element, 'userName', SERVER_NS),
-                          numberOfSteps=findtext(element, 'numberOfSteps', SERVER_NS),
-                          step_name=findtext(element, 'step/name', SERVER_NS),
-                          step_number=findtext(element, 'step_number', SERVER_NS),
-                          step_percentComplete=findtext(element, 'step/percentComplete', SERVER_NS),
-                          failureReason=findtext(element, 'failureReason', SERVER_NS))
+                          requestTime=findtext(element, 'requestTime',
+                              SERVER_NS),
+                          userName=findtext(element, 'userName',
+                              SERVER_NS),
+                          numberOfSteps=findtext(element, 'numberOfSteps',
+                              SERVER_NS),
+                          step_name=findtext(element, 'step/name',
+                              SERVER_NS),
+                          step_number=findtext(element, 'step_number',
+                              SERVER_NS),
+                          step_percentComplete=findtext(element,
+                              'step/percentComplete', SERVER_NS),
+                          failureReason=findtext(element, 'failureReason',
+                              SERVER_NS))
         return s

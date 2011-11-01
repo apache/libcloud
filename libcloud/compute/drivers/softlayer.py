@@ -148,7 +148,7 @@ class SoftLayerTransport(xmlrpclib.Transport):
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
     transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
-    API_PREFIX = "http://api.service.softlayer.com/xmlrpc/v3"
+    API_PREFIX = 'https://api.softlayer.com/xmlrpc/v3/'
 
     def __init__(self, service, user_agent, verbose=0):
         cls = self.transportCls[0]

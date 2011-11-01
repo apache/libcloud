@@ -21,8 +21,9 @@ import uuid
 import socket
 import struct
 
-from libcloud.base import ConnectionKey, NodeDriver, NodeSize, NodeLocation
-from libcloud.compute.base import NodeImage, Node
+from libcloud.common.base import ConnectionKey
+from libcloud.compute.base import NodeImage, NodeSize, Node
+from libcloud.compute.base import NodeDriver, NodeLocation
 from libcloud.compute.types import Provider,NodeState
 
 class DummyConnection(ConnectionKey):
@@ -125,6 +126,10 @@ class DummyNodeDriver(NodeDriver):
         As more nodes are added, list_nodes will return them
 
         >>> node=driver.create_node()
+        >>> node.size.id
+        's1'
+        >>> node.image.id
+        'i2'
         >>> sorted([node.name for node in driver.list_nodes()])
         ['dummy-1', 'dummy-2', 'dummy-3']
         """
@@ -282,6 +287,10 @@ class DummyNodeDriver(NodeDriver):
                  public_ip=['127.0.0.%d' % l],
                  private_ip=[],
                  driver=self,
+                 size=NodeSize(id='s1', name='foo', ram=2048,
+                               disk=160, bandwidth=None, price=0.0,
+                               driver=self),
+                 image=NodeImage(id='i2', name='image', driver=self),
                  extra={'foo': 'bar'})
         self.nl.append(n)
         return n

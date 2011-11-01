@@ -13,9 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# Copy this file to secrets.py for use with provided examples
-#
+from libcloud.utils import get_driver as get_provider_driver
+from libcloud.dns.types import Provider
 
-EC2_ACCESS_ID=''
-EC2_SECRET_KEY=''
+DRIVERS = {
+    Provider.DUMMY:
+        ('libcloud.dns.drivers.dummy', 'DummyDNSDriver'),
+    Provider.LINODE:
+        ('libcloud.dns.drivers.linode', 'LinodeDNSDriver'),
+    Provider.ZERIGO:
+        ('libcloud.dns.drivers.zerigo', 'ZerigoDNSDriver'),
+    Provider.RACKSPACE_US:
+        ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
+    Provider.RACKSPACE_UK:
+        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
+}
+
+
+def get_driver(provider):
+    return get_provider_driver(DRIVERS, provider)

@@ -18,16 +18,16 @@ import sys
 import unittest
 
 try:
-    import json
-except ImportError:
     import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 
 from test import MockHttpTestCase
-from test.file_fixtures import LoadBalancerFileFixtures
+from test.file_fixtures import LoadBalancerFileFixtures, OpenStackFixtures
 
 class RackspaceLBTests(unittest.TestCase):
 
@@ -110,6 +110,7 @@ class RackspaceUKLBTests(RackspaceLBTests):
 
 class RackspaceLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
+    auth_fixtures = OpenStackFixtures()
 
     def _v1_0(self, method, url, body, headers):
         headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
@@ -165,6 +166,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
+
+    def _v1_1__auth(self, method, url, body, headers):
+        headers = { 'content-type': 'application/json; charset=UTF-8'}
+        body = self.auth_fixtures.load('_v1_1__auth.json')
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

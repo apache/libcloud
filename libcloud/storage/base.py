@@ -27,7 +27,7 @@ from os.path import join as pjoin
 
 from libcloud import utils
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
@@ -151,7 +151,7 @@ class Container(object):
         return ('<Container: name=%s, provider=%s>'
                 % (self.name, self.driver.name))
 
-class StorageDriver(object):
+class StorageDriver(BaseDriver):
     """
     A base StorageDriver to derive from.
     """
@@ -161,26 +161,8 @@ class StorageDriver(object):
     hash_type = 'md5'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        self.key = key
-        self.secret = secret
-        self.secure = secure
-        args = [self.key]
-
-        if self.secret != None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args)
-
-        self.connection.driver = self
-        self.connection.connect()
+      super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                          host=host, port=port)
 
     def list_containters(self):
         """
@@ -303,7 +285,7 @@ class StorageDriver(object):
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
         """
-        Upload an object.
+        Upload an object currently located on a disk.
 
         @type file_path: C{str}
         @param file_path: Path to the object on disk.
@@ -324,6 +306,22 @@ class StorageDriver(object):
                                  object_name,
                                  extra=None):
         """
+        Upload an object using an iterator.
+
+        If a provider supports it, chunked transfer encoding is used and you
+        don't need to know in advance the amount of data to be uploaded.
+
+        Otherwise if a provider doesn't support it, iterator will be exhausted
+        so a total size for data to be uploaded can be determined.
+
+        Note: Exhausting the iterator means that the whole data must be buffered
+        in memory which might result in memory exhausting when uploading a very
+        large object.
+
+        If a file is located on a disk you are advised to use upload_object
+        function which uses fs.stat function to determine the file size and it
+        doesn't need to buffer whole object in the memory.
+
         @type iterator: C{object}
         @param iterator: An object which implements the iterator interface.
 

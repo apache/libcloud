@@ -1,7 +1,157 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development
+Changes with Apache Libcloud in development:
 
+  *) General:
+
+     - Modify ParamikoSSHClient.connect so it supports authentication using a
+       key file ; LIBCLOUD-116
+       [Jay Doane]
+
+     - User must now explicitly specify a path when using LIBCLOUD_DEBUG
+       environment variable ; LIBCLOUD-95.
+       [daveb, Tomaz Muraus]
+
+     - Add new XmlResponse and JsonResponse base class and modify all the
+       driver-specific response classes to inherit from one of those two
+       classes where applicable.
+       [Caio Romão]
+
+      - Add new 'PollingConnection' class. This class can work with 'async'
+        APIs. It sends and an initial request and then periodically poll the API
+        until the job has completed or a timeout has been reached.
+        [Tomaz Muraus]
+
+  *) Compute:
+
+     - Add 24GB size to the GoGrid driver
+       [Roman Bogorodskiy]
+
+     - Fix API endpoint URL in the Softlayer driver
+       [Tomaz Muraus]
+
+     - Add support for OpenNebula 3.0 API ; LIBCLOUD-120
+       [Hutson Betts]
+
+     - Add more attributes to the extra dictionary in the EC2 driver ;
+       GITHUB-31
+       [Juan Carlos Moreno]
+
+     - Fix IP address assignment in the EC2 driver. Don't include "None" in the
+       public_ip and private_ip Node list attribute.
+       [Tomaz Muraus]
+
+     - Make deploy_node functionality more robust and don't start deployment if
+       node public_ip attribute is an empty list.
+       [Tomaz Muraus]
+
+     - Support SSH key authentication when using deploy_node.
+       [Russell Haering, Tomaz Muraus]
+
+     - Enable deploy_node functionality in the EC2 driver using SSH key
+       authentication
+       [Russell Haering, Tomaz Muraus]
+
+  *) DNS:
+
+   - New drivers for Rackspace Cloud DNS (US and UK region)
+     [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.6.0-beta1
+
+  *) General:
+
+    - All the driver classes now inherit from the BaseDriver class
+      [Tomaz Muraus]
+
+    - Prefer simplejson (if available) over json module; LIBCLOUD-112
+      [Geoff Greer]
+
+    - Update compute demo and change the syntax of test credentials stored in
+      test/secrets.py-dist ; LIBCLOUD-111
+      [Mike Nerone]
+
+    - Enable SSL certificate verification by default and throw an exception
+      if CA certificate files cannot be found. This can be overridden by
+      setting libcloud.security.VERIFY_SSL_CERT_STRICT to False.
+      [Tomaz Muraus]
+
+  *) Compute:
+
+     - Support for 1.1 API and many other improvements in the OpenStack driver ;
+       LIBCLOUD-83
+       [Mike Nerone, Paul Querna, Brad Morgan, Tomaz Muraus]
+
+     - Add some extra methods to the Gandi.net driver ; LIBCLOUD-115
+       [Aymeric Barantal]
+
+     - Add ex_delete_image method to the Rackspace driver ; GITHUB-27
+       [David Busby]
+
+     - Linode driver now supports new 'Japan' location
+       [Jed Smith]
+
+     - Rackspace driver now inherits from the OpenStack one instead of doing
+       it vice versa.; LIBCLOUD-110
+       [Mike Nerone]
+
+     - Properly populate NodeImage "details" dictionary in the Rackspace
+       compute driver.; LIBCLOUD-107
+       [Lucy Mendel]
+
+     - Fix a bug in Eucalyptus driver ex_describe_addresses method.
+       [Tomaz Muraus]
+
+     - Add the following new extenstion methods to the Rackspace driver:
+       ex_resize, ex_confirm_resize, ex_revert_resize.
+       [Tomaz Muraus]
+
+     - Also allow user to pass in Node object to some ex_ methods in
+       the Rackspace compute driver.
+       [Tomaz Muraus]
+
+     - Throw an exception in deploy_node if paramiko library is not
+       available
+       [Tomaz Muraus]
+
+     - Fix chmod argument value which is pased to the sftpclient.put
+       method; GITHUB-17
+       [John Carr]
+
+     - New driver for Ninefold.com; LIBCLOUD-98
+       [Benno Rice]
+
+  *) Storage:
+
+     - New driver for Google Storage based on the v1.0 / legacy API
+       [Tomaz Muraus]
+
+     - New driver for Ninefold.com; GITHUB-19
+       [Benno Rice]
+
+     - Fix a bug in uploading an object with some versions of Python 2.7
+       where httplib library doesn't automatically call str() on the
+       header values.
+       [Tomaz Muraus]
+
+     - Allow users to upload (create) 0-bytes large (empty) objects
+       [Tomaz Muraus]
+
+  *) Load-balancer:
+
+     - New driver for Rackspace UK location
+       [Tomaz Muraus]
+
+     - New driver for Ninefold.com; LIBCLOUD-98
+       [Benno Rice]
+
+  *) DNS:
+
+   - Drivers for Linode DNS and Zerigo DNS
+     [Tomaz Muraus]
+
+   - Brand new DNS API!
+     [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.5.2
 
@@ -38,7 +188,7 @@ Changes with Apache Libcloud 0.5.2
     *) Storage:
 
        - Fix handling of the containers with a lot of objects. Now a LazyList
-         object is returned when user calls list_container_objects() method 
+         object is returned when user calls list_container_objects() method
          and this object transparently handles pagination.
        [Danny Clark, Wiktor Kolodziej]
 

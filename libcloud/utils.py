@@ -184,17 +184,20 @@ def dict2str(data):
 
     return result
 
-def fixxpath(xpath, namespace):
+def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
+    if not namespace:
+        return xpath
+
     return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
-def findtext(element, xpath, namespace):
+def findtext(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findattr(element, xpath, namespace):
+def findattr(element, xpath, namespace=None):
     return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-def findall(element, xpath, namespace):
+def findall(element, xpath, namespace=None):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
 
 def reverse_dict(dictionary):
@@ -214,3 +217,54 @@ def get_driver(drivers, provider):
         return getattr(_mod, driver_name)
 
     raise AttributeError('Provider %s does not exist' % (provider))
+
+def merge_valid_keys(params, valid_keys, extra):
+    """
+    Merge valid keys from extra into params dictionary and return
+    dictionary with keys which have been merged.
+
+    Note: params is modified in place.
+    """
+    merged = {}
+    if not extra:
+        return merged
+
+    for key in valid_keys:
+        if key in extra:
+            params[key] = extra[key]
+            merged[key] = extra[key]
+
+    return merged
+
+def get_new_obj(obj, klass, attributes):
+    """
+    Pass attributes from the existing object 'obj' and attributes
+    dictionary to a 'klass' constructor.
+    Attributes from 'attributes' dictionary are only passed to the
+    constructor if they are not None.
+    """
+    kwargs = {}
+    for key, value in obj.__dict__.items():
+        if isinstance(value, dict):
+            kwargs[key] = value.copy()
+        elif isinstance(value, (tuple, list)):
+            kwargs[key] = value[:]
+        else:
+            kwargs[key] = value
+
+    for key, value in attributes.items():
+        if value is None:
+            continue
+
+        if isinstance(value, dict):
+            kwargs_value = kwargs.get(key, {})
+            for key1, value2 in value.items():
+                if value2 is None:
+                    continue
+
+                kwargs_value[key1] = value2
+            kwargs[key] = kwargs_value
+        else:
+            kwargs[key] = value
+
+    return klass(**kwargs)
