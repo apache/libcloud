@@ -597,12 +597,25 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('An expected error was not raised')
 
-    def test_ex_update_node(self):
-        old_node = Node(
-            id='12064',
-            name=None, state=None, public_ip=None, private_ip=None, driver=self.driver,
-        )
+    def test_ex_set_server_name(self):
+        node_12064 = self._generic_node_with_id('12064')
+        new_node = self.driver.ex_set_server_name(node_12064, 'Bob')
+        self.assertEqual('Bob', new_node.name)
 
+    def test_ex_set_metadata(self):
+        node_12065 = self._generic_node_with_id('12065')
+        metadata = {"Server Label" : "Web Head 1",
+                    "Image Version" : "2.1"}
+        new_metadata = self.driver.ex_set_metadata(node_12065, metadata)
+        self.assertEqual(metadata, new_metadata)
+
+    def test_ex_get_metadata(self):
+        node_12065 = self._generic_node_with_id('12065')
+        metadata = self.driver.ex_get_metadata(node_12065)
+        self.assertEqual(metadata, {'Label': 'dev'})
+
+    def test_ex_update_node(self):
+        old_node = self._generic_node_with_id('12064')
         new_node = self.driver.ex_update_node(old_node, name='Bob')
 
         self.assertTrue(new_node)
@@ -635,6 +648,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             pass
         else:
             self.fail('An expected error was not raised')
+
+    def _generic_node_with_id(self, node_id):
+        return Node(id=node_id, name=None, state=None,
+                    public_ip=None, private_ip=None, driver=self.driver)
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -699,6 +716,16 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         elif method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        else:
+            raise NotImplementedError()
+
+    def _servers_12065_metadata(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_12065_metadata_one_key.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "PUT":
+            body = self.fixtures.load('_servers_12065_metadata_two_keys.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
