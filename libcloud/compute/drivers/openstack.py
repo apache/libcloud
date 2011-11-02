@@ -910,18 +910,44 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Sets the Node's name.
         """
-        return self.ex_update_node(node, name=name)
+        return self._update_node(node, name=name)
+
+    def ex_get_metadata(self, node):
+        """
+        Get a Node's metadata.
+
+        @return     Key/Value metadata associated with node.
+        @type       C{dict}
+        """
+        return self.connection.request(
+                '/servers/%s/metadata' % (node.id,), method='GET',
+            ).object['metadata']
+
+    def ex_set_metadata(self, node, metadata):
+        """
+        Sets the Node's metadata.
+
+        @keyword    metadata: Key/Value metadata to associate with a node
+        @type       metadata: C{dict}
+        """
+        return self.connection.request(
+                '/servers/%s/metadata' % (node.id,), method='PUT',
+                data={'metadata': metadata}
+            ).object['metadata']
 
     def ex_update_node(self, node, **node_updates):
-        # Currently only setting the name is supported in OpenStack, but we
-        # leave the function signature prepared to support metadata or other
-        # fields in the future.
+        """
+        Update the Node's editable attributes.  The OpenStack API currently
+        supports editing name and IPv4/IPv6 access addresses.
+
+        The driver currently only supports updating the node name.
+
+        @keyword    name:   New name for the server
+        @type       name:   C{str}
+        """
         potential_data = self._create_args_to_params(node, node_updates)
-        return self._to_node(
-            self.connection.request(
-                '/servers/%s' % (node.id,), method='PUT',
-                data={'server': {'name': potential_data['name']}})
-                   .object['server'])
+        updates = {'name': potential_data['name']}
+        return self._update_node(node, **updates)
 
     def ex_get_size(self, size_id):
         return self._to_size(self.connection.request('/flavors/%s' %
@@ -945,6 +971,18 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         params = params or None
         return self.connection.request('/servers/%s/action' % (node.id,),
                                        method='POST', data={action: params})
+
+    def _update_node(self, node, **node_updates):
+        """
+        Updates the editable attributes of a server, which currently include
+        its name and IPv4/IPv6 access addresses.
+        """
+        return self._to_node(
+            self.connection.request(
+                '/servers/%s' % (node.id,), method='PUT',
+                data={'server': node_updates}
+            ).object['server']
+        )
 
     def _to_node_from_obj(self, obj):
         return self._to_node(obj['server'])

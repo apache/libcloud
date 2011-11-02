@@ -597,6 +597,33 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('An expected error was not raised')
 
+    def test_ex_set_server_name(self):
+        old_node = Node(
+            id='12064', name=None, state=None,
+            public_ip=None, private_ip=None, driver=self.driver,
+        )
+        new_node = self.driver.ex_set_server_name(old_node, 'Bob')
+        self.assertEqual('Bob', new_node.name)
+
+    def test_ex_set_metadata(self):
+        old_node = Node(
+            id='12063', name=None, state=None,
+            public_ip=None, private_ip=None, driver=self.driver,
+        )
+        metadata = {'Image Version': '2.1', 'Server Label': 'Web Head 1'}
+        returned_metadata = self.driver.ex_set_metadata(old_node, metadata)
+        self.assertEqual(metadata, returned_metadata)
+
+    def test_ex_get_metadata(self):
+        node = Node(
+            id='12063', name=None, state=None,
+            public_ip=None, private_ip=None, driver=self.driver,
+        )
+
+        metadata = {'Image Version': '2.1', 'Server Label': 'Web Head 1'}
+        returned_metadata = self.driver.ex_get_metadata(node)
+        self.assertEqual(metadata, returned_metadata)
+
     def test_ex_update_node(self):
         old_node = Node(
             id='12064',
@@ -701,6 +728,19 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         else:
             raise NotImplementedError()
+
+    def _servers_12062(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_12064.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _servers_12063_metadata(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_12063_metadata_two_keys.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "PUT":
+            body = self.fixtures.load('_servers_12063_metadata_two_keys.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _flavors_7(self, method, url, body, headers):
         if method == "GET":
