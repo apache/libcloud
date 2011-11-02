@@ -225,7 +225,12 @@ class EC2Connection(ConnectionUserAndKey):
                          urllib.quote(params[key], safe='-_~'))
 
         qs = '&'.join(pairs)
-        string_to_sign = '\n'.join(('GET', self.host, path, qs))
+
+        hostname = self.host
+        if (self.secure and self.port != 443) or (not self.secure and self.port != 80):
+            hostname += ":" + str(self.port)
+
+        string_to_sign = '\n'.join(('GET', hostname, path, qs))
 
         b64_hmac = base64.b64encode(
             hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
