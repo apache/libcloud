@@ -912,12 +912,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         return self._update_node(node, name=name)
 
-    def ex_get_metadata(self, node, metadata):
+    def ex_get_metadata(self, node):
         """
         Get a Node's metadata.
 
-        @return     Key/Value metadata to associate with a node
-        @type       C{dict}
+        @return C{dict} : Key/Value metadata to associate with a node
         """
         return self.connection.request(
                 '/servers/%s/metadata' % (node.id,), method='GET',
