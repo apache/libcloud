@@ -56,6 +56,12 @@ Changes with Apache Libcloud in development:
        paramiko is installed.
        [Tomaz Muraus]
 
+     - Fix the request signature generation in the base EC2 compute driver.
+       If the endpoint is using a non-standard port (Eucalyptus based
+       installations), append it to the hostname used to generate the
+       signature.
+       [Simon Delamare]
+
   *) DNS:
 
    - New drivers for Rackspace Cloud DNS (US and UK region)
