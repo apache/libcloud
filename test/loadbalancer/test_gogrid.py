@@ -19,6 +19,8 @@ import unittest
 from urlparse import urlparse
 
 from libcloud.common.types import LibcloudError
+from libcloud.compute.base import Node
+from libcloud.compute.drivers.dummy import DummyNodeDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
@@ -100,6 +102,18 @@ class GoGridTests(unittest.TestCase):
         self.assertEquals(len(members), 3)
         self.assertEquals(expected_members,
                 set(["%s:%s" % (member.ip, member.port) for member in members]))
+
+    def test_balancer_attach_compute_node(self):
+        balancer = LoadBalancer(23530, None, None, None, None, self.driver)
+        node = Node(id='1', name='test', state=None, public_ip=['10.0.0.75'], 
+                    private_ip=[], driver=DummyNodeDriver)
+        member1 = self.driver.balancer_attach_compute_node(balancer, node)
+        member2 = balancer.attach_compute_node(node)
+
+        self.assertEquals(member1.ip, '10.0.0.75')
+        self.assertEquals(member1.port, 80)
+        self.assertEquals(member2.ip, '10.0.0.75')
+        self.assertEquals(member2.port, 80)
 
     def test_balancer_attach_member(self):
         balancer = LoadBalancer(23530, None, None, None, None, None)

@@ -55,7 +55,7 @@ class LoadBalancer(object):
         self.driver = driver
 
     def attach_compute_node(self, node):
-        return self.driver.balancer_attach_compute_node(node)
+        return self.driver.balancer_attach_compute_node(self, node)
 
     def attach_member(self, member):
         return self.driver.balancer_attach_member(self, member)
@@ -151,15 +151,16 @@ class Driver(BaseDriver):
                 'get_balancer not implemented for this driver'
 
     def balancer_attach_compute_node(self, balancer, node):
-      """
-      Attach a compute node as a member to the load balancer.
+        """
+        Attach a compute node as a member to the load balancer.
 
-      @keyword node: Member to join to the balancer
-      @type member: C{libcloud.compute.base.Node}
-      @return {Member} Member after joining the balancer.
-      """
+        @keyword node: Member to join to the balancer
+        @type member: C{libcloud.compute.base.Node}
+        @return {Member} Member after joining the balancer.
+        """
 
-      return self.attach_member(Member(None, node.public_ip[0], balancer.port))
+        return self.balancer_attach_member(balancer, Member(None, node.public_ip[0],
+                                           balancer.port))
 
     def balancer_attach_member(self, balancer, member):
         """
