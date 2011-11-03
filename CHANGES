@@ -62,6 +62,15 @@ Changes with Apache Libcloud in development:
        signature.
        [Simon Delamare]
 
+     - Add new "unavailable" state to the BrightboxNodeDriver class.
+       [Tim Fletcher]
+
+  *) Load-baancer:
+
+   - Add a missing argument to the method call inside
+     LoadBalancer.attach_compute_node and Driver.balancer_attach_compute_node.
+     [Tim Fletcher, Tomaz Muraus]
+
   *) DNS:
 
    - New drivers for Rackspace Cloud DNS (US and UK region)
