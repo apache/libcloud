@@ -106,7 +106,8 @@ class BrightboxNodeDriver(NodeDriver):
                        'inactive': NodeState.UNKNOWN,
                        'deleting': NodeState.UNKNOWN,
                        'deleted': NodeState.TERMINATED,
-                       'failed': NodeState.UNKNOWN }
+                       'failed': NodeState.UNKNOWN,
+                       'unavailable': NodeState.UNKNOWN }
 
     def _to_node(self, data):
         return Node(
