@@ -295,6 +295,19 @@ class EC2NodeDriver(NodeDriver):
         tag = "{%s}%s" % (NAMESPACE, 'return')
         return element.findtext(tag) == 'true'
 
+    def _get_state_boolean(self, element):
+        iterobj = element.iter()
+        while 1:
+            try:
+                elem = iterobj.next()
+                if elem.tag.find('name') > -1:
+                    if (elem.text == 'pending') or (elem.text == 'stopping') or (elem.text == 'starting'):
+                        return True
+                    break
+            except StopIteration:
+                break
+        return False
+
     def _get_terminate_boolean(self, element):
         status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
         return any([term_status == status
@@ -932,6 +945,24 @@ class EC2NodeDriver(NodeDriver):
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
+
+    def ex_start_node(self, node):
+        """
+        Start the node by passing in the node object, does not work with instance store backed instances
+        """
+        params = {'Action': 'StartInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
+
+    def ex_stop_node(self, node):
+        """
+        Stop the node by passing in the node object, does not work with instance store backed instances
+        """
+        params = {'Action': 'StopInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
 
     def destroy_node(self, node):
         """
