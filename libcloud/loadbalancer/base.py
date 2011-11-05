@@ -23,6 +23,7 @@ __all__ = [
         "Algorithm"
         ]
 
+
 class Member(object):
 
     def __init__(self, id, ip, port):
@@ -34,12 +35,14 @@ class Member(object):
         return ('<Member: id=%s, address=%s:%s>' % (self.id,
             self.ip, self.port))
 
+
 class Algorithm(object):
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
 
 DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
+
 
 class LoadBalancer(object):
     """
@@ -98,8 +101,8 @@ class Driver(BaseDriver):
         Return a list of supported protocols.
         """
 
-        raise NotImplementedError, \
-                'list_protocols not implemented for this driver'
+        raise NotImplementedError(
+                'list_protocols not implemented for this driver')
 
     def list_balancers(self):
         """
@@ -109,8 +112,8 @@ class Driver(BaseDriver):
 
         """
 
-        raise NotImplementedError, \
-                'list_balancers not implemented for this driver'
+        raise NotImplementedError(
+                'list_balancers not implemented for this driver')
 
     def create_balancer(self, name, port, protocol, algorithm, members):
         """
@@ -130,8 +133,8 @@ class Driver(BaseDriver):
 
         """
 
-        raise NotImplementedError, \
-                'create_balancer not implemented for this driver'
+        raise NotImplementedError(
+                'create_balancer not implemented for this driver')
 
     def destroy_balancer(self, balancer):
         """Destroy a load balancer
@@ -140,8 +143,8 @@ class Driver(BaseDriver):
 
         """
 
-        raise NotImplementedError, \
-                'destroy_balancer not implemented for this driver'
+        raise NotImplementedError(
+                'destroy_balancer not implemented for this driver')
 
     def get_balancer(self, balancer_id):
         """
@@ -153,8 +156,8 @@ class Driver(BaseDriver):
         @return: C{LoadBalancer}
         """
 
-        raise NotImplementedError, \
-                'get_balancer not implemented for this driver'
+        raise NotImplementedError(
+                'get_balancer not implemented for this driver')
 
     def balancer_attach_compute_node(self, balancer, node):
         """
@@ -165,7 +168,8 @@ class Driver(BaseDriver):
         @return {Member} Member after joining the balancer.
         """
 
-        return self.balancer_attach_member(balancer, Member(None, node.public_ip[0],
+        return self.balancer_attach_member(balancer, Member(None,
+                                           node.public_ip[0],
                                            balancer.port))
 
     def balancer_attach_member(self, balancer, member):
@@ -177,8 +181,8 @@ class Driver(BaseDriver):
         @return {Member} Member after joining the balancer.
         """
 
-        raise NotImplementedError, \
-                'balancer_attach_member not implemented for this driver'
+        raise NotImplementedError(
+                'balancer_attach_member not implemented for this driver')
 
     def balancer_detach_member(self, balancer, member):
         """
@@ -188,8 +192,8 @@ class Driver(BaseDriver):
 
         """
 
-        raise NotImplementedError, \
-                'balancer_detach_member not implemented for this driver'
+        raise NotImplementedError(
+                'balancer_detach_member not implemented for this driver')
 
     def balancer_list_members(self, balancer):
         """
@@ -199,8 +203,8 @@ class Driver(BaseDriver):
 
         """
 
-        raise NotImplementedError, \
-                'balancer_list_members not implemented for this driver'
+        raise NotImplementedError(
+                'balancer_list_members not implemented for this driver')
 
     def _value_to_algorithm(self, value):
         """

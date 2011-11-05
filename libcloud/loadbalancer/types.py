@@ -22,9 +22,14 @@ __all__ = [
 
 from libcloud.common.types import LibcloudError
 
-class LibcloudLBError(LibcloudError): pass
 
-class LibcloudLBImmutableError(LibcloudLBError): pass
+class LibcloudLBError(LibcloudError):
+    pass
+
+
+class LibcloudLBImmutableError(LibcloudLBError):
+    pass
+
 
 class Provider(object):
     RACKSPACE_US = 0
@@ -32,9 +37,10 @@ class Provider(object):
     NINEFOLD = 2
     RACKSPACE_UK = 3
 
+
 class State(object):
     """
-    Standart states for a loadbalancer
+    Standard states for a loadbalancer
 
     @cvar RUNNING: loadbalancer is running and ready to use
     @cvar UNKNOWN: loabalancer state is unknown
