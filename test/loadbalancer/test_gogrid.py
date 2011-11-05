@@ -83,8 +83,11 @@ class GoGridTests(unittest.TestCase):
     def test_destroy_balancer(self):
         balancer = self.driver.list_balancers()[0]
 
-        ret = self.driver.destroy_balancer(balancer)
-        self.assertTrue(ret)
+        ret1 = self.driver.destroy_balancer(balancer)
+        ret2 = balancer.destroy()
+
+        self.assertTrue(ret1)
+        self.assertTrue(ret2)
 
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='23530')
