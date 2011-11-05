@@ -55,16 +55,19 @@ class LoadBalancer(object):
         self.driver = driver
 
     def attach_compute_node(self, node):
-        return self.driver.balancer_attach_compute_node(self, node)
+        return self.driver.balancer_attach_compute_node(balancer=self,
+                                                        node=node)
 
     def attach_member(self, member):
-        return self.driver.balancer_attach_member(self, member)
+        return self.driver.balancer_attach_member(balancer=self,
+                                                  member=member)
 
     def detach_member(self, member):
-        return self.driver.balancer_detach_member(self, member)
+        return self.driver.balancer_detach_member(balancer=self,
+                                                  member=member)
 
     def list_members(self):
-        return self.driver.balancer_list_members(self)
+        return self.driver.balancer_list_members(balancer=self)
 
     def __repr__(self):
         return ('<LoadBalancer: id=%s, name=%s, state=%s>' % (self.id,
