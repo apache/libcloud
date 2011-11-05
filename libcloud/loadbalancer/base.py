@@ -69,6 +69,9 @@ class LoadBalancer(object):
     def list_members(self):
         return self.driver.balancer_list_members(balancer=self)
 
+    def destroy(self):
+        return self.driver.destroy_balancer(balancer=self)
+
     def __repr__(self):
         return ('<LoadBalancer: id=%s, name=%s, state=%s>' % (self.id,
                 self.name, self.state))
