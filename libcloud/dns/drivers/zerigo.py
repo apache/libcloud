@@ -139,6 +139,9 @@ class ZerigoDNSDriver(DNSDriver):
     name = 'Zerigo DNS'
     connectionCls = ZerigoDNSConnection
 
+    def list_record_types(self):
+        return RECORD_TYPE_MAP.keys()
+
     def list_zones(self):
         value_dict = {'type': 'zones'}
         return LazyList(get_more=self._get_more, value_dict=value_dict)

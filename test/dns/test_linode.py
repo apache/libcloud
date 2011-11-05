@@ -39,6 +39,11 @@ class LinodeTests(unittest.TestCase):
             self.assertTrue(key in dictionary, 'key "%s" not in dictionary' %
                             (key))
 
+    def test_list_record_types(self):
+        record_types = self.driver.list_record_types()
+        self.assertEqual(len(record_types), 5)
+        self.assertTrue(RecordType.A in record_types)
+
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 2)

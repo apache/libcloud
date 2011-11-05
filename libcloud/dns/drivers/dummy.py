@@ -35,6 +35,14 @@ class DummyDNSDriver(DNSDriver):
     def __init__(self, api_key, api_secret):
         self._zones = {}
 
+    def list_record_types(self):
+        """
+        >>> driver = DummyDNSDriver('key', 'secret')
+        >>> driver.list_record_types()
+        [0]
+        """
+        return [RecordType.A]
+
     def list_zones(self):
         """
         >>> driver = DummyDNSDriver('key', 'secret')
