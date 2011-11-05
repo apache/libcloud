@@ -67,14 +67,17 @@ Changes with Apache Libcloud in development:
 
   *) Load-baancer:
 
-   - Add a missing argument to the method call inside
-     LoadBalancer.attach_compute_node and Driver.balancer_attach_compute_node.
-     [Tim Fletcher, Tomaz Muraus]
+     - Add a missing argument to the method call inside
+       LoadBalancer.attach_compute_node and Driver.balancer_attach_compute_node.
+       [Tim Fletcher, Tomaz Muraus]
+
+     - Add missing destroy() method to the LoadBalancer class.
+       [Tomaz Muraus]
 
   *) DNS:
 
-   - New drivers for Rackspace Cloud DNS (US and UK region)
-     [Tomaz Muraus]
+     - New drivers for Rackspace Cloud DNS (US and UK region)
+       [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.0-beta1
 
