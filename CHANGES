@@ -1,6 +1,6 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.6.0:
 
   *) General:
 
@@ -77,6 +77,10 @@ Changes with Apache Libcloud in development:
   *) DNS:
 
      - New drivers for Rackspace Cloud DNS (US and UK region)
+       [Tomaz Muraus]
+
+     - Add list_record_types() method. This method returns a list of record
+       types supported by the provider.
        [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.0-beta1

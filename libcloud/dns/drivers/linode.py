@@ -70,6 +70,9 @@ class LinodeDNSDriver(DNSDriver):
     name = 'Linode DNS'
     connectionCls = LinodeDNSConnection
 
+    def list_record_types(self):
+        return RECORD_TYPE_MAP.keys()
+
     def list_zones(self):
         params = {'api_action': 'domain.list'}
         data = self.connection.request(API_ROOT, params=params).objects[0]
