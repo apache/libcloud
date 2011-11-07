@@ -131,12 +131,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         nodes = []
 
         for vm in vms.get('virtualmachine', []):
+            private_ips = []
+
+            for nic in vm['nic']:
+                if 'ipaddress' in nic:
+                    private_ips.append(nic['ipaddress'])
+
             node = CloudStackNode(
                 id=vm['id'],
                 name=vm.get('displayname', None),
                 state=self.NODE_STATE_MAP[vm['state']],
                 public_ip=public_ips.get(vm['id'], {}).keys(),
-                private_ip=[x['ipaddress'] for x in vm['nic']],
+                private_ip=private_ips,
                 driver=self,
                 extra={
                     'zoneid': vm['zoneid'],
@@ -201,7 +207,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             name=node['displayname'],
             state=self.NODE_STATE_MAP[node['state']],
             public_ip=[],
-            private_ip=[x['ipaddress'] for x in node['nic']],
+            private_ip=[],
             driver=self,
             extra={
                 'zoneid': location.id,
