@@ -136,6 +136,15 @@ class DNSDriver(BaseDriver):
         super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
                                         host=host, port=port)
 
+    def list_record_types(self):
+        """
+        Return a list of RecordType objects supported by the provider.
+
+        @return: A list of C{RecordType} instances.
+        """
+        raise NotImplementedError(
+            'list_record_types not implemented for this driver')
+
     def list_zones(self):
         """
         Return a list of zones.
