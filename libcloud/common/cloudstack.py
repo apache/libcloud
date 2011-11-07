@@ -29,6 +29,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
     poll_interval = 1
     request_method = '_sync_request'
+    timeout = 300
 
     ASYNC_PENDING = 0
     ASYNC_SUCCESS = 1
@@ -54,7 +55,8 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         return params, headers
 
     def _async_request(self, command, **kwargs):
-        context = {'command': command, 'kwargs': kwargs}
+        context = {'command': command}
+        context.update(kwargs)
         result = super(CloudStackConnection, self).async_request(action=None,
                                                                params=None,
                                                                data=None,
