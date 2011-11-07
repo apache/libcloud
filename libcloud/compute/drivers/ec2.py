@@ -296,17 +296,14 @@ class EC2NodeDriver(NodeDriver):
         return element.findtext(tag) == 'true'
 
     def _get_state_boolean(self, element):
-        iterobj = element.iter()
-        while 1:
-            try:
-                elem = iterobj.next()
-                if elem.tag.find('name') > -1:
-                    if (elem.text == 'pending') or (elem.text == 'stopping') or (elem.text == 'starting'):
-                        return True
-                    break
-            except StopIteration:
-                break
-        return False
+        """
+        Checks for the instances's state
+        """
+        elem_xpath_list = ['instancesSet/', 'item/', 'currentState/', 'name/']
+        elem_xpath = ('{%s}' % NAMESPACE) + ('{%s}' % NAMESPACE).join(elem_xpath_list)[:-1]
+        state = element.findall(elem_xpath)[0].text
+
+        return state in ('stopping', 'pending', 'starting')
 
     def _get_terminate_boolean(self, element):
         status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))

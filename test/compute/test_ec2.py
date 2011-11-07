@@ -125,6 +125,16 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
 
+    def test_ex_start_node(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ret = self.driver.ex_start_node(node)
+        self.assertTrue(ret)
+
+    def test_ex_stop_node(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ret = self.driver.ex_stop_node(node)
+        self.assertTrue(ret)
+
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.destroy_node(node)
