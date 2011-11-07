@@ -29,7 +29,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
     poll_interval = 1
     request_method = '_sync_request'
-    timeout = 300
+    timeout = 600
 
     ASYNC_PENDING = 0
     ASYNC_SUCCESS = 1
