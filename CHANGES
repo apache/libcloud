@@ -1,6 +1,6 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.6.0:
 
   *) General:
 
@@ -62,10 +62,26 @@ Changes with Apache Libcloud in development:
        signature.
        [Simon Delamare]
 
+     - Add new "unavailable" state to the BrightboxNodeDriver class.
+       [Tim Fletcher]
+
+  *) Load-baancer:
+
+     - Add a missing argument to the method call inside
+       LoadBalancer.attach_compute_node and Driver.balancer_attach_compute_node.
+       [Tim Fletcher, Tomaz Muraus]
+
+     - Add missing destroy() method to the LoadBalancer class.
+       [Tomaz Muraus]
+
   *) DNS:
 
-   - New drivers for Rackspace Cloud DNS (US and UK region)
-     [Tomaz Muraus]
+     - New drivers for Rackspace Cloud DNS (US and UK region)
+       [Tomaz Muraus]
+
+     - Add list_record_types() method. This method returns a list of record
+       types supported by the provider.
+       [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.0-beta1
 

@@ -43,6 +43,11 @@ class ZerigoTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    def test_list_record_types(self):
+        record_types = self.driver.list_record_types()
+        self.assertEqual(len(record_types), 11)
+        self.assertTrue(RecordType.A in record_types)
+
     def test_list_zones_success(self):
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 1)

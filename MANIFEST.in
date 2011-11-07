@@ -5,6 +5,7 @@ include example_*.py
 include CONTRIBUTORS
 include CHANGES
 include HACKING
+include RELEASING
 include README
 include tox.ini
 include libcloud/data/pricing.json

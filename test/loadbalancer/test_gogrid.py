@@ -19,6 +19,8 @@ import unittest
 from urlparse import urlparse
 
 from libcloud.common.types import LibcloudError
+from libcloud.compute.base import Node
+from libcloud.compute.drivers.dummy import DummyNodeDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
@@ -81,8 +83,11 @@ class GoGridTests(unittest.TestCase):
     def test_destroy_balancer(self):
         balancer = self.driver.list_balancers()[0]
 
-        ret = self.driver.destroy_balancer(balancer)
-        self.assertTrue(ret)
+        ret1 = self.driver.destroy_balancer(balancer)
+        ret2 = balancer.destroy()
+
+        self.assertTrue(ret1)
+        self.assertTrue(ret2)
 
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='23530')
@@ -92,30 +97,49 @@ class GoGridTests(unittest.TestCase):
 
     def test_balancer_list_members(self):
         balancer = self.driver.get_balancer(balancer_id='23530')
-        members = balancer.list_members()
+        members1 = self.driver.balancer_list_members(balancer=balancer)
+        members2 = balancer.list_members()
 
         expected_members = set([u'10.0.0.78:80', u'10.0.0.77:80',
             u'10.0.0.76:80'])
 
-        self.assertEquals(len(members), 3)
+        self.assertEquals(len(members1), 3)
+        self.assertEquals(len(members2), 3)
         self.assertEquals(expected_members,
-                set(["%s:%s" % (member.ip, member.port) for member in members]))
+                set(["%s:%s" % (member.ip, member.port) for member in members1]))
+
+    def test_balancer_attach_compute_node(self):
+        balancer = LoadBalancer(23530, None, None, None, None, self.driver)
+        node = Node(id='1', name='test', state=None, public_ip=['10.0.0.75'], 
+                    private_ip=[], driver=DummyNodeDriver)
+        member1 = self.driver.balancer_attach_compute_node(balancer, node)
+        member2 = balancer.attach_compute_node(node)
+
+        self.assertEquals(member1.ip, '10.0.0.75')
+        self.assertEquals(member1.port, 80)
+        self.assertEquals(member2.ip, '10.0.0.75')
+        self.assertEquals(member2.port, 80)
 
     def test_balancer_attach_member(self):
-        balancer = LoadBalancer(23530, None, None, None, None, None)
-        member = self.driver.balancer_attach_member(balancer,
-                    Member(None, ip='10.0.0.75', port='80'))
+        balancer = LoadBalancer(23530, None, None, None, None, self.driver)
+        member = Member(None, ip='10.0.0.75', port='80')
+        member1 = self.driver.balancer_attach_member(balancer, member=member)
+        member2 = balancer.attach_member(member=member)
 
-        self.assertEquals(member.ip, '10.0.0.75')
-        self.assertEquals(member.port, 80)
+        self.assertEquals(member1.ip, '10.0.0.75')
+        self.assertEquals(member1.port, 80)
+        self.assertEquals(member2.ip, '10.0.0.75')
+        self.assertEquals(member2.port, 80)
 
     def test_balancer_detach_member(self):
-        balancer = LoadBalancer(23530, None, None, None, None, None)
+        balancer = LoadBalancer(23530, None, None, None, None, self.driver)
         member = self.driver.balancer_list_members(balancer)[0]
 
-        ret = self.driver.balancer_detach_member(balancer, member)
+        ret1 = self.driver.balancer_detach_member(balancer, member)
+        ret2 = balancer.detach_member(member)
 
-        self.assertTrue(ret)
+        self.assertTrue(ret1)
+        self.assertTrue(ret2)
 
 class GoGridLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')
