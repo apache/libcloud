@@ -1,7 +1,6 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.6.0:
-
+Changes with Apache Libcloud 0.6.1:
   *) General:
 
      - Modify ParamikoSSHClient.connect so it supports authentication using a
@@ -64,6 +63,19 @@ Changes with Apache Libcloud 0.6.0:
 
      - Add new "unavailable" state to the BrightboxNodeDriver class.
        [Tim Fletcher]
+
+     - Increase a PollingConnection timeout in the CloudStack connection
+       and fix the context dictionary creation in the _async_request method.
+       [gigimon]
+
+     - Fix networks retrieval in the CloudStack driver create_node method.
+       Also only pass 'networkids' field to the API if there are any networks
+       available.
+       [gigimon, Tomaz Muraus]
+
+     - Fix list_nodes in the CloudStack driver. Private IPs aren't always
+       available.
+       [Tomaz Muraus]
 
   *) Load-baancer:
 
