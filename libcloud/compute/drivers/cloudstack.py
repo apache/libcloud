@@ -120,7 +120,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         addrs = self._sync_request('listPublicIpAddresses')
 
         public_ips = {}
-        for addr in addrs['publicipaddress']:
+        for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
