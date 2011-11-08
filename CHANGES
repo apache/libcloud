@@ -1,6 +1,15 @@
                                                         -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Compute:
+
+     - Add support for Auth 2.0 API (keystone) to the OpenStack Auth
+       connection class.
+       [Brad Morgan]
+
 Changes with Apache Libcloud 0.6.1:
+
   *) General:
 
      - Modify ParamikoSSHClient.connect so it supports authentication using a
