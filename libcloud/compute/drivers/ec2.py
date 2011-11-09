@@ -464,11 +464,26 @@ class EC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, ex_image_filter=False):
         params = {'Action': 'DescribeImages'}
+
+        if ex_image_filter == 'provider':
+            params.update({'Owner.0': 'amazon'})
+
+        if ex_image_filter == 'self':
+            params.update({'Owner.0': 'self'})
+
+        if ex_image_filter == 'public':
+            params.update({'Filter.0.Name': 'is-public'})
+            params.update({'Filter.0.Value.0': 'true'})
+
+        if ex_image_filter == 'executable':
+            params.update({'ExecutableBy': 'self'})
+
         images = self._to_images(
             self.connection.request(self.path, params=params).object
         )
+
         return images
 
     def list_locations(self):
