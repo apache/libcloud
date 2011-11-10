@@ -8,6 +8,10 @@ Changes with Apache Libcloud in development:
        connection class.
        [Brad Morgan]
 
+     - Add list_locations method to the OpenStack driver and fix some
+       inconsistencies in the OpenStack driver extension method signatures.
+       [Brad Morgan]
+
 Changes with Apache Libcloud 0.6.1:
 
   *) General:

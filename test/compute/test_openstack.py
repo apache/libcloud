@@ -106,6 +106,10 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('test should have thrown')
 
+    def test_list_locations(self):
+        locations = self.driver.list_locations()
+        self.assertEqual(len(locations), 1)
+
     def test_list_nodes(self):
         OpenStackMockHttp.type = 'EMPTY'
         ret = self.driver.list_nodes()
