@@ -51,6 +51,18 @@
             "m2.4xlarge": 2.28
         },
 
+        "ec2_us_west_oregon": {
+            "t1.micro": 0.02,
+            "m1.small": 0.085,
+            "m1.large": 0.34,
+            "m1.xlarge": 0.68,
+            "c1.medium": 0.17,
+            "c1.xlarge": 0.68,
+            "m2.xlarge": 0.50,
+            "m2.2xlarge": 1.0,
+            "m2.4xlarge": 2.0
+        },
+
        "ec2_eu_west": {
             "t1.micro": 0.025,
             "m1.small": 0.095,
