@@ -207,11 +207,16 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         return headers
 
     def morph_action_hook(self, action):
+        if self._force_base_url:
+            _, _, request_path, _, _, _ = urlparse.urlparse(self._force_base_url)
+            return request_path + action
+
         value = getattr(self, self._url_key, None)
         if not value:
             self._populate_hosts_and_request_paths()
         request_path = getattr(self, '__request_path_%s' % (self._url_key), '')
         action = request_path + action
+
         return action
 
     @property
