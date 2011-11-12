@@ -546,7 +546,7 @@ class PollingConnection(Connection):
     If job doesn't finish in timeout seconds, an Exception thrown.
     """
     poll_interval = 0.5
-    timeout = 10
+    timeout = 200
     request_method = 'request'
 
     def async_request(self, action, params=None, data='', headers=None,
@@ -605,6 +605,7 @@ class PollingConnection(Connection):
         while time.time() < end and not completed:
             response = request(**kwargs)
             completed = self.has_completed(response=response)
+            time.sleep(self.poll_interval)
 
         if not completed:
             raise LibcloudError('Job did not complete in %s seconds' %
