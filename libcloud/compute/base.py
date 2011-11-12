@@ -78,7 +78,7 @@ class Node(object):
     >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
     >>> driver = DummyNodeDriver(0)
     >>> node = driver.create_node()
-    >>> node.public_ip[0]
+    >>> node.public_ips[0]
     '127.0.0.3'
     >>> node.name
     'dummy-3'
@@ -109,18 +109,36 @@ class Node(object):
 
     """
 
-    def __init__(self, id, name, state, public_ip, private_ip,
+    def __init__(self, id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None):
         self.id = str(id) if id else None
         self.name = name
         self.state = state
-        self.public_ip = public_ip
-        self.private_ip = private_ip
+        self.public_ips = public_ips
+        self.private_ips = private_ips
         self.driver = driver
         self.uuid = self.get_uuid()
         self.size = size
         self.image = image
         self.extra = extra or {}
+
+    # Note: getters and setters bellow are here only for backward compatibility.
+    # They will be removed in the next release.
+
+    def _set_public_ips(self, value):
+        self.public_ips = value
+
+    def _get_public_ips(self):
+        return self.public_ips
+
+    def _set_private_ips(self, value):
+        self.private_ips = value
+
+    def _get_private_ips(self):
+        return self.private_ips
+
+    public_ip = property(fget=_get_public_ips, fset=_set_public_ips)
+    private_ip = property(fget=_get_private_ips, fset=_set_private_ips)
 
     def get_uuid(self):
         """Unique hash for this node
@@ -189,9 +207,9 @@ class Node(object):
         return self.driver.destroy_node(self)
 
     def __repr__(self):
-        return (('<Node: uuid=%s, name=%s, state=%s, public_ip=%s, '
+        return (('<Node: uuid=%s, name=%s, state=%s, public_ips=%s, '
                  'provider=%s ...>')
-                % (self.uuid, self.name, self.state, self.public_ip,
+                % (self.uuid, self.name, self.state, self.public_ips,
                    self.driver.name))
 
 
@@ -527,7 +545,7 @@ class NodeDriver(BaseDriver):
             ssh_timeout = kwargs.get('ssh_timeout', 10)
             ssh_key_file = kwargs.get('ssh_key', None)
 
-            ssh_client = SSHClient(hostname=node.public_ip[0],
+            ssh_client = SSHClient(hostname=node.public_ips[0],
                                    port=ssh_port, username=ssh_username,
                                    password=password,
                                    key=ssh_key_file,
@@ -582,7 +600,7 @@ class NodeDriver(BaseDriver):
 
             node = nodes[0]
 
-            if (node.public_ip and node.state == NodeState.RUNNING):
+            if (node.public_ips and node.state == NodeState.RUNNING):
                 return node
             else:
                 time.sleep(wait_period)

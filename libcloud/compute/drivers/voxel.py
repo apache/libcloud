@@ -231,8 +231,8 @@ class VoxelNodeDriver(NodeDriver):
                 id = object.findtext("device/id"),
                 name = kwargs["name"],
                 state = NODE_STATE_MAP[object.findtext("device/status")],
-                public_ip = kwargs.get("publicip", None),
-                private_ip = kwargs.get("privateip", None),
+                public_ips = kwargs.get("publicip", None),
+                private_ips = kwargs.get("privateip", None),
                 driver = self.connection.driver
             )
         else:
@@ -293,8 +293,8 @@ class VoxelNodeDriver(NodeDriver):
                 nodes.append(Node(id= element.attrib['id'],
                                  name=element.attrib['label'],
                                  state=state,
-                                 public_ip= public_ip,
-                                 private_ip= private_ip,
+                                 public_ips= public_ip,
+                                 private_ips= private_ip,
                                  driver=self.connection.driver))
         return nodes
 

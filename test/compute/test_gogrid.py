@@ -155,7 +155,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_edit_node(self):
         node = Node(id=90967, name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         ret = self.driver.ex_edit_node(node=node,
                                        size=self._get_test_512Mb_node_size())
 

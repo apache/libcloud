@@ -169,7 +169,7 @@ class Driver(BaseDriver):
         """
 
         return self.balancer_attach_member(balancer, Member(None,
-                                           node.public_ip[0],
+                                           node.public_ips[0],
                                            balancer.port))
 
     def balancer_attach_member(self, balancer, member):

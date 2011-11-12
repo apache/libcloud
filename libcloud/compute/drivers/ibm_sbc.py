@@ -160,8 +160,8 @@ class IBMNodeDriver(NodeDriver):
         return Node(id = instance.findtext('ID'),
                     name = instance.findtext('Name'),
                     state = self.NODE_STATE_MAP[int(instance.findtext('Status'))],
-                    public_ip = instance.findtext('IP'),
-                    private_ip = None,
+                    public_ips = instance.findtext('IP'),
+                    private_ips = None,
                     driver = self.connection.driver)
 
     def _to_images(self, object):

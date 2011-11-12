@@ -300,8 +300,8 @@ class OpenNebulaNodeDriver(NodeDriver):
         return Node(id=compute.findtext('ID'),
                     name=compute.findtext('NAME'),
                     state=state,
-                    public_ip=networks,
-                    private_ip=[],
+                    public_ips=networks,
+                    private_ips=[],
                     driver=self.connection.driver)
 
     def _xml_action(self, compute_id, action):
