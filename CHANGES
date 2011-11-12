@@ -21,6 +21,11 @@ Changes with Apache Libcloud in development:
      - Update Amazon S3 driver to support a new region - US West 2 (Oregon)
        [Tomaz Muraus]
 
+   *) DNS:
+      - Increase the default poll interval in the Rackspace driver to 2.5
+      seconds
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.6.1:
 
   *) General:
