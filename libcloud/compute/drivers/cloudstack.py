@@ -142,8 +142,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 id=vm['id'],
                 name=vm.get('displayname', None),
                 state=self.NODE_STATE_MAP[vm['state']],
-                public_ips=public_ips.get(vm['id'], {}).keys(),
-                private_ips=private_ips,
+                public_ip=public_ips.get(vm['id'], {}).keys(),
+                private_ip=private_ips,
                 driver=self,
                 extra={
                     'zoneid': vm['zoneid'],
@@ -207,8 +207,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             id=node['id'],
             name=node['displayname'],
             state=self.NODE_STATE_MAP[node['state']],
-            public_ips=[],
-            private_ips=[],
+            public_ip=[],
+            private_ip=[],
             driver=self,
             extra={
                 'zoneid': location.id,
@@ -236,7 +236,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if result.get('success', '').lower() != 'true':
             return None
 
-        node.public_ips.append(addr['ipaddress'])
+        node.public_ip.append(addr['ipaddress'])
         addr = CloudStackAddress(node, addr['id'], addr['ipaddress'])
         node.extra['ip_addresses'].append(addr)
         return addr
@@ -245,7 +245,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         "Release a public IP."
 
         node.extra['ip_addresses'].remove(address)
-        node.public_ips.remove(address.address)
+        node.public_ip.remove(address.address)
 
         self._async_request('disableStaticNat', ipaddressid=address.id)
         self._async_request('disassociateIpAddress', id=address.id)

@@ -59,7 +59,7 @@ class DeploymentTests(unittest.TestCase):
         self.driver = Rackspace(*RACKSPACE_PARAMS)
         self.driver.features = {'create_node': ['generates_password']}
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
-                   public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
+                   public_ip=['1.2.3.4'], private_ip='1.2.3.5',
                    driver=Rackspace)
 
     def test_multi_step_deployment(self):

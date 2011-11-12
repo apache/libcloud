@@ -27,7 +27,7 @@ class FakeDriver(object):
 class BaseTests(unittest.TestCase):
 
     def test_base_node(self):
-        Node(id=0, name=0, state=0, public_ips=0, private_ips=0,
+        Node(id=0, name=0, state=0, public_ip=0, private_ip=0,
              driver=FakeDriver())
 
     def test_base_node_size(self):

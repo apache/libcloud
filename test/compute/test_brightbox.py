@@ -47,8 +47,8 @@ class BrightboxTest(unittest.TestCase, TestCaseMixin):
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
-        self.assertTrue('109.107.42.129' in nodes[0].public_ips)
-        self.assertTrue('10.110.24.54' in nodes[0].private_ips)
+        self.assertTrue('109.107.42.129' in nodes[0].public_ip)
+        self.assertTrue('10.110.24.54' in nodes[0].private_ip)
         self.assertEqual(nodes[0].state, NodeState.RUNNING)
 
     def test_list_sizes(self):

@@ -118,8 +118,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
-        self.assertEqual('67.23.21.33', node.public_ips[0])
-        self.assertEqual('10.176.168.218', node.private_ips[0])
+        self.assertEqual('67.23.21.33', node.public_ip[0])
+        self.assertEqual('10.176.168.218', node.private_ip[0])
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
@@ -183,14 +183,14 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('metadata'), metadata)
 
     def test_reboot_node(self):
-        node = Node(id=72258, name=None, state=None, public_ips=None,
-                    private_ips=None, driver=self.driver)
+        node = Node(id=72258, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         ret = node.reboot()
         self.assertTrue(ret is True)
 
     def test_destroy_node(self):
-        node = Node(id=72258, name=None, state=None, public_ips=None,
-                    private_ips=None, driver=self.driver)
+        node = Node(id=72258, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         ret = node.destroy()
         self.assertTrue(ret is True)
 
@@ -200,8 +200,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue("absolute" in limits)
 
     def test_ex_save_image(self):
-        node = Node(id=444222, name=None, state=None, public_ips=None,
-                    private_ips=None, driver=self.driver)
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         image = self.driver.ex_save_image(node, "imgtest")
         self.assertEqual(image.name, "imgtest")
         self.assertEqual(image.id, "12345")
@@ -267,20 +267,20 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEquals(True, ret)
 
     def test_ex_resize(self):
-        node = Node(id=444222, name=None, state=None, public_ips=None,
-                    private_ips=None, driver=self.driver)
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None,
                         driver=self.driver)
         self.assertTrue(self.driver.ex_resize(node=node, size=size))
 
     def test_ex_confirm_resize(self):
-        node = Node(id=444222, name=None, state=None, public_ips=None,
-                    private_ips=None, driver=self.driver)
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         self.assertTrue(self.driver.ex_confirm_resize(node=node))
 
     def test_ex_revert_resize(self):
-        node = Node(id=444222, name=None, state=None, public_ips=None,
-                    private_ips=None, driver=self.driver)
+        node = Node(id=444222, name=None, state=None, public_ip=None,
+                    private_ip=None, driver=self.driver)
         self.assertTrue(self.driver.ex_revert_resize(node=node))
 
     def test_list_sizes(self):
@@ -499,10 +499,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
 
         self.assertEqual('12065', node.id)
-        self.assertEqual('50.57.94.35', node.public_ips[0])
-        self.assertEqual('2001:4801:7808:52:16:3eff:fe47:788a', node.public_ips[1])
-        self.assertEqual('10.182.64.34', node.private_ips[0])
-        self.assertEqual('fec0:4801:7808:52:16:3eff:fe60:187d', node.private_ips[1])
+        self.assertEqual('50.57.94.35', node.public_ip[0])
+        self.assertEqual('2001:4801:7808:52:16:3eff:fe47:788a', node.public_ip[1])
+        self.assertEqual('10.182.64.34', node.private_ip[0])
+        self.assertEqual('fec0:4801:7808:52:16:3eff:fe60:187d', node.private_ip[1])
 
         self.assertEqual(node.extra.get('flavorId'), '2')
         self.assertEqual(node.extra.get('imageId'), '7')
@@ -604,7 +604,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_set_server_name(self):
         old_node = Node(
             id='12064', name=None, state=None,
-            public_ips=None, private_ips=None, driver=self.driver,
+            public_ip=None, private_ip=None, driver=self.driver,
         )
         new_node = self.driver.ex_set_server_name(old_node, 'Bob')
         self.assertEqual('Bob', new_node.name)
@@ -612,7 +612,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_set_metadata(self):
         old_node = Node(
             id='12063', name=None, state=None,
-            public_ips=None, private_ips=None, driver=self.driver,
+            public_ip=None, private_ip=None, driver=self.driver,
         )
         metadata = {'Image Version': '2.1', 'Server Label': 'Web Head 1'}
         returned_metadata = self.driver.ex_set_metadata(old_node, metadata)
@@ -621,7 +621,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_get_metadata(self):
         node = Node(
             id='12063', name=None, state=None,
-            public_ips=None, private_ips=None, driver=self.driver,
+            public_ip=None, private_ip=None, driver=self.driver,
         )
 
         metadata = {'Image Version': '2.1', 'Server Label': 'Web Head 1'}
@@ -631,14 +631,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_update_node(self):
         old_node = Node(
             id='12064',
-            name=None, state=None, public_ips=None, private_ips=None, driver=self.driver,
+            name=None, state=None, public_ip=None, private_ip=None, driver=self.driver,
         )
 
         new_node = self.driver.ex_update_node(old_node, name='Bob')
 
         self.assertTrue(new_node)
         self.assertEqual('Bob', new_node.name)
-        self.assertEqual('50.57.94.30', new_node.public_ips[0])
+        self.assertEqual('50.57.94.30', new_node.public_ip[0])
 
     def test_ex_get_node_details(self):
         node_id = '12064'

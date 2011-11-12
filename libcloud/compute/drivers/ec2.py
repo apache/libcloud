@@ -340,8 +340,8 @@ class EC2NodeDriver(NodeDriver):
                         namespace=NAMESPACE),
             name=name,
             state=state,
-            public_ips=public_ips,
-            private_ips=private_ips,
+            public_ip=public_ips,
+            private_ip=private_ips,
             driver=self.connection.driver,
             extra={
                 'dns_name': findattr(element=element, xpath="dnsName",
@@ -446,7 +446,7 @@ class EC2NodeDriver(NodeDriver):
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
             ips = nodes_elastic_ips_mappings[node.id]
-            node.public_ips.extend(ips)
+            node.public_ip.extend(ips)
         return nodes
 
     def list_sizes(self, location=None):

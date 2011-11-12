@@ -34,8 +34,8 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes),1)
         node = nodes[0]
-        self.assertEqual(node.public_ips[0], "1.2.3.4")
-        self.assertEqual(node.public_ips[1], "1.2.3.5")
+        self.assertEqual(node.public_ip[0], "1.2.3.4")
+        self.assertEqual(node.public_ip[1], "1.2.3.5")
         self.assertEqual(node.extra['order_oid'], 88833465)
         self.assertEqual(node.id, "order-88833465-api-ivan-net-nz")
 

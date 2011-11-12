@@ -139,7 +139,7 @@ class IBMNodeDriver(NodeDriver):
     def list_images(self, location = None):
         return self._to_images(self.connection.request(REST_BASE + '/offerings/image').object)
 
-    def list_sizes(self, location = None):
+    def list_sizes(self, location = None):        
         return [ NodeSize('BRZ32.1/2048/60*175', 'Bronze 32 bit', None, None, None, None, self.connection.driver),
                  NodeSize('BRZ64.2/4096/60*500*350', 'Bronze 64 bit', None, None, None, None, self.connection.driver),
                  NodeSize('COP32.1/2048/60', 'Copper 32 bit', None, None, None, None, self.connection.driver),
@@ -157,17 +157,11 @@ class IBMNodeDriver(NodeDriver):
         return [ self._to_node(instance) for instance in object.findall('Instance') ]
 
     def _to_node(self, instance):
-        public_ips = []
-
-        ip = instance.findtext('IP')
-        if ip:
-            public_ips.append(ip)
-
         return Node(id = instance.findtext('ID'),
                     name = instance.findtext('Name'),
                     state = self.NODE_STATE_MAP[int(instance.findtext('Status'))],
-                    public_ips = public_ips,
-                    private_ips = [],
+                    public_ip = instance.findtext('IP'),
+                    private_ip = None,
                     driver = self.connection.driver)
 
     def _to_images(self, object):

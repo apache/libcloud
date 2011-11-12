@@ -12,40 +12,14 @@ Changes with Apache Libcloud in development:
        inconsistencies in the OpenStack driver extension method signatures.
        [Brad Morgan]
 
-     - Update Amazon EC2 driver and pricing data to support a new region -
+     - Update Amazon EC2 driver and pricing data to support a new region - 
        US West 2 (Oregon)
-       [Tomaz Muraus]
-
-     - Change public_ip and private_ip attribute on the Node object to the
-       public_ips and private_ips since both of the objects are always a list.
-
-       Note: For backward compatibility you can still access public_ip and
-       private_ip attributes, but this will be removed in the next release.
-       [Tomaz Muraus]
-
-     - Fix an inconsistency in IBM SBC driver and make sure public_ips and
-       private_ips attributes are a list.
-       [Tomaz Muraus]
-
-     - Fix an inconsistency in OpSource driver and make sure public_ips is an
-       empty list ([]), not 'unknown'
        [Tomaz Muraus]
 
   *) Storage:
 
      - Update Amazon S3 driver to support a new region - US West 2 (Oregon)
        [Tomaz Muraus]
-
-   *) DNS:
-
-      - Increase the default poll interval in the Rackspace driver to 2.5
-        seconds.
-        [Tomaz Muraus]
-
-      - Fix a bug in Rackspace Cloud DNS driver and make sure to throw an
-        exception if an unexpected status code is returned. Reported by
-        jeblair.
-        [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.1:
 

@@ -109,14 +109,14 @@ class VoxelTest(unittest.TestCase):
 
     def test_reboot_node(self):
         VoxelMockHttp.type = 'REBOOT_NODE'
-        node = Node(id=72258, name=None, state=None, public_ips=None, private_ips=None,
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
 
         self.assertTrue(node.reboot())
 
     def test_destroy_node(self):
         VoxelMockHttp.type = 'DESTROY_NODE'
-        node = Node(id=72258, name=None, state=None, public_ips=None, private_ips=None,
+        node = Node(id=72258, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
 
         self.assertTrue(node.destroy())

@@ -38,7 +38,7 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(nodes), 1)
 
         node = nodes[0]
-        self.assertEqual(node.public_ips[0], "1.2.3.4")
+        self.assertEqual(node.public_ip[0], "1.2.3.4")
         self.assertEqual(node.extra['smp'], 1)
         self.assertEqual(node.extra['cpu'], 1100)
         self.assertEqual(node.extra['mem'], 640)

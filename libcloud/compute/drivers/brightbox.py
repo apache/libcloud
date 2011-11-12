@@ -114,8 +114,8 @@ class BrightboxNodeDriver(NodeDriver):
             id = data['id'],
             name = data['name'],
             state = self.NODE_STATE_MAP[data['status']],
-            public_ips = map(lambda cloud_ip: cloud_ip['public_ip'], data['cloud_ips']),
-            private_ips = map(lambda interface: interface['ipv4_address'], data['interfaces']),
+            public_ip = map(lambda cloud_ip: cloud_ip['public_ip'], data['cloud_ips']),
+            private_ip = map(lambda interface: interface['ipv4_address'], data['interfaces']),
             driver = self.connection.driver,
             extra = {
                 'status': data['status'],

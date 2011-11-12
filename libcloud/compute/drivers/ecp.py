@@ -171,8 +171,8 @@ class ECPNodeDriver(NodeDriver):
           id=vm['uuid'],
           name=vm['name'],
           state=NodeState.RUNNING,
-          public_ips=public_ips,
-          private_ips=private_ips,
+          public_ip=public_ips,
+          private_ip=private_ips,
           driver=self,
         )
 
@@ -352,8 +352,8 @@ class ECPNodeDriver(NodeDriver):
             id=response['machine_id'],
             name=data['name'],
             state=NodeState.PENDING,
-            public_ips=[],
-            private_ips=[],
+            public_ip=[],
+            private_ip=[],
             driver=self,
         )
 

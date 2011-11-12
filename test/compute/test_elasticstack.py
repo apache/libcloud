@@ -50,8 +50,8 @@ class ElasticStackTestCase(object):
         self.mockHttp = ElasticStackMockHttp
         self.mockHttp.type = None
 
-        self.node = Node(id=72258, name=None, state=None, public_ips=None,
-                         private_ips=None, driver=self.driver)
+        self.node = Node(id=72258, name=None, state=None, public_ip=None,
+                         private_ip=None, driver=self.driver)
 
     def test_invalid_creds(self):
         self.mockHttp.type = 'UNAUTHORIZED'
@@ -100,8 +100,8 @@ class ElasticStackTestCase(object):
         self.assertEqual(len(nodes), 1)
 
         node = nodes[0]
-        self.assertEqual(node.public_ips[0], "1.2.3.4")
-        self.assertEqual(node.public_ips[1], "1.2.3.5")
+        self.assertEqual(node.public_ip[0], "1.2.3.4")
+        self.assertEqual(node.public_ip[1], "1.2.3.5")
         self.assertEqual(node.extra['smp'], 1)
 
     def test_list_sizes(self):

@@ -210,8 +210,8 @@ class BlueboxNodeDriver(NodeDriver):
         n = Node(id=vm['id'],
                  name=vm['hostname'],
                  state=state,
-                 public_ips=[ ip['address'] for ip in vm['ips'] ],
-                 private_ips=[],
+                 public_ip=[ ip['address'] for ip in vm['ips'] ],
+                 private_ip=[],
                  extra={'storage':vm['storage'], 'cpu':vm['cpu']},
                  driver=self.connection.driver)
         return n

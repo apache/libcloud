@@ -63,17 +63,15 @@ class RackspaceDNSResponse(OpenStack_1_1_Response):
             elif context['resource'] == 'record':
                 raise RecordDoesNotExistError(value='', driver=self,
                                               record_id=context['id'])
-        if body:
-            if 'code' and 'message' in body:
-                err = '%s - %s (%s)' % (body['code'], body['message'],
-                                        body['details'])
-                return err
-            elif 'validationErrors' in body:
-                errors = [m for m in body['validationErrors']['messages']]
-                err = 'Validation errors: %s' % ', '.join(errors)
-                return err
 
-        raise LibcloudError('Unexpected status code: %s' % (status))
+        if 'code' and 'message' in body:
+            err = '%s - %s (%s)' % (body['code'], body['message'],
+                                    body['details'])
+        elif 'validationErrors' in body:
+            errors = [m for m in body['validationErrors']['messages']]
+            err = 'Validation errors: %s' % ', '.join(errors)
+
+        return err
 
 
 class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
@@ -84,7 +82,6 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     responseCls = RackspaceDNSResponse
     _url_key = 'dns_url'
     XML_NAMESPACE = None
-    poll_interval = 2.5
 
     def get_poll_request_kwargs(self, response, context):
         job_id = response.object['jobId']

@@ -445,7 +445,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             extra.update({'password': ssh_password})
 
         node = Node(id=data['server'], name=data['name'], state=state,
-                    public_ips=public_ip, private_ips=None,
+                    public_ip=public_ip, private_ip=None,
                     driver=self.connection.driver,
                     extra=extra)
 

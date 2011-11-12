@@ -608,8 +608,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                  name=el.get('name'),
                  state=self.NODE_STATE_MAP.get(
                      el.get('status'), NodeState.UNKNOWN),
-                 public_ips=public_ip,
-                 private_ips=private_ip,
+                 public_ip=public_ip,
+                 private_ip=private_ip,
                  driver=self.connection.driver,
                  extra={
                     'password': el.get('adminPass'),
@@ -1016,9 +1016,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             name=api_node['name'],
             state=self.NODE_STATE_MAP.get(api_node['status'],
                                           NodeState.UNKNOWN),
-            public_ips=[addr_desc['addr'] for addr_desc in
+            public_ip=[addr_desc['addr'] for addr_desc in
                        api_node['addresses'].get('public', [])],
-            private_ips=[addr_desc['addr'] for addr_desc in
+            private_ip=[addr_desc['addr'] for addr_desc in
                         api_node['addresses'].get('private', [])],
             driver=self,
             extra=dict(

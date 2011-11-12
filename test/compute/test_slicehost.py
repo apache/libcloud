@@ -39,8 +39,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         ret = self.driver.list_nodes()
         self.assertEqual(len(ret), 1)
         node = ret[0]
-        self.assertTrue('174.143.212.229' in node.public_ips)
-        self.assertTrue('10.176.164.199' in node.private_ips)
+        self.assertTrue('174.143.212.229' in node.public_ip)
+        self.assertTrue('10.176.164.199' in node.private_ip)
         self.assertEqual(node.state, NodeState.PENDING)
 
         SlicehostMockHttp.type = 'UNAUTHORIZED'
@@ -65,7 +65,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.id, '2')
 
     def test_reboot_node(self):
-        node = Node(id=1, name=None, state=None, public_ips=None, private_ips=None,
+        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
 
         ret = node.reboot()
@@ -83,7 +83,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_destroy_node(self):
-        node = Node(id=1, name=None, state=None, public_ips=None, private_ips=None,
+        node = Node(id=1, name=None, state=None, public_ip=None, private_ip=None,
                     driver=self.driver)
 
         ret = node.destroy()

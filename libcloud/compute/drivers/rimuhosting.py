@@ -131,11 +131,11 @@ class RimuHostingNodeDriver(NodeDriver):
         n = Node(id=order['slug'],
                 name=order['domain_name'],
                 state=NodeState.RUNNING,
-                public_ips=(
+                public_ip=(
                     [order['allocated_ips']['primary_ip']]
                     + order['allocated_ips']['secondary_ips']
                 ),
-                private_ips=[],
+                private_ip=[],
                 driver=self.connection.driver,
                 extra={'order_oid': order['order_oid'],
                        'monthly_recurring_fee': order.get('billing_info').get('monthly_recurring_fee')})

@@ -77,7 +77,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         # Web node tests
         self.assertEqual(web_node.id, 'ps22174')
         self.assertEqual(web_node.state, NodeState.UNKNOWN)
-        self.assertTrue('75.119.203.51' in web_node.public_ips)
+        self.assertTrue('75.119.203.51' in web_node.public_ip)
         self.assertTrue(
             web_node.extra.has_key('current_size') and
             web_node.extra['current_size'] == 500
@@ -93,7 +93,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         # MySql node tests
         self.assertEqual(mysql_node.id, 'ps22175')
         self.assertEqual(mysql_node.state, NodeState.UNKNOWN)
-        self.assertTrue('75.119.203.52' in mysql_node.public_ips)
+        self.assertTrue('75.119.203.52' in mysql_node.public_ip)
         self.assertTrue(
             mysql_node.extra.has_key('current_size') and
             mysql_node.extra['current_size'] == 1500

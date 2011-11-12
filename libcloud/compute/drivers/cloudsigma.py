@@ -491,12 +491,12 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                 # creation failed because of insufficient funds.
                 return None
 
-            public_ips = []
+            public_ip = []
             if data.has_key('nic:0:dhcp'):
                 if isinstance(data['nic:0:dhcp'], list):
-                    public_ips = data['nic:0:dhcp']
+                    public_ip = data['nic:0:dhcp']
                 else:
-                    public_ips = [data['nic:0:dhcp']]
+                    public_ip = [data['nic:0:dhcp']]
 
             extra = {}
             extra_keys = [ ('cpu', 'int'), ('smp', 'auto'), ('mem', 'int'), ('status', 'str') ]
@@ -518,7 +518,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                 extra.update({'vnc_ip': data['vnc:ip'], 'vnc_password': data['vnc:password']})
 
             node = Node(id = data['server'], name = data['name'], state =  state,
-                        public_ips = public_ips, private_ips = None, driver = self.connection.driver,
+                        public_ip = public_ip, private_ip = None, driver = self.connection.driver,
                         extra = extra)
 
             return node
