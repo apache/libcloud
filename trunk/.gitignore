@@ -1,0 +1,11 @@
+*.py[co]
+*.sw[po]
+test/secrets.py
+demos/secrets.py
+*~
+_trial_temp
+build
+MANIFEST
+/.ropeproject/config.py
+/.coverage
+coverage_html_report/

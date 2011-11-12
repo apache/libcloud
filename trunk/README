@@ -1,0 +1,58 @@
+Apache libcloud - a unified interface into the cloud
+====================================================
+
+The goal of this project is to create a basic yet functional standard library
+into various cloud providers.
+
+Apache libcloud is an Apache project, see <http://libcloud.apache.org> for
+more information.
+
+For API documentation and examples, see:
+ <http://libcloud.apache.org/getting-started.html>
+
+Important Security Note
+=======================
+
+Python's built-in SSL module does not do certificate validation.
+
+To address this, we've introduced the libcloud.security module with tunable
+parameters.
+
+View the entire guide at: <http://wiki.apache.org/incubator/LibcloudSSL>
+
+Enabling SSL Certificate Check
+==============================
+
+   import libcloud.security
+   libcloud.security.VERIFY_SSL_CERT = True
+
+   # optionally, add to CA_CERTS_PATH
+   libcloud.security.CA_CERTS_PATH.append("/path/to/your/cacerts.txt")
+
+CA_CERTS_PATH contains common paths to CA bundle installations on the
+following platforms:
+
+ * openssl on CentOS/Fedora
+ * ca-certificates on Debian/Ubuntu/Arch/Gentoo
+ * ca_root_nss on FreeBSD
+ * curl-ca-bundle on Mac OS X
+
+Note for OS X Users
+===================
+
+OS X root certificates are stored in the Keychain format, unlike the standard
+PEM format available on other *nix platforms.  For this reason, it is not
+possible to include the standard OS X root certificates with CA_CERTS_PATH.
+
+Acquiring CA Certificates
+=========================
+
+If the above packages are unavailable to you, and you don't wish to roll your
+own, the makers of cURL provides an excellent resource, generated from
+Mozilla: http://curl.haxx.se/docs/caextract.html
+
+Feedback
+========
+
+Please send feedback to the mailing list at <dev@libcloud.apache.org>,
+or the JIRA at <https://issues.apache.org/jira/browse/LIBCLOUD>.

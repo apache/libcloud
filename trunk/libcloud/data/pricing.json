@@ -1,0 +1,170 @@
+{
+    "compute": {
+        "bluebox": {
+           "1gb": 0.15,
+           "2gb": 0.25,
+           "4gb": 0.35,
+           "8gb": 0.45
+        },
+
+        "rackspace": {
+            "1": 0.015,
+            "2": 0.030,
+            "3": 0.060,
+            "4": 0.120,
+            "5": 0.240,
+            "6": 0.480,
+            "7": 0.960
+        },
+
+        "dreamhost": {
+            "minimum": 15,
+            "maximum": 200,
+            "default": 115,
+            "low": 50,
+            "high": 150
+        },
+
+        "ec2_us_east": {
+            "t1.micro": 0.02,
+            "m1.small": 0.085,
+            "m1.large": 0.34,
+            "m1.xlarge": 0.68,
+            "c1.medium": 0.17,
+            "c1.xlarge": 0.68,
+            "m2.xlarge": 0.50,
+            "m2.2xlarge": 1.0,
+            "m2.4xlarge": 2.0,
+            "cg1.4xlarge": 2.1,
+            "cc1.4xlarge": 1.6
+        },
+
+        "ec2_us_west": {
+            "t1.micro": 0.025,
+            "m1.small": 0.095,
+            "m1.large": 0.38,
+            "m1.xlarge": 0.76,
+            "c1.medium": 0.19,
+            "c1.xlarge": 0.76,
+            "m2.xlarge": 0.57,
+            "m2.2xlarge": 1.14,
+            "m2.4xlarge": 2.28
+        },
+
+        "ec2_us_west_oregon": {
+            "t1.micro": 0.02,
+            "m1.small": 0.085,
+            "m1.large": 0.34,
+            "m1.xlarge": 0.68,
+            "c1.medium": 0.17,
+            "c1.xlarge": 0.68,
+            "m2.xlarge": 0.50,
+            "m2.2xlarge": 1.0,
+            "m2.4xlarge": 2.0
+        },
+
+       "ec2_eu_west": {
+            "t1.micro": 0.025,
+            "m1.small": 0.095,
+            "m1.large": 0.38,
+            "m1.xlarge": 0.76,
+            "c1.medium": 0.19,
+            "c1.xlarge": 0.76,
+            "m2.xlarge": 0.57,
+            "m2.2xlarge": 1.14,
+            "m2.4xlarge": 2.28
+        },
+
+       "ec2_ap_southeast": {
+            "t1.micro": 0.025,
+            "m1.small": 0.095,
+            "m1.large": 0.38,
+            "m1.xlarge": 0.76,
+            "c1.medium": 0.19,
+            "c1.xlarge": 0.76,
+            "m2.xlarge": 0.57,
+            "m2.2xlarge": 1.14,
+            "m2.4xlarge": 2.28
+        },
+
+       "ec2_ap_northeast": {
+            "t1.micro": 0.027,
+            "m1.small": 0.10,
+            "m1.large": 0.40,
+            "m1.xlarge": 0.80,
+            "c1.medium": 0.20,
+            "c1.xlarge": 0.80,
+            "m2.xlarge": 0.60,
+            "m2.2xlarge": 1.20,
+            "m2.4xlarge": 2.39
+        },
+
+        "nimbus" : {
+            "m1.small": 0.0,
+            "m1.large": 0.0,
+            "m1.xlarge": 0.0
+        },
+
+        "cloudsigma_zrh": {
+            "micro-regular": 0.0548,
+            "micro-high-cpu": 0.381,
+            "standard-small": 0.0796,
+            "standard-large": 0.381,
+            "standard-extra-large": 0.762,
+            "high-memory-extra-large": 0.642,
+            "high-memory-double-extra-large": 1.383,
+            "high-cpu-medium": 0.211,
+            "high-cpu-extra-large": 0.780
+        },
+
+        "elastichosts": {
+           "small": 0.100,
+           "medium": 0.223,
+           "large": 0.378,
+           "extra-large": 0.579,
+           "high-cpu-medium": 0.180,
+           "high-cpu-extra-large": 0.770
+        },
+
+        "skalicloud": {
+           "small": 0.136,
+           "medium": 0.301,
+           "large": 0.505,
+           "extra-large": 0.654,
+           "high-cpu-medium": 0.249,
+           "high-cpu-extra-large": 0.936
+        },
+
+        "serverlove": {
+           "small": 0.161,
+           "medium": 0.404,
+           "large": 0.534,
+           "extra-large": 0.615,
+           "high-cpu-medium": 0.291,
+           "high-cpu-extra-large": 0.776
+        },
+
+        "gogrid": {
+            "512MB": 0.095,
+            "1GB": 0.19,
+            "2GB": 0.38,
+            "4GB": 0.76,
+            "8GB": 1.52,
+            "16GB": 3.04,
+            "24GB": 4.56
+        },
+
+        "gandi": {
+            "1": 0.02
+        },
+
+        "vps_net": {
+            "1": 0.416
+        }
+    },
+
+    "storage": {
+    },
+
+    "updated": 1309019791
+}

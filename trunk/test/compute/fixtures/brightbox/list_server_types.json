@@ -1,0 +1,8 @@
+[{"id": "typ-4nssg",
+  "url": "server_types/typ-4nssg",
+  "handle": "nano",
+  "name": "Brightbox Nano Instance",
+  "status": "",
+  "cores": 1,
+  "ram": 512,
+  "disk_size": 10240}]

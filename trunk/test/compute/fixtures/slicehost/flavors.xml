@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flavors type="array">
+  <flavor>
+    <id type="integer">1</id>
+    <name>256 slice</name>
+    <price type="integer">2000</price>
+    <ram type="integer">256</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">2</id>
+    <name>512 slice</name>
+    <price type="integer">3800</price>
+    <ram type="integer">512</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">3</id>
+    <name>1GB slice</name>
+    <price type="integer">7000</price>
+    <ram type="integer">1024</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">4</id>
+    <name>2GB slice</name>
+    <price type="integer">13000</price>
+    <ram type="integer">2048</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">5</id>
+    <name>4GB slice</name>
+    <price type="integer">25000</price>
+    <ram type="integer">4096</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">6</id>
+    <name>8GB slice</name>
+    <price type="integer">45000</price>
+    <ram type="integer">8192</ram>
+  </flavor>
+  <flavor>
+    <id type="integer">7</id>
+    <name>15.5GB slice</name>
+    <price type="integer">80000</price>
+    <ram type="integer">15872</ram>
+  </flavor>
+</flavors>

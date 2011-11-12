@@ -1,0 +1,64 @@
+Making a release (for release managers)
+=======================================
+
+1. Pre-release check list
+
+- Make sure tests pass on all the supported Python versions (sudo tox)
+- Make sure CHANGES file is up to date
+- Make sure __version__ string in libcloud/__init__.py is up to date
+
+2. Creating release artifacts
+
+ We have a script that runs the required setup.py commands and then hashes
+ and signs the files. To run it:
+
+    cd dist
+    ./release.sh -u yourusername@apache.org
+
+ This should result in a set of apache-libcloud-${VERSION}.{tar.bz2,zip}{,asc,md5,sha1}
+ files that are suitable to be uploaded for a release.
+
+3. Uploading release artifacts
+
+ - Add release artifacts to the SVN repository at
+   https://dist.apache.org/repos/dist/release/libcloud/
+
+   It may take up to a day for the artifacts to be available on all the
+   Apache mirrors, but they should be instantly available at
+   http://www.apache.org/dist/libcloud/.
+
+ - If there is more than one older release in the repository, delete the
+   oldest one. Old releases are automatically archived and available at
+   https://dist.apache.org/repos/dist/release/libcloud/.
+
+4. Tagging a release
+
+ svn copy https://svn.apache.org/repos/asf/libcloud/trunk/ \
+   https://svn.apache.org/repos/asf/libcloud/tags/<version number> \
+   -r <release revision number> \
+   -m "Release <version number>"
+
+5. Publishing package to PyPi
+
+  TODO
+
+6. Updating a website and doap_libcloud
+
+ - Update "News" page
+
+ - Update "Downloads" page
+
+ - Update "Get it" section in the sidebar
+
+ - Update doap_libcloud.py and add info about the new version
+
+7. Sending announcements
+
+ - Send a release announcement to {dev,users}@libcloud.apache.org. If it's a
+   major release also send it to announce@apache.org.
+
+ - Send a release announcement to Twitter
+
+Miscellaneous:
+
+- If needed, use Apache URL shortening service - http://s.apache.org/
