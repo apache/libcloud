@@ -85,6 +85,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     _url_key = 'dns_url'
     XML_NAMESPACE = None
     poll_interval = 2.5
+    timeout = 30
 
     def get_poll_request_kwargs(self, response, context):
         job_id = response.object['jobId']
