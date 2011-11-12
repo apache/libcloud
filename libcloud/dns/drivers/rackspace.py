@@ -63,15 +63,17 @@ class RackspaceDNSResponse(OpenStack_1_1_Response):
             elif context['resource'] == 'record':
                 raise RecordDoesNotExistError(value='', driver=self,
                                               record_id=context['id'])
+        if body:
+            if 'code' and 'message' in body:
+                err = '%s - %s (%s)' % (body['code'], body['message'],
+                                        body['details'])
+                return err
+            elif 'validationErrors' in body:
+                errors = [m for m in body['validationErrors']['messages']]
+                err = 'Validation errors: %s' % ', '.join(errors)
+                return err
 
-        if 'code' and 'message' in body:
-            err = '%s - %s (%s)' % (body['code'], body['message'],
-                                    body['details'])
-        elif 'validationErrors' in body:
-            errors = [m for m in body['validationErrors']['messages']]
-            err = 'Validation errors: %s' % ', '.join(errors)
-
-        return err
+        raise LibcloudError('Unexpected status code: %s' % (status))
 
 
 class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):

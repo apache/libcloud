@@ -22,9 +22,15 @@ Changes with Apache Libcloud in development:
        [Tomaz Muraus]
 
    *) DNS:
+
       - Increase the default poll interval in the Rackspace driver to 2.5
-      seconds
-      [Tomaz Muraus]
+        seconds.
+        [Tomaz Muraus]
+
+      - Fix a bug in Rackspace Cloud DNS driver and make sure to throw an
+        exception if an unexpected status code is returned. Reported by
+        jeblair.
+        [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.1:
 
