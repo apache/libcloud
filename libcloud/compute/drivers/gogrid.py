@@ -83,7 +83,7 @@ class GoGridNode(Node):
     # so uuid of node should not change after add is completed
     def get_uuid(self):
         return hashlib.sha1(
-            "%s:%d" % (self.public_ip,self.driver.type)
+            "%s:%d" % (self.public_ips,self.driver.type)
         ).hexdigest()
 
 class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
@@ -119,8 +119,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         n = GoGridNode(id=id,
                  name=element['name'],
                  state=state,
-                 public_ip=[ip],
-                 private_ip=[],
+                 public_ips=[ip],
+                 private_ips=[],
                  extra={'ram': element.get('ram').get('name'),
                      'description': element.get('description', '')},
                  driver=self.connection.driver)
@@ -279,7 +279,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             nodes = self.list_nodes()
 
             for i in nodes:
-                if i.public_ip[0] == node.public_ip[0] and i.id is not None:
+                if i.public_ips[0] == node.public_ips[0] and i.id is not None:
                     return i
 
             waittime += interval

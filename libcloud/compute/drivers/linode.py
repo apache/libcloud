@@ -438,8 +438,8 @@ class LinodeNodeDriver(NodeDriver):
         batch = []
         for o in objs:
             lid = o["LINODEID"]
-            nodes[lid] = n = Node(id=lid, name=o["LABEL"], public_ip=[],
-                private_ip=[], state=self.LINODE_STATES[o["STATUS"]],
+            nodes[lid] = n = Node(id=lid, name=o["LABEL"], public_ips=[],
+                private_ips=[], state=self.LINODE_STATES[o["STATUS"]],
                 driver=self.connection.driver)
             n.extra = copy(o)
             n.extra["PLANID"] = self._linode_plan_ids.get(o.get("TOTALRAM"))
@@ -462,8 +462,8 @@ class LinodeNodeDriver(NodeDriver):
         for ip_list in ip_answers:
             for ip in ip_list:
                 lid = ip["LINODEID"]
-                which = nodes[lid].public_ip if ip["ISPUBLIC"] == 1 else \
-                    nodes[lid].private_ip
+                which = nodes[lid].public_ips if ip["ISPUBLIC"] == 1 else \
+                    nodes[lid].private_ips
                 which.append(ip["IPADDRESS"])
         return nodes.values()
 
