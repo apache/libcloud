@@ -23,6 +23,10 @@ Changes with Apache Libcloud in development:
        private_ip attributes, but this will be removed in the next release.
        [Tomaz Muraus]
 
+     - Fix an inconsistency in IBM SBC driver and make sure public_ips and
+       private_ips attributes are a list.
+       [Tomaz Muraus]
+
   *) Storage:
 
      - Update Amazon S3 driver to support a new region - US West 2 (Oregon)
