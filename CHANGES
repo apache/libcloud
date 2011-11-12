@@ -27,6 +27,10 @@ Changes with Apache Libcloud in development:
        private_ips attributes are a list.
        [Tomaz Muraus]
 
+     - Fix an inconsistency in OpSource driver and make sure public_ips is an
+       empty list ([]), not 'unknown'
+       [Tomaz Muraus]
+
   *) Storage:
 
      - Update Amazon S3 driver to support a new region - US West 2 (Oregon)
