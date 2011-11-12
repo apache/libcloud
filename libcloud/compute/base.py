@@ -114,8 +114,8 @@ class Node(object):
         self.id = str(id) if id else None
         self.name = name
         self.state = state
-        self.public_ips = public_ips
-        self.private_ips = private_ips
+        self.public_ips = public_ips if public_ips else []
+        self.private_ips = private_ips if private_ips else []
         self.driver = driver
         self.uuid = self.get_uuid()
         self.size = size

@@ -50,10 +50,10 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         self.assertEquals(len(ret), 3)
         self.assertEquals(ret[0].id, '26557')
         self.assertEquals(ret[0].name, 'Insight Instance')
-        self.assertEquals(ret[0].public_ips, '129.33.196.128')
-        self.assertEquals(ret[0].private_ips, None)  # Private IPs not supported
-        self.assertEquals(ret[1].public_ips, None)   # Node is non-active (no IP)
-        self.assertEquals(ret[1].private_ips, None)
+        self.assertEquals(ret[0].public_ips, ['129.33.196.128'])
+        self.assertEquals(ret[0].private_ips, [])  # Private IPs not supported
+        self.assertEquals(ret[1].public_ips, [])   # Node is non-active (no IP)
+        self.assertEquals(ret[1].private_ips, [])
         self.assertEquals(ret[1].id, '28193')
 
     def test_list_sizes(self):
