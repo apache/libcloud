@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General
+
+     - Fix a bug in PollingConnection class - actually use and don't ignore
+       the poll_interval
+       [Tomaz Muraus]
+
   *) Compute:
 
      - Add support for Auth 2.0 API (keystone) to the OpenStack Auth
@@ -29,7 +35,7 @@ Changes with Apache Libcloud in development:
 
       - Fix a bug in Rackspace Cloud DNS driver and make sure to throw an
         exception if an unexpected status code is returned. Reported by
-        jeblair.
+        "jeblair".
         [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.6.1:
