@@ -35,6 +35,7 @@ class RackspaceUSTests(unittest.TestCase):
                 None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
         self.driver = self.klass(*DNS_PARAMS_RACKSPACE)
+        self.driver.connection.poll_interval = 0.0
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()

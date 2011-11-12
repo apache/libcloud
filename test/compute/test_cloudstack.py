@@ -29,6 +29,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.driver.path = '/test/path'
         self.driver.type = -1
         CloudStackMockHttp.fixture_tag = 'default'
+        self.driver.connection.poll_interval = 0.0
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
