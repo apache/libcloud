@@ -540,7 +540,7 @@ class OpsourceNodeDriver(NodeDriver):
         n = Node(id=findtext(element, 'id', SERVER_NS),
                  name=findtext(element, 'name', SERVER_NS),
                  state=state,
-                 public_ips="unknown",
+                 public_ips=[],
                  private_ips=findtext(element, 'privateIpAddress', SERVER_NS),
                  driver=self.connection.driver,
                  extra=extra)
