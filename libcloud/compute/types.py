@@ -57,6 +57,7 @@ class Provider(object):
     @cvar NINEFOLD: Ninefold
     @cvar TERREMARK: Terremark
     @cvar: EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    @cvar CLOUDSTACK: CloudStack
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -97,6 +98,7 @@ class Provider(object):
     NINEFOLD = 34
     TERREMARK = 35
     EC2_US_WEST_OREGON = 36
+    CLOUDSTACK = 37
 
 class NodeState(object):
     """
