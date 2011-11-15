@@ -37,6 +37,10 @@ Changes with Apache Libcloud in development:
        empty list ([]), not 'unknown'
        [Tomaz Muraus]
 
+     - Expose 'CLOUDSTACK' provider. This driver can be used with an
+       arbitrary CloudStack installation.
+       [Tomaz Muraus]
+
   *) Storage:
 
      - Update Amazon S3 driver to support a new region - US West 2 (Oregon)
