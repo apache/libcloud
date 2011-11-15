@@ -1,6 +1,6 @@
                                                         -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.6.2:
 
   *) General
 
@@ -18,7 +18,7 @@ Changes with Apache Libcloud in development:
        inconsistencies in the OpenStack driver extension method signatures.
        [Brad Morgan]
 
-     - Update Amazon EC2 driver and pricing data to support a new region - 
+     - Update Amazon EC2 driver and pricing data to support a new region -
        US West 2 (Oregon)
        [Tomaz Muraus]
 
