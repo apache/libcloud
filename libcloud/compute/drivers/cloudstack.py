@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackConnection, \
                                        CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
@@ -83,7 +84,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                 job completion.
     @type async_poll_frequency: C{int}"""
 
+    name = 'CloudStack'
     api_name = 'cloudstack'
+    type = Provider.CLOUDSTACK
 
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
@@ -92,6 +95,23 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Stopping': NodeState.TERMINATED,
         'Destroyed': NodeState.TERMINATED
     }
+
+    def __init__(self, key, secret=None, secure=True, host=None,
+                 path=None, port=None, *args, **kwargs):
+        host = host if host else self.host
+
+        if path is not None:
+            self.path = path
+
+        if host is not None:
+            self.host = host
+
+        if (self.type == Provider.CLOUDSTACK) and (not host or not path):
+            raise Exception('When instantiating CloudStack driver directly ' +
+                            'you also need to provide host and path argument')
+
+        NodeDriver.__init__(self, key=key, secret=secret, secure=secure,
+                            host=host, port=port)
 
     def list_images(self, location=None):
         args = {
