@@ -199,7 +199,7 @@ class EC2Response(AWSBaseResponse):
 
 class EC2Connection(ConnectionUserAndKey):
     """
-    Repersents a single connection to the EC2 Endpoint
+    Represents a single connection to the EC2 Endpoint
     """
 
     host = EC2_US_EAST_HOST
@@ -304,6 +304,16 @@ class EC2NodeDriver(NodeDriver):
     def _get_boolean(self, element):
         tag = "{%s}%s" % (NAMESPACE, 'return')
         return element.findtext(tag) == 'true'
+
+    def _get_state_boolean(self, element):
+        """
+        Checks for the instances's state
+        """
+        state = findall(element=element,
+                        xpath='instancesSet/item/currentState/name',
+                        namespace=NAMESPACE)[0].text
+
+        return state in ('stopping', 'pending', 'starting')
 
     def _get_terminate_boolean(self, element):
         status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
@@ -551,7 +561,7 @@ class EC2NodeDriver(NodeDriver):
             }
 
     def ex_describe_keypairs(self, name):
-        """Describes a keypiar by name
+        """Describes a keypair by name
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -756,6 +766,55 @@ class EC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
+    def ex_describe_all_addresses(self, only_allocated=False):
+        """
+        Return all the Elastic IP addresses for this account
+        optionally, return only the allocated addresses
+
+        @keyword  only_allocated: If true, return only those addresses
+                                  that are associated with an instance
+        @type     only_allocated: C{string}
+
+        @return   list list of elastic ips for this particular account.
+        """
+        params = {'Action': 'DescribeAddresses'}
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        # the list which we return
+        elastic_ip_addresses = []
+        for element in findall(element=result, xpath='addressesSet/item',
+                               namespace=NAMESPACE):
+            instance_id = findtext(element=element, xpath='instanceId',
+                                   namespace=NAMESPACE)
+
+            # if only allocated addresses are requested
+            if only_allocated and not instance_id:
+                continue
+
+            ip_address = findtext(element=element, xpath='publicIp',
+                                  namespace=NAMESPACE)
+
+            elastic_ip_addresses.append(ip_address)
+
+        return elastic_ip_addresses
+
+    def ex_associate_addresses(self, node, elastic_ip_address):
+        """
+        Associate an IP address with a particular node.
+
+        @type node: C{Node}
+        @param node: Node instance
+
+        """
+        params = {'Action': 'AssociateAddress'}
+
+        params.update(self._pathlist('InstanceId', [node.id]))
+        params.update({'PublicIp': elastic_ip_address})
+        res = self.connection.request(self.path, params=params).object
+        return self._get_boolean(res)
+
     def ex_describe_addresses(self, nodes):
         """
         Return Elastic IP addresses for all the nodes in the provided list.
@@ -942,6 +1001,26 @@ class EC2NodeDriver(NodeDriver):
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
+
+    def ex_start_node(self, node):
+        """
+        Start the node by passing in the node object, does not work with
+        instance store backed instances
+        """
+        params = {'Action': 'StartInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
+
+    def ex_stop_node(self, node):
+        """
+        Stop the node by passing in the node object, does not work with
+        instance store backed instances
+        """
+        params = {'Action': 'StopInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
 
     def destroy_node(self, node):
         """
