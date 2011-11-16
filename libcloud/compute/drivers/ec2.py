@@ -131,9 +131,16 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'cc2.8xlarge': {
+        'id': 'cc2.8xlarge',
+        'name': 'Cluster Compute Eight Extra Large Instance',
+        'ram': 63488,
+        'disk': 3370,
+        'bandwidth': None
     }
+}
 
-CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge']
+CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge', 'cc2.8xlarge']
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
