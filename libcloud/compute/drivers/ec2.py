@@ -190,7 +190,7 @@ class EC2Response(AWSBaseResponse):
 
 class EC2Connection(ConnectionUserAndKey):
     """
-    Repersents a single connection to the EC2 Endpoint
+    Represents a single connection to the EC2 Endpoint
     """
 
     host = EC2_US_EAST_HOST
@@ -299,9 +299,7 @@ class EC2NodeDriver(NodeDriver):
         """
         Checks for the instances's state
         """
-        elem_xpath_list = ['instancesSet/', 'item/', 'currentState/', 'name/']
-        elem_xpath = ('{%s}' % NAMESPACE) + ('{%s}' % NAMESPACE).join(elem_xpath_list)[:-1]
-        state = element.findall(elem_xpath)[0].text
+        state = findall(element=element, xpath='instancesSet/item/currentState/name', namespace=NAMESPACE)[0].text
 
         return state in ('stopping', 'pending', 'starting')
 
@@ -456,6 +454,32 @@ class EC2NodeDriver(NodeDriver):
             node.public_ip.extend(ips)
         return nodes
 
+    def ex_list_nodes(self, nodes):
+        """
+        List only particular node information.
+
+        @type nodes: C{list}
+        @param nodes: List of C{Node} instances
+        """
+        params = {'Action': 'DescribeInstances'}
+
+        params.update(self._pathlist('InstanceId', [node.id for node in nodes]))
+        elem = self.connection.request(self.path, params=params).object
+        nodes = []
+        for rs in findall(element=elem, xpath='reservationSet/item',
+                          namespace=NAMESPACE):
+            groups = [g.findtext('')
+                      for g in findall(element=rs,
+                                       xpath='groupSet/item/groupId',
+                                       namespace=NAMESPACE)]
+            nodes += self._to_nodes(rs, 'instancesSet/item', groups)
+
+        nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
+        for node in nodes:
+            ips = nodes_elastic_ips_mappings[node.id]
+            node.public_ip.extend(ips)
+        return nodes
+
     def list_sizes(self, location=None):
         # Cluster instances are currently only available
         # in the US - N. Virginia Region
@@ -551,7 +575,7 @@ class EC2NodeDriver(NodeDriver):
             }
 
     def ex_describe_keypairs(self, name):
-        """Describes a keypiar by name
+        """Describes a keypair by name
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -755,6 +779,56 @@ class EC2NodeDriver(NodeDriver):
             'Filter.0.Name': 'instance-id',
             'Filter.0.Value.0': node.id
         })
+
+
+    def ex_describe_all_addresses(self, only_allocated=False):
+        """
+        Return all the Elastic IP addresses for this account
+        optionally, return only the allocated addresses
+
+        @keyword  only_allocated: If true, return only those addresses
+                                  that are associated with an instance
+        @type     only_allocated: C{string}
+
+        @return   list list of elastic ips for this particular account.
+        """
+        params = {'Action': 'DescribeAddresses'}
+        
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        # the list which we return
+        elastic_ip_addresses = []
+        for element in findall(element=result, xpath='addressesSet/item', namespace=NAMESPACE):
+            instance_id = findtext(element=element, xpath='instanceId',
+                                   namespace=NAMESPACE)
+
+            # if only allocated addresses are requested
+            if only_allocated:
+                if not instance_id:
+                    continue
+
+            ip_address = findtext(element=element, xpath='publicIp',
+                                  namespace=NAMESPACE)
+                    
+            elastic_ip_addresses.append(ip_address)
+
+        return elastic_ip_addresses
+
+    def ex_associate_addresses(self, node, elastic_ip_address):
+        """
+        Associate an IP address with a particular node.
+        
+        @type node: C{Node}
+        @param node: Node instance
+
+        """        
+        params = {'Action': 'AssociateAddress'}
+
+        params.update(self._pathlist('InstanceId', [node.id]))
+        params.update({'PublicIp': elastic_ip_address})
+        res = self.connection.request(self.path, params=params).object
+        return self._get_boolean(res)
 
     def ex_describe_addresses(self, nodes):
         """
