@@ -35,6 +35,7 @@ class RackspaceUSTests(unittest.TestCase):
                 None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
         self.driver = self.klass(*DNS_PARAMS_RACKSPACE)
+        self.driver.connection.poll_interval = 0.0
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
@@ -47,6 +48,16 @@ class RackspaceUSTests(unittest.TestCase):
         self.assertEqual(len(zones), 6)
         self.assertEqual(zones[0].domain, 'foo4.bar.com')
         self.assertEqual(zones[0].extra['comment'], 'wazaaa')
+
+    def test_list_zones_http_413(self):
+        RackspaceMockHttp.type = '413'
+
+        try:
+            self.driver.list_zones()
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
 
     def test_list_zones_no_results(self):
         RackspaceMockHttp.type = 'NO_RESULTS'
@@ -268,6 +279,11 @@ class RackspaceMockHttp(MockHttp):
         body = self.fixtures.load('list_zones_success.json')
         return (httplib.OK, body, self.base_headers,
                 httplib.responses[httplib.OK])
+
+    def _v1_0_11111_domains_413(self, method, url, body, headers):
+        body = ''
+        return (httplib.REQUEST_ENTITY_TOO_LARGE, body, self.base_headers,
+                httplib.responses[httplib.REQUEST_ENTITY_TOO_LARGE])
 
     def _v1_0_11111_domains_NO_RESULTS(self, method, url, body, headers):
         body = self.fixtures.load('list_zones_no_results.json')

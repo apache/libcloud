@@ -67,8 +67,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 vm['state'],
                 NodeState.UNKNOWN
             ),
-            public_ip=vm.get('ip'),
-            private_ip='',
+            public_ips=vm.get('ip'),
+            private_ips=[],
             driver=self,
             extra={
                 'ai_active': vm.get('ai_active'),

@@ -91,8 +91,8 @@ class VPSNetNodeDriver(NodeDriver):
         n = Node(id=vm['id'],
                  name=vm['label'],
                  state=state,
-                 public_ip=[vm.get('primary_ip_address', None)],
-                 private_ip=[],
+                 public_ips=[vm.get('primary_ip_address', None)],
+                 private_ips=[],
                  extra={'slices_count':vm['slices_count']}, # Number of nodes consumed by VM
                  driver=self.connection.driver)
         return n

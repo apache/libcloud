@@ -44,7 +44,7 @@ class DummyNodeDriver(NodeDriver):
     >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
     >>> driver = DummyNodeDriver(0)
     >>> node=driver.create_node()
-    >>> node.public_ip[0]
+    >>> node.public_ips[0]
     '127.0.0.3'
     >>> node.name
     'dummy-3'
@@ -79,8 +79,8 @@ class DummyNodeDriver(NodeDriver):
               Node(id=i,
                    name='dummy-%d' % (i),
                    state=NodeState.RUNNING,
-                   public_ip=[ip],
-                   private_ip=[],
+                   public_ips=[ip],
+                   private_ips=[],
                    driver=self,
                    extra={'foo': 'bar'})
             )
@@ -89,15 +89,15 @@ class DummyNodeDriver(NodeDriver):
               Node(id=1,
                    name='dummy-1',
                    state=NodeState.RUNNING,
-                   public_ip=['127.0.0.1'],
-                   private_ip=[],
+                   public_ips=['127.0.0.1'],
+                   private_ips=[],
                    driver=self,
                    extra={'foo': 'bar'}),
               Node(id=2,
                    name='dummy-2',
                    state=NodeState.RUNNING,
-                   public_ip=['127.0.0.1'],
-                   private_ip=[],
+                   public_ips=['127.0.0.1'],
+                   private_ips=[],
                    driver=self,
                    extra={'foo': 'bar'}),
           ]
@@ -284,8 +284,8 @@ class DummyNodeDriver(NodeDriver):
         n = Node(id=l,
                  name='dummy-%d' % l,
                  state=NodeState.RUNNING,
-                 public_ip=['127.0.0.%d' % l],
-                 private_ip=[],
+                 public_ips=['127.0.0.%d' % l],
+                 private_ips=[],
                  driver=self,
                  size=NodeSize(id='s1', name='foo', ram=2048,
                                disk=160, bandwidth=None, price=0.0,

@@ -151,8 +151,8 @@ class DreamhostNodeDriver(NodeDriver):
             id = data['added_web'],
             name = data['added_web'],
             state = NodeState.PENDING,
-            public_ip = [],
-            private_ip = [],
+            public_ips = [],
+            private_ips = [],
             driver = self.connection.driver,
             extra = {
                 'type' : kwargs['image'].name
@@ -235,8 +235,8 @@ class DreamhostNodeDriver(NodeDriver):
             id = data['ps'],
             name = data['ps'],
             state = NodeState.UNKNOWN,
-            public_ip = [data['ip']],
-            private_ip = [],
+            public_ips = [data['ip']],
+            private_ips = [],
             driver = self.connection.driver,
             extra = {
                 'current_size' : data['memory_mb'],

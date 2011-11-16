@@ -96,6 +96,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return self.authenticate_1_0()
         elif self.auth_version == "1.1":
             return self.authenticate_1_1()
+        elif self.auth_version == "2.0":
+            return self.authenticate_2_0()
         else:
             raise LibcloudError('Unsupported Auth Version requested')
 
@@ -151,6 +153,30 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             except KeyError, e:
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
+    # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
+    def authenticate_2_0(self):
+        reqbody = json.dumps({'auth':{'passwordCredentials':{'username':self.user_id, 'password':self.key}}})
+        resp = self.request('tokens/',
+                    data=reqbody,
+                    headers={'Content-Type':'application/json'},
+                    method='POST')
+        if resp.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsError()
+        elif resp.status not in [httplib.OK, httplib.NON_AUTHORITATIVE_INFORMATION]:
+            raise MalformedResponseError('Malformed response',
+                    body='code: %s body: %s' % (resp.status, resp.body),
+                    driver=self.driver)
+        else:
+            try:
+                body = json.loads(resp.body)
+            except Exception, e:
+                raise MalformedResponseError('Failed to parse JSON', e)
+            try:
+                self.auth_token = body['access']['token']['id']
+                self.urls = body['access']['serviceCatalog']
+            except KeyError, e:
+                raise MalformedResponseError('Auth JSON response is missing required elements', e)
+
 class OpenStackBaseConnection(ConnectionUserAndKey):
 
     auth_url = None
@@ -173,22 +199,24 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self._auth_version = '1.1'
 
         super(OpenStackBaseConnection, self).__init__(
-            user_id, key)
+            user_id, key, secure=secure)
 
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.auth_token
         headers['Accept'] = self.accept_format
         return headers
 
-    def morph_action(self, action):
-        key = self._url_key
+    def morph_action_hook(self, action):
+        if self._force_base_url:
+            _, _, request_path, _, _, _ = urlparse.urlparse(self._force_base_url)
+            return request_path + action
 
-        value = getattr(self, key, None)
+        value = getattr(self, self._url_key, None)
         if not value:
             self._populate_hosts_and_request_paths()
-
-        request_path = getattr(self, '__request_path_%s' % (key), '')
+        request_path = getattr(self, '__request_path_%s' % (self._url_key), '')
         action = request_path + action
+
         return action
 
     @property
@@ -206,10 +234,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     def _get_default_region(self, arr):
         if len(arr):
-            for i in arr:
-                if i.get('v1Default', False):
-                    return i['publicURL']
-            # uber lame
             return arr[0]['publicURL']
         return None
 
@@ -224,7 +248,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         request yet, do it here. Otherwise, just return the management host.
         """
         if not self.auth_token:
-            aurl = self.auth_url 
+            aurl = self.auth_url
 
             if self._ex_force_auth_url != None:
                 aurl = self._ex_force_auth_url
@@ -240,13 +264,20 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_token = osa.auth_token
 
             # TODO: Multi-region support
-            self.server_url = self._get_default_region(osa.urls.get('cloudServers', []))
-            self.cdn_management_url = self._get_default_region(osa.urls.get('cloudFilesCDN', []))
-            self.storage_url = self._get_default_region(osa.urls.get('cloudFiles', []))
-            # TODO: this is even more broken, the service catalog does NOT show load
-            # balanacers :(  You must hard code in the Rackspace Load balancer URLs...
-            self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
-            self.dns_url = self.server_url.replace("servers", "dns")
+            if self._auth_version == '2.0':
+                for service in osa.urls:
+                    if service.get('type') == 'compute':
+                        self.server_url = self._get_default_region(service.get('endpoints', []))
+            elif self._auth_version in ['1.1', '1.0']:
+                self.server_url = self._get_default_region(osa.urls.get('cloudServers', []))
+                self.cdn_management_url = self._get_default_region(osa.urls.get('cloudFilesCDN', []))
+                self.storage_url = self._get_default_region(osa.urls.get('cloudFiles', []))
+                # TODO: this is even more broken, the service catalog does NOT show load
+                # balanacers :(  You must hard code in the Rackspace Load balancer URLs...
+                self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
+                self.dns_url = self.server_url.replace("servers", "dns")
+            else:
+                raise LibcloudError('auth version "%s" not supported' % (self._auth_version))
 
             for key in ['server_url', 'storage_url', 'cdn_management_url',
                         'lb_url', 'dns_url']:
@@ -259,7 +290,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 scheme, server, request_path, param, query, fragment = (
                     urlparse.urlparse(base_url))
                 # Set host to where we want to make further requests to
-                setattr(self, '__%s' % (key), server)
+                setattr(self, '__%s' % (key), server+request_path)
                 setattr(self, '__request_path_%s' % (key), request_path)
 
             (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self.base_url)

@@ -110,8 +110,8 @@ class GoGridTests(unittest.TestCase):
 
     def test_balancer_attach_compute_node(self):
         balancer = LoadBalancer(23530, None, None, None, None, self.driver)
-        node = Node(id='1', name='test', state=None, public_ip=['10.0.0.75'], 
-                    private_ip=[], driver=DummyNodeDriver)
+        node = Node(id='1', name='test', state=None, public_ips=['10.0.0.75'], 
+                    private_ips=[], driver=DummyNodeDriver)
         member1 = self.driver.balancer_attach_compute_node(balancer, node)
         member2 = balancer.attach_compute_node(node)
 

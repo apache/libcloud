@@ -33,6 +33,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.ec2', 'EC2EUNodeDriver'),
     Provider.EC2_US_WEST:
         ('libcloud.compute.drivers.ec2', 'EC2USWestNodeDriver'),
+    Provider.EC2_US_WEST_OREGON:
+        ('libcloud.compute.drivers.ec2', 'EC2USWestOregonNodeDriver'),
     Provider.EC2_AP_SOUTHEAST:
         ('libcloud.compute.drivers.ec2', 'EC2APSENodeDriver'),
     Provider.EC2_AP_NORTHEAST:
@@ -92,7 +94,9 @@ DRIVERS = {
     Provider.NINEFOLD:
         ('libcloud.compute.drivers.ninefold', 'NinefoldNodeDriver'),
     Provider.TERREMARK:
-        ('libcloud.compute.drivers.vcloud', 'TerremarkDriver')
+        ('libcloud.compute.drivers.vcloud', 'TerremarkDriver'),
+    Provider.CLOUDSTACK:
+        ('libcloud.compute.drivers.cloudstack', 'CloudStackNodeDriver')
 }
 
 def get_driver(provider):

@@ -51,14 +51,14 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def test_reboot_node_response(self):
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         ret = node.reboot()
         self.assertTrue(ret is True)
 
     def test_reboot_node_response_INPROGRESS(self):
         OpsourceMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         try:
             node.reboot()
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
@@ -67,14 +67,14 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def test_destroy_node_response(self):
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         ret = node.destroy()
         self.assertTrue(ret is True)
 
     def test_destroy_node_response_INPROGRESS(self):
         OpsourceMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         try:
             node.destroy()
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
@@ -93,14 +93,14 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_shutdown_graceful(self):
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         ret = self.driver.ex_shutdown_graceful(node)
         self.assertTrue(ret is True)
 
     def test_ex_shutdown_graceful_INPROGRESS(self):
         OpsourceMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         try:
             self.driver.ex_shutdown_graceful(node)
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
@@ -109,14 +109,14 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_start_node(self):
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         ret = self.driver.ex_start_node(node)
         self.assertTrue(ret is True)
 
     def test_ex_start_node_INPROGRESS(self):
         OpsourceMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         try:
             self.driver.ex_start_node(node)
             self.assertTrue(False) # above command should have thrown OpsourceAPIException
@@ -125,14 +125,14 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_power_off(self):
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         ret = self.driver.ex_power_off(node)
         self.assertTrue(ret is True)
 
     def test_ex_power_off_INPROGRESS(self):
         OpsourceMockHttp.type = 'INPROGRESS'
         node = Node(id='11', name=None, state=None,
-                    public_ip=None, private_ip=None, driver=self.driver)
+                    public_ips=None, private_ips=None, driver=self.driver)
         try:
             self.driver.ex_power_off(node)
             self.assertTrue(False) # above command should have thrown OpsourceAPIException

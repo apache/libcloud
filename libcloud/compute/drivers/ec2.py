@@ -40,6 +40,7 @@ from libcloud.compute.base import NodeImage
 
 EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
+EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
 EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
@@ -139,6 +140,7 @@ EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_US_WEST_OREGON_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 
 class EC2NodeLocation(NodeLocation):
@@ -227,7 +229,8 @@ class EC2Connection(ConnectionUserAndKey):
         qs = '&'.join(pairs)
 
         hostname = self.host
-        if (self.secure and self.port != 443) or (not self.secure and self.port != 80):
+        if (self.secure and self.port != 443) or \
+           (not self.secure and self.port != 80):
             hostname += ":" + str(self.port)
 
         string_to_sign = '\n'.join(('GET', hostname, path, qs))
@@ -345,8 +348,8 @@ class EC2NodeDriver(NodeDriver):
                         namespace=NAMESPACE),
             name=name,
             state=state,
-            public_ip=public_ips,
-            private_ip=private_ips,
+            public_ips=public_ips,
+            private_ips=private_ips,
             driver=self.connection.driver,
             extra={
                 'dns_name': findattr(element=element, xpath="dnsName",
@@ -451,7 +454,7 @@ class EC2NodeDriver(NodeDriver):
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
             ips = nodes_elastic_ips_mappings[node.id]
-            node.public_ip.extend(ips)
+            node.public_ips.extend(ips)
         return nodes
 
     def ex_list_nodes(self, nodes):
@@ -1096,6 +1099,28 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     region_name = 'us-west-1'
     connectionCls = EC2USWestConnection
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
+
+
+class EC2USWestOregonConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Western US Region (Oregon).
+    """
+
+    host = EC2_US_WEST_OREGON_HOST
+
+
+class EC2USWestOregonNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the US West Oregon region.
+    """
+
+    api_name = 'ec2_us_west_oregon'
+    name = 'Amazon EC2 (us-west-2)'
+    friendly_name = 'Amazon US West - Oregon'
+    country = 'US'
+    region_name = 'us-west-2'
+    connectionCls = EC2USWestOregonConnection
+    _instance_types = EC2_US_WEST_OREGON_INSTANCE_TYPES
 
 
 class EC2APSEConnection(EC2Connection):
