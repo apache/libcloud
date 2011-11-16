@@ -1,5 +1,12 @@
                                                         -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+  *) Compute:
+
+     - Add new "Cluster Compute Eight Extra Large" size to the Amazon EC2
+       driver.
+       [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.6.2:
 
   *) General
