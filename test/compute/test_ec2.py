@@ -125,6 +125,16 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
 
+    def test_ex_start_node(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ret = self.driver.ex_start_node(node)
+        self.assertTrue(ret)
+
+    def test_ex_stop_node(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ret = self.driver.ex_stop_node(node)
+        self.assertTrue(ret)
+
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.destroy_node(node)
@@ -228,6 +238,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(node2.id in nodes_elastic_ips2)
         self.assertEqual(nodes_elastic_ips2[node2.id], [])
 
+    def test_ex_describe_all_addresses(self):
+        EC2MockHttp.type = 'all_addresses'
+        elastic_ips1 = self.driver.ex_describe_all_addresses()
+        elastic_ips2 = self.driver.ex_describe_all_addresses(only_allocated=True)
+
+        self.assertEqual(len(elastic_ips1), 3)
+        self.assertTrue('1.2.3.5' in elastic_ips1)
+
+        self.assertEqual(len(elastic_ips2), 2)
+        self.assertTrue('1.2.3.5' not in elastic_ips2)
+
+    def test_ex_associate_addresses(self):
+        node = Node('i-4382922a', None, None, None, None, self.driver)
+        ret = self.driver.ex_associate_addresses(node, '1.2.3.4')
+        self.assertTrue(ret)
+
     def test_ex_change_node_size_same_size(self):
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
         node = Node('i-4382922a', None, None, None, None, self.driver,
@@ -269,6 +295,14 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('reboot_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _StartInstances(self, method, url, body, headers):
+        body = self.fixtures.load('start_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _StopInstances(self, method, url, body, headers):
+        body = self.fixtures.load('stop_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _DescribeImages(self, method, url, body, headers):
         body = self.fixtures.load('describe_images.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -303,6 +337,14 @@ class EC2MockHttp(MockHttp):
 
     def _DescribeAddresses(self, method, url, body, headers):
         body = self.fixtures.load('describe_addresses_multi.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _AssociateAddress(self, method, url, body, headers):
+        body = self.fixtures.load('associate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _all_addresses_DescribeAddresses(self, method, url, body, headers):
+        body = self.fixtures.load('describe_addresses_all.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _WITH_TAGS_DescribeAddresses(self, method, url, body, headers):

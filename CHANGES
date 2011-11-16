@@ -7,6 +7,11 @@ Changes with Apache Libcloud in development:
        driver.
        [Tomaz Muraus]
 
+     - Add the following extension methods to the EC2 compute driver:
+       ex_describe_all_addresses, ex_associate_addresses, ex_start_node,
+       ex_stop_node.
+       [Suvish Vt]
+
 Changes with Apache Libcloud 0.6.2:
 
   *) General
