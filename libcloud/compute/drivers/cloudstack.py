@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackConnection, \
                                        CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
@@ -83,14 +84,34 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                 job completion.
     @type async_poll_frequency: C{int}"""
 
+    name = 'CloudStack'
     api_name = 'cloudstack'
+    type = Provider.CLOUDSTACK
 
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.TERMINATED,
-        'Stopping': NodeState.TERMINATED
+        'Stopping': NodeState.TERMINATED,
+        'Destroyed': NodeState.TERMINATED
     }
+
+    def __init__(self, key, secret=None, secure=True, host=None,
+                 path=None, port=None, *args, **kwargs):
+        host = host if host else self.host
+
+        if path is not None:
+            self.path = path
+
+        if host is not None:
+            self.host = host
+
+        if (self.type == Provider.CLOUDSTACK) and (not host or not path):
+            raise Exception('When instantiating CloudStack driver directly ' +
+                            'you also need to provide host and path argument')
+
+        NodeDriver.__init__(self, key=key, secret=secret, secure=secure,
+                            host=host, port=port)
 
     def list_images(self, location=None):
         args = {
@@ -120,7 +141,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         addrs = self._sync_request('listPublicIpAddresses')
 
         public_ips = {}
-        for addr in addrs['publicipaddress']:
+        for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
@@ -131,12 +152,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         nodes = []
 
         for vm in vms.get('virtualmachine', []):
+            private_ips = []
+
+            for nic in vm['nic']:
+                if 'ipaddress' in nic:
+                    private_ips.append(nic['ipaddress'])
+
             node = CloudStackNode(
                 id=vm['id'],
                 name=vm.get('displayname', None),
                 state=self.NODE_STATE_MAP[vm['state']],
-                public_ip=public_ips.get(vm['id'], {}).keys(),
-                private_ip=[x['ipaddress'] for x in vm['nic']],
+                public_ips=public_ips.get(vm['id'], {}).keys(),
+                private_ips=private_ips,
                 driver=self,
                 extra={
                     'zoneid': vm['zoneid'],
@@ -171,11 +198,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return sizes
 
     def create_node(self, name, size, image, location=None, **kwargs):
+        extra_args = {}
         if location is None:
             location = self.list_locations()[0]
 
-        networks = self._sync_request('listNetworks')
-        network_id = networks['network'][0]['id']
+
+        network_id = kwargs.pop('network_id', None)
+        if network_id is None:
+            networks = self._sync_request('listNetworks')
+
+            if networks:
+                extra_args['networkids'] = networks['network'][0]['id']
+        else:
+            extra_args['networkids'] = network_id
 
         result = self._async_request('deployVirtualMachine',
             name=name,
@@ -183,7 +218,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             serviceofferingid=size.id,
             templateid=image.id,
             zoneid=location.id,
-            networkids=network_id,
+            **extra_args
         )
 
         node = result['virtualmachine']
@@ -192,8 +227,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             id=node['id'],
             name=node['displayname'],
             state=self.NODE_STATE_MAP[node['state']],
-            public_ip=[],
-            private_ip=[x['ipaddress'] for x in node['nic']],
+            public_ips=[],
+            private_ips=[],
             driver=self,
             extra={
                 'zoneid': location.id,
@@ -221,7 +256,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if result.get('success', '').lower() != 'true':
             return None
 
-        node.public_ip.append(addr['ipaddress'])
+        node.public_ips.append(addr['ipaddress'])
         addr = CloudStackAddress(node, addr['id'], addr['ipaddress'])
         node.extra['ip_addresses'].append(addr)
         return addr
@@ -230,7 +265,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         "Release a public IP."
 
         node.extra['ip_addresses'].remove(address)
-        node.public_ip.remove(address.address)
+        node.public_ips.remove(address.address)
 
         self._async_request('disableStaticNat', ipaddressid=address.id)
         self._async_request('disassociateIpAddress', id=address.id)

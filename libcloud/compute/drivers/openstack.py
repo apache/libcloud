@@ -33,7 +33,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
-from libcloud.compute.base import NodeDriver, Node
+from libcloud.compute.base import NodeDriver, Node, NodeLocation
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
 from libcloud.utils import findall
@@ -194,6 +194,9 @@ class OpenStackNodeDriver(NodeDriver):
     def list_sizes(self, location=None):
         return self._to_sizes(self.connection.request('/flavors/detail')
                                              .object)
+
+    def list_locations(self):
+        return [NodeLocation(0, '', '', self)]
 
     def _ex_connection_class_kwargs(self):
         rv = {}
@@ -605,8 +608,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                  name=el.get('name'),
                  state=self.NODE_STATE_MAP.get(
                      el.get('status'), NodeState.UNKNOWN),
-                 public_ip=public_ip,
-                 private_ip=private_ip,
+                 public_ips=public_ip,
+                 private_ips=private_ip,
                  driver=self.connection.driver,
                  extra={
                     'password': el.get('adminPass'),
@@ -796,7 +799,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @type       ex_files:   C{dict}
         """
 
-        server_params = self._create_args_to_params(None, kwargs)
+        server_params = self._create_args_to_params(None, **kwargs)
 
         resp = self.connection.request("/servers",
                                        method='POST',
@@ -835,7 +838,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         flavors = obj['flavors']
         return [self._to_size(flavor) for flavor in flavors]
 
-    def _create_args_to_params(self, node, kwargs):
+    def _create_args_to_params(self, node, **kwargs):
         server_params = {
             'name': kwargs.get('name'),
             'metadata': kwargs.get('ex_metadata', {}),
@@ -877,13 +880,33 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         node.extra['password'] = password
         return resp.status == httplib.ACCEPTED
 
-    def ex_rebuild(self, node, **kwargs):
-        server_params = self._create_args_to_params(node, kwargs)
+    def ex_rebuild(self, node, image):
+        """
+        Rebuild a Node.
+
+        @type node: C{Node}
+        @param node: Node to rebuild.
+
+        @type image: C{NodeImage}
+        @param image: New image to use.
+        """
+        server_params = self._create_args_to_params(node, image=image)
         resp = self._node_action(node, 'rebuild', **server_params)
         return resp.status == httplib.ACCEPTED
 
     def ex_resize(self, node, size):
-        resp = self._node_action(node, 'resize', flavorRef=size.id)
+        """
+        Change a node size.
+
+        @type node: C{Node}
+        @param node: Node to resize.
+
+        @type image: C{NodeSize}
+        @param image: New size to use.
+        """
+
+        server_params = self._create_args_to_params(node, size=size)
+        resp = self._node_action(node, 'resize', **server_params)
         return resp.status == httplib.ACCEPTED
 
     def ex_confirm_resize(self, node):
@@ -945,7 +968,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @keyword    name:   New name for the server
         @type       name:   C{str}
         """
-        potential_data = self._create_args_to_params(node, node_updates)
+        potential_data = self._create_args_to_params(node, **node_updates)
         updates = {'name': potential_data['name']}
         return self._update_node(node, **updates)
 
@@ -993,9 +1016,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             name=api_node['name'],
             state=self.NODE_STATE_MAP.get(api_node['status'],
                                           NodeState.UNKNOWN),
-            public_ip=[addr_desc['addr'] for addr_desc in
+            public_ips=[addr_desc['addr'] for addr_desc in
                        api_node['addresses'].get('public', [])],
-            private_ip=[addr_desc['addr'] for addr_desc in
+            private_ips=[addr_desc['addr'] for addr_desc in
                         api_node['addresses'].get('private', [])],
             driver=self,
             extra=dict(

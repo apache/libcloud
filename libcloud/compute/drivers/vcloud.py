@@ -324,8 +324,8 @@ class VCloudNodeDriver(NodeDriver):
         node = Node(id=elm.get('href'),
                     name=name,
                     state=state,
-                    public_ip=public_ips,
-                    private_ip=private_ips,
+                    public_ips=public_ips,
+                    private_ips=private_ips,
                     driver=self.connection.driver)
 
         return node

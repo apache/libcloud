@@ -64,8 +64,8 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
         self.assertEqual(node.name, 'testerpart2')
         self.assertEqual(node.state, NodeState.RUNNING)
-        self.assertEqual(node.public_ip, [])
-        self.assertEqual(node.private_ip, ['10.112.78.69'])
+        self.assertEqual(node.public_ips, [])
+        self.assertEqual(node.private_ips, ['10.112.78.69'])
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]

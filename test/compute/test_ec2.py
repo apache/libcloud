@@ -99,10 +99,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
-        public_ips = sorted(node.public_ip)
+        public_ips = sorted(node.public_ips)
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(node.name, node.id)
-        self.assertEqual(len(node.public_ip), 2)
+        self.assertEqual(len(node.public_ips), 2)
         self.assertEqual(node.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in node.extra)
 
@@ -459,17 +459,17 @@ class NimbusTests(EC2Tests):
         # overridden from EC2Tests -- Nimbus doesn't support elastic IPs.
         node = self.driver.list_nodes()[0]
         self.assertExecutedMethodCount(0)
-        public_ips = node.public_ip
+        public_ips = node.public_ips
         self.assertEqual(node.id, 'i-4382922a')
-        self.assertEqual(len(node.public_ip), 1)
+        self.assertEqual(len(node.public_ips), 1)
         self.assertEqual(public_ips[0], '1.2.3.5')
         self.assertEqual(node.extra['tags'], {})
 
         node = self.driver.list_nodes()[1]
         self.assertExecutedMethodCount(0)
-        public_ips = node.public_ip
+        public_ips = node.public_ips
         self.assertEqual(node.id, 'i-8474834a')
-        self.assertEqual(len(node.public_ip), 1)
+        self.assertEqual(len(node.public_ips), 1)
         self.assertEqual(public_ips[0], '1.2.3.5')
         self.assertEqual(node.extra['tags'], {'user_key0': 'user_val0', 'user_key1': 'user_val1'})
 
