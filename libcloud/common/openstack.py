@@ -96,8 +96,10 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return self.authenticate_1_0()
         elif self.auth_version == "1.1":
             return self.authenticate_1_1()
-        elif self.auth_version == "2.0":
-            return self.authenticate_2_0()
+        elif self.auth_version == "2.0" or self.auth_version == "2.0_apikey":
+            return self.authenticate_2_0_with_apikey()
+        elif self.auth_version == "2.0_password":
+            return self.authenticate_2_0_with_password()
         else:
             raise LibcloudError('Unsupported Auth Version requested')
 
@@ -153,9 +155,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             except KeyError, e:
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
-    # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
-    def authenticate_2_0(self):
+    def authenticate_2_0_with_apikey(self):
+        # API Key based authentication uses the RAX-KSKEY extension.
+        # https://github.com/openstack/keystone/tree/master/keystone/content/service
+        reqbody = json.dumps({'auth':{'RAX-KSKEY:apiKeyCredentials':{'username':self.user_id, 'apiKey':self.key}}})
+        return self.authenticate_2_0_with_body(reqbody)
+
+    def authenticate_2_0_with_password(self):
+        # Password based authentication is the only 'core' authentication method in Keystone at this time.
+        # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
         reqbody = json.dumps({'auth':{'passwordCredentials':{'username':self.user_id, 'password':self.key}}})
+        return self.authenticate_2_0_with_body(reqbody)
+
+    def authenticate_2_0_with_body(self, reqbody):
         resp = self.request('tokens/',
                     data=reqbody,
                     headers={'Content-Type':'application/json'},
