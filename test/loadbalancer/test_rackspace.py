@@ -49,8 +49,23 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(len(balancers), 2)
         self.assertEquals(balancers[0].name, "test0")
         self.assertEquals(balancers[0].id, "8155")
+        self.assertEquals(balancers[0].port, 80)
+        self.assertEquals(balancers[0].ip, "1.1.1.25")
         self.assertEquals(balancers[1].name, "test1")
         self.assertEquals(balancers[1].id, "8156")
+
+    def test_list_balancers_ex_member_address(self):
+        RackspaceLBMockHttp.type = 'EX_MEMBER_ADDRESS'
+        balancers = self.driver.list_balancers(ex_member_address='127.0.0.1')
+
+        self.assertEquals(len(balancers), 3)
+        self.assertEquals(balancers[0].name, "First Loadbalancer")
+        self.assertEquals(balancers[0].id, "1")
+        self.assertEquals(balancers[1].name, "Second Loadbalancer")
+        self.assertEquals(balancers[1].id, "2")
+        self.assertEquals(balancers[2].name, "Third Loadbalancer")
+        self.assertEquals(balancers[2].id, "8")
+
 
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
@@ -139,6 +154,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
                     httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_EX_MEMBER_ADDRESS(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_loadbalancers_nodeaddress.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
     def _v1_0_slug_loadbalancers_8155(self, method, url, body, headers):
         if method == "DELETE":

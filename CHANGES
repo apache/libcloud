@@ -12,6 +12,13 @@ Changes with Apache Libcloud in development:
        ex_stop_node.
        [Suvish Vt]
 
+  *) Load-baancer:
+
+    - Add ex_member_address argument to the Rackspace driver list_balancers
+      method. If this argument is provided, only loadbalancers which have a
+      member with the provided IP address attached are returned.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.6.2:
 
   *) General

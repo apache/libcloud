@@ -87,9 +87,21 @@ class RackspaceLBDriver(Driver):
         return self._to_protocols(
                    self.connection.request('/loadbalancers/protocols').object)
 
-    def list_balancers(self):
+    def list_balancers(self, ex_member_address=None):
+        """
+        @param ex_member_address: Optional IP address of the attachment member.
+                                  If provided, only the load balancers which
+                                  have this member attached will be returned.
+        @type ex_member_address: C{str}
+        """
+        params = {}
+
+        if ex_member_address:
+            params['nodeaddress'] = ex_member_address
+
         return self._to_balancers(
-                self.connection.request('/loadbalancers').object)
+                self.connection.request('/loadbalancers', params=params)
+                    .object)
 
     def create_balancer(self, name, members, protocol='http',
                         port=80, algorithm=DEFAULT_ALGORITHM):
@@ -163,12 +175,21 @@ class RackspaceLBDriver(Driver):
         return [ self._to_balancer(el) for el in object["loadBalancers"] ]
 
     def _to_balancer(self, el):
+        ip = None
+        port = None
+
+        if 'virtualIps' in el:
+            ip = el["virtualIps"][0]["address"]
+
+        if 'port' in el:
+            port = el["port"]
+
         lb = LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
                     el["status"], State.UNKNOWN),
-                ip=el["virtualIps"][0]["address"],
-                port=el["port"],
+                ip=ip,
+                port=port,
                 driver=self.connection.driver)
         return lb
 
