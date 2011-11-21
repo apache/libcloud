@@ -309,9 +309,13 @@ class EC2NodeDriver(NodeDriver):
         """
         Checks for the instances's state
         """
+<<<<<<< HEAD
+        state = findall(element=element, xpath='instancesSet/item/currentState/name', namespace=NAMESPACE)[0].text
+=======
         state = findall(element=element,
                         xpath='instancesSet/item/currentState/name',
                         namespace=NAMESPACE)[0].text
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
 
         return state in ('stopping', 'pending', 'starting')
 
@@ -448,17 +452,8 @@ class EC2NodeDriver(NodeDriver):
         )
         return n
 
-    def list_nodes(self, ex_node_ids=None):
-        """
-        @type node.id: C{list}
-        @param ex_node_ids: List of C{node.id}
-        This parameter is used to filter the list of
-        nodes that should be returned. Only the nodes
-        with the corresponding node ids will be returned.
-        """
+    def list_nodes(self):
         params = {'Action': 'DescribeInstances'}
-        if ex_node_ids:
-            params.update(self._pathlist('InstanceId', ex_node_ids))
         elem = self.connection.request(self.path, params=params).object
         nodes = []
         for rs in findall(element=elem, xpath='reservationSet/item',
@@ -473,6 +468,32 @@ class EC2NodeDriver(NodeDriver):
         for node in nodes:
             ips = nodes_elastic_ips_mappings[node.id]
             node.public_ips.extend(ips)
+        return nodes
+
+    def ex_list_nodes(self, nodes):
+        """
+        List only particular node information.
+
+        @type nodes: C{list}
+        @param nodes: List of C{Node} instances
+        """
+        params = {'Action': 'DescribeInstances'}
+
+        params.update(self._pathlist('InstanceId', [node.id for node in nodes]))
+        elem = self.connection.request(self.path, params=params).object
+        nodes = []
+        for rs in findall(element=elem, xpath='reservationSet/item',
+                          namespace=NAMESPACE):
+            groups = [g.findtext('')
+                      for g in findall(element=rs,
+                                       xpath='groupSet/item/groupId',
+                                       namespace=NAMESPACE)]
+            nodes += self._to_nodes(rs, 'instancesSet/item', groups)
+
+        nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
+        for node in nodes:
+            ips = nodes_elastic_ips_mappings[node.id]
+            node.public_ip.extend(ips)
         return nodes
 
     def list_sizes(self, location=None):
@@ -775,6 +796,10 @@ class EC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
     def ex_describe_all_addresses(self, only_allocated=False):
         """
         Return all the Elastic IP addresses for this account
@@ -787,24 +812,42 @@ class EC2NodeDriver(NodeDriver):
         @return   list list of elastic ips for this particular account.
         """
         params = {'Action': 'DescribeAddresses'}
+<<<<<<< HEAD
+        
+=======
 
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
         result = self.connection.request(self.path,
                                          params=params.copy()).object
 
         # the list which we return
         elastic_ip_addresses = []
+<<<<<<< HEAD
+        for element in findall(element=result, xpath='addressesSet/item', namespace=NAMESPACE):
+=======
         for element in findall(element=result, xpath='addressesSet/item',
                                namespace=NAMESPACE):
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
             instance_id = findtext(element=element, xpath='instanceId',
                                    namespace=NAMESPACE)
 
             # if only allocated addresses are requested
+<<<<<<< HEAD
+            if only_allocated:
+                if not instance_id:
+                    continue
+
+            ip_address = findtext(element=element, xpath='publicIp',
+                                  namespace=NAMESPACE)
+                    
+=======
             if only_allocated and not instance_id:
                 continue
 
             ip_address = findtext(element=element, xpath='publicIp',
                                   namespace=NAMESPACE)
 
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
             elastic_ip_addresses.append(ip_address)
 
         return elastic_ip_addresses
@@ -812,11 +855,19 @@ class EC2NodeDriver(NodeDriver):
     def ex_associate_addresses(self, node, elastic_ip_address):
         """
         Associate an IP address with a particular node.
+<<<<<<< HEAD
+        
+        @type node: C{Node}
+        @param node: Node instance
+
+        """        
+=======
 
         @type node: C{Node}
         @param node: Node instance
 
         """
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
         params = {'Action': 'AssociateAddress'}
 
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1013,8 +1064,12 @@ class EC2NodeDriver(NodeDriver):
 
     def ex_start_node(self, node):
         """
+<<<<<<< HEAD
+        Start the node by passing in the node object, does not work with instance store backed instances
+=======
         Start the node by passing in the node object, does not work with
         instance store backed instances
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
         """
         params = {'Action': 'StartInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1023,8 +1078,12 @@ class EC2NodeDriver(NodeDriver):
 
     def ex_stop_node(self, node):
         """
+<<<<<<< HEAD
+        Stop the node by passing in the node object, does not work with instance store backed instances
+=======
         Stop the node by passing in the node object, does not work with
         instance store backed instances
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
         """
         params = {'Action': 'StopInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))

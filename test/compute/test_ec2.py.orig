@@ -64,8 +64,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-2ba64342')
         self.assertEqual(node.extra['clienttoken'], token)
 
-        # from: http://docs.amazonwebservices.com/
-        # AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
+        # from: http://docs.amazonwebservices.com/AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
 
         #    If you repeat the request with the same client token, but change
         #    another request parameter, Amazon EC2 returns an
@@ -104,27 +103,28 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ips), 2)
-        self.assertEqual(node.extra['launchdatetime'],
-                            '2009-08-07T05:47:04.000Z')
+        self.assertEqual(node.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in node.extra)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
         self.assertEqual(public_ips[1], '1.2.3.5')
 
-        nodes = self.driver.list_nodes(ex_node_ids=['i-4382922a',
-                                                    'i-8474834a'])
+    def test_ex_list_nodes(self):
+        node1 = Node('i-4382922a', None, None, None, None, self.driver)
+        node2 = Node('i-8474834a', None, None, None, None, self.driver)
+
+        nodes = self.driver.ex_list_nodes([node1, node2])
+
         ret_node1 = nodes[0]
         ret_node2 = nodes[1]
 
         self.assertEqual(ret_node1.id, 'i-4382922a')
         self.assertEqual(ret_node2.id, 'i-8474834a')
 
-        self.assertEqual(ret_node1.extra['launchdatetime'],
-                                        '2009-08-07T05:47:04.000Z')
+        self.assertEqual(ret_node1.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in ret_node1.extra)
 
-        self.assertEqual(ret_node2.extra['launchdatetime'],
-                                        '2009-08-07T05:47:04.000Z')
+        self.assertEqual(ret_node2.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in ret_node2.extra)
 
     def test_list_nodes_with_name_tag(self):
@@ -197,8 +197,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         images = self.driver.list_images()
         image = images[0]
         self.assertEqual(len(images), 1)
-        self.assertEqual(image.name,
-                    'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
+        self.assertEqual(image.name, 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
         self.assertEqual(image.id, 'ami-be3adfd7')
 
     def test_ex_list_availability_zones(self):
@@ -264,11 +263,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(elastic_ips1), 3)
         self.assertTrue('1.2.3.5' in elastic_ips1)
+<<<<<<< HEAD
+        
+        self.assertEqual(len(elastic_ips2), 2)
+        self.assertTrue('1.2.3.5' not in elastic_ips2)
+
+    def test_ex_associate_addresses(self): 
+=======
 
         self.assertEqual(len(elastic_ips2), 2)
         self.assertTrue('1.2.3.5' not in elastic_ips2)
 
     def test_ex_associate_addresses(self):
+>>>>>>> 782538b293ded879115b08c5dd4c0decd3b3752f
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.ex_associate_addresses(node, '1.2.3.4')
         self.assertTrue(ret)
