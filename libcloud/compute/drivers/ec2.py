@@ -131,9 +131,16 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'cc2.8xlarge': {
+        'id': 'cc2.8xlarge',
+        'name': 'Cluster Compute Eight Extra Large Instance',
+        'ram': 63488,
+        'disk': 3370,
+        'bandwidth': None
     }
+}
 
-CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge']
+CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge', 'cc2.8xlarge']
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
@@ -302,7 +309,9 @@ class EC2NodeDriver(NodeDriver):
         """
         Checks for the instances's state
         """
-        state = findall(element=element, xpath='instancesSet/item/currentState/name', namespace=NAMESPACE)[0].text
+        state = findall(element=element,
+                        xpath='instancesSet/item/currentState/name',
+                        namespace=NAMESPACE)[0].text
 
         return state in ('stopping', 'pending', 'starting')
 
@@ -802,18 +811,18 @@ class EC2NodeDriver(NodeDriver):
 
         # the list which we return
         elastic_ip_addresses = []
-        for element in findall(element=result, xpath='addressesSet/item', namespace=NAMESPACE):
+        for element in findall(element=result, xpath='addressesSet/item',
+                               namespace=NAMESPACE):
             instance_id = findtext(element=element, xpath='instanceId',
                                    namespace=NAMESPACE)
 
             # if only allocated addresses are requested
-            if only_allocated:
-                if not instance_id:
-                    continue
+            if only_allocated and not instance_id:
+                continue
 
             ip_address = findtext(element=element, xpath='publicIp',
                                   namespace=NAMESPACE)
-                    
+
             elastic_ip_addresses.append(ip_address)
 
         return elastic_ip_addresses
@@ -821,11 +830,11 @@ class EC2NodeDriver(NodeDriver):
     def ex_associate_addresses(self, node, elastic_ip_address):
         """
         Associate an IP address with a particular node.
-        
+
         @type node: C{Node}
         @param node: Node instance
 
-        """        
+        """
         params = {'Action': 'AssociateAddress'}
 
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1022,7 +1031,8 @@ class EC2NodeDriver(NodeDriver):
 
     def ex_start_node(self, node):
         """
-        Start the node by passing in the node object, does not work with instance store backed instances
+        Start the node by passing in the node object, does not work with
+        instance store backed instances
         """
         params = {'Action': 'StartInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1031,7 +1041,8 @@ class EC2NodeDriver(NodeDriver):
 
     def ex_stop_node(self, node):
         """
-        Stop the node by passing in the node object, does not work with instance store backed instances
+        Stop the node by passing in the node object, does not work with
+        instance store backed instances
         """
         params = {'Action': 'StopInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
