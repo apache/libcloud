@@ -184,9 +184,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 11)
+                self.assertEqual(len(sizes), 12)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc1.4xlarge' in ids)
+                self.assertTrue('cc2.8xlarge' in ids)
             else:
                 self.assertEqual(len(sizes), 9)
 
@@ -262,11 +263,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(elastic_ips1), 3)
         self.assertTrue('1.2.3.5' in elastic_ips1)
-        
+
         self.assertEqual(len(elastic_ips2), 2)
         self.assertTrue('1.2.3.5' not in elastic_ips2)
 
-    def test_ex_associate_addresses(self): 
+    def test_ex_associate_addresses(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.ex_associate_addresses(node, '1.2.3.4')
         self.assertTrue(ret)
