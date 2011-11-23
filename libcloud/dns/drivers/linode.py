@@ -35,6 +35,8 @@ VALID_RECORD_EXTRA_PARAMS = ['Priority', 'Weight', 'Port', 'Protocol',
                              'TTL_sec']
 
 RECORD_TYPE_MAP = {
+    RecordType.NS: 'NS',
+    RecordType.MX: 'MX',
     RecordType.A: 'A',
     RecordType.AAAA: 'AAAA',
     RecordType.CNAME: 'CNAME',
