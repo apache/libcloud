@@ -14,6 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
+import types
 import httplib
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
@@ -673,7 +674,7 @@ class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
     driver_args = OPENSTACK_PARAMS + ('1.1',)
-
+    driver_kwargs = {'ex_force_auth_version': '1.0'}
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack_v1.1')
@@ -770,23 +771,56 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         else:
             raise NotImplementedError()
 
+class OpenStack_1_1_Auth_2_0_MockHttp(OpenStack_1_1_MockHttp):
+    fixtures = ComputeFileFixtures('openstack_v1.1')
+    auth_fixtures = OpenStackFixtures()
+    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def __init__(self, *args, **kwargs):
+        super(OpenStack_1_1_Auth_2_0_MockHttp, self).__init__(*args, **kwargs)
+
+        # TODO Figure out why 1.1 tests are using some 1.0 endpoints
+        methods1 = OpenStackMockHttp.__dict__
+        methods2 = OpenStack_1_1_MockHttp.__dict__
+
+        names1 = [m for m in methods1 if m.find('_v1_0') == 0]
+        names2 = [m for m in methods2 if m.find('_v1_1') == 0]
+
+        for name in names1:
+            method = methods1[name]
+            new_name = name.replace('_v1_0_slug_', '_v1_0_1337_')
+            setattr(self, new_name, types.MethodType(method, self,
+                OpenStack_1_1_Auth_2_0_MockHttp))
+
+        for name in names2:
+            method = methods2[name]
+            new_name = name.replace('_v1_1_slug_', '_v1_0_1337_')
+            setattr(self, new_name, types.MethodType(method, self,
+                OpenStack_1_1_Auth_2_0_MockHttp))
+
+
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
+    driver_args = OPENSTACK_PARAMS + ('1.1',)
     driver_kwargs = {'ex_force_auth_version': '2.0'}
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (OpenStack_1_1_MockHttp, OpenStack_1_1_MockHttp)
+        self.driver_klass.connectionCls.conn_classes = \
+                (OpenStack_1_1_Auth_2_0_MockHttp, OpenStack_1_1_Auth_2_0_MockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
         OpenStack_1_1_MockHttp.type = None
         self.driver = self.create_driver()
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
-        server_url = 'http://my.fake.hostname:8774/v1.1/slug'
+        server_url = 'https://servers.api.rackspacecloud.com/v1.0/1337'
         auth_token = 'aaaaaaaaaaaa-bbb-cccccccccccccc'
+        tenant_compute = '1337'
+        tenant_object_store = 'MossoCloudFS_11111-111111111-1111111111-1111111'
+
         self.assertEqual(self.driver.connection.server_url, server_url)
         self.assertEqual(self.driver.connection.auth_token, auth_token)
-        self.assertEqual(self.driver.connection.tenant, {'id': '45', 'name':
-                                                         'testproj-project'})
+        self.assertEqual(self.driver.connection.tenant_ids,
+              {'compute': tenant_compute, 'object-store': tenant_object_store})
 
 
 
