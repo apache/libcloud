@@ -30,6 +30,7 @@ class CloudStackLBTests(unittest.TestCase):
         self.driver.type = -1
         self.driver.name = 'CloudStack'
         CloudStackMockHttp.fixture_tag = 'default'
+        self.driver.connection.poll_interval = 0.0
 
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
