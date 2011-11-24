@@ -781,5 +781,14 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
+        server_url = 'http://my.fake.hostname:8774/v1.1/slug'
+        auth_token = 'aaaaaaaaaaaa-bbb-cccccccccccccc'
+        self.assertEqual(self.driver.connection.server_url, server_url)
+        self.assertEqual(self.driver.connection.auth_token, auth_token)
+        self.assertEqual(self.driver.connection.tenant, {'id': '45', 'name':
+                                                         'testproj-project'})
+
+
+
 if __name__ == '__main__':
     sys.exit(unittest.main())

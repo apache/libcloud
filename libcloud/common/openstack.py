@@ -84,6 +84,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.auth_version = auth_version
         self.auth_url = auth_url
         self.urls = {}
+        self.tenant = {}
         self.driver = self.parent_conn.driver
 
     def add_default_headers(self, headers):
@@ -183,9 +184,15 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 body = json.loads(resp.body)
             except Exception, e:
                 raise MalformedResponseError('Failed to parse JSON', e)
+
             try:
-                self.auth_token = body['access']['token']['id']
-                self.urls = body['access']['serviceCatalog']
+                access = body['access']
+                token = access['token']
+                self.auth_token = token['id']
+                self.urls = access['serviceCatalog']
+
+                self.tenant['id'] = token['tenant']['id']
+                self.tenant['name'] = token['tenant']['name']
             except KeyError, e:
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
@@ -280,6 +287,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 for service in osa.urls:
                     if service.get('type') == 'compute':
                         self.server_url = self._get_default_region(service.get('endpoints', []))
+
+                self.tenant = osa.tenant
             elif self._auth_version in ['1.1', '1.0']:
                 self.server_url = self._get_default_region(osa.urls.get('cloudServers', []))
                 self.cdn_management_url = self._get_default_region(osa.urls.get('cloudFilesCDN', []))
