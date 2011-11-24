@@ -109,6 +109,24 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(public_ips[0], '1.2.3.4')
         self.assertEqual(public_ips[1], '1.2.3.5')
 
+    def test_ex_list_nodes(self):
+        node1 = Node('i-4382922a', None, None, None, None, self.driver)
+        node2 = Node('i-8474834a', None, None, None, None, self.driver)
+
+        nodes = self.driver.ex_list_nodes([node1, node2])
+
+        ret_node1 = nodes[0]
+        ret_node2 = nodes[1]
+
+        self.assertEqual(ret_node1.id, 'i-4382922a')
+        self.assertEqual(ret_node2.id, 'i-8474834a')
+
+        self.assertEqual(ret_node1.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
+        self.assertTrue('instancetype' in ret_node1.extra)
+
+        self.assertEqual(ret_node2.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
+        self.assertTrue('instancetype' in ret_node2.extra)
+
     def test_list_nodes_with_name_tag(self):
         EC2MockHttp.type = 'WITH_TAGS'
         node = self.driver.list_nodes()[0]

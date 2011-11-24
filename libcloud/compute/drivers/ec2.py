@@ -466,6 +466,32 @@ class EC2NodeDriver(NodeDriver):
             node.public_ips.extend(ips)
         return nodes
 
+    def ex_list_nodes(self, nodes):
+        """
+        List only particular node information.
+
+        @type nodes: C{list}
+        @param nodes: List of C{Node} instances
+        """
+        params = {'Action': 'DescribeInstances'}
+
+        params.update(self._pathlist('InstanceId', [node.id for node in nodes]))
+        elem = self.connection.request(self.path, params=params).object
+        nodes = []
+        for rs in findall(element=elem, xpath='reservationSet/item',
+                          namespace=NAMESPACE):
+            groups = [g.findtext('')
+                      for g in findall(element=rs,
+                                       xpath='groupSet/item/groupId',
+                                       namespace=NAMESPACE)]
+            nodes += self._to_nodes(rs, 'instancesSet/item', groups)
+
+        nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
+        for node in nodes:
+            ips = nodes_elastic_ips_mappings[node.id]
+            node.public_ip.extend(ips)
+        return nodes
+
     def list_sizes(self, location=None):
         # Cluster instances are currently only available
         # in the US - N. Virginia Region
@@ -766,6 +792,7 @@ class EC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
+
     def ex_describe_all_addresses(self, only_allocated=False):
         """
         Return all the Elastic IP addresses for this account
@@ -778,7 +805,7 @@ class EC2NodeDriver(NodeDriver):
         @return   list list of elastic ips for this particular account.
         """
         params = {'Action': 'DescribeAddresses'}
-
+        
         result = self.connection.request(self.path,
                                          params=params.copy()).object
 
