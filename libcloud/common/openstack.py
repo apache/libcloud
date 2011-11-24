@@ -84,7 +84,6 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.auth_version = auth_version
         self.auth_url = auth_url
         self.urls = {}
-        self.tenant = {}
         self.driver = self.parent_conn.driver
 
     def add_default_headers(self, headers):
@@ -190,9 +189,6 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 token = access['token']
                 self.auth_token = token['id']
                 self.urls = access['serviceCatalog']
-
-                self.tenant['id'] = token['tenant']['id']
-                self.tenant['name'] = token['tenant']['name']
             except KeyError, e:
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
@@ -284,11 +280,14 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
             # TODO: Multi-region support
             if self._auth_version == '2.0':
+                self.tenant_ids = {}
+
                 for service in osa.urls:
-                    if service.get('type') == 'compute':
+                    service_type = service['type']
+                    if service_type == 'compute':
                         self.server_url = self._get_default_region(service.get('endpoints', []))
 
-                self.tenant = osa.tenant
+                    self.tenant_ids[service_type] = service['endpoints'][0]['tenantId']
             elif self._auth_version in ['1.1', '1.0']:
                 self.server_url = self._get_default_region(osa.urls.get('cloudServers', []))
                 self.cdn_management_url = self._get_default_region(osa.urls.get('cloudFilesCDN', []))
