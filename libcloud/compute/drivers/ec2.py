@@ -448,8 +448,17 @@ class EC2NodeDriver(NodeDriver):
         )
         return n
 
-    def list_nodes(self):
+    def list_nodes(self, ex_node_ids=None):
+        """
+        @type node.id: C{list}
+        @param ex_node_ids: List of C{node.id}
+        This parameter is used to filter the list of
+        nodes that should be returned. Only the nodes
+        with the corresponding node ids will be returned.
+        """
         params = {'Action': 'DescribeInstances'}
+        if ex_node_ids:
+            params.update(self._pathlist('InstanceId', ex_node_ids))
         elem = self.connection.request(self.path, params=params).object
         nodes = []
         for rs in findall(element=elem, xpath='reservationSet/item',
