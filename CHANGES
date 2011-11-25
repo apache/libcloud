@@ -3,6 +3,11 @@
 Changes with Apache Libcloud in development:
   *) Compute:
 
+     - If OpenStack Auth 2.0 API is used, also parse out tenant id and
+       name and save it on the connection class (conn.tenant['id'],
+       conn.tenant['name']).
+       [Tomaz Muraus]
+
      - Add new "Cluster Compute Eight Extra Large" size to the Amazon EC2
        driver.
        [Tomaz Muraus]
