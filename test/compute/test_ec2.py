@@ -65,7 +65,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['clienttoken'], token)
 
         # from: http://docs.amazonwebservices.com/AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
-
         #    If you repeat the request with the same client token, but change
         #    another request parameter, Amazon EC2 returns an
         #    IdempotentParameterMismatch error.
@@ -103,11 +102,28 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ips), 2)
-        self.assertEqual(node.extra['launchdatetime'], '2009-08-07T05:47:04.000Z')
+        self.assertEqual(node.extra['launchdatetime'],
+                            '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in node.extra)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
         self.assertEqual(public_ips[1], '1.2.3.5')
+
+        nodes = self.driver.list_nodes(ex_node_ids=['i-4382922a',
+                                                    'i-8474834a'])
+        ret_node1 = nodes[0]
+        ret_node2 = nodes[1]
+
+        self.assertEqual(ret_node1.id, 'i-4382922a')
+        self.assertEqual(ret_node2.id, 'i-8474834a')
+
+        self.assertEqual(ret_node1.extra['launchdatetime'],
+                                        '2009-08-07T05:47:04.000Z')
+        self.assertTrue('instancetype' in ret_node1.extra)
+
+        self.assertEqual(ret_node2.extra['launchdatetime'],
+                                        '2009-08-07T05:47:04.000Z')
+        self.assertTrue('instancetype' in ret_node2.extra)
 
     def test_list_nodes_with_name_tag(self):
         EC2MockHttp.type = 'WITH_TAGS'
@@ -179,7 +195,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         images = self.driver.list_images()
         image = images[0]
         self.assertEqual(len(images), 1)
-        self.assertEqual(image.name, 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
+        self.assertEqual(image.name,
+                    'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
         self.assertEqual(image.id, 'ami-be3adfd7')
 
     def test_ex_list_availability_zones(self):
