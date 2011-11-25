@@ -35,6 +35,7 @@ class CloudStackCommonTest(unittest.TestCase):
         CloudStackConnection.conn_classes = (None, CloudStackMockHttp)
         self.connection = CloudStackConnection('apikey', 'secret',
                                                host=CloudStackMockDriver.host)
+        self.connection.poll_interval = 0.0
         self.driver = self.connection.driver = CloudStackMockDriver()
 
     def test_sync_request_bad_response(self):
