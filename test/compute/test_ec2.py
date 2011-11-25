@@ -64,9 +64,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-2ba64342')
         self.assertEqual(node.extra['clienttoken'], token)
 
-        # from: http://docs.amazonwebservices.com/
-        # AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
-
+        # from: http://docs.amazonwebservices.com/AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
         #    If you repeat the request with the same client token, but change
         #    another request parameter, Amazon EC2 returns an
         #    IdempotentParameterMismatch error.
