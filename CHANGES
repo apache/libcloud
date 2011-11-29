@@ -3,6 +3,10 @@
 Changes with Apache Libcloud in development:
   *) Compute:
 
+     - Add ex_node_ids argument to the EC2 driver list_nodes method. ;
+       GITHUB-39
+       [Suvish Vt]
+
      - If OpenStack Auth 2.0 API is used, also parse out tenant id and
        name and save it on the connection class (conn.tenant['id'],
        conn.tenant['name']).
