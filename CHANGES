@@ -3,6 +3,11 @@
 Changes with Apache Libcloud in development:
   *) Compute:
 
+     - Update OpenStack 1.1 driver to comply with the API specs. Need to make
+       another call to retrieve node name and ip addresses when creating a node,
+       because the first call only returns an id an the password. ; GITHUB-40
+       [Dave King]
+
      - Add ex_node_ids argument to the EC2 driver list_nodes method. ;
        GITHUB-39
        [Suvish Vt]
