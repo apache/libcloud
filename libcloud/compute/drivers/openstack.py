@@ -805,7 +805,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='POST',
                                        data={'server': server_params})
 
-        return self._to_node(resp.object['server'])
+        create_response = resp.object['server']
+        server_resp = self.connection.request('/servers/%s' % create_response['id'])
+        server_object = server_resp.object['server']
+        server_object['adminPass'] = create_response['adminPass']
+
+        return self._to_node(server_object)
 
     def _to_images(self, obj, ex_only_active):
         images = []
