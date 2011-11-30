@@ -550,9 +550,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size)
-        self.assertEqual(node.id, '52415800-8b69-11e0-9b19-734f565bc83b')
-        self.assertEqual(node.name, 'new-server-test')
-        self.assertEqual(node.extra['password'], 'GFf1j9aP')
+        self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra['password'], 'racktestvJq7d3')
         self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
 
     def test_destroy_node(self):
@@ -705,7 +705,21 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_servers(self, method, url, body, headers):
-        body = self.fixtures.load('_servers.json')
+        if method == "POST":
+            body = self.fixtures.load('_servers_create.json')
+        elif method == "GET":
+            body = self.fixtures.load('_servers.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json')
+        else:
+            raise NotImplementedError()
+
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_servers_12065_action(self, method, url, body, headers):
