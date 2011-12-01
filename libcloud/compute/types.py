@@ -58,6 +58,7 @@ class Provider(object):
     @cvar TERREMARK: Terremark
     @cvar: EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
     @cvar CLOUDSTACK: CloudStack
+    @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -99,6 +100,7 @@ class Provider(object):
     TERREMARK = 35
     EC2_US_WEST_OREGON = 36
     CLOUDSTACK = 37
+    CLOUDSIGMA_US = 38
 
 class NodeState(object):
     """
