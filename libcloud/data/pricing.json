@@ -118,6 +118,18 @@
             "high-cpu-extra-large": 0.780
         },
 
+        "cloudsigma_lvs": {
+            "micro-regular": 0.0,
+            "micro-high-cpu": 0.0,
+            "standard-small": 0.0,
+            "standard-large": 0.0,
+            "standard-extra-large": 0.0,
+            "high-memory-extra-large": 0.0,
+            "high-memory-double-extra-large": 0.0,
+            "high-cpu-medium": 0.0,
+            "high-cpu-extra-large": 0.0
+        },
+
         "elastichosts": {
            "small": 0.100,
            "medium": 0.223,

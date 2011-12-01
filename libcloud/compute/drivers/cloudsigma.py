@@ -32,8 +32,14 @@ API_ENDPOINTS = {
     'zrh': {
         'name': 'Zurich',
         'country': 'Switzerland',
-        'host': 'api.cloudsigma.com'
+        'host': 'api.zrh.cloudsigma.com'
     },
+
+   'lvs': {
+        'name': 'Las Vegas',
+        'country': 'United States',
+        'host': 'api.lvs.cloudsigma.com'
+    }
 }
 
 # Default API end-point for the base connection clase.
@@ -49,7 +55,7 @@ INSTANCE_TYPES = {
         'name': 'Micro/Regular instance',
         'cpu': 1100,
         'memory': 640,
-        'disk': 50,
+        'disk': 10,
         'bandwidth': None,
     },
     'micro-high-cpu': {
@@ -293,18 +299,28 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
         @keyword    vnc_password: If not set, VNC access is disabled.
         @type       vnc_password: C{bool}
+
+        @keyword    drive_type: Drive type (ssd|hdd). Defaults to hdd.
+        @type       drive_type: C{str}
         """
         size = kwargs['size']
         image = kwargs['image']
         smp = kwargs.get('smp', 'auto')
         nic_model = kwargs.get('nic_model', 'e1000')
         vnc_password = kwargs.get('vnc_password', None)
+        drive_type = kwargs.get('drive_type', 'hdd')
 
         if nic_model not in ['e1000', 'rtl8139', 'virtio']:
             raise CloudSigmaException('Invalid NIC model specified')
 
+        if drive_type not in ['hdd', 'ssd']:
+            raise CloudSigmaException('Invalid drive type "%s". Valid types'
+                                      ' are: hdd, ssd' % (drive_type))
+
         drive_data = {}
-        drive_data.update({'name': kwargs['name'], 'size': '%sG' % (kwargs['size'].disk)})
+        drive_data.update({'name': kwargs['name'],
+                           'size': '%sG' % (kwargs['size'].disk),
+                           'driveType': drive_type})
 
         response = self.connection.request(action = '/drives/%s/clone' % image.id, data = dict2str(drive_data),
                                            method = 'POST').object
@@ -551,3 +567,16 @@ class CloudSigmaZrhNodeDriver(CloudSigmaBaseNodeDriver):
     """
     connectionCls = CloudSigmaZrhConnection
     api_name = 'cloudsigma_zrh'
+
+class CloudSigmaLvsConnection(CloudSigmaBaseConnection):
+    """
+    Connection class for the CloudSigma driver for the Las Vegas end-point
+    """
+    host = API_ENDPOINTS['lvs']['host']
+
+class CloudSigmaLvsNodeDriver(CloudSigmaBaseNodeDriver):
+    """
+    CloudSigma node driver for the Las Vegas end-point
+    """
+    connectionCls = CloudSigmaZrhConnection
+    api_name = 'cloudsigma_lvs'

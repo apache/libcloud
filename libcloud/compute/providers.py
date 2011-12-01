@@ -53,6 +53,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.serverlove', 'ServerLoveNodeDriver'),
     Provider.CLOUDSIGMA:
         ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
+    Provider.CLOUDSIGMA_US:
+        ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaLvsNodeDriver'),
     Provider.GOGRID:
         ('libcloud.compute.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:

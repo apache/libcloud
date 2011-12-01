@@ -3,6 +3,18 @@
 Changes with Apache Libcloud in development:
   *) Compute:
 
+     - Update CloudSigma Zurich API endpoint address.
+       [Tomaz Muraus]
+
+     - Add new US Las Vegas endpoint to CloudSigma driver (types.CLOUDSIGMA_US)
+       [Tomaz Muraus]
+
+     - Allow user to specify drive type (hdd, ssd) when creating a
+       CloudSigma server.
+
+       Note 'ssd' drive_type doesn't work with the API yet.
+       [Tomaz Muraus]
+
      - Update OpenStack 1.1 driver to comply with the API specs. Need to make
        another call to retrieve node name and ip addresses when creating a node,
        because the first call only returns an id an the password. ; GITHUB-40
