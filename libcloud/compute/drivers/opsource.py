@@ -274,6 +274,7 @@ class OpsourceACLRule(object):
                         self.protocol, self.type, self.port1, self.port2))
 
 
+
 class OpsourceNodeDriver(NodeDriver):
     """
     Opsource node driver.
@@ -480,6 +481,10 @@ class OpsourceNodeDriver(NodeDriver):
         shutdown sequence within the guest operating system. A successful response
         on this function means the system has successfully passed the
         request into the operating system.
+<<<<<<< HEAD
+=======
+        add support to create/delete networks, acls, nat rules
+>>>>>>> fix merge issues
         """
         body = self.connection.request_with_orgId('server/%s?shutdown' %
                                                   (node.id)).object
@@ -608,7 +613,7 @@ class OpsourceNodeDriver(NodeDriver):
         port_elm = ET.SubElement(acl_elm, 'portRange')
         ET.SubElement(port_elm, "type").text = _type
         ET.SubElement(port_elm, "port1").text = start_port
-        if port2:
+        if end_port:
             ET.SubElement(port_elm, "port2").text = end_port
 
         self.connection.request_with_orgId('network/%s/aclrule' %network.id, 
@@ -616,7 +621,7 @@ class OpsourceNodeDriver(NodeDriver):
                                            data=ET.tostring(acl_elm)
                                            ).object
  
-        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network))[0]
+        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network.id))[0]
 
     def ex_get_location_by_id(self, id):
         location = None
@@ -675,17 +680,17 @@ class OpsourceNodeDriver(NodeDriver):
                                position = findtext(element, 'position', NETWORK_NS),
                                action = findtext(element, 'action', NETWORK_NS),
                                protocol = findtext(element, 'protocol', NETWORK_NS),
-                               _type = findtext(element, 'portRange/type', NETWORK_NS), 
-                               port1 = findtext(element, 'portRange/port1', NETWORK_NS),   
+                                _type = findtext(element, 'portRange/type', NETWORK_NS),
+                               port1 = findtext(element, 'portRange/port1', NETWORK_NS), 
                                port2 = findtext(element, 'portRange/port2', NETWORK_NS))   
+ 
           
     def ex_remove_acl_rule(self, acl_rule, network):
         """Remove the ACL rule"""
         body = self.connection.request_with_orgId('network/%s/aclrule/%s?delete' % (network.id, acl_rule.id)).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
-
-
+          
     def ex_remove_nat_rule(self, nat_rule, network):
         """Remove the NAT rule"""
         body = self.connection.request_with_orgId('network/%s/natrule/%s?delete' % (network.id, nat_rule.id)).object
