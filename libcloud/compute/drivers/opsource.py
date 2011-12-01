@@ -40,6 +40,7 @@ from libcloud.compute.types import NodeState, Provider
 #                                 no customer images yet)
 #   x implement list_locations()
 #	x implement ex_* extension functions for opsource-specific featurebody =s
+#    x implement ex_* extension functions for opsource-specific features
 #       x ex_graceful_shutdown
 #       x ex_start_node
 #       x ex_power_off
@@ -60,7 +61,7 @@ from libcloud.compute.types import NodeState, Provider
 #       - delete customer images
 #       - modify customer images
 #   - add "pending-servers" in list_nodes()
-#	- implement various ex_* extension functions for opsource-specific features
+#    - implement various ex_* extension functions for opsource-specific features
 #       - ex_modify_server()
 #       - ex_add_storage_to_server()
 #       - ex_snapshot_server()  (create's customer image)
@@ -227,6 +228,40 @@ class OpsourceNetwork(object):
                  'location=%s, privateNet=%s, multicast=%s>')
                 % (self.id, self.name, self.description, self.location,
                    self.privateNet, self.multicast))
+
+class OpsourceNATRule(object):
+    """
+    Opsource network NAT Rule
+    """
+
+    def __init__(self, id, name, private_ip, public_ip):
+        self.id = str(id)
+        self.name = name
+        self.private_ip = private_ip
+        self.public_ip = public_ip
+
+    def __repr__(self):
+        return (('<OpsourceNATRule: id=%s, name=%s, private_ip=%s, public_ip=%s>')
+                % (self.id, self.name, self.private_ip, self.public_ip))
+
+class OpsourceACLRule(object):
+    """
+    Opsource network NAT Rule
+    """
+
+    def __init__(self, id, name, status, position, action, protocol, port_num, port_operator='EQUAL_TO'):
+        self.id = str(id)
+        self.name = name
+        self.status = status
+        self.position = position
+        self.action = action
+        self.protocol = protocol
+        self.port_num = port_num
+        self.port_operator = port_operator
+
+    def __repr__(self):
+        return (('<OpsourceACLRule: id=%s, name=%s, status=%s, position=%s, action=%s, protocol=%s, port_number=%s, port_operator=%s>')
+                % (self.id, self.name, self.status, self.position, self.action, self.protocol, self.port_num, self.port_operator))
 
 
 class OpsourceNodeDriver(NodeDriver):
@@ -421,11 +456,11 @@ class OpsourceNodeDriver(NodeDriver):
         return result == 'SUCCESS'
 
     def ex_shutdown_graceful(self, node):
-        """
-        This function will attempt to "gracefully" stop a server by
-        initiating a shutdown sequence within the guest operating system.
-        A successful response on this function means the system has
-        successfully passed the request into the operating system.
+        """This function will attempt to "gracefully" stop a server by initiating a
+        shutdown sequence within the guest operating system. A successful response
+        on this function means the system has successfully passed the
+        request into the operating system.
+        add support to create/delete networks, acls, nat rules
         """
         body = self.connection.request_with_orgId('server/%s?shutdown' %
                                                   (node.id)).object
@@ -444,6 +479,25 @@ class OpsourceNodeDriver(NodeDriver):
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
+    def ex_create_network_with_location(self, name, location, description = None):
+        """Create a network within which a server will be created eventually
+        """
+        network_elm = ET.Element('NewNetworkWithLocation', {'xmlns': NETWORK_NS})
+        ET.SubElement(network_elm, "name").text = name
+        ET.SubElement(network_elm, "description").text = description
+        ET.SubElement(network_elm, "location").text = location
+
+        self.connection.request_with_orgId('networkWithLocation',
+                                           method='POST',
+                                           data=ET.tostring(network_elm)
+                                           ).object
+        return filter(lambda x: x.name == name, self.ex_list_networks())[0]
+
+    def ex_delete_network(self, network):
+        body = self.connection.request_with_orgId('network/%s?delete' % network.id).object
+        result = findtext(body, 'result', GENERAL_NS)
+        return result == 'SUCCESS'
+
     def ex_list_networks(self):
         """
         List networks deployed across all data center locations for your
@@ -454,6 +508,42 @@ class OpsourceNodeDriver(NodeDriver):
         response = self.connection.request_with_orgId('networkWithLocation') \
                                   .object
         return self._to_networks(response)
+
+    def ex_list_nat_rules(self, network_id):
+        return self._to_natrules(self.connection.request_with_orgId('network/%s/natrule' %network_id).object)
+
+    def ex_list_acl_rules(self, network_id):
+        return self._to_aclrules(self.connection.request_with_orgId('network/%s/aclrule' %network_id).object)
+
+    def ex_create_nat_rule(self, network, private_ip):
+        nat_elm = ET.Element('NatRule', {'xmlns': NETWORK_NS})
+        ET.SubElement(nat_elm, "name").text = private_ip
+        ET.SubElement(nat_elm, "sourceIp").text = private_ip
+
+        self.connection.request_with_orgId('network/%s/natrule' %network.id, 
+                                           method='POST',
+                                           data=ET.tostring(nat_elm)
+                                           ).object
+
+        return filter(lambda x: x.name == private_ip, self.ex_list_nat_rules(network.id))[0]
+ 
+    def ex_create_acl_rule(self, name, position, network, action, protocol, port):
+
+        acl_elm = ET.Element('AclRule', {'xmlns': NETWORK_NS})
+        ET.SubElement(acl_elm, "name").text = name
+        ET.SubElement(acl_elm, "position").text = position
+        ET.SubElement(acl_elm, "action").text = action
+        ET.SubElement(acl_elm, "protocol").text = protocol
+        port_elm = ET.SubElement(acl_elm, 'portRange')
+        ET.SubElement(port_elm, "type").text = 'EQUAL_TO'
+        ET.SubElement(port_elm, "port1").text = port
+
+        self.connection.request_with_orgId('network/%s/aclrule' %network.id, 
+                                           method='POST',
+                                           data=ET.tostring(acl_elm)
+                                           ).object
+ 
+        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network.id))[0]
 
     def ex_get_location_by_id(self, id):
         location = None
@@ -487,6 +577,46 @@ class OpsourceNodeDriver(NodeDriver):
                                    NETWORK_NS),
                                multicast=multicast,
                                status=status)
+
+
+    def _to_natrules(self, object):
+        nat_elements = findall(object, 'NatRule', NETWORK_NS)
+        return [ self._to_natrule(el) for el in nat_elements ]
+
+    def _to_natrule(self, element):
+        return OpsourceNATRule(id = findtext(element, 'id', NETWORK_NS),
+                               name = findtext(element, 'name', NETWORK_NS),
+                               private_ip = findtext(element, 'sourceIp', NETWORK_NS),
+                               public_ip = findtext(element, 'natIp', NETWORK_NS))
+                     
+
+
+    def _to_aclrules(self, object):
+        acl_elements = findall(object, 'AclRule', NETWORK_NS)
+        return [ self._to_aclrule(el) for el in acl_elements ]
+
+    def _to_aclrule(self, element):
+        return OpsourceACLRule(id = findtext(element, 'id', NETWORK_NS),
+                               name = findtext(element, 'name', NETWORK_NS),
+                               status = findtext(element, 'status', NETWORK_NS),
+                               position = findtext(element, 'position', NETWORK_NS),
+                               action = findtext(element, 'action', NETWORK_NS),
+                               protocol = findtext(element, 'protocol', NETWORK_NS),
+                               port_num = findtext(element, 'portRange/port1', NETWORK_NS))   
+          
+    def ex_remove_nat_rule(self, nat_rule, network):
+        """Destroys the nk"""
+        body = self.connection.request_with_orgId('network/%s/natrule/%s?delete' % (network.id, nat_rule.id)).object
+        result = findtext(body, 'result', GENERAL_NS)
+        return result == 'SUCCESS'
+
+
+    def ex_destroy_network(self, network):
+        """Destroys the network"""
+        body = self.connection.request_with_orgId('network/%s?delete' % network.id).object
+        result = findtext(body, 'result', GENERAL_NS)
+        return result == 'SUCCESS'
+
 
     def _to_locations(self, object):
         locations = []
