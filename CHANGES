@@ -53,6 +53,10 @@ Changes with Apache Libcloud in development:
        empty list ([]), not 'unknown'
        [Tomaz Muraus]
 
+     - Updated support for OpenNebula.org v1.4, v2.x, and v3.x APIs and included
+       additional compute tests validating functionality; LIBCLOUD-121
+       [Hutson Betts]
+
   *) Load-baancer:
 
     - Add ex_member_address argument to the Rackspace driver list_balancers
