@@ -141,7 +141,7 @@ class BrightboxNodeDriver(NodeDriver):
             ram = data['ram'],
             disk = data['disk_size'],
             bandwidth = 0,
-            price = '',
+            price = 0,
             driver = self
         )
 

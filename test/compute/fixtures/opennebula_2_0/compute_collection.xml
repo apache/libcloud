@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<COMPUTE_COLLECTION>  
+    <COMPUTE href="http://www.opennebula.org/compute/5" name="Compute 5"/>  
+    <COMPUTE href="http://www.opennebula.org/compute/15" name="Compute 15"/>
+</COMPUTE_COLLECTION>
