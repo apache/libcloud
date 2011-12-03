@@ -112,7 +112,7 @@ class RackspaceUKDNSConnection(RackspaceDNSConnection):
 
 class RackspaceDNSDriver(DNSDriver):
     def list_record_types(self):
-        return RECORD_TYPE_MAP.keys()
+        return list(RECORD_TYPE_MAP.keys())
 
     def list_zones(self):
         response = self.connection.request(action='/domains')

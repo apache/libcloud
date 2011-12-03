@@ -97,7 +97,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         if not 'content-type' in special_header_values:
             special_header_values['content-type'] = ''
 
-        keys_sorted = special_header_values.keys()
+        keys_sorted = list(special_header_values.keys())
         keys_sorted.sort()
 
         buf = [method]
@@ -106,7 +106,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             buf.append(value)
         string_to_sign = '\n'.join(buf)
 
-        keys_sorted = extension_header_values.keys()
+        keys_sorted = list(extension_header_values.keys())
         keys_sorted.sort()
 
         extension_header_string = []

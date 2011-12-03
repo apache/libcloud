@@ -84,7 +84,7 @@ class VoxelConnection(ConnectionUserAndKey):
             if params[param] is None:
                 del params[param]
 
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
 
         md5 = hashlib.md5()

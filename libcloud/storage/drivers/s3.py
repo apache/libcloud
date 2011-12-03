@@ -129,7 +129,7 @@ class S3Connection(ConnectionUserAndKey):
         if expires:
             special_header_values['date'] = str(expires)
 
-        keys_sorted = special_header_values.keys()
+        keys_sorted = list(special_header_values.keys())
         keys_sorted.sort()
 
         buf = [ method ]
@@ -138,7 +138,7 @@ class S3Connection(ConnectionUserAndKey):
             buf.append(value)
         string_to_sign = '\n'.join(buf)
 
-        keys_sorted = amz_header_values.keys()
+        keys_sorted = list(amz_header_values.keys())
         keys_sorted.sort()
 
         amz_header_string = []
