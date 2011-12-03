@@ -50,6 +50,7 @@ if sys.version_info >= (3, 0):
 else:
     import httplib
     from StringIO import StringIO
+    import urllib
     import urllib2
     import urlparse
 
