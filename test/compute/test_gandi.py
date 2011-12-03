@@ -17,7 +17,7 @@ import unittest
 import sys
 import random
 import string
-import httplib
+from libcloud.py3 import httplib
 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi

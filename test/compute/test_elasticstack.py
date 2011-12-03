@@ -15,7 +15,7 @@
 
 import sys
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.base import Node
 from libcloud.compute.types import Provider

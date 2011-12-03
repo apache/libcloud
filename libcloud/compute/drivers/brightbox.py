@@ -15,7 +15,7 @@
 """
 Brightbox Driver
 """
-import httplib
+from libcloud.py3 import httplib
 import base64
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse

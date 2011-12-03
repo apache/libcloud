@@ -1,4 +1,4 @@
-import httplib
+from libcloud.py3 import httplib
 import sys
 import unittest
 import urlparse

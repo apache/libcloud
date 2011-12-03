@@ -15,7 +15,7 @@
 import sys
 import unittest
 import exceptions
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.drivers.vpsnet import VPSNetNodeDriver
 from libcloud.compute.base import Node

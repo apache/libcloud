@@ -17,7 +17,7 @@ Opsource Driver
 """
 from xml.etree import ElementTree as ET
 from base64 import b64encode
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation

@@ -16,7 +16,7 @@
 VMware vCloud driver.
 """
 import base64
-import httplib
+from libcloud.py3 import httplib
 import time
 
 from urlparse import urlparse

@@ -17,7 +17,7 @@
 import sys
 import time
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
