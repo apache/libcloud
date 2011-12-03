@@ -31,10 +31,17 @@ HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
 TEST_PATHS = ['test', 'test/common', 'test/compute', 'test/storage',
               'test/loadbalancer', 'test/dns']
-DOC_TEST_MODULES = [ 'libcloud.compute.drivers.dummy',
+DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy',
-                     'libcloud.dns.drivers.dummy' ]
+                     'libcloud.dns.drivers.dummy']
 
+SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
+
+if sys.version_info <= (2, 4):
+    version = '.'.join([str(x) for x in sys.version_info[:3]])
+    print('Version ' + version + ' is not supported. Supported versions are ' +
+          ', '.join(SUPPORTED_VERSIONS))
+    sys.exit(1)
 
 def read_version_string():
     version = None
