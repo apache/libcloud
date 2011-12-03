@@ -15,7 +15,10 @@
 import sys
 import unittest
 import types
+
 from libcloud.py3 import httplib
+from libcloud.py3 import method_type
+from libcloud.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.types import Provider
@@ -397,6 +400,7 @@ class OpenStackMockHttp(MockHttpTestCase):
     def _v1_0_slug_servers_EX_SHARED_IP_GROUP(self, method, url, body, headers):
         # test_create_node_ex_shared_ip_group
         # Verify that the body contains sharedIpGroupId XML element
+        body = u(body)
         self.assertTrue(body.find('sharedIpGroupId="12345"') != -1)
         body = self.fixtures.load('v1_slug_servers.xml')
         return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
@@ -444,6 +448,7 @@ class OpenStackMockHttp(MockHttpTestCase):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_444222_action(self, method, url, body, headers):
+        body = u(body)
         if body.find('resize') != -1:
             # test_ex_resize_server
             return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
@@ -811,13 +816,13 @@ class OpenStack_1_1_Auth_2_0_MockHttp(OpenStack_1_1_MockHttp):
         for name in names1:
             method = methods1[name]
             new_name = name.replace('_v1_0_slug_', '_v1_0_1337_')
-            setattr(self, new_name, types.MethodType(method, self,
+            setattr(self, new_name, method_type(method, self,
                 OpenStack_1_1_Auth_2_0_MockHttp))
 
         for name in names2:
             method = methods2[name]
             new_name = name.replace('_v1_1_slug_', '_v1_0_1337_')
-            setattr(self, new_name, types.MethodType(method, self,
+            setattr(self, new_name, method_type(method, self,
                 OpenStack_1_1_Auth_2_0_MockHttp))
 
 

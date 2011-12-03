@@ -18,6 +18,8 @@ from __future__ import with_statement
 
 import os
 
+from libcloud.py3 import u
+
 FIXTURES_ROOT = {
     'compute': 'compute/fixtures',
     'storage': 'storage/fixtures',
@@ -37,7 +39,7 @@ class FileFixtures(object):
         if os.path.exists(path):
             with open(path, 'r') as fh:
                 content = fh.read()
-            return content
+            return u(content)
         else:
             raise IOError(path)
 

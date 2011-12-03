@@ -26,8 +26,10 @@ except ImportError:
 import os
 
 import warnings
+
 from libcloud.py3 import httplib
 from libcloud.py3 import b
+from libcloud.py3 import next
 
 import base64
 
@@ -1037,8 +1039,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
                 imageId=api_node['image']['id'],
                 flavorId=api_node['flavor']['id'],
-                uri=(link['href'] for link in api_node['links'] if
-                     link['rel'] == 'self').next(),
+                uri=next(link['href'] for link in api_node['links'] if
+                     link['rel'] == 'self'),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass'),
             ),
