@@ -17,8 +17,9 @@ import unittest
 import sys
 import random
 import string
+
 from libcloud.py3 import httplib
-import xmlrpclib
+from libcloud.py3 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi
 from libcloud.common.gandi import GandiException
@@ -60,13 +61,13 @@ class GandiTests(unittest.TestCase):
         self.assertTrue(len(nodes) > 0)
 
     def test_list_locations(self):
-        loc = filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations())[0]
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+            self.driver.list_locations()))[0]
         self.assertEqual(loc.country, 'France')
 
     def test_list_images(self):
-        loc = filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations())[0]
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+            self.driver.list_locations()))[0]
         images = self.driver.list_images(loc)
         self.assertTrue(len(images) > 2)
 
@@ -76,30 +77,31 @@ class GandiTests(unittest.TestCase):
 
     def test_destroy_node_running(self):
         nodes = self.driver.list_nodes()
-        test_node = filter(lambda x: x.state == NodeState.RUNNING, nodes)[0]
+        test_node = list(filter(lambda x: x.state == NodeState.RUNNING, nodes))[0]
         self.assertTrue(self.driver.destroy_node(test_node))
 
     def test_destroy_node_halted(self):
         nodes = self.driver.list_nodes()
-        test_node = filter(lambda x: x.state == NodeState.TERMINATED, nodes)[0]
+        test_node = list(filter(lambda x: x.state == NodeState.TERMINATED,
+                                nodes))[0]
         self.assertTrue(self.driver.destroy_node(test_node))
 
     def test_reboot_node(self):
         nodes = self.driver.list_nodes()
-        test_node = filter(lambda x: x.state == NodeState.RUNNING, nodes)[0]
+        test_node = list(filter(lambda x: x.state == NodeState.RUNNING, nodes))[0]
         self.assertTrue(self.driver.reboot_node(test_node))
 
     def test_create_node(self):
         login = 'libcloud'
-        passwd = ''.join(random.choice(string.letters + string.digits)
-            for i in xrange(10))
+        passwd = ''.join(random.choice(string.ascii_letters)
+            for i in range(10))
         # Get france datacenter
-        loc = filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations())[0]
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+            self.driver.list_locations()))[0]
         # Get a debian image
         images = self.driver.list_images(loc)
         images = [x for x in images if x.name.lower().startswith('debian')]
-        img = filter(lambda x: '5' in x.name, images)[0]
+        img = list(filter(lambda x: '5' in x.name, images))[0]
         # Get a configuration size
         size = self.driver.list_sizes()[0]
         node = self.driver.create_node(name=self.node_name, login=login,

@@ -19,6 +19,8 @@ import time
 import hashlib
 import copy
 
+from libcloud.py3 import b
+
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
 from libcloud.compute.providers import Provider
@@ -83,7 +85,7 @@ class GoGridNode(Node):
     # so uuid of node should not change after add is completed
     def get_uuid(self):
         return hashlib.sha1(
-            "%s:%d" % (self.public_ips,self.driver.type)
+            b("%s:%d" % (self.public_ips,self.driver.type))
         ).hexdigest()
 
 class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):

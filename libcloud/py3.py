@@ -26,6 +26,7 @@ if sys.version_info >= (3, 0):
     from io import StringIO
     import urllib as urllib2
     import urllib.parse as urlparse
+    import xmlrpc.client as xmlrpclib
 
     import urllib
     urllib.quote = urlparse.quote
@@ -55,6 +56,7 @@ else:
     import urllib
     import urllib2
     import urlparse
+    import xmlrpclib
 
     basestring = unicode = str
 

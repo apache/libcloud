@@ -54,7 +54,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         try:
             obj = self.connection.request('vm.info', int(id))
             return obj
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             raise GandiException(1003, e)
         return None
 
@@ -213,7 +214,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 filtering = {}
             images = self.connection.request('image.list', filtering)
             return [self._to_image(i) for i in images]
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             raise GandiException(1011, e)
 
     def _to_size(self, id, size):
@@ -305,7 +307,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         ifaces = self.connection.request('iface.list')
         ips = self.connection.request('ip.list')
         for iface in ifaces:
-            iface['ips'] = filter(lambda i: i['iface_id'] == iface['id'], ips)
+            iface['ips'] = list(filter(lambda i: i['iface_id'] == iface['id'], ips))
         return self._to_ifaces(ifaces)
 
     def _to_disk(self, element):

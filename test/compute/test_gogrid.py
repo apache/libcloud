@@ -12,10 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.py3 import httplib
 import sys
 import unittest
-import urlparse
+
+from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
 
 from libcloud.compute.base import NodeState, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
@@ -101,7 +102,8 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'FAIL'
         try:
             self.driver.list_images()
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, LibcloudError))
         else:
             self.fail("test should have thrown")
@@ -110,7 +112,8 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'FAIL'
         try:
             self.driver.list_nodes()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
         else:
@@ -124,7 +127,8 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
                 name='test1',
                 image=image,
                 size=self._get_test_512Mb_node_size())
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, LibcloudError))
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)

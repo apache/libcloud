@@ -39,7 +39,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 
         try:
             self.driver.list_nodes()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, InvalidCredsError))
             self.assertEquals(e.value, '401: Unauthorized')
         else:
@@ -109,7 +110,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                                'insight_admin_password': 'myPassword1',
                                                'db2_admin_password': 'myPassword2',
                                                'report_user_password': 'myPassword3'})
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertEquals(e.args[0], 'Error 412: No DataCenter with id: 3')
         else:
             self.fail('test should have thrown')
@@ -129,7 +131,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         self.assertEquals(len(nodes), 2)
         try:
             self.driver.destroy_node(toDelete)      # delete non-existent node
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertEquals(e.args[0], 'Error 404: Invalid Instance ID 28193')
         else:
             self.fail('test should have thrown')
@@ -146,7 +149,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         # Reboot inactive node
         try:
             ret = self.driver.reboot_node(nodes[1])
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertEquals(e.args[0], 'Error 412: Instance must be in the Active state')
         else:
             self.fail('test should have thrown')
