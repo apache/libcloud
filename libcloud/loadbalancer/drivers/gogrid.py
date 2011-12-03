@@ -112,8 +112,9 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         try:
             resp = self.connection.request('/api/grid/loadbalancer/delete',
                     method='POST', params={'id': balancer.id})
-        except Exception, err:
-            if "Update request for LoadBalancer" in str(err):
+        except Exception:
+            e = sys.exc_info()[1]
+            if "Update request for LoadBalancer" in str(e):
                 raise LibcloudLBImmutableError("Cannot delete immutable object",
                         GoGridLBDriver)
             else:
@@ -171,8 +172,9 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
             return self.connection.request('/api/grid/loadbalancer/edit',
                     method='POST',
                     params=params)
-        except Exception, err:
-            if "Update already pending" in str(err):
+        except Exception:
+            e = sys.exc_info()[1]
+            if "Update already pending" in str(e):
                 raise LibcloudLBImmutableError("Balancer is immutable", GoGridLBDriver)
 
         raise LibcloudError(value='Exception: %s' % str(err), driver=self)

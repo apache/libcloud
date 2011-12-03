@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
 import sys
 import unittest
 
@@ -21,6 +20,8 @@ try:
     import simplejson as json
 except ImportError:
     import json
+
+from libcloud.py3 import httplib
 
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver

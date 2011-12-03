@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import binascii
 
 try:
     import simplejson as json
@@ -59,7 +60,7 @@ class RackspaceConnection(OpenStackBaseConnection):
         if method in ('POST', 'PUT'):
             headers['Content-Type'] = 'application/json'
         if method == 'GET':
-            params['cache-busing'] = os.urandom(8).encode('hex')
+            params['cache-busing'] = binascii.hexlify(os.urandom(8))
 
         return super(RackspaceConnection, self).request(action=action,
                 params=params, data=data, method=method, headers=headers)
