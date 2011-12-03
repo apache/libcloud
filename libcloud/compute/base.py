@@ -560,8 +560,10 @@ class NodeDriver(BaseDriver):
                                         node=node,
                                         ssh_client=ssh_client,
                                         max_tries=3)
-        except Exception, e:
-            raise DeploymentError(node, e)
+        except Exception:
+        #except Exception, e:
+            #raise DeploymentError(node, e)
+            raise DeploymentError(node, None)
         return node
 
     def _wait_until_running(self, node, wait_period=3, timeout=600):
