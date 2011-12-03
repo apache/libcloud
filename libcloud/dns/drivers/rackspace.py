@@ -18,7 +18,7 @@ __all__ = [
     'RackspaceUKDNSDriver'
 ]
 
-import httplib
+from libcloud.py3 import httplib
 import copy
 
 from libcloud.common.base import PollingConnection

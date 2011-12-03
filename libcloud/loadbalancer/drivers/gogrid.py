@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import time
-import httplib
+from libcloud.py3 import httplib
 
 try:
     import simplejson as json

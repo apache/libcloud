@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
-import urllib
+from libcloud.py3 import httplib
+from libcloud.py3 import urllib
 
 try:
     import simplejson as json

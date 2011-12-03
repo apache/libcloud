@@ -16,9 +16,9 @@
 import base64
 import hashlib
 import hmac
-import httplib
+from libcloud.py3 import httplib
 import time
-import urllib
+from libcloud.py3 import urllib
 import urlparse
 
 from xml.etree import ElementTree
