@@ -169,7 +169,7 @@ class BrightboxNodeDriver(NodeDriver):
             'user_data': ''
         }
 
-        if kwargs.has_key('location'):
+        if 'location' in kwargs:
             data['zone'] = kwargs['location'].id
         else:
             data['zone'] = ''
