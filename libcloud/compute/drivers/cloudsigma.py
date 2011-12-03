@@ -336,10 +336,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
         response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
         imaging_start = time.time()
-        while response[0].has_key('imaging'):
+        while 'imaging' in response[0]:
             response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
             elapsed_time = time.time() - imaging_start
-            if response[0].has_key('imaging') and elapsed_time >= IMAGING_TIMEOUT:
+            if 'imaging' in response[0] and elapsed_time >= IMAGING_TIMEOUT:
                 raise CloudSigmaException('Drive imaging timed out')
             time.sleep(1)
 
@@ -512,7 +512,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                 return None
 
             public_ips = []
-            if data.has_key('nic:0:dhcp'):
+            if 'nic:0:dhcp' in data:
                 if isinstance(data['nic:0:dhcp'], list):
                     public_ips = data['nic:0:dhcp']
                 else:
@@ -521,7 +521,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
             extra = {}
             extra_keys = [ ('cpu', 'int'), ('smp', 'auto'), ('mem', 'int'), ('status', 'str') ]
             for key, value_type in extra_keys:
-                if data.has_key(key):
+                if key in data:
                     value = data[key]
 
                     if value_type == 'int':
@@ -534,7 +534,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
                     extra.update({key: value})
 
-            if data.has_key('vnc:ip') and data.has_key('vnc:password'):
+            if 'vnc:ip' in data and 'vnc:password' in data:
                 extra.update({'vnc_ip': data['vnc:ip'], 'vnc_password': data['vnc:password']})
 
             node = Node(id = data['server'], name = data['name'], state =  state,

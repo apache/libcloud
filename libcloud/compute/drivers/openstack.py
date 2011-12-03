@@ -25,8 +25,7 @@ import os
 
 import warnings
 from libcloud.py3 import httplib
-ffrom libcloud.py3 import b
-rom libcloud.py3 import b
+from libcloud.py3 import b
 
 import base64
 

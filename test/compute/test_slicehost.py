@@ -114,7 +114,7 @@ class SlicehostMockHttp(MockHttp):
             # the correct validation logic
             if not (name and image_id and flavor_id) \
                 or tree.tag != 'slice' \
-                or not headers.has_key('Content-Type')  \
+                or not 'Content-Type' in headers  \
                 or headers['Content-Type'] != 'application/xml':
 
                 err_body = self.fixtures.load('slices_error.xml')

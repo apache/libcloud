@@ -120,10 +120,10 @@ class S3Connection(ConnectionUserAndKey):
             elif key.lower().startswith('x-amz-'):
                 amz_header_values[key.lower()] = value.strip()
 
-        if not special_header_values.has_key('content-md5'):
+        if not 'content-md5' in special_header_values:
             special_header_values['content-md5'] = ''
 
-        if not special_header_values.has_key('content-type'):
+        if not 'content-type' in special_header_values:
             special_header_values['content-type'] = ''
 
         if expires:
