@@ -16,6 +16,8 @@
 OpenStack driver
 """
 
+import binascii
+
 try:
     import simplejson as json
 except ImportError:
@@ -127,7 +129,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             headers = {'Content-Type': self.default_content_type}
 
         if method == "GET":
-            params['cache-busting'] = os.urandom(8).encode('hex')
+            params['cache-busting'] = binascii.hexlify(os.urandom(8))
 
         return super(OpenStackComputeConnection, self).request(
             action=action,
