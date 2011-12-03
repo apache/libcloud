@@ -20,6 +20,9 @@ import re
 import time
 import base64
 
+from libcloud.py3 import b
+
+
 from libcloud.utils import str2dicts, str2list, dict2str
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError
@@ -186,7 +189,8 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
 
-        headers['Authorization'] = 'Basic %s' % (base64.b64encode('%s:%s' % (self.user_id, self.key)))
+        headers['Authorization'] = 'Basic %s' % (base64.b64encode(b('%s:%s' %
+                                                 (self.user_id, self.key))))
 
         return headers
 

@@ -18,6 +18,8 @@ Brightbox Driver
 from libcloud.py3 import httplib
 import base64
 
+from libcloud.py3 import b
+
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver
@@ -56,7 +58,8 @@ class BrightboxConnection(ConnectionUserAndKey):
     def _fetch_oauth_token(self):
         body = json.dumps({'client_id': self.user_id, 'grant_type': 'none'})
 
-        authorization = 'Basic ' + base64.encodestring('%s:%s' % (self.user_id, self.key)).rstrip()
+        authorization = 'Basic ' + base64.encodestring(b('%s:%s' %
+                                        (self.user_id, self.key))).rstrip()
 
         self.connect()
 

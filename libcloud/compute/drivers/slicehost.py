@@ -21,6 +21,8 @@ import socket
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
+from libcloud.py3 import b
+
 from libcloud.common.base import ConnectionKey, XmlResponse
 from libcloud.compute.types import NodeState, Provider, InvalidCredsError
 from libcloud.compute.base import NodeSize, NodeDriver, NodeImage, NodeLocation
@@ -50,7 +52,7 @@ class SlicehostConnection(ConnectionKey):
 
     def add_default_headers(self, headers):
         headers['Authorization'] = ('Basic %s'
-                              % (base64.b64encode('%s:' % self.key)))
+                              % (base64.b64encode(b('%s:' % self.key))))
         return headers
 
 

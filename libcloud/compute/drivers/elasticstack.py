@@ -21,7 +21,9 @@ http://www.elasticstack.com.
 import re
 import time
 import base64
+
 from libcloud.py3 import httplib
+from libcloud.py3 import b
 
 try:
     import simplejson as json
@@ -153,9 +155,9 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
         headers['Authorization'] = ('Basic %s'
-                                    % (base64.b64encode('%s:%s'
+                                    % (base64.b64encode(b('%s:%s'
                                                         % (self.user_id,
-                                                           self.key))))
+                                                           self.key)))))
         return headers
 
 

@@ -17,9 +17,13 @@ VMware vCloud driver.
 """
 import base64
 from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
+from libcloud.py3 import b
+
+urlparse = urlparse.urlparse
+
 import time
 
-from urlparse import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
@@ -226,7 +230,7 @@ class VCloudConnection(ConnectionUserAndKey):
         return {
             'Authorization':
                 "Basic %s"
-                % base64.b64encode('%s:%s' % (self.user_id, self.key)),
+                % base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
             'Content-Length': 0
         }
 
@@ -525,7 +529,7 @@ class VCloudNodeDriver(NodeDriver):
             network = ''
 
         password = None
-        if kwargs.has_key('auth'):
+        if 'auth' in kwargs:
             auth = kwargs['auth']
             if isinstance(auth, NodeAuthPassword):
                 password = auth.password
@@ -585,7 +589,7 @@ class HostingComConnection(VCloudConnection):
         """hosting.com doesn't follow the standard vCloud authentication API"""
         return {
             'Authentication':
-                base64.b64encode('%s:%s' % (self.user_id, self.key)),
+                base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
             'Content-Length': 0
         }
 
