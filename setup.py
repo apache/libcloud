@@ -74,7 +74,7 @@ class TestCommand(Command):
     def _run_tests(self):
         secrets = pjoin(self._dir, 'test', 'secrets.py')
         if not os.path.isfile(secrets):
-            print("Missing %s".format(secrets))
+            print("Missing " + secrets)
             print("Maybe you forgot to copy it from -dist:")
             print("  cp test/secrets.py-dist test/secrets.py")
             sys.exit(1)
@@ -97,7 +97,7 @@ class TestCommand(Command):
                 missing.append("ssl")
 
             if missing:
-                print("Missing dependencies: %s".format(", ".join(missing)))
+                print("Missing dependencies: " + ", ".join(missing))
                 sys.exit(1)
 
         testfiles = []
