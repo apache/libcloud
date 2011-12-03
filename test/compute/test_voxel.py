@@ -37,7 +37,8 @@ class VoxelTest(unittest.TestCase):
         VoxelMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')

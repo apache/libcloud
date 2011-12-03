@@ -46,7 +46,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         SlicehostMockHttp.type = 'UNAUTHORIZED'
         try:
             ret = self.driver.list_nodes()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.value, 'HTTP Basic: Access denied.')
         else:
             self.fail('test should have thrown')
@@ -77,7 +78,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         SlicehostMockHttp.type = 'FORBIDDEN'
         try:
             ret = self.driver.reboot_node(node)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertEqual(e.args[0], 'Permission denied')
         else:
             self.fail('test should have thrown')

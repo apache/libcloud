@@ -16,6 +16,8 @@
 import hashlib
 import time
 
+from libcloud.py3 import b
+
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
@@ -74,7 +76,7 @@ class GoGridConnection(ConnectionUserAndKey):
 
     def get_signature(self, key, secret):
         """ create sig from md5 of key + secret + time """
-        m = hashlib.md5(key+secret+str(int(time.time())))
+        m = hashlib.md5(b(key+secret+str(int(time.time()))))
         return m.hexdigest()
 
 class GoGridIpAddress(object):

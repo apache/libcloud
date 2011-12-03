@@ -30,7 +30,8 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         try:
             client.connect()
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertTrue(str(e).find('must specify either password or')
                             != -1)
         else:
