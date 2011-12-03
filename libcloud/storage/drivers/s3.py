@@ -24,6 +24,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from libcloud.py3 import PY3
 from libcloud.py3 import httplib
 from libcloud.py3 import urllib
+from libcloud.py3 import urlquote
 from libcloud.py3 import b
 
 from libcloud.utils import fixxpath, findtext, in_development_warning
@@ -337,7 +338,7 @@ class S3StorageDriver(StorageDriver):
         return False
 
     def _clean_object_name(self, name):
-        name = urllib.quote(name)
+        name = urlquote(name)
         return name
 
     def _get_more(self, last_key, value_dict):

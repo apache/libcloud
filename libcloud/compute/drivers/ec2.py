@@ -28,7 +28,7 @@ import copy
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.py3 import urllib
+from libcloud.py3 import urlquote
 from libcloud.py3 import b
 
 from libcloud.utils import fixxpath, findtext, findattr, findall
@@ -233,8 +233,8 @@ class EC2Connection(ConnectionUserAndKey):
         keys.sort()
         pairs = []
         for key in keys:
-            pairs.append(urllib.quote(key, safe='') + '=' +
-                         urllib.quote(params[key], safe='-_~'))
+            pairs.append(urlquote(key, safe='') + '=' +
+                         urlquote(params[key], safe='-_~'))
 
         qs = '&'.join(pairs)
 

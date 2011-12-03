@@ -23,6 +23,7 @@ from libcloud.py3 import PY3
 from libcloud.py3 import httplib
 from libcloud.py3 import urllib
 from libcloud.py3 import urlparse
+from libcloud.py3 import urlencode
 from libcloud.py3 import next
 from libcloud.py3 import b
 
@@ -90,7 +91,7 @@ class AtmosConnection(ConnectionUserAndKey):
         if params:
             if type(params) is dict:
                 params = params.items()
-            pathstring += '?' + urllib.urlencode(params)
+            pathstring += '?' + urlencode(params)
         pathstring = pathstring.lower()
 
         xhdrs = [(k, v) for k, v in headers.items() if k.startswith('x-emc-')]
@@ -370,7 +371,7 @@ class AtmosDriver(StorageDriver):
         ]
         params.append(('signature', self._cdn_signature(path, params)))
 
-        params = urllib.urlencode(params)
+        params = urlencode(params)
         path = self.path + path
         return urlparse.urlunparse((protocol, self.host, path, '', params, ''))
 

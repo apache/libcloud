@@ -22,6 +22,7 @@ except ImportError:
     import json
 
 from libcloud.py3 import PY3
+from libcloud.py3 import urlquote
 
 if PY3:
     from io import FileIO as file
@@ -436,7 +437,7 @@ class CloudFilesStorageDriver(StorageDriver):
         """
         if name.startswith('/'):
             name = name[1:]
-        name = urllib.quote(name)
+        name = urlquote(name)
 
         if name.find('/') != -1:
             raise InvalidContainerNameError(value='Container name cannot'
@@ -452,7 +453,7 @@ class CloudFilesStorageDriver(StorageDriver):
         return name
 
     def _clean_object_name(self, name):
-        name = urllib.quote(name)
+        name = urlquote(name)
         return name
 
     def _to_container_list(self, response):

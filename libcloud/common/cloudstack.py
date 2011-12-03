@@ -16,9 +16,8 @@
 import base64
 import hashlib
 import hmac
-import time
 
-from libcloud.py3 import urllib
+from libcloud.py3 import urlencode
 from libcloud.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey, PollingConnection
@@ -40,7 +39,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     def _make_signature(self, params):
         signature = [(k.lower(), v) for k, v in params.items()]
         signature.sort(key=lambda x: x[0])
-        signature = urllib.urlencode(signature)
+        signature = urlencode(signature)
         signature = signature.lower().replace('+', '%20')
         signature = hmac.new(b(self.key), msg=b(signature), digestmod=hashlib.sha1)
         return base64.b64encode(b(signature.digest()))

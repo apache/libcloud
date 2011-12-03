@@ -29,6 +29,7 @@ import libcloud
 from libcloud.py3 import urllib
 from libcloud.py3 import httplib
 from libcloud.py3 import urlparse
+from libcloud.py3 import urlencode
 from libcloud.py3 import StringIO
 from libcloud.py3 import u
 
@@ -467,7 +468,7 @@ class Connection(object):
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urllib.urlencode(params)))
+            url = '?'.join((action, urlencode(params)))
         else:
             url = action
 

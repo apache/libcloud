@@ -26,6 +26,7 @@ import copy
 from libcloud.py3 import urllib
 import base64
 
+from libcloud.py3 import urlencode
 from libcloud.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
@@ -185,7 +186,7 @@ class BlueboxNodeDriver(NodeDriver):
         if not ssh and not password:
             raise Exception("SSH public key or password required.")
 
-        params = urllib.urlencode(data)
+        params = urlencode(data)
         result = self.connection.request('/api/blocks.json', headers=headers, data=params, method='POST')
         node = self._to_node(result.object)
         return node

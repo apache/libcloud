@@ -27,13 +27,12 @@ if sys.version_info >= (3, 0):
     PY3 = True
     import http.client as httplib
     from io import StringIO
+    import urllib
     import urllib as urllib2
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
-
-    import urllib
-    urllib.quote = urlparse.quote
-    urllib.urlencode = urlparse.urlencode
+    from urllib.parse import quote as urlquote
+    from urllib.parse import urlencode as urlencode
 
     basestring = str
 
@@ -63,6 +62,8 @@ else:
     import urllib2
     import urlparse
     import xmlrpclib
+    from urllib import quote as urlquote
+    from urllib import urlencode as urlencode
 
     basestring = unicode = str
 
