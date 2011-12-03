@@ -505,7 +505,7 @@ class NodeDriver(BaseDriver):
         ...     try:
         ...         node = driver.deploy_node(deploy=msd)
         ...     except NotImplementedError:
-        ...         print "not implemented for dummy driver"
+        ...         print ("not implemented for dummy driver")
         >>> d()
         not implemented for dummy driver
 
