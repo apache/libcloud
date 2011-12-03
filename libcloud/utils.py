@@ -18,7 +18,8 @@ import mimetypes
 import warnings
 
 from libcloud.py3 import httplib
-from libcloud.py3 import PY25, PY3
+from libcloud.py3 import next
+from libcloud.py3 import PY3
 
 SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
@@ -50,13 +51,8 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
         get_data = iterator.read
         args = (chunk_size, )
     else:
-        # TODO move in a common place
-        if PY25:
-            get_data = iterator.next
-            args = ()
-        else:
-            get_data = next
-            args = (iterator, )
+        get_data = next
+        args = (iterator, )
 
     data = ''
     empty = False
@@ -97,16 +93,8 @@ def exhaust_iterator(iterator):
     """
     data = ''
 
-    # TODO move in a common place
-    if PY25:
-        get_data = iterator.next
-        args = ()
-    else:
-        get_data = next
-        args = (iterator,)
-
     try:
-        chunk = str(get_data(*args))
+        chunk = str(next(iterator))
     except StopIteration:
         chunk = ''
 
@@ -114,7 +102,7 @@ def exhaust_iterator(iterator):
         data += chunk
 
         try:
-            chunk = str(get_data(*args))
+            chunk = str(next(iterator))
         except StopIteration:
             chunk = ''
 

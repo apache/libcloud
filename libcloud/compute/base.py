@@ -23,6 +23,8 @@ import os
 import socket
 import struct
 
+from libcloud.py3 import b
+
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, DeploymentError
@@ -161,7 +163,7 @@ class Node(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1("%s:%d" % (self.id, self.driver.type)).hexdigest()
+        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
 
     def reboot(self):
         """Reboot this node
