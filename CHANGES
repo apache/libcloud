@@ -1,6 +1,11 @@
                                                         -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud in development:
+  *) General:
+
+     - Add support for Python 3.x.
+       [Tomaz Muraus]
+
   *) Compute:
 
      - Update CloudSigma Zurich API endpoint address.
