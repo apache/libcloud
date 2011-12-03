@@ -20,7 +20,7 @@ from cgi import parse_qs
 
 from libcloud.py3 import httplib
 from libcloud.py3 import StringIO
-from libcloud.py3 import urllib2
+from libcloud.py3 import urlparse
 
 XML_HEADERS = {'content-type': 'application/xml'}
 

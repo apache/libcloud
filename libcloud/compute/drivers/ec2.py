@@ -18,15 +18,18 @@ Amazon EC2 driver
 """
 from __future__ import with_statement
 
+import sys
 import base64
 import hmac
 import os
 import time
-import urllib
 import copy
 
 from hashlib import sha256
 from xml.etree import ElementTree as ET
+
+from libcloud.py3 import urllib
+from libcloud.py3 import b
 
 from libcloud.utils import fixxpath, findtext, findattr, findall
 from libcloud.common.base import ConnectionUserAndKey
@@ -226,7 +229,7 @@ class EC2Connection(ConnectionUserAndKey):
                        HTTPRequestURI + "\n" +
                        CanonicalizedQueryString <from the preceding step>
         """
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
         pairs = []
         for key in keys:
@@ -243,7 +246,7 @@ class EC2Connection(ConnectionUserAndKey):
         string_to_sign = '\n'.join(('GET', hostname, path, qs))
 
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha256).digest()
         )
         return b64_hmac
 
@@ -484,7 +487,7 @@ class EC2NodeDriver(NodeDriver):
 
     def _get_sizes(self, include_cluser_instances=False):
         sizes = []
-        for key, values in self._instance_types.iteritems():
+        for key, values in self._instance_types.items():
             if not include_cluser_instances and\
                key in CLUSTER_INSTANCES_IDS:
                 continue
@@ -627,7 +630,8 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params['IpProtocol'] = 'udp'
@@ -636,7 +640,8 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
 
@@ -646,7 +651,9 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
+
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         return results

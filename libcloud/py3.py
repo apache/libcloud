@@ -26,11 +26,42 @@ if sys.version_info >= (3, 0):
     from io import StringIO
     import urllib as urllib2
     import urllib.parse as urlparse
+
+    import urllib
+    urllib.quote = urlparse.quote
+    urllib.urlencode = urlparse.urlencode
+
+    # Taken from django.utils.py3
+    bytes = __builtins__['bytes']
+    def b(s):
+        if isinstance(s, str):
+            return s.encode("ascii")
+        elif isinstance(s, bytes):
+            return s
+        else:
+            raise TypeError("Invalid argument %r for b()" % (s,))
+    def byte(n):
+        # assume n is a Latin-1 string of length 1
+        return ord(n)
+    u = str
+    next = __builtins__['next']
+    def dictvalues(d):
+        return list(d.values())
 else:
     import httplib
     from StringIO import StringIO
     import urllib2
     import urlparse
+
+    # Taken from django.utils.py3
+    b = bytes = str
+    def byte(n):
+        return n
+    u = unicode
+    def next(i):
+        return i.next()
+    def dictvalues(d):
+        return d.values()
 
 if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
     PY25 = True
