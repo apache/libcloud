@@ -193,7 +193,7 @@ class SlicehostNodeDriver(NodeDriver):
         # for consistency with other drivers, we put this in two places.
         node_attrs['password'] = node_attrs['root-password']
         extra = {}
-        for k in node_attrs.keys():
+        for k in list(node_attrs.keys()):
             ek = k.replace("-", "_")
             extra[ek] = node_attrs[k]
         n = Node(id=element.findtext('id'),

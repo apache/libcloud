@@ -333,7 +333,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                       '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
 
         invalid_keys = []
-        for key in kwargs.keys():
+        keys = list(kwargs.keys())
+        for key in keys:
             matches = False
             for regex in valid_keys:
                 if re.match(regex, key):
