@@ -16,12 +16,17 @@
 import os
 import mimetypes
 import warnings
-from httplib import HTTPResponse
+
+from libcloud.py3 import httplib
+from libcloud.py3 import PY25, PY3
 
 SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.7.0'
 CHUNK_SIZE = 8096
+
+if PY3:
+    from io import FileIO as file
 
 
 def read_in_chunks(iterator, chunk_size=None, fill_size=False):
@@ -41,12 +46,17 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     """
     chunk_size = chunk_size or CHUNK_SIZE
 
-    if isinstance(iterator, (file, HTTPResponse)):
+    if isinstance(iterator, (file, httplib.HTTPResponse)):
         get_data = iterator.read
         args = (chunk_size, )
     else:
-        get_data = iterator.next
-        args = ()
+        # TODO move in a common place
+        if PY25:
+            get_data = iterator.next
+            args = ()
+        else:
+            get_data = next
+            args = (iterator, )
 
     data = ''
     empty = False
@@ -87,8 +97,16 @@ def exhaust_iterator(iterator):
     """
     data = ''
 
+    # TODO move in a common place
+    if PY25:
+        get_data = iterator.next
+        args = ()
+    else:
+        get_data = next
+        args = (iterator,)
+
     try:
-        chunk = str(iterator.next())
+        chunk = str(get_data(*args))
     except StopIteration:
         chunk = ''
 
@@ -96,7 +114,7 @@ def exhaust_iterator(iterator):
         data += chunk
 
         try:
-            chunk = str(iterator.next())
+            chunk = str(get_data(*args))
         except StopIteration:
             chunk = ''
 

@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
 import random
 import unittest
 
-from cStringIO import StringIO
-from urllib2 import urlparse
 from cgi import parse_qs
+
+from libcloud.py3 import httplib
+from libcloud.py3 import StringIO
+from libcloud.py3 import urllib2
 
 XML_HEADERS = {'content-type': 'application/xml'}
 
