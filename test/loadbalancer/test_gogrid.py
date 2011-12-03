@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
 import sys
 import unittest
-from urlparse import urlparse
+
+from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
 
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node
@@ -75,7 +76,8 @@ class GoGridTests(unittest.TestCase):
                     members=(Member(None, '10.1.0.10', 80),
                              Member(None, '10.1.0.11', 80))
                     )
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(str(e).find('tried to add a member with an IP address not assigned to your account') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -100,8 +102,8 @@ class GoGridTests(unittest.TestCase):
         members1 = self.driver.balancer_list_members(balancer=balancer)
         members2 = balancer.list_members()
 
-        expected_members = set([u'10.0.0.78:80', u'10.0.0.77:80',
-            u'10.0.0.76:80'])
+        expected_members = set(['10.0.0.78:80', '10.0.0.77:80',
+                                '10.0.0.76:80'])
 
         self.assertEquals(len(members1), 3)
         self.assertEquals(len(members2), 3)
@@ -153,7 +155,7 @@ class GoGridLBMockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_loadbalancer_add(self, method, url, body, headers):
-        query = urlparse(url).query
+        query = urlparse.urlparse(url).query
         self.assertTrue(query.find('loadbalancer.type=round+robin') != -1)
 
         body = self.fixtures.load('loadbalancer_add.json')

@@ -15,8 +15,9 @@
 
 import os
 import sys
-import httplib
 import unittest
+
+from libcloud.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
@@ -276,7 +277,8 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = 'UNAUTHORIZED'
         try:
             self.driver.list_containers()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('Exception was not thrown')
@@ -514,7 +516,8 @@ class S3Tests(unittest.TestCase):
                                       object_name=object_name,
                                       verify_hash=True,
                                       ex_storage_class='invalid-class')
-        except ValueError, e:
+        except ValueError:
+            e = sys.exc_info()[1]
             self.assertTrue(str(e).lower().find('invalid storage class') != -1)
         else:
             self.fail('Exception was not thrown')

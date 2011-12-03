@@ -18,16 +18,20 @@ import sys
 import unittest
 import warnings
 import os.path
-from StringIO import StringIO
 
 # In Python > 2.7 DeprecationWarnings are disabled by default
 warnings.simplefilter('default')
 
 import libcloud.utils
+from libcloud.py3 import StringIO
+from libcloud.py3 import PY3
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
 
 WARNINGS_BUFFER = []
+
+if PY3:
+    from io import FileIO as file
 
 
 def show_warning(msg, cat, fname, lno, line=None):

@@ -17,9 +17,10 @@ Softlayer driver
 """
 
 import time
-import xmlrpclib
 
 import libcloud
+
+from libcloud.py3 import xmlrpclib
 
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
@@ -187,7 +188,8 @@ class SoftLayerConnection(object):
 
         try:
             return getattr(sl, method)(*params)
-        except xmlrpclib.Fault, e:
+        except xmlrpclib.Fault:
+            e = sys.exc_info()[1]
             if e.faultCode == "SoftLayer_Account":
                 raise InvalidCredsError(e.faultString)
             raise SoftLayerException(e)
@@ -396,7 +398,7 @@ class SoftLayerNodeDriver(NodeDriver):
         )
 
     def list_sizes(self, location=None):
-        return [self._to_size(id, s['imagedata']) for id, s in SL_TEMPLATES.iteritems()]
+        return [self._to_size(id, s['imagedata']) for id, s in SL_TEMPLATES.items()]
 
     def _to_loc(self, loc):
         return NodeLocation(

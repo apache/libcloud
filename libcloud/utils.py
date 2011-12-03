@@ -16,12 +16,18 @@
 import os
 import mimetypes
 import warnings
-from httplib import HTTPResponse
+
+from libcloud.py3 import httplib
+from libcloud.py3 import next
+from libcloud.py3 import PY3
 
 SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.7.0'
 CHUNK_SIZE = 8096
+
+if PY3:
+    from io import FileIO as file
 
 
 def read_in_chunks(iterator, chunk_size=None, fill_size=False):
@@ -41,12 +47,12 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     """
     chunk_size = chunk_size or CHUNK_SIZE
 
-    if isinstance(iterator, (file, HTTPResponse)):
+    if isinstance(iterator, (file, httplib.HTTPResponse)):
         get_data = iterator.read
         args = (chunk_size, )
     else:
-        get_data = iterator.next
-        args = ()
+        get_data = next
+        args = (iterator, )
 
     data = ''
     empty = False
@@ -88,7 +94,7 @@ def exhaust_iterator(iterator):
     data = ''
 
     try:
-        chunk = str(iterator.next())
+        chunk = str(next(iterator))
     except StopIteration:
         chunk = ''
 
@@ -96,7 +102,7 @@ def exhaust_iterator(iterator):
         data += chunk
 
         try:
-            chunk = str(iterator.next())
+            chunk = str(next(iterator))
         except StopIteration:
             chunk = ''
 
@@ -246,7 +252,7 @@ def findall(element, xpath, namespace=None):
 
 
 def reverse_dict(dictionary):
-    return dict([(value, key) for key, value in dictionary.iteritems()])
+    return dict([(value, key) for key, value in dictionary.items()])
 
 
 def get_driver(drivers, provider):

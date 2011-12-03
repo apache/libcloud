@@ -15,7 +15,10 @@
 import sys
 import unittest
 import types
-import httplib
+
+from libcloud.py3 import httplib
+from libcloud.py3 import method_type
+from libcloud.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.types import Provider
@@ -84,7 +87,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver = self.create_driver()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -93,7 +97,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         OpenStackMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
             self.driver = self.create_driver()
-        except MalformedResponseError, e:
+        except MalformedResponseError:
+            e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -102,7 +107,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         OpenStackMockHttp.type = 'INTERNAL_SERVER_ERROR'
         try:
             self.driver = self.create_driver()
-        except MalformedResponseError, e:
+        except MalformedResponseError:
+            e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -394,6 +400,7 @@ class OpenStackMockHttp(MockHttpTestCase):
     def _v1_0_slug_servers_EX_SHARED_IP_GROUP(self, method, url, body, headers):
         # test_create_node_ex_shared_ip_group
         # Verify that the body contains sharedIpGroupId XML element
+        body = u(body)
         self.assertTrue(body.find('sharedIpGroupId="12345"') != -1)
         body = self.fixtures.load('v1_slug_servers.xml')
         return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
@@ -441,6 +448,7 @@ class OpenStackMockHttp(MockHttpTestCase):
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_444222_action(self, method, url, body, headers):
+        body = u(body)
         if body.find('resize') != -1:
             # test_ex_resize_server
             return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
@@ -564,14 +572,16 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_set_password(self):
         try:
             self.driver.ex_set_password(self.node, 'New1&53jPass')
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_rebuild(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         try:
             self.driver.ex_rebuild(self.node, image=image)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_resize(self):
@@ -579,19 +589,22 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                         driver=self.driver)
         try:
             self.driver.ex_resize(self.node, size)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_confirm_resize(self):
         try:
             self.driver.ex_confirm_resize(self.node)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_revert_resize(self):
         try:
             self.driver.ex_revert_resize(self.node)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_save_image(self):
@@ -803,13 +816,13 @@ class OpenStack_1_1_Auth_2_0_MockHttp(OpenStack_1_1_MockHttp):
         for name in names1:
             method = methods1[name]
             new_name = name.replace('_v1_0_slug_', '_v1_0_1337_')
-            setattr(self, new_name, types.MethodType(method, self,
+            setattr(self, new_name, method_type(method, self,
                 OpenStack_1_1_Auth_2_0_MockHttp))
 
         for name in names2:
             method = methods2[name]
             new_name = name.replace('_v1_1_slug_', '_v1_0_1337_')
-            setattr(self, new_name, types.MethodType(method, self,
+            setattr(self, new_name, method_type(method, self,
                 OpenStack_1_1_Auth_2_0_MockHttp))
 
 

@@ -30,7 +30,10 @@ except ImportError:
 from xml.etree import ElementTree as ET
 from base64 import b64encode
 import hashlib
-import httplib
+
+from libcloud.py3 import httplib
+from libcloud.py3 import next
+from libcloud.py3 import b
 
 from libcloud.compute.base import NodeState, NodeDriver, Node, NodeLocation
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
@@ -113,9 +116,9 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         @rtype:  C{dict}
         @return: Dictionary containing updated headers.
         """
-        pass_sha1 = hashlib.sha1(self.key).hexdigest()
-        headers['Authorization'] = ('Basic %s' % b64encode('%s:%s' %
-                                                (self.user_id, pass_sha1)))
+        pass_sha1 = hashlib.sha1(b(self.key)).hexdigest()
+        headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
+                                                (self.user_id, pass_sha1))))
         return headers
 
 
@@ -194,7 +197,7 @@ class OpenNebulaNetwork(object):
         @rtype:  C{string}
         @return: Unique identifier for this instance.
         """
-        return hashlib.sha1("%s:%d" % (self.id, self.driver.type)).hexdigest()
+        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
 
     def destroy(self):
         """
@@ -859,8 +862,8 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         instance_type = compute.find('INSTANCE_TYPE')
 
         try:
-            return (node_size for node_size in self.list_sizes()
-                    if node_size.name == instance_type.text).next()
+            return next((node_size for node_size in self.list_sizes()
+                    if node_size.name == instance_type.text))
         except StopIteration:
             return None
 

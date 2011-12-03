@@ -20,6 +20,9 @@ import re
 import time
 import base64
 
+from libcloud.py3 import b
+
+
 from libcloud.utils import str2dicts, str2list, dict2str
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError
@@ -186,7 +189,8 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
 
-        headers['Authorization'] = 'Basic %s' % (base64.b64encode('%s:%s' % (self.user_id, self.key)))
+        headers['Authorization'] = 'Basic %s' % (base64.b64encode(b('%s:%s' %
+                                                 (self.user_id, self.key))))
 
         return headers
 
@@ -259,7 +263,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Return a list of available node sizes.
         """
         sizes = []
-        for key, value in INSTANCE_TYPES.iteritems():
+        for key, value in INSTANCE_TYPES.items():
             size = CloudSigmaNodeSize(id = value['id'], name = value['name'],
                                       cpu = value['cpu'], ram = value['memory'],
                                       disk = value['disk'], bandwidth = value['bandwidth'],
@@ -332,10 +336,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
         response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
         imaging_start = time.time()
-        while response[0].has_key('imaging'):
+        while 'imaging' in response[0]:
             response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
             elapsed_time = time.time() - imaging_start
-            if response[0].has_key('imaging') and elapsed_time >= IMAGING_TIMEOUT:
+            if 'imaging' in response[0] and elapsed_time >= IMAGING_TIMEOUT:
                 raise CloudSigmaException('Drive imaging timed out')
             time.sleep(1)
 
@@ -374,7 +378,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         node = self._get_node_info(node)
 
         drive_uuids = []
-        for key, value in node.iteritems():
+        for key, value in node.items():
             if (key.startswith('ide:') or key.startswith('scsi') or key.startswith('block')) and \
                not (key.endswith(':bytes') or key.endswith(':requests') or key.endswith('media')):
                 drive_uuids.append(value)
@@ -447,7 +451,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                       '^ide:[0-1]:[0-1](:media)?$', '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
 
         invalid_keys = []
-        for key in kwargs.keys():
+        keys = list(kwargs.keys())
+        for key in keys:
             matches = False
             for regex in valid_keys:
                 if re.match(regex, key):
@@ -508,7 +513,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                 return None
 
             public_ips = []
-            if data.has_key('nic:0:dhcp'):
+            if 'nic:0:dhcp' in data:
                 if isinstance(data['nic:0:dhcp'], list):
                     public_ips = data['nic:0:dhcp']
                 else:
@@ -517,7 +522,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
             extra = {}
             extra_keys = [ ('cpu', 'int'), ('smp', 'auto'), ('mem', 'int'), ('status', 'str') ]
             for key, value_type in extra_keys:
-                if data.has_key(key):
+                if key in data:
                     value = data[key]
 
                     if value_type == 'int':
@@ -530,7 +535,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
                     extra.update({key: value})
 
-            if data.has_key('vnc:ip') and data.has_key('vnc:password'):
+            if 'vnc:ip' in data and 'vnc:password' in data:
                 extra.update({'vnc_ip': data['vnc:ip'], 'vnc_password': data['vnc:password']})
 
             node = Node(id = data['server'], name = data['name'], state =  state,

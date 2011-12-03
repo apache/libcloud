@@ -19,6 +19,8 @@ Voxel VoxCloud driver
 import datetime
 import hashlib
 
+from libcloud.py3 import b
+
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
@@ -77,24 +79,21 @@ class VoxelConnection(ConnectionUserAndKey):
     responseCls = VoxelResponse
 
     def add_default_params(self, params):
+        params = dict([(k, v) for k, v in params.items() if v is not None])
         params["key"] = self.user_id
         params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
 
-        for param in params.keys():
-            if params[param] is None:
-                del params[param]
-
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
 
         md5 = hashlib.md5()
-        md5.update(self.key)
+        md5.update(b(self.key))
         for key in keys:
             if params[key]:
                 if not params[key] is None:
-                    md5.update("%s%s"% (key, params[key]))
+                    md5.update(b("%s%s"% (key, params[key])))
                 else:
-                    md5.update(key)
+                    md5.update(b(key))
         params['api_sig'] = md5.hexdigest()
         return params
 

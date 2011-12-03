@@ -17,7 +17,9 @@ Opsource Driver
 """
 from xml.etree import ElementTree as ET
 from base64 import b64encode
-import httplib
+
+from libcloud.py3 import httplib
+from libcloud.py3 import b
 
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
@@ -133,8 +135,8 @@ class OpsourceConnection(ConnectionUserAndKey):
     responseCls = OpsourceResponse
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = ('Basic %s' % b64encode('%s:%s' %
-                                                (self.user_id, self.key)))
+        headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
+                                                (self.user_id, self.key))))
         return headers
 
     def request(self, action, params=None, data='',
@@ -316,7 +318,7 @@ class OpsourceNodeDriver(NodeDriver):
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
         #      because opsource allows multiple nodes to have the same name
-        return filter(lambda x: x.name == name, self.list_nodes())[-1]
+        return list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
 
     def destroy_node(self, node):
         body = self.connection.request_with_orgId('server/%s?delete' %
@@ -458,7 +460,7 @@ class OpsourceNodeDriver(NodeDriver):
     def ex_get_location_by_id(self, id):
         location = None
         if id is not None:
-            location = filter(lambda x: x.id == id, self.list_locations())[0]
+            location = list(filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
 
     def _to_networks(self, object):
