@@ -259,7 +259,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Return a list of available node sizes.
         """
         sizes = []
-        for key, value in INSTANCE_TYPES.iteritems():
+        for key, value in INSTANCE_TYPES.items():
             size = CloudSigmaNodeSize(id = value['id'], name = value['name'],
                                       cpu = value['cpu'], ram = value['memory'],
                                       disk = value['disk'], bandwidth = value['bandwidth'],
@@ -374,7 +374,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         node = self._get_node_info(node)
 
         drive_uuids = []
-        for key, value in node.iteritems():
+        for key, value in node.items():
             if (key.startswith('ide:') or key.startswith('scsi') or key.startswith('block')) and \
                not (key.endswith(':bytes') or key.endswith(':requests') or key.endswith('media')):
                 drive_uuids.append(value)

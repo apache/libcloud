@@ -81,7 +81,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         extension_header_values = {}
 
         headers_copy = copy.deepcopy(headers)
-        for key, value in headers_copy.iteritems():
+        for key, value in headers_copy.items():
             if key.lower() in special_header_keys:
                 if key.lower() == 'date':
                     value = value.strip()

@@ -114,7 +114,7 @@ class S3Connection(ConnectionUserAndKey):
         amz_header_values = {}
 
         headers_copy = copy.deepcopy(headers)
-        for key, value in headers_copy.iteritems():
+        for key, value in headers_copy.items():
             if key.lower() in special_header_keys:
                 special_header_values[key.lower()] = value.lower().strip()
             elif key.lower().startswith('x-amz-'):
@@ -375,7 +375,7 @@ class S3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
 
         if meta_data:
-            for key, value in meta_data.iteritems():
+            for key, value in meta_data.items():
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
 
