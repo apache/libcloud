@@ -21,6 +21,12 @@ try:
 except ImportError:
     import json
 
+from libcloud.py3 import PY3
+
+if PY3:
+    from io import FileIO as file
+
+
 from libcloud.utils import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.common.base import Response, RawResponse
