@@ -43,6 +43,7 @@ if sys.version_info <= (2, 4):
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
+
 def read_version_string():
     version = None
     sys.path.insert(0, pjoin(os.getcwd()))
@@ -50,6 +51,7 @@ def read_version_string():
     version = __version__
     sys.path.pop(0)
     return version
+
 
 class TestCommand(Command):
     description = "run test suite"
@@ -118,7 +120,7 @@ class TestCommand(Command):
         for test_module in DOC_TEST_MODULES:
             tests.addTests(doctest.DocTestSuite(test_module))
 
-        t = TextTestRunner(verbosity = 2)
+        t = TextTestRunner(verbosity=2)
         res = t.run(tests)
         return not res.wasSuccessful()
 
@@ -169,6 +171,7 @@ class ApiDocsCommand(Command):
             ' --project-url="%s"'
             % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR)
         )
+
 
 class CoverageCommand(Command):
     description = "run test suite and generate coverage report"
