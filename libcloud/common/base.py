@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import ssl
 import time
 
@@ -488,10 +489,9 @@ class Connection(object):
             else:
                 self.connection.request(method=method, url=url, body=data,
                                         headers=headers)
-        #except ssl.SSLError, e:
         except ssl.SSLError:
-            raise ssl.SSLError()
-            #raise ssl.SSLError(str(e))
+            e = sys.exc_info()[1]
+            raise ssl.SSLError(str(e))
 
         if raw:
             response = self.rawResponseCls(connection=self)

@@ -17,6 +17,7 @@
 Provides base classes for working with drivers
 """
 
+import sys
 import time
 import hashlib
 import os
@@ -564,9 +565,8 @@ class NodeDriver(BaseDriver):
                                         ssh_client=ssh_client,
                                         max_tries=3)
         except Exception:
-        #except Exception, e:
-            #raise DeploymentError(node, e)
-            raise DeploymentError(node, None)
+            e = sys.exc_info()[1]
+            raise DeploymentError(node, e)
         return node
 
     def _wait_until_running(self, node, wait_period=3, timeout=600):
