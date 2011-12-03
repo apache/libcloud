@@ -57,7 +57,8 @@ class ElasticStackTestCase(object):
         self.mockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -75,7 +76,8 @@ class ElasticStackTestCase(object):
         self.mockHttp.type = 'PARSE_ERROR'
         try:
             self.driver.list_nodes()
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertTrue(str(e).find('X-Elastic-Error') != -1)
         else:
             self.fail('test should have thrown')
