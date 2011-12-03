@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import time
-import httplib
-import urllib
+from libcloud.py3 import httplib
+from libcloud.py3 import urllib
 import copy
 import base64
 import hmac

@@ -20,7 +20,7 @@ __all__ = [
 
 import copy
 import base64
-import httplib
+from libcloud.py3 import httplib
 
 from xml.etree import ElementTree as ET
 
