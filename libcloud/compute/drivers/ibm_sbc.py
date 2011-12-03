@@ -17,6 +17,7 @@ Driver for the IBM Developer Cloud.
 """
 import base64, urllib
 
+from libcloud.py3 import urlencode
 from libcloud.py3 import b
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
@@ -56,7 +57,7 @@ class IBMConnection(ConnectionUserAndKey):
         return headers
 
     def encode_data(self, data):
-        return urllib.urlencode(data)
+        return urlencode(data)
 
 class IBMNodeDriver(NodeDriver):
     """

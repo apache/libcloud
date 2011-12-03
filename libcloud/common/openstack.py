@@ -19,7 +19,6 @@ Common utilities for OpenStack
 import sys
 
 from libcloud.py3 import httplib
-from libcloud.py3 import urllib2
 from libcloud.py3 import urlparse
 
 from libcloud.common.base import ConnectionUserAndKey, Response
