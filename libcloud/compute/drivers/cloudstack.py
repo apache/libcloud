@@ -162,7 +162,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 id=vm['id'],
                 name=vm.get('displayname', None),
                 state=self.NODE_STATE_MAP[vm['state']],
-                public_ips=list(public_ips.get(vm['id'], {})).keys(),
+                public_ips=public_ips.get(vm['id'], {}).keys(),
                 private_ips=private_ips,
                 driver=self,
                 extra={
