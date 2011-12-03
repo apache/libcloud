@@ -20,9 +20,11 @@ import time
 import base64
 import os
 import socket
+import binascii
 
 from libcloud.py3 import httplib
 from libcloud.py3 import b
+from libcloud.py3 import u
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -99,7 +101,7 @@ class ECPConnection(ConnectionUserAndKey):
         #use a random boundary that does not appear in the fields
         boundary = ''
         while boundary in ''.join(fields):
-            boundary = os.urandom(16).encode('hex')
+            boundary = u(binascii.hexlify(os.urandom(16)))
         L = []
         for i in fields:
             L.append('--' + boundary)
