@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from xml.etree import ElementTree as ET
 
@@ -46,7 +46,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         SlicehostMockHttp.type = 'UNAUTHORIZED'
         try:
             ret = self.driver.list_nodes()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.value, 'HTTP Basic: Access denied.')
         else:
             self.fail('test should have thrown')
@@ -77,7 +78,8 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         SlicehostMockHttp.type = 'FORBIDDEN'
         try:
             ret = self.driver.reboot_node(node)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertEqual(e.args[0], 'Permission denied')
         else:
             self.fail('test should have thrown')
@@ -114,7 +116,7 @@ class SlicehostMockHttp(MockHttp):
             # the correct validation logic
             if not (name and image_id and flavor_id) \
                 or tree.tag != 'slice' \
-                or not headers.has_key('Content-Type')  \
+                or not 'Content-Type' in headers  \
                 or headers['Content-Type'] != 'application/xml':
 
                 err_body = self.fixtures.load('slices_error.xml')

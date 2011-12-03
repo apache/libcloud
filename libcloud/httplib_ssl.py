@@ -16,7 +16,6 @@
 Subclass for httplib.HTTPSConnection with optional certificate name
 verification, depending on libcloud.security settings.
 """
-import httplib
 import os
 import re
 import socket
@@ -24,6 +23,7 @@ import ssl
 import warnings
 
 import libcloud.security
+from libcloud.py3 import httplib
 
 class LibcloudHTTPSConnection(httplib.HTTPSConnection):
     """LibcloudHTTPSConnection

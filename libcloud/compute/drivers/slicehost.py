@@ -21,6 +21,8 @@ import socket
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
+from libcloud.py3 import b
+
 from libcloud.common.base import ConnectionKey, XmlResponse
 from libcloud.compute.types import NodeState, Provider, InvalidCredsError
 from libcloud.compute.base import NodeSize, NodeDriver, NodeImage, NodeLocation
@@ -50,7 +52,7 @@ class SlicehostConnection(ConnectionKey):
 
     def add_default_headers(self, headers):
         headers['Authorization'] = ('Basic %s'
-                              % (base64.b64encode('%s:' % self.key)))
+                              % (base64.b64encode(b('%s:' % self.key))))
         return headers
 
 
@@ -191,7 +193,7 @@ class SlicehostNodeDriver(NodeDriver):
         # for consistency with other drivers, we put this in two places.
         node_attrs['password'] = node_attrs['root-password']
         extra = {}
-        for k in node_attrs.keys():
+        for k in list(node_attrs.keys()):
             ek = k.replace("-", "_")
             extra[ek] = node_attrs[k]
         n = Node(id=element.findtext('id'),

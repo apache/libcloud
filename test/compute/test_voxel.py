@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.base import Node, NodeSize, NodeImage, NodeLocation
 from libcloud.compute.drivers.voxel import VoxelNodeDriver as Voxel
@@ -37,7 +37,8 @@ class VoxelTest(unittest.TestCase):
         VoxelMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')

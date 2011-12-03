@@ -13,15 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
-import urllib
-import StringIO
+import sys
 import ssl
 import time
 
 from xml.etree import ElementTree as ET
 from pipes import quote as pquote
-import urlparse
 
 try:
     import simplejson as json
@@ -29,10 +26,19 @@ except:
     import json
 
 import libcloud
+
+from libcloud.py3 import urllib
+from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
+from libcloud.py3 import urlencode
+from libcloud.py3 import StringIO
+from libcloud.py3 import u
+
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
-from httplib import HTTPConnection as LibcloudHTTPConnection
+
+LibcloudHTTPConnection = httplib.HTTPConnection
 
 class Response(object):
     """
@@ -463,7 +469,7 @@ class Connection(object):
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urllib.urlencode(params)))
+            url = '?'.join((action, urlencode(params)))
         else:
             url = action
 
@@ -476,14 +482,15 @@ class Connection(object):
             if raw:
                 self.connection.putrequest(method, url)
 
-                for key, value in headers.iteritems():
+                for key, value in headers.items():
                     self.connection.putheader(key, str(value))
 
                 self.connection.endheaders()
             else:
                 self.connection.request(method=method, url=url, body=data,
                                         headers=headers)
-        except ssl.SSLError, e:
+        except ssl.SSLError:
+            e = sys.exc_info()[1]
             raise ssl.SSLError(str(e))
 
         if raw:

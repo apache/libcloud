@@ -23,8 +23,11 @@ Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/inde
 """
 
 import copy
-import urllib
+from libcloud.py3 import urllib
 import base64
+
+from libcloud.py3 import urlencode
+from libcloud.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.providers import Provider
@@ -112,7 +115,7 @@ class BlueboxConnection(ConnectionUserAndKey):
     responseCls = BlueboxResponse
 
     def add_default_headers(self, headers):
-        user_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (user_b64)
         return headers
 
@@ -132,7 +135,7 @@ class BlueboxNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, values in BLUEBOX_INSTANCE_TYPES.iteritems():
+        for key, values in BLUEBOX_INSTANCE_TYPES.items():
             attributes = copy.deepcopy(values)
             attributes.update({ 'price': self._get_size_price(size_id=key) })
             sizes.append(BlueboxNodeSize(driver=self.connection.driver,
@@ -183,7 +186,7 @@ class BlueboxNodeDriver(NodeDriver):
         if not ssh and not password:
             raise Exception("SSH public key or password required.")
 
-        params = urllib.urlencode(data)
+        params = urlencode(data)
         result = self.connection.request('/api/blocks.json', headers=headers, data=params, method='POST')
         node = self._to_node(result.object)
         return node

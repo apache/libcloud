@@ -20,10 +20,13 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
-import httplib
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
+
+from libcloud.py3 import httplib
+from libcloud.py3 import next
+from libcloud.py3 import b
 
 from libcloud import utils
 from libcloud.common.types import LibcloudError
@@ -466,7 +469,7 @@ class StorageDriver(BaseDriver):
         stream = utils.read_in_chunks(response, chunk_size)
 
         try:
-            data_read = stream.next()
+            data_read = next(stream)
         except StopIteration:
             # Empty response?
             return False
@@ -475,11 +478,11 @@ class StorageDriver(BaseDriver):
 
         with open(file_path, 'wb') as file_handle:
             while len(data_read) > 0:
-                file_handle.write(data_read)
+                file_handle.write(b(data_read))
                 bytes_transferred += len(data_read)
 
                 try:
-                    data_read = stream.next()
+                    data_read = next(stream)
                 except StopIteration:
                     data_read = ''
 
@@ -505,9 +508,10 @@ class StorageDriver(BaseDriver):
         headers = headers or {}
 
         if file_path and not os.path.exists(file_path):
-          raise OSError('File %s does not exist' % (file_path))
+            raise OSError('File %s does not exist' % (file_path))
 
-        if iterator is not None and not hasattr(iterator, 'next'):
+        if iterator is not None and not hasattr(iterator, 'next') and not \
+           hasattr(iterator, '__next__'):
             raise AttributeError('iterator object must implement next() ' +
                                  'method.')
 
@@ -584,7 +588,7 @@ class StorageDriver(BaseDriver):
 
         if calculate_hash:
             data_hash = self._get_hash_function()
-            data_hash.update(data)
+            data_hash.update(b(data))
 
         try:
             response.connection.connection.send(data)
@@ -639,7 +643,7 @@ class StorageDriver(BaseDriver):
 
         bytes_transferred = 0
         try:
-            chunk = generator.next()
+            chunk = next(generator)
         except StopIteration:
             # Special case when StopIteration is thrown on the first iteration -
             # create a 0-byte long object
@@ -670,10 +674,10 @@ class StorageDriver(BaseDriver):
 
             bytes_transferred += len(chunk)
             if calculate_hash:
-                data_hash.update(chunk)
+                data_hash.update(b(chunk))
 
             try:
-                chunk = generator.next()
+                chunk = next(generator)
             except StopIteration:
                 chunk = ''
 

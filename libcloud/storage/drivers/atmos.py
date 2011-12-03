@@ -13,15 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import base64
 import hashlib
 import hmac
-import httplib
 import time
-import urllib
-import urlparse
 
-from xml.etree import ElementTree
+from libcloud.py3 import PY3
+from libcloud.py3 import httplib
+from libcloud.py3 import urllib
+from libcloud.py3 import urlparse
+from libcloud.py3 import urlencode
+from libcloud.py3 import next
+from libcloud.py3 import b
+
+if PY3:
+    from io import FileIO as file
 
 from libcloud import utils
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
@@ -84,7 +91,7 @@ class AtmosConnection(ConnectionUserAndKey):
         if params:
             if type(params) is dict:
                 params = params.items()
-            pathstring += '?' + urllib.urlencode(params)
+            pathstring += '?' + urlencode(params)
         pathstring = pathstring.lower()
 
         xhdrs = [(k, v) for k, v in headers.items() if k.startswith('x-emc-')]
@@ -100,8 +107,8 @@ class AtmosConnection(ConnectionUserAndKey):
         signature.extend([k + ':' + collapse(v) for k, v in xhdrs])
         signature = '\n'.join(signature)
         key = base64.b64decode(self.key)
-        signature = hmac.new(key, signature, hashlib.sha1).digest()
-        return base64.b64encode(signature)
+        signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
+        return base64.b64encode(b(signature))
 
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
@@ -132,7 +139,8 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name + '/?metadata/system')
         try:
             result = self.connection.request(path)
-        except AtmosError, e:
+        except AtmosError:
+            e = sys.exc_info()[1]
             if e.code != 1003:
                 raise
             raise ContainerDoesNotExistError(e, self, container_name)
@@ -146,7 +154,8 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name + '/')
         try:
             result = self.connection.request(path, method='POST')
-        except AtmosError, e:
+        except AtmosError:
+            e = sys.exc_info()[1]
             if e.code != 1016:
                 raise
             raise ContainerAlreadyExistsError(e, self, container_name)
@@ -156,7 +165,8 @@ class AtmosDriver(StorageDriver):
         try:
             self.connection.request(self._namespace_path(container.name + '/'),
                                     method='DELETE')
-        except AtmosError, e:
+        except AtmosError:
+            e = sys.exc_info()[1]
             if e.code == 1003:
                 raise ContainerDoesNotExistError(e, self, container.name)
             elif e.code == 1023:
@@ -174,7 +184,8 @@ class AtmosDriver(StorageDriver):
 
             result = self.connection.request(path + '?metadata/user')
             user_meta = self._emc_meta(result)
-        except AtmosError, e:
+        except AtmosError:
+            e = sys.exc_info()[1]
             if e.code != 1003:
                 raise
             raise ObjectDoesNotExistError(e, self, object_name)
@@ -204,7 +215,8 @@ class AtmosDriver(StorageDriver):
 
         try:
             self.connection.request(request_path + '?metadata/system')
-        except AtmosError, e:
+        except AtmosError:
+            e = sys.exc_info()[1]
             if e.code != 1003:
                 raise
             method = 'POST'
@@ -248,7 +260,7 @@ class AtmosDriver(StorageDriver):
         generator = utils.read_in_chunks(iterator, CHUNK_SIZE, True)
         bytes_transferred = 0
         try:
-            chunk = generator.next()
+            chunk = next(generator)
         except StopIteration:
             chunk = ''
 
@@ -256,7 +268,7 @@ class AtmosDriver(StorageDriver):
 
         while True:
             end = bytes_transferred + len(chunk) - 1
-            data_hash.update(chunk)
+            data_hash.update(b(chunk))
             headers = {
                 'x-emc-meta': 'md5=' + data_hash.hexdigest(),
             }
@@ -267,7 +279,7 @@ class AtmosDriver(StorageDriver):
             bytes_transferred += len(chunk)
 
             try:
-                chunk = generator.next()
+                chunk = next(generator)
             except StopIteration:
                 break
             if len(chunk) == 0:
@@ -327,7 +339,8 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(obj.container.name + '/' + obj.name)
         try:
             self.connection.request(path, method='DELETE')
-        except AtmosError, e:
+        except AtmosError:
+            e = sys.exc_info()[1]
             if e.code != 1003:
                 raise
             raise ObjectDoesNotExistError(e, self, obj.name)
@@ -358,7 +371,7 @@ class AtmosDriver(StorageDriver):
         ]
         params.append(('signature', self._cdn_signature(path, params)))
 
-        params = urllib.urlencode(params)
+        params = urlencode(params)
         path = self.path + path
         return urlparse.urlunparse((protocol, self.host, path, '', params, ''))
 

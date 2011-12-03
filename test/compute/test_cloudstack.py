@@ -1,7 +1,8 @@
-import httplib
 import sys
 import unittest
-import urlparse
+
+from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
 
 try:
     import simplejson as json

@@ -15,7 +15,7 @@
 
 import sys
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.cloudsigma import CloudSigmaZrhNodeDriver
@@ -88,8 +88,8 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
     def test_ex_static_ip_create(self):
         result = self.driver.ex_static_ip_create()
         self.assertEqual(len(result), 2)
-        self.assertEqual(len(result[0].keys()), 6)
-        self.assertEqual(len(result[1].keys()), 6)
+        self.assertEqual(len(list(result[0].keys())), 6)
+        self.assertEqual(len(list(result[1].keys())), 6)
 
     def test_ex_static_ip_destroy(self):
         result = self.driver.ex_static_ip_destroy('1.2.3.4')

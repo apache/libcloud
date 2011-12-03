@@ -16,6 +16,8 @@
 OpenStack driver
 """
 
+import binascii
+
 try:
     import simplejson as json
 except ImportError:
@@ -24,7 +26,11 @@ except ImportError:
 import os
 
 import warnings
-import httplib
+
+from libcloud.py3 import httplib
+from libcloud.py3 import b
+from libcloud.py3 import next
+
 import base64
 
 from xml.etree import ElementTree as ET
@@ -125,7 +131,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             headers = {'Content-Type': self.default_content_type}
 
         if method == "GET":
-            params['cache-busting'] = os.urandom(8).encode('hex')
+            params['cache-busting'] = binascii.hexlify(os.urandom(8))
 
         return super(OpenStackComputeConnection, self).request(
             action=action,
@@ -562,7 +568,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             file_elm = ET.SubElement(personality_elm,
                                      'file',
                                      {'path': str(k)})
-            file_elm.text = base64.b64encode(v)
+            file_elm.text = base64.b64encode(b(v))
 
         return personality_elm
 
@@ -872,7 +878,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         rv = []
 
         for k, v in files.items():
-            rv.append({'path': k, 'contents': base64.b64encode(v)})
+            rv.append({'path': k, 'contents': base64.b64encode(b(v))})
 
         return rv
 
@@ -1033,8 +1039,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
                 imageId=api_node['image']['id'],
                 flavorId=api_node['flavor']['id'],
-                uri=(link['href'] for link in api_node['links'] if
-                     link['rel'] == 'self').next(),
+                uri=next(link['href'] for link in api_node['links'] if
+                     link['rel'] == 'self'),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass'),
             ),

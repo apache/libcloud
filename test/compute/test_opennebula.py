@@ -23,8 +23,9 @@ OpenNebula.org test suite.
 __docformat__ = 'epytext'
 
 import unittest
-import httplib
 import sys
+
+from libcloud.py3 import httplib
 
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeState
 from libcloud.compute.drivers.opennebula import *

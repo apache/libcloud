@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
 import random
 import unittest
 
-from cStringIO import StringIO
-from urllib2 import urlparse
 from cgi import parse_qs
+
+from libcloud.py3 import httplib
+from libcloud.py3 import StringIO
+from libcloud.py3 import urlparse
+from libcloud.py3 import u
+
 
 XML_HEADERS = {'content-type': 'application/xml'}
 
@@ -75,7 +78,7 @@ class MockResponse(object):
 
     def __init__(self, status, body, headers=None, reason=None):
         self.status = status
-        self.body = StringIO(body)
+        self.body = StringIO(u(body))
         self.headers = headers or self.headers
         self.reason = reason or self.reason
 
@@ -239,6 +242,9 @@ class MockRawResponse(BaseMockHttpObject):
         value = self._data[self._current_item]
         self._current_item += 1
         return value
+
+    def __next__(self):
+        return self.next()
 
     def _generate_random_data(self, size):
         data = []
