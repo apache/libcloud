@@ -58,8 +58,8 @@ class BrightboxConnection(ConnectionUserAndKey):
     def _fetch_oauth_token(self):
         body = json.dumps({'client_id': self.user_id, 'grant_type': 'none'})
 
-        authorization = 'Basic ' + base64.encodestring(b('%s:%s' %
-                                        (self.user_id, self.key))).rstrip()
+        authorization = 'Basic ' + str(base64.encodestring(b('%s:%s' %
+                                        (self.user_id, self.key)))).rstrip()
 
         self.connect()
 
@@ -78,7 +78,7 @@ class BrightboxConnection(ConnectionUserAndKey):
         else:
             message = '%s (%s)' % (json.loads(response.read())['error'], response.status)
 
-            raise InvalidCredsError, message
+            raise InvalidCredsError(message)
 
     def add_default_headers(self, headers):
         try:
@@ -117,8 +117,10 @@ class BrightboxNodeDriver(NodeDriver):
             id = data['id'],
             name = data['name'],
             state = self.NODE_STATE_MAP[data['status']],
-            public_ips = map(lambda cloud_ip: cloud_ip['public_ip'], data['cloud_ips']),
-            private_ips = map(lambda interface: interface['ipv4_address'], data['interfaces']),
+            public_ips = list(map(lambda cloud_ip: cloud_ip['public_ip'],
+                                                   data['cloud_ips'])),
+            private_ips = list(map(lambda interface: interface['ipv4_address'],
+                                                     data['interfaces'])),
             driver = self.connection.driver,
             extra = {
                 'status': data['status'],
@@ -186,22 +188,22 @@ class BrightboxNodeDriver(NodeDriver):
     def list_nodes(self):
         data = self.connection.request('/%s/servers' % API_VERSION).object
 
-        return map(self._to_node, data)
+        return list(map(self._to_node, data))
 
     def list_images(self):
         data = self.connection.request('/%s/images' % API_VERSION).object
 
-        return map(self._to_image, data)
+        return list(map(self._to_image, data))
 
     def list_sizes(self):
         data = self.connection.request('/%s/server_types' % API_VERSION).object
 
-        return map(self._to_size, data)
+        return list(map(self._to_size, data))
 
     def list_locations(self):
         data = self.connection.request('/%s/zones' % API_VERSION).object
 
-        return map(self._to_location, data)
+        return list(map(self._to_location, data))
 
     def ex_list_cloud_ips(self):
         return self.connection.request('/%s/cloud_ips' % API_VERSION).object
