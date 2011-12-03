@@ -17,6 +17,9 @@
 Provides generic deployment steps for machines post boot.
 """
 import os
+import binascii
+
+from libcloud.py3 import basestring
 
 class Deployment(object):
     """
@@ -35,8 +38,8 @@ class Deployment(object):
 
         @return: L{Node}
         """
-        raise NotImplementedError, \
-            'run not implemented for this deployment'
+        raise NotImplementedError(
+            'run not implemented for this deployment')
 
     def _get_string_value(self, argument_name, argument_value):
         if not isinstance(argument_value, basestring) and \
@@ -98,7 +101,7 @@ class ScriptDeployment(Deployment):
         self.delete = delete
         self.name = name
         if self.name is None:
-            self.name = "/root/deployment_%s.sh" % (os.urandom(4).encode('hex'))
+            self.name = "/root/deployment_%s.sh" % (binascii.hexlify(os.urandom(4)))
 
     def run(self, node, client):
         """
@@ -106,7 +109,8 @@ class ScriptDeployment(Deployment):
 
         See also L{Deployment.run}
         """
-        client.put(path=self.name, chmod=0755, contents=self.script)
+
+        client.put(path=self.name, chmod=int('755', 8), contents=self.script)
         self.stdout, self.stderr, self.exit_status = client.run(self.name)
         if self.delete:
             client.delete(self.name)

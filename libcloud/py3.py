@@ -31,6 +31,8 @@ if sys.version_info >= (3, 0):
     urllib.quote = urlparse.quote
     urllib.urlencode = urlparse.urlencode
 
+    basestring = str
+
     # Taken from django.utils.py3
     bytes = __builtins__['bytes']
     def b(s):
@@ -53,6 +55,8 @@ else:
     import urllib
     import urllib2
     import urlparse
+
+    basestring = unicode = str
 
     # Taken from django.utils.py3
     b = bytes = str

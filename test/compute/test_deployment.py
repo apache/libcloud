@@ -17,7 +17,9 @@
 import sys
 import time
 import unittest
+
 from libcloud.py3 import httplib
+from libcloud.py3 import u
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
@@ -99,11 +101,11 @@ class DeploymentTests(unittest.TestCase):
                 return 'bar'
 
         ScriptDeployment(script='foobar')
-        ScriptDeployment(script=unicode('foobar'))
+        ScriptDeployment(script=u('foobar'))
         ScriptDeployment(script=FileObject('test'))
 
         SSHKeyDeployment(key='foobar')
-        SSHKeyDeployment(key=unicode('foobar'))
+        SSHKeyDeployment(key=u('foobar'))
         SSHKeyDeployment(key=FileObject('test'))
 
         try:
@@ -137,7 +139,8 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver._wait_until_running(node=self.node, wait_period=0.5,
                                             timeout=1)
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Timed out') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -149,7 +152,8 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver._wait_until_running(node=self.node, wait_period=0.5,
                                             timeout=1)
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.value.find('is missing from list_nodes') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -160,7 +164,8 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver._wait_until_running(node=self.node, wait_period=0.5,
                                             timeout=1)
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.value.find('multiple nodes have same UUID') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -182,7 +187,8 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver._ssh_client_connect(ssh_client=mock_ssh_client,
                                             timeout=1)
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Giving up') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -208,7 +214,8 @@ class DeploymentTests(unittest.TestCase):
                                                node=self.node,
                                                ssh_client=ssh_client,
                                                max_tries=2)
-        except LibcloudError, e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Failed after 2 tries') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -239,7 +246,8 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.deploy_node(deploy=deploy)
-        except DeploymentError, e:
+        except DeploymentError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.node.id, self.node.id)
         else:
             self.fail('Exception was not thrown')
@@ -258,7 +266,8 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.deploy_node(deploy=deploy)
-        except DeploymentError, e:
+        except DeploymentError:
+            e = sys.exc_info()[1]
             self.assertTrue(e.node.id, self.node.id)
         else:
             self.fail('Exception was not thrown')
@@ -309,7 +318,8 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.deploy_node(deploy=Mock())
-        except RuntimeError, e:
+        except RuntimeError:
+            e = sys.exc_info()[1]
             self.assertTrue(str(e).find('paramiko is not installed') != -1)
         else:
             self.fail('Exception was not thrown')

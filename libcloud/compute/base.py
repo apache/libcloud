@@ -22,6 +22,7 @@ import hashlib
 import os
 import socket
 import struct
+import binascii
 
 from libcloud.py3 import b
 
@@ -527,7 +528,7 @@ class NodeDriver(BaseDriver):
                     'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
-                kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
+                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(os.urandom(16)))
 
             if 'ssh_key' not in kwargs:
                 password = kwargs['auth'].password
@@ -590,7 +591,7 @@ class NodeDriver(BaseDriver):
 
         while time.time() < end:
             nodes = self.list_nodes()
-            nodes = filter(lambda n: n.uuid == node.uuid, nodes)
+            nodes = list(filter(lambda n: n.uuid == node.uuid, nodes))
 
             if len(nodes) == 0:
                 raise LibcloudError(value=('Booted node[%s] ' % node

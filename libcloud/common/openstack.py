@@ -16,8 +16,10 @@
 """
 Common utilities for OpenStack
 """
-import httplib
-from urllib2 import urlparse
+from libcloud.py3 import httplib
+from libcloud.py3 import urllib2
+from libcloud.py3 import urlparse
+
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import LibcloudError, InvalidCredsError, MalformedResponseError
 
@@ -147,12 +149,14 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         else:
             try:
                 body = json.loads(resp.body)
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)
             try:
                 self.auth_token = body['auth']['token']['id']
                 self.urls = body['auth']['serviceCatalog']
-            except KeyError, e:
+            except KeyError:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
     def authenticate_2_0_with_apikey(self):
@@ -181,7 +185,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         else:
             try:
                 body = json.loads(resp.body)
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
@@ -189,7 +194,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 token = access['token']
                 self.auth_token = token['id']
                 self.urls = access['serviceCatalog']
-            except KeyError, e:
+            except KeyError:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
