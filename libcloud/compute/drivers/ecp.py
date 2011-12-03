@@ -18,7 +18,7 @@ Enomaly ECP driver
 """
 import time
 import base64
-import httplib
+from libcloud.py3 import httplib
 import socket
 import os
 

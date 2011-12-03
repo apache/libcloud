@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.opsource import OpsourceNodeDriver as Opsource

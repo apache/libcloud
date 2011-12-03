@@ -24,7 +24,7 @@ except ImportError:
 import os
 
 import warnings
-import httplib
+from libcloud.py3 import httplib
 import base64
 
 from xml.etree import ElementTree as ET

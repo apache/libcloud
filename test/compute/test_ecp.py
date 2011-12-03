@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+from libcloud.py3 import httplib
 
 from libcloud.compute.drivers.ecp import ECPNodeDriver
 from libcloud.compute.types import NodeState

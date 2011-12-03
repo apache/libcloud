@@ -21,7 +21,7 @@ http://www.elasticstack.com.
 import re
 import time
 import base64
-import httplib
+from libcloud.py3 import httplib
 
 try:
     import simplejson as json
