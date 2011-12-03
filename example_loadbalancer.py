@@ -29,7 +29,7 @@ def main():
 
     balancers = driver.list_balancers()
 
-    print balancers
+    print(balancers)
 
     # creating a balancer which balances traffic across two
     # nodes: 192.168.86.1:80 and 192.168.86.2:8080. Balancer
@@ -43,7 +43,7 @@ def main():
                      Member(None, '192.168.86.2', 8080))
             )
 
-    print new_balancer
+    print(new_balancer)
 
     # wait for balancer to become ready
     # NOTE: in real life code add timeout to not end up in
@@ -54,12 +54,12 @@ def main():
         if balancer.state == State.RUNNING:
             break
 
-        print "sleeping for 30 seconds for balancers to become ready"
+        print('sleeping for 30 seconds for balancers to become ready')
         time.sleep(30)
 
     # fetch list of members
     members = balancer.list_members()
-    print members
+    print(members)
 
     # remove first member
     balancer.detach_member(members[0])
