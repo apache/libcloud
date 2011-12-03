@@ -20,7 +20,9 @@ __all__ = [
 
 import copy
 import base64
+
 from libcloud.py3 import httplib
+from libcloud.py3 import b
 
 from xml.etree import ElementTree as ET
 
@@ -114,7 +116,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
     responseCls = ZerigoDNSResponse
 
     def add_default_headers(self, headers):
-        auth_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        auth_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (auth_b64)
         return headers
 
