@@ -15,7 +15,10 @@
 
 # Libcloud Python 2.x and 3.x compatibility layer
 
+from __future__ import absolute_import
+
 import sys
+import types
 
 PY3 = False
 PY25 = False
@@ -33,6 +36,9 @@ if sys.version_info >= (3, 0):
     urllib.urlencode = urlparse.urlencode
 
     basestring = str
+
+    def method_type(callable, instance, klass):
+        return types.MethodType(callable, instance or klass())
 
     # Taken from django.utils.py3
     bytes = __builtins__['bytes']
@@ -59,6 +65,8 @@ else:
     import xmlrpclib
 
     basestring = unicode = str
+
+    method_type = types.MethodType
 
     # Taken from django.utils.py3
     b = bytes = str
