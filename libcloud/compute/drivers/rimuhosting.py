@@ -59,11 +59,12 @@ class RimuHostingResponse(JsonResponse):
     def parse_body(self):
         try:
             js = super(RimuHostingResponse, self).parse_body()
-            if js[js.keys()[0]]['response_type'] == "ERROR":
+            keys = list(js.keys())
+            if js[keys[0]]['response_type'] == "ERROR":
                 raise RimuHostingException(
-                    js[js.keys()[0]]['human_readable_message']
+                    js[keys[0]]['human_readable_message']
                 )
-            return js[js.keys()[0]]
+            return js[keys[0]]
         except KeyError:
             raise RimuHostingException('Could not parse body: %s'
                                        % (self.body))
