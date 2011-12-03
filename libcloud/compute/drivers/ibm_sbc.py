@@ -17,6 +17,8 @@ Driver for the IBM Developer Cloud.
 """
 import base64, urllib
 
+from libcloud.py3 import b
+
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState, Provider
@@ -47,7 +49,8 @@ class IBMConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'text/xml'
-        headers['Authorization'] = ('Basic %s' % (base64.b64encode('%s:%s' % (self.user_id, self.key))))
+        headers['Authorization'] = ('Basic %s' % (base64.b64encode(b('%s:%s' %
+                                                 (self.user_id, self.key)))))
         if not 'Content-Type' in headers:
             headers['Content-Type'] = 'text/xml'
         return headers

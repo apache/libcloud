@@ -25,6 +25,9 @@ import os
 
 import warnings
 from libcloud.py3 import httplib
+ffrom libcloud.py3 import b
+rom libcloud.py3 import b
+
 import base64
 
 from xml.etree import ElementTree as ET
@@ -562,7 +565,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             file_elm = ET.SubElement(personality_elm,
                                      'file',
                                      {'path': str(k)})
-            file_elm.text = base64.b64encode(v)
+            file_elm.text = base64.b64encode(b(v))
 
         return personality_elm
 
@@ -872,7 +875,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         rv = []
 
         for k, v in files.items():
-            rv.append({'path': k, 'contents': base64.b64encode(v)})
+            rv.append({'path': k, 'contents': base64.b64encode(b(v))})
 
         return rv
 

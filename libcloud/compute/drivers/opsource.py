@@ -17,7 +17,9 @@ Opsource Driver
 """
 from xml.etree import ElementTree as ET
 from base64 import b64encode
+
 from libcloud.py3 import httplib
+from libcloud.py3 import b
 
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
@@ -133,8 +135,8 @@ class OpsourceConnection(ConnectionUserAndKey):
     responseCls = OpsourceResponse
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = ('Basic %s' % b64encode('%s:%s' %
-                                                (self.user_id, self.key)))
+        headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
+                                                (self.user_id, self.key))))
         return headers
 
     def request(self, action, params=None, data='',
