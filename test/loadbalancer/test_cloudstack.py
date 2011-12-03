@@ -1,12 +1,13 @@
-import httplib
 import sys
 import unittest
-import urlparse
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
+from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
 
 try:
     parse_qsl = urlparse.parse_qsl
