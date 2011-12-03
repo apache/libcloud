@@ -218,7 +218,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, values in self._instance_types.iteritems():
+        for key, values in self._instance_types.items():
             attributes = copy.deepcopy(values)
             attributes.update({ 'price': self._get_size_price(size_id=key) })
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))

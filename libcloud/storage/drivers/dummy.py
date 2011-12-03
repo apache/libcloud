@@ -105,7 +105,7 @@ class DummyStorageDriver(StorageDriver):
         bytes_used = 0
         for container in self._containers:
             objects = self._containers[container]['objects']
-            for _, obj in objects.iteritems():
+            for _, obj in objects.items():
                 bytes_used += obj.size
 
         return { 'container_count': int(container_count),

@@ -119,7 +119,7 @@ class ElasticStackTestCase(object):
         images = self.driver.list_images()
         self.assertEqual(len(images), len(self.driver._standard_drives))
 
-        for uuid, values in self.driver._standard_drives.iteritems():
+        for uuid, values in self.driver._standard_drives.items():
             self.assertEqual(len([image for image in images if image.id == uuid]), 1)
 
     def test_reboot_node(self):

@@ -252,7 +252,7 @@ def findall(element, xpath, namespace=None):
 
 
 def reverse_dict(dictionary):
-    return dict([(value, key) for key, value in dictionary.iteritems()])
+    return dict([(value, key) for key, value in dictionary.items()])
 
 
 def get_driver(drivers, provider):

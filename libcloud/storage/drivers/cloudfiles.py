@@ -383,7 +383,7 @@ class CloudFilesStorageDriver(StorageDriver):
 
         headers = {}
         if meta_data:
-            for key, value in meta_data.iteritems():
+            for key, value in meta_data.items():
                 key = 'X-Object-Meta-%s' % (key)
                 headers[key] = value
 
@@ -492,7 +492,7 @@ class CloudFilesStorageDriver(StorageDriver):
         content_type = headers.pop('content-type', None)
 
         meta_data = {}
-        for key, value in headers.iteritems():
+        for key, value in headers.items():
             if key.find('x-object-meta-') != -1:
                 key = key.replace('x-object-meta-', '')
                 meta_data[key] = value

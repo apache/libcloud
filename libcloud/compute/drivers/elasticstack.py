@@ -182,7 +182,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     def list_images(self, location=None):
         # Returns a list of available pre-installed system drive images
         images = []
-        for key, value in self._standard_drives.iteritems():
+        for key, value in self._standard_drives.items():
             image = NodeImage(
                 id=value['uuid'],
                 name=value['description'],
@@ -197,7 +197,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, value in INSTANCE_TYPES.iteritems():
+        for key, value in INSTANCE_TYPES.items():
             size = ElasticStackNodeSize(
                 id=value['id'],
                 name=value['name'], cpu=value['cpu'], ram=value['memory'],
