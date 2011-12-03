@@ -55,7 +55,7 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
     >>> driver.load_nodes()
     >>> images = driver.load_images()
     >>> sizes = driver.load_sizes()
-    
+
     # And maybe do more than that:
     >>> node = driver.create_node(
             name='my_first_node',
