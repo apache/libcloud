@@ -17,6 +17,12 @@ import os.path
 import random
 import hashlib
 
+from libcloud.py3 import PY3
+from libcloud.py3 import b
+
+if PY3:
+    from io import FileIO as file
+
 from libcloud.common.types import LibcloudError
 
 from libcloud.storage.base import Object, Container, StorageDriver
@@ -61,9 +67,13 @@ class DummyIterator(object):
             raise StopIteration
 
         value = self._data[self._current_item]
-        self.hash.update(value)
+        self.hash.update(b(value))
         self._current_item += 1
         return value
+
+    def __next__(self):
+        return self.next()
+
 
 class DummyStorageDriver(StorageDriver):
     """
@@ -318,7 +328,7 @@ class DummyStorageDriver(StorageDriver):
         ...    iterator=DummyFileObject(5, 10), extra={})
         >>> stream = container.download_object_as_stream(obj)
         >>> stream #doctest: +ELLIPSIS
-        <closed file ..., mode '<uninitialized file>' at 0x...>
+        <...closed...>
         """
 
         return DummyFileObject()

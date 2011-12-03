@@ -14,13 +14,13 @@
 # limitations under the License.
 
 import base64
-import httplib
 import os.path
 import sys
 import unittest
-import urlparse
 
-from xml.etree import ElementTree
+from libcloud.py3 import httplib
+from libcloud.py3 import urlparse
+from libcloud.py3 import b
 
 import libcloud.utils
 
@@ -44,7 +44,7 @@ class AtmosTests(unittest.TestCase):
         AtmosMockHttp.type = None
         AtmosMockHttp.upload_created = False
         AtmosMockRawResponse.type = None
-        self.driver = AtmosDriver('dummy', base64.b64encode('dummy'))
+        self.driver = AtmosDriver('dummy', base64.b64encode(b('dummy')))
         self._remove_test_file()
 
     def tearDown(self):
@@ -342,7 +342,7 @@ class AtmosTests(unittest.TestCase):
 
     def test_signature_algorithm(self):
         test_uid = 'fredsmagicuid'
-        test_key = base64.b64encode('ssssshhhhhmysecretkey')
+        test_key = base64.b64encode(b('ssssshhhhhmysecretkey'))
         test_date = 'Mon, 04 Jul 2011 07:39:19 GMT'
         test_values = [
             ('GET', '/rest/namespace/foo', '', {},
@@ -372,7 +372,7 @@ class AtmosTests(unittest.TestCase):
             c.driver = d
             headers = c.add_default_headers(headers)
             headers['Date'] = headers['x-emc-date'] = test_date
-            self.assertEqual(c._calculate_signature({}, headers), expected)
+            self.assertEqual(c._calculate_signature({}, headers), b(expected))
 
 class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')

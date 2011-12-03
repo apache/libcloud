@@ -17,9 +17,14 @@ import os.path                          # pylint: disable-msg=W0404
 import sys
 import copy
 import unittest
-import httplib
 
 import libcloud.utils
+
+from libcloud.py3 import PY3
+from libcloud.py3 import httplib
+
+if PY3:
+    from io import FileIO as file
 
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.storage.base import Container, Object

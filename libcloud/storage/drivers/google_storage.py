@@ -14,14 +14,14 @@
 # limitations under the License.
 
 import time
-from libcloud.py3 import httplib
-from libcloud.py3 import urllib
 import copy
 import base64
 import hmac
 
 from hashlib import sha1
 from email.utils import formatdate
+
+from libcloud.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey
 
@@ -122,7 +122,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
 
         string_to_sign = '\n'.join(values_to_sign)
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha1).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
         return b64_hmac
 

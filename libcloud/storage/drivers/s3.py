@@ -14,14 +14,17 @@
 # limitations under the License.
 
 import time
-from libcloud.py3 import httplib
-from libcloud.py3 import urllib
 import copy
 import base64
 import hmac
 
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement, tostring
+
+from libcloud.py3 import PY3
+from libcloud.py3 import httplib
+from libcloud.py3 import urllib
+from libcloud.py3 import b
 
 from libcloud.utils import fixxpath, findtext, in_development_warning
 from libcloud.utils import read_in_chunks
@@ -154,7 +157,7 @@ class S3Connection(ConnectionUserAndKey):
 
         string_to_sign = '\n'.join(values_to_sign)
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha1).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
         return b64_hmac
 
@@ -214,7 +217,12 @@ class S3StorageDriver(StorageDriver):
             root = Element('CreateBucketConfiguration')
             child = SubElement(root, 'LocationConstraint')
             child.text = self.ex_location_name
-            data = tostring(root)
+
+            if PY3:
+                encoding = 'unicode'
+            else:
+                encoding = None
+            data = tostring(root, encoding=encoding)
         else:
             data = ''
 
