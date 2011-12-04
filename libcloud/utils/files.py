@@ -41,6 +41,9 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     @type fill_size: C{bool}
     @param fill_size: If True, make sure chunks are chunk_size in length
                       (except for last chunk).
+
+    TODO: At some point in the future we could use byte arrays here if version
+    >= Python 3. This should speed things up a bit and reduce memory usage.
     """
     chunk_size = chunk_size or CHUNK_SIZE
 
