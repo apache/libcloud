@@ -591,7 +591,7 @@ class StorageDriver(BaseDriver):
             data_hash.update(b(data))
 
         try:
-            response.connection.connection.send(data)
+            response.connection.connection.send(b(data))
         except Exception:
             # TODO: let this exception propagate
             # Timeout, etc.
@@ -649,11 +649,11 @@ class StorageDriver(BaseDriver):
             # create a 0-byte long object
             chunk = ''
             if chunked:
-                response.connection.connection.send('%X\r\n' %
-                                                   (len(chunk)))
+                response.connection.connection.send(b('%X\r\n' %
+                                                   (len(chunk))))
                 response.connection.connection.send(chunk)
-                response.connection.connection.send('\r\n')
-                response.connection.connection.send('0\r\n\r\n')
+                response.connection.connection.send(b('\r\n'))
+                response.connection.connection.send(b('0\r\n\r\n'))
             else:
                 response.connection.connection.send(chunk)
             return True, data_hash.hexdigest(), bytes_transferred
@@ -661,12 +661,12 @@ class StorageDriver(BaseDriver):
         while len(chunk) > 0:
             try:
                 if chunked:
-                    response.connection.connection.send('%X\r\n' %
-                                                       (len(chunk)))
-                    response.connection.connection.send(chunk)
-                    response.connection.connection.send('\r\n')
+                    response.connection.connection.send(b('%X\r\n' %
+                                                       (len(chunk))))
+                    response.connection.connection.send(b(chunk))
+                    response.connection.connection.send(b('\r\n'))
                 else:
-                    response.connection.connection.send(chunk)
+                    response.connection.connection.send(b(chunk))
             except Exception:
                 # TODO: let this exception propagate
                 # Timeout, etc.
@@ -682,7 +682,7 @@ class StorageDriver(BaseDriver):
                 chunk = ''
 
         if chunked:
-            response.connection.connection.send('0\r\n\r\n')
+            response.connection.connection.send(b('0\r\n\r\n'))
 
         if calculate_hash:
             data_hash = data_hash.hexdigest()

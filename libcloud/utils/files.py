@@ -19,6 +19,7 @@ import mimetypes
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next
+from libcloud.utils.py3 import b
 
 CHUNK_SIZE = 8096
 
@@ -50,13 +51,13 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
         get_data = next
         args = (iterator, )
 
-    data = ''
+    data = b('')
     empty = False
 
     while not empty or len(data) > 0:
         if not empty:
             try:
-                chunk = str(get_data(*args))
+                chunk = b(get_data(*args))
                 if len(chunk) > 0:
                     data += chunk
                 else:
@@ -73,7 +74,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
                 data = data[chunk_size:]
         else:
             yield data
-            data = ''
+            data = b('')
 
 
 def exhaust_iterator(iterator):
