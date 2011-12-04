@@ -14,15 +14,15 @@
 # limitations under the License.
 
 import time
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
+from libcloud.utils.misc import reverse_dict
 from libcloud.common.types import LibcloudError
-from libcloud.utils import reverse_dict
 from libcloud.common.gogrid import GoGridConnection, GoGridResponse, BaseGoGridDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM

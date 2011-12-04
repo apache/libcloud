@@ -21,7 +21,7 @@ try:
 except ImportError:
     import json
 
-from libcloud.utils import reverse_dict
+from libcloud.utils.misc import reverse_dict
 from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM

@@ -18,7 +18,7 @@ from libcloud.common.cloudstack import CloudStackConnection, \
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.loadbalancer.types import State, LibcloudLBImmutableError
-from libcloud.utils import reverse_dict
+from libcloud.utils.misc import reverse_dict
 
 class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     """Driver for CloudStack load balancers."""

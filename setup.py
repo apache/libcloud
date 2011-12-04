@@ -23,8 +23,8 @@ from glob import glob
 from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
-import libcloud.utils
-libcloud.utils.SHOW_DEPRECATION_WARNING = False
+import libcloud.utils.misc
+libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
@@ -207,6 +207,7 @@ setup(
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
     packages=[
         'libcloud',
+        'libcloud.utils',
         'libcloud.common',
         'libcloud.compute',
         'libcloud.compute.drivers',

@@ -21,13 +21,13 @@ __all__ = [
 import copy
 import base64
 
-from libcloud.py3 import httplib
-from libcloud.py3 import b
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
 
 from xml.etree import ElementTree as ET
 
-from libcloud.utils import fixxpath, findtext, findattr, findall
-from libcloud.utils import merge_valid_keys, get_new_obj
+from libcloud.utils.misc import merge_valid_keys, get_new_obj
+from libcloud.utils.xml import findtext, findall
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError, LazyList

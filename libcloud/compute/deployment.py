@@ -19,7 +19,7 @@ Provides generic deployment steps for machines post boot.
 import os
 import binascii
 
-from libcloud.py3 import basestring
+from libcloud.utils.py3 import basestring
 
 class Deployment(object):
     """

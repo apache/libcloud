@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-from libcloud.utils import merge_valid_keys, get_new_obj
+from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.linode import (API_ROOT, LinodeException,
                                     LinodeConnection, LinodeResponse,
                                     LINODE_PLAN_IDS)

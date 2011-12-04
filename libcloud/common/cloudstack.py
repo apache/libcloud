@@ -17,8 +17,8 @@ import base64
 import hashlib
 import hmac
 
-from libcloud.py3 import urlencode
-from libcloud.py3 import b
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey, PollingConnection
 from libcloud.common.base import JsonResponse

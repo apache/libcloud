@@ -16,7 +16,7 @@
 Provider related utilities
 """
 
-from libcloud.utils import get_driver as _get_provider_driver
+from libcloud.utils.misc import get_driver as _get_provider_driver
 from libcloud.compute.types import Provider
 
 __all__ = [

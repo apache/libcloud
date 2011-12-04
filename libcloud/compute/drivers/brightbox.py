@@ -15,10 +15,10 @@
 """
 Brightbox Driver
 """
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 import base64
 
-from libcloud.py3 import b
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError

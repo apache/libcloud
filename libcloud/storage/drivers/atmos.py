@@ -19,18 +19,18 @@ import hashlib
 import hmac
 import time
 
-from libcloud.py3 import PY3
-from libcloud.py3 import httplib
-from libcloud.py3 import urllib
-from libcloud.py3 import urlparse
-from libcloud.py3 import urlencode
-from libcloud.py3 import next
-from libcloud.py3 import b
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urllib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import next
+from libcloud.utils.py3 import b
 
 if PY3:
     from io import FileIO as file
 
-from libcloud import utils
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LazyList
 
@@ -257,7 +257,7 @@ class AtmosDriver(StorageDriver):
             iterator = iter(iterator)
 
         data_hash = hashlib.md5()
-        generator = utils.read_in_chunks(iterator, CHUNK_SIZE, True)
+        generator = read_in_chunks(iterator, CHUNK_SIZE, True)
         bytes_transferred = 0
         try:
             chunk = next(generator)
@@ -327,7 +327,7 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(obj.container.name + '/' + obj.name)
         response = self.connection.request(path, method='GET', raw=True)
 
-        return self._get_object(obj=obj, callback=utils.read_in_chunks,
+        return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
                                 callback_kwargs={
                                     'iterator': response.response,

@@ -28,10 +28,10 @@ import copy
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.py3 import urlquote
-from libcloud.py3 import b
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import b
 
-from libcloud.utils import fixxpath, findtext, findattr, findall
+from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.aws import AWSBaseResponse
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,

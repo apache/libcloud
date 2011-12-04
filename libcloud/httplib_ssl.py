@@ -23,7 +23,7 @@ import ssl
 import warnings
 
 import libcloud.security
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 class LibcloudHTTPSConnection(httplib.HTTPSConnection):
     """LibcloudHTTPSConnection
