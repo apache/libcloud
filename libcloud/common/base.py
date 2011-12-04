@@ -33,7 +33,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import u
+from libcloud.utils.py3 import b
 
 from libcloud.utils.misc import lowercase_keys
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -60,7 +60,7 @@ class Response(object):
         self.body = response.read().strip()
 
         if PY3:
-            self.body = self.body.decode('utf-8')
+            self.body = b(self.body).decode('utf-8')
 
         self.status = response.status
 
