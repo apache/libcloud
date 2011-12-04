@@ -1,6 +1,7 @@
                                     -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.7.0:
+
   *) General:
 
      - Add support for Python 3.x.
