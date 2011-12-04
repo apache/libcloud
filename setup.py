@@ -201,7 +201,8 @@ pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 setup(
     name='apache-libcloud',
     version=read_version_string(),
-    description='A unified interface into many cloud server providers',
+    description='A standard Python library that abstracts away differences' +
+                'among multiple cloud provider APIs',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
