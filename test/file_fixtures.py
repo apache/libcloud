@@ -18,7 +18,7 @@ from __future__ import with_statement
 
 import os
 
-from libcloud.py3 import u
+from libcloud.utils.py3 import u
 
 FIXTURES_ROOT = {
     'compute': 'compute/fixtures',

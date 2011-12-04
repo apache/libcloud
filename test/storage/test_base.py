@@ -19,9 +19,9 @@ import hashlib
 
 from mock import Mock
 
-from libcloud.py3 import StringIO
-from libcloud.py3 import PY3
-from libcloud.py3 import b
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 
 if PY3:
     from io import FileIO as file

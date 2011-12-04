@@ -26,8 +26,8 @@ import libcloud.utils.files
 
 from libcloud.utils.misc import get_driver
 
-from libcloud.py3 import StringIO
-from libcloud.py3 import PY3
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import PY3
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
 

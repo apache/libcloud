@@ -18,9 +18,9 @@ import sys
 
 from xml.etree import ElementTree as ET
 
-from libcloud.py3 import httplib
-from libcloud.py3 import xmlrpclib
-from libcloud.py3 import next
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import xmlrpclib
+from libcloud.utils.py3 import next
 
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 from libcloud.compute.types import NodeState

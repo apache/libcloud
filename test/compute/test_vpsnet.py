@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.vpsnet import VPSNetNodeDriver
 from libcloud.compute.base import Node

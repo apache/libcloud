@@ -18,8 +18,8 @@ import sys
 import time
 import unittest
 
-from libcloud.py3 import httplib
-from libcloud.py3 import u
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import u
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment

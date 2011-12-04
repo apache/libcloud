@@ -25,7 +25,7 @@ __docformat__ = 'epytext'
 import unittest
 import sys
 
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeState
 from libcloud.compute.drivers.opennebula import *
