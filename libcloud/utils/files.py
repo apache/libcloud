@@ -91,20 +91,20 @@ def exhaust_iterator(iterator):
     @rtype C{str}
     @return Data returned by the iterator.
     """
-    data = ''
+    data = b('')
 
     try:
-        chunk = str(next(iterator))
+        chunk = b(next(iterator))
     except StopIteration:
-        chunk = ''
+        chunk = b('')
 
     while len(chunk) > 0:
         data += chunk
 
         try:
-            chunk = str(next(iterator))
+            chunk = b(next(iterator))
         except StopIteration:
-            chunk = ''
+            chunk = b('')
 
     return data
 
