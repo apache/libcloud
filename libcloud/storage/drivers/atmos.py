@@ -21,7 +21,6 @@ import time
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urllib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import next

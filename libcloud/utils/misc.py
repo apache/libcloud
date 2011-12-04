@@ -82,6 +82,7 @@ def get_new_obj(obj, klass, attributes):
 
     return klass(**kwargs)
 
+
 def str2dicts(data):
     """
     Create a list of dictionaries from a whitespace and newline delimited text.
@@ -184,3 +185,7 @@ def dict2str(data):
 
 def reverse_dict(dictionary):
     return dict([(value, key) for key, value in list(dictionary.items())])
+
+
+def lowercase_keys(dictionary):
+    return dict(((k.lower(), v) for k, v in dictionary.items()))

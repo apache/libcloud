@@ -27,13 +27,15 @@ except:
 
 import libcloud
 
-from libcloud.utils.py3 import urllib
+
+from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
 
+from libcloud.utils.misc import lowercase_keys
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
@@ -56,8 +58,15 @@ class Response(object):
 
     def __init__(self, response, connection):
         self.body = response.read().strip()
+
+        if PY3:
+            self.body = self.body.decode('utf-8')
+
         self.status = response.status
-        self.headers = dict(response.getheaders())
+
+        # http.client In Python 3 doesn't automatically lowercase the header
+        # names
+        self.headers = lowercase_keys(dict(response.getheaders()))
         self.error = response.reason
         self.connection = connection
 
@@ -166,7 +175,7 @@ class RawResponse(Response):
     @property
     def headers(self):
         if not self._headers:
-            self._headers = dict(self.response.getheaders())
+            self._headers = lowercase_keys(dict(self.response.getheaders()))
         return self._headers
 
     @property
