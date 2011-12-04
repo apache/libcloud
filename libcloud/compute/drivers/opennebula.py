@@ -31,9 +31,9 @@ from xml.etree import ElementTree as ET
 from base64 import b64encode
 import hashlib
 
-from libcloud.py3 import httplib
-from libcloud.py3 import next
-from libcloud.py3 import b
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import next
+from libcloud.utils.py3 import b
 
 from libcloud.compute.base import NodeState, NodeDriver, Node, NodeLocation
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils import get_driver as get_provider_driver
+from libcloud.utils.misc import get_driver as get_provider_driver
 from libcloud.storage.types import Provider
 
 DRIVERS = {

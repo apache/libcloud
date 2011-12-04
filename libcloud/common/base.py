@@ -27,12 +27,12 @@ except:
 
 import libcloud
 
-from libcloud.py3 import urllib
-from libcloud.py3 import httplib
-from libcloud.py3 import urlparse
-from libcloud.py3 import urlencode
-from libcloud.py3 import StringIO
-from libcloud.py3 import u
+from libcloud.utils.py3 import urllib
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import u
 
 from libcloud.common.types import LibcloudError, MalformedResponseError
 

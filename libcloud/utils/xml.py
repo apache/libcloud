@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils.misc import get_driver as get_provider_driver
-from libcloud.dns.types import Provider
 
-DRIVERS = {
-    Provider.DUMMY:
-        ('libcloud.dns.drivers.dummy', 'DummyDNSDriver'),
-    Provider.LINODE:
-        ('libcloud.dns.drivers.linode', 'LinodeDNSDriver'),
-    Provider.ZERIGO:
-        ('libcloud.dns.drivers.zerigo', 'ZerigoDNSDriver'),
-    Provider.RACKSPACE_US:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
-    Provider.RACKSPACE_UK:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
-}
+def fixxpath(xpath, namespace=None):
+    # ElementTree wants namespaces in its xpaths, so here we add them.
+    if not namespace:
+        return xpath
+
+    return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
 
-def get_driver(provider):
-    return get_provider_driver(DRIVERS, provider)
+def findtext(element, xpath, namespace=None):
+    return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
+
+
+def findattr(element, xpath, namespace=None):
+    return element.findtext(fixxpath(xpath=xpath, namespace=namespace))
+
+
+def findall(element, xpath, namespace=None):
+    return element.findall(fixxpath(xpath=xpath, namespace=namespace))

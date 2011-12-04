@@ -24,11 +24,11 @@ import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
 
-from libcloud.py3 import httplib
-from libcloud.py3 import next
-from libcloud.py3 import b
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import next
+from libcloud.utils.py3 import b
 
-from libcloud import utils
+import libcloud.utils.files
 from libcloud.common.types import LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
@@ -466,7 +466,7 @@ class StorageDriver(BaseDriver):
                 'overwrite_existing=False',
                 driver=self)
 
-        stream = utils.read_in_chunks(response, chunk_size)
+        stream = libcloud.utils.files.read_in_chunks(response, chunk_size)
 
         try:
             data_read = next(stream)
@@ -520,7 +520,7 @@ class StorageDriver(BaseDriver):
                 name = file_path
             else:
                 name = object_name
-            content_type, _ = utils.guess_file_mime_type(name)
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
             if not content_type:
                 raise AttributeError(
@@ -536,8 +536,8 @@ class StorageDriver(BaseDriver):
             else:
                 # Chunked transfer encoding is not supported. Need to buffer all
                 # the data in memory so we can determine file size.
-                iterator = utils.read_in_chunks(iterator=iterator)
-                data = utils.exhaust_iterator(iterator=iterator)
+                iterator = libcloud.utils.files.read_in_chunks(iterator=iterator)
+                data = libcloud.utils.files.exhaust_iterator(iterator=iterator)
 
                 file_size = len(data)
                 upload_func_kwargs['data'] = data
@@ -639,7 +639,7 @@ class StorageDriver(BaseDriver):
         if calculate_hash:
             data_hash = self._get_hash_function()
 
-        generator = utils.read_in_chunks(iterator, chunk_size)
+        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size)
 
         bytes_transferred = 0
         try:

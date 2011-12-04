@@ -17,8 +17,8 @@ import os.path
 import random
 import hashlib
 
-from libcloud.py3 import PY3
-from libcloud.py3 import b
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 
 if PY3:
     from io import FileIO as file

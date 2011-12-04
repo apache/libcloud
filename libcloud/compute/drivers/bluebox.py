@@ -23,11 +23,11 @@ Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/inde
 """
 
 import copy
-from libcloud.py3 import urllib
+from libcloud.utils.py3 import urllib
 import base64
 
-from libcloud.py3 import urlencode
-from libcloud.py3 import b
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.providers import Provider

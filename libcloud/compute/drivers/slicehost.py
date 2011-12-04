@@ -21,7 +21,7 @@ import socket
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.py3 import b
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionKey, XmlResponse
 from libcloud.compute.types import NodeState, Provider, InvalidCredsError

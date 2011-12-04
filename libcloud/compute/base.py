@@ -25,7 +25,7 @@ import socket
 import struct
 import binascii
 
-from libcloud.py3 import b
+from libcloud.utils.py3 import b
 
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price

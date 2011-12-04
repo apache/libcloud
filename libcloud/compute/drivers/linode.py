@@ -38,8 +38,8 @@ import binascii
 
 from copy import copy
 
-from libcloud.py3 import PY3
-from libcloud.py3 import u
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import u
 
 from libcloud.common.linode import (API_ROOT, LinodeException, LinodeConnection,
     LINODE_PLAN_IDS)

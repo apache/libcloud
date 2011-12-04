@@ -19,7 +19,7 @@ Voxel VoxCloud driver
 import datetime
 import hashlib
 
-from libcloud.py3 import b
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError

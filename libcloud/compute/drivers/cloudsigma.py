@@ -20,10 +20,10 @@ import re
 import time
 import base64
 
-from libcloud.py3 import b
+from libcloud.utils.py3 import b
 
 
-from libcloud.utils import str2dicts, str2list, dict2str
+from libcloud.utils.misc import str2dicts, str2list, dict2str
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState, Provider

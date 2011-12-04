@@ -20,7 +20,7 @@ import time
 
 import libcloud
 
-from libcloud.py3 import xmlrpclib
+from libcloud.utils.py3 import xmlrpclib
 
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState

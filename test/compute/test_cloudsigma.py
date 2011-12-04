@@ -19,7 +19,7 @@ from libcloud.py3 import httplib
 
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.cloudsigma import CloudSigmaZrhNodeDriver
-from libcloud.utils import str2dicts, str2list, dict2str
+from libcloud.utils.misc import str2dicts, str2list, dict2str
 
 from test import MockHttp               # pylint: disable-msg=E0611
 from test.compute import TestCaseMixin  # pylint: disable-msg=E0611

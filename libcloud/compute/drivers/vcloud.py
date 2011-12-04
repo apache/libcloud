@@ -16,9 +16,9 @@
 VMware vCloud driver.
 """
 import base64
-from libcloud.py3 import httplib
-from libcloud.py3 import urlparse
-from libcloud.py3 import b
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import b
 
 urlparse = urlparse.urlparse
 
@@ -42,15 +42,15 @@ VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1,9)]
 
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
-def get_url_path(url):
-    return urlparse(url.strip()).path
-
 def fixxpath(root, xpath):
     """ElementTree wants namespaces in its xpaths, so here we add them."""
     namespace, root_tag = root.tag[1:].split("}", 1)
     fixed_xpath = "/".join(["{%s}%s" % (namespace, e)
                             for e in xpath.split("/")])
     return fixed_xpath
+
+def get_url_path(url):
+    return urlparse(url.strip()).path
 
 class InstantiateVAppXML(object):
 

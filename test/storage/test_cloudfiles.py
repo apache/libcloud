@@ -18,7 +18,7 @@ import sys
 import copy
 import unittest
 
-import libcloud.utils
+import libcloud.utils.files
 
 from libcloud.py3 import PY3
 from libcloud.py3 import httplib
@@ -308,8 +308,8 @@ class CloudFilesTests(unittest.TestCase):
         def no_content_type(name):
             return None, None
 
-        old_func = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = no_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = no_content_type
         file_path = os.path.abspath(__file__)
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
@@ -323,7 +323,7 @@ class CloudFilesTests(unittest.TestCase):
                 'File content type not provided'
                 ' but an exception was not thrown')
         finally:
-            libcloud.utils.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_error(self):
         def dummy_content_type(name):
@@ -332,8 +332,8 @@ class CloudFilesTests(unittest.TestCase):
         def send(instance):
             raise Exception('')
 
-        old_func1 = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func1 = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
         old_func2 = CloudFilesMockHttp.send
         CloudFilesMockHttp.send = send
 
@@ -350,15 +350,15 @@ class CloudFilesTests(unittest.TestCase):
         else:
             self.fail('Timeout while uploading but an exception was not thrown')
         finally:
-            libcloud.utils.guess_file_mime_type = old_func1
+            libcloud.utils.files.guess_file_mime_type = old_func1
             CloudFilesMockHttp.send = old_func2
 
     def test_upload_object_inexistent_file(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         file_path = os.path.abspath(__file__ + '.inexistent')
         container = Container(name='foo_bar_container', extra={}, driver=self)
@@ -373,14 +373,14 @@ class CloudFilesTests(unittest.TestCase):
         else:
             self.fail('Inesitent but an exception was not thrown')
         finally:
-            libcloud.utils.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_via_stream(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_stream_data'
@@ -390,7 +390,7 @@ class CloudFilesTests(unittest.TestCase):
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
-            libcloud.utils.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_delete_object_success(self):
         container = Container(name='foo_bar_container', extra={}, driver=self)

@@ -13,22 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.py3 import httplib
-from libcloud.py3 import urllib
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.py3 import PY3
-from libcloud.py3 import urlquote
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import urlquote
 
 if PY3:
     from io import FileIO as file
 
 
-from libcloud.utils import read_in_chunks
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.common.base import Response, RawResponse
 

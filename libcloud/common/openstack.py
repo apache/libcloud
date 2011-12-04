@@ -18,8 +18,8 @@ Common utilities for OpenStack
 """
 import sys
 
-from libcloud.py3 import httplib
-from libcloud.py3 import urlparse
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
 
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import LibcloudError, InvalidCredsError, MalformedResponseError

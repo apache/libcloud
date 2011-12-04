@@ -17,8 +17,8 @@ Driver for the IBM Developer Cloud.
 """
 import base64, urllib
 
-from libcloud.py3 import urlencode
-from libcloud.py3 import b
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError

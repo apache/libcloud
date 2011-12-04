@@ -27,9 +27,9 @@ import os
 
 import warnings
 
-from libcloud.py3 import httplib
-from libcloud.py3 import b
-from libcloud.py3 import next
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+from libcloud.utils.py3 import next
 
 import base64
 
@@ -42,7 +42,7 @@ from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
-from libcloud.utils import findall
+from libcloud.utils.xml import findall
 
 __all__ = [
     'OpenStack_1_0_Response',

@@ -1,4 +1,4 @@
-                                                        -*- coding: utf-8 -*-
+                                    -*- coding: utf-8 -*-
 
 Changes with Apache Libcloud in development:
   *) General:
@@ -62,7 +62,7 @@ Changes with Apache Libcloud in development:
        additional compute tests validating functionality; LIBCLOUD-121
        [Hutson Betts]
 
-  *) Load-baancer:
+  *) Load-balancer:
 
     - Add ex_member_address argument to the Rackspace driver list_balancers
       method. If this argument is provided, only loadbalancers which have a

@@ -16,7 +16,7 @@
 import hashlib
 import time
 
-from libcloud.py3 import b
+from libcloud.utils.py3 import b
 
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError

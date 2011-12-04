@@ -21,14 +21,13 @@ import hmac
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from libcloud.py3 import PY3
-from libcloud.py3 import httplib
-from libcloud.py3 import urllib
-from libcloud.py3 import urlquote
-from libcloud.py3 import b
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import b
 
-from libcloud.utils import fixxpath, findtext, in_development_warning
-from libcloud.utils import read_in_chunks
+from libcloud.utils.xml import fixxpath, findtext
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse
