@@ -46,7 +46,7 @@ if sys.version_info >= (3, 0):
     bytes = __builtins__['bytes']
     def b(s):
         if isinstance(s, str):
-            return s.encode("ascii")
+            return s.encode('utf-8')
         elif isinstance(s, bytes):
             return s
         else:

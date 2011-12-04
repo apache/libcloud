@@ -26,8 +26,9 @@ import libcloud.utils.files
 
 from libcloud.utils.misc import get_driver
 
-from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import b
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
 
@@ -102,14 +103,14 @@ class TestUtils(unittest.TestCase):
             for x in range(0, 1000):
                 yield 'aa'
 
-        for result in libcloud.utils.files.read_in_chunks(iterator(), 
+        for result in libcloud.utils.files.read_in_chunks(iterator(),
                                                           chunk_size=10,
                                                           fill_size=False):
-            self.assertEqual(result, 'aa')
+            self.assertEqual(result, b('aa'))
 
         for result in libcloud.utils.files.read_in_chunks(iterator(), chunk_size=10,
                                                           fill_size=True):
-            self.assertEqual(result, 'aaaaaaaaaa')
+            self.assertEqual(result, b('aaaaaaaaaa'))
 
     def test_read_in_chunks_filelike(self):
             class FakeFile(file):
@@ -125,7 +126,7 @@ class TestUtils(unittest.TestCase):
             for index, result in enumerate(libcloud.utils.files.read_in_chunks(
                                            FakeFile(), chunk_size=10,
                                            fill_size=False)):
-                self.assertEqual(result, 'b' * 11)
+                self.assertEqual(result, b('b' * 11))
 
             self.assertEqual(index, 498)
 
@@ -133,9 +134,9 @@ class TestUtils(unittest.TestCase):
                                            FakeFile(), chunk_size=10,
                                            fill_size=True)):
                 if index != 548:
-                    self.assertEqual(result, 'b' * 10)
+                    self.assertEqual(result, b('b' * 10))
                 else:
-                    self.assertEqual(result, 'b' * 9)
+                    self.assertEqual(result, b('b' * 9))
 
             self.assertEqual(index, 548)
 
@@ -144,7 +145,7 @@ class TestUtils(unittest.TestCase):
             for x in range(0, 1000):
                 yield 'aa'
 
-        data = 'aa' * 1000
+        data = b('aa' * 1000)
         iterator = libcloud.utils.files.read_in_chunks(iterator=iterator_func())
         result = libcloud.utils.files.exhaust_iterator(iterator=iterator)
         self.assertEqual(result, data)
@@ -155,13 +156,13 @@ class TestUtils(unittest.TestCase):
         data = '12345678990'
         iterator = StringIO(data)
         result = libcloud.utils.files.exhaust_iterator(iterator=iterator)
-        self.assertEqual(result, data)
+        self.assertEqual(result, b(data))
 
     def test_exhaust_iterator_empty_iterator(self):
         data = ''
         iterator = StringIO(data)
         result = libcloud.utils.files.exhaust_iterator(iterator=iterator)
-        self.assertEqual(result, data)
+        self.assertEqual(result, b(data))
 
 
 if __name__ == '__main__':
