@@ -93,8 +93,9 @@ def main(argv):
     """
     try:
         driver = get_demo_driver()
-    except InvalidCredsError as ex:
-        print("Invalid Credentials: %s" % (ex.value,))
+    except InvalidCredsError:
+        e = sys.exc_info()[1]
+        print("Invalid Credentials: " + e.value)
         return 1
 
     try:
@@ -106,8 +107,9 @@ def main(argv):
 
         print(">> Loading sizes... (showing up to 10)")
         pprint(driver.list_sizes()[:10])
-    except Exception as ex:
-        print("A fatal error occurred: %s" % (ex,))
+    except Exception:
+        e = sys.exc_info()[1]
+        print("A fatal error occurred: " + e)
         return 1
 
 if __name__ == '__main__':

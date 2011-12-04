@@ -57,7 +57,7 @@ def get_new_obj(obj, klass, attributes):
     constructor if they are not None.
     """
     kwargs = {}
-    for key, value in obj.__dict__.items():
+    for key, value in list(obj.__dict__.items()):
         if isinstance(value, dict):
             kwargs[key] = value.copy()
         elif isinstance(value, (tuple, list)):
@@ -65,13 +65,13 @@ def get_new_obj(obj, klass, attributes):
         else:
             kwargs[key] = value
 
-    for key, value in attributes.items():
+    for key, value in list(attributes.items()):
         if value is None:
             continue
 
         if isinstance(value, dict):
             kwargs_value = kwargs.get(key, {})
-            for key1, value2 in value.items():
+            for key1, value2 in list(value.items()):
                 if value2 is None:
                     continue
 
@@ -183,4 +183,4 @@ def dict2str(data):
 
 
 def reverse_dict(dictionary):
-    return dict([(value, key) for key, value in dictionary.items()])
+    return dict([(value, key) for key, value in list(dictionary.items())])

@@ -653,7 +653,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         if 'context' in kwargs:
             if isinstance(kwargs['context'], dict):
                 contextGroup = ET.SubElement(compute, 'CONTEXT')
-                for key, value in kwargs['context'].items():
+                for key, value in list(kwargs['context'].items()):
                     context = ET.SubElement(contextGroup, key.upper())
                     context.text = value
 

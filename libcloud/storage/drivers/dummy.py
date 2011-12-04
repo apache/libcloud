@@ -145,7 +145,7 @@ class DummyStorageDriver(StorageDriver):
         """
 
         return [container['container'] for container in
-                self._containers.values()]
+                list(self._containers.values())]
 
     def list_container_objects(self, container):
         container = self.get_container(container.name)

@@ -135,7 +135,7 @@ class BlueboxNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, values in BLUEBOX_INSTANCE_TYPES.items():
+        for key, values in list(BLUEBOX_INSTANCE_TYPES.items()):
             attributes = copy.deepcopy(values)
             attributes.update({ 'price': self._get_size_price(size_id=key) })
             sizes.append(BlueboxNodeSize(driver=self.connection.driver,

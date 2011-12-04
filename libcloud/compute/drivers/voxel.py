@@ -79,7 +79,8 @@ class VoxelConnection(ConnectionUserAndKey):
     responseCls = VoxelResponse
 
     def add_default_params(self, params):
-        params = dict([(k, v) for k, v in params.items() if v is not None])
+        params = dict([(k, v) for k, v in list(params.items())
+                       if v is not None])
         params["key"] = self.user_id
         params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
 
@@ -147,7 +148,7 @@ class VoxelNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i)
-                 for i in VOXEL_INSTANCE_TYPES.values() ]
+                 for i in list(VOXEL_INSTANCE_TYPES.values()) ]
 
     def list_images(self, location=None):
         params = {"method": "voxel.images.list"}
