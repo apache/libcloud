@@ -151,8 +151,8 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
                          'created': '2009-11-29T20:22:09-06:00',
                          'updated': '2009-11-29T20:24:08-06:00',
                          'progress': '100'}}
-        for ret_idx, extra in expected.items():
-            for key, value in extra.items():
+        for ret_idx, extra in list(expected.items()):
+            for key, value in list(extra.items()):
                 self.assertEqual(ret[ret_idx].extra[key], value)
 
     def test_create_node(self):

@@ -468,7 +468,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'mtime': '2011-01-25T22:01:49Z'
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
@@ -481,7 +481,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'bar-foo': 'test 2',
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
@@ -518,7 +518,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'mtime': '2011-01-25T22:01:49Z'
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
@@ -543,7 +543,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'mtime': '2011-01-25T22:01:49Z'
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 

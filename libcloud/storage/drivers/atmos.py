@@ -90,11 +90,12 @@ class AtmosConnection(ConnectionUserAndKey):
             pathstring = pathstring[len(self.driver.path):]
         if params:
             if type(params) is dict:
-                params = params.items()
+                params = list(params.items())
             pathstring += '?' + urlencode(params)
         pathstring = pathstring.lower()
 
-        xhdrs = [(k, v) for k, v in headers.items() if k.startswith('x-emc-')]
+        xhdrs = [(k, v) for k, v in list(headers.items()) if
+                 k.startswith('x-emc-')]
         xhdrs.sort(key=lambda x: x[0])
 
         signature = [
@@ -237,7 +238,8 @@ class AtmosDriver(StorageDriver):
         else:
             meta_data = extra.get('meta_data', {})
         meta_data['md5'] = result_dict['data_hash']
-        user_meta = ', '.join([k + '=' + str(v) for k, v in meta_data.items()])
+        user_meta = ', '.join([k + '=' + str(v) for k, v in
+                               list(meta_data.items())])
         self.connection.request(request_path + '?metadata/user', method='POST',
                                 headers={'x-emc-meta': user_meta})
         result = self.connection.request(request_path + '?metadata/system')
@@ -292,7 +294,8 @@ class AtmosDriver(StorageDriver):
         else:
             meta_data = extra.get('meta_data', {})
         meta_data['md5'] = data_hash
-        user_meta = ', '.join([k + '=' + str(v) for k, v in meta_data.items()])
+        user_meta = ', '.join([k + '=' + str(v) for k, v in
+                               list(meta_data.items())])
         self.connection.request(path + '?metadata/user', method='POST',
                                 headers={'x-emc-meta': user_meta})
 

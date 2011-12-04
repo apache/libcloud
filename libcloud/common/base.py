@@ -482,7 +482,7 @@ class Connection(object):
             if raw:
                 self.connection.putrequest(method, url)
 
-                for key, value in headers.items():
+                for key, value in list(headers.items()):
                     self.connection.putheader(key, str(value))
 
                 self.connection.endheaders()

@@ -553,7 +553,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             return None
 
         metadata_elm = ET.Element('metadata')
-        for k, v in metadata.items():
+        for k, v in list(metadata.items()):
             meta_elm = ET.SubElement(metadata_elm, 'meta', {'key': str(k)})
             meta_elm.text = str(v)
 
@@ -564,7 +564,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             return None
 
         personality_elm = ET.Element('personality')
-        for k, v in files.items():
+        for k, v in list(files.items()):
             file_elm = ET.SubElement(personality_elm,
                                      'file',
                                      {'path': str(k)})
@@ -656,7 +656,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         def _to_rate(el):
             rate = {}
-            for item in el.items():
+            for item in list(el.items()):
                 rate[item[0]] = item[1]
 
             return rate
@@ -877,7 +877,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _files_to_personality(self, files):
         rv = []
 
-        for k, v in files.items():
+        for k, v in list(files.items()):
             rv.append({'path': k, 'contents': base64.b64encode(b(v))})
 
         return rv

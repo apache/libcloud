@@ -591,7 +591,7 @@ class NodeDriver(BaseDriver):
 
         while time.time() < end:
             nodes = self.list_nodes()
-            nodes = list(filter(lambda n: n.uuid == node.uuid, nodes))
+            nodes = list([n for n in nodes if n.uuid == node.uuid])
 
             if len(nodes) == 0:
                 raise LibcloudError(value=('Booted node[%s] ' % node

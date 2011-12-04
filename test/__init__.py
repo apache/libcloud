@@ -89,7 +89,7 @@ class MockResponse(object):
         return self.headers.get(name, *args, **kwargs)
 
     def getheaders(self):
-        return self.headers.items()
+        return list(self.headers.items())
 
     def msg(self):
         raise NotImplemented

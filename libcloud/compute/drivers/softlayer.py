@@ -398,7 +398,8 @@ class SoftLayerNodeDriver(NodeDriver):
         )
 
     def list_sizes(self, location=None):
-        return [self._to_size(id, s['imagedata']) for id, s in SL_TEMPLATES.items()]
+        return [self._to_size(id, s['imagedata']) for id, s in 
+                list(SL_TEMPLATES.items())]
 
     def _to_loc(self, loc):
         return NodeLocation(

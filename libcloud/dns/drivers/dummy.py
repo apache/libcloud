@@ -50,7 +50,7 @@ class DummyDNSDriver(DNSDriver):
         []
         """
 
-        return [zone['zone'] for zone in self._zones.values()]
+        return [zone['zone'] for zone in list(self._zones.values())]
 
     def list_records(self, zone):
         return self.get_zone(zone_id=zone.id).records

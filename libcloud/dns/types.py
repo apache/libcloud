@@ -56,7 +56,7 @@ class RecordType(object):
 
     @classmethod
     def __repr__(self, value):
-        reverse = dict((v, k) for k, v in RecordType.__dict__.items())
+        reverse = dict((v, k) for k, v in list(RecordType.__dict__.items()))
         return reverse[value]
 
 

@@ -37,7 +37,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     ASYNC_FAILURE = 2
 
     def _make_signature(self, params):
-        signature = [(k.lower(), v) for k, v in params.items()]
+        signature = [(k.lower(), v) for k, v in list(params.items())]
         signature.sort(key=lambda x: x[0])
         signature = urlencode(signature)
         signature = signature.lower().replace('+', '%20')
