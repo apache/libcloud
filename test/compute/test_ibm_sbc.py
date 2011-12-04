@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 import unittest
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 import sys
 
 from libcloud.compute.types import InvalidCredsError

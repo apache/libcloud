@@ -6,8 +6,8 @@ try:
 except ImportError:
     import json
 
-from libcloud.py3 import httplib
-from libcloud.py3 import urlparse
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
 
 try:
     parse_qsl = urlparse.parse_qsl

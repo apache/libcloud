@@ -20,8 +20,8 @@ import unittest
 
 import libcloud.utils.files
 
-from libcloud.py3 import PY3
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import httplib
 
 if PY3:
     from io import FileIO as file

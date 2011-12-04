@@ -16,9 +16,9 @@ import sys
 import unittest
 import types
 
-from libcloud.py3 import httplib
-from libcloud.py3 import method_type
-from libcloud.py3 import u
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import method_type
+from libcloud.utils.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.types import Provider

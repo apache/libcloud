@@ -18,10 +18,10 @@ import unittest
 
 from cgi import parse_qs
 
-from libcloud.py3 import httplib
-from libcloud.py3 import StringIO
-from libcloud.py3 import urlparse
-from libcloud.py3 import u
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import u
 
 
 XML_HEADERS = {'content-type': 'application/xml'}

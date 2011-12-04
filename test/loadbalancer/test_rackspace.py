@@ -21,7 +21,7 @@ try:
 except ImportError:
     import json
 
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver

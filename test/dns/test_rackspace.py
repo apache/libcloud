@@ -15,7 +15,7 @@
 import sys
 import unittest
 
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import LibcloudError
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError

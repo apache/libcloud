@@ -18,8 +18,8 @@ import sys
 import random
 import string
 
-from libcloud.py3 import httplib
-from libcloud.py3 import xmlrpclib
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi
 from libcloud.common.gandi import GandiException

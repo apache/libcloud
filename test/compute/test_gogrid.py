@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-from libcloud.py3 import httplib
-from libcloud.py3 import urlparse
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
 
 from libcloud.compute.base import NodeState, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError

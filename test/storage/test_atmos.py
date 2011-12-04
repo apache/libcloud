@@ -18,9 +18,9 @@ import os.path
 import sys
 import unittest
 
-from libcloud.py3 import httplib
-from libcloud.py3 import urlparse
-from libcloud.py3 import b
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import b
 
 import libcloud.utils.files
 

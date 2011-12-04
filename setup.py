@@ -213,7 +213,6 @@ setup(
         'libcloud.compute.drivers',
         'libcloud.storage',
         'libcloud.storage.drivers',
-        'libcloud.drivers',
         'libcloud.loadbalancer',
         'libcloud.loadbalancer.drivers',
         'libcloud.dns',

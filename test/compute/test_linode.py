@@ -19,7 +19,7 @@
 
 import sys
 import unittest
-from libcloud.py3 import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.linode import LinodeNodeDriver
 from libcloud.compute.base import Node, NodeAuthPassword
