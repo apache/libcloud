@@ -89,6 +89,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.urls = {}
         self.driver = self.parent_conn.driver
 
+    def morph_action_hook(self, action):
+        return action
+
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json; charset=UTF-8'
@@ -107,7 +110,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             raise LibcloudError('Unsupported Auth Version requested')
 
     def authenticate_1_0(self):
-        resp = self.request("/",
+        resp = self.request("/v1.0",
                     headers={
                         'X-Auth-User': self.user_id,
                         'X-Auth-Key': self.key,
@@ -135,7 +138,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id, 'key': self.key}})
-        resp = self.request("/auth",
+        resp = self.request("/v1.1/auth",
                     data=reqbody,
                     headers={},
                     method='POST')
@@ -173,7 +176,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
-        resp = self.request('tokens/',
+        resp = self.request('/v2.0/tokens/',
                     data=reqbody,
                     headers={'Content-Type':'application/json'},
                     method='POST')
