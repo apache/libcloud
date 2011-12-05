@@ -271,7 +271,7 @@ class RackspaceMockHttp(MockHttp):
     base_headers = {'content-type': 'application/json'}
 
     # fake auth token response
-    def _v1_1__auth(self, method, url, body, headers):
+    def _v1_1_auth(self, method, url, body, headers):
         body = self.fixtures.load('auth_1_1.json')
         headers = {'content-length': '657', 'vary': 'Accept,Accept-Encoding',
                    'server': 'Apache/2.2.13 (Red Hat)',
