@@ -465,19 +465,19 @@ class OpenStackMockHttp(MockHttpTestCase):
         headers.update(XML_HEADERS)
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
-    def _v1_1__auth(self, method, url, body, headers):
+    def _v1_1_auth(self, method, url, body, headers):
         body = self.auth_fixtures.load('_v1_1__auth.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v1_1__auth_UNAUTHORIZED(self, method, url, body, headers):
+    def _v1_1_auth_UNAUTHORIZED(self, method, url, body, headers):
         body = self.auth_fixtures.load('_v1_1__auth_unauthorized.json')
         return  (httplib.UNAUTHORIZED, body, self.json_content_headers, httplib.responses[httplib.UNAUTHORIZED])
 
-    def _v1_1__auth_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
+    def _v1_1_auth_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
         body = self.auth_fixtures.load('_v1_1__auth_mssing_token.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v1_1__auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
+    def _v1_1_auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
         return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>",  {'content-type': 'text/html'}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
 
 class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
@@ -698,7 +698,7 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         body = self.auth_fixtures.load('_v2_0__auth.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v1_0_(self, method, url, body, headers):
+    def _v1_0(self, method, url, body, headers):
         headers = {
             'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
             'x-server-management-url': 'https://api.example.com/v1.1/slug',

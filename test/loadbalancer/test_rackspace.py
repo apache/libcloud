@@ -188,7 +188,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_1__auth(self, method, url, body, headers):
+    def _v1_1_auth(self, method, url, body, headers):
         headers = { 'content-type': 'application/json; charset=UTF-8'}
         body = self.auth_fixtures.load('_v1_1__auth.json')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])

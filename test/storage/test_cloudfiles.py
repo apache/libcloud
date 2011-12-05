@@ -631,7 +631,7 @@ class CloudFilesMockHttp(StorageMockHttp):
 
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
-    def _v1_1__auth(self, method, url, body, headers):
+    def _v1_1_auth(self, method, url, body, headers):
         body = self.auth_fixtures.load('_v1_1__auth.json')
         return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
 
