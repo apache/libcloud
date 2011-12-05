@@ -213,7 +213,7 @@ class LoggingConnection():
             def __init__(self, s):
                 self.s = s
             def makefile(self, mode, foo):
-                return StringIO.StringIO(self.s)
+                return StringIO(self.s)
         rr = r
         if r.chunked:
             ht += "%x\r\n" % (len(body))
