@@ -1,5 +1,16 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud 0.7.1:
+
+  *) General:
+
+     - Fix a minor bug in debug mode (LIBCLOUD_DEBUG=/dev/stderr) which has been
+       introduced when adding Python 3 compatibility layer.
+       [Paul Querna]
+
+     - Update OpenStack Auth API endpoint paths.
+       [Paul Querna]
+
 Changes with Apache Libcloud 0.7.0:
 
   *) General:
