@@ -195,6 +195,11 @@ class RackspaceLBDriver(Driver):
         lb.ex_private_virtual_ips = self._ex_private_virtual_ips(el)
         lb.ex_public_virtual_ips = self._ex_public_virtual_ips(el)
 
+        if 'sourceAddresses' in el:
+            lb.ex_public_source_address_ipv6 = el["sourceAddresses"].get("ipv6Public")
+            lb.ex_public_source_address_ipv4 = el["sourceAddresses"].get("ipv4Public")
+            lb.ex_private_source_address_ipv4 = el["sourceAddresses"].get("ipv4Servicenet")
+
         return lb
 
     def _to_members(self, object):
