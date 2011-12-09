@@ -29,6 +29,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
 
+
 class RackspaceResponse(JsonResponse):
 
     def parse_body(self):
@@ -196,8 +197,8 @@ class RackspaceLBDriver(Driver):
                 port=port,
                 driver=self.connection.driver,
                 extra={
-                    "publicVips" : self._ex_public_virtual_ips(el),
-                    "privateVips" : self._ex_private_virtual_ips(el),
+                    "publicVips": self._ex_public_virtual_ips(el),
+                    "privateVips": self._ex_private_virtual_ips(el),
                     "ipv6PublicSource": sourceAddresses.get("ipv6Public"),
                     "ipv4PublicSource": sourceAddresses.get("ipv4Public"),
                     "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet")
