@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Load-balancer:
+
+    - Add 'extra' attribute to the LoadBalancer object and retrieve all the
+      virtual IP addresses in the Rackspace driver.
+      [Dave King]
+
 Changes with Apache Libcloud 0.7.1:
 
   *) General:

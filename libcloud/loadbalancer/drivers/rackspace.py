@@ -30,6 +30,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
 
+
 class RackspaceResponse(JsonResponse):
 
     def parse_body(self):
@@ -178,6 +179,7 @@ class RackspaceLBDriver(Driver):
     def _to_balancer(self, el):
         ip = None
         port = None
+        sourceAddresses = {}
 
         if 'virtualIps' in el:
             ip = el["virtualIps"][0]["address"]
@@ -185,14 +187,23 @@ class RackspaceLBDriver(Driver):
         if 'port' in el:
             port = el["port"]
 
-        lb = LoadBalancer(id=el["id"],
+        if 'sourceAddresses' in el:
+            sourceAddresses = el['sourceAddresses']
+
+        return LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
                     el["status"], State.UNKNOWN),
                 ip=ip,
                 port=port,
-                driver=self.connection.driver)
-        return lb
+                driver=self.connection.driver,
+                extra={
+                    "publicVips": self._ex_public_virtual_ips(el) or [],
+                    "privateVips": self._ex_private_virtual_ips(el) or [],
+                    "ipv6PublicSource": sourceAddresses.get("ipv6Public"),
+                    "ipv4PublicSource": sourceAddresses.get("ipv4Public"),
+                    "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet")
+                })
 
     def _to_members(self, object):
         return [ self._to_member(el) for el in object["nodes"] ]
@@ -202,6 +213,21 @@ class RackspaceLBDriver(Driver):
                 ip=el["address"],
                 port=el["port"])
         return lbmember
+
+    def _ex_private_virtual_ips(self, el):
+        if not 'virtualIps' in el:
+            return None
+
+        servicenet_vips = [ip for ip in el['virtualIps']
+                           if ip['type'] == 'SERVICENET']
+        return [vip["address"] for vip in servicenet_vips]
+
+    def _ex_public_virtual_ips(self, el):
+        if not 'virtualIps' in el:
+            return None
+
+        public_vips = [ip for ip in el['virtualIps'] if ip['type'] == 'PUBLIC']
+        return [vip["address"] for vip in public_vips]
 
 
 class RackspaceUKLBDriver(RackspaceLBDriver):
