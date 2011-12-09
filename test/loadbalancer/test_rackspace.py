@@ -90,7 +90,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
 
-    def test_get_balancer_ex_public_vips(self):
+    def test_get_balancer_extra_public_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
         self.assertEquals(balancer.extra["publicVips"], ['50.56.49.149'])
 
