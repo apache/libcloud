@@ -178,12 +178,8 @@ class RackspaceLBDriver(Driver):
         ip = None
         port = None
 
-        ex_private_virtual_ips = None
-
         if 'virtualIps' in el:
             ip = el["virtualIps"][0]["address"]
-            servicenet_ips = filter(lambda ip : ip["type"] == "SERVICENET", el["virtualIps"])
-            ex_private_virtual_ips = [ip["address"] for ip in servicenet_ips]
 
         if 'port' in el:
             port = el["port"]
@@ -195,7 +191,10 @@ class RackspaceLBDriver(Driver):
                 ip=ip,
                 port=port,
                 driver=self.connection.driver)
-        lb.ex_private_virtual_ips = ex_private_virtual_ips
+
+        lb.ex_private_virtual_ips = self._ex_private_virtual_ips(el)
+        lb.ex_public_virtual_ips = self._ex_public_virtual_ips(el)
+
         return lb
 
     def _to_members(self, object):
@@ -206,6 +205,20 @@ class RackspaceLBDriver(Driver):
                 ip=el["address"],
                 port=el["port"])
         return lbmember
+
+    def _ex_private_virtual_ips(self, el):
+        if not 'virtualIps' in el:
+            return None
+
+        servicenet_vips = filter(lambda ip : ip["type"] == "SERVICENET", el["virtualIps"])
+        return [vip["address"] for vip in servicenet_vips]
+
+    def _ex_public_virtual_ips(self, el):
+        if not 'virtualIps' in el:
+            return None
+
+        public_vips = filter(lambda ip : ip["type"] == "PUBLIC", el["virtualIps"])
+        return [vip["address"] for vip in public_vips]
 
 
 class RackspaceUKLBDriver(RackspaceLBDriver):

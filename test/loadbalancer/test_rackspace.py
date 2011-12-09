@@ -90,6 +90,10 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
 
+    def test_get_balancer_ex_public_ips(self):
+        balancer = self.driver.get_balancer(balancer_id='18940')
+        self.assertEquals(balancer.ex_public_virtual_ips, ['50.56.49.149'])
+
     def test_get_balancer_ex_private_ips(self):
         balancer = self.driver.get_balancer(balancer_id='18941')
 
@@ -189,6 +193,13 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_slug_loadbalancers_8290_nodes_30944(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_18940(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("v1_slug_loadbalancers_18940_ex_public_ips.json")
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
