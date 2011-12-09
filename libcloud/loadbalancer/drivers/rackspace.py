@@ -178,8 +178,12 @@ class RackspaceLBDriver(Driver):
         ip = None
         port = None
 
+        ex_private_virtual_ips = None
+
         if 'virtualIps' in el:
             ip = el["virtualIps"][0]["address"]
+            servicenet_ips = filter(lambda ip : ip["type"] == "SERVICENET", el["virtualIps"])
+            ex_private_virtual_ips = [ip["address"] for ip in servicenet_ips]
 
         if 'port' in el:
             port = el["port"]
@@ -191,6 +195,7 @@ class RackspaceLBDriver(Driver):
                 ip=ip,
                 port=port,
                 driver=self.connection.driver)
+        lb.ex_private_virtual_ips = ex_private_virtual_ips
         return lb
 
     def _to_members(self, object):
