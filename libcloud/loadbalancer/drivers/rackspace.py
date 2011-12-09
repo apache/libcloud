@@ -177,6 +177,7 @@ class RackspaceLBDriver(Driver):
     def _to_balancer(self, el):
         ip = None
         port = None
+        sourceAddresses = {}
 
         if 'virtualIps' in el:
             ip = el["virtualIps"][0]["address"]
@@ -184,23 +185,23 @@ class RackspaceLBDriver(Driver):
         if 'port' in el:
             port = el["port"]
 
-        lb = LoadBalancer(id=el["id"],
+        if 'sourceAddresses' in el:
+            sourceAddresses = el['sourceAddresses']
+
+        return LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
                     el["status"], State.UNKNOWN),
                 ip=ip,
                 port=port,
-                driver=self.connection.driver)
-
-        lb.ex_private_virtual_ips = self._ex_private_virtual_ips(el)
-        lb.ex_public_virtual_ips = self._ex_public_virtual_ips(el)
-
-        if 'sourceAddresses' in el:
-            lb.ex_public_source_address_ipv6 = el["sourceAddresses"].get("ipv6Public")
-            lb.ex_public_source_address_ipv4 = el["sourceAddresses"].get("ipv4Public")
-            lb.ex_private_source_address_ipv4 = el["sourceAddresses"].get("ipv4Servicenet")
-
-        return lb
+                driver=self.connection.driver,
+                extra={
+                    "publicVips" : self._ex_public_virtual_ips(el),
+                    "privateVips" : self._ex_private_virtual_ips(el),
+                    "ipv6PublicSource": sourceAddresses.get("ipv6Public"),
+                    "ipv4PublicSource": sourceAddresses.get("ipv4Public"),
+                    "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet")
+                })
 
     def _to_members(self, object):
         return [ self._to_member(el) for el in object["nodes"] ]

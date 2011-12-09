@@ -90,26 +90,26 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
 
-    def test_get_balancer_ex_public_ips(self):
+    def test_get_balancer_ex_public_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.ex_public_virtual_ips, ['50.56.49.149'])
+        self.assertEquals(balancer.extra["publicVips"], ['50.56.49.149'])
 
-    def test_get_balancer_ex_private_ips(self):
+    def test_get_balancer_extra_private_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18941')
 
-        self.assertEquals(balancer.ex_private_virtual_ips, ['10.183.252.175'])
+        self.assertEquals(balancer.extra["privateVips"], ['10.183.252.175'])
 
-    def test_get_balancer_ex_public_source_ipv4(self):
+    def test_get_balancer_extra_public_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.ex_public_source_address_ipv4, '184.106.100.25')
+        self.assertEquals(balancer.extra["ipv4PublicSource"], '184.106.100.25')
 
-    def test_get_balancer_ex_public_source_ipv6(self):
+    def test_get_balancer_extra_public_source_ipv6(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.ex_public_source_address_ipv6, '2001:4801:7901::6/64')
+        self.assertEquals(balancer.extra["ipv6PublicSource"], '2001:4801:7901::6/64')
 
-    def test_get_balancer_ex_private_source_ipv4(self):
+    def test_get_balancer_extra_private_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.ex_private_source_address_ipv4, '10.183.252.25')
+        self.assertEquals(balancer.extra["ipv4PrivateSource"], '10.183.252.25')
 
     def test_balancer_list_members(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
