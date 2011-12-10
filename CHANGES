@@ -2,6 +2,13 @@
 
 Changes with Apache Libcloud in development:
 
+  *) Compute:
+
+     - Added support for retrieving OpenNebula v3.2 instance types, OpenNebula
+       v3.0 network Public attribute support, and additional code coverage
+       tests.
+       [Hutson Betts]
+
   *) Load-balancer:
 
     - Add 'extra' attribute to the LoadBalancer object and retrieve all the
