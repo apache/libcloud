@@ -31,10 +31,26 @@ from libcloud.compute.base import Node, NodeImage, NodeSize, NodeState
 from libcloud.compute.drivers.opennebula import *
 
 from test.file_fixtures import ComputeFileFixtures
+from libcloud.common.types import InvalidCredsError
+from test import MockResponse, MockHttp
 from test.compute import TestCaseMixin
-from test import MockHttp
 
 from test.secrets import OPENNEBULA_PARAMS
+
+
+class OpenNebula_ResponseTests(unittest.TestCase):
+    XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
+
+    def test_unauthorized_response(self):
+        http_response = MockResponse(httplib.UNAUTHORIZED,
+                                     OpenNebula_ResponseTests.XML,
+                                     headers={'content-type':
+                                              'application/xml'})
+        try:
+            OpenNebulaResponse(http_response, None).parse_body()
+        except InvalidCredsError:
+            exceptionType = sys.exc_info()[0]
+            self.assertEqual(exceptionType, type(InvalidCredsError()))
 
 
 class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
@@ -217,7 +233,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(network.address, '192.168.1.0')
         self.assertEqual(network.size, '256')
 
-    def test_node_action(self):
+    def test_ex_node_action(self):
         """
         Test ex_node_action functionality.
         """
@@ -228,7 +244,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
 
 class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
     """
-    OpenNebula.org test suite for OpenNebula v2.0 through v3.2.
+    OpenNebula.org test suite for OpenNebula v2.0 through v2.2.
     """
 
     def setUp(self):
@@ -304,7 +320,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         """
         nodes = self.driver.list_nodes()
 
-        self.assertEqual(len(nodes), 2)
+        self.assertEqual(len(nodes), 3)
         node = nodes[0]
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
@@ -323,6 +339,18 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.private_ips, [])
         self.assertTrue(len([size for size in self.driver.list_sizes() \
                         if size.id == node.size.id]) == 1)
+        self.assertEqual(node.size.id, '1')
+        self.assertEqual(node.size.name, 'small')
+        self.assertEqual(node.size.ram, 1024)
+        self.assertTrue(node.size.cpu is None or isinstance(size.cpu, int))
+        self.assertTrue(node.size.vcpu is None or isinstance(size.vcpu, int))
+        self.assertEqual(node.size.cpu, 1)
+        self.assertEqual(node.size.vcpu, None)
+        self.assertEqual(node.size.disk, None)
+        self.assertEqual(node.size.bandwidth, None)
+        self.assertEqual(node.size.price, None)
+        self.assertTrue(len([image for image in self.driver.list_images() \
+                        if image.id == node.image.id]) == 1)
         self.assertEqual(node.image.id, '5')
         self.assertEqual(node.image.name, 'Ubuntu 9.04 LAMP')
         self.assertEqual(node.image.extra['type'], 'DISK')
@@ -347,12 +375,44 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.private_ips, [])
         self.assertTrue(len([size for size in self.driver.list_sizes() \
                         if size.id == node.size.id]) == 1)
+        self.assertEqual(node.size.id, '1')
+        self.assertEqual(node.size.name, 'small')
+        self.assertEqual(node.size.ram, 1024)
+        self.assertTrue(node.size.cpu is None or isinstance(size.cpu, int))
+        self.assertTrue(node.size.vcpu is None or isinstance(size.vcpu, int))
+        self.assertEqual(node.size.cpu, 1)
+        self.assertEqual(node.size.vcpu, None)
+        self.assertEqual(node.size.disk, None)
+        self.assertEqual(node.size.bandwidth, None)
+        self.assertEqual(node.size.price, None)
+        self.assertTrue(len([image for image in self.driver.list_images() \
+                        if image.id == node.image.id]) == 1)
         self.assertEqual(node.image.id, '15')
         self.assertEqual(node.image.name, 'Ubuntu 9.04 LAMP')
         self.assertEqual(node.image.extra['type'], 'DISK')
         self.assertEqual(node.image.extra['target'], 'hda')
         context = node.extra['context']
         self.assertEqual(context['hostname'], 'compute-15')
+        node = nodes[2]
+        self.assertEqual(node.id, '25')
+        self.assertEqual(node.name, 'Compute 25')
+        self.assertEqual(node.state,
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['UNKNOWN'])
+        self.assertEqual(node.public_ips[0].id, '5')
+        self.assertEqual(node.public_ips[0].name, 'Network 5')
+        self.assertEqual(node.public_ips[0].address, '192.168.0.3')
+        self.assertEqual(node.public_ips[0].size, 1)
+        self.assertEqual(node.public_ips[0].extra['mac'], '02:00:c0:a8:00:03')
+        self.assertEqual(node.public_ips[1].id, '15')
+        self.assertEqual(node.public_ips[1].name, 'Network 15')
+        self.assertEqual(node.public_ips[1].address, '192.168.1.3')
+        self.assertEqual(node.public_ips[1].size, 1)
+        self.assertEqual(node.public_ips[1].extra['mac'], '02:00:c0:a8:01:03')
+        self.assertEqual(node.private_ips, [])
+        self.assertEqual(node.size, None)
+        self.assertEqual(node.image, None)
+        context = node.extra['context']
+        self.assertEqual(context['hostname'], 'compute-25')
 
     def test_list_images(self):
         """
@@ -455,6 +515,104 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(network.name, 'Network 15')
         self.assertEqual(network.address, '192.168.1.0')
         self.assertEqual(network.size, '256')
+
+
+class OpenNebula_3_0_Tests(unittest.TestCase, TestCaseMixin):
+    """
+    OpenNebula.org test suite for OpenNebula v3.0.
+    """
+
+    def setUp(self):
+        """
+        Setup test environment.
+        """
+        OpenNebulaNodeDriver.connectionCls.conn_classes = (
+            OpenNebula_3_0_MockHttp, OpenNebula_3_0_MockHttp)
+        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.0',))
+
+    def test_ex_list_networks(self):
+        """
+        Test ex_list_networks functionality.
+        """
+        networks = self.driver.ex_list_networks()
+
+        self.assertEqual(len(networks), 2)
+        network = networks[0]
+        self.assertEqual(network.id, '5')
+        self.assertEqual(network.name, 'Network 5')
+        self.assertEqual(network.address, '192.168.0.0')
+        self.assertEqual(network.size, '256')
+        self.assertEqual(network.extra['public'], 'YES')
+        network = networks[1]
+        self.assertEqual(network.id, '15')
+        self.assertEqual(network.name, 'Network 15')
+        self.assertEqual(network.address, '192.168.1.0')
+        self.assertEqual(network.size, '256')
+        self.assertEqual(network.extra['public'], 'NO')
+
+    def test_ex_node_set_save_name(self):
+        """
+        Test ex_node_action functionality.
+        """
+        image = NodeImage(id=5, name='Ubuntu 9.04 LAMP', driver=self.driver)
+        node = Node(5, None, None, None, None, self.driver, image=image)
+        ret = self.driver.ex_node_set_save_name(node, 'test')
+        self.assertTrue(ret)
+
+
+class OpenNebula_3_2_Tests(unittest.TestCase, TestCaseMixin):
+    """
+    OpenNebula.org test suite for OpenNebula v3.2.
+    """
+
+    def setUp(self):
+        """
+        Setup test environment.
+        """
+        OpenNebulaNodeDriver.connectionCls.conn_classes = (
+            OpenNebula_3_2_MockHttp, OpenNebula_3_2_MockHttp)
+        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.2',))
+
+    def test_list_sizes(self):
+        """
+        Test ex_list_networks functionality.
+        """
+        sizes = self.driver.list_sizes()
+
+        self.assertEqual(len(sizes), 3)
+        size = sizes[0]
+        self.assertEqual(size.id, '1')
+        self.assertEqual(size.name, 'small')
+        self.assertEqual(size.ram, 1024)
+        self.assertTrue(size.cpu is None or isinstance(size.cpu, float))
+        self.assertTrue(size.vcpu is None or isinstance(size.vcpu, int))
+        self.assertEqual(size.cpu, 1)
+        self.assertEqual(size.vcpu, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.price, None)
+        size = sizes[1]
+        self.assertEqual(size.id, '2')
+        self.assertEqual(size.name, 'medium')
+        self.assertEqual(size.ram, 4096)
+        self.assertTrue(size.cpu is None or isinstance(size.cpu, float))
+        self.assertTrue(size.vcpu is None or isinstance(size.vcpu, int))
+        self.assertEqual(size.cpu, 4)
+        self.assertEqual(size.vcpu, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.price, None)
+        size = sizes[2]
+        self.assertEqual(size.id, '3')
+        self.assertEqual(size.name, 'large')
+        self.assertEqual(size.ram, 8192)
+        self.assertTrue(size.cpu is None or isinstance(size.cpu, float))
+        self.assertTrue(size.vcpu is None or isinstance(size.vcpu, int))
+        self.assertEqual(size.cpu, 8)
+        self.assertEqual(size.vcpu, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.price, None)
 
 
 class OpenNebula_1_4_MockHttp(MockHttp):
@@ -675,6 +833,24 @@ class OpenNebula_2_0_MockHttp(MockHttp):
             return (httplib.NO_CONTENT, body, {},
                     httplib.responses[httplib.NO_CONTENT])
 
+    def _compute_25(self, method, url, body, headers):
+        """
+        Compute entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures.load('compute_25.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'PUT':
+            body = ""
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
+
     def _storage_5(self, method, url, body, headers):
         """
         Storage entry resource.
@@ -726,6 +902,69 @@ class OpenNebula_2_0_MockHttp(MockHttp):
             body = ""
             return (httplib.NO_CONTENT, body, {},
                     httplib.responses[httplib.NO_CONTENT])
+
+
+class OpenNebula_3_0_MockHttp(OpenNebula_2_0_MockHttp):
+    """
+    Mock HTTP server for testing v3.0 of the OpenNebula.org compute driver.
+    """
+
+    fixtures_3_0 = ComputeFileFixtures('opennebula_3_0')
+
+    def _network(self, method, url, body, headers):
+        """
+        Network pool resources.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_0.load('network_collection.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'POST':
+            body = self.fixtures.load('network_5.xml')
+            return (httplib.CREATED, body, {},
+                    httplib.responses[httplib.CREATED])
+
+    def _network_5(self, method, url, body, headers):
+        """
+        Network entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_0.load('network_5.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
+
+    def _network_15(self, method, url, body, headers):
+        """
+        Network entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_0.load('network_15.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
+
+
+class OpenNebula_3_2_MockHttp(OpenNebula_3_0_MockHttp):
+    """
+    Mock HTTP server for testing v3.2 of the OpenNebula.org compute driver.
+    """
+
+    fixtures_3_2 = ComputeFileFixtures('opennebula_3_2')
+
+    def _instance_type(self, method, url, body, headers):
+        """
+        Instance type pool.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_2.load('instance_type_collection.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

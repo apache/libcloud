@@ -22,11 +22,6 @@ OpenNebula.org driver.
 
 __docformat__ = 'epytext'
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from xml.etree import ElementTree as ET
 from base64 import b64encode
 import hashlib
@@ -49,7 +44,9 @@ __all__ = [
     'OpenNebulaNetwork',
     'OpenNebulaNodeDriver',
     'OpenNebula_1_4_NodeDriver',
-    'OpenNebula_2_0_NodeDriver']
+    'OpenNebula_2_0_NodeDriver',
+    'OpenNebula_3_0_NodeDriver',
+    'OpenNebula_3_2_NodeDriver']
 
 API_HOST = ''
 API_PORT = (4567, 443)
@@ -197,24 +194,8 @@ class OpenNebulaNetwork(object):
         @rtype:  C{string}
         @return: Unique identifier for this instance.
         """
-        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
-
-    def destroy(self):
-        """
-        Destroy this network.
-
-        This calls the networks's driver and destroys the network.
-
-        >>> from libcloud.network.drivers.dummy import DummyNetworkDriver
-        >>> driver = DummyNetworkDriver()
-        >>> network = driver.create_network()
-        >>> network.destroy()
-        True
-
-        @return: True is the network was destroyed, else False.
-        @rtype:  C{bool}
-        """
-        return self.driver.destroy_network(self)
+        return hashlib.sha1(b("%s:%d" % (self.id,
+                                         self.driver.type))).hexdigest()
 
     def __repr__(self):
         return (('<OpenNebulaNetwork: uuid=%s, name=%s, address=%s, size=%s, '
@@ -250,8 +231,12 @@ class OpenNebulaNodeDriver(NodeDriver):
         if cls is OpenNebulaNodeDriver:
             if api_version in ['1.4']:
                 cls = OpenNebula_1_4_NodeDriver
-            elif api_version in ['2.0', '2.2', '3.0', '3.2']:
+            elif api_version in ['2.0', '2.2']:
                 cls = OpenNebula_2_0_NodeDriver
+            elif api_version in ['3.0']:
+                cls = OpenNebula_3_0_NodeDriver
+            elif api_version in ['3.2']:
+                cls = OpenNebula_3_2_NodeDriver
             else:
                 raise NotImplementedError(
                     "No OpenNebulaNodeDriver found for API version %s" %
@@ -280,7 +265,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         instance_type.text = kwargs['size'].name
 
         storage = ET.SubElement(compute, 'STORAGE')
-        disk = ET.SubElement(storage, 'DISK', {'image': '%s' %
+        ET.SubElement(storage, 'DISK', {'image': '%s' %
                                                   (str(kwargs['image'].id))})
 
         if 'networks' in kwargs:
@@ -290,11 +275,11 @@ class OpenNebulaNodeDriver(NodeDriver):
             networkGroup = ET.SubElement(compute, 'NETWORK')
             for network in kwargs['networks']:
                 if network.address:
-                    nic = ET.SubElement(networkGroup, 'NIC',
+                    ET.SubElement(networkGroup, 'NIC',
                         {'network': '%s' % (str(network.id)),
                         'ip': network.address})
                 else:
-                    nic = ET.SubElement(networkGroup, 'NIC',
+                    ET.SubElement(networkGroup, 'NIC',
                         {'network': '%s' % (str(network.id))})
 
         xml = ET.tostring(compute)
@@ -396,7 +381,7 @@ class OpenNebulaNodeDriver(NodeDriver):
         compute = ET.Element('COMPUTE')
 
         compute_id = ET.SubElement(compute, 'ID')
-        compute_id.text = str(compute_node_id)
+        compute_id.text = compute_node_id
 
         state = ET.SubElement(compute, 'STATE')
         state.text = action
@@ -528,12 +513,10 @@ class OpenNebulaNodeDriver(NodeDriver):
         except KeyError:
             state = NodeState.UNKNOWN
 
-        networks = self._extract_networks(compute)
-
         return Node(id=compute.findtext('ID'),
                     name=compute.findtext('NAME'),
                     state=state,
-                    public_ips=networks,
+                    public_ips=self._extract_networks(compute),
                     private_ips=[],
                     driver=self.connection.driver,
                     image=self._extract_images(compute))
@@ -607,7 +590,7 @@ class OpenNebula_1_4_NodeDriver(OpenNebulaNodeDriver):
 class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
     """
     OpenNebula.org node driver for OpenNebula.org v2.0 through OpenNebula.org
-    v3.2.
+    v2.2.
     """
 
     def create_node(self, **kwargs):
@@ -635,7 +618,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         instance_type.text = kwargs['size'].name
 
         disk = ET.SubElement(compute, 'DISK')
-        storage = ET.SubElement(disk, 'STORAGE', {'href': '/storage/%s' %
+        ET.SubElement(disk, 'STORAGE', {'href': '/storage/%s' %
                                                   (str(kwargs['image'].id))})
 
         if 'networks' in kwargs:
@@ -644,7 +627,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
             for network in kwargs['networks']:
                 nic = ET.SubElement(compute, 'NIC')
-                network_line = ET.SubElement(nic, 'NETWORK',
+                ET.SubElement(nic, 'NETWORK',
                             {'href': '/network/%s' % (str(network.id))})
                 if network.address:
                     ip_line = ET.SubElement(nic, 'IP')
@@ -772,12 +755,10 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         except KeyError:
             state = NodeState.UNKNOWN
 
-        networks = self._extract_networks(compute)
-
         return Node(id=compute.findtext('ID'),
                     name=compute.findtext('NAME'),
                     state=state,
-                    public_ips=networks,
+                    public_ips=self._extract_networks(compute),
                     private_ips=[],
                     driver=self.connection.driver,
                     image=self._extract_images(compute),
@@ -889,3 +870,121 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
                 contexts[context_element.tag.lower()] = context_element.text
 
         return contexts
+
+
+class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
+    """
+    OpenNebula.org node driver for OpenNebula.org v3.0.
+    """
+
+    def ex_node_set_save_name(self, node, name):
+        """
+        Build action representation and instruct node to commit action.
+
+        Build action representation from the compute node ID, the disk image
+        which will be saved, and the name under which the image will be saved
+        upon shutting down the compute node.
+
+        @type  node: L{Node}
+        @param node: Compute node instance.
+        @type  name: C{str}
+        @param name: Name under which the image should be saved after shutting
+                     down the compute node.
+
+        @rtype:  C{bool}
+        @return: False if an HTTP Bad Request is received, else, True is
+                 returned.
+        """
+        compute_node_id = str(node.id)
+
+        compute = ET.Element('COMPUTE')
+
+        compute_id = ET.SubElement(compute, 'ID')
+        compute_id.text = compute_node_id
+
+        disk = ET.SubElement(compute, 'DISK', {'id': str(node.image.id)})
+
+        ET.SubElement(disk, 'STORAGE', {'href': '/storage/%s' %
+                                        (str(node.image.id)),
+                                        'name': node.image.name})
+
+        ET.SubElement(disk, 'SAVE_AS', {'name': str(name)})
+
+        xml = ET.tostring(compute)
+
+        url = '/compute/%s' % compute_node_id
+        resp = self.connection.request(url, method='PUT',
+                                        data=xml)
+
+        if resp.status == httplib.BAD_REQUEST:
+            return False
+        else:
+            return True
+
+    def _to_network(self, element):
+        """
+        Take XML object containing a network description and convert to
+        OpenNebulaNetwork object.
+
+        Take XML representation containing a network description and
+        convert to OpenNebulaNetwork object.
+
+        @rtype:  L{OpenNebulaNetwork}
+        @return: The newly extracted L{OpenNebulaNetwork}.
+        """
+        return OpenNebulaNetwork(id=element.findtext('ID'),
+                      name=element.findtext('NAME'),
+                      address=element.findtext('ADDRESS'),
+                      size=element.findtext('SIZE'),
+                      driver=self.connection.driver,
+                      extra={'public': element.findtext('PUBLIC')})
+
+
+class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
+    """
+    OpenNebula.org node driver for OpenNebula.org v3.2.
+    """
+
+    def list_sizes(self, location=None):
+        """
+        Return list of sizes on a provider.
+
+        See L{NodeDriver.list_sizes} for more args.
+
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
+        @return: List of compute node sizes supported by the cloud provider.
+        """
+        return self._to_sizes(self.connection.request('/instance_type').object)
+
+    def _to_sizes(self, object):
+        """
+        Request a list of instance types and convert that list to a list of
+        OpenNebulaNodeSize objects.
+
+        Request a list of instance types from the OpenNebula web interface,
+        and issue a request to convert each XML object representation of an
+        instance type to an OpenNebulaNodeSize object.
+
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
+        @return: List of instance types.
+        """
+        sizes = []
+        ids = 1
+        for element in object.findall('INSTANCE_TYPE'):
+            sizes.append(OpenNebulaNodeSize(id=ids,
+                         name=element.findtext('NAME'),
+                         ram=int(element.findtext('MEMORY'))
+                             if element.findtext('MEMORY', None) else None,
+                         cpu=float(element.findtext('CPU'))
+                             if element.findtext('CPU', None) else None,
+                         vcpu=int(element.findtext('VCPU'))
+                             if element.findtext('VCPU', None) else None,
+                         disk=element.findtext('DISK', None),
+                         bandwidth=float(element.findtext('BANDWIDTH'))
+                             if element.findtext('BANDWIDTH', None) else None,
+                         price=float(element.findtext('PRICE'))
+                             if element.findtext('PRICE', None) else None,
+                         driver=self))
+            ids += 1
+
+        return sizes
