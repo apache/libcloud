@@ -24,7 +24,7 @@ from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import NodeLocation
 
 HOST = 'api.gogrid.com'
-PORTS_BY_SECURITY = { True: 443, False: 80 }
+PORTS_BY_SECURITY = {True: 443, False: 80}
 API_VERSION = '1.8'
 
 __all__ = ["GoGridResponse",
@@ -36,8 +36,8 @@ __all__ = ["GoGridResponse",
 class GoGridResponse(JsonResponse):
 
     def __init__(self, *args, **kwargs):
-       self.driver = BaseGoGridDriver
-       super(GoGridResponse, self).__init__(*args, **kwargs)
+        self.driver = BaseGoGridDriver
+        super(GoGridResponse, self).__init__(*args, **kwargs)
 
     def success(self):
         if self.status == 403:
@@ -76,7 +76,7 @@ class GoGridConnection(ConnectionUserAndKey):
 
     def get_signature(self, key, secret):
         """ create sig from md5 of key + secret + time """
-        m = hashlib.md5(b(key+secret+str(int(time.time()))))
+        m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
 class GoGridIpAddress(object):
@@ -111,8 +111,8 @@ class BaseGoGridDriver(object):
         return ip
 
     def _to_ips(self, object):
-        return [ self._to_ip(el)
-                for el in object['list'] ]
+        return [self._to_ip(el)
+                for el in object['list']]
 
     def _to_location(self, element):
         location = NodeLocation(id=element['id'],
@@ -124,7 +124,6 @@ class BaseGoGridDriver(object):
     def _to_locations(self, object):
         return [self._to_location(el)
                 for el in object['list']]
-
 
     def ex_list_ips(self, **kwargs):
         """Return list of IP addresses assigned to

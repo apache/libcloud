@@ -12,10 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Driver for the IBM Developer Cloud.
 """
-import base64, urllib
+
+import base64
 
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import b
@@ -67,22 +69,22 @@ class IBMNodeDriver(NodeDriver):
     type = Provider.IBM
     name = "IBM Developer Cloud"
 
-    NODE_STATE_MAP = { 0: NodeState.PENDING,    # New
-                       1: NodeState.PENDING,    # Provisioning
-                       2: NodeState.TERMINATED, # Failed
-                       3: NodeState.TERMINATED, # Removed
-                       4: NodeState.TERMINATED, # Rejected
-                       5: NodeState.RUNNING,    # Active
-                       6: NodeState.UNKNOWN,    # Unknown
-                       7: NodeState.PENDING,    # Deprovisioning
-                       8: NodeState.REBOOTING,  # Restarting
-                       9: NodeState.PENDING,    # Starting
-                       10: NodeState.PENDING,   # Stopping
-                       11: NodeState.TERMINATED,# Stopped
-                       12: NodeState.PENDING,   # Deprovision Pending
-                       13: NodeState.PENDING,   # Restart Pending
-                       14: NodeState.PENDING,   # Attaching
-                       15: NodeState.PENDING }  # Detaching
+    NODE_STATE_MAP = { 0: NodeState.PENDING,      # New
+                       1: NodeState.PENDING,      # Provisioning
+                       2: NodeState.TERMINATED,   # Failed
+                       3: NodeState.TERMINATED,   # Removed
+                       4: NodeState.TERMINATED,   # Rejected
+                       5: NodeState.RUNNING,      # Active
+                       6: NodeState.UNKNOWN,      # Unknown
+                       7: NodeState.PENDING,      # Deprovisioning
+                       8: NodeState.REBOOTING,    # Restarting
+                       9: NodeState.PENDING,      # Starting
+                       10: NodeState.PENDING,     # Stopping
+                       11: NodeState.TERMINATED,  # Stopped
+                       12: NodeState.PENDING,     # Deprovision Pending
+                       13: NodeState.PENDING,     # Restart Pending
+                       14: NodeState.PENDING,     # Attaching
+                       15: NodeState.PENDING }    # Detaching
 
     def create_node(self, **kwargs):
         """

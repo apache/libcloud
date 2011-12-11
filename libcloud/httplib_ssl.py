@@ -25,6 +25,7 @@ import warnings
 import libcloud.security
 from libcloud.utils.py3 import httplib
 
+
 class LibcloudHTTPSConnection(httplib.HTTPSConnection):
     """LibcloudHTTPSConnection
 
@@ -73,10 +74,12 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
             self.ca_cert = ca_certs_available[0]
         else:
             if self.strict:
-                raise RuntimeError(libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
+                raise RuntimeError(
+                    libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG)
             else:
                 # no certificates found; toggle verify to False
-                warnings.warn(libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
+                warnings.warn(
+                    libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
                 self.ca_cert = None
                 self.verify = False
 
@@ -126,9 +129,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
                     r"*", r"[0-9A-Za-z]+"
                 )
             )
-            for pattern
-            in (set(common_name) | set(alt_names))
-        ]
+            for pattern in (set(common_name) | set(alt_names))]
 
         return any(
             pattern.search(hostname)

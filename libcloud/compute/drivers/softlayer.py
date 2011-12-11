@@ -95,19 +95,19 @@ SL_TEMPLATES = {
             'disk': 100,
             'bandwidth': None
         },
-        'prices': [
-            {'id': 1644}, # 1 GB
-            {'id': 1639}, # 100 GB (SAN)
-            {'id': 1963}, # Private 2 x 2.0 GHz Cores
-            {'id': 21}, # 1 IP Address
-            {'id': 55}, # Host Ping
-            {'id': 58}, # Automated Notification
-            {'id': 1800}, # 0 GB Bandwidth
-            {'id': 57}, # Email and Ticket
-            {'id': 274}, # 1000 Mbps Public & Private Networks
-            {'id': 905}, # Reboot / Remote Console
-            {'id': 418}, # Nessus Vulnerability Assessment & Reporting
-            {'id': 420}, # Unlimited SSL VPN Users & 1 PPTP VPN User per account
+        'prices':[
+            {'id': 1644},  # 1 GB
+            {'id': 1639},  # 100 GB (SAN)
+            {'id': 1963},  # Private 2 x 2.0 GHz Cores
+            {'id': 21},  # 1 IP Address
+            {'id': 55},  # Host Ping
+            {'id': 58},  # Automated Notification
+            {'id': 1800},  # 0 GB Bandwidth
+            {'id': 57},  # Email and Ticket
+            {'id': 274},  # 1000 Mbps Public & Private Networks
+            {'id': 905},  # Reboot / Remote Console
+            {'id': 418},  # Nessus Vulnerability Assessment & Reporting
+            {'id': 420},  # Unlimited SSL VPN Users & 1 PPTP VPN User per account
         ],
     },
     'sl2': {
@@ -118,19 +118,19 @@ SL_TEMPLATES = {
             'bandwidth': None
         },
         'prices': [
-            {'id': 1646}, # 4 GB
-            {'id': 1639}, # 100 GB (SAN) - This is the only available "First Disk"
-            {'id': 1638}, # 250 GB (SAN)
-            {'id': 1963}, # Private 2 x 2.0 GHz Cores
-            {'id': 21}, # 1 IP Address
-            {'id': 55}, # Host Ping
-            {'id': 58}, # Automated Notification
-            {'id': 1800}, # 0 GB Bandwidth
-            {'id': 57}, # Email and Ticket
-            {'id': 274}, # 1000 Mbps Public & Private Networks
-            {'id': 905}, # Reboot / Remote Console
-            {'id': 418}, # Nessus Vulnerability Assessment & Reporting
-            {'id': 420}, # Unlimited SSL VPN Users & 1 PPTP VPN User per account
+            {'id': 1646},  # 4 GB
+            {'id': 1639},  # 100 GB (SAN) - This is the only available "First Disk"
+            {'id': 1638},  # 250 GB (SAN)
+            {'id': 1963},  # Private 2 x 2.0 GHz Cores
+            {'id': 21},  # 1 IP Address
+            {'id': 55},  # Host Ping
+            {'id': 58},  # Automated Notification
+            {'id': 1800},  # 0 GB Bandwidth
+            {'id': 57},  # Email and Ticket
+            {'id': 274},  # 1000 Mbps Public & Private Networks
+            {'id': 905},  # Reboot / Remote Console
+            {'id': 418},  # Nessus Vulnerability Assessment & Reporting
+            {'id': 420},  # Unlimited SSL VPN Users & 1 PPTP VPN User per account
         ],
     }
 }
@@ -256,8 +256,8 @@ class SoftLayerNodeDriver(NodeDriver):
             password = None
 
         hourlyRecurringFee = host.get('billingItem', {}).get('hourlyRecurringFee', 0)
-        recurringFee       = host.get('billingItem', {}).get('recurringFee', 0)
-        recurringMonths    = host.get('billingItem', {}).get('recurringMonths', 0)
+        recurringFee = host.get('billingItem', {}).get('recurringFee', 0)
+        recurringMonths = host.get('billingItem', {}).get('recurringMonths', 0)
 
         return Node(
             id=host['id'],
@@ -398,7 +398,7 @@ class SoftLayerNodeDriver(NodeDriver):
         )
 
     def list_sizes(self, location=None):
-        return [self._to_size(id, s['imagedata']) for id, s in 
+        return [self._to_size(id, s['imagedata']) for id, s in
                 list(SL_TEMPLATES.items())]
 
     def _to_loc(self, loc):

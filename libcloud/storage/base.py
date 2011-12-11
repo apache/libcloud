@@ -709,7 +709,7 @@ class StorageDriver(BaseDriver):
                  one is the uploaded data MD5 hash and the third one
                  is the number of transferred bytes.
         """
-        with open (file_path, 'rb') as file_handle:
+        with open(file_path, 'rb') as file_handle:
             success, data_hash, bytes_transferred = (
                 self._stream_data(
                     response=response,

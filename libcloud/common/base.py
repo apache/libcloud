@@ -136,9 +136,9 @@ class XmlResponse(Response):
             return self.body
 
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML",
+            raise MalformedResponseError("Failed to parse XML",
                                        body=self.body,
                                        driver=self.connection.driver)
         return body
@@ -155,7 +155,6 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
-
 
     @property
     def response(self):
@@ -208,10 +207,12 @@ class LoggingConnection():
         for h in r.getheaders():
             ht += "%s: %s\r\n" % (h[0].title(), h[1])
         ht += "\r\n"
+
         # this is evil. laugh with me. ha arharhrhahahaha
         class fakesock:
             def __init__(self, s):
                 self.s = s
+
             def makefile(self, mode, foo):
                 return StringIO(self.s)
         rr = r
@@ -261,11 +262,12 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
+            pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
-        return LibcloudHTTPSConnection.request(self, method, url, body, headers)
+        return LibcloudHTTPSConnection.request(self, method, url, body,
+                                               headers)
 
 class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
@@ -283,7 +285,7 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
+            pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
@@ -326,7 +328,8 @@ class Connection(object):
                 self.port = 80
 
         if url:
-            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(url)
+            (self.host, self.port, self.secure,
+             self.request_path) = self._tuple_from_url(url)
 
     def set_context(self, context):
         self.context = context
@@ -334,7 +337,8 @@ class Connection(object):
     def _tuple_from_url(self, url):
         secure = 1
         port = None
-        scheme, netloc, request_path, param, query, fragment = urlparse.urlparse(url)
+        (scheme, netloc, request_path, param,
+         query, fragment) = urlparse.urlparse(url)
 
         if scheme not in ['http', 'https']:
             raise LibcloudError('Invalid scheme: %s in url %s' % (scheme, url))
@@ -356,7 +360,7 @@ class Connection(object):
 
         return (host, port, secure, request_path)
 
-    def connect(self, host=None, port=None, base_url = None):
+    def connect(self, host=None, port=None, base_url=None):
         """
         Establish a connection with the API server.
 
@@ -511,7 +515,7 @@ class Connection(object):
         return response
 
     def morph_action_hook(self, action):
-        return self.request_path  + action
+        return self.request_path + action
 
     def add_default_params(self, params):
         """
@@ -570,7 +574,7 @@ class PollingConnection(Connection):
         """
         Perform an 'async' request to the specified path. Keep in mind that
         this function is *blocking* and 'async' in this case means that the
-        hit URL only returns a job ID which is the periodically polled until 
+        hit URL only returns a job ID which is the periodically polled until
         the job has completed.
 
         This function works like this:

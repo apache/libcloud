@@ -375,9 +375,9 @@ class NodeDriver(BaseDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None):
-      super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                       host=host, port=port,
-                                       api_version=api_version)
+        super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                         host=host, port=port,
+                                         api_version=api_version)
 
     def create_node(self, **kwargs):
         """Create a new node instance.

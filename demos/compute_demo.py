@@ -31,13 +31,15 @@ import os.path
 import sys
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                 os.path.pardir)))
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider
 from libcloud.providers import get_driver
 
 from pprint import pprint
+
 
 def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
     """An easy way to play with a driver interactively.
@@ -77,8 +79,8 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
         return DriverClass(*args, **kwargs)
     except InvalidCredsError:
         raise InvalidCredsError(
-            'valid values should be put in secrets.py'
-        )
+            'valid values should be put in secrets.py')
+
 
 def main(argv):
     """Main Compute Demo

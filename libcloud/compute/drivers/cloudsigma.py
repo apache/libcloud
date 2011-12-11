@@ -137,6 +137,7 @@ NODE_STATE_MAP = {
 # Default timeout (in seconds) for the drive imaging process
 IMAGING_TIMEOUT = 20 * 60
 
+
 class CloudSigmaException(Exception):
     def __str__(self):
         return self.args[0]
@@ -144,9 +145,11 @@ class CloudSigmaException(Exception):
     def __repr__(self):
         return "<CloudSigmaException '%s'>" % (self.args[0])
 
+
 class CloudSigmaInsufficientFundsException(Exception):
     def __repr__(self):
         return "<CloudSigmaInsufficientFundsException '%s'>" % (self.args[0])
+
 
 class CloudSigmaResponse(Response):
     def success(self):
@@ -163,6 +166,7 @@ class CloudSigmaResponse(Response):
 
     def parse_error(self):
         return 'Error: %s' % (self.body.replace('errors:', '').strip())
+
 
 class CloudSigmaNodeSize(NodeSize):
     def __init__(self, id, name, cpu, ram, disk, bandwidth, price, driver):
@@ -181,6 +185,7 @@ class CloudSigmaNodeSize(NodeSize):
                 % (self.id, self.name, self.cpu, self.ram, self.disk, self.bandwidth,
                    self.price, self.driver.name))
 
+
 class CloudSigmaBaseConnection(ConnectionUserAndKey):
     host = API_ENDPOINTS[DEFAULT_ENDPOINT]['host']
     responseCls = CloudSigmaResponse
@@ -193,6 +198,7 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
                                                  (self.user_id, self.key))))
 
         return headers
+
 
 class CloudSigmaBaseNodeDriver(NodeDriver):
     type = Provider.CLOUDSIGMA
@@ -238,37 +244,37 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         if not stopped:
             raise CloudSigmaException('Could not stop node with id %s' % (node.id))
 
-        response = self.connection.request(action = '/servers/%s/destroy' % (node.id),
-                                           method = 'POST')
+        response = self.connection.request(action='/servers/%s/destroy' % (node.id),
+                                           method='POST')
         return response.status == 204
 
     def list_images(self, location=None):
         """
         Return a list of available standard images (this call might take up to 15 seconds to return).
         """
-        response = self.connection.request(action = '/drives/standard/info').object
+        response = self.connection.request(action='/drives/standard/info').object
 
         images = []
         for value in response:
             if value.get('type'):
                 if value['type'] == 'disk':
-                    image = NodeImage(id = value['drive'], name = value['name'], driver = self.connection.driver,
-                                    extra = {'size': value['size']})
+                    image = NodeImage(id=value['drive'], name=value['name'], driver=self.connection.driver,
+                                    extra={'size': value['size']})
                     images.append(image)
 
         return images
 
-    def list_sizes(self, location = None):
+    def list_sizes(self, location=None):
         """
         Return a list of available node sizes.
         """
         sizes = []
         for key, value in INSTANCE_TYPES.items():
-            size = CloudSigmaNodeSize(id = value['id'], name = value['name'],
-                                      cpu = value['cpu'], ram = value['memory'],
-                                      disk = value['disk'], bandwidth = value['bandwidth'],
-                                      price = self._get_size_price(size_id=key),
-                                      driver = self.connection.driver)
+            size = CloudSigmaNodeSize(id=value['id'], name=value['name'],
+                                      cpu=value['cpu'], ram=value['memory'],
+                                      disk=value['disk'], bandwidth=value['bandwidth'],
+                                      price=self._get_size_price(size_id=key),
+                                      driver=self.connection.driver)
             sizes.append(size)
 
         return sizes
@@ -277,7 +283,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Return a list of nodes.
         """
-        response = self.connection.request(action = '/servers/info').object
+        response = self.connection.request(action='/servers/info').object
 
         nodes = []
         for data in response:
@@ -326,18 +332,18 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                            'size': '%sG' % (kwargs['size'].disk),
                            'driveType': drive_type})
 
-        response = self.connection.request(action = '/drives/%s/clone' % image.id, data = dict2str(drive_data),
-                                           method = 'POST').object
+        response = self.connection.request(action='/drives/%s/clone' % image.id, data=dict2str(drive_data),
+                                           method='POST').object
 
         if not response:
             raise CloudSigmaException('Drive creation failed')
 
         drive_uuid = response[0]['drive']
 
-        response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
+        response = self.connection.request(action='/drives/%s/info' % (drive_uuid)).object
         imaging_start = time.time()
         while 'imaging' in response[0]:
-            response = self.connection.request(action = '/drives/%s/info' % (drive_uuid)).object
+            response = self.connection.request(action='/drives/%s/info' % (drive_uuid)).object
             elapsed_time = time.time() - imaging_start
             if 'imaging' in response[0] and elapsed_time >= IMAGING_TIMEOUT:
                 raise CloudSigmaException('Drive imaging timed out')
@@ -351,11 +357,11 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         if vnc_password:
             node_data.update({'vnc:ip': 'auto', 'vnc:password': vnc_password})
 
-        response = self.connection.request(action = '/servers/create', data = dict2str(node_data),
-                                           method = 'POST').object
+        response = self.connection.request(action='/servers/create', data=dict2str(node_data),
+                                           method='POST').object
 
         if not isinstance(response, list):
-            response = [ response ]
+            response = [response]
 
         node = self._to_node(response[0])
         if node is None:
@@ -397,7 +403,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Return a list of available static IP addresses.
         """
-        response = self.connection.request(action = '/resources/ip/list', method = 'GET')
+        response = self.connection.request(action='/resources/ip/list', method='GET')
 
         if response.status != 200:
             raise CloudSigmaException('Could not retrieve IP list')
@@ -409,7 +415,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Return a list of all the available drives.
         """
-        response = self.connection.request(action = '/drives/info', method = 'GET')
+        response = self.connection.request(action='/drives/info', method='GET')
 
         result = str2dicts(response.body)
         return result
@@ -418,7 +424,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Create a new static IP address.
         """
-        response = self.connection.request(action = '/resources/ip/create', method = 'GET')
+        response = self.connection.request(action='/resources/ip/create', method='GET')
 
         result = str2dicts(response.body)
         return result
@@ -427,7 +433,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Destroy a static IP address.
         """
-        response = self.connection.request(action = '/resources/ip/%s/destroy' % (ip_address), method = 'GET')
+        response = self.connection.request(action='/resources/ip/%s/destroy' % (ip_address), method='GET')
 
         return response.status == 204
 
@@ -436,10 +442,9 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Destroy a drive with a specified uuid.
         If the drive is currently mounted an exception is thrown.
         """
-        response = self.connection.request(action = '/drives/%s/destroy' % (drive_uuid), method = 'POST')
+        response = self.connection.request(action='/drives/%s/destroy' % (drive_uuid), method='POST')
 
         return response.status == 204
-
 
     def ex_set_node_configuration(self, node, **kwargs):
         """
@@ -464,8 +469,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         if invalid_keys:
             raise CloudSigmaException('Invalid configuration key specified: %s' % (',' .join(invalid_keys)))
 
-        response = self.connection.request(action = '/servers/%s/set' % (node.id), data = dict2str(kwargs),
-                                           method = 'POST')
+        response = self.connection.request(action='/servers/%s/set' % (node.id), data=dict2str(kwargs),
+                                           method='POST')
 
         return (response.status == 200 and response.body != '')
 
@@ -473,8 +478,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Start a node.
         """
-        response = self.connection.request(action = '/servers/%s/start' % (node.id),
-                                           method = 'POST')
+        response = self.connection.request(action='/servers/%s/start' % (node.id),
+                                           method='POST')
 
         return response.status == 200
 
@@ -482,8 +487,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Stop (shutdown) a node.
         """
-        response = self.connection.request(action = '/servers/%s/stop' % (node.id),
-                                           method = 'POST')
+        response = self.connection.request(action='/servers/%s/stop' % (node.id),
+                                           method='POST')
         return response.status == 204
 
     def ex_shutdown_node(self, node):
@@ -496,8 +501,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Destroy a drive.
         """
-        response = self.connection.request(action = '/drives/%s/destroy' % (drive_uuid),
-                                           method = 'POST')
+        response = self.connection.request(action='/drives/%s/destroy' % (drive_uuid),
+                                           method='POST')
         return response.status == 204
 
     def _to_node(self, data):
@@ -520,7 +525,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
                     public_ips = [data['nic:0:dhcp']]
 
             extra = {}
-            extra_keys = [ ('cpu', 'int'), ('smp', 'auto'), ('mem', 'int'), ('status', 'str') ]
+            extra_keys = [('cpu', 'int'), ('smp', 'auto'), ('mem', 'int'), ('status', 'str')]
             for key, value_type in extra_keys:
                 if key in data:
                     value = data[key]
@@ -538,9 +543,9 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
             if 'vnc:ip' in data and 'vnc:password' in data:
                 extra.update({'vnc_ip': data['vnc:ip'], 'vnc_password': data['vnc:password']})
 
-            node = Node(id = data['server'], name = data['name'], state =  state,
-                        public_ips = public_ips, private_ips = None, driver = self.connection.driver,
-                        extra = extra)
+            node = Node(id=data['server'], name=data['name'], state=state,
+                        public_ips=public_ips, private_ips=None, driver=self.connection.driver,
+                        extra=extra)
 
             return node
         return None
@@ -555,16 +560,18 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         return node[0]
 
     def _get_node_info(self, node):
-        response = self.connection.request(action = '/servers/%s/info' % (node.id))
+        response = self.connection.request(action='/servers/%s/info' % (node.id))
 
         result = str2dicts(response.body)
         return result[0]
+
 
 class CloudSigmaZrhConnection(CloudSigmaBaseConnection):
     """
     Connection class for the CloudSigma driver for the Zurich end-point
     """
     host = API_ENDPOINTS[DEFAULT_ENDPOINT]['host']
+
 
 class CloudSigmaZrhNodeDriver(CloudSigmaBaseNodeDriver):
     """
@@ -573,11 +580,13 @@ class CloudSigmaZrhNodeDriver(CloudSigmaBaseNodeDriver):
     connectionCls = CloudSigmaZrhConnection
     api_name = 'cloudsigma_zrh'
 
+
 class CloudSigmaLvsConnection(CloudSigmaBaseConnection):
     """
     Connection class for the CloudSigma driver for the Las Vegas end-point
     """
     host = API_ENDPOINTS['lvs']['host']
+
 
 class CloudSigmaLvsNodeDriver(CloudSigmaBaseNodeDriver):
     """

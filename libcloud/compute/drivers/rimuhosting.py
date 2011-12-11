@@ -91,7 +91,7 @@ class RimuHostingConnection(ConnectionKey):
         headers['Content-Type'] = 'application/json'
 
         headers['Authorization'] = 'rimuhosting apikey=%s' % (self.key)
-        return headers;
+        return headers
 
     def request(self, action, params=None, data='', headers=None, method='GET'):
         if not headers:
@@ -116,7 +116,7 @@ class RimuHostingNodeDriver(NodeDriver):
         # Pass in some extra vars so that
         self.key = key
         self.secure = secure
-        self.connection = self.connectionCls(key ,secure)
+        self.connection = self.connectionCls(key, secure)
         self.connection.host = host
         self.connection.api_context = api_context
         self.connection.port = port
@@ -163,25 +163,25 @@ class RimuHostingNodeDriver(NodeDriver):
         # Get plans. Note this is really just for libcloud.
         # We are happy with any size.
         if location == None:
-            location = '';
+            location = ''
         else:
             location = ";dc_location=%s" % (location.id)
 
         res = self.connection.request('/pricing-plans;server-type=VPS%s' % (location)).object
-        return list(map(lambda x : self._to_size(x), res['pricing_plan_infos']))
+        return list(map(lambda x: self._to_size(x), res['pricing_plan_infos']))
 
     def list_nodes(self):
         # Returns a list of Nodes
         # Will only include active ones.
         res = self.connection.request('/orders;include_inactive=N').object
-        return list(map(lambda x : self._to_node(x), res['about_orders']))
+        return list(map(lambda x: self._to_node(x), res['about_orders']))
 
     def list_images(self, location=None):
         # Get all base images.
         # TODO: add other image sources. (Such as a backup of a VPS)
         # All Images are available for use at all locations
         res = self.connection.request('/distributions').object
-        return list(map(lambda x : self._to_image(x), res['distro_infos']))
+        return list(map(lambda x: self._to_image(x), res['distro_infos']))
 
     def reboot_node(self, node):
         # Reboot

@@ -14,11 +14,10 @@
 # limitations under the License.
 
 from libcloud.compute.providers import Provider
-from libcloud.common.cloudstack import CloudStackConnection, \
-                                       CloudStackDriverMixIn
+from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
                                   NodeSize
-from libcloud.compute.types import DeploymentError, NodeState
+from libcloud.compute.types import NodeState
 
 class CloudStackNode(Node):
     "Subclass of Node so we can expose our extension methods."
@@ -201,7 +200,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         extra_args = {}
         if location is None:
             location = self.list_locations()[0]
-
 
         network_id = kwargs.pop('network_id', None)
         if network_id is None:

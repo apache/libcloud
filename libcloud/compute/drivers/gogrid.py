@@ -165,18 +165,17 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         res = self._server_list()
         try:
-          for password in self._password_list()['list']:
-              try:
-                  passwords_map[password['server']['id']] = password['password']
-              except KeyError:
-                  pass
+            for password in self._password_list()['list']:
+                try:
+                    passwords_map[password['server']['id']] = password['password']
+                except KeyError:
+                    pass
         except InvalidCredsError:
-          # some gogrid API keys don't have permission to access the password list.
-          pass
+            # some gogrid API keys don't have permission to access the password list.
+            pass
 
-        return [ self._to_node(el, passwords_map.get(el.get('id')))
-                 for el
-                 in res['list'] ]
+        return [self._to_node(el, passwords_map.get(el.get('id')))
+                 for el in res['list']]
 
     def reboot_node(self, node):
         id = node.id
@@ -213,7 +212,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def _get_first_ip(self, location=None):
         ips = self.ex_list_ips(public=True, assigned=False, location=location)
         try:
-            return ips[0].ip 
+            return ips[0].ip
         except IndexError:
             raise LibcloudError('No public unassigned IPs left',
                     GoGridNodeDriver)

@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-import copy
 import base64
+import copy
 import hmac
 
-from hashlib import sha1
 from email.utils import formatdate
+from hashlib import sha1
 
 from libcloud.utils.py3 import b
 

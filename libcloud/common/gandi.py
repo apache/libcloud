@@ -22,11 +22,7 @@ import hashlib
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b
 
-import libcloud
 from libcloud.common.base import ConnectionKey
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, Node, \
-    NodeLocation, NodeSize, NodeImage
 
 # Global constants
 API_VERSION = '2.0'

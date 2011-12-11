@@ -22,6 +22,7 @@ from libcloud.loadbalancer.base import Member, Algorithm
 from libcloud.loadbalancer.types import Provider, State
 from libcloud.loadbalancer.providers import get_driver
 
+
 def main():
     Rackspace = get_driver(Provider.RACKSPACE_US)
 

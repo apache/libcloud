@@ -215,8 +215,8 @@ class SlicehostNodeDriver(NodeDriver):
         s = NodeSize(id=int(element.findtext('id')),
                      name=str(element.findtext('name')),
                      ram=int(element.findtext('ram')),
-                     disk=None, # XXX: needs hardcode
-                     bandwidth=None, # XXX: needs hardcode
+                     disk=None,  # XXX: needs hardcode
+                     bandwidth=None,  # XXX: needs hardcode
                      price=float(element.findtext('price'))/(100*24*30),
                      driver=self.connection.driver)
         return s

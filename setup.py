@@ -169,8 +169,7 @@ class ApiDocsCommand(Command):
             ' --html-viewsource-base="%s"'
             ' --project-base-dir=`pwd`'
             ' --project-url="%s"'
-            % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR)
-        )
+            % (HTML_VIEWSOURCE_BASE, PROJECT_BASE_DIR))
 
 
 class CoverageCommand(Command):
@@ -217,8 +216,7 @@ setup(
         'libcloud.loadbalancer',
         'libcloud.loadbalancer.drivers',
         'libcloud.dns',
-        'libcloud.dns.drivers'
-    ],
+        'libcloud.dns.drivers'],
     package_dir={
         'libcloud': 'libcloud',
     },
@@ -247,6 +245,4 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.0',
         'Programming Language :: Python :: 3.1',
-        'Programming Language :: Python :: 3.2'
-    ]
-)
+        'Programming Language :: Python :: 3.2'])
