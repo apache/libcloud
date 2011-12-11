@@ -86,9 +86,9 @@ class ECPConnection(ConnectionUserAndKey):
         #Authentication
         username = self.user_id
         password = self.key
-        base64string =  base64.encodestring(
+        base64string = base64.encodestring(
                 b('%s:%s' % (username, password)))[:-1]
-        authheader =  "Basic %s" % base64string
+        authheader = "Basic %s" % base64string
         headers['Authorization']= authheader
 
         return headers
@@ -142,7 +142,6 @@ class ECPNodeDriver(NodeDriver):
 
         #And return it
         return nodes
-
 
     def _to_node(self, vm):
         """
@@ -208,7 +207,6 @@ class ECPNodeDriver(NodeDriver):
                 node.state = NodeState.TERMINATED
             else:
                 time.sleep(5)
-
 
         #Turn the VM back on.
         #Black magic to make the POST requests work
@@ -283,7 +281,6 @@ class ECPNodeDriver(NodeDriver):
 
         return images
 
-
     def list_sizes(self, location=None):
         """
         Returns a list of all hardware templates
@@ -300,9 +297,9 @@ class ECPNodeDriver(NodeDriver):
                 id = htemplate['uuid'],
                 name = htemplate['name'],
                 ram = htemplate['memory'],
-                disk = 0, #Disk is independent of hardware template
-                bandwidth = 0, #There is no way to keep track of bandwidth
-                price = 0, #The billing system is external
+                disk = 0,  # Disk is independent of hardware template.
+                bandwidth = 0,  # There is no way to keep track of bandwidth.
+                price = 0,  # The billing system is external.
                 driver = self,
                 ))
 

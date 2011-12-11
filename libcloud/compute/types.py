@@ -63,7 +63,7 @@ class Provider(object):
     DUMMY = 0
     EC2 = 1  # deprecated name
     EC2_US_EAST = 1
-    EC2_EU = 2 # deprecated name
+    EC2_EU = 2  # deprecated name
     EC2_EU_WEST = 2
     RACKSPACE = 3
     SLICEHOST = 4
@@ -137,6 +137,7 @@ class DeploymentError(LibcloudError):
     def __init__(self, node, original_exception=None):
         self.node = node
         self.value = original_exception
+
     def __str__(self):
         return repr(self.value)
 

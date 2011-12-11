@@ -265,7 +265,6 @@ class VoxelNodeDriver(NodeDriver):
         status = element.attrib["stat"]
         return status == "ok"
 
-
     def _to_locations(self, object):
         return [NodeLocation(element.attrib["label"],
                              element.findtext("description"),

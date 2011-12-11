@@ -239,6 +239,6 @@ class DreamhostNodeDriver(NodeDriver):
             private_ips = [],
             driver = self.connection.driver,
             extra = {
-                'current_size' : data['memory_mb'],
-                'account_id' : data['account_id'],
-                'type' : data['type']})
+                'current_size': data['memory_mb'],
+                'account_id': data['account_id'],
+                'type': data['type']})

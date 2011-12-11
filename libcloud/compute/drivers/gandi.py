@@ -94,7 +94,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
     def reboot_node(self, node):
         op = self.connection.request('vm.reboot', int(node.id))
-        op_res = self._wait_operation(op['id'])
+        self._wait_operation(op['id'])
         vm = self.connection.request('vm.info', int(node.id))
         if vm['state'] == 'running':
             return True
@@ -330,7 +330,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def ex_list_disks(self):
         """Specific method to list all disk"""
         res = self.connection.request('disk.list', {})
-        disks = []
         return self._to_disks(res)
 
     def ex_node_attach_disk(self, node, disk):

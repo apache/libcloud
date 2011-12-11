@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.cloudstack import CloudStackConnection, \
-                                       CloudStackDriverMixIn
+from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import State, LibcloudLBImmutableError
+from libcloud.loadbalancer.types import State
 from libcloud.utils.misc import reverse_dict
 
 class CloudStackLBDriver(CloudStackDriverMixIn, Driver):

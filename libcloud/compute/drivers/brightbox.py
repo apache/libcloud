@@ -104,25 +104,25 @@ class BrightboxNodeDriver(NodeDriver):
     type = Provider.BRIGHTBOX
     name = 'Brightbox'
 
-    NODE_STATE_MAP = { 'creating': NodeState.PENDING,
-                       'active': NodeState.RUNNING,
-                       'inactive': NodeState.UNKNOWN,
-                       'deleting': NodeState.UNKNOWN,
-                       'deleted': NodeState.TERMINATED,
-                       'failed': NodeState.UNKNOWN,
-                       'unavailable': NodeState.UNKNOWN }
+    NODE_STATE_MAP = {'creating': NodeState.PENDING,
+                      'active': NodeState.RUNNING,
+                      'inactive': NodeState.UNKNOWN,
+                      'deleting': NodeState.UNKNOWN,
+                      'deleted': NodeState.TERMINATED,
+                      'failed': NodeState.UNKNOWN,
+                      'unavailable': NodeState.UNKNOWN}
 
     def _to_node(self, data):
         return Node(
-            id = data['id'],
-            name = data['name'],
-            state = self.NODE_STATE_MAP[data['status']],
-            public_ips = list(map(lambda cloud_ip: cloud_ip['public_ip'],
+            id=data['id'],
+            name=data['name'],
+            state=self.NODE_STATE_MAP[data['status']],
+            public_ips=list(map(lambda cloud_ip: cloud_ip['public_ip'],
                                                    data['cloud_ips'])),
-            private_ips = list(map(lambda interface: interface['ipv4_address'],
+            private_ips=list(map(lambda interface: interface['ipv4_address'],
                                                      data['interfaces'])),
-            driver = self.connection.driver,
-            extra = {
+            driver=self.connection.driver,
+            extra={
                 'status': data['status'],
                 'interfaces': data['interfaces']
             }
@@ -130,10 +130,10 @@ class BrightboxNodeDriver(NodeDriver):
 
     def _to_image(self, data):
         return NodeImage(
-            id = data['id'],
-            name = data['name'],
-            driver = self,
-            extra = {
+            id=data['id'],
+            name=data['name'],
+            driver=self,
+            extra={
                 'description': data['description'],
                 'arch': data['arch']
             }
@@ -141,21 +141,21 @@ class BrightboxNodeDriver(NodeDriver):
 
     def _to_size(self, data):
         return NodeSize(
-            id = data['id'],
-            name = data['name'],
-            ram = data['ram'],
-            disk = data['disk_size'],
-            bandwidth = 0,
-            price = 0,
-            driver = self
+            id=data['id'],
+            name=data['name'],
+            ram=data['ram'],
+            disk=data['disk_size'],
+            bandwidth=0,
+            price=0,
+            driver=self
         )
 
     def _to_location(self, data):
         return NodeLocation(
-            id = data['id'],
-            name = data['handle'],
-            country = 'GB',
-            driver = self
+            id=data['id'],
+            name=data['handle'],
+            country='GB',
+            driver=self
         )
 
     def _post(self, path, data={}):

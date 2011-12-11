@@ -153,7 +153,7 @@ class AtmosDriver(StorageDriver):
     def create_container(self, container_name):
         path = self._namespace_path(container_name + '/')
         try:
-            result = self.connection.request(path, method='POST')
+            self.connection.request(path, method='POST')
         except AtmosError:
             e = sys.exc_info()[1]
             if e.code != 1016:
@@ -229,7 +229,6 @@ class AtmosDriver(StorageDriver):
                                           request_method=method,
                                           headers={}, file_path=file_path)
 
-        response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
 
         if extra is None:

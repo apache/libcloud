@@ -32,7 +32,6 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState, InvalidCredsError
-from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
@@ -76,11 +75,11 @@ BLUEBOX_INSTANCE_TYPES = {
 
 RAM_PER_CPU = 2048
 
-NODE_STATE_MAP = { 'queued': NodeState.PENDING,
-                   'building': NodeState.PENDING,
-                   'running': NodeState.RUNNING,
-                   'error': NodeState.TERMINATED,
-                   'unknown': NodeState.UNKNOWN }
+NODE_STATE_MAP = {'queued': NodeState.PENDING,
+                  'building': NodeState.PENDING,
+                  'running': NodeState.RUNNING,
+                  'error': NodeState.TERMINATED,
+                  'unknown': NodeState.UNKNOWN}
 
 class BlueboxResponse(JsonResponse):
     def parse_error(self):
@@ -137,7 +136,7 @@ class BlueboxNodeDriver(NodeDriver):
         sizes = []
         for key, values in list(BLUEBOX_INSTANCE_TYPES.items()):
             attributes = copy.deepcopy(values)
-            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(BlueboxNodeSize(driver=self.connection.driver,
                                          **attributes))
 
@@ -147,12 +146,12 @@ class BlueboxNodeDriver(NodeDriver):
         result = self.connection.request('/api/block_templates.json')
         images = []
         for image in result.object:
-          images.extend([self._to_image(image)])
+            images.extend([self._to_image(image)])
 
         return images
 
     def create_node(self, **kwargs):
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         size = kwargs["size"]
 
         name = kwargs['name']
@@ -213,7 +212,7 @@ class BlueboxNodeDriver(NodeDriver):
         n = Node(id=vm['id'],
                  name=vm['hostname'],
                  state=state,
-                 public_ips=[ ip['address'] for ip in vm['ips'] ],
+                 public_ips=[ip['address'] for ip in vm['ips']],
                  private_ips=[],
                  extra={'storage':vm['storage'], 'cpu':vm['cpu']},
                  driver=self.connection.driver)

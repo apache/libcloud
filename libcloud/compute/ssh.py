@@ -175,7 +175,7 @@ class ParamikoSSHClient(BaseSSHClient):
     def run(self, cmd):
         # based on exec_command()
         bufsize = -1
-        t =  self.client.get_transport()
+        t = self.client.get_transport()
         chan = t.open_session()
         chan.exec_command(cmd)
         stdin = chan.makefile('wb', bufsize)

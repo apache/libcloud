@@ -24,7 +24,10 @@ from libcloud.common.base import ConnectionUserAndKey, PollingConnection
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import MalformedResponseError
 
-class CloudStackResponse(JsonResponse): pass
+
+class CloudStackResponse(JsonResponse):
+    pass
+
 
 class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
@@ -97,6 +100,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
                 driver=self.driver)
         result = result.object[command]
         return result
+
 
 class CloudStackDriverMixIn(object):
     host = None

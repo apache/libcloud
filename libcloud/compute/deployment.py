@@ -120,7 +120,7 @@ class MultiStepDeployment(Deployment):
     """
     Runs a chain of Deployment steps.
     """
-    def __init__(self, add = None):
+    def __init__(self, add=None):
         """
         @type add: C{list}
         @keyword add: Deployment steps to add.

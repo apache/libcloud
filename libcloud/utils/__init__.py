@@ -42,6 +42,3 @@ def in_development_warning(module):
         warnings.warn('The module %s is in development and your are advised '
                       'against using it in production.' % (module),
                       category=FutureWarning)
-
-
-

@@ -29,7 +29,8 @@ PRICING_FILE_PATH = 'data/pricing.json'
 
 PRICING_DATA = {}
 
-VALID_PRICING_DRIVER_TYPES = [ 'compute', 'storage' ]
+VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
+
 
 def clear_pricing_data():
     PRICING_DATA.clear()
@@ -38,6 +39,7 @@ def clear_pricing_data():
         'storage': {},
     })
 clear_pricing_data()
+
 
 def get_pricing_file_path(file_path=None):
     pricing_directory = os.path.dirname(os.path.abspath(__file__))
