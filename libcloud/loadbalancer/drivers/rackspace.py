@@ -44,17 +44,25 @@ class RackspaceResponse(JsonResponse):
 
 class RackspaceHealthMonitor(object):
     """
-    type: type of load balancer.  currently CONNECT (connection monitoring),
-    HTTP, HTTPS (connection and HTTP monitoring) are supported.
+    @param type: type of load balancer.  currently CONNECT (connection
+                 monitoring), HTTP, HTTPS (connection and HTTP
+                 monitoring) are supported.
+    @type type: C{str}
 
-    delay: minimum seconds to wait before executing the health monitor.  (Must
-    be between 1 and 3600)
+    @param delay: minimum seconds to wait before executing the health
+                  monitor.  (Must be between 1 and 3600)
+    @type delay: C{int}
 
-    timeout: maximum seconds to wait when establishing a connection before
-    timing out.  (Must be between 1 and 3600)
+    @param timeout: maximum seconds to wait when establishing a
+                    connection before timing out.  (Must be between 1
+                    and 3600)
+    @type timeout: C{int}
 
-    attempts_before_deactivation: Number of monitor failures before removing a
-    node from rotation. (Must be between 1 and 10)
+    @param attempts_before_deactivation: Number of monitor failures
+                                         before removing a node from
+                                         rotation. (Must be between 1
+                                         and 10)
+    @type attempts_before_deactivation: C{int}
     """
 
     def __init__(self, type, delay, timeout, attempts_before_deactivation):
@@ -68,13 +76,16 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
     """
     A HTTP health monitor adds extra features to a Rackspace health monitor.
 
-    path: the HTTP path to monitor.
+    @param path: the HTTP path to monitor.
+    @type path: C{str}
 
-    body_regex: Regular expression used to evaluate the body of the HTTP
-    response.
+    @param body_regex: Regular expression used to evaluate the body of
+                       the HTTP response.
+    @type body_regex: C{str}
 
-    status_regex: Regular expression used to evaluate the HTTP status code of
-    the response.
+    @param status_regex: Regular expression used to evaluate the HTTP
+                         status code of the response.
+    @type status_regex: C{str}
     """
 
     def __init__(self, type, delay, timeout, attempts_before_deactivation,
@@ -88,19 +99,26 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
 
 class RackspaceConnectionThrottle(object):
     """
-    min_connections: Minimum number of connections per IP address before
-    applying throttling.
+    @param min_connections: Minimum number of connections per IP address
+                            before applying throttling.
+    @type min_connections: C{int}
 
-    max_connections: Maximum number of of connections per IP address.
-    (Must be between 0 and 100000, 0 allows an unlimited number of
-    connections.)
+    @param max_connections: Maximum number of of connections per IP address.
+                            (Must be between 0 and 100000, 0 allows an 
+                            unlimited number of connections.)
+    @type max_connections: C{int}
 
-    max_connection_rate: Maximum number of connections allowed from a single
-    IP address within the given rate_interval_seconds.  (Must be between 0 and
-    100000, 0 allows an unlimited number of connections.)
+    @param max_connection_rate: Maximum number of connections allowed
+                                from a single IP address within the
+                                given rate_interval_seconds.  (Must be
+                                between 0 and 100000, 0 allows an
+                                unlimited number of connections.)
+    @type max_connection_rate: C{int}
 
-    rate_interval_seconds: Interval at which the max_connection_rate is
-    enforced.  (Must be between 1 and 3600.)
+    @param rate_interval_seconds: Interval at which the
+                                  max_connection_rate is enforced.
+                                  (Must be between 1 and 3600.)
+    @type rate_interval_seconds: C{int}
     """
 
     def __init__(self, min_connections, max_connections,
@@ -121,11 +139,14 @@ class RackspaceAccessRule(object):
     An access rule allows or denies traffic to a Load Balancer based on the
     incoming IPs.
 
-    id: Unique identifier to refer to this rule by.
+    @param id: Unique identifier to refer to this rule by.
+    @type id: C{str}
 
-    rule_type: ALLOW or DENY.
+    @param rule_type: ALLOW or DENY.
+    @type id: C{RackspaceAccessRuleType}
 
-    address: IP address or cidr (can be IPv4 or IPv6).
+    @param address: IP address or cidr (can be IPv4 or IPv6).
+    @type address: C{str}
     """
 
     def __init__(self, id, rule_type, address):
