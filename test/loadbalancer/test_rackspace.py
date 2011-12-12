@@ -46,6 +46,24 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(len(protocols), 10)
         self.assertTrue('http' in protocols)
 
+    def test_list_supported_algorithms(self):
+        algorithms = self.driver.list_supported_algorithms()
+
+        self.assertTrue(Algorithm.RANDOM in algorithms)
+        self.assertTrue(Algorithm.ROUND_ROBIN in algorithms)
+        self.assertTrue(Algorithm.LEAST_CONNECTIONS in algorithms)
+        self.assertTrue(Algorithm.WEIGHTED_ROUND_ROBIN in algorithms)
+        self.assertTrue(Algorithm.WEIGHTED_LEAST_CONNECTIONS in algorithms)
+
+    def test_ex_list_algorithms(self):
+        algorithms = self.driver.ex_list_algorithms()
+
+        self.assertTrue("RANDOM" in algorithms)
+        self.assertTrue("ROUND_ROBIN" in algorithms)
+        self.assertTrue("LEAST_CONNECTIONS" in algorithms)
+        self.assertTrue("WEIGHTED_ROUND_ROBIN" in algorithms)
+        self.assertTrue("WEIGHTED_LEAST_CONNECTIONS" in algorithms)
+
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
 
@@ -259,6 +277,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         body = self.fixtures.load('v1_slug_loadbalancers_protocols.json')
         return (httplib.ACCEPTED, body, {},
                 httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_loadbalancers_algorithms(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('v1_slug_loadbalancers_algorithms.json')
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+        
+        raise NotImplementedError
 
     def _v1_0_slug_loadbalancers(self, method, url, body, headers):
         if method == "GET":

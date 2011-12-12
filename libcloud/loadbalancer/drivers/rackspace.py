@@ -269,6 +269,14 @@ class RackspaceLBDriver(Driver):
         return self._to_members(
                 self.connection.request(uri).object)
 
+    def ex_list_algorithms(self):
+        """
+        Lists algorithms supported by the API.  Returned as strings because
+        this list may change in the future.
+        """
+        response = self.connection.request('/loadbalancers/algorithms')
+        return [a["name"].upper() for a in response.object["algorithms"]]
+
     def ex_get_balancer_error_page(self, balancer):
         uri = '/loadbalancers/%s/errorpage' % (balancer.id)
         resp = self.connection.request(uri)

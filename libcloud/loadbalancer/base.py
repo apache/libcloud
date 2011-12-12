@@ -228,3 +228,9 @@ class Driver(BaseDriver):
         except KeyError:
             raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
                                 driver=self)
+
+    def list_supported_algorithms(self):
+        """
+        Return algorithms supported by this driver.
+        """
+        return list(self._ALGORITHM_TO_VALUE_MAP.keys())
