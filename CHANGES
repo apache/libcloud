@@ -15,6 +15,21 @@ Changes with Apache Libcloud in development:
       virtual IP addresses in the Rackspace driver.
       [Dave King]
 
+    - Add list_supported_algorithms() method to the base LoadBalancer class.
+      This method returns a list of supported algorithms by the provider.
+      [Dave King]
+
+    - Update Rackspace driver:
+      - Add two new supported algorithms: WEIGHTED_ROUND_ROBIN,
+        WEIGHTED_LEAST_CONNECTIONS
+      - Add ex_list_algorithm_names method
+      - Add ex_get_balancer_error_page method
+      - Add ex_balancer_access_list method
+      - Populate LoadBalancer extra dictionary with more attributes
+      - Add support for health monitors and connection throttling
+      - Add more balancer states
+      [Dave King]
+
 Changes with Apache Libcloud 0.7.1:
 
   *) General:

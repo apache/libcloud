@@ -36,6 +36,12 @@ class GoGridTests(unittest.TestCase):
         GoGridLBMockHttp.type = None
         self.driver = GoGridLBDriver('user', 'key')
 
+    def test_list_supported_algorithms(self):
+        algorithms = self.driver.list_supported_algorithms()
+
+        self.assertTrue(Algorithm.ROUND_ROBIN in algorithms)
+        self.assertTrue(Algorithm.LEAST_CONNECTIONS in algorithms)
+
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
 

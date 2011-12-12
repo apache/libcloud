@@ -40,6 +40,8 @@ class Algorithm(object):
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
+    WEIGHTED_ROUND_ROBIN = 3
+    WEIGHTED_LEAST_CONNECTIONS = 4
 
 DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
@@ -226,3 +228,9 @@ class Driver(BaseDriver):
         except KeyError:
             raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
                                 driver=self)
+
+    def list_supported_algorithms(self):
+        """
+        Return algorithms supported by this driver.
+        """
+        return list(self._ALGORITHM_TO_VALUE_MAP.keys())
