@@ -33,6 +33,12 @@ class CloudStackLBTests(unittest.TestCase):
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
 
+    def test_list_supported_algorithms(self):
+        algorithms = self.driver.list_supported_algorithms()
+
+        self.assertTrue(Algorithm.ROUND_ROBIN in algorithms)
+        self.assertTrue(Algorithm.LEAST_CONNECTIONS in algorithms)
+
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
         for balancer in balancers:
