@@ -187,7 +187,8 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer_health_monitor.type, "HTTPS")
         self.assertEquals(balancer_health_monitor.delay, 15)
         self.assertEquals(balancer_health_monitor.timeout, 12)
-        self.assertEquals(balancer_health_monitor.attempts_before_deactivation, 5)
+        self.assertEquals(balancer_health_monitor.attempts_before_deactivation,
+                          5)
         self.assertEquals(balancer_health_monitor.path, "/test")
         self.assertEquals(balancer_health_monitor.status_regex,
                            "^[234][0-9][0-9]$")
@@ -283,7 +284,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             body = self.fixtures.load('v1_slug_loadbalancers_algorithms.json')
             return (httplib.ACCEPTED, body, {},
                     httplib.responses[httplib.ACCEPTED])
-        
+
         raise NotImplementedError
 
     def _v1_0_slug_loadbalancers(self, method, url, body, headers):

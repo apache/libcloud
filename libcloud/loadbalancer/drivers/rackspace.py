@@ -44,16 +44,16 @@ class RackspaceResponse(JsonResponse):
 
 class RackspaceHealthMonitor(object):
     """
-    type: type of load balancer.  currently CONNECT (connection monitoring), 
+    type: type of load balancer.  currently CONNECT (connection monitoring),
     HTTP, HTTPS (connection and HTTP monitoring) are supported.
 
-    delay: minimum seconds to wait before executing the health monitor.  (Must 
+    delay: minimum seconds to wait before executing the health monitor.  (Must
     be between 1 and 3600)
 
-    timeout: maximum seconds to wait when establishing a connection before 
+    timeout: maximum seconds to wait when establishing a connection before
     timing out.  (Must be between 1 and 3600)
 
-    attempts_before_deactivation: Number of monitor failures before removing a 
+    attempts_before_deactivation: Number of monitor failures before removing a
     node from rotation. (Must be between 1 and 10)
     """
 
@@ -70,10 +70,10 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
 
     path: the HTTP path to monitor.
 
-    body_regex: Regular expression used to evaluate the body of the HTTP 
+    body_regex: Regular expression used to evaluate the body of the HTTP
     response.
 
-    status_regex: Regular expression used to evaluate the HTTP status code of 
+    status_regex: Regular expression used to evaluate the HTTP status code of
     the response.
     """
 
@@ -88,17 +88,18 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
 
 class RackspaceConnectionThrottle(object):
     """
-    min_connections: Minimum number of connections per IP address before 
+    min_connections: Minimum number of connections per IP address before
     applying throttling.
 
-    max_connections: Maximum number of of connections per IP address.  
-    (Must be between 0 and 100000, 0 allows an unlimited number of connections.)
+    max_connections: Maximum number of of connections per IP address.
+    (Must be between 0 and 100000, 0 allows an unlimited number of
+    connections.)
 
-    max_connection_rate: Maximum number of connections allowed from a single 
-    IP address within the given rate_interval_seconds.  (Must be between 0 and 
+    max_connection_rate: Maximum number of connections allowed from a single
+    IP address within the given rate_interval_seconds.  (Must be between 0 and
     100000, 0 allows an unlimited number of connections.)
 
-    rate_interval_seconds: Interval at which the max_connection_rate is 
+    rate_interval_seconds: Interval at which the max_connection_rate is
     enforced.  (Must be between 1 and 3600.)
     """
 
@@ -117,7 +118,7 @@ class RackspaceAccessRuleType(object):
 
 class RackspaceAccessRule(object):
     """
-    An access rule allows or denies traffic to a Load Balancer based on the 
+    An access rule allows or denies traffic to a Load Balancer based on the
     incoming IPs.
 
     id: Unique identifier to refer to this rule by.
