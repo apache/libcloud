@@ -56,7 +56,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertTrue(Algorithm.WEIGHTED_LEAST_CONNECTIONS in algorithms)
 
     def test_ex_list_algorithms(self):
-        algorithms = self.driver.ex_list_algorithms()
+        algorithms = self.driver.ex_list_algorithm_names()
 
         self.assertTrue("RANDOM" in algorithms)
         self.assertTrue("ROUND_ROBIN" in algorithms)

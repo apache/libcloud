@@ -291,7 +291,7 @@ class RackspaceLBDriver(Driver):
         return self._to_members(
                 self.connection.request(uri).object)
 
-    def ex_list_algorithms(self):
+    def ex_list_algorithm_names(self):
         """
         Lists algorithms supported by the API.  Returned as strings because
         this list may change in the future.
