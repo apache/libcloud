@@ -180,8 +180,7 @@ class RackspaceLBTests(unittest.TestCase):
         balancer_connection_throttle = balancer.extra["connectionThrottle"]
 
         self.assertEquals(balancer_connection_throttle.min_connections, 50)
-        self.assertEquals(balancer_connection_throttle.max_connections_per_ip,
-                           200)
+        self.assertEquals(balancer_connection_throttle.max_connections, 200)
         self.assertEquals(balancer_connection_throttle.max_connection_rate, 50)
         self.assertEquals(balancer_connection_throttle.rate_interval_seconds,
                            10)
@@ -197,7 +196,7 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_get_error_page(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        error_page = self.driver.ex_balancer_error_page(balancer)
+        error_page = self.driver.ex_get_balancer_error_page(balancer)
         self.assertTrue("The service is temporarily unavailable" in error_page)
 
     def test_get_access_list(self):

@@ -43,6 +43,19 @@ class RackspaceResponse(JsonResponse):
 
 
 class RackspaceHealthMonitor(object):
+    """
+    type: type of load balancer.  currently CONNECT (connection monitoring), 
+    HTTP, HTTPS (connection and HTTP monitoring) are supported.
+
+    delay: minimum seconds to wait before executing the health monitor.  (Must 
+    be between 1 and 3600)
+
+    timeout: maximum seconds to wait when establishing a connection before 
+    timing out.  (Must be between 1 and 3600)
+
+    attempts_before_deactivation: Number of monitor failures before removing a 
+    node from rotation. (Must be between 1 and 10)
+    """
 
     def __init__(self, type, delay, timeout, attempts_before_deactivation):
         self.type = type
@@ -52,6 +65,17 @@ class RackspaceHealthMonitor(object):
 
 
 class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
+    """
+    A HTTP health monitor adds extra features to a Rackspace health monitor.
+
+    path: the HTTP path to monitor.
+
+    body_regex: Regular expression used to evaluate the body of the HTTP 
+    response.
+
+    status_regex: Regular expression used to evaluate the HTTP status code of 
+    the response.
+    """
 
     def __init__(self, type, delay, timeout, attempts_before_deactivation,
                  path, body_regex, status_regex):
@@ -63,11 +87,25 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
 
 
 class RackspaceConnectionThrottle(object):
+    """
+    min_connections: Minimum number of connections per IP address before 
+    applying throttling.
 
-    def __init__(self, min_connections, max_connections_per_ip,
+    max_connections: Maximum number of of connections per IP address.  
+    (Must be between 0 and 100000, 0 allows an unlimited number of connections.)
+
+    max_connection_rate: Maximum number of connections allowed from a single 
+    IP address within the given rate_interval_seconds.  (Must be between 0 and 
+    100000, 0 allows an unlimited number of connections.)
+
+    rate_interval_seconds: Interval at which the max_connection_rate is 
+    enforced.  (Must be between 1 and 3600.)
+    """
+
+    def __init__(self, min_connections, max_connections,
                  max_connection_rate, rate_interval_seconds):
         self.min_connections = min_connections
-        self.max_connections_per_ip = max_connections_per_ip
+        self.max_connections = max_connections
         self.max_connection_rate = max_connection_rate
         self.rate_interval_seconds = rate_interval_seconds
 
@@ -78,6 +116,16 @@ class RackspaceAccessRuleType(object):
 
 
 class RackspaceAccessRule(object):
+    """
+    An access rule allows or denies traffic to a Load Balancer based on the 
+    incoming IPs.
+
+    id: Unique identifier to refer to this rule by.
+
+    rule_type: ALLOW or DENY.
+
+    address: IP address or cidr (can be IPv4 or IPv6).
+    """
 
     def __init__(self, id, rule_type, address):
         self.id = id
@@ -221,7 +269,7 @@ class RackspaceLBDriver(Driver):
         return self._to_members(
                 self.connection.request(uri).object)
 
-    def ex_balancer_error_page(self, balancer):
+    def ex_get_balancer_error_page(self, balancer):
         uri = '/loadbalancers/%s/errorpage' % (balancer.id)
         resp = self.connection.request(uri)
 
@@ -343,12 +391,12 @@ class RackspaceLBDriver(Driver):
         connection_throttle_data = el["connectionThrottle"]
 
         min_connections = connection_throttle_data.get("minConnections")
-        max_connections_per_ip = connection_throttle_data.get("maxConnections")
+        max_connections = connection_throttle_data.get("maxConnections")
         max_connection_rate = connection_throttle_data.get("maxConnectionRate")
         rate_interval = connection_throttle_data.get("rateInterval")
 
         return RackspaceConnectionThrottle(min_connections=min_connections,
-            max_connections_per_ip=max_connections_per_ip,
+            max_connections=max_connections,
             max_connection_rate=max_connection_rate,
             rate_interval_seconds=rate_interval)
 
