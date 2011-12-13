@@ -608,12 +608,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_save_image(self):
-        try:
-            self.driver.ex_save_image(self.node, 'new_image')
-        except NotImplementedError:
-            pass
-        else:
-            self.fail('An expected error was not raised')
+        result = self.driver.ex_save_image(self.node, 'new_image')
+        self.assertTrue(result)
 
     def test_ex_set_server_name(self):
         old_node = Node(

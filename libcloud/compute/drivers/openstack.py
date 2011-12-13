@@ -929,16 +929,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return resp.status == httplib.ACCEPTED
 
     def ex_save_image(self, node, name, metadata=None):
-        # This has not yet been implemented by OpenStack 1.1
-        raise NotImplementedError()
-
         optional_params = {}
         if metadata:
             optional_params['metadata'] = metadata
         resp = self._node_action(node, 'createImage', name=name,
                                  **optional_params)
         # TODO: concevt location header into NodeImage object
-        return resp.status == httplib.NO_CONTENT
+        return resp.status == httplib.ACCEPTED
 
     def ex_set_server_name(self, node, name):
         """
