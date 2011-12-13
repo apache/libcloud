@@ -1,3 +1,4 @@
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -99,8 +100,9 @@ class CloudFilesConnection(OpenStackBaseConnection):
     rawResponseCls = CloudFilesRawResponse
     _url_key = "storage_url"
 
-    def __init__(self, user_id, key, secure=True):
-        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure)
+    def __init__(self, user_id, key, secure=True, **kwargs):
+        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure, 
+                                                   **kwargs)
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
 
