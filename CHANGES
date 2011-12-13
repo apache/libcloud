@@ -12,6 +12,12 @@ Changes with Apache Libcloud in development:
      - Add implementation for ex_save_image method to the OpenStack 1.1 driver.
        [Shawn Smith]
 
+  *) Storage:
+
+    - Propagate extra keyword arguments passed to the Rackspace driver
+      connection class.
+      [Dave King]
+
   *) Load-balancer:
 
     - Add 'extra' attribute to the LoadBalancer object and retrieve all the
@@ -31,6 +37,10 @@ Changes with Apache Libcloud in development:
       - Populate LoadBalancer extra dictionary with more attributes
       - Add support for health monitors and connection throttling
       - Add more balancer states
+      [Dave King]
+
+    - Propagate extra keyword arguments passed to the Rackspace driver
+      connection class.
       [Dave King]
 
 Changes with Apache Libcloud 0.7.1:
