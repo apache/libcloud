@@ -9,6 +9,9 @@ Changes with Apache Libcloud in development:
        tests.
        [Hutson Betts]
 
+     - Add implementation for ex_save_image method to the OpenStack 1.1 driver.
+       [Shawn Smith]
+
   *) Load-balancer:
 
     - Add 'extra' attribute to the LoadBalancer object and retrieve all the
