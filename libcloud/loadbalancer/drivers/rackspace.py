@@ -160,8 +160,9 @@ class RackspaceConnection(OpenStackBaseConnection):
     auth_url = AUTH_URL_US
     _url_key = "lb_url"
 
-    def __init__(self, user_id, key, secure=True):
-        super(RackspaceConnection, self).__init__(user_id, key, secure)
+    def __init__(self, user_id, key, secure=True, **kwargs):
+        super(RackspaceConnection, self).__init__(user_id, key, secure, 
+                                                  **kwargs)
         self.api_version = 'v1.0'
         self.accept_format = 'application/json'
 
