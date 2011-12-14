@@ -141,6 +141,10 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='8290')
         self.assertEquals(balancer.extra["algorithm"], Algorithm.RANDOM)
 
+    def test_get_balancer_protocol(self):
+        balancer = self.driver.get_balancer(balancer_id='94695')
+        self.assertEquals(balancer.extra["protocol"], "HTTP")
+
     def test_get_balancer_weighted_round_robin_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='94692')
         self.assertEquals(balancer.extra["algorithm"],
