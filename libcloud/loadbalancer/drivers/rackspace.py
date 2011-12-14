@@ -343,6 +343,9 @@ class RackspaceLBDriver(Driver):
             "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet"),
         }
 
+        if 'protocol' in el:
+            extra["protocol"] = el["protocol"]
+
         if 'algorithm' in el and el["algorithm"] in self._VALUE_TO_ALGORITHM_MAP:
             extra["algorithm"] = self._value_to_algorithm(el["algorithm"])
 
