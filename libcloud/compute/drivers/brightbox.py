@@ -16,82 +16,14 @@
 Brightbox Driver
 """
 from libcloud.utils.py3 import httplib
-import base64
 
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.compute.types import Provider, NodeState, InvalidCredsError
+from libcloud.common.brightbox import BrightboxConnection
+from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 API_VERSION = '1.0'
-
-
-class BrightboxResponse(JsonResponse):
-    def success(self):
-        return self.status >= 200 and self.status < 400
-
-    def parse_body(self):
-        if self.headers['content-type'].split('; ')[0] == 'application/json':
-            return super(BrightboxResponse, self).parse_body()
-        else:
-            return self.body
-
-    def parse_error(self):
-        return super(BrightboxResponse, self).parse_body()['error']
-
-
-class BrightboxConnection(ConnectionUserAndKey):
-    """
-    Connection class for the Brightbox driver
-    """
-
-    host = 'api.gb1.brightbox.com'
-    responseCls = BrightboxResponse
-
-    def _fetch_oauth_token(self):
-        body = json.dumps({'client_id': self.user_id, 'grant_type': 'none'})
-
-        authorization = 'Basic ' + str(base64.encodestring(b('%s:%s' %
-                                        (self.user_id, self.key)))).rstrip()
-
-        self.connect()
-
-        response = self.connection.request(method='POST', url='/token', body=body, headers={
-            'Host': self.host,
-            'User-Agent': self._user_agent(),
-            'Authorization': authorization,
-            'Content-Type': 'application/json',
-            'Content-Length': str(len(body))
-        })
-
-        response = self.connection.getresponse()
-
-        if response.status == 200:
-            return json.loads(response.read())['access_token']
-        else:
-            message = '%s (%s)' % (json.loads(response.read())['error'], response.status)
-
-            raise InvalidCredsError(message)
-
-    def add_default_headers(self, headers):
-        try:
-            headers['Authorization'] = 'OAuth ' + self.token
-        except AttributeError:
-            self.token = self._fetch_oauth_token()
-
-            headers['Authorization'] = 'OAuth ' + self.token
-
-        return headers
-
-    def encode_data(self, data):
-        return json.dumps(data)
 
 
 class BrightboxNodeDriver(NodeDriver):

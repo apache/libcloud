@@ -31,7 +31,10 @@ DRIVERS = {
             ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
         Provider.NINEFOLD:
             ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
+        Provider.BRIGHTBOX:
+            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver')
 }
+
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)
