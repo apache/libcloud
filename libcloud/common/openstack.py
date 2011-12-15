@@ -289,7 +289,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_token = osa.auth_token
 
             # TODO: Multi-region support
-            if self._auth_version == '2.0':
+            if self._auth_version in ['2.0', '2.0_apikey', '2.0_password']:
                 self.tenant_ids = {}
 
                 for service in osa.urls:

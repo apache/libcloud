@@ -15,6 +15,10 @@ Changes with Apache Libcloud in development:
      - Add support for Amazon new South America (Sao Paulo) location.
        [Tomaz Muraus]
 
+     - Fix a bug in OpenStack driver when 2.0_apikey or 2.0_password
+       'auth_version' is used.
+       [Tomaz Muraus]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver
