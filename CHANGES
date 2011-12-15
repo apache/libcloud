@@ -12,6 +12,9 @@ Changes with Apache Libcloud in development:
      - Add implementation for ex_save_image method to the OpenStack 1.1 driver.
        [Shawn Smith]
 
+     - Add support for Amazon new South America (Sao Paulo) location.
+       [Tomaz Muraus]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver

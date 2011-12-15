@@ -101,6 +101,7 @@ class Provider(object):
     EC2_US_WEST_OREGON = 36
     CLOUDSTACK = 37
     CLOUDSIGMA_US = 38
+    EC2_SA_EAST = 39
 
 class NodeState(object):
     """
