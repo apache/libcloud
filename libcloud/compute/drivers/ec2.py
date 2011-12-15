@@ -47,6 +47,7 @@ EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
 EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
+EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
 
 API_VERSION = '2010-08-31'
 
@@ -151,6 +152,7 @@ EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_OREGON_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_SA_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 
 class EC2NodeLocation(NodeLocation):
@@ -1165,6 +1167,28 @@ class EC2APNENodeDriver(EC2NodeDriver):
     region_name = 'ap-northeast-1'
     connectionCls = EC2APNEConnection
     _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
+
+
+class EC2SAEastConnection(EC2Connection):
+    """
+    Connection class for EC2 in the South America (Sao Paulo) Region
+    """
+
+    host = EC2_SA_EAST_HOST
+
+
+class EC2SAEastNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the South America (Sao Paulo) Region
+    """
+
+    api_name = 'ec2_sa_east'
+    name = 'Amazon EC2 (sa-east-1)'
+    friendly_name = 'Amazon South America Sao Paulo'
+    country = 'BR'
+    region_name = 'sa-east-1'
+    connectionCls = EC2SAEastConnection
+    _instance_types = EC2_SA_EAST_INSTANCE_TYPES
 
 
 class EucConnection(EC2Connection):
