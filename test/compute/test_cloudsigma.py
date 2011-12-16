@@ -15,11 +15,11 @@
 
 import sys
 import unittest
-import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.cloudsigma import CloudSigmaZrhNodeDriver
-from libcloud.utils import str2dicts, str2list, dict2str
+from libcloud.utils.misc import str2dicts, str2list, dict2str
 
 from test import MockHttp               # pylint: disable-msg=E0611
 from test.compute import TestCaseMixin  # pylint: disable-msg=E0611
@@ -88,8 +88,8 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
     def test_ex_static_ip_create(self):
         result = self.driver.ex_static_ip_create()
         self.assertEqual(len(result), 2)
-        self.assertEqual(len(result[0].keys()), 6)
-        self.assertEqual(len(result[1].keys()), 6)
+        self.assertEqual(len(list(result[0].keys())), 6)
+        self.assertEqual(len(list(result[1].keys())), 6)
 
     def test_ex_static_ip_destroy(self):
         result = self.driver.ex_static_ip_destroy('1.2.3.4')

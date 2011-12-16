@@ -13,15 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
-import urllib
-import StringIO
+import sys
 import ssl
 import time
 
 from xml.etree import ElementTree as ET
 from pipes import quote as pquote
-import urlparse
 
 try:
     import simplejson as json
@@ -29,10 +26,21 @@ except:
     import json
 
 import libcloud
+
+
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import b
+
+from libcloud.utils.misc import lowercase_keys
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
-from httplib import HTTPConnection as LibcloudHTTPConnection
+
+LibcloudHTTPConnection = httplib.HTTPConnection
 
 class Response(object):
     """
@@ -50,8 +58,15 @@ class Response(object):
 
     def __init__(self, response, connection):
         self.body = response.read().strip()
+
+        if PY3:
+            self.body = b(self.body).decode('utf-8')
+
         self.status = response.status
-        self.headers = dict(response.getheaders())
+
+        # http.client In Python 3 doesn't automatically lowercase the header
+        # names
+        self.headers = lowercase_keys(dict(response.getheaders()))
         self.error = response.reason
         self.connection = connection
 
@@ -121,9 +136,9 @@ class XmlResponse(Response):
             return self.body
 
         try:
-          body = ET.XML(self.body)
+            body = ET.XML(self.body)
         except:
-          raise MalformedResponseError("Failed to parse XML",
+            raise MalformedResponseError("Failed to parse XML",
                                        body=self.body,
                                        driver=self.connection.driver)
         return body
@@ -140,7 +155,6 @@ class RawResponse(Response):
         self._error = None
         self._reason = None
         self.connection = connection
-
 
     @property
     def response(self):
@@ -160,7 +174,7 @@ class RawResponse(Response):
     @property
     def headers(self):
         if not self._headers:
-            self._headers = dict(self.response.getheaders())
+            self._headers = lowercase_keys(dict(self.response.getheaders()))
         return self._headers
 
     @property
@@ -193,12 +207,14 @@ class LoggingConnection():
         for h in r.getheaders():
             ht += "%s: %s\r\n" % (h[0].title(), h[1])
         ht += "\r\n"
+
         # this is evil. laugh with me. ha arharhrhahahaha
         class fakesock:
             def __init__(self, s):
                 self.s = s
+
             def makefile(self, mode, foo):
-                return StringIO.StringIO(self.s)
+                return StringIO(self.s)
         rr = r
         if r.chunked:
             ht += "%x\r\n" % (len(body))
@@ -246,11 +262,12 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
+            pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
-        return LibcloudHTTPSConnection.request(self, method, url, body, headers)
+        return LibcloudHTTPSConnection.request(self, method, url, body,
+                                               headers)
 
 class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
@@ -268,7 +285,7 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n"  % id(self)
+            pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
@@ -311,7 +328,8 @@ class Connection(object):
                 self.port = 80
 
         if url:
-            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(url)
+            (self.host, self.port, self.secure,
+             self.request_path) = self._tuple_from_url(url)
 
     def set_context(self, context):
         self.context = context
@@ -319,7 +337,8 @@ class Connection(object):
     def _tuple_from_url(self, url):
         secure = 1
         port = None
-        scheme, netloc, request_path, param, query, fragment = urlparse.urlparse(url)
+        (scheme, netloc, request_path, param,
+         query, fragment) = urlparse.urlparse(url)
 
         if scheme not in ['http', 'https']:
             raise LibcloudError('Invalid scheme: %s in url %s' % (scheme, url))
@@ -341,7 +360,7 @@ class Connection(object):
 
         return (host, port, secure, request_path)
 
-    def connect(self, host=None, port=None, base_url = None):
+    def connect(self, host=None, port=None, base_url=None):
         """
         Establish a connection with the API server.
 
@@ -463,7 +482,7 @@ class Connection(object):
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urllib.urlencode(params)))
+            url = '?'.join((action, urlencode(params)))
         else:
             url = action
 
@@ -476,14 +495,15 @@ class Connection(object):
             if raw:
                 self.connection.putrequest(method, url)
 
-                for key, value in headers.iteritems():
+                for key, value in list(headers.items()):
                     self.connection.putheader(key, str(value))
 
                 self.connection.endheaders()
             else:
                 self.connection.request(method=method, url=url, body=data,
                                         headers=headers)
-        except ssl.SSLError, e:
+        except ssl.SSLError:
+            e = sys.exc_info()[1]
             raise ssl.SSLError(str(e))
 
         if raw:
@@ -495,7 +515,7 @@ class Connection(object):
         return response
 
     def morph_action_hook(self, action):
-        return self.request_path  + action
+        return self.request_path + action
 
     def add_default_params(self, params):
         """
@@ -554,7 +574,7 @@ class PollingConnection(Connection):
         """
         Perform an 'async' request to the specified path. Keep in mind that
         this function is *blocking* and 'async' in this case means that the
-        hit URL only returns a job ID which is the periodically polled until 
+        hit URL only returns a job ID which is the periodically polled until
         the job has completed.
 
         This function works like this:

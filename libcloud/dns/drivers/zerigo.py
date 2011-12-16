@@ -20,12 +20,14 @@ __all__ = [
 
 import copy
 import base64
-import httplib
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
 
 from xml.etree import ElementTree as ET
 
-from libcloud.utils import fixxpath, findtext, findattr, findall
-from libcloud.utils import merge_valid_keys, get_new_obj
+from libcloud.utils.misc import merge_valid_keys, get_new_obj
+from libcloud.utils.xml import findtext, findall
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError, LazyList
@@ -114,7 +116,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
     responseCls = ZerigoDNSResponse
 
     def add_default_headers(self, headers):
-        auth_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        auth_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (auth_b64)
         return headers
 
@@ -140,7 +142,7 @@ class ZerigoDNSDriver(DNSDriver):
     connectionCls = ZerigoDNSConnection
 
     def list_record_types(self):
-        return RECORD_TYPE_MAP.keys()
+        return list(RECORD_TYPE_MAP.keys())
 
     def list_zones(self):
         value_dict = {'type': 'zones'}

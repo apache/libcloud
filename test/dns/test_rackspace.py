@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 
 import sys
-import httplib
 import unittest
+
+from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import LibcloudError
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
@@ -88,7 +89,8 @@ class RackspaceUSTests(unittest.TestCase):
         RackspaceMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.list_records(zone=zone)
-        except ZoneDoesNotExistError, e:
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -107,7 +109,8 @@ class RackspaceUSTests(unittest.TestCase):
 
         try:
             self.driver.get_zone(zone_id='4444')
-        except ZoneDoesNotExistError, e:
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, '4444')
         else:
             self.fail('Exception was not thrown')
@@ -159,7 +162,8 @@ class RackspaceUSTests(unittest.TestCase):
             self.driver.create_zone(domain='foo.bar.com', type='master',
                                     ttl=10,
                                     extra={'email': 'test@test.com'})
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertEqual(str(e), 'Validation errors: Domain TTL is ' +
                                       'required and must be greater than ' +
                                       'or equal to 300')
@@ -231,7 +235,8 @@ class RackspaceUSTests(unittest.TestCase):
 
         try:
             self.driver.delete_zone(zone=zone)
-        except ZoneDoesNotExistError, e:
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -250,7 +255,8 @@ class RackspaceUSTests(unittest.TestCase):
 
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError, e:
+        except RecordDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.record_id, record.id)
         else:
             self.fail('Exception was not thrown')
@@ -265,7 +271,7 @@ class RackspaceMockHttp(MockHttp):
     base_headers = {'content-type': 'application/json'}
 
     # fake auth token response
-    def _v1_1__auth(self, method, url, body, headers):
+    def _v1_1_auth(self, method, url, body, headers):
         body = self.fixtures.load('auth_1_1.json')
         headers = {'content-length': '657', 'vary': 'Accept,Accept-Encoding',
                    'server': 'Apache/2.2.13 (Red Hat)',

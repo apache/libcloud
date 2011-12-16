@@ -17,11 +17,15 @@
 Provides base classes for working with drivers
 """
 
+import sys
 import time
 import hashlib
 import os
 import socket
 import struct
+import binascii
+
+from libcloud.utils.py3 import b
 
 import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
@@ -161,7 +165,7 @@ class Node(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1("%s:%d" % (self.id, self.driver.type)).hexdigest()
+        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
 
     def reboot(self):
         """Reboot this node
@@ -371,9 +375,9 @@ class NodeDriver(BaseDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None):
-      super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                       host=host, port=port,
-                                       api_version=api_version)
+        super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                         host=host, port=port,
+                                         api_version=api_version)
 
     def create_node(self, **kwargs):
         """Create a new node instance.
@@ -502,7 +506,7 @@ class NodeDriver(BaseDriver):
         ...     try:
         ...         node = driver.deploy_node(deploy=msd)
         ...     except NotImplementedError:
-        ...         print "not implemented for dummy driver"
+        ...         print ("not implemented for dummy driver")
         >>> d()
         not implemented for dummy driver
 
@@ -525,7 +529,7 @@ class NodeDriver(BaseDriver):
                     'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
-                kwargs['auth'] = NodeAuthPassword(os.urandom(16).encode('hex'))
+                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(os.urandom(16)))
 
             if 'ssh_key' not in kwargs:
                 password = kwargs['auth'].password
@@ -560,7 +564,8 @@ class NodeDriver(BaseDriver):
                                         node=node,
                                         ssh_client=ssh_client,
                                         max_tries=3)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             raise DeploymentError(node, e)
         return node
 
@@ -586,7 +591,7 @@ class NodeDriver(BaseDriver):
 
         while time.time() < end:
             nodes = self.list_nodes()
-            nodes = filter(lambda n: n.uuid == node.uuid, nodes)
+            nodes = list([n for n in nodes if n.uuid == node.uuid])
 
             if len(nodes) == 0:
                 raise LibcloudError(value=('Booted node[%s] ' % node

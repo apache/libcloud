@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 
 import sys
-import httplib
 import unittest
+
+from libcloud.utils.py3 import httplib
 
 from libcloud.common.linode import LinodeException
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
@@ -74,7 +75,8 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.list_records(zone=zone)
-        except ZoneDoesNotExistError, e:
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -94,7 +96,8 @@ class LinodeTests(unittest.TestCase):
 
         try:
             self.driver.get_zone(zone_id='4444')
-        except ZoneDoesNotExistError, e:
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, '4444')
         else:
             self.fail('Exception was not thrown')
@@ -203,7 +206,8 @@ class LinodeTests(unittest.TestCase):
 
         try:
             self.driver.delete_zone(zone=zone)
-        except ZoneDoesNotExistError, e:
+        except ZoneDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -222,7 +226,8 @@ class LinodeTests(unittest.TestCase):
 
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError, e:
+        except RecordDoesNotExistError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.record_id, record.id)
         else:
             self.fail('Exception was not thrown')

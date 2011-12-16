@@ -13,15 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-import httplib
-import urllib
-import copy
 import base64
+import copy
 import hmac
 
-from hashlib import sha1
 from email.utils import formatdate
+from hashlib import sha1
+
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey
 
@@ -81,7 +80,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         extension_header_values = {}
 
         headers_copy = copy.deepcopy(headers)
-        for key, value in headers_copy.iteritems():
+        for key, value in list(headers_copy.items()):
             if key.lower() in special_header_keys:
                 if key.lower() == 'date':
                     value = value.strip()
@@ -97,7 +96,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         if not 'content-type' in special_header_values:
             special_header_values['content-type'] = ''
 
-        keys_sorted = special_header_values.keys()
+        keys_sorted = list(special_header_values.keys())
         keys_sorted.sort()
 
         buf = [method]
@@ -106,7 +105,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             buf.append(value)
         string_to_sign = '\n'.join(buf)
 
-        keys_sorted = extension_header_values.keys()
+        keys_sorted = list(extension_header_values.keys())
         keys_sorted.sort()
 
         extension_header_string = []
@@ -122,7 +121,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
 
         string_to_sign = '\n'.join(values_to_sign)
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha1).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
         return b64_hmac
 

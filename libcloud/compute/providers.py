@@ -16,7 +16,7 @@
 Provider related utilities
 """
 
-from libcloud.utils import get_driver as _get_provider_driver
+from libcloud.utils.misc import get_driver as _get_provider_driver
 from libcloud.compute.types import Provider
 
 __all__ = [
@@ -39,6 +39,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.ec2', 'EC2APSENodeDriver'),
     Provider.EC2_AP_NORTHEAST:
         ('libcloud.compute.drivers.ec2', 'EC2APNENodeDriver'),
+    Provider.EC2_SA_EAST:
+        ('libcloud.compute.drivers.ec2', 'EC2SAEastNodeDriver'),
     Provider.ECP:
         ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
     Provider.ELASTICHOSTS_UK1:
@@ -53,6 +55,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.serverlove', 'ServerLoveNodeDriver'),
     Provider.CLOUDSIGMA:
         ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
+    Provider.CLOUDSIGMA_US:
+        ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaLvsNodeDriver'),
     Provider.GOGRID:
         ('libcloud.compute.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:

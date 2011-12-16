@@ -20,12 +20,15 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
-import httplib
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
 
-from libcloud import utils
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import next
+from libcloud.utils.py3 import b
+
+import libcloud.utils.files
 from libcloud.common.types import LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
@@ -463,10 +466,10 @@ class StorageDriver(BaseDriver):
                 'overwrite_existing=False',
                 driver=self)
 
-        stream = utils.read_in_chunks(response, chunk_size)
+        stream = libcloud.utils.files.read_in_chunks(response, chunk_size)
 
         try:
-            data_read = stream.next()
+            data_read = next(stream)
         except StopIteration:
             # Empty response?
             return False
@@ -475,11 +478,11 @@ class StorageDriver(BaseDriver):
 
         with open(file_path, 'wb') as file_handle:
             while len(data_read) > 0:
-                file_handle.write(data_read)
+                file_handle.write(b(data_read))
                 bytes_transferred += len(data_read)
 
                 try:
-                    data_read = stream.next()
+                    data_read = next(stream)
                 except StopIteration:
                     data_read = ''
 
@@ -505,9 +508,10 @@ class StorageDriver(BaseDriver):
         headers = headers or {}
 
         if file_path and not os.path.exists(file_path):
-          raise OSError('File %s does not exist' % (file_path))
+            raise OSError('File %s does not exist' % (file_path))
 
-        if iterator is not None and not hasattr(iterator, 'next'):
+        if iterator is not None and not hasattr(iterator, 'next') and not \
+           hasattr(iterator, '__next__'):
             raise AttributeError('iterator object must implement next() ' +
                                  'method.')
 
@@ -516,7 +520,7 @@ class StorageDriver(BaseDriver):
                 name = file_path
             else:
                 name = object_name
-            content_type, _ = utils.guess_file_mime_type(name)
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
             if not content_type:
                 raise AttributeError(
@@ -532,8 +536,8 @@ class StorageDriver(BaseDriver):
             else:
                 # Chunked transfer encoding is not supported. Need to buffer all
                 # the data in memory so we can determine file size.
-                iterator = utils.read_in_chunks(iterator=iterator)
-                data = utils.exhaust_iterator(iterator=iterator)
+                iterator = libcloud.utils.files.read_in_chunks(iterator=iterator)
+                data = libcloud.utils.files.exhaust_iterator(iterator=iterator)
 
                 file_size = len(data)
                 upload_func_kwargs['data'] = data
@@ -584,10 +588,10 @@ class StorageDriver(BaseDriver):
 
         if calculate_hash:
             data_hash = self._get_hash_function()
-            data_hash.update(data)
+            data_hash.update(b(data))
 
         try:
-            response.connection.connection.send(data)
+            response.connection.connection.send(b(data))
         except Exception:
             # TODO: let this exception propagate
             # Timeout, etc.
@@ -635,21 +639,21 @@ class StorageDriver(BaseDriver):
         if calculate_hash:
             data_hash = self._get_hash_function()
 
-        generator = utils.read_in_chunks(iterator, chunk_size)
+        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size)
 
         bytes_transferred = 0
         try:
-            chunk = generator.next()
+            chunk = next(generator)
         except StopIteration:
             # Special case when StopIteration is thrown on the first iteration -
             # create a 0-byte long object
             chunk = ''
             if chunked:
-                response.connection.connection.send('%X\r\n' %
-                                                   (len(chunk)))
+                response.connection.connection.send(b('%X\r\n' %
+                                                   (len(chunk))))
                 response.connection.connection.send(chunk)
-                response.connection.connection.send('\r\n')
-                response.connection.connection.send('0\r\n\r\n')
+                response.connection.connection.send(b('\r\n'))
+                response.connection.connection.send(b('0\r\n\r\n'))
             else:
                 response.connection.connection.send(chunk)
             return True, data_hash.hexdigest(), bytes_transferred
@@ -657,12 +661,12 @@ class StorageDriver(BaseDriver):
         while len(chunk) > 0:
             try:
                 if chunked:
-                    response.connection.connection.send('%X\r\n' %
-                                                       (len(chunk)))
-                    response.connection.connection.send(chunk)
-                    response.connection.connection.send('\r\n')
+                    response.connection.connection.send(b('%X\r\n' %
+                                                       (len(chunk))))
+                    response.connection.connection.send(b(chunk))
+                    response.connection.connection.send(b('\r\n'))
                 else:
-                    response.connection.connection.send(chunk)
+                    response.connection.connection.send(b(chunk))
             except Exception:
                 # TODO: let this exception propagate
                 # Timeout, etc.
@@ -670,15 +674,15 @@ class StorageDriver(BaseDriver):
 
             bytes_transferred += len(chunk)
             if calculate_hash:
-                data_hash.update(chunk)
+                data_hash.update(b(chunk))
 
             try:
-                chunk = generator.next()
+                chunk = next(generator)
             except StopIteration:
                 chunk = ''
 
         if chunked:
-            response.connection.connection.send('0\r\n\r\n')
+            response.connection.connection.send(b('0\r\n\r\n'))
 
         if calculate_hash:
             data_hash = data_hash.hexdigest()
@@ -705,7 +709,7 @@ class StorageDriver(BaseDriver):
                  one is the uploaded data MD5 hash and the third one
                  is the number of transferred bytes.
         """
-        with open (file_path, 'rb') as file_handle:
+        with open(file_path, 'rb') as file_handle:
             success, data_hash, bytes_transferred = (
                 self._stream_data(
                     response=response,

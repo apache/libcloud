@@ -58,11 +58,12 @@ class Provider(object):
     @cvar TERREMARK: Terremark
     @cvar: EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
     @cvar CLOUDSTACK: CloudStack
+    @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
     EC2_US_EAST = 1
-    EC2_EU = 2 # deprecated name
+    EC2_EU = 2  # deprecated name
     EC2_EU_WEST = 2
     RACKSPACE = 3
     SLICEHOST = 4
@@ -99,6 +100,8 @@ class Provider(object):
     TERREMARK = 35
     EC2_US_WEST_OREGON = 36
     CLOUDSTACK = 37
+    CLOUDSIGMA_US = 38
+    EC2_SA_EAST = 39
 
 class NodeState(object):
     """
@@ -135,6 +138,7 @@ class DeploymentError(LibcloudError):
     def __init__(self, node, original_exception=None):
         self.node = node
         self.value = original_exception
+
     def __str__(self):
         return repr(self.value)
 

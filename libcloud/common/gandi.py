@@ -18,13 +18,11 @@ Gandi driver base classes
 
 import time
 import hashlib
-import xmlrpclib
 
-import libcloud
+from libcloud.utils.py3 import xmlrpclib
+from libcloud.utils.py3 import b
+
 from libcloud.common.base import ConnectionKey
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, Node, \
-    NodeLocation, NodeSize, NodeImage
 
 # Global constants
 API_VERSION = '2.0'
@@ -84,14 +82,16 @@ class GandiConnection(ConnectionKey):
 
         try:
             self._proxy = self.proxyCls(self._user_agent())
-        except xmlrpclib.Fault, e:
+        except xmlrpclib.Fault:
+            e = sys.exc_info()[1]
             raise GandiException(1000, e)
 
     def request(self, method, *args):
         """ Request xmlrpc method with given args"""
         try:
             return getattr(self._proxy, method)(self.key, *args)
-        except xmlrpclib.Fault, e:
+        except xmlrpclib.Fault:
+            e = sys.exc_info()[1]
             raise GandiException(1001, e)
 
 
@@ -124,7 +124,8 @@ class BaseGandiDriver(object):
                     return False
             except (KeyError, IndexError):
                 pass
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info()[1]
                 raise GandiException(1002, e)
 
             time.sleep(check_interval)
@@ -160,8 +161,8 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1("%s:%s:%d" % \
-            (self.uuid_prefix, self.id, self.driver.type)).hexdigest()
+        return hashlib.sha1(b("%s:%s:%d" % \
+            (self.uuid_prefix, self.id, self.driver.type))).hexdigest()
 
 
 class IPAddress(BaseObject):

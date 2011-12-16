@@ -18,9 +18,13 @@ Enomaly ECP driver
 """
 import time
 import base64
-import httplib
-import socket
 import os
+import socket
+import binascii
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+from libcloud.utils.py3 import u
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -82,9 +86,9 @@ class ECPConnection(ConnectionUserAndKey):
         #Authentication
         username = self.user_id
         password = self.key
-        base64string =  base64.encodestring(
-                '%s:%s' % (username, password))[:-1]
-        authheader =  "Basic %s" % base64string
+        base64string = base64.encodestring(
+                b('%s:%s' % (username, password)))[:-1]
+        authheader = "Basic %s" % base64string
         headers['Authorization']= authheader
 
         return headers
@@ -97,7 +101,7 @@ class ECPConnection(ConnectionUserAndKey):
         #use a random boundary that does not appear in the fields
         boundary = ''
         while boundary in ''.join(fields):
-            boundary = os.urandom(16).encode('hex')
+            boundary = u(binascii.hexlify(os.urandom(16)))
         L = []
         for i in fields:
             L.append('--' + boundary)
@@ -138,7 +142,6 @@ class ECPNodeDriver(NodeDriver):
 
         #And return it
         return nodes
-
 
     def _to_node(self, vm):
         """
@@ -204,7 +207,6 @@ class ECPNodeDriver(NodeDriver):
                 node.state = NodeState.TERMINATED
             else:
                 time.sleep(5)
-
 
         #Turn the VM back on.
         #Black magic to make the POST requests work
@@ -279,7 +281,6 @@ class ECPNodeDriver(NodeDriver):
 
         return images
 
-
     def list_sizes(self, location=None):
         """
         Returns a list of all hardware templates
@@ -296,9 +297,9 @@ class ECPNodeDriver(NodeDriver):
                 id = htemplate['uuid'],
                 name = htemplate['name'],
                 ram = htemplate['memory'],
-                disk = 0, #Disk is independent of hardware template
-                bandwidth = 0, #There is no way to keep track of bandwidth
-                price = 0, #The billing system is external
+                disk = 0,  # Disk is independent of hardware template.
+                bandwidth = 0,  # There is no way to keep track of bandwidth.
+                price = 0,  # The billing system is external.
                 driver = self,
                 ))
 

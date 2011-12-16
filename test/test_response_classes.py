@@ -15,10 +15,10 @@
 
 import sys
 import unittest
-import httplib
 
 from mock import Mock
 
+from libcloud.utils.py3 import httplib
 from libcloud.common.base import XmlResponse, JsonResponse
 from libcloud.common.types import MalformedResponseError
 

@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json
@@ -79,15 +79,15 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(web_node.state, NodeState.UNKNOWN)
         self.assertTrue('75.119.203.51' in web_node.public_ips)
         self.assertTrue(
-            web_node.extra.has_key('current_size') and
+            'current_size' in web_node.extra and
             web_node.extra['current_size'] == 500
         )
         self.assertTrue(
-            web_node.extra.has_key('account_id') and
+            'account_id' in web_node.extra and
             web_node.extra['account_id'] == 000000
         )
         self.assertTrue(
-            web_node.extra.has_key('type') and
+            'type' in web_node.extra and
             web_node.extra['type'] == 'web'
         )
         # MySql node tests
@@ -95,15 +95,15 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(mysql_node.state, NodeState.UNKNOWN)
         self.assertTrue('75.119.203.52' in mysql_node.public_ips)
         self.assertTrue(
-            mysql_node.extra.has_key('current_size') and
+            'current_size' in mysql_node.extra and
             mysql_node.extra['current_size'] == 1500
         )
         self.assertTrue(
-            mysql_node.extra.has_key('account_id') and
+            'account_id' in mysql_node.extra and
             mysql_node.extra['account_id'] == 000000
         )
         self.assertTrue(
-            mysql_node.extra.has_key('type') and
+            'type' in mysql_node.extra and
             mysql_node.extra['type'] == 'mysql'
         )
 
@@ -124,7 +124,7 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(new_node.id, 'ps12345')
         self.assertEqual(new_node.state, NodeState.PENDING)
         self.assertTrue(
-            new_node.extra.has_key('type') and
+            'type' in new_node.extra and
             new_node.extra['type'] == 'web'
         )
 

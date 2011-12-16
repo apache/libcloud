@@ -17,8 +17,14 @@ import sys
 import unittest
 import hashlib
 
-from StringIO import StringIO
 from mock import Mock
+
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
+
+if PY3:
+    from io import FileIO as file
 
 from libcloud.storage.base import StorageDriver
 
@@ -73,7 +79,12 @@ class BaseStorageTests(unittest.TestCase):
 
     def test_upload_zero_bytes_long_object_via_stream(self):
         iterator = Mock()
-        iterator.next.side_effect = StopIteration()
+
+        if PY3:
+            iterator.__next__ = Mock()
+            iterator.__next__.side_effect = StopIteration()
+        else:
+            iterator.next.side_effect = StopIteration()
 
         def mock_send(data):
             self.send_called += 1
@@ -88,7 +99,7 @@ class BaseStorageTests(unittest.TestCase):
                                            chunked=False, calculate_hash=True)
 
         self.assertTrue(success)
-        self.assertEqual(data_hash, hashlib.md5('').hexdigest())
+        self.assertEqual(data_hash, hashlib.md5(b('')).hexdigest())
         self.assertEqual(bytes_transferred, 0)
         self.assertEqual(self.send_called, 1)
 
@@ -99,7 +110,7 @@ class BaseStorageTests(unittest.TestCase):
                                            chunked=True, calculate_hash=True)
 
         self.assertTrue(success)
-        self.assertEqual(data_hash, hashlib.md5('').hexdigest())
+        self.assertEqual(data_hash, hashlib.md5(b('')).hexdigest())
         self.assertEqual(bytes_transferred, 0)
         self.assertEqual(self.send_called, 5)
 
@@ -116,7 +127,7 @@ class BaseStorageTests(unittest.TestCase):
                                            calculate_hash=True)
 
         self.assertTrue(success)
-        self.assertEqual(data_hash, hashlib.md5(data).hexdigest())
+        self.assertEqual(data_hash, hashlib.md5(b(data)).hexdigest())
         self.assertEqual(bytes_transferred, (len(data)))
         self.assertEqual(self.send_called, 1)
 

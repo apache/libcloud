@@ -16,6 +16,8 @@
 OpenStack driver
 """
 
+import binascii
+
 try:
     import simplejson as json
 except ImportError:
@@ -24,7 +26,11 @@ except ImportError:
 import os
 
 import warnings
-import httplib
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+from libcloud.utils.py3 import next
+
 import base64
 
 from xml.etree import ElementTree as ET
@@ -36,7 +42,7 @@ from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
-from libcloud.utils import findall
+from libcloud.utils.xml import findall
 
 __all__ = [
     'OpenStack_1_0_Response',
@@ -125,7 +131,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             headers = {'Content-Type': self.default_content_type}
 
         if method == "GET":
-            params['cache-busting'] = os.urandom(8).encode('hex')
+            params['cache-busting'] = binascii.hexlify(os.urandom(8))
 
         return super(OpenStackComputeConnection, self).request(
             action=action,
@@ -547,7 +553,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             return None
 
         metadata_elm = ET.Element('metadata')
-        for k, v in metadata.items():
+        for k, v in list(metadata.items()):
             meta_elm = ET.SubElement(metadata_elm, 'meta', {'key': str(k)})
             meta_elm.text = str(v)
 
@@ -558,11 +564,11 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             return None
 
         personality_elm = ET.Element('personality')
-        for k, v in files.items():
+        for k, v in list(files.items()):
             file_elm = ET.SubElement(personality_elm,
                                      'file',
                                      {'path': str(k)})
-            file_elm.text = base64.b64encode(v)
+            file_elm.text = base64.b64encode(b(v))
 
         return personality_elm
 
@@ -650,7 +656,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         def _to_rate(el):
             rate = {}
-            for item in el.items():
+            for item in list(el.items()):
                 rate[item[0]] = item[1]
 
             return rate
@@ -805,7 +811,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='POST',
                                        data={'server': server_params})
 
-        return self._to_node(resp.object['server'])
+        create_response = resp.object['server']
+        server_resp = self.connection.request('/servers/%s' % create_response['id'])
+        server_object = server_resp.object['server']
+        server_object['adminPass'] = create_response['adminPass']
+
+        return self._to_node(server_object)
 
     def _to_images(self, obj, ex_only_active):
         images = []
@@ -866,8 +877,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _files_to_personality(self, files):
         rv = []
 
-        for k, v in files.items():
-            rv.append({'path': k, 'contents': base64.b64encode(v)})
+        for k, v in list(files.items()):
+            rv.append({'path': k, 'contents': base64.b64encode(b(v))})
 
         return rv
 
@@ -918,16 +929,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return resp.status == httplib.ACCEPTED
 
     def ex_save_image(self, node, name, metadata=None):
-        # This has not yet been implemented by OpenStack 1.1
-        raise NotImplementedError()
-
         optional_params = {}
         if metadata:
             optional_params['metadata'] = metadata
         resp = self._node_action(node, 'createImage', name=name,
                                  **optional_params)
         # TODO: concevt location header into NodeImage object
-        return resp.status == httplib.NO_CONTENT
+        return resp.status == httplib.ACCEPTED
 
     def ex_set_server_name(self, node, name):
         """
@@ -1028,8 +1036,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
                 imageId=api_node['image']['id'],
                 flavorId=api_node['flavor']['id'],
-                uri=(link['href'] for link in api_node['links'] if
-                     link['rel'] == 'self').next(),
+                uri=next(link['href'] for link in api_node['links'] if
+                     link['rel'] == 'self'),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass'),
             ),

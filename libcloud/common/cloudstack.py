@@ -16,14 +16,18 @@
 import base64
 import hashlib
 import hmac
-import time
-import urllib
+
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey, PollingConnection
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import MalformedResponseError
 
-class CloudStackResponse(JsonResponse): pass
+
+class CloudStackResponse(JsonResponse):
+    pass
+
 
 class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = CloudStackResponse
@@ -36,12 +40,12 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     ASYNC_FAILURE = 2
 
     def _make_signature(self, params):
-        signature = [(k.lower(), v) for k, v in params.items()]
+        signature = [(k.lower(), v) for k, v in list(params.items())]
         signature.sort(key=lambda x: x[0])
-        signature = urllib.urlencode(signature)
+        signature = urlencode(signature)
         signature = signature.lower().replace('+', '%20')
-        signature = hmac.new(self.key, msg=signature, digestmod=hashlib.sha1)
-        return base64.b64encode(signature.digest())
+        signature = hmac.new(b(self.key), msg=b(signature), digestmod=hashlib.sha1)
+        return base64.b64encode(b(signature.digest()))
 
     def add_default_params(self, params):
         params['apiKey'] = self.user_id
@@ -96,6 +100,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
                 driver=self.driver)
         result = result.object[command]
         return result
+
 
 class CloudStackDriverMixIn(object):
     host = None

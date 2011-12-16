@@ -14,8 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import exceptions
-import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.vpsnet import VPSNetNodeDriver
 from libcloud.compute.base import Node
@@ -60,7 +59,7 @@ class VPSNetTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
         VPSNetMockHttp.type = 'delete_fail'
         node = Node('2223', None, None, None, None, self.driver)
-        self.assertRaises(exceptions.Exception, self.driver.destroy_node, node)
+        self.assertRaises(Exception, self.driver.destroy_node, node)
 
     def test_list_images(self):
         VPSNetMockHttp.type = 'templates'

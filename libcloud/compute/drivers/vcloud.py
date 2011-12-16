@@ -16,10 +16,14 @@
 VMware vCloud driver.
 """
 import base64
-import httplib
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import b
+
+urlparse = urlparse.urlparse
+
 import time
 
-from urlparse import urlparse
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
@@ -38,15 +42,15 @@ VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1,9)]
 
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
-def get_url_path(url):
-    return urlparse(url.strip()).path
-
 def fixxpath(root, xpath):
     """ElementTree wants namespaces in its xpaths, so here we add them."""
     namespace, root_tag = root.tag[1:].split("}", 1)
     fixed_xpath = "/".join(["{%s}%s" % (namespace, e)
                             for e in xpath.split("/")])
     return fixed_xpath
+
+def get_url_path(url):
+    return urlparse(url.strip()).path
 
 class InstantiateVAppXML(object):
 
@@ -226,7 +230,7 @@ class VCloudConnection(ConnectionUserAndKey):
         return {
             'Authorization':
                 "Basic %s"
-                % base64.b64encode('%s:%s' % (self.user_id, self.key)),
+                % base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
             'Content-Length': 0
         }
 
@@ -525,7 +529,7 @@ class VCloudNodeDriver(NodeDriver):
             network = ''
 
         password = None
-        if kwargs.has_key('auth'):
+        if 'auth' in kwargs:
             auth = kwargs['auth']
             if isinstance(auth, NodeAuthPassword):
                 password = auth.password
@@ -585,7 +589,7 @@ class HostingComConnection(VCloudConnection):
         """hosting.com doesn't follow the standard vCloud authentication API"""
         return {
             'Authentication':
-                base64.b64encode('%s:%s' % (self.user_id, self.key)),
+                base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
             'Content-Length': 0
         }
 

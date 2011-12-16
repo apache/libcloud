@@ -14,7 +14,7 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json

@@ -14,15 +14,15 @@
 # limitations under the License.
 
 import base64
-import httplib
 import os.path
 import sys
 import unittest
-import urlparse
 
-from xml.etree import ElementTree
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import b
 
-import libcloud.utils
+import libcloud.utils.files
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container, Object
@@ -44,7 +44,7 @@ class AtmosTests(unittest.TestCase):
         AtmosMockHttp.type = None
         AtmosMockHttp.upload_created = False
         AtmosMockRawResponse.type = None
-        self.driver = AtmosDriver('dummy', base64.b64encode('dummy'))
+        self.driver = AtmosDriver('dummy', base64.b64encode(b('dummy')))
         self._remove_test_file()
 
     def tearDown(self):
@@ -256,8 +256,8 @@ class AtmosTests(unittest.TestCase):
         def no_content_type(name):
             return None, None
 
-        old_func = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = no_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = no_content_type
         file_path = os.path.abspath(__file__)
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftu'
@@ -271,7 +271,7 @@ class AtmosTests(unittest.TestCase):
                 'File content type not provided'
                 ' but an exception was not thrown')
         finally:
-            libcloud.utils.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_error(self):
         def dummy_content_type(name):
@@ -280,8 +280,8 @@ class AtmosTests(unittest.TestCase):
         def send(instance):
             raise Exception('')
 
-        old_func1 = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func1 = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
         old_func2 = AtmosMockHttp.send
         AtmosMockHttp.send = send
 
@@ -298,15 +298,15 @@ class AtmosTests(unittest.TestCase):
         else:
             self.fail('Timeout while uploading but an exception was not thrown')
         finally:
-            libcloud.utils.guess_file_mime_type = old_func1
+            libcloud.utils.files.guess_file_mime_type = old_func1
             AtmosMockHttp.send = old_func2
 
     def test_upload_object_nonexistent_file(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         file_path = os.path.abspath(__file__ + '.inexistent')
         container = Container(name='fbc', extra={}, driver=self)
@@ -321,14 +321,14 @@ class AtmosTests(unittest.TestCase):
         else:
             self.fail('Inesitent but an exception was not thrown')
         finally:
-            libcloud.utils.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_via_stream(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.utils.guess_file_mime_type
-        libcloud.utils.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftsd'
@@ -338,11 +338,11 @@ class AtmosTests(unittest.TestCase):
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
-            libcloud.utils.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_signature_algorithm(self):
         test_uid = 'fredsmagicuid'
-        test_key = base64.b64encode('ssssshhhhhmysecretkey')
+        test_key = base64.b64encode(b('ssssshhhhhmysecretkey'))
         test_date = 'Mon, 04 Jul 2011 07:39:19 GMT'
         test_values = [
             ('GET', '/rest/namespace/foo', '', {},
@@ -372,7 +372,7 @@ class AtmosTests(unittest.TestCase):
             c.driver = d
             headers = c.add_default_headers(headers)
             headers['Date'] = headers['x-emc-date'] = test_date
-            self.assertEqual(c._calculate_signature({}, headers), expected)
+            self.assertEqual(c._calculate_signature({}, headers), b(expected))
 
 class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')
@@ -468,7 +468,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'mtime': '2011-01-25T22:01:49Z'
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
@@ -481,7 +481,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'bar-foo': 'test 2',
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
@@ -518,7 +518,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'mtime': '2011-01-25T22:01:49Z'
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
@@ -543,7 +543,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'mtime': '2011-01-25T22:01:49Z'
         }
         headers = {
-            'x-emc-meta': ', '.join([k + '=' + v for k, v in meta.items()])
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
