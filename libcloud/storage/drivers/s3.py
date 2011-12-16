@@ -14,8 +14,6 @@
 # limitations under the License.
 
 import time
-import httplib
-import urllib
 import copy
 import base64
 import hmac
@@ -23,8 +21,13 @@ import hmac
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from libcloud.utils import fixxpath, findtext, in_development_warning
-from libcloud.utils import read_in_chunks
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import b
+
+from libcloud.utils.xml import fixxpath, findtext
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse
@@ -114,22 +117,22 @@ class S3Connection(ConnectionUserAndKey):
         amz_header_values = {}
 
         headers_copy = copy.deepcopy(headers)
-        for key, value in headers_copy.iteritems():
+        for key, value in list(headers_copy.items()):
             if key.lower() in special_header_keys:
                 special_header_values[key.lower()] = value.lower().strip()
             elif key.lower().startswith('x-amz-'):
                 amz_header_values[key.lower()] = value.strip()
 
-        if not special_header_values.has_key('content-md5'):
+        if not 'content-md5' in special_header_values:
             special_header_values['content-md5'] = ''
 
-        if not special_header_values.has_key('content-type'):
+        if not 'content-type' in special_header_values:
             special_header_values['content-type'] = ''
 
         if expires:
             special_header_values['date'] = str(expires)
 
-        keys_sorted = special_header_values.keys()
+        keys_sorted = list(special_header_values.keys())
         keys_sorted.sort()
 
         buf = [ method ]
@@ -138,7 +141,7 @@ class S3Connection(ConnectionUserAndKey):
             buf.append(value)
         string_to_sign = '\n'.join(buf)
 
-        keys_sorted = amz_header_values.keys()
+        keys_sorted = list(amz_header_values.keys())
         keys_sorted.sort()
 
         amz_header_string = []
@@ -154,7 +157,7 @@ class S3Connection(ConnectionUserAndKey):
 
         string_to_sign = '\n'.join(values_to_sign)
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha1).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
         return b64_hmac
 
@@ -214,7 +217,12 @@ class S3StorageDriver(StorageDriver):
             root = Element('CreateBucketConfiguration')
             child = SubElement(root, 'LocationConstraint')
             child.text = self.ex_location_name
-            data = tostring(root)
+
+            if PY3:
+                encoding = 'unicode'
+            else:
+                encoding = None
+            data = tostring(root, encoding=encoding)
         else:
             data = ''
 
@@ -329,7 +337,7 @@ class S3StorageDriver(StorageDriver):
         return False
 
     def _clean_object_name(self, name):
-        name = urllib.quote(name)
+        name = urlquote(name)
         return name
 
     def _get_more(self, last_key, value_dict):
@@ -375,7 +383,7 @@ class S3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
 
         if meta_data:
-            for key, value in meta_data.iteritems():
+            for key, value in list(meta_data.items()):
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
 

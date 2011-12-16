@@ -1,12 +1,14 @@
-import httplib
 import sys
 import unittest
-import urlparse
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import b
 
 try:
     parse_qsl = urlparse.parse_qsl
@@ -42,7 +44,8 @@ class CloudStackCommonTest(unittest.TestCase):
         self.driver.path = '/bad/response'
         try:
             self.connection._sync_request('fake')
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, MalformedResponseError))
             return
         self.assertTrue(False)
@@ -103,7 +106,7 @@ class CloudStackCommonTest(unittest.TestCase):
         connection = CloudStackConnection('fnord', 'abracadabra')
         for case in cases:
             params = connection.add_default_params(case[0])
-            self.assertEqual(connection._make_signature(params), case[1])
+            self.assertEqual(connection._make_signature(params), b(case[1]))
 
 class CloudStackMockHttp(MockHttpTestCase):
     def _response(self, status, result, response):

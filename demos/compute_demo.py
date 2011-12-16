@@ -31,13 +31,15 @@ import os.path
 import sys
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                 os.path.pardir)))
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider
 from libcloud.providers import get_driver
 
 from pprint import pprint
+
 
 def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
     """An easy way to play with a driver interactively.
@@ -55,7 +57,7 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
     >>> driver.load_nodes()
     >>> images = driver.load_images()
     >>> sizes = driver.load_sizes()
-    
+
     # And maybe do more than that:
     >>> node = driver.create_node(
             name='my_first_node',
@@ -77,8 +79,8 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
         return DriverClass(*args, **kwargs)
     except InvalidCredsError:
         raise InvalidCredsError(
-            'valid values should be put in secrets.py'
-        )
+            'valid values should be put in secrets.py')
+
 
 def main(argv):
     """Main Compute Demo
@@ -93,8 +95,9 @@ def main(argv):
     """
     try:
         driver = get_demo_driver()
-    except InvalidCredsError as ex:
-        print("Invalid Credentials: %s" % (ex.value,))
+    except InvalidCredsError:
+        e = sys.exc_info()[1]
+        print("Invalid Credentials: " + e.value)
         return 1
 
     try:
@@ -106,8 +109,9 @@ def main(argv):
 
         print(">> Loading sizes... (showing up to 10)")
         pprint(driver.list_sizes()[:10])
-    except Exception as ex:
-        print("A fatal error occurred: %s" % (ex,))
+    except Exception:
+        e = sys.exc_info()[1]
+        print("A fatal error occurred: " + e)
         return 1
 
 if __name__ == '__main__':

@@ -14,7 +14,8 @@
 # limitations under the License.
 import sys
 import unittest
-import httplib
+
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
@@ -78,7 +79,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.driver.create_node(name='foo', image=image, size=size,
                     ex_mincount='2', ex_maxcount='2',
                     ex_clienttoken=token)
-        except IdempotentParamError, e:
+        except IdempotentParamError:
+            e = sys.exc_info()[1]
             idem_error = e
         self.assertTrue(idem_error is not None)
 

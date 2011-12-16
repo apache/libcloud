@@ -13,15 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
-import urllib
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from libcloud.utils import read_in_chunks
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import urlquote
+
+if PY3:
+    from io import FileIO as file
+
+
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.common.base import Response, RawResponse
 
@@ -93,8 +99,9 @@ class CloudFilesConnection(OpenStackBaseConnection):
     rawResponseCls = CloudFilesRawResponse
     _url_key = "storage_url"
 
-    def __init__(self, user_id, key, secure=True):
-        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure)
+    def __init__(self, user_id, key, secure=True, **kwargs):
+        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
+                                                   **kwargs)
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
 
@@ -383,7 +390,7 @@ class CloudFilesStorageDriver(StorageDriver):
 
         headers = {}
         if meta_data:
-            for key, value in meta_data.iteritems():
+            for key, value in list(meta_data.items()):
                 key = 'X-Object-Meta-%s' % (key)
                 headers[key] = value
 
@@ -430,7 +437,7 @@ class CloudFilesStorageDriver(StorageDriver):
         """
         if name.startswith('/'):
             name = name[1:]
-        name = urllib.quote(name)
+        name = urlquote(name)
 
         if name.find('/') != -1:
             raise InvalidContainerNameError(value='Container name cannot'
@@ -446,7 +453,7 @@ class CloudFilesStorageDriver(StorageDriver):
         return name
 
     def _clean_object_name(self, name):
-        name = urllib.quote(name)
+        name = urlquote(name)
         return name
 
     def _to_container_list(self, response):
@@ -492,7 +499,7 @@ class CloudFilesStorageDriver(StorageDriver):
         content_type = headers.pop('content-type', None)
 
         meta_data = {}
-        for key, value in headers.iteritems():
+        for key, value in list(headers.items()):
             if key.find('x-object-meta-') != -1:
                 key = key.replace('x-object-meta-', '')
                 meta_data[key] = value

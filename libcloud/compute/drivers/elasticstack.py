@@ -21,7 +21,9 @@ http://www.elasticstack.com.
 import re
 import time
 import base64
-import httplib
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
 
 try:
     import simplejson as json
@@ -153,9 +155,9 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
         headers['Authorization'] = ('Basic %s'
-                                    % (base64.b64encode('%s:%s'
+                                    % (base64.b64encode(b('%s:%s'
                                                         % (self.user_id,
-                                                           self.key))))
+                                                           self.key)))))
         return headers
 
 
@@ -182,7 +184,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     def list_images(self, location=None):
         # Returns a list of available pre-installed system drive images
         images = []
-        for key, value in self._standard_drives.iteritems():
+        for key, value in self._standard_drives.items():
             image = NodeImage(
                 id=value['uuid'],
                 name=value['description'],
@@ -197,7 +199,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, value in INSTANCE_TYPES.iteritems():
+        for key, value in INSTANCE_TYPES.items():
             size = ElasticStackNodeSize(
                 id=value['id'],
                 name=value['name'], cpu=value['cpu'], ram=value['memory'],
@@ -331,7 +333,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                       '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
 
         invalid_keys = []
-        for key in kwargs.keys():
+        keys = list(kwargs.keys())
+        for key in keys:
             matches = False
             for regex in valid_keys:
                 if re.match(regex, key):

@@ -18,17 +18,20 @@ Amazon EC2 driver
 """
 from __future__ import with_statement
 
+import sys
 import base64
 import hmac
 import os
 import time
-import urllib
 import copy
 
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.utils import fixxpath, findtext, findattr, findall
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import b
+
+from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.aws import AWSBaseResponse
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
@@ -44,6 +47,7 @@ EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
 EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
+EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
 
 API_VERSION = '2010-08-31'
 
@@ -148,6 +152,7 @@ EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_OREGON_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_SA_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 
 class EC2NodeLocation(NodeLocation):
@@ -226,12 +231,12 @@ class EC2Connection(ConnectionUserAndKey):
                        HTTPRequestURI + "\n" +
                        CanonicalizedQueryString <from the preceding step>
         """
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
         pairs = []
         for key in keys:
-            pairs.append(urllib.quote(key, safe='') + '=' +
-                         urllib.quote(params[key], safe='-_~'))
+            pairs.append(urlquote(key, safe='') + '=' +
+                         urlquote(params[key], safe='-_~'))
 
         qs = '&'.join(pairs)
 
@@ -243,7 +248,7 @@ class EC2Connection(ConnectionUserAndKey):
         string_to_sign = '\n'.join(('GET', hostname, path, qs))
 
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha256).digest()
         )
         return b64_hmac
 
@@ -484,7 +489,7 @@ class EC2NodeDriver(NodeDriver):
 
     def _get_sizes(self, include_cluser_instances=False):
         sizes = []
-        for key, values in self._instance_types.iteritems():
+        for key, values in self._instance_types.items():
             if not include_cluser_instances and\
                key in CLUSTER_INSTANCES_IDS:
                 continue
@@ -627,7 +632,8 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params['IpProtocol'] = 'udp'
@@ -636,7 +642,8 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
 
@@ -646,7 +653,9 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
+
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         return results
@@ -1158,6 +1167,28 @@ class EC2APNENodeDriver(EC2NodeDriver):
     region_name = 'ap-northeast-1'
     connectionCls = EC2APNEConnection
     _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
+
+
+class EC2SAEastConnection(EC2Connection):
+    """
+    Connection class for EC2 in the South America (Sao Paulo) Region
+    """
+
+    host = EC2_SA_EAST_HOST
+
+
+class EC2SAEastNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the South America (Sao Paulo) Region
+    """
+
+    api_name = 'ec2_sa_east'
+    name = 'Amazon EC2 (sa-east-1)'
+    friendly_name = 'Amazon South America Sao Paulo'
+    country = 'BR'
+    region_name = 'sa-east-1'
+    connectionCls = EC2SAEastConnection
+    _instance_types = EC2_SA_EAST_INSTANCE_TYPES
 
 
 class EucConnection(EC2Connection):

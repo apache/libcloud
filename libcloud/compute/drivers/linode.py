@@ -28,17 +28,20 @@ Linode(R) is a registered trademark of Linode, LLC.
 """
 
 try:
-	import simplejson as json
+    import simplejson as json
 except ImportError:
-	import json
+    import json
 
 import itertools
-import os
+import binascii
 
 from copy import copy
 
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import u
+
 from libcloud.common.linode import (API_ROOT, LinodeException, LinodeConnection,
-	LINODE_PLAN_IDS)
+    LINODE_PLAN_IDS)
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
@@ -225,8 +228,10 @@ class LinodeNodeDriver(NodeDriver):
             raise LinodeException(0xFB, "Root password is too short")
 
         # Swap size
-        try: swap = 128 if "ex_swap" not in kwargs else int(kwargs["ex_swap"])
-        except: raise LinodeException(0xFB, "Need an integer swap size")
+        try:
+            swap = 128 if "ex_swap" not in kwargs else int(kwargs["ex_swap"])
+        except:
+            raise LinodeException(0xFB, "Need an integer swap size")
 
         # Root partition size
         imagesize = (size.disk - swap) if "ex_rsize" not in kwargs else \
@@ -295,7 +300,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            root = os.urandom(8).encode('hex')
+            root = u(binascii.hexlifyos.urandom(8).encode('hex'))
         params = {
             "api_action":       "linode.disk.createfromdistribution",
             "LinodeID":         linode["id"],
@@ -304,7 +309,8 @@ class LinodeNodeDriver(NodeDriver):
             "Size":             imagesize,
             "rootPass":         root,
         }
-        if ssh: params["rootSSHKey"] = ssh
+        if ssh:
+            params["rootSSHKey"] = ssh
         data = self.connection.request(API_ROOT, params=params).objects[0]
         linode["rootimage"] = data["DiskID"]
 
@@ -395,10 +401,14 @@ class LinodeNodeDriver(NodeDriver):
         nl = []
         for dc in data:
             country = None
-            if "USA" in dc["LOCATION"]: country = "US"
-            elif "UK" in dc["LOCATION"]: country = "GB"
-            elif "JP" in dc["LOCATION"]: country = "JP"
-            else: country = "??"
+            if "USA" in dc["LOCATION"]:
+                country = "US"
+            elif "UK" in dc["LOCATION"]:
+                country = "GB"
+            elif "JP" in dc["LOCATION"]:
+                country = "JP"
+            else:
+                country = "??"
             nl.append(NodeLocation(dc["DATACENTERID"],
                                    dc["LOCATION"],
                                    country,
@@ -448,7 +458,12 @@ class LinodeNodeDriver(NodeDriver):
         # Avoid batch limitation
         ip_answers = []
         args = [iter(batch)] * 25
-        izip_longest = getattr(itertools, 'izip_longest', _izip_longest)
+
+        if PY3:
+            izip_longest = itertools.zip_longest
+        else:
+            izip_longest = getattr(itertools, 'izip_longest', _izip_longest)
+
         for twenty_five in izip_longest(*args):
             twenty_five = [q for q in twenty_five if q]
             params = { "api_action": "batch",
@@ -465,7 +480,7 @@ class LinodeNodeDriver(NodeDriver):
                 which = nodes[lid].public_ips if ip["ISPUBLIC"] == 1 else \
                     nodes[lid].private_ips
                 which.append(ip["IPADDRESS"])
-        return nodes.values()
+        return list(nodes.values())
 
     features = {"create_node": ["ssh_key", "password"]}
 
@@ -474,9 +489,11 @@ def _izip_longest(*args, **kwds):
 
     http://docs.python.org/library/itertools.html#itertools.izip
     """
+
     fillvalue = kwds.get('fillvalue')
+
     def sentinel(counter = ([fillvalue]*(len(args)-1)).pop):
-        yield counter() # yields the fillvalue, or raises IndexError
+        yield counter()  # yields the fillvalue, or raises IndexError
     fillers = itertools.repeat(fillvalue)
     iters = [itertools.chain(it, sentinel(), fillers) for it in args]
     try:

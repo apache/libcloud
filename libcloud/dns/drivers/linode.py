@@ -18,11 +18,10 @@ __all__ = [
 ]
 
 
-from libcloud.utils import merge_valid_keys, get_new_obj
+from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.linode import (API_ROOT, LinodeException,
-                                    LinodeConnection, LinodeResponse,
-                                    LINODE_PLAN_IDS)
-from libcloud.common.linode import API_HOST, API_ROOT, LinodeException
+                                    LinodeConnection, LinodeResponse)
+from libcloud.common.linode import API_ROOT, LinodeException
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
@@ -73,7 +72,7 @@ class LinodeDNSDriver(DNSDriver):
     connectionCls = LinodeDNSConnection
 
     def list_record_types(self):
-        return RECORD_TYPE_MAP.keys()
+        return list(RECORD_TYPE_MAP.keys())
 
     def list_zones(self):
         params = {'api_action': 'domain.list'}
@@ -153,7 +152,7 @@ class LinodeDNSDriver(DNSDriver):
         merged = merge_valid_keys(params=params,
                                   valid_keys=VALID_ZONE_EXTRA_PARAMS,
                                   extra=extra)
-        data = self.connection.request(API_ROOT, params=params).objects[0]
+        self.connection.request(API_ROOT, params=params).objects[0]
         updated_zone = get_new_obj(obj=zone, klass=Zone,
                                   attributes={'domain': domain,
                                               'type': type, 'ttl': ttl,

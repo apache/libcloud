@@ -1,12 +1,13 @@
-import httplib
 import sys
 import unittest
-import urlparse
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
 
 try:
     parse_qsl = urlparse.parse_qsl
@@ -31,6 +32,12 @@ class CloudStackLBTests(unittest.TestCase):
         self.driver.name = 'CloudStack'
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
+
+    def test_list_supported_algorithms(self):
+        algorithms = self.driver.list_supported_algorithms()
+
+        self.assertTrue(Algorithm.ROUND_ROBIN in algorithms)
+        self.assertTrue(Algorithm.LEAST_CONNECTIONS in algorithms)
 
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()

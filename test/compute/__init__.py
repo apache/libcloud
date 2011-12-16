@@ -16,6 +16,7 @@
 from libcloud.compute.base import Node, NodeImage, NodeLocation
 from libcloud.pricing import get_pricing
 
+
 class TestCaseMixin(object):
     should_list_locations = True
     should_have_pricing = False
@@ -35,6 +36,9 @@ class TestCaseMixin(object):
         self.assertTrue(size.disk is None or isinstance(size.disk, int))
         self.assertTrue(size.bandwidth is None or
                             isinstance(size.bandwidth, int))
+        # Check that price values are ints, floats, or None.
+        self.assertTrue(size.price is None or isinstance(size.price, float)
+                        or isinstance(size.price, int))
 
     def test_list_images_response(self):
         images = self.driver.list_images()
@@ -78,7 +82,8 @@ class TestCaseMixin(object):
 
         driver_type = 'compute'
         try:
-            get_pricing(driver_type=driver_type, driver_name=self.driver.api_name)
+            get_pricing(driver_type=driver_type,
+                        driver_name=self.driver.api_name)
         except KeyError:
             self.fail("No {driver_type!r} pricing info for {driver}.".format(
                 driver=self.driver.__class__.__name__,

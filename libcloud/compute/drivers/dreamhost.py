@@ -198,7 +198,7 @@ class DreamhostNodeDriver(NodeDriver):
 
     def list_sizes(self, **kwargs):
         sizes = []
-        for key, values in self._sizes.iteritems():
+        for key, values in self._sizes.items():
             attributes = copy.deepcopy(values)
             attributes.update({ 'price': self._get_size_price(size_id=key) })
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))
@@ -239,6 +239,6 @@ class DreamhostNodeDriver(NodeDriver):
             private_ips = [],
             driver = self.connection.driver,
             extra = {
-                'current_size' : data['memory_mb'],
-                'account_id' : data['account_id'],
-                'type' : data['type']})
+                'current_size': data['memory_mb'],
+                'account_id': data['account_id'],
+                'type': data['type']})

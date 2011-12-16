@@ -40,6 +40,8 @@ class Algorithm(object):
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
+    WEIGHTED_ROUND_ROBIN = 3
+    WEIGHTED_LEAST_CONNECTIONS = 4
 
 DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
@@ -49,13 +51,14 @@ class LoadBalancer(object):
     Provide a common interface for handling Load Balancers.
     """
 
-    def __init__(self, id, name, state, ip, port, driver):
+    def __init__(self, id, name, state, ip, port, driver, extra=None):
         self.id = str(id) if id else None
         self.name = name
         self.state = state
         self.ip = ip
         self.port = port
         self.driver = driver
+        self.extra = extra or {}
 
     def attach_compute_node(self, node):
         return self.driver.balancer_attach_compute_node(balancer=self,
@@ -225,3 +228,9 @@ class Driver(BaseDriver):
         except KeyError:
             raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
                                 driver=self)
+
+    def list_supported_algorithms(self):
+        """
+        Return algorithms supported by this driver.
+        """
+        return list(self._ALGORITHM_TO_VALUE_MAP.keys())

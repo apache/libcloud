@@ -98,6 +98,18 @@
             "m2.xlarge": 0.60,
             "m2.2xlarge": 1.20,
             "m2.4xlarge": 2.39
+       },
+
+        "ec2_sa_east": {
+            "t1.micro": 0.027,
+            "m1.small": 0.115,
+            "m1.large": 0.46,
+            "m1.xlarge": 0.92,
+            "c1.medium": 0.23,
+            "c1.xlarge": 0.92,
+            "m2.xlarge": 0.68,
+            "m2.2xlarge": 1.36,
+            "m2.4xlarge": 2.72
         },
 
         "nimbus" : {
@@ -116,6 +128,18 @@
             "high-memory-double-extra-large": 1.383,
             "high-cpu-medium": 0.211,
             "high-cpu-extra-large": 0.780
+        },
+
+        "cloudsigma_lvs": {
+            "micro-regular": 0.0,
+            "micro-high-cpu": 0.0,
+            "standard-small": 0.0,
+            "standard-large": 0.0,
+            "standard-extra-large": 0.0,
+            "high-memory-extra-large": 0.0,
+            "high-memory-double-extra-large": 0.0,
+            "high-cpu-medium": 0.0,
+            "high-cpu-extra-large": 0.0
         },
 
         "elastichosts": {

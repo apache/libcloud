@@ -18,12 +18,12 @@ __all__ = [
     'RackspaceUKDNSDriver'
 ]
 
-import httplib
+from libcloud.utils.py3 import httplib
 import copy
 
 from libcloud.common.base import PollingConnection
 from libcloud.common.types import LibcloudError
-from libcloud.utils import merge_valid_keys, get_new_obj
+from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
@@ -112,7 +112,7 @@ class RackspaceUKDNSConnection(RackspaceDNSConnection):
 
 class RackspaceDNSDriver(DNSDriver):
     def list_record_types(self):
-        return RECORD_TYPE_MAP.keys()
+        return list(RECORD_TYPE_MAP.keys())
 
     def list_zones(self):
         response = self.connection.request(action='/domains')

@@ -59,11 +59,12 @@ class RimuHostingResponse(JsonResponse):
     def parse_body(self):
         try:
             js = super(RimuHostingResponse, self).parse_body()
-            if js[js.keys()[0]]['response_type'] == "ERROR":
+            keys = list(js.keys())
+            if js[keys[0]]['response_type'] == "ERROR":
                 raise RimuHostingException(
-                    js[js.keys()[0]]['human_readable_message']
+                    js[keys[0]]['human_readable_message']
                 )
-            return js[js.keys()[0]]
+            return js[keys[0]]
         except KeyError:
             raise RimuHostingException('Could not parse body: %s'
                                        % (self.body))
@@ -90,7 +91,7 @@ class RimuHostingConnection(ConnectionKey):
         headers['Content-Type'] = 'application/json'
 
         headers['Authorization'] = 'rimuhosting apikey=%s' % (self.key)
-        return headers;
+        return headers
 
     def request(self, action, params=None, data='', headers=None, method='GET'):
         if not headers:
@@ -115,7 +116,7 @@ class RimuHostingNodeDriver(NodeDriver):
         # Pass in some extra vars so that
         self.key = key
         self.secure = secure
-        self.connection = self.connectionCls(key ,secure)
+        self.connection = self.connectionCls(key, secure)
         self.connection.host = host
         self.connection.api_context = api_context
         self.connection.port = port
@@ -162,25 +163,25 @@ class RimuHostingNodeDriver(NodeDriver):
         # Get plans. Note this is really just for libcloud.
         # We are happy with any size.
         if location == None:
-            location = '';
+            location = ''
         else:
             location = ";dc_location=%s" % (location.id)
 
         res = self.connection.request('/pricing-plans;server-type=VPS%s' % (location)).object
-        return map(lambda x : self._to_size(x), res['pricing_plan_infos'])
+        return list(map(lambda x: self._to_size(x), res['pricing_plan_infos']))
 
     def list_nodes(self):
         # Returns a list of Nodes
         # Will only include active ones.
         res = self.connection.request('/orders;include_inactive=N').object
-        return map(lambda x : self._to_node(x), res['about_orders'])
+        return list(map(lambda x: self._to_node(x), res['about_orders']))
 
     def list_images(self, location=None):
         # Get all base images.
         # TODO: add other image sources. (Such as a backup of a VPS)
         # All Images are available for use at all locations
         res = self.connection.request('/distributions').object
-        return map(lambda x : self._to_image(x), res['distro_infos'])
+        return list(map(lambda x: self._to_image(x), res['distro_infos']))
 
     def reboot_node(self, node):
         # Reboot
@@ -247,46 +248,46 @@ class RimuHostingNodeDriver(NodeDriver):
             'pricing_plan_code': size.id,
         }
 
-        if kwargs.has_key('ex_control_panel'):
+        if 'ex_control_panel' in kwargs:
             data['instantiation_options']['control_panel'] = kwargs['ex_control_panel']
 
-        if kwargs.has_key('auth'):
+        if 'auth' in kwargs:
             auth = kwargs['auth']
             if not isinstance(auth, NodeAuthPassword):
                 raise ValueError('auth must be of NodeAuthPassword type')
             data['instantiation_options']['password'] = auth.password
 
-        if kwargs.has_key('ex_billing_oid'):
+        if 'ex_billing_oid' in kwargs:
             #TODO check for valid oid.
             data['billing_oid'] = kwargs['ex_billing_oid']
 
-        if kwargs.has_key('ex_host_server_oid'):
+        if 'ex_host_server_oid' in kwargs:
             data['host_server_oid'] = kwargs['ex_host_server_oid']
 
-        if kwargs.has_key('ex_vps_order_oid_to_clone'):
+        if 'ex_vps_order_oid_to_clone' in kwargs:
             data['vps_order_oid_to_clone'] = kwargs['ex_vps_order_oid_to_clone']
 
-        if kwargs.has_key('ex_num_ips') and int(kwargs['ex_num_ips']) > 1:
-            if not kwargs.has_key('ex_extra_ip_reason'):
+        if 'ex_num_ips' in kwargs and int(kwargs['ex_num_ips']) > 1:
+            if not 'ex_extra_ip_reason' in kwargs:
                 raise RimuHostingException('Need an reason for having an extra IP')
             else:
-                if not data.has_key('ip_request'):
+                if not 'ip_request' in data:
                     data['ip_request'] = {}
                 data['ip_request']['num_ips'] = int(kwargs['ex_num_ips'])
                 data['ip_request']['extra_ip_reason'] = kwargs['ex_extra_ip_reason']
 
-        if kwargs.has_key('ex_memory_mb'):
-            if not data.has_key('vps_parameters'):
+        if 'ex_memory_mb' in kwargs:
+            if not 'vps_parameters' in data:
                 data['vps_parameters'] = {}
             data['vps_parameters']['memory_mb'] = kwargs['ex_memory_mb']
 
-        if kwargs.has_key('ex_disk_space_mb'):
-            if not data.has_key('ex_vps_parameters'):
+        if 'ex_disk_space_mb' in kwargs:
+            if not 'ex_vps_parameters' in data:
                 data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_mb'] = kwargs['ex_disk_space_mb']
 
-        if kwargs.has_key('ex_disk_space_2_mb'):
-            if not data.has_key('vps_parameters'):
+        if 'ex_disk_space_2_mb' in kwargs:
+            if not 'vps_parameters' in data:
                 data['vps_parameters'] = {}
             data['vps_parameters']['disk_space_2_mb'] = kwargs['ex_disk_space_2_mb']
 

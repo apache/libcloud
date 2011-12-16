@@ -16,8 +16,11 @@
 """
 Common utilities for OpenStack
 """
-import httplib
-from urllib2 import urlparse
+import sys
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlparse
+
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import LibcloudError, InvalidCredsError, MalformedResponseError
 
@@ -86,6 +89,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.urls = {}
         self.driver = self.parent_conn.driver
 
+    def morph_action_hook(self, action):
+        return action
+
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json; charset=UTF-8'
@@ -104,7 +110,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             raise LibcloudError('Unsupported Auth Version requested')
 
     def authenticate_1_0(self):
-        resp = self.request("/",
+        resp = self.request("/v1.0",
                     headers={
                         'X-Auth-User': self.user_id,
                         'X-Auth-Key': self.key,
@@ -132,7 +138,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id, 'key': self.key}})
-        resp = self.request("/auth",
+        resp = self.request("/v1.1/auth",
                     data=reqbody,
                     headers={},
                     method='POST')
@@ -147,12 +153,14 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         else:
             try:
                 body = json.loads(resp.body)
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)
             try:
                 self.auth_token = body['auth']['token']['id']
                 self.urls = body['auth']['serviceCatalog']
-            except KeyError, e:
+            except KeyError:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
     def authenticate_2_0_with_apikey(self):
@@ -168,7 +176,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
-        resp = self.request('tokens/',
+        resp = self.request('/v2.0/tokens/',
                     data=reqbody,
                     headers={'Content-Type':'application/json'},
                     method='POST')
@@ -181,7 +189,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         else:
             try:
                 body = json.loads(resp.body)
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
@@ -189,7 +198,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 token = access['token']
                 self.auth_token = token['id']
                 self.urls = access['serviceCatalog']
-            except KeyError, e:
+            except KeyError:
+                e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
@@ -279,7 +289,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_token = osa.auth_token
 
             # TODO: Multi-region support
-            if self._auth_version == '2.0':
+            if self._auth_version in ['2.0', '2.0_apikey', '2.0_password']:
                 self.tenant_ids = {}
 
                 for service in osa.urls:

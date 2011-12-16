@@ -14,15 +14,15 @@
 # limitations under the License.
 
 import time
-import httplib
+from libcloud.utils.py3 import httplib
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
+from libcloud.utils.misc import reverse_dict
 from libcloud.common.types import LibcloudError
-from libcloud.utils import reverse_dict
 from libcloud.common.gogrid import GoGridConnection, GoGridResponse, BaseGoGridDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
@@ -112,8 +112,9 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
         try:
             resp = self.connection.request('/api/grid/loadbalancer/delete',
                     method='POST', params={'id': balancer.id})
-        except Exception, err:
-            if "Update request for LoadBalancer" in str(err):
+        except Exception:
+            e = sys.exc_info()[1]
+            if "Update request for LoadBalancer" in str(e):
                 raise LibcloudLBImmutableError("Cannot delete immutable object",
                         GoGridLBDriver)
             else:
@@ -171,8 +172,9 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
             return self.connection.request('/api/grid/loadbalancer/edit',
                     method='POST',
                     params=params)
-        except Exception, err:
-            if "Update already pending" in str(err):
+        except Exception:
+            e = sys.exc_info()[1]
+            if "Update already pending" in str(e):
                 raise LibcloudLBImmutableError("Balancer is immutable", GoGridLBDriver)
 
         raise LibcloudError(value='Exception: %s' % str(err), driver=self)

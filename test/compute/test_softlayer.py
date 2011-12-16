@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
 import unittest
 import sys
 
 from xml.etree import ElementTree as ET
-import xmlrpclib
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import xmlrpclib
+from libcloud.utils.py3 import next
 
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 from libcloud.compute.types import NodeState
@@ -57,7 +59,7 @@ class SoftLayerTests(unittest.TestCase):
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
-        seattle = (l for l in locations if l.name == 'sea01').next()
+        seattle = next(l for l in locations if l.name == 'sea01')
         self.assertEqual(seattle.country, 'US')
         self.assertEqual(seattle.id, '18171')
 

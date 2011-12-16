@@ -15,7 +15,7 @@
 
 import sys
 import unittest
-import httplib
+from libcloud.utils.py3 import httplib
 
 from libcloud.compute.base import Node
 from libcloud.compute.types import Provider
@@ -57,7 +57,8 @@ class ElasticStackTestCase(object):
         self.mockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
-        except InvalidCredsError, e:
+        except InvalidCredsError:
+            e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -75,7 +76,8 @@ class ElasticStackTestCase(object):
         self.mockHttp.type = 'PARSE_ERROR'
         try:
             self.driver.list_nodes()
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             self.assertTrue(str(e).find('X-Elastic-Error') != -1)
         else:
             self.fail('test should have thrown')
@@ -119,7 +121,7 @@ class ElasticStackTestCase(object):
         images = self.driver.list_images()
         self.assertEqual(len(images), len(self.driver._standard_drives))
 
-        for uuid, values in self.driver._standard_drives.iteritems():
+        for uuid, values in list(self.driver._standard_drives.items()):
             self.assertEqual(len([image for image in images if image.id == uuid]), 1)
 
     def test_reboot_node(self):

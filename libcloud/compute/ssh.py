@@ -66,8 +66,8 @@ class BaseSSHClient(object):
 
         @return: C{bool}
         """
-        raise NotImplementedError, \
-            'connect not implemented for this ssh client'
+        raise NotImplementedError(
+            'connect not implemented for this ssh client')
 
     def put(self, path, contents=None, chmod=None):
         """
@@ -82,8 +82,8 @@ class BaseSSHClient(object):
         @type chmod: C{int}
         @keyword chmod: chmod file to this after creation.
         """
-        raise NotImplementedError, \
-            'put not implemented for this ssh client'
+        raise NotImplementedError(
+            'put not implemented for this ssh client')
 
     def delete(self, path):
         """
@@ -92,8 +92,8 @@ class BaseSSHClient(object):
         @type path: C{str}
         @keyword path: File path on the remote node.
         """
-        raise NotImplementedError, \
-            'delete not implemented for this ssh client'
+        raise NotImplementedError(
+            'delete not implemented for this ssh client')
 
     def run(self, cmd):
         """
@@ -104,15 +104,15 @@ class BaseSSHClient(object):
 
         @return C{list} of [stdout, stderr, exit_status]
         """
-        raise NotImplementedError, \
-            'run not implemented for this ssh client'
+        raise NotImplementedError(
+            'run not implemented for this ssh client')
 
     def close(self):
         """
         Shutdown connection to the remote node.
         """
-        raise NotImplementedError, \
-            'close not implemented for this ssh client'
+        raise NotImplementedError(
+            'close not implemented for this ssh client')
 
 class ParamikoSSHClient(BaseSSHClient):
     """
@@ -175,7 +175,7 @@ class ParamikoSSHClient(BaseSSHClient):
     def run(self, cmd):
         # based on exec_command()
         bufsize = -1
-        t =  self.client.get_transport()
+        t = self.client.get_transport()
         chan = t.open_session()
         chan.exec_command(cmd)
         stdin = chan.makefile('wb', bufsize)

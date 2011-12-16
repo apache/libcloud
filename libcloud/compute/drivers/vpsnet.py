@@ -22,6 +22,8 @@ try:
 except ImportError:
     import json
 
+from libcloud.utils.py3 import b
+
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.providers import Provider
@@ -68,7 +70,7 @@ class VPSNetConnection(ConnectionUserAndKey):
     responseCls = VPSNetResponse
 
     def add_default_headers(self, headers):
-        user_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (user_b64)
         return headers
 

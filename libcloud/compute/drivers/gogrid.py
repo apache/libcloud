@@ -19,6 +19,8 @@ import time
 import hashlib
 import copy
 
+from libcloud.utils.py3 import b
+
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.gogrid import GoGridConnection, BaseGoGridDriver
 from libcloud.compute.providers import Provider
@@ -83,7 +85,7 @@ class GoGridNode(Node):
     # so uuid of node should not change after add is completed
     def get_uuid(self):
         return hashlib.sha1(
-            "%s:%d" % (self.public_ips,self.driver.type)
+            b("%s:%d" % (self.public_ips,self.driver.type))
         ).hexdigest()
 
 class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
@@ -163,18 +165,17 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         res = self._server_list()
         try:
-          for password in self._password_list()['list']:
-              try:
-                  passwords_map[password['server']['id']] = password['password']
-              except KeyError:
-                  pass
+            for password in self._password_list()['list']:
+                try:
+                    passwords_map[password['server']['id']] = password['password']
+                except KeyError:
+                    pass
         except InvalidCredsError:
-          # some gogrid API keys don't have permission to access the password list.
-          pass
+            # some gogrid API keys don't have permission to access the password list.
+            pass
 
-        return [ self._to_node(el, passwords_map.get(el.get('id')))
-                 for el
-                 in res['list'] ]
+        return [self._to_node(el, passwords_map.get(el.get('id')))
+                 for el in res['list']]
 
     def reboot_node(self, node):
         id = node.id
@@ -211,14 +212,14 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def _get_first_ip(self, location=None):
         ips = self.ex_list_ips(public=True, assigned=False, location=location)
         try:
-            return ips[0].ip 
+            return ips[0].ip
         except IndexError:
             raise LibcloudError('No public unassigned IPs left',
                     GoGridNodeDriver)
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, values in self._instance_types.iteritems():
+        for key, values in self._instance_types.items():
             attributes = copy.deepcopy(values)
             attributes.update({ 'price': self._get_size_price(size_id=key) })
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))

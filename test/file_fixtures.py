@@ -18,6 +18,9 @@ from __future__ import with_statement
 
 import os
 
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import u
+
 FIXTURES_ROOT = {
     'compute': 'compute/fixtures',
     'storage': 'storage/fixtures',
@@ -35,9 +38,14 @@ class FileFixtures(object):
     def load(self, file):
         path = os.path.join(self.root, file)
         if os.path.exists(path):
-            with open(path, 'r') as fh:
+            if PY3:
+                kwargs = {'encoding': 'utf-8'}
+            else:
+                kwargs = {}
+
+            with open(path, 'r', **kwargs) as fh:
                 content = fh.read()
-            return content
+            return u(content)
         else:
             raise IOError(path)
 
