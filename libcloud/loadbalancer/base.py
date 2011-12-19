@@ -26,10 +26,11 @@ __all__ = [
 
 class Member(object):
 
-    def __init__(self, id, ip, port):
+    def __init__(self, id, ip, port, extra=None):
         self.id = str(id) if id else None
         self.ip = ip
         self.port = port
+        self.extra = extra or {}
 
     def __repr__(self):
         return ('<Member: id=%s, address=%s:%s>' % (self.id,
