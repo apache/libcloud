@@ -50,6 +50,10 @@ Changes with Apache Libcloud in development:
       connection class.
       [Dave King]
 
+    - Add 'extra' attribute to the Member object and populate it in 
+      the Rackspace driver.
+      [Mark Everett]
+
 Changes with Apache Libcloud 0.7.1:
 
   *) General:
