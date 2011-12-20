@@ -292,7 +292,6 @@ class RackspaceLBDriver(Driver):
         return self._to_members(
                 self.connection.request(uri).object)
 
-    #def update_balancer(self, balancer, name=None, algorithm=None, protocol=None, port=None):
     def update_balancer(self, balancer, **kwargs):
         """
         Sets the name, algorithm, protocol, or port on a Rackspace load balancer.
@@ -301,7 +300,7 @@ class RackspaceLBDriver(Driver):
         @type       metadata: C{str}
 
         @keyword    algorithm: New load balancer algorithm
-        @type       metadata: C{str}
+        @type       metadata: C{libcloud.loadbalancer.base.Algorithm}
 
         @keyword    protocol: New load balancer protocol
         @type       metadata: C{str}
