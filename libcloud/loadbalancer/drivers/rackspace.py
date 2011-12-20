@@ -21,6 +21,7 @@ try:
 except ImportError:
     import json
 
+from libcloud.utils.py3 import httplib
 from libcloud.utils.misc import reverse_dict
 from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
@@ -255,7 +256,7 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s' % (balancer.id)
         resp = self.connection.request(uri, method='DELETE')
 
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
         uri = '/loadbalancers/%s' % (balancer_id)
@@ -285,7 +286,7 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, member.id)
         resp = self.connection.request(uri, method='DELETE')
 
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def balancer_list_members(self, balancer):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
@@ -312,7 +313,7 @@ class RackspaceLBDriver(Driver):
         resp = self.connection.request('/loadbalancers/%s' % balancer.id,
                 method='PUT',
                 data=json.dumps(attrs))
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def _to_update_attrs(self, attrs):
         update_attrs = {}
