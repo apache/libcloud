@@ -23,10 +23,11 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
+from libcloud.common.types import LibcloudError
 
 from test import MockHttpTestCase
 from test.file_fixtures import LoadBalancerFileFixtures, OpenStackFixtures
@@ -39,6 +40,9 @@ class RackspaceLBTests(unittest.TestCase):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
+        self.fake_lb_3131 = LoadBalancer(id='3131', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
 
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
@@ -277,6 +281,31 @@ class RackspaceLBTests(unittest.TestCase):
         ret = balancer.detach_member(member)
         self.assertTrue(ret)
 
+    def test_update_balancer_protocol(self):
+        ret = self.driver.update_balancer(self.fake_lb_3131, protocol='HTTPS')
+        self.assertTrue(ret)
+
+    def test_update_balancer_port(self):
+        ret = self.driver.update_balancer(self.fake_lb_3131, port=4024)
+        self.assertTrue(ret)
+
+    def test_update_balancer_name(self):
+        ret = self.driver.update_balancer(self.fake_lb_3131, name='trogdor')
+        self.assertTrue(ret)
+
+    def test_update_balancer_algorithm(self):
+        ret = self.driver.update_balancer(self.fake_lb_3131,
+                                          algorithm=Algorithm.RANDOM)
+        self.assertTrue(ret)
+
+    def test_update_balancer_bad_algorithm_exception(self):
+        try:
+            self.driver.update_balancer(self.fake_lb_3131,
+                                        algorithm='OUIJA_BOARD')
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Should have thrown an exception with bad algorithm value')
 
 class RackspaceUKLBTests(RackspaceLBTests):
 
@@ -285,6 +314,9 @@ class RackspaceUKLBTests(RackspaceLBTests):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceUKLBDriver('user', 'key')
+        self.fake_lb_3131 = LoadBalancer(id='3131', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
 
 
 class RackspaceLBMockHttp(MockHttpTestCase):
@@ -432,6 +464,18 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94697_https_health_monitor.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3131(self, method, url, body, headers):
+        if method == "PUT":
+            body = json.loads(body)
+            for put_param in body.keys():
+                if put_param not in ('name', 'algorithm', 'protocol', 'port'):
+                    return (httplib.BAD_REQUEST, "", {},
+                            httplib.responses[httplib.BAD_REQUEST])
+
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 

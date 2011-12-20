@@ -292,6 +292,46 @@ class RackspaceLBDriver(Driver):
         return self._to_members(
                 self.connection.request(uri).object)
 
+    #def update_balancer(self, balancer, name=None, algorithm=None, protocol=None, port=None):
+    def update_balancer(self, balancer, **kwargs):
+        """
+        Sets the name, algorithm, protocol, or port on a Rackspace load balancer.
+
+        @keyword    name: New load balancer name
+        @type       metadata: C{str}
+
+        @keyword    algorithm: New load balancer algorithm
+        @type       metadata: C{str}
+
+        @keyword    protocol: New load balancer protocol
+        @type       metadata: C{str}
+
+        @keyword    port: New load balancer port
+        @type       metadata: C{int}
+        """
+        attrs = self._to_update_attrs(kwargs)
+        resp = self.connection.request('/loadbalancers/%s' % balancer.id,
+                method='PUT',
+                data=json.dumps(attrs))
+        return resp.status == 202
+
+    def _to_update_attrs(self, attrs):
+        update_attrs = {}
+        if "name" in attrs:
+            update_attrs['name'] = attrs['name']
+
+        if "algorithm" in attrs:
+            algorithm_value = self._algorithm_to_value(attrs['algorithm'])
+            update_attrs['algorithm'] = algorithm_value
+
+        if "protocol" in attrs:
+            update_attrs['protocol'] = attrs['protocol']
+
+        if "port" in attrs:
+            update_attrs['port'] = int(attrs['port'])
+
+        return update_attrs
+
     def ex_list_algorithm_names(self):
         """
         Lists algorithms supported by the API.  Returned as strings because
