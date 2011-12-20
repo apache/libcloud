@@ -233,19 +233,19 @@ class RackspaceLBDriver(Driver):
 
     def create_balancer(self, name, members, protocol='http',
                         port=80, algorithm=DEFAULT_ALGORITHM):
-        algorithm = self._algorithm_to_value(algorithm)
+        balancer_attrs = self._kwargs_to_mutable_attrs(
+                                name=name,
+                                protocol=protocol,
+                                port=port,
+                                algorithm=algorithm)
 
-        balancer_object = {"loadBalancer":
-                {"name": name,
-                    "port": port,
-                    "algorithm": algorithm,
-                    "protocol": protocol.upper(),
-                    "virtualIps": [{"type": "PUBLIC"}],
-                    "nodes": [{"address": member.ip,
-                        "port": member.port,
-                        "condition": "ENABLED"} for member in members],
-                    }
-                }
+        balancer_attrs.update({
+            "virtualIps": [{"type": "PUBLIC"}],
+            "nodes": [{"address": member.ip,
+                "port": member.port,
+                "condition": "ENABLED"} for member in members],
+            })
+        balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',
                 method='POST',
@@ -309,13 +309,13 @@ class RackspaceLBDriver(Driver):
         @keyword    port: New load balancer port
         @type       metadata: C{int}
         """
-        attrs = self._to_update_attrs(kwargs)
+        attrs = self._kwargs_to_mutable_attrs(**kwargs)
         resp = self.connection.request('/loadbalancers/%s' % balancer.id,
                 method='PUT',
                 data=json.dumps(attrs))
         return resp.status == httplib.ACCEPTED
 
-    def _to_update_attrs(self, attrs):
+    def _kwargs_to_mutable_attrs(self, **attrs):
         update_attrs = {}
         if "name" in attrs:
             update_attrs['name'] = attrs['name']
@@ -325,7 +325,7 @@ class RackspaceLBDriver(Driver):
             update_attrs['algorithm'] = algorithm_value
 
         if "protocol" in attrs:
-            update_attrs['protocol'] = attrs['protocol']
+            update_attrs['protocol'] = attrs['protocol'].upper()
 
         if "port" in attrs:
             update_attrs['port'] = int(attrs['port'])
