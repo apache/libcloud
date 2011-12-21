@@ -55,9 +55,33 @@ DEFAULT_API_VERSION = '3.2'
 
 
 class ACTION(object):
+    # The VM is stopped, and its memory state stored to a checkpoint file.
+    # VM state, and disk image, has been transferred back to the front-end.
+    # Resuming the VM requires the VM instance to be re-scheduled.
     STOP = 'STOPPED'
-    PAUSE = 'SUSPENDED'
+
+    # The VM is stopped, and its memory state stored to a checkpoint file.
+    # The VM state, and disk image, are left on the host to later resume the
+    # VM there. Resuming the VM does not require the VM to be re-scheduled.
+    # Rather, after suspending, the VM resources are reserved for later
+    # resuming.
+    SUSPEND = 'SUSPENDED'
+
+    # The VM is resumed using the saved memory state from the checkpoint file,
+    # and the VM's disk image. The VM is either started immediately, or
+    # re-scheduled depending on how it was suspended.
     RESUME = 'RESUME'
+
+    # The VM is forcibly shutdown, its memory state and disk image are deleted.
+    CANCEL = 'CANCEL'
+
+    # The VM is gracefully shutdown by sending the ACPI signal. If the VM does
+    # not shutdown, then it is considered to still be running. If successfully,
+    # shutdown, its memory state and disk image are deleted.
+    SHUTDOWN = 'SHUTDOWN'
+
+    # The VM is forcibly shutdown, its memory state and disk image are deleted.
+    DONE = 'DONE'
 
 
 class OpenNebulaResponse(XmlResponse):
@@ -293,15 +317,6 @@ class OpenNebulaNodeDriver(NodeDriver):
         resp = self.connection.request(url, method='DELETE')
 
         return resp.status == httplib.OK
-
-    def reboot_node(self, node):
-        if not self.ex_node_action(node, ACTION.STOP):
-            return False
-
-        if not self.ex_node_action(node, ACTION.RESUME):
-            return False
-
-        return True
 
     def list_nodes(self):
         return self._to_nodes(self.connection.request('/compute').object)
