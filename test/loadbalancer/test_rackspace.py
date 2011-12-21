@@ -24,6 +24,7 @@ except ImportError:
 from libcloud.utils.py3 import httplib
 
 from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.types import MemberCondition
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
@@ -137,6 +138,14 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='18940')
         self.assertEquals(balancer.extra["ipv4PrivateSource"], '10.183.252.25')
 
+    def test_get_balancer_extra_members(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = balancer.extra['members']
+        self.assertEquals(3, len(members))
+        self.assertEquals('10.1.0.11', members[0].ip)
+        self.assertEquals('10.1.0.10', members[1].ip)
+        self.assertEquals('10.1.0.9', members[2].ip)
+
     def test_get_balancer_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         self.assertEquals(balancer.extra["algorithm"], Algorithm.RANDOM)
@@ -238,9 +247,32 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.list_members()
 
-        self.assertEquals(len(members), 2)
-        self.assertEquals(set(['10.1.0.10:80', '10.1.0.11:80']),
+        self.assertEquals(len(members), 3)
+        self.assertEquals(set(['10.1.0.10:80', '10.1.0.11:80', '10.1.0.9:8080']),
                 set(["%s:%s" % (member.ip, member.port) for member in members]))
+
+    def test_balancer_members_extra_weight(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = balancer.list_members()
+
+        self.assertEquals(12, members[0].extra['weight'])
+        self.assertEquals(8, members[1].extra['weight'])
+
+    def test_balancer_members_extra_condition(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = balancer.list_members()
+
+        self.assertEquals(MemberCondition.ENABLED, members[0].extra['condition'])
+        self.assertEquals(MemberCondition.DISABLED, members[1].extra['condition'])
+        self.assertEquals(MemberCondition.DRAINING, members[2].extra['condition'])
+
+    def test_balancer_members_extra_status(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = balancer.list_members()
+
+        self.assertEquals('ONLINE', members[0].extra['status'])
+        self.assertEquals('OFFLINE', members[1].extra['status'])
+        self.assertEquals('DRAINING', members[2].extra['status'])
 
     def test_balancer_attach_member(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
