@@ -25,7 +25,7 @@ from libcloud.utils.misc import reverse_dict
 from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import State
+from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
@@ -198,6 +198,12 @@ class RackspaceLBDriver(Driver):
         'DELETED': State.DELETED,
         'PENDING_UPDATE': State.PENDING,
         'PENDING_DELETE': State.PENDING
+    }
+
+    LB_MEMBER_CONDITION_MAP = {
+        'ENABLED' : MemberCondition.ENABLED,
+        'DISABLED' : MemberCondition.DISABLED,
+        'DRAINING' : MemberCondition.DRAINING,
     }
 
     _VALUE_TO_ALGORITHM_MAP = {
@@ -385,8 +391,11 @@ class RackspaceLBDriver(Driver):
         if 'weight' in el:
             extra['weight'] = el["weight"]
 
-        if 'condition' in el:
-            extra['condition'] = el["condition"]
+        if 'condition' in el and el['condition'] in self.LB_MEMBER_CONDITION_MAP:
+            extra['condition'] = self.LB_MEMBER_CONDITION_MAP.get(el["condition"])
+
+        if 'status' in el:
+            extra['status'] = el["status"]
 
         lbmember = Member(id=el["id"],
                 ip=el["address"],
