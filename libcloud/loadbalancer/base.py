@@ -165,7 +165,7 @@ class Driver(BaseDriver):
 
     def update_balancer(self, balancer, **kwargs):
         """
-        Sets the name, algorithm, protocol, or port on a Rackspace load balancer.
+        Sets the name, algorithm, protocol, or port on a load balancer.
 
         @keyword    name: New load balancer name
         @type       metadata: C{str}
