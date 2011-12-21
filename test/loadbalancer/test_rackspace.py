@@ -326,10 +326,6 @@ class RackspaceUKLBTests(RackspaceLBTests):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceUKLBDriver('user', 'key')
-        self.fake_lb_3131 = LoadBalancer(id='3131', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
-
 
 class RackspaceLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
