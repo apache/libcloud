@@ -294,26 +294,11 @@ class RackspaceLBDriver(Driver):
                 self.connection.request(uri).object)
 
     def update_balancer(self, balancer, **kwargs):
-        """
-        Sets the name, algorithm, protocol, or port on a Rackspace load balancer.
-
-        @keyword    name: New load balancer name
-        @type       metadata: C{str}
-
-        @keyword    algorithm: New load balancer algorithm
-        @type       metadata: C{libcloud.loadbalancer.base.Algorithm}
-
-        @keyword    protocol: New load balancer protocol
-        @type       metadata: C{str}
-
-        @keyword    port: New load balancer port
-        @type       metadata: C{int}
-        """
         attrs = self._kwargs_to_mutable_attrs(**kwargs)
-        resp = self.connection.request('/loadbalancers/%s' % balancer.id,
+        self.connection.request('/loadbalancers/%s' % balancer.id,
                 method='PUT',
                 data=json.dumps(attrs))
-        return resp.status == httplib.ACCEPTED
+        return self.get_balancer(balancer.id)
 
     def _kwargs_to_mutable_attrs(self, **attrs):
         update_attrs = {}
