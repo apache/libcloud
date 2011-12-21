@@ -38,6 +38,11 @@ from test.compute import TestCaseMixin
 from test.secrets import OPENNEBULA_PARAMS
 
 
+class OpenNebulaCaseMixin(TestCaseMixin):
+    def test_reboot_node_response(self):
+        pass
+
+
 class OpenNebula_ResponseTests(unittest.TestCase):
     XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
 
@@ -53,7 +58,7 @@ class OpenNebula_ResponseTests(unittest.TestCase):
             self.assertEqual(exceptionType, type(InvalidCredsError()))
 
 
-class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v1.4.
     """
@@ -104,14 +109,6 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         """
         node = Node(5, None, None, None, None, self.driver)
         ret = self.driver.destroy_node(node)
-        self.assertTrue(ret)
-
-    def test_reboot_node(self):
-        """
-        Test reboot_node functionality.
-        """
-        node = Node(5, None, None, None, None, self.driver)
-        ret = self.driver.reboot_node(node)
         self.assertTrue(ret)
 
     def test_list_nodes(self):
@@ -242,7 +239,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
 
-class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v2.0 through v2.2.
     """
@@ -306,14 +303,6 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
-    def test_reboot_node(self):
-        """
-        Test reboot_node functionality.
-        """
-        node = Node(5, None, None, None, None, self.driver)
-        ret = self.driver.reboot_node(node)
-        self.assertTrue(ret)
-
     def test_list_nodes(self):
         """
         Test list_nodes functionality.
@@ -342,8 +331,10 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.size.id, '1')
         self.assertEqual(node.size.name, 'small')
         self.assertEqual(node.size.ram, 1024)
-        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu, int))
-        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu, int))
+        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu,
+                                                            int))
+        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu,
+                                                             int))
         self.assertEqual(node.size.cpu, 1)
         self.assertEqual(node.size.vcpu, None)
         self.assertEqual(node.size.disk, None)
@@ -378,8 +369,10 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.size.id, '1')
         self.assertEqual(node.size.name, 'small')
         self.assertEqual(node.size.ram, 1024)
-        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu, int))
-        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu, int))
+        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu,
+                                                            int))
+        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu,
+                                                             int))
         self.assertEqual(node.size.cpu, 1)
         self.assertEqual(node.size.vcpu, None)
         self.assertEqual(node.size.disk, None)
@@ -517,7 +510,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(network.size, '256')
 
 
-class OpenNebula_3_0_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_3_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v3.0.
     """
@@ -560,7 +553,7 @@ class OpenNebula_3_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
 
-class OpenNebula_3_2_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_3_2_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v3.2.
     """

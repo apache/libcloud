@@ -19,6 +19,11 @@ Changes with Apache Libcloud in development:
        'auth_version' is used.
        [Tomaz Muraus]
 
+     - Current OpenNebula OCCI implementation does not support a proper
+       restart method. Rather it suspends and resumes. Therefore, restart_node
+       has been removed from the OpenNebula driver.
+       [Hutson Betts]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver
@@ -49,6 +54,10 @@ Changes with Apache Libcloud in development:
     - Propagate extra keyword arguments passed to the Rackspace driver
       connection class.
       [Dave King]
+
+    - Add 'extra' attribute to the Member object and populate it in 
+      the Rackspace driver.
+      [Mark Everett]
 
 Changes with Apache Libcloud 0.7.1:
 
