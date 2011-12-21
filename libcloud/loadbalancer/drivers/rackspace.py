@@ -21,6 +21,7 @@ try:
 except ImportError:
     import json
 
+from libcloud.utils.py3 import httplib
 from libcloud.utils.misc import reverse_dict
 from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
@@ -232,19 +233,19 @@ class RackspaceLBDriver(Driver):
 
     def create_balancer(self, name, members, protocol='http',
                         port=80, algorithm=DEFAULT_ALGORITHM):
-        algorithm = self._algorithm_to_value(algorithm)
+        balancer_attrs = self._kwargs_to_mutable_attrs(
+                                name=name,
+                                protocol=protocol,
+                                port=port,
+                                algorithm=algorithm)
 
-        balancer_object = {"loadBalancer":
-                {"name": name,
-                    "port": port,
-                    "algorithm": algorithm,
-                    "protocol": protocol.upper(),
-                    "virtualIps": [{"type": "PUBLIC"}],
-                    "nodes": [{"address": member.ip,
-                        "port": member.port,
-                        "condition": "ENABLED"} for member in members],
-                    }
-                }
+        balancer_attrs.update({
+            "virtualIps": [{"type": "PUBLIC"}],
+            "nodes": [{"address": member.ip,
+                "port": member.port,
+                "condition": "ENABLED"} for member in members],
+            })
+        balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',
                 method='POST',
@@ -255,7 +256,7 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s' % (balancer.id)
         resp = self.connection.request(uri, method='DELETE')
 
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
         uri = '/loadbalancers/%s' % (balancer_id)
@@ -285,12 +286,36 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, member.id)
         resp = self.connection.request(uri, method='DELETE')
 
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def balancer_list_members(self, balancer):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         return self._to_members(
                 self.connection.request(uri).object)
+
+    def update_balancer(self, balancer, **kwargs):
+        attrs = self._kwargs_to_mutable_attrs(**kwargs)
+        self.connection.request('/loadbalancers/%s' % balancer.id,
+                method='PUT',
+                data=json.dumps(attrs))
+        return self.get_balancer(balancer.id)
+
+    def _kwargs_to_mutable_attrs(self, **attrs):
+        update_attrs = {}
+        if "name" in attrs:
+            update_attrs['name'] = attrs['name']
+
+        if "algorithm" in attrs:
+            algorithm_value = self._algorithm_to_value(attrs['algorithm'])
+            update_attrs['algorithm'] = algorithm_value
+
+        if "protocol" in attrs:
+            update_attrs['protocol'] = attrs['protocol'].upper()
+
+        if "port" in attrs:
+            update_attrs['port'] = int(attrs['port'])
+
+        return update_attrs
 
     def ex_list_algorithm_names(self):
         """
