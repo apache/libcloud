@@ -25,7 +25,7 @@ from libcloud.utils.misc import reverse_dict
 from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import State
+from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
@@ -200,6 +200,12 @@ class RackspaceLBDriver(Driver):
         'PENDING_DELETE': State.PENDING
     }
 
+    LB_MEMBER_CONDITION_MAP = {
+        'ENABLED' : MemberCondition.ENABLED,
+        'DISABLED' : MemberCondition.DISABLED,
+        'DRAINING' : MemberCondition.DRAINING,
+    }
+
     _VALUE_TO_ALGORITHM_MAP = {
         'RANDOM': Algorithm.RANDOM,
         'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
@@ -365,6 +371,9 @@ class RackspaceLBDriver(Driver):
             logging = el["connectionLogging"]
             extra["connectionLoggingEnabled"] = logging.get("enabled")
 
+        if 'nodes' in el:
+            extra['members'] = self._to_members(el)
+
         return LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
@@ -378,9 +387,20 @@ class RackspaceLBDriver(Driver):
         return [self._to_member(el) for el in object["nodes"]]
 
     def _to_member(self, el):
+        extra = {}
+        if 'weight' in el:
+            extra['weight'] = el["weight"]
+
+        if 'condition' in el and el['condition'] in self.LB_MEMBER_CONDITION_MAP:
+            extra['condition'] = self.LB_MEMBER_CONDITION_MAP.get(el["condition"])
+
+        if 'status' in el:
+            extra['status'] = el["status"]
+
         lbmember = Member(id=el["id"],
                 ip=el["address"],
-                port=el["port"])
+                port=el["port"],
+                extra=extra)
         return lbmember
 
     def _ex_private_virtual_ips(self, el):
