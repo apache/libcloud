@@ -13,8 +13,16 @@
             "condition": "DISABLED", 
             "id": 30945, 
             "port": 80, 
-            "status": "ONLINE",
+            "status": "OFFLINE",
             "weight": 8
+        },
+        {
+            "address": "10.1.0.9", 
+            "condition": "DRAINING", 
+            "id": 30946, 
+            "port": 8080, 
+            "status": "DRAINING",
+            "weight": 20
         }
     ]
 }
