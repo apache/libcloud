@@ -25,7 +25,7 @@ from libcloud.utils.misc import reverse_dict
 from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
-from libcloud.loadbalancer.types import State
+from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
@@ -104,8 +104,8 @@ class RackspaceConnectionThrottle(object):
     @type min_connections: C{int}
 
     @param max_connections: Maximum number of of connections per IP address.
-                            (Must be between 0 and 100000, 0 allows an 
-                            unlimited number of connections.)
+                            (Must be between 0 and 100000, 0 allows an
+                            unlimited number of connections.
     @type max_connections: C{int}
 
     @param max_connection_rate: Maximum number of connections allowed
@@ -161,7 +161,7 @@ class RackspaceConnection(OpenStackBaseConnection):
     _url_key = "lb_url"
 
     def __init__(self, user_id, key, secure=True, **kwargs):
-        super(RackspaceConnection, self).__init__(user_id, key, secure, 
+        super(RackspaceConnection, self).__init__(user_id, key, secure,
                                                   **kwargs)
         self.api_version = 'v1.0'
         self.accept_format = 'application/json'
@@ -198,6 +198,12 @@ class RackspaceLBDriver(Driver):
         'DELETED': State.DELETED,
         'PENDING_UPDATE': State.PENDING,
         'PENDING_DELETE': State.PENDING
+    }
+
+    LB_MEMBER_CONDITION_MAP = {
+        'ENABLED': MemberCondition.ENABLED,
+        'DISABLED': MemberCondition.DISABLED,
+        'DRAINING': MemberCondition.DRAINING
     }
 
     _VALUE_TO_ALGORITHM_MAP = {
@@ -346,7 +352,8 @@ class RackspaceLBDriver(Driver):
         if 'protocol' in el:
             extra['protocol'] = el['protocol']
 
-        if 'algorithm' in el and el["algorithm"] in self._VALUE_TO_ALGORITHM_MAP:
+        if 'algorithm' in el and el["algorithm"] in \
+            self._VALUE_TO_ALGORITHM_MAP:
             extra["algorithm"] = self._value_to_algorithm(el["algorithm"])
 
         if 'healthMonitor' in el:
@@ -359,7 +366,8 @@ class RackspaceLBDriver(Driver):
 
         if 'sessionPersistence' in el:
             persistence = el["sessionPersistence"]
-            extra["sessionPersistenceType"] = persistence.get("persistenceType")
+            extra["sessionPersistenceType"] = \
+                    persistence.get("persistenceType")
 
         if 'connectionLogging' in el:
             logging = el["connectionLogging"]
@@ -385,8 +393,13 @@ class RackspaceLBDriver(Driver):
         if 'weight' in el:
             extra['weight'] = el["weight"]
 
-        if 'condition' in el:
-            extra['condition'] = el["condition"]
+        if 'condition' in el and el['condition'] in \
+           self.LB_MEMBER_CONDITION_MAP:
+            extra['condition'] = \
+                    self.LB_MEMBER_CONDITION_MAP.get(el["condition"])
+
+        if 'status' in el:
+            extra['status'] = el["status"]
 
         lbmember = Member(id=el["id"],
                 ip=el["address"],
@@ -415,7 +428,8 @@ class RackspaceLBDriver(Driver):
         type = health_monitor_data.get("type")
         delay = health_monitor_data.get("delay")
         timeout = health_monitor_data.get("timeout")
-        attempts_before_deactivation = health_monitor_data.get("attemptsBeforeDeactivation")
+        attempts_before_deactivation = \
+                health_monitor_data.get("attemptsBeforeDeactivation")
 
         if type == "CONNECT":
             return RackspaceHealthMonitor(type=type, delay=delay,

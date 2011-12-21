@@ -55,8 +55,12 @@ Changes with Apache Libcloud in development:
       connection class.
       [Dave King]
 
-    - Add 'extra' attribute to the Member object and populate it in 
+    - Add 'extra' attribute to the Member object and populate it in
       the Rackspace driver.
+      [Mark Everett]
+
+    - Adds status to the Member object and conditions an 'enum'
+      (Rackspace driver).
       [Mark Everett]
 
 Changes with Apache Libcloud 0.7.1:
