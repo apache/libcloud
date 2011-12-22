@@ -23,10 +23,11 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.misc import reverse_dict
-from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.loadbalancer.types import State
+from libcloud.common.types import LibcloudError
+from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
@@ -105,7 +106,7 @@ class RackspaceConnectionThrottle(object):
     @type min_connections: C{int}
 
     @param max_connections: Maximum number of of connections per IP address.
-                            (Must be between 0 and 100000, 0 allows an 
+                            (Must be between 0 and 100000, 0 allows an
                             unlimited number of connections.)
     @type max_connections: C{int}
 
@@ -156,13 +157,15 @@ class RackspaceAccessRule(object):
         self.address = address
 
 
-class RackspaceConnection(OpenStackBaseConnection):
+class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
     responseCls = RackspaceResponse
     auth_url = AUTH_URL_US
     _url_key = "lb_url"
+    poll_interval = 2
+    timeout = 60
 
     def __init__(self, user_id, key, secure=True, **kwargs):
-        super(RackspaceConnection, self).__init__(user_id, key, secure, 
+        super(RackspaceConnection, self).__init__(user_id, key, secure,
                                                   **kwargs)
         self.api_version = 'v1.0'
         self.accept_format = 'application/json'
@@ -182,6 +185,17 @@ class RackspaceConnection(OpenStackBaseConnection):
         return super(RackspaceConnection, self).request(action=action,
                 params=params, data=data, method=method, headers=headers)
 
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
+        return {'action': request_kwargs['action'],
+                'method': 'GET'}
+
+    def has_completed(self, response):
+        state = response.object['loadBalancer']['status']
+        if state == 'ERROR':
+            raise LibcloudError("damnit.",
+                                driver=self.driver)
+
+        return state == 'ACTIVE'
 
 class RackspaceUKConnection(RackspaceConnection):
     auth_url = AUTH_URL_UK
@@ -295,27 +309,19 @@ class RackspaceLBDriver(Driver):
 
     def update_balancer(self, balancer, **kwargs):
         attrs = self._kwargs_to_mutable_attrs(**kwargs)
-        self.connection.request('/loadbalancers/%s' % balancer.id,
-                method='PUT',
-                data=json.dumps(attrs))
-        return self.get_balancer(balancer.id)
+        resp = self.connection.async_request(
+                    action='/loadbalancers/%s' % balancer.id,
+                    method='PUT',
+                    data=json.dumps(attrs))
+        return self._to_balancer(resp.object["loadBalancer"])
 
-    def _kwargs_to_mutable_attrs(self, **attrs):
-        update_attrs = {}
-        if "name" in attrs:
-            update_attrs['name'] = attrs['name']
-
-        if "algorithm" in attrs:
-            algorithm_value = self._algorithm_to_value(attrs['algorithm'])
-            update_attrs['algorithm'] = algorithm_value
-
-        if "protocol" in attrs:
-            update_attrs['protocol'] = attrs['protocol'].upper()
-
-        if "port" in attrs:
-            update_attrs['port'] = int(attrs['port'])
-
-        return update_attrs
+    def ex_update_balancer_no_poll(self, balancer, **kwargs):
+        attrs = self._kwargs_to_mutable_attrs(**kwargs)
+        resp = self.connection.request(
+                    action='/loadbalancers/%s' % balancer.id,
+                    method='PUT',
+                    data=json.dumps(attrs))
+        return resp.status == 202
 
     def ex_list_algorithm_names(self):
         """
@@ -418,6 +424,23 @@ class RackspaceLBDriver(Driver):
                 port=el["port"],
                 extra=extra)
         return lbmember
+
+    def _kwargs_to_mutable_attrs(self, **attrs):
+        update_attrs = {}
+        if "name" in attrs:
+            update_attrs['name'] = attrs['name']
+
+        if "algorithm" in attrs:
+            algorithm_value = self._algorithm_to_value(attrs['algorithm'])
+            update_attrs['algorithm'] = algorithm_value
+
+        if "protocol" in attrs:
+            update_attrs['protocol'] = attrs['protocol'].upper()
+
+        if "port" in attrs:
+            update_attrs['port'] = int(attrs['port'])
+
+        return update_attrs
 
     def _ex_private_virtual_ips(self, el):
         if not 'virtualIps' in el:

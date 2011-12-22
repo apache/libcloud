@@ -40,6 +40,7 @@ class RackspaceLBTests(unittest.TestCase):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
+        self.driver.connection.poll_interval = 0.0
 
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
@@ -318,6 +319,54 @@ class RackspaceLBTests(unittest.TestCase):
             pass
         else:
             self.fail('Should have thrown an exception with bad algorithm value')
+
+    def test_ex_update_balancer_no_poll_protocol(self):
+        balancer = LoadBalancer(id='3130', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        action_succeeded = self.driver.ex_update_balancer_no_poll(
+                                                              balancer,
+                                                              protocol='HTTPS')
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_port(self):
+        balancer = LoadBalancer(id='3131', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        action_succeeded = self.driver.ex_update_balancer_no_poll(
+                                                            balancer,
+                                                            port=1337)
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_name(self):
+        balancer = LoadBalancer(id='3132', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+
+        action_succeeded = self.driver.ex_update_balancer_no_poll(
+                                                          balancer,
+                                                          name='new_lb_name')
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_algorithm(self):
+        balancer = LoadBalancer(id='3133', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        action_succeeded = self.driver.ex_update_balancer_no_poll(balancer,
+                                               algorithm=Algorithm.ROUND_ROBIN)
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_bad_algorithm_exception(self):
+        balancer = LoadBalancer(id='3134', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        try:
+            self.driver.update_balancer(balancer,
+                                        algorithm='HAVE_MERCY_ON_OUR_SERVERS')
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Should have thrown exception with bad algorithm value')
 
 class RackspaceUKLBTests(RackspaceLBTests):
 
