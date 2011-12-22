@@ -73,7 +73,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
                            method='GET', context=None):
         return context
 
-    def get_poll_request_kwargs(self, response, context):
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response['jobid']
         kwargs = {'command': 'queryAsyncJobResult', 'jobid': job_id}
         return kwargs
