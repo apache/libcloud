@@ -2,6 +2,13 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General:
+
+    - Add 'request_kwargs' argument to the get_poll_request_kwargs method.
+      This argument contains kwargs which were previously used to initiate the
+      poll request.
+      [Mark Everett]
+
   *) Compute:
 
      - Added support for retrieving OpenNebula v3.2 instance types, OpenNebula
@@ -61,6 +68,12 @@ Changes with Apache Libcloud in development:
 
     - Adds status to the Member object and conditions an 'enum'
       (Rackspace driver).
+      [Mark Everett]
+
+    - Add update_balancer method to the base LoadBalancer class.
+      [Mark Everett]
+
+    - Add update_balancer method to the Rackspace driver.
       [Mark Everett]
 
 Changes with Apache Libcloud 0.7.1:

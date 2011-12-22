@@ -23,11 +23,12 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.loadbalancer.base import Member, Algorithm
+from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.types import MemberCondition
 from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
+from libcloud.common.types import LibcloudError
 
 from test import MockHttpTestCase
 from test.file_fixtures import LoadBalancerFileFixtures, OpenStackFixtures
@@ -40,6 +41,7 @@ class RackspaceLBTests(unittest.TestCase):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
+        self.driver.connection.poll_interval = 0.0
 
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
@@ -293,6 +295,94 @@ class RackspaceLBTests(unittest.TestCase):
         ret = balancer.detach_member(member)
         self.assertTrue(ret)
 
+    def test_update_balancer_protocol(self):
+        balancer = LoadBalancer(id='3130', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer, protocol='HTTPS')
+        self.assertEqual('HTTPS', updated_balancer.extra['protocol'])
+
+    def test_update_balancer_port(self):
+        balancer = LoadBalancer(id='3131', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer, port=1337)
+        self.assertEqual(1337, updated_balancer.port)
+
+    def test_update_balancer_name(self):
+        balancer = LoadBalancer(id='3132', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer, name='new_lb_name')
+        self.assertEqual('new_lb_name', updated_balancer.name)
+
+    def test_update_balancer_algorithm(self):
+        balancer = LoadBalancer(id='3133', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer,
+                                                       algorithm=Algorithm.ROUND_ROBIN)
+        self.assertEqual(Algorithm.ROUND_ROBIN, updated_balancer.extra['algorithm'])
+
+    def test_update_balancer_bad_algorithm_exception(self):
+        balancer = LoadBalancer(id='3134', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        try:
+            self.driver.update_balancer(balancer,
+                                        algorithm='HAVE_MERCY_ON_OUR_SERVERS')
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Should have thrown an exception with bad algorithm value')
+
+    def test_ex_update_balancer_no_poll_protocol(self):
+        balancer = LoadBalancer(id='3130', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        action_succeeded = self.driver.ex_update_balancer_no_poll(
+                                                              balancer,
+                                                              protocol='HTTPS')
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_port(self):
+        balancer = LoadBalancer(id='3131', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        action_succeeded = self.driver.ex_update_balancer_no_poll(
+                                                            balancer,
+                                                            port=1337)
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_name(self):
+        balancer = LoadBalancer(id='3132', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+
+        action_succeeded = self.driver.ex_update_balancer_no_poll(
+                                                          balancer,
+                                                          name='new_lb_name')
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_algorithm(self):
+        balancer = LoadBalancer(id='3133', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        action_succeeded = self.driver.ex_update_balancer_no_poll(balancer,
+                                               algorithm=Algorithm.ROUND_ROBIN)
+        self.assertTrue(action_succeeded)
+
+    def test_ex_update_balancer_no_poll_bad_algorithm_exception(self):
+        balancer = LoadBalancer(id='3134', name='LB_update',
+                                         state='PENDING_UPDATE', ip='10.34.4.3',
+                                         port=80, driver=self.driver)
+        try:
+            self.driver.update_balancer(balancer,
+                                        algorithm='HAVE_MERCY_ON_OUR_SERVERS')
+        except LibcloudError:
+            pass
+        else:
+            self.fail('Should have thrown exception with bad algorithm value')
 
 class RackspaceUKLBTests(RackspaceLBTests):
 
@@ -301,7 +391,6 @@ class RackspaceUKLBTests(RackspaceLBTests):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceUKLBDriver('user', 'key')
-
 
 class RackspaceLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
@@ -449,6 +538,60 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             body = self.fixtures.load("v1_slug_loadbalancers_94697_https_health_monitor.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3130(self, method, url, body, headers):
+        """ update_balancer(b, protocol='HTTPS'), then get_balancer('3130') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'protocol': 'HTTPS'})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3130
+            response_body['loadBalancer']['protocol'] = 'HTTPS'
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3131(self, method, url, body, headers):
+        """ update_balancer(b, port=443), then get_balancer('3131') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'port': 1337})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3131
+            response_body['loadBalancer']['port'] = 1337
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3132(self, method, url, body, headers):
+        """ update_balancer(b, name='new_lb_name'), then get_balancer('3132') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'name': 'new_lb_name'})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3132
+            response_body['loadBalancer']['name'] = 'new_lb_name'
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3133(self, method, url, body, headers):
+        """ update_balancer(b, algorithm='ROUND_ROBIN'), then get_balancer('3133') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'algorithm': 'ROUND_ROBIN'})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3133
+            response_body['loadBalancer']['algorithm'] = 'ROUND_ROBIN'
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3134(self, method, url, body, headers):
+        """ update.balancer(b, algorithm='HAVE_MERCY_ON_OUR_SERVERS') """
+        if method == "PUT":
+            return (httplib.BAD_REQUEST, "", {}, httplib.responses[httplib.BAD_REQUEST])
         raise NotImplementedError
 
     def _v1_1_auth(self, method, url, body, headers):

@@ -21,10 +21,12 @@ try:
 except ImportError:
     import json
 
+from libcloud.utils.py3 import httplib
 from libcloud.utils.misc import reverse_dict
-from libcloud.common.base import JsonResponse
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
+from libcloud.common.types import LibcloudError
+from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.rackspace import (
@@ -105,7 +107,7 @@ class RackspaceConnectionThrottle(object):
 
     @param max_connections: Maximum number of of connections per IP address.
                             (Must be between 0 and 100000, 0 allows an
-                            unlimited number of connections.
+                            unlimited number of connections.)
     @type max_connections: C{int}
 
     @param max_connection_rate: Maximum number of connections allowed
@@ -155,10 +157,12 @@ class RackspaceAccessRule(object):
         self.address = address
 
 
-class RackspaceConnection(OpenStackBaseConnection):
+class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
     responseCls = RackspaceResponse
     auth_url = AUTH_URL_US
     _url_key = "lb_url"
+    poll_interval = 2
+    timeout = 80
 
     def __init__(self, user_id, key, secure=True, **kwargs):
         super(RackspaceConnection, self).__init__(user_id, key, secure,
@@ -181,6 +185,17 @@ class RackspaceConnection(OpenStackBaseConnection):
         return super(RackspaceConnection, self).request(action=action,
                 params=params, data=data, method=method, headers=headers)
 
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
+        return {'action': request_kwargs['action'],
+                'method': 'GET'}
+
+    def has_completed(self, response):
+        state = response.object['loadBalancer']['status']
+        if state == 'ERROR':
+            raise LibcloudError("Load balancer entered an ERROR state.",
+                                driver=self.driver)
+
+        return state == 'ACTIVE'
 
 class RackspaceUKConnection(RackspaceConnection):
     auth_url = AUTH_URL_UK
@@ -238,19 +253,19 @@ class RackspaceLBDriver(Driver):
 
     def create_balancer(self, name, members, protocol='http',
                         port=80, algorithm=DEFAULT_ALGORITHM):
-        algorithm = self._algorithm_to_value(algorithm)
+        balancer_attrs = self._kwargs_to_mutable_attrs(
+                                name=name,
+                                protocol=protocol,
+                                port=port,
+                                algorithm=algorithm)
 
-        balancer_object = {"loadBalancer":
-                {"name": name,
-                    "port": port,
-                    "algorithm": algorithm,
-                    "protocol": protocol.upper(),
-                    "virtualIps": [{"type": "PUBLIC"}],
-                    "nodes": [{"address": member.ip,
-                        "port": member.port,
-                        "condition": "ENABLED"} for member in members],
-                    }
-                }
+        balancer_attrs.update({
+            "virtualIps": [{"type": "PUBLIC"}],
+            "nodes": [{"address": member.ip,
+                "port": member.port,
+                "condition": "ENABLED"} for member in members],
+            })
+        balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',
                 method='POST',
@@ -261,7 +276,7 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s' % (balancer.id)
         resp = self.connection.request(uri, method='DELETE')
 
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
         uri = '/loadbalancers/%s' % (balancer_id)
@@ -291,12 +306,28 @@ class RackspaceLBDriver(Driver):
         uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, member.id)
         resp = self.connection.request(uri, method='DELETE')
 
-        return resp.status == 202
+        return resp.status == httplib.ACCEPTED
 
     def balancer_list_members(self, balancer):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         return self._to_members(
                 self.connection.request(uri).object)
+
+    def update_balancer(self, balancer, **kwargs):
+        attrs = self._kwargs_to_mutable_attrs(**kwargs)
+        resp = self.connection.async_request(
+                    action='/loadbalancers/%s' % balancer.id,
+                    method='PUT',
+                    data=json.dumps(attrs))
+        return self._to_balancer(resp.object["loadBalancer"])
+
+    def ex_update_balancer_no_poll(self, balancer, **kwargs):
+        attrs = self._kwargs_to_mutable_attrs(**kwargs)
+        resp = self.connection.request(
+                    action='/loadbalancers/%s' % balancer.id,
+                    method='PUT',
+                    data=json.dumps(attrs))
+        return resp.status == httplib.ACCEPTED
 
     def ex_list_algorithm_names(self):
         """
@@ -406,6 +437,23 @@ class RackspaceLBDriver(Driver):
                 port=el["port"],
                 extra=extra)
         return lbmember
+
+    def _kwargs_to_mutable_attrs(self, **attrs):
+        update_attrs = {}
+        if "name" in attrs:
+            update_attrs['name'] = attrs['name']
+
+        if "algorithm" in attrs:
+            algorithm_value = self._algorithm_to_value(attrs['algorithm'])
+            update_attrs['algorithm'] = algorithm_value
+
+        if "protocol" in attrs:
+            update_attrs['protocol'] = attrs['protocol'].upper()
+
+        if "port" in attrs:
+            update_attrs['port'] = int(attrs['port'])
+
+        return update_attrs
 
     def _ex_private_virtual_ips(self, el):
         if not 'virtualIps' in el:

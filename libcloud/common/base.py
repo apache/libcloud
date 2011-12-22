@@ -618,14 +618,16 @@ class PollingConnection(Connection):
                                          context=context)
         response = request(**kwargs)
         kwargs = self.get_poll_request_kwargs(response=response,
-                                              context=context)
+                                              context=context,
+                                              request_kwargs=kwargs)
 
         end = time.time() + self.timeout
         completed = False
         while time.time() < end and not completed:
             response = request(**kwargs)
             completed = self.has_completed(response=response)
-            time.sleep(self.poll_interval)
+            if not completed:
+                time.sleep(self.poll_interval)
 
         if not completed:
             raise LibcloudError('Job did not complete in %s seconds' %
@@ -643,13 +645,17 @@ class PollingConnection(Connection):
                   'headers': headers, 'method': method}
         return kwargs
 
-    def get_poll_request_kwargs(self, response, context):
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
         """
         Return keyword arguments which are passed to the request() method when
         polling for the job status.
 
         @param response: Response object returned by poll request.
         @type response: C{HTTPResponse}
+
+        @param request_kwargs: Kwargs previously used to initiate the
+                                  poll request.
+        @type response: C{dict}
 
         @return C{dict} Keyword arguments
         """
