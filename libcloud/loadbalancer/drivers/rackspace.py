@@ -192,7 +192,7 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
     def has_completed(self, response):
         state = response.object['loadBalancer']['status']
         if state == 'ERROR':
-            raise LibcloudError("damnit.",
+            raise LibcloudError("Load balancer entered an ERROR state.",
                                 driver=self.driver)
 
         return state == 'ACTIVE'
