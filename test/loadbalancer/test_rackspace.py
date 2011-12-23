@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import sys
+import datetime
 import unittest
 
 try:
@@ -145,6 +146,18 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals('10.1.0.11', members[0].ip)
         self.assertEquals('10.1.0.10', members[1].ip)
         self.assertEquals('10.1.0.9', members[2].ip)
+
+    def test_get_balancer_extra_created(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+
+        created_8290 = datetime.datetime(2011, 4, 7, 16, 27, 50)
+        self.assertEquals(created_8290, balancer.extra['created'])
+
+    def test_get_balancer_extra_updated(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+
+        updated_8290 = datetime.datetime(2011, 4, 7, 16, 28, 12)
+        self.assertEquals(updated_8290, balancer.extra['updated'])
 
     def test_get_balancer_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
