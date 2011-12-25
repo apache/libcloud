@@ -15,6 +15,7 @@
 
 import os
 import binascii
+from datetime import datetime
 
 try:
     import simplejson as json
@@ -196,6 +197,7 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
                                 driver=self.driver)
 
         return state == 'ACTIVE'
+
 
 class RackspaceUKConnection(RackspaceConnection):
     auth_url = AUTH_URL_UK
@@ -407,6 +409,12 @@ class RackspaceLBDriver(Driver):
         if 'nodes' in el:
             extra['members'] = self._to_members(el)
 
+        if 'created' in el:
+            extra['created'] = self._iso_to_datetime(el['created']['time'])
+
+        if 'updated' in el:
+            extra['updated'] = self._iso_to_datetime(el['updated']['time'])
+
         return LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
@@ -517,6 +525,21 @@ class RackspaceLBDriver(Driver):
             return RackspaceAccessRuleType.ALLOW
         elif type == "DENY":
             return RackspaceAccessRuleType.DENY
+
+    def _iso_to_datetime(self, isodate):
+        date_formats = ('%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%dT%H:%M:%S%z')
+        date = None
+
+        for date_format in date_formats:
+            try:
+                date = datetime.strptime(isodate, date_format)
+            except ValueError:
+                pass
+
+            if date:
+                break
+
+        return date
 
 
 class RackspaceUKLBDriver(RackspaceLBDriver):
