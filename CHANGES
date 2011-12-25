@@ -76,6 +76,10 @@ Changes with Apache Libcloud in development:
     - Add update_balancer method to the Rackspace driver.
       [Mark Everett]
 
+    - Add created and updated attribute to the LoadBalancer extra dictionary in
+      the Rackspace driver.
+      [Mark Everett]
+
 Changes with Apache Libcloud 0.7.1:
 
   *) General:
