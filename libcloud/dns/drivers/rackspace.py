@@ -35,16 +35,6 @@ from libcloud.dns.base import DNSDriver, Zone, Record
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
 VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment']
 
-RECORD_TYPE_MAP = {
-    RecordType.A: 'A',
-    RecordType.AAAA: 'AAAA',
-    RecordType.CNAME: 'CNAME',
-    RecordType.MX: 'MX',
-    RecordType.NS: 'NS',
-    RecordType.TXT: 'TXT',
-    RecordType.SRV: 'SRV',
-}
-
 
 class RackspaceDNSResponse(OpenStack_1_1_Response):
     """
@@ -111,8 +101,16 @@ class RackspaceUKDNSConnection(RackspaceDNSConnection):
 
 
 class RackspaceDNSDriver(DNSDriver):
-    def list_record_types(self):
-        return list(RECORD_TYPE_MAP.keys())
+
+    RECORD_TYPE_MAP = {
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.NS: 'NS',
+        RecordType.TXT: 'TXT',
+        RecordType.SRV: 'SRV',
+    }
 
     def list_zones(self):
         response = self.connection.request(action='/domains')
@@ -202,7 +200,8 @@ class RackspaceDNSDriver(DNSDriver):
         extra = extra if extra else {}
 
         name = self._to_full_record_name(domain=zone.domain, name=name)
-        data = {'name': name, 'type': RECORD_TYPE_MAP[type], 'data': data}
+        data = {'name': name, 'type': self.RECORD_TYPE_MAP[type],
+                'data': data}
 
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])
