@@ -142,8 +142,7 @@ class DNSDriver(BaseDriver):
 
         @return: A list of C{RecordType} instances.
         """
-        raise NotImplementedError(
-            'list_record_types not implemented for this driver')
+        return list(self.RECORD_TYPE_MAP.keys())
 
     def list_zones(self):
         """
