@@ -111,7 +111,7 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_ex_destroy_balancers(self):
         balancers = self.driver.list_balancers()
-        ret = self.driver.ex_destroy_balancers(*balancers)
+        ret = self.driver.ex_destroy_balancers(balancers)
         self.assertTrue(ret)
 
     def test_get_balancer(self):

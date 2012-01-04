@@ -280,7 +280,7 @@ class RackspaceLBDriver(Driver):
 
         return resp.status == httplib.ACCEPTED
 
-    def ex_destroy_balancers(self, *balancers):
+    def ex_destroy_balancers(self, balancers):
         ids = [("id", balancer.id) for balancer in balancers]
         resp = self.connection.request('/loadbalancers',
             method='DELETE',
