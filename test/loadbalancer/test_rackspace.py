@@ -459,12 +459,12 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             balancers = self.fixtures.load('v1_slug_loadbalancers.json')
             balancers_json = json.loads(balancers)
 
-            for balancer in balancers_json["loadBalancers"]:
-                id = balancer["id"]
-                self.assertTrue(urllib.urlencode([("id", id)]) in url,
-                    msg="Did not delete balancer with id %d" % id)
+            for balancer in balancers_json['loadBalancers']:
+                id = balancer['id']
+                self.assertTrue(urllib.urlencode([('id', id)]) in url,
+                    msg='Did not delete balancer with id %d' % id)
 
-            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
@@ -497,12 +497,12 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             nodes = self.fixtures.load('v1_slug_loadbalancers_8290_nodes.json')
             json_nodes = json.loads(nodes)
 
-            for node in json_nodes["nodes"]:
-                id = node["id"]
-                self.assertTrue(urllib.urlencode([("id", id)]) in url,
-                    msg="Did not delete member with id %d" % id)
+            for node in json_nodes['nodes']:
+                id = node['id']
+                self.assertTrue(urllib.urlencode([('id', id)]) in url,
+                    msg='Did not delete member with id %d' % id)
 
-            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
