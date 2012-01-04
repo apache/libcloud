@@ -223,6 +223,8 @@ class RackspaceLBDriver(Driver):
         'DRAINING': MemberCondition.DRAINING
     }
 
+    CONDITION_LB_MEMBER_MAP = reverse_dict(LB_MEMBER_CONDITION_MAP)
+
     _VALUE_TO_ALGORITHM_MAP = {
         'RANDOM': Algorithm.RANDOM,
         'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
@@ -329,6 +331,42 @@ class RackspaceLBDriver(Driver):
                     action='/loadbalancers/%s' % balancer.id,
                     method='PUT',
                     data=json.dumps(attrs))
+        return resp.status == httplib.ACCEPTED
+
+    def ex_balancer_update_member(self, balancer, member, **kwargs):
+        resp = self.connection.request(
+            action='/loadbalancers/%s/nodes/%s' % (balancer.id, member.id),
+            method='PUT',
+            data=json.dumps(self._kwargs_to_mutable_member_attrs(**kwargs))
+        )
+
+        if resp.status != httplib.ACCEPTED:
+            raise LibcloudError("Update member attributes was not accepted")
+
+        # Updating a member puts a balancer into "PENDING_UPDATE" status.
+        # Wait until the balancer is back in 'ACTIVE' status and fetch
+        # the updated member.
+        balancer_resp = self.connection.async_request(
+            action='/loadbalancers/%s' % balancer.id,
+            method='GET')
+
+        balancer = self._to_balancer(balancer_resp.object["loadBalancer"])
+        extra_members = balancer.extra["members"]
+
+        updated_members = [extra_member for extra_member in extra_members \
+                           if extra_member.id == member.id]
+
+        if updated_members:
+            return updated_members[0]
+        return None
+
+    def ex_balancer_update_member_no_poll(self, balancer, member, **kwargs):
+        resp = self.connection.request(
+            action='/loadbalancers/%s/nodes/%s' % (balancer.id, member.id),
+            method='PUT',
+            data=json.dumps(self._kwargs_to_mutable_member_attrs(**kwargs))
+        )
+
         return resp.status == httplib.ACCEPTED
 
     def ex_list_algorithm_names(self):
@@ -460,6 +498,16 @@ class RackspaceLBDriver(Driver):
 
         if "port" in attrs:
             update_attrs['port'] = int(attrs['port'])
+
+        return update_attrs
+
+    def _kwargs_to_mutable_member_attrs(self, **attrs):
+        update_attrs = {}
+        if "condition" in attrs:
+            update_attrs["condition"] = self.CONDITION_LB_MEMBER_MAP.get(attrs["condition"])
+
+        if "weight" in attrs:
+            update_attrs["weight"] = attrs["weight"]
 
         return update_attrs
 
