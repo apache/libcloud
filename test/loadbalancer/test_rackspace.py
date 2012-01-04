@@ -406,8 +406,8 @@ class RackspaceLBTests(unittest.TestCase):
         member = self.driver.ex_balancer_update_member(balancer, first_member,
             condition=MemberCondition.ENABLED, weight=12)
 
-        self.assertEquals(MemberCondition.ENABLED, member.extra["condition"])
-        self.assertEquals(12, member.extra["weight"])
+        self.assertEquals(MemberCondition.ENABLED, member.extra['condition'])
+        self.assertEquals(12, member.extra['weight'])
 
     def test_ex_update_balancer_member_no_poll_extra_attributes(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -498,7 +498,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             json_body = json.loads(body)
             self.assertEqual('ENABLED', json_body['condition'])
             self.assertEqual(12, json_body['weight'])
-            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
         elif method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
