@@ -280,6 +280,14 @@ class RackspaceLBDriver(Driver):
 
         return resp.status == httplib.ACCEPTED
 
+    def ex_destroy_balancers(self, balancers):
+        ids = [('id', balancer.id) for balancer in balancers]
+        resp = self.connection.request('/loadbalancers',
+            method='DELETE',
+            params=ids)
+
+        return resp.status == httplib.ACCEPTED
+
     def get_balancer(self, balancer_id):
         uri = '/loadbalancers/%s' % (balancer_id)
         resp = self.connection.request(uri)
@@ -307,6 +315,13 @@ class RackspaceLBDriver(Driver):
         # the balancer.
         uri = '/loadbalancers/%s/nodes/%s' % (balancer.id, member.id)
         resp = self.connection.request(uri, method='DELETE')
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_balancer_detach_members(self, balancer, members):
+        uri = '/loadbalancers/%s/nodes' % (balancer.id)
+        ids = [('id', member.id) for member in members]
+        resp = self.connection.request(uri, method='DELETE', params=ids)
 
         return resp.status == httplib.ACCEPTED
 

@@ -23,6 +23,7 @@ except ImportError:
     import json
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urllib
 
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.types import MemberCondition
@@ -106,6 +107,11 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.list_balancers()[0]
 
         ret = self.driver.destroy_balancer(balancer)
+        self.assertTrue(ret)
+
+    def test_ex_destroy_balancers(self):
+        balancers = self.driver.list_balancers()
+        ret = self.driver.ex_destroy_balancers(balancers)
         self.assertTrue(ret)
 
     def test_get_balancer(self):
@@ -308,6 +314,13 @@ class RackspaceLBTests(unittest.TestCase):
         ret = balancer.detach_member(member)
         self.assertTrue(ret)
 
+    def test_ex_detach_members(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = balancer.list_members()
+
+        ret = self.driver.ex_balancer_detach_members(balancer, members)
+        self.assertTrue(ret)
+
     def test_update_balancer_protocol(self):
         balancer = LoadBalancer(id='3130', name='LB_update',
                                          state='PENDING_UPDATE', ip='10.34.4.3',
@@ -442,6 +455,16 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             body = self.fixtures.load('v1_slug_loadbalancers_post.json')
             return (httplib.ACCEPTED, body, {},
                     httplib.responses[httplib.ACCEPTED])
+        elif method == "DELETE":
+            balancers = self.fixtures.load('v1_slug_loadbalancers.json')
+            balancers_json = json.loads(balancers)
+
+            for balancer in balancers_json['loadBalancers']:
+                id = balancer['id']
+                self.assertTrue(urllib.urlencode([('id', id)]) in url,
+                    msg='Did not delete balancer with id %d' % id)
+
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
@@ -456,8 +479,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         raise NotImplementedError
 
     def _v1_0_slug_loadbalancers_8290(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_loadbalancers_8290.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == "GET":
+            body = self.fixtures.load('v1_slug_loadbalancers_8290.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        raise NotImplementedError
 
     def _v1_0_slug_loadbalancers_8290_nodes(self, method, url, body, headers):
         if method == "GET":
@@ -467,6 +493,16 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
             return (httplib.ACCEPTED, body, {},
                     httplib.responses[httplib.ACCEPTED])
+        elif method == "DELETE":
+            nodes = self.fixtures.load('v1_slug_loadbalancers_8290_nodes.json')
+            json_nodes = json.loads(nodes)
+
+            for node in json_nodes['nodes']:
+                id = node['id']
+                self.assertTrue(urllib.urlencode([('id', id)]) in url,
+                    msg='Did not delete member with id %d' % id)
+
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
