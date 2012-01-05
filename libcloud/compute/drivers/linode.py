@@ -300,7 +300,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            root = u(binascii.hexlifyos.urandom(8).encode('hex'))
+            root = u(binascii.hexlify(os.urandom(8).encode('hex')))
         params = {
             "api_action":       "linode.disk.createfromdistribution",
             "LinodeID":         linode["id"],
