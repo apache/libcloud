@@ -397,6 +397,29 @@ class RackspaceLBTests(unittest.TestCase):
         else:
             self.fail('Should have thrown exception with bad algorithm value')
 
+    def test_ex_update_balancer_member_extra_attributes(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = self.driver.balancer_list_members(balancer)
+
+        first_member = members[0]
+
+        member = self.driver.ex_balancer_update_member(balancer, first_member,
+            condition=MemberCondition.ENABLED, weight=12)
+
+        self.assertEquals(MemberCondition.ENABLED, member.extra['condition'])
+        self.assertEquals(12, member.extra['weight'])
+
+    def test_ex_update_balancer_member_no_poll_extra_attributes(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        members = self.driver.balancer_list_members(balancer)
+
+        first_member = members[0]
+
+        resp = self.driver.ex_balancer_update_member_no_poll(balancer, first_member,
+            condition=MemberCondition.ENABLED, weight=12)
+        self.assertTrue(resp)
+
+
 class RackspaceUKLBTests(RackspaceLBTests):
 
     def setUp(self):
@@ -471,7 +494,12 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         raise NotImplementedError
 
     def _v1_0_slug_loadbalancers_8290_nodes_30944(self, method, url, body, headers):
-        if method == "DELETE":
+        if method == "PUT":
+            json_body = json.loads(body)
+            self.assertEqual('ENABLED', json_body['condition'])
+            self.assertEqual(12, json_body['weight'])
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
