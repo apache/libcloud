@@ -27,6 +27,8 @@ Linode(R) is a registered trademark of Linode, LLC.
 
 """
 
+import os
+
 try:
     import simplejson as json
 except ImportError:
@@ -300,7 +302,8 @@ class LinodeNodeDriver(NodeDriver):
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            root = u(binascii.hexlify(os.urandom(8).encode('hex')))
+            root = binascii.hexlify(os.urandom(8)).decode('ascii')
+
         params = {
             "api_action":       "linode.disk.createfromdistribution",
             "LinodeID":         linode["id"],
