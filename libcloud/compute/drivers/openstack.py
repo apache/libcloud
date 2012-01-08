@@ -991,9 +991,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                    .object['image'])
 
     def ex_delete_image(self, image):
-        # This has not yet been implemented by OpenStack 1.1
-        raise NotImplementedError()
-
         resp = self.connection.request('/images/%s' % (image.id,),
                                        method='DELETE')
         return resp.status == httplib.ACCEPTED
