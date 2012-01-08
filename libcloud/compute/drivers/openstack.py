@@ -993,7 +993,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def ex_delete_image(self, image):
         resp = self.connection.request('/images/%s' % (image.id,),
                                        method='DELETE')
-        return resp.status == httplib.ACCEPTED
+        return resp.status == httplib.NO_CONTENT
 
     def _node_action(self, node, action, **params):
         params = params or None
