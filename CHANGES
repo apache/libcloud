@@ -31,6 +31,9 @@ Changes with Apache Libcloud in development:
        has been removed from the OpenNebula driver.
        [Hutson Betts]
 
+     - Enable ex_delete_image method in the OpenStack 1.1 driver.
+       [Shawn Smith]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver
