@@ -16,6 +16,11 @@ import sys
 import unittest
 import types
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import u
@@ -608,8 +613,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_save_image(self):
-        result = self.driver.ex_save_image(self.node, 'new_image')
-        self.assertTrue(result)
+        image = self.driver.ex_save_image(self.node, 'new_image')
+        self.assertEqual(image.name, 'new_image')
+        self.assertEqual(image.id, '4949f9ee-2421-4c81-8b49-13119446008b')
 
     def test_ex_set_server_name(self):
         old_node = Node(
@@ -740,6 +746,10 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
     def _v1_1_slug_servers_12064_action(self, method, url, body, headers):
         if method != "POST":
             self.fail('HTTP method other than POST to action URL')
+        if "createImage" in json.loads(body):
+            return (httplib.ACCEPTED, "",
+                    {"location": "http://127.0.0.1/v1.1/68/images/4949f9ee-2421-4c81-8b49-13119446008b"},
+                    httplib.responses[httplib.ACCEPTED])
 
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
@@ -791,6 +801,13 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
     def _v1_1_slug_images_DELETEUUID(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_images_4949f9ee_2421_4c81_8b49_13119446008b(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_4949f9ee_2421_4c81_8b49_13119446008b.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
