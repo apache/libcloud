@@ -34,6 +34,10 @@ Changes with Apache Libcloud in development:
      - Enable ex_delete_image method in the OpenStack 1.1 driver.
        [Shawn Smith]
 
+     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method 
+       ; LIBCLOUD-138
+       [Shawn Smith]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver

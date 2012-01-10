@@ -16,6 +16,11 @@ import sys
 import unittest
 import types
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import u
@@ -608,8 +613,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_save_image(self):
-        result = self.driver.ex_save_image(self.node, 'new_image')
-        self.assertTrue(result)
+        image = self.driver.ex_save_image(self.node, 'new_image')
+        self.assertEqual(image.name, 'new_image')
+        self.assertEqual(image.id, '4949f9ee-2421-4c81-8b49-13119446008b')
 
     def test_ex_set_server_name(self):
         old_node = Node(
@@ -672,6 +678,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         image = NodeImage(id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)
         result = self.driver.ex_delete_image(image)
         self.assertTrue(result)
+
+    def test_extract_image_id_from_url(self):
+        url = 'http://127.0.0.1/v1.1/68/images/1d4a8ea9-aae7-4242-a42d-5ff4702f2f14'
+        url_two = 'http://127.0.0.1/v1.1/68/images/13'
+        image_id = self.driver._extract_image_id_from_url(url)
+        image_id_two = self.driver._extract_image_id_from_url(url_two)
+        self.assertEqual(image_id, '1d4a8ea9-aae7-4242-a42d-5ff4702f2f14')
+        self.assertEqual(image_id_two, '13')
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -736,6 +750,10 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
     def _v1_1_slug_servers_12064_action(self, method, url, body, headers):
         if method != "POST":
             self.fail('HTTP method other than POST to action URL')
+        if "createImage" in json.loads(body):
+            return (httplib.ACCEPTED, "",
+                    {"location": "http://127.0.0.1/v1.1/68/images/4949f9ee-2421-4c81-8b49-13119446008b"},
+                    httplib.responses[httplib.ACCEPTED])
 
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
@@ -787,6 +805,13 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
     def _v1_1_slug_images_26365521_8c62_11f9_2c33_283d153ecc3a(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_images_4949f9ee_2421_4c81_8b49_13119446008b(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_4949f9ee_2421_4c81_8b49_13119446008b.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
