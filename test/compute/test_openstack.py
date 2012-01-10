@@ -683,6 +683,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('An expected error was not raised')
 
+    def test_extract_image_id_from_url(self):
+        url = 'http://127.0.0.1/v1.1/68/images/1d4a8ea9-aae7-4242-a42d-5ff4702f2f14'
+        url_two = 'http://127.0.0.1/v1.1/68/images/13'
+        image_id = self.driver._extract_image_id_from_url(url)
+        image_id_two = self.driver._extract_image_id_from_url(url_two)
+        self.assertEqual(image_id, '1d4a8ea9-aae7-4242-a42d-5ff4702f2f14')
+        self.assertEqual(image_id_two, '13')
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
 
