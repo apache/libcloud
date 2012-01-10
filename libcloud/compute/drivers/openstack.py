@@ -30,6 +30,7 @@ import warnings
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
+from libcloud.utils.py3 import urlparse
 
 import base64
 
@@ -934,8 +935,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             optional_params['metadata'] = metadata
         resp = self._node_action(node, 'createImage', name=name,
                                  **optional_params)
-        # TODO: concevt location header into NodeImage object
-        return resp.status == httplib.ACCEPTED
+        image_id = self._extract_image_id_from_url(resp.headers['location'])
+        return self.ex_get_image(image_id=image_id)
 
     def ex_set_server_name(self, node, name):
         """
@@ -1065,3 +1066,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 )
             except KeyError:
                 return(0.0)
+
+    def _extract_image_id_from_url(self, location_header):
+        path = urlparse.urlparse(location_header).path
+        image_id = path.split('/')[-1]
+        return image_id
