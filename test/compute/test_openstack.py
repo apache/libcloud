@@ -676,12 +676,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_delete_image(self):
         image = NodeImage(id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)
-        try:
-            self.driver.ex_delete_image(image)
-        except NotImplementedError:
-            pass
-        else:
-            self.fail('An expected error was not raised')
+        result = self.driver.ex_delete_image(image)
+        self.assertTrue(result)
 
     def test_extract_image_id_from_url(self):
         url = 'http://127.0.0.1/v1.1/68/images/1d4a8ea9-aae7-4242-a42d-5ff4702f2f14'
@@ -806,9 +802,9 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         else:
             raise NotImplementedError()
 
-    def _v1_1_slug_images_DELETEUUID(self, method, url, body, headers):
+    def _v1_1_slug_images_26365521_8c62_11f9_2c33_283d153ecc3a(self, method, url, body, headers):
         if method == "DELETE":
-            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
 

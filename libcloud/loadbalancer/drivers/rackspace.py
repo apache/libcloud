@@ -74,6 +74,20 @@ class RackspaceHealthMonitor(object):
         self.timeout = timeout
         self.attempts_before_deactivation = attempts_before_deactivation
 
+    def __repr__(self):
+        return ('<RackspaceHealthMonitor: type=%s, delay=%d, timeout=%d, '
+                'attempts_before_deactivation=%d>' %
+                (self.type, self.delay, self.timeout,
+                 self.attempts_before_deactivation))
+
+    def _to_dict(self):
+        return {
+            'type': self.type,
+            'delay': self.delay,
+            'timeout': self.timeout,
+            'attemptsBeforeDeactivation': self.attempts_before_deactivation
+        }
+
 
 class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
     """
@@ -98,6 +112,22 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
         self.path = path
         self.body_regex = body_regex
         self.status_regex = status_regex
+
+    def __repr__(self):
+        return ('<RackspaceHTTPHealthMonitor: type=%s, delay=%d, timeout=%d, '
+                'attempts_before_deactivation=%d, path=%s, body_regex=%s, '
+                'status_regex=%s>' %
+                (self.type, self.delay, self.timeout,
+                 self.attempts_before_deactivation, self.path, self.body_regex,
+                 self.status_regex))
+
+    def _to_dict(self):
+        super_dict = super(RackspaceHTTPHealthMonitor, self)._to_dict()
+        super_dict['path'] = self.path
+        super_dict['statusRegex'] = self.status_regex
+        super_dict['bodyRegex'] = self.body_regex
+
+        return super_dict
 
 
 class RackspaceConnectionThrottle(object):
@@ -131,10 +161,30 @@ class RackspaceConnectionThrottle(object):
         self.max_connection_rate = max_connection_rate
         self.rate_interval_seconds = rate_interval_seconds
 
+    def __repr__(self):
+        return ('<RackspaceConnectionThrottle: min_connections=%d, '
+                'max_connections=%d, max_connection_rate=%d, '
+                'rate_interval_seconds=%d>' %
+                (self.min_connections, self.max_connections,
+                 self.max_connection_rate, self.rate_interval_seconds))
+
+    def _to_dict(self):
+        return {
+            'maxConnections': self.max_connections,
+            'minConnections': self.min_connections,
+            'maxConnectionRate': self.max_connection_rate,
+            'rateInterval' : self.rate_interval_seconds
+        }
+
 
 class RackspaceAccessRuleType(object):
     ALLOW = 0
     DENY = 1
+
+    _RULE_TYPE_STRING_MAP = {
+        ALLOW: 'ALLOW',
+        DENY: 'DENY'
+    }
 
 
 class RackspaceAccessRule(object):
@@ -145,17 +195,32 @@ class RackspaceAccessRule(object):
     @param id: Unique identifier to refer to this rule by.
     @type id: C{str}
 
-    @param rule_type: ALLOW or DENY.
-    @type id: C{RackspaceAccessRuleType}
+    @param rule_type: RackspaceAccessRuleType.ALLOW or
+                      RackspaceAccessRuleType.DENY.
+    @type id: C{int}
 
     @param address: IP address or cidr (can be IPv4 or IPv6).
     @type address: C{str}
     """
 
-    def __init__(self, id, rule_type, address):
+    def __init__(self, id=None, rule_type=None, address=None):
         self.id = id
         self.rule_type = rule_type
         self.address = address
+
+    def _to_dict(self):
+        type_string = \
+            RackspaceAccessRuleType._RULE_TYPE_STRING_MAP[self.rule_type]
+
+        as_dict = {
+            'type': type_string,
+            'address' : self.address,
+        }
+
+        if self.id is not None:
+            as_dict['id'] = self.id
+
+        return as_dict
 
 
 class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
@@ -223,6 +288,8 @@ class RackspaceLBDriver(Driver):
         'DRAINING': MemberCondition.DRAINING
     }
 
+    CONDITION_LB_MEMBER_MAP = reverse_dict(LB_MEMBER_CONDITION_MAP)
+
     _VALUE_TO_ALGORITHM_MAP = {
         'RANDOM': Algorithm.RANDOM,
         'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
@@ -235,6 +302,15 @@ class RackspaceLBDriver(Driver):
 
     def list_protocols(self):
         return self._to_protocols(
+                   self.connection.request('/loadbalancers/protocols').object)
+
+    def ex_list_protocols_with_default_ports(self):
+        """
+        @rtype: C{list} of tuples of protocols (C{str}) with default ports
+        (C{int}).
+        @return: A list of protocols with default ports included.
+        """
+        return self._to_protocols_with_default_ports(
                    self.connection.request('/loadbalancers/protocols').object)
 
     def list_balancers(self, ex_member_address=None):
@@ -280,6 +356,23 @@ class RackspaceLBDriver(Driver):
 
         return resp.status == httplib.ACCEPTED
 
+    def ex_destroy_balancers(self, balancers):
+        """
+        Destroys a list of Balancers (the API supports up to 10).
+
+        @param balancers: A list of Balancers to destroy.
+        @type balancers: C{list}
+
+        @rtype: C{bool}
+        @return: Returns whether the destroy request was accepted.
+        """
+        ids = [('id', balancer.id) for balancer in balancers]
+        resp = self.connection.request('/loadbalancers',
+            method='DELETE',
+            params=ids)
+
+        return resp.status == httplib.ACCEPTED
+
     def get_balancer(self, balancer_id):
         uri = '/loadbalancers/%s' % (balancer_id)
         resp = self.connection.request(uri)
@@ -310,6 +403,49 @@ class RackspaceLBDriver(Driver):
 
         return resp.status == httplib.ACCEPTED
 
+    def ex_balancer_detach_members(self, balancer, members):
+        """
+        Detaches a list of members from a balancer (the API supports up to 10).
+        This method blocks until the detach request has been processed and the
+        balancer is in a RUNNING state again.
+
+        @param balancer: The Balancer to detach members from.
+        @type balancer: C{Balancer}
+
+        @param members: A list of Members to detach.
+        @type members: C{list}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        accepted = self.ex_balancer_detach_members_no_poll(balancer, members)
+
+        if not accepted:
+            msg = 'Detach members request was not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_balancer_detach_members_no_poll(self, balancer, members):
+        """
+        Detaches a list of members from a balancer (the API supports up to 10).
+        This method returns immediately.
+
+        @param balancer: The Balancer to detach members from.
+        @type balancer: C{Balancer}
+
+        @param members: A list of Members to detach.
+        @type members: C{list}
+
+        @rtype: C{bool}
+        @return: Returns whether the detach request was accepted.
+        """
+        uri = '/loadbalancers/%s/nodes' % (balancer.id)
+        ids = [('id', member.id) for member in members]
+        resp = self.connection.request(uri, method='DELETE', params=ids)
+
+        return resp.status == httplib.ACCEPTED
+
     def balancer_list_members(self, balancer):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         return self._to_members(
@@ -329,6 +465,69 @@ class RackspaceLBDriver(Driver):
                     action='/loadbalancers/%s' % balancer.id,
                     method='PUT',
                     data=json.dumps(attrs))
+        return resp.status == httplib.ACCEPTED
+
+    def ex_balancer_update_member(self, balancer, member, **kwargs):
+        """
+        Updates a Member's extra attributes for a Balancer.  The attributes can
+        include 'weight' or 'condition'.  This method blocks until the update
+        request has been processed and the balancer is in a RUNNING state
+        again.
+
+        @param balancer: Balancer to update the member on.
+        @type balancer: C{Balancer}
+
+        @param **kwargs: New attributes.  Should contain either 'weight'
+        or 'condition'.  'condition' can be set to 'ENABLED', 'DISABLED'.
+        or 'DRAINING'.  'weight' can be set to a positive integer between
+        1 and 100, with a higher weight indicating that the node will receive
+        more traffic (assuming the Balancer is using a weighted algorithm).
+        @type **kwargs: C{dict}
+
+        @rtype: C{Member}
+        @return: Updated Member.
+        """
+        accepted = self.ex_balancer_update_member_no_poll(
+            balancer, member, **kwargs)
+
+        if not accepted:
+            msg = 'Update member attributes was not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        balancer = self._get_updated_balancer(balancer)
+        members = balancer.extra['members']
+
+        updated_members = [m for m in members if m.id == member.id]
+
+        if not updated_members:
+            raise LibcloudError('Could not find updated member')
+
+        return updated_members[0]
+
+    def ex_balancer_update_member_no_poll(self, balancer, member, **kwargs):
+        """
+        Updates a Member's extra attributes for a Balancer.  The attribute can
+        include 'weight' or 'condition'.  This method returns immediately.
+
+        @param balancer: Balancer to update the member on.
+        @type balancer: C{Balancer}
+
+        @param **kwargs: New attributes.  Should contain either 'weight'
+        or 'condition'.  'condition' can be set to 'ENABLED', 'DISABLED'.
+        or 'DRAINING'.  'weight' can be set to a positive integer between
+        1 and 100, with a higher weight indicating that the node will receive
+        more traffic (assuming the Balancer is using a weighted algorithm).
+        @type **kwargs: C{dict}
+
+        @rtype: C{bool}
+        @return: Returns whether the update request was accepted.
+        """
+        resp = self.connection.request(
+            action='/loadbalancers/%s/nodes/%s' % (balancer.id, member.id),
+            method='PUT',
+            data=json.dumps(self._kwargs_to_mutable_member_attrs(**kwargs))
+        )
+
         return resp.status == httplib.ACCEPTED
 
     def ex_list_algorithm_names(self):
@@ -351,10 +550,575 @@ class RackspaceLBDriver(Driver):
 
         return [self._to_access_rule(el) for el in resp.object["accessList"]]
 
+    def _get_updated_balancer(self, balancer):
+        """
+        Updating a balancer's attributes puts a balancer into
+        'PENDING_UPDATE' status.  Wait until the balancer is
+        back in 'ACTIVE' status and then return the individual
+        balancer details call.
+        """
+        resp = self.connection.async_request(
+            action='/loadbalancers/%s' % balancer.id,
+            method='GET')
+
+        return self._to_balancer(resp.object['loadBalancer'])
+
+    def ex_update_balancer_health_monitor(self, balancer, health_monitor):
+        """
+        Sets a Balancer's health monitor.  This method blocks until the update
+        request has been processed and the balancer is in a RUNNING state
+        again.
+
+        @param balancer: Balancer to update.
+        @type balancer: C{Balancer}
+
+        @param health_monitor: Health Monitor for the balancer.
+        @type health_monitor: C{RackspaceHealthMonitor}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        accepted = self.ex_update_balancer_health_monitor_no_poll(balancer,
+                    health_monitor)
+        if not accepted:
+            msg = 'Update health monitor request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_update_balancer_health_monitor_no_poll(self, balancer,
+                                                  health_monitor):
+        """
+        Sets a Balancer's health monitor.  This method returns immediately.
+
+        @param balancer: Balancer to update health monitor on.
+        @type balancer: C{Balancer}
+
+        @param health_monitor: Health Monitor for the balancer.
+        @type health_monitor: C{RackspaceHealthMonitor}
+
+        @rtype: C{bool}
+        @return: Returns whether the update request was accepted.
+        """
+        uri = '/loadbalancers/%s/healthmonitor' % (balancer.id)
+
+        resp = self.connection.request(uri,
+            method='PUT',
+            data=json.dumps(health_monitor._to_dict()))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_disable_balancer_health_monitor(self, balancer):
+        """
+        Disables a Balancer's health monitor.  This method blocks until the
+        disable request has been processed and the balancer is in a RUNNING
+        state again.
+
+        @param balancer: Balancer to disable health monitor on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_disable_balancer_health_monitor_no_poll(balancer):
+            msg = 'Disable health monitor request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_disable_balancer_health_monitor_no_poll(self, balancer):
+        """
+        Disables a Balancer's health monitor.  This method returns
+        immediately.
+
+        @param balancer: Balancer to disable health monitor on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the disable request was accepted.
+        """
+        uri = '/loadbalancers/%s/healthmonitor' % (balancer.id)
+
+        resp = self.connection.request(uri,
+            method='DELETE')
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_update_balancer_connection_throttle(self, balancer,
+                                               connection_throttle):
+        """
+        Updates a Balancer's connection throttle.  This method blocks until
+        the update request has been processed and the balancer is in a
+        RUNNING state again.
+
+        @param balancer: Balancer to update connection throttle on.
+        @type balancer: C{Balancer}
+
+        @param connection_throttle: Connection Throttle for the balancer.
+        @type connection_throttle: C{RackspaceConnectionThrottle}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        accepted = self.ex_update_balancer_connection_throttle_no_poll(
+            balancer, connection_throttle)
+
+        if not accepted:
+            msg = 'Update connection throttle request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_update_balancer_connection_throttle_no_poll(self, balancer,
+                                                       connection_throttle):
+        """
+        Sets a Balancer's connection throttle.  This method returns
+        immediately.
+
+        @param balancer: Balancer to update connection throttle on.
+        @type balancer: C{Balancer}
+
+        @param connection_throttle: Connection Throttle for the balancer.
+        @type connection_throttle: C{RackspaceConnectionThrottle}
+
+        @rtype: C{bool}
+        @return: Returns whether the update request was accepted.
+        """
+        uri = '/loadbalancers/%s/connectionthrottle' % (balancer.id)
+        resp = self.connection.request(uri, method='PUT',
+            data=json.dumps(connection_throttle._to_dict()))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_disable_balancer_connection_throttle(self, balancer):
+        """
+        Disables a Balancer's connection throttle.  This method blocks until
+        the disable request has been processed and the balancer is in a RUNNING
+        state again.
+
+        @param balancer: Balancer to disable connection throttle on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_disable_balancer_connection_throttle_no_poll(balancer):
+            msg = 'Disable connection throttle request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_disable_balancer_connection_throttle_no_poll(self, balancer):
+        """
+        Disables a Balancer's connection throttle.  This method returns
+        immediately.
+
+        @param balancer: Balancer to disable connection throttle on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the disable request was accepted.
+        """
+        uri = '/loadbalancers/%s/connectionthrottle' % (balancer.id)
+        resp = self.connection.request(uri, method='DELETE')
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_enable_balancer_connection_logging(self, balancer):
+        """
+        Enables connection logging for a Balancer.  This method blocks until
+        the enable request has been processed and the balancer is in a RUNNING
+        state again.
+
+        @param balancer: Balancer to enable connection logging on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_enable_balancer_connection_logging_no_poll(balancer):
+            msg = 'Enable connection logging request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_enable_balancer_connection_logging_no_poll(self, balancer):
+        """
+        Enables connection logging for a Balancer.  This method returns
+        immediately.
+
+        @param balancer: Balancer to enable connection logging on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the enable request was accepted.
+        """
+        uri = '/loadbalancers/%s/connectionlogging' % (balancer.id)
+
+        resp = self.connection.request(uri, method='PUT',
+            data=json.dumps({
+            'connectionLogging': {
+                'enabled': True
+            }
+        }))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_disable_balancer_connection_logging(self, balancer):
+        """
+        Disables connection logging for a Balancer.  This method blocks until
+        the enable request has been processed and the balancer is in a RUNNING
+        state again.
+
+        @param balancer: Balancer to disable connection logging on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_disable_balancer_connection_logging_no_poll(balancer):
+            msg = 'Disable connection logging request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_disable_balancer_connection_logging_no_poll(self, balancer):
+        """
+        Disables connection logging for a Balancer.  This method returns
+        immediately.
+
+        @param balancer: Balancer to disable connection logging on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the disable request was accepted.
+        """
+        uri = '/loadbalancers/%s/connectionlogging' % (balancer.id)
+        resp = self.connection.request(uri, method='PUT',
+            data=json.dumps({
+            'connectionLogging': {
+                'enabled': False
+            }
+        }))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_enable_balancer_session_persistence(self, balancer):
+        """
+        Enables session persistence for a Balancer by setting the persistence
+        type to 'HTTP_COOKIE'.  This method blocks until the enable request
+        has been processed and the balancer is in a RUNNING state again.
+
+        @param balancer: Balancer to enable session persistence on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_enable_balancer_session_persistence_no_poll(balancer):
+            msg = 'Enable session persistence request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_enable_balancer_session_persistence_no_poll(self, balancer):
+        """
+        Enables session persistence for a Balancer by setting the persistence
+        type to 'HTTP_COOKIE'.  This method returns immediately.
+
+        @param balancer: Balancer to enable session persistence on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the enable request was accepted.
+        """
+        uri = '/loadbalancers/%s/sessionpersistence' % (balancer.id)
+        resp = self.connection.request(uri, method='PUT',
+            data=json.dumps({
+                'sessionPersistence': {
+                    'persistenceType': 'HTTP_COOKIE'
+                }
+            }))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_disable_balancer_session_persistence(self, balancer):
+        """
+        Disables session persistence for a Balancer.  This method blocks until
+        the disable request has been processed and the balancer is in a RUNNING
+        state again.
+
+        @param balancer: Balancer to disable session persistence on.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_disable_balancer_session_persistence_no_poll(balancer):
+            msg = 'Disable session persistence request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_disable_balancer_session_persistence_no_poll(self, balancer):
+        """
+        Disables session persistence for a Balancer.  This method returns
+        immediately.
+
+        @param balancer: Balancer to disable session persistence for.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the disable request was accepted.
+        """
+        uri = '/loadbalancers/%s/sessionpersistence' % (balancer.id)
+        resp = self.connection.request(uri, method='DELETE')
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_update_balancer_error_page(self, balancer, page_content):
+        """
+        Updates a Balancer's custom error page.  This method blocks until
+        the update request has been processed and the balancer is in a
+        RUNNING state again.
+
+        @param balancer: Balancer to update the custom error page for.
+        @type balancer: C{Balancer}
+
+        @param page_content: HTML content for the custom error page.
+        @type page_content: C{string}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        accepted = self.ex_update_balancer_error_page_no_poll(balancer, page_content)
+        if not accepted:
+            msg = 'Update error page request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_update_balancer_error_page_no_poll(self, balancer, page_content):
+        """
+        Updates a Balancer's custom error page.  This method returns
+        immediately.
+
+        @param balancer: Balancer to update the custom error page for.
+        @type balancer: C{Balancer}
+
+        @param page_content: HTML content for the custom error page.
+        @type page_content: C{string}
+
+        @rtype: C{bool}
+        @return: Returns whether the update request was accepted.
+        """
+        uri = '/loadbalancers/%s/errorpage' % (balancer.id)
+        resp = self.connection.request(uri, method='PUT',
+            data=json.dumps({
+                'errorpage': {
+                    'content': page_content
+                }
+            }))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_disable_balancer_custom_error_page(self, balancer):
+        """
+        Disables a Balancer's custom error page, returning its error page to
+        the Rackspace-provided default.  This method blocks until the disable
+        request has been processed and the balancer is in a RUNNING state
+        again.
+
+        @param balancer: Balancer to disable the custom error page for.
+        @type balancer: C{Balancer}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        if not self.ex_disable_balancer_custom_error_page_no_poll(balancer):
+            msg = 'Disable custom error page request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_disable_balancer_custom_error_page_no_poll(self, balancer):
+        """
+        Disables a Balancer's custom error page, returning its error page to
+        the Rackspace-provided default.  This method returns immediately.
+
+        @param balancer: Balancer to disable the custom error page for.
+        @type balancer: C{Balancer}
+
+        @rtype: C{bool}
+        @return: Returns whether the disable request was accepted.
+        """
+        uri = '/loadbalancers/%s/errorpage' % (balancer.id)
+        resp = self.connection.request(uri, method='DELETE')
+
+        # Load Balancer API currently returns 200 OK on custom error page
+        # delete.
+        return resp.status == httplib.OK or resp.status == httplib.ACCEPTED
+
+    def ex_create_balancer_access_rule(self, balancer, rule):
+        """
+        Adds an access rule to a Balancer's access list.  This method blocks
+        until the update request has been processed and the balancer is in a
+        RUNNING state again.
+
+        @param balancer: Balancer to create the access rule for.
+        @type balancer: C{Balancer}
+
+        @param rule: Access Rule to add to the balancer.
+        @type rule: C{RackspaceAccessRule}
+
+        @rtype: C{RackspaceAccessRule}
+        @return: The created access rule.
+        """
+        accepted = self.ex_create_balancer_access_rule_no_poll(balancer, rule)
+        if not accepted:
+            msg = 'Create access rule not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        balancer = self._get_updated_balancer(balancer)
+        access_list = balancer.extra['accessList']
+
+        # LB API does not return the ID for the newly created item, so we have
+        # to fudge it. Rule types and addresses are unique, so this is a safe
+        # way to uniquely identify the new access rule.
+        created_rule = [r for r in access_list \
+                        if rule.rule_type == r.rule_type and \
+                           rule.address == r.address]
+
+        if not created_rule:
+            raise LibcloudError('Could not find created rule')
+
+        return created_rule[0]
+
+    def ex_create_balancer_access_rule_no_poll(self, balancer, rule):
+        """
+        Adds an access rule to a Balancer's access list.  This method returns
+        immediately.
+
+        @param balancer: Balancer to create the access rule for.
+        @type balancer: C{Balancer}
+
+        @param rule: Access Rule to add to the balancer.
+        @type rule: C{RackspaceAccessRule}
+
+        @rtype: C{bool}
+        @return: Returns whether the create request was accepted.
+        """
+        uri = '/loadbalancers/%s/accesslist' % (balancer.id)
+        resp = self.connection.request(uri, method='POST',
+            data=json.dumps({
+                'networkItem': rule._to_dict()
+            }))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_destroy_balancer_access_rule(self, balancer, rule):
+        """
+        Removes an access rule from a Balancer's access list.  This method
+        blocks until the update request has been processed and the balancer
+        is in a RUNNING state again.
+
+        @param balancer: Balancer to remove the access rule from.
+        @type balancer: C{Balancer}
+
+        @param rule: Access Rule to remove from the balancer.
+        @type rule: C{RackspaceAccessRule}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        accepted = self.ex_destroy_balancer_access_rule_no_poll(balancer, rule)
+        if not accepted:
+            msg = 'Delete access rule not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_destroy_balancer_access_rule_no_poll(self, balancer, rule):
+        """
+        Removes an access rule from a Balancer's access list.  This method
+        returns immediately.
+
+        @param balancer: Balancer to remove the access rule from.
+        @type balancer: C{Balancer}
+
+        @param rule: Access Rule to remove from the balancer.
+        @type rule: C{RackspaceAccessRule}
+
+        @rtype: C{bool}
+        @return: Returns whether the destroy request was accepted.
+        """
+        uri = '/loadbalancers/%s/accesslist/%s' % (balancer.id, rule.id)
+        resp = self.connection.request(uri, method='DELETE')
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_destroy_balancer_access_rules(self, balancer, rules):
+        """
+        Removes a list of access rules from a Balancer's access list.  This
+        method blocks until the update request has been processed and the
+        balancer is in a RUNNING state again.
+
+        @param balancer: Balancer to remove the access rules from.
+        @type balancer: C{Balancer}
+
+        @param rules: List of C{RackspaceAccessRule} objects to remove from the
+        balancer.
+        @type rules: C{list}
+
+        @rtype: C{Balancer}
+        @return: Updated Balancer.
+        """
+        accepted = self.ex_destroy_balancer_access_rules_no_poll(
+            balancer, rules)
+
+        if not accepted:
+            msg = 'Destroy access rules request not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        return self._get_updated_balancer(balancer)
+
+    def ex_destroy_balancer_access_rules_no_poll(self, balancer, rules):
+        """
+        Removes a list of access rules from a Balancer's access list.  This
+        method returns immediately.
+
+        @param balancer: Balancer to remove the access rules from.
+        @type balancer: C{Balancer}
+
+        @param rules: List of C{RackspaceAccessRule} objects to remove from the
+        balancer.
+        @type rules: C{list}
+
+        @rtype: C{bool}
+        @return: Returns whether the destroy request was accepted.
+        """
+        ids = [('id', rule.id) for rule in rules]
+        uri = '/loadbalancers/%s/accesslist' % balancer.id
+
+        resp = self.connection.request(uri,
+            method='DELETE',
+            params=ids)
+
+        return resp.status == httplib.ACCEPTED
+
     def _to_protocols(self, object):
         protocols = []
         for item in object["protocols"]:
             protocols.append(item['name'].lower())
+        return protocols
+
+    def _to_protocols_with_default_ports(self, object):
+        protocols = []
+        for item in object["protocols"]:
+            name = item['name'].lower()
+            port = int(item['port'])
+            protocols.append((name, port))
+
         return protocols
 
     def _to_balancers(self, object):
@@ -415,6 +1179,10 @@ class RackspaceLBDriver(Driver):
         if 'updated' in el:
             extra['updated'] = self._iso_to_datetime(el['updated']['time'])
 
+        if 'accessList' in el:
+            extra['accessList'] = [self._to_access_rule(rule) \
+                                   for rule in el['accessList']]
+
         return LoadBalancer(id=el["id"],
                 name=el["name"],
                 state=self.LB_STATE_MAP.get(
@@ -460,6 +1228,16 @@ class RackspaceLBDriver(Driver):
 
         if "port" in attrs:
             update_attrs['port'] = int(attrs['port'])
+
+        return update_attrs
+
+    def _kwargs_to_mutable_member_attrs(self, **attrs):
+        update_attrs = {}
+        if 'condition' in attrs:
+            update_attrs['condition'] = self.CONDITION_LB_MEMBER_MAP.get(attrs['condition'])
+
+        if 'weight' in attrs:
+            update_attrs['weight'] = attrs['weight']
 
         return update_attrs
 
