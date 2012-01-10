@@ -52,6 +52,12 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(len(protocols), 10)
         self.assertTrue('http' in protocols)
 
+    def test_ex_list_protocols_with_default_ports(self):
+        protocols = self.driver.ex_list_protocols_with_default_ports()
+
+        self.assertEqual(len(protocols), 10)
+        self.assertTrue(('http', 80) in protocols)
+
     def test_list_supported_algorithms(self):
         algorithms = self.driver.list_supported_algorithms()
 

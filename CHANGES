@@ -59,6 +59,7 @@ Changes with Apache Libcloud in development:
       - Populate LoadBalancer extra dictionary with more attributes
       - Add support for health monitors and connection throttling
       - Add more balancer states
+      - ex_list_protocols_with_default_ports
       [Dave King]
 
     - Propagate extra keyword arguments passed to the Rackspace driver

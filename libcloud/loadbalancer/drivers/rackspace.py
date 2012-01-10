@@ -304,6 +304,15 @@ class RackspaceLBDriver(Driver):
         return self._to_protocols(
                    self.connection.request('/loadbalancers/protocols').object)
 
+    def ex_list_protocols_with_default_ports(self):
+        """
+        @rtype: C{list} of tuples of protocols (C{str}) with default ports
+        (C{int}).
+        @return: A list of protocols with default ports included.
+        """
+        return self._to_protocols_with_default_ports(
+                   self.connection.request('/loadbalancers/protocols').object)
+
     def list_balancers(self, ex_member_address=None):
         """
         @param ex_member_address: Optional IP address of the attachment member.
@@ -1101,6 +1110,15 @@ class RackspaceLBDriver(Driver):
         protocols = []
         for item in object["protocols"]:
             protocols.append(item['name'].lower())
+        return protocols
+
+    def _to_protocols_with_default_ports(self, object):
+        protocols = []
+        for item in object["protocols"]:
+            name = item['name'].lower()
+            port = int(item['port'])
+            protocols.append((name, port))
+
         return protocols
 
     def _to_balancers(self, object):
