@@ -102,6 +102,8 @@ class Provider(object):
     CLOUDSTACK = 37
     CLOUDSIGMA_US = 38
     EC2_SA_EAST = 39
+    ELASTICHOSTS_US2 = 40
+    ELASTICHOSTS_CA1 = 41
 
 class NodeState(object):
     """
