@@ -34,6 +34,10 @@ Changes with Apache Libcloud in development:
      - Enable ex_delete_image method in the OpenStack 1.1 driver.
        [Shawn Smith]
 
+     - Add support for ElasticHosts new United States (Los Angeles) and Canada
+       (Toronto) locations.
+       [Jaime Irurzun]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver
