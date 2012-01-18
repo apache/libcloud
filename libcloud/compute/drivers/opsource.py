@@ -481,10 +481,6 @@ class OpsourceNodeDriver(NodeDriver):
         shutdown sequence within the guest operating system. A successful response
         on this function means the system has successfully passed the
         request into the operating system.
-<<<<<<< HEAD
-=======
-        add support to create/delete networks, acls, nat rules
->>>>>>> fix merge issues
         """
         body = self.connection.request_with_orgId('server/%s?shutdown' %
                                                   (node.id)).object
@@ -548,7 +544,7 @@ class OpsourceNodeDriver(NodeDriver):
     def ex_list_nat_rules(self, network):
         """List NAT rules for a particular network
         """
-        return self._to_natrules(self.connection.request_with_orgId('network/%s/natrule' %network.id).object)
+        return self._to_natrules(self.connection.request_with_orgId('network/%s/natrule' %(network.id)).object)
 
     def ex_list_acl_rules(self, network):
         """List ACL rules for a particular network
@@ -569,12 +565,12 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(nat_elm, "name").text = private_ip
         ET.SubElement(nat_elm, "sourceIp").text = private_ip
 
-        self.connection.request_with_orgId('network/%s/natrule' %network.id, 
+        self.connection.request_with_orgId('network/%s/natrule' %(network.id), 
                                            method='POST',
                                            data=ET.tostring(nat_elm)
                                            ).object
 
-        return filter(lambda x: x.name == private_ip, self.ex_list_nat_rules(network.id))[0]
+        return filter(lambda x: x.name == private_ip, self.ex_list_nat_rules(network))[0]
  
     def ex_create_acl_rule(self, name, position, network, action, protocol, _type, start_port, end_port=None):
         """Create a ACL rule in a particular network
@@ -690,7 +686,7 @@ class OpsourceNodeDriver(NodeDriver):
         body = self.connection.request_with_orgId('network/%s/aclrule/%s?delete' % (network.id, acl_rule.id)).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
-          
+
     def ex_remove_nat_rule(self, nat_rule, network):
         """Remove the NAT rule"""
         body = self.connection.request_with_orgId('network/%s/natrule/%s?delete' % (network.id, nat_rule.id)).object
