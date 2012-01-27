@@ -205,6 +205,9 @@ class RackspaceDNSDriver(DNSDriver):
 
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])
+            
+        if 'priority' in extra:
+            data['priority'] = int(extra['priority']) 
 
         payload = {'records': [data]}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
