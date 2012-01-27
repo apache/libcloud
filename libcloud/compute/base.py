@@ -66,16 +66,10 @@ __all__ = [
     "LibcloudHTTPConnection"
     ]
 
-class NodeBase(object):
+class UuidMixin(object):
     """
-    Base class for Node, NodeSize, and NodeImage.
+    Mixin class for get_uuid function.
     """
-
-    def __init__(self, id, name, driver):
-        self.id = str(id) if id else None
-        self.name = name
-        self.driver = driver
-        self.uuid = self.get_uuid()
 
     def get_uuid(self):
         """Unique hash for a node, node image, or node size
@@ -101,10 +95,8 @@ class NodeBase(object):
         """
         return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
     
-    def __repr__(self):
-        raise NotImplementedError()
 
-class Node(NodeBase):
+class Node(UuidMixin):
     """
     Provide a common interface for handling nodes of all types.
 
@@ -152,13 +144,16 @@ class Node(NodeBase):
 
     def __init__(self, id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None):
+        self.id = str(id) if id else None
+        self.name = name
         self.state = state
         self.public_ips = public_ips if public_ips else []
         self.private_ips = private_ips if private_ips else []
+        self.driver = driver
+        self.uuid = self.get_uuid()
         self.size = size
         self.image = image
         self.extra = extra or {}
-        NodeBase.__init__(self, id, name, driver)
 
     # Note: getters and setters bellow are here only for backward compatibility.
     # They will be removed in the next release.
@@ -228,7 +223,7 @@ class Node(NodeBase):
                    self.driver.name))
 
 
-class NodeSize(NodeBase):
+class NodeSize(UuidMixin):
     """
     A Base NodeSize class to derive from.
 
@@ -253,11 +248,14 @@ class NodeSize(NodeBase):
     """
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver):
-        NodeBase.__init__(self, id, name, driver)
+        self.id = str(id)
+        self.name = name
         self.ram = ram
         self.disk = disk
         self.bandwidth = bandwidth
         self.price = price
+        self.driver = driver
+        self.uuid = self.get_uuid()
 
     def __repr__(self):
         return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
@@ -266,7 +264,7 @@ class NodeSize(NodeBase):
                    self.price, self.driver.name))
 
 
-class NodeImage(NodeBase):
+class NodeImage(UuidMixin):
     """
     An operating system image.
 
@@ -290,7 +288,10 @@ class NodeImage(NodeBase):
     """
 
     def __init__(self, id, name, driver, extra=None):
-        NodeBase.__init__(self, id, name, driver)
+        self.id = str(id)
+        self.name = name
+        self.driver = driver
+        self.uuid = self.get_uuid()
         self.extra = extra or {}
 
     def __repr__(self):
