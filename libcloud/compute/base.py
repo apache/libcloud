@@ -71,6 +71,9 @@ class UuidMixin(object):
     Mixin class for get_uuid function.
     """
 
+    def __init__(self):
+        self._uuid = None
+
     def get_uuid(self):
         """Unique hash for a node, node image, or node size
 
@@ -93,8 +96,14 @@ class UuidMixin(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
-    
+        if not self._uuid:
+            self._uuid = hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
+        return self._uuid
+
+    @property
+    def uuid(self):
+        return self.get_uuid()
+
 
 class Node(UuidMixin):
     """
@@ -150,10 +159,10 @@ class Node(UuidMixin):
         self.public_ips = public_ips if public_ips else []
         self.private_ips = private_ips if private_ips else []
         self.driver = driver
-        self.uuid = self.get_uuid()
         self.size = size
         self.image = image
         self.extra = extra or {}
+        UuidMixin.__init__(self)
 
     # Note: getters and setters bellow are here only for backward compatibility.
     # They will be removed in the next release.
@@ -255,7 +264,7 @@ class NodeSize(UuidMixin):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
-        self.uuid = self.get_uuid()
+        UuidMixin.__init__(self)
 
     def __repr__(self):
         return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
@@ -291,8 +300,8 @@ class NodeImage(UuidMixin):
         self.id = str(id)
         self.name = name
         self.driver = driver
-        self.uuid = self.get_uuid()
         self.extra = extra or {}
+        UuidMixin.__init__(self)
 
     def __repr__(self):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
