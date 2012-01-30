@@ -88,6 +88,9 @@ Changes with Apache Libcloud in development:
       the Rackspace driver.
       [Mark Everett]
 
+    - Fix protocol name maping in the Rackspace driver.
+      [Bill Woodward]
+
 Changes with Apache Libcloud 0.7.1:
 
   *) General:
