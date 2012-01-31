@@ -566,6 +566,15 @@ class OpenNebula_3_2_Tests(unittest.TestCase, OpenNebulaCaseMixin):
             OpenNebula_3_2_MockHttp, OpenNebula_3_2_MockHttp)
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.2',))
 
+    def test_reboot_node(self):
+        """
+        Test reboot_node functionality.
+        """
+        image = NodeImage(id=5, name='Ubuntu 9.04 LAMP', driver=self.driver)
+        node = Node(5, None, None, None, None, self.driver, image=image)
+        ret = self.driver.reboot_node(node)
+        self.assertTrue(ret)
+
     def test_list_sizes(self):
         """
         Test ex_list_networks functionality.
@@ -950,6 +959,24 @@ class OpenNebula_3_2_MockHttp(OpenNebula_3_0_MockHttp):
     """
 
     fixtures_3_2 = ComputeFileFixtures('opennebula_3_2')
+
+    def _compute_5(self, method, url, body, headers):
+        """
+        Compute entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures.load('compute_5.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'PUT':
+            body = ""
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
 
     def _instance_type(self, method, url, body, headers):
         """
