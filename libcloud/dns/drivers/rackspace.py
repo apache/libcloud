@@ -236,7 +236,10 @@ class RackspaceDNSDriver(DNSDriver):
 
         if 'comment' in extra:
             payload['comment'] = extra['comment']
-
+        
+        if 'priority' in extra:
+            payload['priority'] = extra['priority']
+            
         type = type if type else record.type
         data = data if data else record.data
 
