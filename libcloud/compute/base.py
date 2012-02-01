@@ -411,6 +411,9 @@ class NodeDriver(BaseDriver):
         Depending upon the provider, this may destroy all data associated with
         the node, including backups.
 
+        @param node: The node to be destroyed
+        @type node: L{Node}
+
         @return: C{bool} True if the destroy was successful, otherwise False
         """
         raise NotImplementedError(
@@ -419,6 +422,10 @@ class NodeDriver(BaseDriver):
     def reboot_node(self, node):
         """
         Reboot a node.
+
+        @param node: The node to be rebooted
+        @type node: L{Node}
+
         @return: C{bool} True if the reboot was successful, otherwise False
         """
         raise NotImplementedError(
@@ -435,6 +442,10 @@ class NodeDriver(BaseDriver):
     def list_images(self, location=None):
         """
         List images on a provider
+
+        @keyword location: The location at which to list images
+        @type location: L{NodeLocation}
+
         @return: C{list} of L{NodeImage} objects
         """
         raise NotImplementedError(
@@ -443,6 +454,10 @@ class NodeDriver(BaseDriver):
     def list_sizes(self, location=None):
         """
         List sizes on a provider
+
+        @keyword location: The location at which to list sizes
+        @type location: L{NodeLocation}
+
         @return: C{list} of L{NodeSize} objects
         """
         raise NotImplementedError(
