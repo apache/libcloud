@@ -38,6 +38,9 @@ Changes with Apache Libcloud in development:
        ; LIBCLOUD-138
        [Shawn Smith]
 
+     - Enable reboot_node method in the OpenNebula 3.2 driver.
+       [Hutson Betts]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver
@@ -87,6 +90,9 @@ Changes with Apache Libcloud in development:
     - Add created and updated attribute to the LoadBalancer extra dictionary in
       the Rackspace driver.
       [Mark Everett]
+
+    - Fix protocol name maping in the Rackspace driver.
+      [Bill Woodward]
 
 Changes with Apache Libcloud 0.7.1:
 

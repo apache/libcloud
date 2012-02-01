@@ -173,7 +173,7 @@ class RackspaceConnectionThrottle(object):
             'maxConnections': self.max_connections,
             'minConnections': self.min_connections,
             'maxConnectionRate': self.max_connection_rate,
-            'rateInterval' : self.rate_interval_seconds
+            'rateInterval': self.rate_interval_seconds
         }
 
 
@@ -214,7 +214,7 @@ class RackspaceAccessRule(object):
 
         as_dict = {
             'type': type_string,
-            'address' : self.address,
+            'address': self.address
         }
 
         if self.id is not None:
@@ -891,7 +891,8 @@ class RackspaceLBDriver(Driver):
         @rtype: C{Balancer}
         @return: Updated Balancer.
         """
-        accepted = self.ex_update_balancer_error_page_no_poll(balancer, page_content)
+        accepted = self.ex_update_balancer_error_page_no_poll(balancer,
+                                                              page_content)
         if not accepted:
             msg = 'Update error page request not accepted'
             raise LibcloudError(msg, driver=self)
@@ -1214,6 +1215,18 @@ class RackspaceLBDriver(Driver):
                 extra=extra)
         return lbmember
 
+    def _protocol_to_value(self, protocol):
+        non_standard_protocols = {'imapv2': 'IMAPv2', 'imapv3': 'IMAPv3',
+                                  'imapv4': 'IMAPv4'}
+        protocol_name = protocol.lower()
+
+        if protocol_name in non_standard_protocols:
+            protocol_value = non_standard_protocols[protocol_name]
+        else:
+            protocol_value = protocol.upper()
+
+        return protocol_value
+
     def _kwargs_to_mutable_attrs(self, **attrs):
         update_attrs = {}
         if "name" in attrs:
@@ -1224,7 +1237,8 @@ class RackspaceLBDriver(Driver):
             update_attrs['algorithm'] = algorithm_value
 
         if "protocol" in attrs:
-            update_attrs['protocol'] = attrs['protocol'].upper()
+            update_attrs['protocol'] = \
+                self._protocol_to_value(attrs['protocol'])
 
         if "port" in attrs:
             update_attrs['port'] = int(attrs['port'])
@@ -1234,7 +1248,8 @@ class RackspaceLBDriver(Driver):
     def _kwargs_to_mutable_member_attrs(self, **attrs):
         update_attrs = {}
         if 'condition' in attrs:
-            update_attrs['condition'] = self.CONDITION_LB_MEMBER_MAP.get(attrs['condition'])
+            update_attrs['condition'] = \
+                self.CONDITION_LB_MEMBER_MAP.get(attrs['condition'])
 
         if 'weight' in attrs:
             update_attrs['weight'] = attrs['weight']

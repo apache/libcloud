@@ -631,6 +631,27 @@ class RackspaceLBTests(unittest.TestCase):
         updated_balancer = self.driver.update_balancer(balancer, protocol='HTTPS')
         self.assertEqual('HTTPS', updated_balancer.extra['protocol'])
 
+    def test_update_balancer_protocol_to_imapv2(self):
+        balancer = LoadBalancer(id='3135', name='LB_update',
+            state='PENDING_UPDATE', ip='10.34.4.3',
+            port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer, protocol='imapv2')
+        self.assertEqual('IMAPv2', updated_balancer.extra['protocol'])
+
+    def test_update_balancer_protocol_to_imapv3(self):
+        balancer = LoadBalancer(id='3136', name='LB_update',
+            state='PENDING_UPDATE', ip='10.34.4.3',
+            port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer, protocol='IMAPV3')
+        self.assertEqual('IMAPv3', updated_balancer.extra['protocol'])
+
+    def test_update_balancer_protocol_to_imapv4(self):
+        balancer = LoadBalancer(id='3137', name='LB_update',
+            state='PENDING_UPDATE', ip='10.34.4.3',
+            port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(balancer, protocol='IMAPv4')
+        self.assertEqual('IMAPv4', updated_balancer.extra['protocol'])
+
     def test_update_balancer_port(self):
         balancer = LoadBalancer(id='3131', name='LB_update',
                                          state='PENDING_UPDATE', ip='10.34.4.3',
@@ -1140,6 +1161,42 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         """ update.balancer(b, algorithm='HAVE_MERCY_ON_OUR_SERVERS') """
         if method == "PUT":
             return (httplib.BAD_REQUEST, "", {}, httplib.responses[httplib.BAD_REQUEST])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3135(self, method, url, body, headers):
+        """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3135') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'protocol': 'IMAPv2'})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3135
+            response_body['loadBalancer']['protocol'] = 'IMAPv2'
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3136(self, method, url, body, headers):
+        """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3136') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'protocol': 'IMAPv3'})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3136
+            response_body['loadBalancer']['protocol'] = 'IMAPv3'
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_3137(self, method, url, body, headers):
+        """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3137') """
+        if method == "PUT":
+            self.assertEqual(json.loads(body), {'protocol': 'IMAPv4'})
+            return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+        elif method == "GET":
+            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body['loadBalancer']['id'] = 3137
+            response_body['loadBalancer']['protocol'] = 'IMAPv4'
+            return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
     def _v1_1_auth(self, method, url, body, headers):

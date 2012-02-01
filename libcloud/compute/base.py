@@ -66,8 +66,46 @@ __all__ = [
     "LibcloudHTTPConnection"
     ]
 
+class UuidMixin(object):
+    """
+    Mixin class for get_uuid function.
+    """
 
-class Node(object):
+    def __init__(self):
+        self._uuid = None
+
+    def get_uuid(self):
+        """Unique hash for a node, node image, or node size
+
+        @return: C{string}
+
+        The hash is a function of an SHA1 hash of the node, node image,
+        or node size's ID and its driver which means that it should be 
+        unique between all objects of its type.
+        In some subclasses (e.g. GoGridNode) there is no ID
+        available so the public IP address is used.  This means that,
+        unlike a properly done system UUID, the same UUID may mean a
+        different system install at a different time
+
+        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+        >>> driver = DummyNodeDriver(0)
+        >>> node = driver.create_node()
+        >>> node.get_uuid()
+        'd3748461511d8b9b0e0bfa0d4d3383a619a2bb9f'
+
+        Note, for example, that this example will always produce the
+        same UUID!
+        """
+        if not self._uuid:
+            self._uuid = hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
+        return self._uuid
+
+    @property
+    def uuid(self):
+        return self.get_uuid()
+
+
+class Node(UuidMixin):
     """
     Provide a common interface for handling nodes of all types.
 
@@ -121,10 +159,10 @@ class Node(object):
         self.public_ips = public_ips if public_ips else []
         self.private_ips = private_ips if private_ips else []
         self.driver = driver
-        self.uuid = self.get_uuid()
         self.size = size
         self.image = image
         self.extra = extra or {}
+        UuidMixin.__init__(self)
 
     # Note: getters and setters bellow are here only for backward compatibility.
     # They will be removed in the next release.
@@ -143,29 +181,6 @@ class Node(object):
 
     public_ip = property(fget=_get_public_ips, fset=_set_public_ips)
     private_ip = property(fget=_get_private_ips, fset=_set_private_ips)
-
-    def get_uuid(self):
-        """Unique hash for this node
-
-        @return: C{string}
-
-        The hash is a function of an SHA1 hash of the node's ID and
-        its driver which means that it should be unique between all
-        nodes.  In some subclasses (e.g. GoGrid) there is no ID
-        available so the public IP address is used.  This means that,
-        unlike a properly done system UUID, the same UUID may mean a
-        different system install at a different time
-
-        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
-        >>> driver = DummyNodeDriver(0)
-        >>> node = driver.create_node()
-        >>> node.get_uuid()
-        'd3748461511d8b9b0e0bfa0d4d3383a619a2bb9f'
-
-        Note, for example, that this example will always produce the
-        same UUID!
-        """
-        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
 
     def reboot(self):
         """Reboot this node
@@ -217,7 +232,7 @@ class Node(object):
                    self.driver.name))
 
 
-class NodeSize(object):
+class NodeSize(UuidMixin):
     """
     A Base NodeSize class to derive from.
 
@@ -249,6 +264,7 @@ class NodeSize(object):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+        UuidMixin.__init__(self)
 
     def __repr__(self):
         return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
@@ -257,7 +273,7 @@ class NodeSize(object):
                    self.price, self.driver.name))
 
 
-class NodeImage(object):
+class NodeImage(UuidMixin):
     """
     An operating system image.
 
@@ -285,6 +301,7 @@ class NodeImage(object):
         self.name = name
         self.driver = driver
         self.extra = extra or {}
+        UuidMixin.__init__(self)
 
     def __repr__(self):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
