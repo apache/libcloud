@@ -177,7 +177,6 @@ class RackspaceUSTests(unittest.TestCase):
                                                       'bar foo'})
 
         self.assertEqual(zone.extra['comment'], 'wazaaa')
-
         self.assertEqual(updated_zone.id, zone.id)
         self.assertEqual(updated_zone.domain, 'foo4.bar.com')
         self.assertEqual(updated_zone.type, zone.type)

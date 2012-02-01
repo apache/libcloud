@@ -313,7 +313,8 @@ class RackspaceDNSDriver(DNSDriver):
 
         if 'comment' in data:
             extra['comment'] = data['comment']
-
+        if 'priority' in data:
+            extra['priority'] = data['priority']
         record = Record(id=str(id), name=name, type=type, data=record_data,
                         zone=zone, driver=self, extra=extra)
         return record
