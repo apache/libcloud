@@ -495,6 +495,9 @@ class Connection(object):
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
 
+        # Indicate that support gzip and deflate compression
+        headers.update({'Accept-Encoding': 'gzip,deflate'})
+
         p = int(self.port)
 
         if p not in (80, 443):
