@@ -16,8 +16,6 @@
 import sys
 import ssl
 import time
-import zlib
-import gzip
 
 from xml.etree import ElementTree as ET
 from pipes import quote as pquote
@@ -38,6 +36,7 @@ from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
 
 from libcloud.utils.misc import lowercase_keys
+from libcloud.utils.compression import decompress_data
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
@@ -121,16 +120,9 @@ class Response(object):
         body = response.read()
 
         if encoding in  ['zlib', 'deflate']:
-            body = zlib.decompress(body)
+            body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
-            # TODO: Should export BytesIO as StringIO in libcloud.utils.py3
-            if PY3:
-                from io import BytesIO
-                cls = BytesIO
-            else:
-                cls = StringIO
-
-            body = gzip.GzipFile(fileobj=cls(body)).read()
+            body = decompress_data('gzip', body)
         else:
             body = body.strip()
 
