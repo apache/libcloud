@@ -15,6 +15,7 @@
 """
 Gandi driver for compute
 """
+import sys
 from datetime import datetime
 
 from libcloud.common.gandi import BaseGandiDriver, GandiException, \
@@ -68,7 +69,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 vm['state'],
                 NodeState.UNKNOWN
             ),
-            public_ips=vm.get('ip'),
+            public_ips=vm.get('ips', []),
             private_ips=[],
             driver=self,
             extra={
@@ -85,9 +86,12 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         vms = self.connection.request('vm.list')
         ips = self.connection.request('ip.list')
         for vm in vms:
+            vm['ips'] = []
             for ip in ips:
                 if vm['ifaces_id'][0] == ip['iface_id']:
-                    vm['ip'] = ip.get('ip')
+                    ip = ip.get('ip', None)
+                    if ip:
+                        vm['ips'].append(ip)
 
         nodes = self._to_nodes(vms)
         return nodes
