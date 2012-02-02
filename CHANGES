@@ -4,10 +4,14 @@ Changes with Apache Libcloud in development:
 
   *) General:
 
-    - Add 'request_kwargs' argument to the get_poll_request_kwargs method.
-      This argument contains kwargs which were previously used to initiate the
-      poll request.
-      [Mark Everett]
+     - Add 'request_kwargs' argument to the get_poll_request_kwargs method.
+       This argument contains kwargs which were previously used to initiate the
+       poll request.
+       [Mark Everett]
+
+     - Add support for handling compressed responses (deflate, gzip). Also send
+       "Accept-Encoding" "gzip,deflate" header with all the requests.
+       [Tomaz Muraus]
 
   *) Compute:
 
@@ -40,6 +44,9 @@ Changes with Apache Libcloud in development:
 
      - Enable reboot_node method in the OpenNebula 3.2 driver.
        [Hutson Betts]
+
+     - Fix a public_ips Node variable assignment in the Gandi.net driver.
+       [Aymeric Barantal]
 
   *) Storage:
 
