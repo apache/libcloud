@@ -273,6 +273,8 @@ class LoggingConnection():
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
 
+        cmd.extend(["--compress"])
+
         cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
         return " ".join(cmd)
 
