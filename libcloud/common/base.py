@@ -16,6 +16,8 @@
 import sys
 import ssl
 import time
+import zlib
+import gzip
 
 from xml.etree import ElementTree as ET
 from pipes import quote as pquote
@@ -42,6 +44,7 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
 LibcloudHTTPConnection = httplib.HTTPConnection
 
+
 class Response(object):
     """
     A Base Response class to derive from.
@@ -57,7 +60,7 @@ class Response(object):
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = response.read().strip()
+        self.body = self._decompress_response(response=response)
 
         if PY3:
             self.body = b(self.body).decode('utf-8')
@@ -105,6 +108,33 @@ class Response(object):
         @return: C{True} or C{False}
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
+
+    def _decompress_response(self, response):
+        """
+        Decompress a response body if it is using deflate or gzip encoding.
+
+        @return: Decompressed response
+        """
+        headers = lowercase_keys(dict(response.getheaders()))
+        encoding = headers.get('content-encoding', None)
+
+        body = response.read()
+
+        if encoding in  ['zlib', 'deflate']:
+            body = zlib.decompress(body)
+        elif encoding in ['gzip', 'x-gzip']:
+            # TODO: Should export BytesIO as StringIO in libcloud.utils.py3
+            if PY3:
+                from io import BytesIO
+                cls = BytesIO
+            else:
+                cls = StringIO
+
+            body = gzip.GzipFile(fileobj=cls(body)).read()
+        else:
+            body = body.strip()
+
+        return body
 
 
 class JsonResponse(Response):
