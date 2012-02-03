@@ -30,6 +30,7 @@ class ResponseClassesTests(unittest.TestCase):
         self._mock_response = Mock()
         self._mock_response.getheaders.return_value = []
         self._mock_response.status = httplib.OK
+        self._mock_response._original_data = None
         self._mock_connection = Mock()
 
     def test_XmlResponse_class(self):
