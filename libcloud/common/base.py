@@ -117,6 +117,11 @@ class Response(object):
         headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
 
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data is not None:
+            return original_data
+
         body = response.read()
 
         if encoding in  ['zlib', 'deflate']:
@@ -238,6 +243,16 @@ class LoggingConnection():
             def makefile(self, mode, foo):
                 return StringIO(self.s)
         rr = r
+        original_data = body
+        headers = lowercase_keys(dict(r.getheaders()))
+
+        encoding = headers.get('content-encoding', None)
+
+        if encoding in  ['zlib', 'deflate']:
+            body = decompress_data('zlib', body)
+        elif encoding in ['gzip', 'x-gzip']:
+            body = decompress_data('gzip', body)
+
         if r.chunked:
             ht += "%x\r\n" % (len(body))
             ht += body
@@ -251,6 +266,8 @@ class LoggingConnection():
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
                % (id(self), id(r)))
+
+        rr._original_data = body
         return (rr, rv)
 
     def _log_curl(self, method, url, body, headers):
