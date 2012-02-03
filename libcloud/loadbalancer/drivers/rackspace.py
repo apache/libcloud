@@ -226,7 +226,6 @@ class RackspaceAccessRule(object):
 class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
     responseCls = RackspaceResponse
     auth_url = AUTH_URL_US
-    _url_key = "lb_url"
     poll_interval = 2
     timeout = 80
 
@@ -262,6 +261,25 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
                                 driver=self.driver)
 
         return state == 'ACTIVE'
+
+    def get_endpoint(self):
+        """
+        FIXME:
+        Dirty, dirty hack. Loadbalancers so not show up in the auth 1.1 service
+        catalog, so we build it from the servers url.
+        """
+
+        if self._auth_version == "1.1":
+            ep = self.service_catalog.get_endpoint(name="cloudServers")
+
+            if 'publicURL' in ep:
+                return ep['publicURL'].replace("servers", "ord.loadbalancers")
+            else:
+                raise LibcloudError('Could not find specified endpoint')
+
+        else:
+            raise LibcloudError("Auth version %s not supported" % \
+                self._auth_version)
 
 
 class RackspaceUKConnection(RackspaceConnection):
