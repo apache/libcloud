@@ -13,6 +13,9 @@ Changes with Apache Libcloud in development:
        "Accept-Encoding" "gzip,deflate" header with all the requests.
        [Tomaz Muraus]
 
+     - Fix debug module (LIBCLOUD_DEBUG env variable) so it works with Python 3
+       [Tomaz Muraus]
+
   *) Compute:
 
      - Added support for retrieving OpenNebula v3.2 instance types, OpenNebula
