@@ -33,6 +33,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import u
 from libcloud.utils.py3 import b
 
 from libcloud.utils.misc import lowercase_keys
@@ -240,8 +241,14 @@ class LoggingConnection():
             def __init__(self, s):
                 self.s = s
 
-            def makefile(self, mode, foo):
-                return StringIO(self.s)
+            def makefile(self, *args, **kwargs):
+                if PY3:
+                    from io import BytesIO
+                    cls = BytesIO
+                else:
+                    cls = StringIO
+
+                return cls(b(self.s))
         rr = r
         original_data = body
         headers = lowercase_keys(dict(r.getheaders()))
@@ -253,13 +260,14 @@ class LoggingConnection():
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
 
+
         if r.chunked:
             ht += "%x\r\n" % (len(body))
-            ht += body
+            ht += u(body)
             ht += "\r\n0\r\n"
         else:
-            ht += body
-        rr = httplib.HTTPResponse(fakesock(ht),
+            ht += u(body)
+        rr = httplib.HTTPResponse(sock=fakesock(ht),
                                   method=r._method,
                                   debuglevel=r.debuglevel)
         rr.begin()
