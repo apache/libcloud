@@ -90,7 +90,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].name, None)
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -122,7 +122,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, None)
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -138,7 +138,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '15')
         self.assertEqual(node.name, 'Compute 15')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, None)
         self.assertEqual(node.public_ips[0].address, '192.168.0.2')
@@ -274,7 +274,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -314,7 +314,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -352,7 +352,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '15')
         self.assertEqual(node.name, 'Compute 15')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.2')
@@ -390,7 +390,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.id, '25')
         self.assertEqual(node.name, 'Compute 25')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['UNKNOWN'])
+                         NodeState.UNKNOWN)
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.3')
