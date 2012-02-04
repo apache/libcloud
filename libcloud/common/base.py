@@ -260,7 +260,6 @@ class LoggingConnection():
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
 
-
         if r.chunked:
             ht += "%x\r\n" % (len(body))
             ht += u(body)
