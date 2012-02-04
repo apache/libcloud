@@ -117,7 +117,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         """
         nodes = self.driver.list_nodes()
 
-        self.assertEqual(len(nodes), 2)
+        self.assertEqual(len(nodes), 3)
         node = nodes[0]
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
@@ -150,6 +150,21 @@ class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.private_ips, [])
         self.assertEqual(node.image.id, '15')
         self.assertEqual(node.image.extra['dev'], 'sda1')
+        node = nodes[2]
+        self.assertEqual(node.id, '25')
+        self.assertEqual(node.name, 'Compute 25')
+        self.assertEqual(node.state,
+                         NodeState.UNKNOWN)
+        self.assertEqual(node.public_ips[0].id, '5')
+        self.assertEqual(node.public_ips[0].name, None)
+        self.assertEqual(node.public_ips[0].address, '192.168.0.3')
+        self.assertEqual(node.public_ips[0].size, 1)
+        self.assertEqual(node.public_ips[1].id, '15')
+        self.assertEqual(node.public_ips[1].name, None)
+        self.assertEqual(node.public_ips[1].address, '192.168.1.3')
+        self.assertEqual(node.public_ips[1].size, 1)
+        self.assertEqual(node.private_ips, [])
+        self.assertEqual(node.image, None)
 
     def test_list_images(self):
         """
@@ -405,7 +420,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(node.size, None)
         self.assertEqual(node.image, None)
         context = node.extra['context']
-        self.assertEqual(context['hostname'], 'compute-25')
+        self.assertEqual(context, {})
 
     def test_list_images(self):
         """
@@ -687,6 +702,24 @@ class OpenNebula_1_4_MockHttp(MockHttp):
         """
         if method == 'GET':
             body = self.fixtures.load('compute_15.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'PUT':
+            body = ""
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.OK, body, {},
+                    httplib.responses[httplib.OK])
+
+    def _compute_25(self, method, url, body, headers):
+        """
+        Compute entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures.load('compute_25.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         if method == 'PUT':
