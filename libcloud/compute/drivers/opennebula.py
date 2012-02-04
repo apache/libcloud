@@ -267,17 +267,14 @@ class OpenNebulaNodeDriver(NodeDriver):
     type = Provider.OPENNEBULA
 
     NODE_STATE_MAP = {
+        'INIT': NodeState.PENDING,
         'PENDING': NodeState.PENDING,
         'HOLD': NodeState.PENDING,
-        'PROLOG': NodeState.PENDING,
-        'RUNNING': NodeState.RUNNING,
-        'MIGRATE': NodeState.PENDING,
-        'EPILOG': NodeState.TERMINATED,
+        'ACTIVE': NodeState.RUNNING,
         'STOPPED': NodeState.TERMINATED,
         'SUSPENDED': NodeState.PENDING,
-        'FAILED': NodeState.TERMINATED,
-        'UNKNOWN': NodeState.UNKNOWN,
-        'DONE': NodeState.TERMINATED}
+        'DONE': NodeState.TERMINATED,
+        'FAILED': NodeState.TERMINATED}
 
     def __new__(cls, key, secret=None, api_version=DEFAULT_API_VERSION,
                 **kwargs):

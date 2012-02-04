@@ -48,6 +48,9 @@ Changes with Apache Libcloud in development:
      - Fix a public_ips Node variable assignment in the Gandi.net driver.
        [Aymeric Barantal]
 
+     - Updated the list of node states for OpenNebula drivers. ; LIBCLOUD-148
+       [Hutson Betts]
+
   *) Storage:
 
     - Propagate extra keyword arguments passed to the Rackspace driver

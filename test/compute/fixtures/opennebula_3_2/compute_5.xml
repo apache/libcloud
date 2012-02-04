@@ -3,7 +3,7 @@
     <ID>5</ID>
     <NAME>Compute 5</NAME>
     <INSTANCE_TYPE>small</INSTANCE_TYPE>
-    <STATE>RUNNING</STATE>
+    <STATE>ACTIVE</STATE>
     <DISK>
         <STORAGE href='http://www.opennebula.org/storage/5' name='Ubuntu 9.04 LAMP'/>
         <TYPE>DISK</TYPE>
