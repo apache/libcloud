@@ -47,6 +47,17 @@
                 ],
                 "name": "cloudServers",
                 "type": "compute"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region": "DFW",
+                        "tenantId": "1337",
+                        "publicURL": "https://preprod.dfw.servers.api.rackspacecloud.com/v2/1337"
+                    }
+                ],
+                "name": "cloudServersPreprod",
+                "type": "compute"
             }
         ],
         "user": {

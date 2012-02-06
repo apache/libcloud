@@ -100,8 +100,11 @@ DRIVERS = {
     Provider.TERREMARK:
         ('libcloud.compute.drivers.vcloud', 'TerremarkDriver'),
     Provider.CLOUDSTACK:
-        ('libcloud.compute.drivers.cloudstack', 'CloudStackNodeDriver')
+        ('libcloud.compute.drivers.cloudstack', 'CloudStackNodeDriver'),
+    Provider.RACKSPACE_NOVA_BETA:
+        ('libcloud.compute.drivers.rackspacenovabeta', 'RackspaceNovaBetaNodeDriver')
 }
+
 
 def get_driver(provider):
     return _get_provider_driver(DRIVERS, provider)

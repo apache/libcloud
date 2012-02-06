@@ -509,7 +509,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.0/"
         OpenStack_1_1_MockHttp.type = None
         self.driver = self.create_driver()
-        
+
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
@@ -544,7 +544,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         pricing = dict((str(i), i * 5.0) for i in range(1, 9))
 
-        set_pricing(driver_type='compute', driver_name='openstack', pricing=pricing)
+        set_pricing(driver_type='compute', driver_name=self.driver.api_name, pricing=pricing)
 
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
@@ -552,6 +552,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
+
             self.assertEqual(size.price, pricing[size.id],
                              'Size price should match')
 
@@ -824,6 +825,7 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
+
 
 class OpenStack_1_1_Auth_2_0_MockHttp(OpenStack_1_1_MockHttp):
     fixtures = ComputeFileFixtures('openstack_v1.1')
