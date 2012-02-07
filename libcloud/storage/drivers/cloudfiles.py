@@ -144,7 +144,7 @@ class CloudFilesConnection(OpenStackBaseConnection):
         # params each request
         self._populate_hosts_and_request_paths()
         ep = self.get_endpoint(cdn_request)
-        (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(ep)
+        (self.host, self.port, self.secure, self.request_path) = self._ex_force_base_url or self._tuple_from_url(ep)
 
         params['format'] = 'json'
 

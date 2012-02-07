@@ -515,6 +515,17 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
+    def test_ex_force_base_url(self):
+        # change base url and trash the current auth token so we can re-authenticate
+        self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
+        self.driver.connection.auth_token = None
+        self.driver.connection._populate_hosts_and_request_paths()
+
+        # assert that we use the base url and not the auth url
+        self.assertEqual(self.driver.connection.host, 'ex_force_base_url.com')
+        self.assertEqual(self.driver.connection.port, '666')
+        self.assertEqual(self.driver.connection.request_path, '/forced_url')
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 2)

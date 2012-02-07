@@ -289,7 +289,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_auth_url=None,
                  ex_force_auth_version=None):
 
-        self._force_base_url = ex_force_base_url
+        self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._auth_version = ex_force_auth_version
 
@@ -353,4 +353,4 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.service_catalog = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=self._auth_version)
 
             # Set up connection info
-            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._force_base_url or self.get_endpoint())
+            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._ex_force_base_url or self.get_endpoint())
