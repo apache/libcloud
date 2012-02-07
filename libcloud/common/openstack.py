@@ -232,12 +232,12 @@ class OpenStackServiceCatalog(object):
     def get_endpoint(self, service_type=None, name=None, region=None):
 
         if '2.0' in self._auth_version:
-            endpoint = self._service_catalog.get(service_type, {}).get(name, {}).get(region)
+            endpoint = self._service_catalog.get(service_type, {}).get(name, {}).get(region, [])
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-            endpoint = self._service_catalog.get(name, {}).get(region)
+            endpoint = self._service_catalog.get(name, {}).get(region, [])
 
         # ideally an endpoint either isn't found or only one match is found.
-        if endpoint and len(endpoint) == 1:
+        if len(endpoint) == 1:
             return endpoint[0]
         else:
             return None
@@ -256,11 +256,6 @@ class OpenStackServiceCatalog(object):
 
                 self._service_catalog[service][region].append(endpoint)
 
-        # TODO: this is even more broken, the service catalog does NOT show load
-        # balanacers :(  You must hard code in the Rackspace Load balancer URLs...
-        # self.loadbalancer = self.server_url.replace("servers", "ord.loadbalancers")
-        # self.dns = self.server_url.replace("servers", "dns")
-
     def _parse_auth_v2(self, service_catalog):
 
         for service in service_catalog:
@@ -274,7 +269,7 @@ class OpenStackServiceCatalog(object):
             if service_name not in self._service_catalog[service_type]:
                 self._service_catalog[service_type][service_name] = {}
 
-            for endpoint in service.get('endpoints'):
+            for endpoint in service.get('endpoints', []):
                 region = endpoint.get('region', None)
                 if region not in self._service_catalog[service_type][service_name]:
                     self._service_catalog[service_type][service_name][region] = []
