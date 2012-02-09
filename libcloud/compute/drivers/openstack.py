@@ -143,6 +143,8 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             if 'publicURL' in ep:
                 return ep['publicURL']
 
+        raise LibcloudError('Could not find specified endpoint')
+
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
         if not headers:
