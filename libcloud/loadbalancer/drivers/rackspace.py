@@ -338,17 +338,30 @@ class RackspaceLBDriver(Driver):
                                 algorithm=algorithm)
 
         balancer_attrs.update({
-            "virtualIps": [{"type": "PUBLIC"}],
-            "nodes": [{"address": member.ip,
-                "port": member.port,
-                "condition": "ENABLED"} for member in members],
+            'virtualIps': [{'type': 'PUBLIC'}],
+            'nodes': [self._member_attributes(member) for member in members],
             })
         balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',
                 method='POST',
                 data=json.dumps(balancer_object))
-        return self._to_balancer(resp.object["loadBalancer"])
+        return self._to_balancer(resp.object['loadBalancer'])
+
+    def _member_attributes(self, member):
+        member_attributes = {'address': member.ip,
+                             'port': member.port}
+
+        member_attributes.update(self._kwargs_to_mutable_member_attrs(
+            **member.extra))
+
+        # If the condition is not specified on the member, then it should be set
+        # to ENABLED by default
+        if 'condition' not in member_attributes:
+            member_attributes['condition'] = \
+            self.CONDITION_LB_MEMBER_MAP[MemberCondition.ENABLED]
+
+        return member_attributes
 
     def destroy_balancer(self, balancer):
         uri = '/loadbalancers/%s' % (balancer.id)
@@ -380,14 +393,7 @@ class RackspaceLBDriver(Driver):
         return self._to_balancer(resp.object["loadBalancer"])
 
     def balancer_attach_member(self, balancer, member):
-        ip = member.ip
-        port = member.port
-
-        member_object = {"nodes":
-                [{"port": port,
-                    "address": ip,
-                    "condition": "ENABLED"}]
-                }
+        member_object = {"nodes": [self._member_attributes(member)]}
 
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         resp = self.connection.request(uri, method='POST',
