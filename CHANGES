@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Load-balancer:
+
+    - Allow user to specify a condition and weight when adding a member in
+      the Rackspace driver.
+      [Adam Pickeral]
+
 Changes with Apache Libcloud 0.8.0:
 
   *) General:
