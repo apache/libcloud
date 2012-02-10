@@ -596,6 +596,16 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_balancer_attach_member(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
+        extra = {'condition': MemberCondition.DISABLED,
+                 'weight': 10}
+        member = balancer.attach_member(Member(None, ip='10.1.0.12',
+                                               port='80', extra=extra))
+
+        self.assertEquals(member.ip, '10.1.0.12')
+        self.assertEquals(member.port, 80)
+
+    def test_balancer_attach_member_with_no_condition_specified(self):
+        balancer = self.driver.get_balancer(balancer_id='8291')
         member = balancer.attach_member(Member(None, ip='10.1.0.12',
                                                port='80'))
 
@@ -837,8 +847,12 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == "POST":
-            body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
-            return (httplib.ACCEPTED, body, {},
+            json_body = json.loads(body)
+            json_node = json_body['nodes'][0]
+            self.assertEqual('DISABLED', json_node['condition'])
+            self.assertEqual(10, json_node['weight'])
+            response_body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
+            return (httplib.ACCEPTED, response_body, {},
                     httplib.responses[httplib.ACCEPTED])
         elif method == "DELETE":
             nodes = self.fixtures.load('v1_slug_loadbalancers_8290_nodes.json')
@@ -850,6 +864,24 @@ class RackspaceLBMockHttp(MockHttpTestCase):
                     msg='Did not delete member with id %d' % id)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_8291(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('v1_slug_loadbalancers_8291.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_8291_nodes(self, method, url, body, headers):
+        if method == "POST":
+            json_body = json.loads(body)
+            json_node = json_body['nodes'][0]
+            self.assertEqual('ENABLED', json_node['condition'])
+            response_body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
+            return (httplib.ACCEPTED, response_body, {},
+                    httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 

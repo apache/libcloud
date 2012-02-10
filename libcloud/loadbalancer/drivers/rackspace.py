@@ -383,11 +383,16 @@ class RackspaceLBDriver(Driver):
         ip = member.ip
         port = member.port
 
-        member_object = {"nodes":
-                [{"port": port,
-                    "address": ip,
-                    "condition": "ENABLED"}]
-                }
+        # If the condition is not specified on the member, then it should be set
+        # be set to ENABLED by default
+        if 'condition' not in member.extra:
+            member.extra['condition'] = MemberCondition.ENABLED
+
+        member_attributes = self._kwargs_to_mutable_member_attrs(**member.extra)
+        member_attributes.update({"port": port,
+                                  "address": ip
+                                 })
+        member_object = {"nodes": [member_attributes]}
 
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         resp = self.connection.request(uri, method='POST',
