@@ -808,10 +808,10 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         elif method == "POST":
             body_json = json.loads(body)
             loadbalancer_json = body_json['loadBalancer']
+            member_1_json, member_2_json = loadbalancer_json['nodes']
+
             self.assertEqual(loadbalancer_json['protocol'], 'HTTP')
             self.assertEqual(loadbalancer_json['algorithm'], 'ROUND_ROBIN')
-            member_1_json = loadbalancer_json['nodes'][0]
-            member_2_json = loadbalancer_json['nodes'][1]
             self.assertEqual(member_1_json['condition'], 'DISABLED')
             self.assertEqual(member_1_json['weight'], 10)
             self.assertEqual(member_2_json['condition'], 'ENABLED')
