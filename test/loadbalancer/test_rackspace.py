@@ -103,8 +103,9 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.create_balancer(name='test2',
                 port=80,
                 algorithm=Algorithm.ROUND_ROBIN,
-                members=(Member(None, '10.1.0.10', 80),
-                    Member(None, '10.1.0.11', 80))
+                members=(Member(None, '10.1.0.10', 80, extra={'condition': MemberCondition.DISABLED,
+                                                              'weight': 10}),
+                         Member(None, '10.1.0.11', 80))
                 )
 
         self.assertEquals(balancer.name, 'test2')
@@ -806,8 +807,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == "POST":
             body_json = json.loads(body)
-            self.assertEqual(body_json['loadBalancer']['protocol'], 'HTTP')
-            self.assertEqual(body_json['loadBalancer']['algorithm'], 'ROUND_ROBIN')
+            loadbalancer_json = body_json['loadBalancer']
+            self.assertEqual(loadbalancer_json['protocol'], 'HTTP')
+            self.assertEqual(loadbalancer_json['algorithm'], 'ROUND_ROBIN')
+            member_1_json = loadbalancer_json['nodes'][0]
+            member_2_json = loadbalancer_json['nodes'][1]
+            self.assertEqual(member_1_json['condition'], 'DISABLED')
+            self.assertEqual(member_1_json['weight'], 10)
+            self.assertEqual(member_2_json['condition'], 'ENABLED')
 
             body = self.fixtures.load('v1_slug_loadbalancers_post.json')
             return (httplib.ACCEPTED, body, {},

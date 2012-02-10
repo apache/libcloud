@@ -338,17 +338,27 @@ class RackspaceLBDriver(Driver):
                                 algorithm=algorithm)
 
         balancer_attrs.update({
-            "virtualIps": [{"type": "PUBLIC"}],
-            "nodes": [{"address": member.ip,
-                "port": member.port,
-                "condition": "ENABLED"} for member in members],
+            'virtualIps': [{'type': 'PUBLIC'}],
+            'nodes': [self._member_attributes(member) for member in members],
             })
         balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',
                 method='POST',
                 data=json.dumps(balancer_object))
-        return self._to_balancer(resp.object["loadBalancer"])
+        return self._to_balancer(resp.object['loadBalancer'])
+
+    def _member_attributes(self, member):
+        # If the condition is not specified on the member, then it should be set
+        # to ENABLED by default
+        if 'condition' not in member.extra:
+            member.extra['condition'] = MemberCondition.ENABLED
+
+        member_attributes = self._kwargs_to_mutable_member_attrs(**member.extra)
+        member_attributes.update({'address': member.ip,
+                                  'port': member.port})
+
+        return member_attributes
 
     def destroy_balancer(self, balancer):
         uri = '/loadbalancers/%s' % (balancer.id)
@@ -384,7 +394,7 @@ class RackspaceLBDriver(Driver):
         port = member.port
 
         # If the condition is not specified on the member, then it should be set
-        # be set to ENABLED by default
+        # to ENABLED by default
         if 'condition' not in member.extra:
             member.extra['condition'] = MemberCondition.ENABLED
 
