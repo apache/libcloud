@@ -102,7 +102,9 @@ DRIVERS = {
     Provider.CLOUDSTACK:
         ('libcloud.compute.drivers.cloudstack', 'CloudStackNodeDriver'),
     Provider.RACKSPACE_NOVA_BETA:
-        ('libcloud.compute.drivers.rackspacenovabeta', 'RackspaceNovaBetaNodeDriver')
+        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaBetaNodeDriver'),
+    Provider.RACKSPACE_NOVA_DFW:
+        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaDfwNodeDriver')
 }
 
 

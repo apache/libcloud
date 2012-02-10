@@ -20,15 +20,17 @@ from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection, OpenSta
 from libcloud.common.types import LibcloudError
 
 
-class RackspaceNovaBetaConnection(OpenStack_1_1_Connection):
+class RackspaceNovaConnection(OpenStack_1_1_Connection):
+    get_endpoint_args = {}
 
     def get_endpoint(self):
 
+        if not self.get_endpoint_args:
+            raise LibcloudError('RackspaceNovaConnection must have get_endpoint_args set')
+
         # Only support auth 2.0_*
         if '2.0' in self._auth_version:
-            ep = self.service_catalog.get_endpoint(service_type='compute',
-                                                   name='cloudServersPreprod',
-                                                   region='DFW')
+            ep = self.service_catalog.get_endpoint(**self.get_endpoint_args)
         else:
             raise LibcloudError('Auth version "%s" not supported' % (self._auth_version))
 
@@ -38,6 +40,27 @@ class RackspaceNovaBetaConnection(OpenStack_1_1_Connection):
             return ep['publicURL']
         else:
             raise LibcloudError('Could not find specified endpoint')
+
+
+class RackspaceNovaBetaConnection(RackspaceNovaConnection):
+
+    get_endpoint_args = {'service_type': 'compute',
+                         'name': 'cloudServersPreprod',
+                         'region': 'DFW'}
+
+
+class RackspaceNovaDfwConnection(RackspaceNovaConnection):
+
+    get_endpoint_args = {'service_type': 'compute',
+                         'name': 'cloudServersOpenStack',
+                         'region': 'DFW'}
+
+
+class RackspaceNovaDfwNodeDriver(OpenStack_1_1_NodeDriver):
+    name = 'RackspaceNovadfw'
+    connectionCls = RackspaceNovaDfwConnection
+    type = Provider.RACKSPACE_NOVA_DFW
+    api_name = 'rackspacenovadfw'
 
 
 class RackspaceNovaBetaNodeDriver(OpenStack_1_1_NodeDriver):

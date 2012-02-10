@@ -106,6 +106,7 @@ class Provider(object):
     CLOUDSIGMA_US = 38
     EC2_SA_EAST = 39
     RACKSPACE_NOVA_BETA = 40
+    RACKSPACE_NOVA_DFW = 41
 
 
 class NodeState(object):

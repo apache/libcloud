@@ -17,16 +17,17 @@ import unittest
 
 from libcloud.utils.py3 import method_type
 
-from libcloud.compute.drivers.rackspacenovabeta import RackspaceNovaBetaNodeDriver
+from libcloud.compute.drivers.rackspacenova import RackspaceNovaBetaNodeDriver, \
+                                                   RackspaceNovaDfwNodeDriver
 from test.compute.test_openstack import OpenStack_1_1_Tests, OpenStack_1_1_MockHttp
-from libcloud.pricing import clear_pricing_data, set_pricing
+from libcloud.pricing import clear_pricing_data
 
-from test.secrets import RACKSPACE_NOVA_BETA_PARAMS
+from test.secrets import RACKSPACE_NOVA_PARAMS
 
 
-class RackspaceNovaBetaMockHttp(OpenStack_1_1_MockHttp):
+class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
     def __init__(self, *args, **kwargs):
-        super(RackspaceNovaBetaMockHttp, self).__init__(*args, **kwargs)
+        super(RackspaceNovaMockHttp, self).__init__(*args, **kwargs)
 
         methods1 = OpenStack_1_1_MockHttp.__dict__
 
@@ -36,14 +37,14 @@ class RackspaceNovaBetaMockHttp(OpenStack_1_1_MockHttp):
             method = methods1[name]
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
-                RackspaceNovaBetaMockHttp))
+                RackspaceNovaMockHttp))
 
 
 class RackspaceNovaBetaTests(OpenStack_1_1_Tests):
 
     driver_klass = RackspaceNovaBetaNodeDriver
     driver_type = RackspaceNovaBetaNodeDriver
-    driver_args = RACKSPACE_NOVA_BETA_PARAMS + ('1.1',)
+    driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
     driver_kwargs = {'ex_force_auth_version': '2.0'}
 
     @classmethod
@@ -51,7 +52,7 @@ class RackspaceNovaBetaTests(OpenStack_1_1_Tests):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (RackspaceNovaBetaMockHttp, RackspaceNovaBetaMockHttp)
+        self.driver_klass.connectionCls.conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
         self.driver = self.create_driver()
         # normally authentication happens lazily, but we force it here
@@ -61,6 +62,31 @@ class RackspaceNovaBetaTests(OpenStack_1_1_Tests):
 
     def test_service_catalog(self):
         self.assertEqual('https://preprod.dfw.servers.api.rackspacecloud.com/v2/1337', self.driver.connection.get_endpoint())
+
+
+class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
+
+    driver_klass = RackspaceNovaDfwNodeDriver
+    driver_type = RackspaceNovaDfwNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
+    driver_kwargs = {'ex_force_auth_version': '2.0'}
+
+    @classmethod
+    def create_driver(self):
+        return self.driver_type(*self.driver_args, **self.driver_kwargs)
+
+    def setUp(self):
+        self.driver_klass.connectionCls.conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        self.driver = self.create_driver()
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
+        clear_pricing_data()
+        self.node = self.driver.list_nodes()[1]
+
+    def test_service_catalog(self):
+        self.assertEqual('https://dfw.servers.api.rackspacecloud.com/v2/1337', self.driver.connection.get_endpoint())
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

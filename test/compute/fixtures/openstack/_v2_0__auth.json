@@ -52,6 +52,20 @@
                 "endpoints": [
                     {
                         "region": "DFW",
+                        "tenantId": "613469",
+                        "publicURL": "https://dfw.servers.api.rackspacecloud.com/v2/1337",
+                        "versionInfo": "https://dfw.servers.api.rackspacecloud.com/v2/",
+                        "versionList": "https://dfw.servers.api.rackspacecloud.com/",
+                        "versionId": "2"
+                    }
+                ],
+                "name": "cloudServersOpenStack",
+                "type": "compute"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region": "DFW",
                         "tenantId": "1337",
                         "publicURL": "https://preprod.dfw.servers.api.rackspacecloud.com/v2/1337"
                     }
