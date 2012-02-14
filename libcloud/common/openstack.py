@@ -240,7 +240,7 @@ class OpenStackServiceCatalog(object):
         if len(endpoint) == 1:
             return endpoint[0]
         else:
-            return []
+            return {}
 
     def _parse_auth_v1(self, service_catalog):
 
