@@ -123,25 +123,12 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
 
     def get_endpoint(self):
 
-        if '2.0' in self._auth_version:
-            ep = self.service_catalog.get_endpoint(service_type='compute',
-                                                     name='cloudServers')
-        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-            ep = self.service_catalog.get_endpoint(name='cloudServers')
-
+        # default config for http://devstack.org/
+        ep = self.service_catalog.get_endpoint(service_type='compute',
+                                               name='nova',
+                                               region='RegionOne')
         if 'publicURL' in ep:
             return ep['publicURL']
-        else:
-            if '2.0' in self._auth_version:
-                ep = self.service_catalog.get_endpoint(service_type='compute',
-                                                       name='nova',
-                                                       region='ORD')
-            elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-                ep = self.service_catalog.get_endpoint(name='nova',
-                                                       region='ORD')
-
-            if 'publicURL' in ep:
-                return ep['publicURL']
 
         raise LibcloudError('Could not find specified endpoint')
 
