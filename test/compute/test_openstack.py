@@ -81,6 +81,13 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
+        # monkeypatch get_endpoint because the base openstack driver doesn't actually
+        # work with old devstack but this class/tests are still used by the rackspace
+        # driver
+        def get_endpoint(*args, **kwargs):
+            return "https://servers.api.rackspacecloud.com/v1.0/slug"
+        self.driver_klass.connectionCls.get_endpoint = get_endpoint
+
         self.driver_klass.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.1/"
         OpenStackMockHttp.type = None
@@ -496,7 +503,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = OpenStack_1_1_NodeDriver
     driver_args = OPENSTACK_PARAMS
-    driver_kwargs = {'ex_force_auth_version': '1.0'}
+    driver_kwargs = {'ex_force_auth_version': '2.0'}
 
     @classmethod
     def create_driver(self):
@@ -505,9 +512,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (OpenStack_1_1_MockHttp, OpenStack_1_1_MockHttp)
-        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.0/"
-        OpenStack_1_1_MockHttp.type = None
+        self.driver_klass.connectionCls.conn_classes = (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        OpenStack_2_0_MockHttp.type = None
         self.driver = self.create_driver()
 
         # normally authentication happens lazily, but we force it here
@@ -714,7 +721,7 @@ class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
     driver_args = OPENSTACK_PARAMS + ('1.1',)
-    driver_kwargs = {'ex_force_auth_version': '1.0'}
+    driver_kwargs = {'ex_force_auth_version': '2.0'}
 
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):
@@ -838,32 +845,21 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             raise NotImplementedError()
 
 
-class OpenStack_1_1_Auth_2_0_MockHttp(OpenStack_1_1_MockHttp):
-    fixtures = ComputeFileFixtures('openstack_v1.1')
-    auth_fixtures = OpenStackFixtures()
-    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
-
+# This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
+# work fine.
+class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
     def __init__(self, *args, **kwargs):
-        super(OpenStack_1_1_Auth_2_0_MockHttp, self).__init__(*args, **kwargs)
+        super(OpenStack_2_0_MockHttp, self).__init__(*args, **kwargs)
 
-        # TODO Figure out why 1.1 tests are using some 1.0 endpoints
-        methods1 = OpenStackMockHttp.__dict__
-        methods2 = OpenStack_1_1_MockHttp.__dict__
+        methods1 = OpenStack_1_1_MockHttp.__dict__
 
-        names1 = [m for m in methods1 if m.find('_v1_0') == 0]
-        names2 = [m for m in methods2 if m.find('_v1_1') == 0]
+        names1 = [m for m in methods1 if m.find('_v1_1') == 0]
 
         for name in names1:
             method = methods1[name]
-            new_name = name.replace('_v1_0_slug_', '_v1_0_1337_')
+            new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
-                OpenStack_1_1_Auth_2_0_MockHttp))
-
-        for name in names2:
-            method = methods2[name]
-            new_name = name.replace('_v1_1_slug_', '_v1_0_1337_')
-            setattr(self, new_name, method_type(method, self,
-                OpenStack_1_1_Auth_2_0_MockHttp))
+                OpenStack_2_0_MockHttp))
 
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
@@ -872,7 +868,7 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
 
     def setUp(self):
         self.driver_klass.connectionCls.conn_classes = \
-                (OpenStack_1_1_Auth_2_0_MockHttp, OpenStack_1_1_Auth_2_0_MockHttp)
+                (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
         OpenStack_1_1_MockHttp.type = None
         self.driver = self.create_driver()

@@ -51,6 +51,20 @@
             {
                 "endpoints": [
                     {
+                        "region": "RegionOne",
+                        "tenantId": "1337",
+                        "publicURL": "https://127.0.0.1/v2/1337",
+                        "versionInfo": "https://127.0.0.1/v2/",
+                        "versionList": "https://127.0.0.1/",
+                        "versionId": "2"
+                    }
+                ],
+                "name": "nova",
+                "type": "compute"
+            },
+            {
+                "endpoints": [
+                    {
                         "region": "DFW",
                         "tenantId": "613469",
                         "publicURL": "https://dfw.servers.api.rackspacecloud.com/v2/1337",
