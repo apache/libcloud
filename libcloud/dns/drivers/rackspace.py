@@ -325,7 +325,10 @@ class RackspaceDNSDriver(DNSDriver):
         @param name: Record name.
         @type name: C{str}
         """
-        name = '%s.%s' % (name, domain)
+        if len(name) == 0:
+            name = domain
+        else:
+            name = '%s.%s' % (name, domain)
         return name
 
     def _to_partial_record_name(self, domain, name):
