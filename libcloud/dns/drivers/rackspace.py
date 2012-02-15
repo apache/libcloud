@@ -33,7 +33,7 @@ from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
-VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment']
+VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment', 'weight', 'port']
 
 
 class RackspaceDNSResponse(OpenStack_1_1_Response):
@@ -200,13 +200,21 @@ class RackspaceDNSDriver(DNSDriver):
         extra = extra if extra else {}
 
         name = self._to_full_record_name(domain=zone.domain, name=name)
-        data = {'name': name, 'type': self.RECORD_TYPE_MAP[type],
-                'data': data}
-
+        record = {'name': name, 'type': RECORD_TYPE_MAP[type], 'data': data}
+        
         if 'ttl' in extra:
-            data['ttl'] = int(extra['ttl'])
+            record['ttl'] = int(extra['ttl'])
+        
+        if 'priority' in extra and RECORD_TYPE_MAP[type] in ['MX', 'SRV']:
+            record['priority'] = int(extra['priority'])
+            
+        if RECORD_TYPE_MAP[type] == 'SRV':
+            record['data'] = "%s %s %s" % (extra['weight'], extra['port'], data)
+            
+        if 'comment' in extra:
+            payload['comment'] = extra['comment']
 
-        payload = {'records': [data]}
+        payload = {'records': [record]}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         response = self.connection.async_request(action='/domains/%s/records'
                                                  % (zone.id), data=payload,
@@ -227,6 +235,12 @@ class RackspaceDNSDriver(DNSDriver):
 
         if data:
             payload['data'] = data
+        
+        if 'priority' in extra and RECORD_TYPE_MAP[type] in ['MX', 'SRV']:
+            payload['priority'] = int(extra['priority'])
+            
+        if RECORD_TYPE_MAP[type] == 'SRV':
+            payload['data'] = "%s %s %s" % (extra['weight'], extra['port'], data)
 
         if 'ttl' in extra:
             payload['ttl'] = extra['ttl']
