@@ -2,6 +2,26 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General:
+
+    - Make parsing of the Auth API responses in the OpenStack drivers more
+      flexible and extensible.
+
+      Now, every connection class that inherits from the openstack base
+      connection must implement get_endpoint(), who's job is to return the
+      correct endpoint out of the service catalog.
+
+      Note: The openstack.py base driver no longer works by default with
+      Rackspace nova. The default endpoint parsed from the service catalog
+      is the default compute endpoint for devstack.
+      [Brad Morgan]
+
+  *) Compute:
+
+    - Add new RackspaceNovaBeta and RackspaveNovaDfw driver based on the
+      OpenStack.
+      [Brad Morgan]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;

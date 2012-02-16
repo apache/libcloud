@@ -15,7 +15,7 @@
 """
 Rackspace driver
 """
-from libcloud.compute.types import Provider
+from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.base import NodeLocation
 from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection, OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 
@@ -31,6 +31,20 @@ class RackspaceConnection(OpenStack_1_0_Connection):
     responseCls = OpenStack_1_0_Response
     auth_url = AUTH_URL_US
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
+
+    def get_endpoint(self):
+
+        ep = {}
+        if '2.0' in self._auth_version:
+            ep = self.service_catalog.get_endpoint(service_type='compute',
+                                                     name='cloudServers')
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            ep = self.service_catalog.get_endpoint(name='cloudServers')
+
+        if 'publicURL' in ep:
+            return ep['publicURL']
+
+        raise LibcloudError('Could not find specified endpoint')
 
 
 class RackspaceNodeDriver(OpenStack_1_0_NodeDriver):

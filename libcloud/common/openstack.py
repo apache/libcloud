@@ -29,7 +29,7 @@ try:
 except ImportError:
     import json
 
-AUTH_API_VERSION = 'v1.0'
+AUTH_API_VERSION = '1.1'
 
 __all__ = [
     "OpenStackBaseConnection",
@@ -70,6 +70,7 @@ class OpenStackAuthResponse(Response):
             data = self.body
 
         return data
+
 
 class OpenStackAuthConnection(ConnectionUserAndKey):
 
@@ -166,19 +167,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
         # https://github.com/openstack/keystone/tree/master/keystone/content/service
-        reqbody = json.dumps({'auth':{'RAX-KSKEY:apiKeyCredentials':{'username':self.user_id, 'apiKey':self.key}}})
+        reqbody = json.dumps({'auth': {'RAX-KSKEY:apiKeyCredentials': {'username': self.user_id, 'apiKey': self.key}}})
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_password(self):
         # Password based authentication is the only 'core' authentication method in Keystone at this time.
         # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
-        reqbody = json.dumps({'auth':{'passwordCredentials':{'username':self.user_id, 'password':self.key}}})
+        reqbody = json.dumps({'auth': {'passwordCredentials': {'username': self.user_id, 'password': self.key}}})
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
         resp = self.request('/v2.0/tokens/',
                     data=reqbody,
-                    headers={'Content-Type':'application/json'},
+                    headers={'Content-Type': 'application/json'},
                     method='POST')
         if resp.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
@@ -202,29 +203,116 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is missing required elements', e)
 
+
+class OpenStackServiceCatalog(object):
+    """
+    http://docs.openstack.org/api/openstack-identity-service/2.0/content/
+
+    This class should be instanciated with the contents of the 'serviceCatalog'
+    in the auth response. This will do the work of figuring out which services
+    actually exist in the catalog as well as split them up by type, name, and
+    region if available
+    """
+
+    _auth_version = None
+    _service_catalog = None
+
+    def __init__(self, service_catalog, ex_force_auth_version=None):
+        self._auth_version = ex_force_auth_version or AUTH_API_VERSION
+        self._service_catalog = {}
+
+        # check this way because there are a couple of different 2.0_* auth types
+        if '2.0' in self._auth_version:
+            self._parse_auth_v2(service_catalog)
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            self._parse_auth_v1(service_catalog)
+        else:
+            raise LibcloudError('auth version "%s" not supported' % (self._auth_version))
+
+    def get_endpoint(self, service_type=None, name=None, region=None):
+
+        if '2.0' in self._auth_version:
+            endpoint = self._service_catalog.get(service_type, {}).get(name, {}).get(region, [])
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            endpoint = self._service_catalog.get(name, {}).get(region, [])
+
+        # ideally an endpoint either isn't found or only one match is found.
+        if len(endpoint) == 1:
+            return endpoint[0]
+        else:
+            return {}
+
+    def _parse_auth_v1(self, service_catalog):
+
+        for service, endpoints in service_catalog.items():
+
+            self._service_catalog[service] = {}
+
+            for endpoint in endpoints:
+                region = endpoint.get('region')
+
+                if region not in self._service_catalog[service]:
+                    self._service_catalog[service][region] = []
+
+                self._service_catalog[service][region].append(endpoint)
+
+    def _parse_auth_v2(self, service_catalog):
+
+        for service in service_catalog:
+
+            service_type = service['type']
+            service_name = service.get('name', None)
+
+            if service_type not in self._service_catalog:
+                self._service_catalog[service_type] = {}
+
+            if service_name not in self._service_catalog[service_type]:
+                self._service_catalog[service_type][service_name] = {}
+
+            for endpoint in service.get('endpoints', []):
+                region = endpoint.get('region', None)
+                if region not in self._service_catalog[service_type][service_name]:
+                    self._service_catalog[service_type][service_name][region] = []
+
+                self._service_catalog[service_type][service_name][region].append(endpoint)
+
+
 class OpenStackBaseConnection(ConnectionUserAndKey):
 
     auth_url = None
+    auth_token = None
+    service_catalog = None
 
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None):
-        self.server_url = None
-        self.cdn_management_url = None
-        self.storage_url = None
-        self.lb_url = None
-        self.auth_token = None
-        self._force_base_url = ex_force_base_url
+
+        self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._auth_version = ex_force_auth_version
 
         if not self._auth_version:
-            self._auth_version = '1.1'
+            self._auth_version = AUTH_API_VERSION
 
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure)
+
+    def get_endpoint(self):
+        """
+        Every openstack driver must have a connection class that subclasses this
+        class and it must implement this method.
+
+        @returns: url of the relevant endpoint for the driver
+
+        Example implementation:
+        ep = self.service_catalog.get_endpoint(service_type='compute',
+                                               name='ServiceName',
+                                               region='US1')
+        return ep['publicURL']
+        """
+        raise NotImplementedError
 
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.auth_token
@@ -232,35 +320,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         return headers
 
     def morph_action_hook(self, action):
-        if self._force_base_url:
-            _, _, request_path, _, _, _ = urlparse.urlparse(self._force_base_url)
-            return request_path + action
-
-        value = getattr(self, self._url_key, None)
-        if not value:
-            self._populate_hosts_and_request_paths()
-        request_path = getattr(self, '__request_path_%s' % (self._url_key), '')
-        action = request_path + action
-
-        return action
-
-    @property
-    def base_url(self):
-        return self._get_base_url(url_key=self._url_key)
-
-    def _get_base_url(self, url_key):
-        value = getattr(self, url_key, None)
-        if not value:
-            self._populate_hosts_and_request_paths()
-            value = getattr(self, url_key, None)
-        if self._force_base_url != None:
-            value = self._force_base_url
-        return value
-
-    def _get_default_region(self, arr):
-        if len(arr):
-            return arr[0]['publicURL']
-        return None
+        self._populate_hosts_and_request_paths()
+        return super(OpenStackBaseConnection, self).morph_action_hook(action)
 
     def request(self, **kwargs):
         self._populate_hosts_and_request_paths()
@@ -269,9 +330,9 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def _populate_hosts_and_request_paths(self):
         """
         OpenStack uses a separate host for API calls which is only provided
-        after an initial authentication request. If we haven't made that
-        request yet, do it here. Otherwise, just return the management host.
+        after an initial authentication request.
         """
+
         if not self.auth_token:
             aurl = self.auth_url
 
@@ -288,39 +349,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
             self.auth_token = osa.auth_token
 
-            # TODO: Multi-region support
-            if self._auth_version in ['2.0', '2.0_apikey', '2.0_password']:
-                self.tenant_ids = {}
+            # pull out and parse the service catalog
+            self.service_catalog = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=self._auth_version)
 
-                for service in osa.urls:
-                    service_type = service['type']
-                    if service_type == 'compute':
-                        self.server_url = self._get_default_region(service.get('endpoints', []))
-
-                    self.tenant_ids[service_type] = service['endpoints'][0]['tenantId']
-            elif self._auth_version in ['1.1', '1.0']:
-                self.server_url = self._get_default_region(osa.urls.get('cloudServers', []))
-                self.cdn_management_url = self._get_default_region(osa.urls.get('cloudFilesCDN', []))
-                self.storage_url = self._get_default_region(osa.urls.get('cloudFiles', []))
-                # TODO: this is even more broken, the service catalog does NOT show load
-                # balanacers :(  You must hard code in the Rackspace Load balancer URLs...
-                self.lb_url = self.server_url.replace("servers", "ord.loadbalancers")
-                self.dns_url = self.server_url.replace("servers", "dns")
-            else:
-                raise LibcloudError('auth version "%s" not supported' % (self._auth_version))
-
-            for key in ['server_url', 'storage_url', 'cdn_management_url',
-                        'lb_url', 'dns_url']:
-                base_url = None
-                if self._force_base_url != None:
-                    base_url = self._force_base_url
-                else:
-                    base_url = getattr(self, key)
-
-                scheme, server, request_path, param, query, fragment = (
-                    urlparse.urlparse(base_url))
-                # Set host to where we want to make further requests to
-                setattr(self, '__%s' % (key), server+request_path)
-                setattr(self, '__request_path_%s' % (key), request_path)
-
-            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self.base_url)
+            # Set up connection info
+            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._ex_force_base_url or self.get_endpoint())

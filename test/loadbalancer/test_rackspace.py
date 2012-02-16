@@ -45,6 +45,8 @@ class RackspaceLBTests(unittest.TestCase):
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
         self.driver.connection.poll_interval = 0.0
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
 
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
@@ -323,7 +325,7 @@ class RackspaceLBTests(unittest.TestCase):
             address="10.45.13.5/12"
         )
 
-        balancer= self.driver.ex_destroy_balancer_access_rule(balancer, rule)
+        balancer = self.driver.ex_destroy_balancer_access_rule(balancer, rule)
 
         rule_ids = [r.id for r in balancer.extra['accessList']]
 
@@ -775,6 +777,9 @@ class RackspaceUKLBTests(RackspaceLBTests):
                 RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceUKLBDriver('user', 'key')
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
+
 
 class RackspaceLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')

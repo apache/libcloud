@@ -34,9 +34,11 @@ from mock import Mock, patch
 
 from test.secrets import RACKSPACE_PARAMS
 
+
 class MockDeployment(Deployment):
     def run(self, node, client):
         return node
+
 
 class MockClient(BaseSSHClient):
     def __init__(self, *args, **kwargs):
@@ -53,12 +55,15 @@ class MockClient(BaseSSHClient):
     def delete(self, name):
         return True
 
+
 class DeploymentTests(unittest.TestCase):
 
     def setUp(self):
         Rackspace.connectionCls.conn_classes = (None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
         self.driver = Rackspace(*RACKSPACE_PARAMS)
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
         self.driver.features = {'create_node': ['generates_password']}
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
                    public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
@@ -145,7 +150,6 @@ class DeploymentTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
-
     def test_wait_until_running_running_node_missing_from_list_nodes(self):
         RackspaceMockHttp.type = 'MISSING'
 
@@ -169,7 +173,6 @@ class DeploymentTests(unittest.TestCase):
             self.assertTrue(e.value.find('multiple nodes have same UUID') != -1)
         else:
             self.fail('Exception was not thrown')
-
 
     def test_ssh_client_connect_success(self):
         mock_ssh_client = Mock()
@@ -327,6 +330,7 @@ class DeploymentTests(unittest.TestCase):
         mock_ssh_module.have_paramiko = True
         node = self.driver.deploy_node(deploy=Mock())
         self.assertEqual(self.node.id, node.id)
+
 
 class RackspaceMockHttp(MockHttp):
 

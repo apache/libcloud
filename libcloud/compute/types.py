@@ -30,6 +30,8 @@ __all__ = [
     "InvalidCredsError",
     "InvalidCredsException"
     ]
+
+
 class Provider(object):
     """
     Defines for each of the supported providers
@@ -59,6 +61,7 @@ class Provider(object):
     @cvar: EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
+    @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -102,6 +105,9 @@ class Provider(object):
     CLOUDSTACK = 37
     CLOUDSIGMA_US = 38
     EC2_SA_EAST = 39
+    RACKSPACE_NOVA_BETA = 40
+    RACKSPACE_NOVA_DFW = 41
+
 
 class NodeState(object):
     """
@@ -119,6 +125,7 @@ class NodeState(object):
     PENDING = 3
     UNKNOWN = 4
 
+
 class Architecture(object):
     """
     Image and size architectures.
@@ -128,6 +135,7 @@ class Architecture(object):
     """
     I386 = 0
     X86_X64 = 1
+
 
 class DeploymentError(LibcloudError):
     """
