@@ -37,7 +37,7 @@ import base64
 from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation
@@ -120,6 +120,17 @@ class OpenStackResponse(Response):
 
 
 class OpenStackComputeConnection(OpenStackBaseConnection):
+
+    def get_endpoint(self):
+
+        # default config for http://devstack.org/
+        ep = self.service_catalog.get_endpoint(service_type='compute',
+                                               name='nova',
+                                               region='RegionOne')
+        if 'publicURL' in ep:
+            return ep['publicURL']
+
+        raise LibcloudError('Could not find specified endpoint')
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -245,7 +256,6 @@ class OpenStack_1_0_Response(OpenStackResponse):
 
 class OpenStack_1_0_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_0_Response
-    _url_key = "server_url"
     default_content_type = 'application/xml; charset=UTF-8'
     accept_format = 'application/xml'
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
@@ -766,7 +776,6 @@ class OpenStack_1_1_Response(OpenStackResponse):
 
 class OpenStack_1_1_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_1_Response
-    _url_key = "server_url"
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
 

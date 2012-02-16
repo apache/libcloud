@@ -86,8 +86,10 @@ class CloudFilesResponse(Response):
 
         return data
 
+
 class CloudFilesRawResponse(CloudFilesResponse, RawResponse):
     pass
+
 
 class CloudFilesConnection(OpenStackBaseConnection):
     """
@@ -97,13 +99,37 @@ class CloudFilesConnection(OpenStackBaseConnection):
     auth_url = AUTH_URL_US
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
-    _url_key = "storage_url"
 
     def __init__(self, user_id, key, secure=True, **kwargs):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
                                                    **kwargs)
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
+
+    def get_endpoint(self, cdn_request=False):
+
+        # First, we parse out both files and cdn endpoints for each auth version
+        if '2.0' in self._auth_version:
+            ep = self.service_catalog.get_endpoint(service_type='object-store',
+                                                   name='cloudFiles',
+                                                   region='ORD')
+            cdn_ep = self.service_catalog.get_endpoint(service_type='object-store',
+                                                       name='cloudFilesCDN',
+                                                       region='ORD')
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            ep = self.service_catalog.get_endpoint(name='cloudFiles',
+                                                   region='ORD')
+            cdn_ep = self.service_catalog.get_endpoint(name='cloudFilesCDN',
+                                                       region='ORD')
+
+        # if this is a CDN request, return the cdn url instead
+        if cdn_request:
+            ep = cdn_ep
+
+        if 'publicURL' in ep:
+            return ep['publicURL']
+        else:
+            raise LibcloudError('Could not find specified endpoint')
 
     def request(self, action, params=None, data='', headers=None, method='GET',
                 raw=False, cdn_request=False):
@@ -112,14 +138,17 @@ class CloudFilesConnection(OpenStackBaseConnection):
         if not params:
             params = {}
 
-        if cdn_request:
-            host = self._get_host(url_key='cdn_management_url')
-        else:
-            host = None
+        # FIXME: Massive hack.
+        # This driver dynamically changes the url in it's connection, based on arguments
+        # passed to request(). As such, we have to manually check and reset connection
+        # params each request
+        self._populate_hosts_and_request_paths()
+        ep = self.get_endpoint(cdn_request)
+        (self.host, self.port, self.secure, self.request_path) = self._ex_force_base_url or self._tuple_from_url(ep)
 
         params['format'] = 'json'
 
-        if method in [ 'POST', 'PUT' ]:
+        if method in ['POST', 'PUT']:
             headers.update({'Content-Type': 'application/json; charset=UTF-8'})
 
         return super(CloudFilesConnection, self).request(

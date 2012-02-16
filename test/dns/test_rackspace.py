@@ -37,6 +37,8 @@ class RackspaceUSTests(unittest.TestCase):
         RackspaceMockHttp.type = None
         self.driver = self.klass(*DNS_PARAMS_RACKSPACE)
         self.driver.connection.poll_interval = 0.0
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()

@@ -14,7 +14,6 @@
 # limitations under the License.
 import sys
 import unittest
-import types
 
 try:
     import simplejson as json
@@ -82,16 +81,26 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
+        # monkeypatch get_endpoint because the base openstack driver doesn't actually
+        # work with old devstack but this class/tests are still used by the rackspace
+        # driver
+        def get_endpoint(*args, **kwargs):
+            return "https://servers.api.rackspacecloud.com/v1.0/slug"
+        self.driver_klass.connectionCls.get_endpoint = get_endpoint
+
         self.driver_klass.connectionCls.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.1/"
         OpenStackMockHttp.type = None
         self.driver = self.create_driver()
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
 
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver = self.create_driver()
+            self.driver.list_nodes()
         except InvalidCredsError:
             e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, InvalidCredsError))
@@ -102,6 +111,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         OpenStackMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
             self.driver = self.create_driver()
+            self.driver.list_nodes()
         except MalformedResponseError:
             e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, MalformedResponseError))
@@ -112,6 +122,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         OpenStackMockHttp.type = 'INTERNAL_SERVER_ERROR'
         try:
             self.driver = self.create_driver()
+            self.driver.list_nodes()
         except MalformedResponseError:
             e = sys.exc_info()[1]
             self.assertEqual(True, isinstance(e, MalformedResponseError))
@@ -384,7 +395,7 @@ class OpenStackMockHttp(MockHttpTestCase):
             raise NotImplementedError()
         # this is currently used for deletion of an image
         # as such it should not accept GET/POST
-        return(httplib.NO_CONTENT,"","",httplib.responses[httplib.NO_CONTENT])
+        return(httplib.NO_CONTENT, "", "", httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_images(self, method, url, body, headers):
         if method != "POST":
@@ -485,13 +496,14 @@ class OpenStackMockHttp(MockHttpTestCase):
     def _v1_1_auth_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
         return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>",  {'content-type': 'text/html'}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
 
+
 class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
 
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = OpenStack_1_1_NodeDriver
     driver_args = OPENSTACK_PARAMS
-    driver_kwargs = {'ex_force_auth_version': '1.0'}
+    driver_kwargs = {'ex_force_auth_version': '2.0'}
 
     @classmethod
     def create_driver(self):
@@ -500,12 +512,26 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (OpenStack_1_1_MockHttp, OpenStack_1_1_MockHttp)
-        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.0/"
-        OpenStack_1_1_MockHttp.type = None
+        self.driver_klass.connectionCls.conn_classes = (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        OpenStack_2_0_MockHttp.type = None
         self.driver = self.create_driver()
+
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
+
+    def test_ex_force_base_url(self):
+        # change base url and trash the current auth token so we can re-authenticate
+        self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
+        self.driver.connection.auth_token = None
+        self.driver.connection._populate_hosts_and_request_paths()
+
+        # assert that we use the base url and not the auth url
+        self.assertEqual(self.driver.connection.host, 'ex_force_base_url.com')
+        self.assertEqual(self.driver.connection.port, '666')
+        self.assertEqual(self.driver.connection.request_path, '/forced_url')
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -534,9 +560,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes_with_specified_pricing(self):
 
-        pricing = dict((str(i), i*5.0) for i in range(1, 9))
+        pricing = dict((str(i), i * 5.0) for i in range(1, 9))
 
-        set_pricing(driver_type='compute', driver_name='openstack', pricing=pricing)
+        set_pricing(driver_type='compute', driver_name=self.driver.api_name, pricing=pricing)
 
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
@@ -544,6 +570,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
+
             self.assertEqual(size.price, pricing[size.id],
                              'Size price should match')
 
@@ -687,13 +714,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image_id, '1d4a8ea9-aae7-4242-a42d-5ff4702f2f14')
         self.assertEqual(image_id_two, '13')
 
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
 
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
     driver_args = OPENSTACK_PARAMS + ('1.1',)
-    driver_kwargs = {'ex_force_auth_version': '1.0'}
+    driver_kwargs = {'ex_force_auth_version': '2.0'}
+
 
 class OpenStack_1_1_MockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('openstack_v1.1')
@@ -815,32 +844,22 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         else:
             raise NotImplementedError()
 
-class OpenStack_1_1_Auth_2_0_MockHttp(OpenStack_1_1_MockHttp):
-    fixtures = ComputeFileFixtures('openstack_v1.1')
-    auth_fixtures = OpenStackFixtures()
-    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
 
+# This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
+# work fine.
+class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
     def __init__(self, *args, **kwargs):
-        super(OpenStack_1_1_Auth_2_0_MockHttp, self).__init__(*args, **kwargs)
+        super(OpenStack_2_0_MockHttp, self).__init__(*args, **kwargs)
 
-        # TODO Figure out why 1.1 tests are using some 1.0 endpoints
-        methods1 = OpenStackMockHttp.__dict__
-        methods2 = OpenStack_1_1_MockHttp.__dict__
+        methods1 = OpenStack_1_1_MockHttp.__dict__
 
-        names1 = [m for m in methods1 if m.find('_v1_0') == 0]
-        names2 = [m for m in methods2 if m.find('_v1_1') == 0]
+        names1 = [m for m in methods1 if m.find('_v1_1') == 0]
 
         for name in names1:
             method = methods1[name]
-            new_name = name.replace('_v1_0_slug_', '_v1_0_1337_')
+            new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
-                OpenStack_1_1_Auth_2_0_MockHttp))
-
-        for name in names2:
-            method = methods2[name]
-            new_name = name.replace('_v1_1_slug_', '_v1_0_1337_')
-            setattr(self, new_name, method_type(method, self,
-                OpenStack_1_1_Auth_2_0_MockHttp))
+                OpenStack_2_0_MockHttp))
 
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
@@ -849,24 +868,14 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
 
     def setUp(self):
         self.driver_klass.connectionCls.conn_classes = \
-                (OpenStack_1_1_Auth_2_0_MockHttp, OpenStack_1_1_Auth_2_0_MockHttp)
+                (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
         OpenStack_1_1_MockHttp.type = None
         self.driver = self.create_driver()
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
-
-        server_url = 'https://servers.api.rackspacecloud.com/v1.0/1337'
-        auth_token = 'aaaaaaaaaaaa-bbb-cccccccccccccc'
-        tenant_compute = '1337'
-        tenant_object_store = 'MossoCloudFS_11111-111111111-1111111111-1111111'
-
-        self.assertEqual(self.driver.connection.server_url, server_url)
-        self.assertEqual(self.driver.connection.auth_token, auth_token)
-        self.assertEqual(self.driver.connection.tenant_ids,
-              {'compute': tenant_compute, 'object-store': tenant_object_store})
-
-
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

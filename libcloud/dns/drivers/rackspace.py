@@ -72,7 +72,6 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     """
 
     responseCls = RackspaceDNSResponse
-    _url_key = 'dns_url'
     XML_NAMESPACE = None
     poll_interval = 2.5
     timeout = 30
@@ -90,6 +89,25 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
                                 driver=self.driver)
 
         return status == 'COMPLETED'
+
+    def get_endpoint(self):
+        """
+        FIXME:
+        Dirty, dirty hack. DNS doesn't get returned in the auth 1.1 service
+        catalog, so we build it from the servers url.
+        """
+
+        if self._auth_version == "1.1":
+            ep = self.service_catalog.get_endpoint(name="cloudServers")
+
+            if 'publicURL' in ep:
+                return ep['publicURL'].replace("servers", "dns")
+            else:
+                raise LibcloudError('Could not find specified endpoint')
+
+        else:
+            raise LibcloudError("Auth version %s not supported" % \
+                self._auth_version)
 
 
 class RackspaceUSDNSConnection(RackspaceDNSConnection):

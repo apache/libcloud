@@ -42,6 +42,7 @@ from test.file_fixtures import StorageFileFixtures, OpenStackFixtures # pylint: 
 
 current_hash = None
 
+
 class CloudFilesTests(unittest.TestCase):
 
     def setUp(self):
@@ -52,6 +53,8 @@ class CloudFilesTests(unittest.TestCase):
         CloudFilesMockHttp.type = None
         CloudFilesMockRawResponse.type = None
         self.driver = CloudFilesStorageDriver('dummy', 'dummy')
+        # normally authentication happens lazily, but we force it here
+        self.driver.connection._populate_hosts_and_request_paths()
         self._remove_test_file()
 
     def tearDown(self):
@@ -162,7 +165,7 @@ class CloudFilesTests(unittest.TestCase):
                 'Container already exists but an exception was not thrown')
 
     def test_create_container_invalid_name_too_long(self):
-        name = ''.join([ 'x' for x in range(0, 257)])
+        name = ''.join(['x' for x in range(0, 257)])
         try:
             self.driver.create_container(container_name=name)
         except InvalidContainerNameError:
@@ -272,7 +275,7 @@ class CloudFilesTests(unittest.TestCase):
         file_path = os.path.abspath(__file__)
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_upload'
-        extra = {'meta_data': { 'some-value': 'foobar'}}
+        extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path, container=container,
                                         extra=extra, object_name=object_name)
         self.assertEqual(obj.name, 'foo_test_upload')
