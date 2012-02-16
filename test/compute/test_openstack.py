@@ -547,6 +547,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('flavorId'), '2')
         self.assertEqual(node.extra.get('imageId'), '7')
         self.assertEqual(node.extra.get('metadata'), {})
+        self.assertEqual(node.extra['updated'], '2011-10-11T00:50:04Z')
+        self.assertEqual(node.extra['created'], '2011-10-11T00:51:39Z')
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
