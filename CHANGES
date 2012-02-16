@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud in development:
 
+  *) Storage:
+
+    - Don't lowercase special header names in the Amazon S3 storage driver. ;
+      LIBCLOUD-149
+      [Tomaz Muraus]
+
   *) Load-balancer:
 
     - Allow user to specify a condition and weight when adding a member in
