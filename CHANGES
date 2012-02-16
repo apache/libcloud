@@ -22,6 +22,9 @@ Changes with Apache Libcloud in development:
       OpenStack.
       [Brad Morgan]
 
+    - Include 'created' and 'updated' attribute in the OpenStack 1.1 driver.
+      [Chris Gilmer]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;

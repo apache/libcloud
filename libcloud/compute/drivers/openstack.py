@@ -1047,6 +1047,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                      link['rel'] == 'self'),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass'),
+                created=api_node['created'],
+                updated=api_node['updated'],
             ),
         )
 
