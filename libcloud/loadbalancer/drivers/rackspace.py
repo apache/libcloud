@@ -418,6 +418,24 @@ class RackspaceLBDriver(Driver):
                 data=json.dumps(member_object))
         return self._to_members(resp.object)[0]
 
+    def ex_balancer_attach_members(self, balancer, members):
+        """
+        Attaches a list of members to a load balancer.
+
+        @param balancer: The Balancer to which members will be attached.
+        @type balancer: C{Balancer}
+
+        @param members: A list of Members to attach.
+        @type members: C{list}
+        """
+        member_objects = {"nodes": [self._member_attributes(member) for member
+                                    in members]}
+
+        uri = '/loadbalancers/%s/nodes' % (balancer.id)
+        resp = self.connection.request(uri, method='POST',
+                data=json.dumps(member_objects))
+        return self._to_members(resp.object)
+
     def balancer_detach_member(self, balancer, member):
         # Loadbalancer always needs to have at least 1 member.
         # Last member cannot be detached. You can only disable it or destroy
