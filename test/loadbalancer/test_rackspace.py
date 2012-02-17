@@ -615,6 +615,21 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(member.ip, '10.1.0.12')
         self.assertEquals(member.port, 80)
 
+    def test_balancer_attach_members(self):
+        balancer = self.driver.get_balancer(balancer_id='8292')
+        members = [Member(None, ip='10.1.0.12', port='80'),
+                   Member(None, ip='10.1.0.13', port='80')]
+
+        attached_members = self.driver.ex_balancer_attach_members(balancer,
+                                                                  members)
+
+        first_member = attached_members[0]
+        second_member = attached_members[1]
+        self.assertEquals(first_member.ip, '10.1.0.12')
+        self.assertEquals(first_member.port, 80)
+        self.assertEquals(second_member.ip, '10.1.0.13')
+        self.assertEquals(second_member.port, 80)
+
     def test_balancer_detach_member(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         member = balancer.list_members()[0]
@@ -892,6 +907,26 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             json_node = json_body['nodes'][0]
             self.assertEqual('ENABLED', json_node['condition'])
             response_body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
+            return (httplib.ACCEPTED, response_body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_8292(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('v1_slug_loadbalancers_8292.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_8292_nodes(self, method, url, body, headers):
+        if method == "POST":
+            json_body = json.loads(body)
+            json_node_1 = json_body['nodes'][0]
+            json_node_2 = json_body['nodes'][1]
+            self.assertEqual('10.1.0.12', json_node_1['address'])
+            self.assertEqual('10.1.0.13', json_node_2['address'])
+            response_body = self.fixtures.load('v1_slug_loadbalancers_8292_nodes_post.json')
             return (httplib.ACCEPTED, response_body, {},
                     httplib.responses[httplib.ACCEPTED])
 
