@@ -143,7 +143,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             headers = {'Content-Type': self.default_content_type}
 
         if method == "GET":
-            params['cache-busting'] = binascii.hexlify(os.urandom(8))
+            self._add_cache_busting_to_params(params)
 
         return super(OpenStackComputeConnection, self).request(
             action=action,
