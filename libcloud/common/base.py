@@ -290,14 +290,15 @@ class LoggingConnection():
             cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend(["--compress"])
-
-        cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
+        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host, self.port, url))])
         return " ".join(cmd)
 
 class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     """
     Utility Class for logging HTTPS connections
     """
+
+    protocol = 'https'
 
     def getresponse(self):
         r = LibcloudHTTPSConnection.getresponse(self)
@@ -321,6 +322,8 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
     Utility Class for logging HTTP connections
     """
+
+    protocol = 'http'
 
     def getresponse(self):
         r = LibcloudHTTPConnection.getresponse(self)
