@@ -13,17 +13,23 @@ Changes with Apache Libcloud in development:
 
       Note: The openstack.py base driver no longer works by default with
       Rackspace nova. The default endpoint parsed from the service catalog
-      is the default compute endpoint for devstack.
+      is the default compute endpoint for devstack. ; LIBCLOUD-151
       [Brad Morgan]
 
   *) Compute:
 
     - Add new RackspaceNovaBeta and RackspaveNovaDfw driver based on the
-      OpenStack.
+      OpenStack. ; LIBCLOUD-151
       [Brad Morgan]
 
     - Include 'created' and 'updated' attribute in the OpenStack 1.1 driver.
+      ; LIBCLOUD-155
       [Chris Gilmer]
+
+    - Alow users to use a list of tuples for the query string parameters inside
+      the OpenStack connection classes. This way same key can be specified
+      multiple times ; LIBCLOUD-153
+      [Dave King]
 
   *) Storage:
 
@@ -39,6 +45,7 @@ Changes with Apache Libcloud in development:
 
     - Add an extension method (ex_balancer_attach_members) for attaching 
       multiple members to a load balancer in the Rackspace driver.
+      LIBCLOUD-152  
       [Adam Pickeral]
 
 Changes with Apache Libcloud 0.8.0:

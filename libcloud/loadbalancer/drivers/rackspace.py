@@ -245,7 +245,7 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
         if method in ('POST', 'PUT'):
             headers['Content-Type'] = 'application/json'
         if method == 'GET':
-            params['cache-busing'] = binascii.hexlify(os.urandom(8))
+            self._add_cache_busting_to_params(params)
 
         return super(RackspaceConnection, self).request(action=action,
                 params=params, data=data, method=method, headers=headers)

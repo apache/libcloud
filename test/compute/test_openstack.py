@@ -716,6 +716,13 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image_id, '1d4a8ea9-aae7-4242-a42d-5ff4702f2f14')
         self.assertEqual(image_id_two, '13')
 
+    def test_cache_busts(self):
+        self.driver.connection.request("/servers/12066", params={"key": "value"})
+
+    def test_cache_busts_with_list_of_tuples(self):
+        params = [("key", "value1"), ("key", "value2") ]
+        self.driver.connection.request("/servers/12067", params=params)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -793,6 +800,28 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         else:
             raise NotImplementedError()
+
+    # Cache Busting Test -- parameters as a dictionary
+    def _v1_1_slug_servers_12066(self, method, url, body, headers):
+        if method == "GET":
+            self.assertTrue("cache-busting=" in url, msg="Did not add cache-busting query string")
+            self.assertTrue("key=value" in url, msg="Did not add parameters")
+            body = self.fixtures.load('_servers_12064.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+        raise NotImplementedError()
+
+    # Cache Busting Test -- parameters as a list of tuples
+    def _v1_1_slug_servers_12067(self, method, url, body, headers):
+        if method == "GET":
+            self.assertTrue("cache-busting=" in url, msg="Did not add cache-busting query string")
+            self.assertTrue("key=value1" in url, msg="Did not add parameters")
+            self.assertTrue("key=value2" in url, msg="Did not add parameters")
+            body = self.fixtures.load('_servers_12064.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+        raise NotImplementedError()
+
 
     def _v1_1_slug_servers_12064(self, method, url, body, headers):
         if method == "GET":
