@@ -147,8 +147,6 @@ class DeploymentError(LibcloudError):
         self.node = node
         self.value = original_exception
 
-    def __str__(self):
-        return repr(self.value)
 
 """Deprecated alias of L{DeploymentException}"""
 DeploymentException = DeploymentError
