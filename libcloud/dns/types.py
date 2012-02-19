@@ -69,6 +69,9 @@ class ZoneError(LibcloudError):
         super(ZoneError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return ('<%s in %s, zone_id=%s, value=%s>' %
                 (self.error_type, repr(self.driver),
                  self.zone_id, self.value))
@@ -90,6 +93,9 @@ class RecordError(LibcloudError):
         super(RecordError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return ('<%s in %s, record_id=%s, value=%s>' %
                 (self.error_type, repr(self.driver),
                  self.record_id, self.value))
