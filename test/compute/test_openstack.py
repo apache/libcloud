@@ -129,6 +129,16 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         else:
             self.fail('test should have thrown')
 
+    def test_error_parsing_when_body_is_missing_message(self):
+        OpenStackMockHttp.type = 'NO_MESSAGE_IN_ERROR_BODY'
+        try:
+            self.driver.list_images()
+        except Exception:
+            e = sys.exc_info()[1]
+            self.assertEqual(True, isinstance(e, Exception))
+        else:
+            self.fail('test should have thrown')
+
     def test_list_locations(self):
         locations = self.driver.list_locations()
         self.assertEqual(len(locations), 1)
@@ -371,6 +381,10 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_INTERNAL_SERVER_ERROR(self, method, url, body, headers):
         return (httplib.INTERNAL_SERVER_ERROR, "<h1>500: Internal Server Error</h1>", {}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
+
+    def _v1_0_slug_images_detail_NO_MESSAGE_IN_ERROR_BODY(self, method, url, body, headers):
+        body = self.fixtures.load('300_multiple_choices.json')
+        return (httplib.MULTIPLE_CHOICES, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_0_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
         headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',

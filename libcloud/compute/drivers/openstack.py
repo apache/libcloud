@@ -107,8 +107,13 @@ class OpenStackResponse(Response):
             text = "; ".join([err.text or '' for err in body.getiterator()
                               if err.text])
         elif self.has_content_type('application/json'):
-            text = ';'.join([fault_data['message'] for fault_data
-                             in body.values()])
+            values = body.values()
+
+            if len(values) > 0 and 'message' in values[0]:
+                text = ';'.join([fault_data['message'] for fault_data
+                                 in values])
+            else:
+                text = body
         else:
             # while we hope a response is always one of xml or json, we have
             # seen html or text in the past, its not clear we can really do
