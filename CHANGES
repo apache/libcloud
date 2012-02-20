@@ -31,6 +31,13 @@ Changes with Apache Libcloud in development:
       multiple times ; LIBCLOUD-153
       [Dave King]
 
+    - Allow user to pass 'max_tries' keyword argument to deploy_node method.
+      [Tomaz Muraus]
+
+    - Include original exception error message when re-throwing an exception
+      inside _run_deployment_script method.
+      [Tomaz Muraus]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;
@@ -45,7 +52,7 @@ Changes with Apache Libcloud in development:
 
     - Add an extension method (ex_balancer_attach_members) for attaching 
       multiple members to a load balancer in the Rackspace driver.
-      LIBCLOUD-152  
+      LIBCLOUD-152
       [Adam Pickeral]
 
 Changes with Apache Libcloud 0.8.0:
