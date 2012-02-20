@@ -29,16 +29,26 @@ API_ENDPOINTS = {
         'country': 'United Kingdom',
         'host': 'api.lon-p.elastichosts.com'
     },
-     'uk-2': {
+    'uk-2': {
         'name': 'London BlueSquare',
         'country': 'United Kingdom',
         'host': 'api.lon-b.elastichosts.com'
     },
-     'us-1': {
+    'us-1': {
         'name': 'San Antonio Peer 1',
         'country': 'United States',
         'host': 'api.sat-p.elastichosts.com'
     },
+    'us-2': {
+        'name': 'Los Angeles Peer 1',
+        'country': 'United States',
+        'host': 'api.lax-p.elastichosts.com'
+    },
+    'ca-1': {
+        'name': 'Toronto Peer 1',
+        'country': 'Canada',
+        'host': 'api.tor-p.elastichosts.com'
+    }
 }
 
 # Default API end-point for the base connection class.
@@ -154,3 +164,33 @@ class ElasticHostsUS1NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the San Antonio Peer 1 end-point
     """
     connectionCls = ElasticHostsUS1Connection
+
+
+class ElasticHostsUS2Connection(ElasticStackBaseConnection):
+    """
+    Connection class for the ElasticHosts driver for
+    the Los Angeles Peer 1 end-point
+    """
+    host = API_ENDPOINTS['us-2']['host']
+
+
+class ElasticHostsUS2NodeDriver(ElasticHostsBaseNodeDriver):
+    """
+    ElasticHosts node driver for the Los Angeles Peer 1 end-point
+    """
+    connectionCls = ElasticHostsUS2Connection
+
+
+class ElasticHostsCA1Connection(ElasticStackBaseConnection):
+    """
+    Connection class for the ElasticHosts driver for
+    the Toronto Peer 1 end-point
+    """
+    host = API_ENDPOINTS['ca-1']['host']
+
+
+class ElasticHostsCA1NodeDriver(ElasticHostsBaseNodeDriver):
+    """
+    ElasticHosts node driver for the Toronto Peer 1 end-point
+    """
+    connectionCls = ElasticHostsCA1Connection

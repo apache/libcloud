@@ -38,6 +38,10 @@ Changes with Apache Libcloud in development:
       inside _run_deployment_script method.
       [Tomaz Muraus]
 
+    - Add support for ElasticHosts new United States (Los Angeles) and Canada
+      (Toronto) locations. ; GITHUB-53
+      [Jaime Irurzun]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;
