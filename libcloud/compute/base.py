@@ -524,6 +524,10 @@ class NodeDriver(BaseDriver):
                              to attempt to authenticate. (optional)
         @type       ssh_key: C{string} or C{list} of C{string}s
 
+        @keyword    max_tries: How many times to retry if a deployment fails
+                               before giving up (default is 3)
+        @type       max_tries: C{int}
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -567,6 +571,7 @@ class NodeDriver(BaseDriver):
                 password = kwargs['auth'].password
 
         node = self.create_node(**kwargs)
+        max_tries = kwargs.get('max_tries', 3)
 
         if 'generates_password' in self.features['create_node']:
             password = node.extra.get('password')
@@ -595,7 +600,7 @@ class NodeDriver(BaseDriver):
             self._run_deployment_script(task=kwargs['deploy'],
                                         node=node,
                                         ssh_client=ssh_client,
-                                        max_tries=3)
+                                        max_tries=max_tries)
         except Exception:
             e = sys.exc_info()[1]
             raise DeploymentError(node, e)
@@ -704,8 +709,9 @@ class NodeDriver(BaseDriver):
             except Exception:
                 tries += 1
                 if tries >= max_tries:
-                    raise LibcloudError(value='Failed after %d tries'
-                                        % (max_tries), driver=self)
+                    e = sys.exc_info()[1]
+                    raise LibcloudError(value='Failed after %d tries: %s'
+                                        % (max_tries, str(e)), driver=self)
             else:
                 ssh_client.close()
                 return node
