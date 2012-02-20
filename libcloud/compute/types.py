@@ -109,6 +109,8 @@ class Provider(object):
     RACKSPACE_NOVA_BETA = 40
     RACKSPACE_NOVA_DFW = 41
     LIBVIRT= 42
+    ELASTICHOSTS_US2 = 43
+    ELASTICHOSTS_CA1 = 44
 
 
 class NodeState(object):
