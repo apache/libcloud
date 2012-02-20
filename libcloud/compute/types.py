@@ -62,6 +62,7 @@ class Provider(object):
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
+    @cvar LIBVIRT: Libvirt driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -107,6 +108,7 @@ class Provider(object):
     EC2_SA_EAST = 39
     RACKSPACE_NOVA_BETA = 40
     RACKSPACE_NOVA_DFW = 41
+    LIBVIRT= 42
 
 
 class NodeState(object):
