@@ -47,7 +47,8 @@ class LibvirtNodeDriver(NodeDriver):
 
     def __init__(self, uri):
         if not have_libvirt:
-            raise RuntimeError('Libvirt driver requires \'libvirt\' Python package')
+            raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
+                               'package')
 
         self._uri = uri
         self.connection = libvirt.open(uri)
@@ -58,16 +59,18 @@ class LibvirtNodeDriver(NodeDriver):
 
        nodes = []
        for domain in domains:
-           states = [state for state in domain.state(flags=0) if state != 0]
+           state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
 
-           if len(states) >= 1:
-               state = self.NODE_STATE_MAP[states[0]]
+           if state in self.NODE_STATE_MAP:
+               state = self.NODE_STATE_MAP[state]
            else:
                state = NodeState.UNKNOWN
 
            # TODO: Use XML config to get Mac address and then parse ips
            extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
-                    'types': self.connection.getType()}
+                    'types': self.connection.getType(),
+                    'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
+                    'used_cpu_time': used_cpu_time}
            node = Node(id=domain.ID(), name=domain.name(), state=state,
                        public_ips=[], private_ips=[], driver=self,
                        extra=extra)
