@@ -16,6 +16,9 @@
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
+
 __all__ = [
     'API_HOST',
     'API_ROOT',
@@ -79,7 +82,11 @@ class LinodeResponse(JsonResponse):
 
         @keyword response: The raw response returned by urllib
         @return: parsed L{LinodeResponse}"""
-        self.body = response.read()
+        self.body = self._decompress_response(response=response)
+
+        if PY3:
+            self.body = b(self.body).decode('utf-8')
+
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
