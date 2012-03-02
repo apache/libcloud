@@ -601,6 +601,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.extra['created'], '2011-08-06T18:13:11Z')
         self.assertEqual(image.extra['status'], 'ACTIVE')
         self.assertEqual(image.extra['metadata']['os_type'], 'windows')
+        self.assertEqual(image.extra['serverId'], '52415800-8b69-11e0-9b19-734f335aa7b3')
 
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
@@ -716,6 +717,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         image = self.driver.ex_get_image(image_id)
         self.assertEqual(image.id, image_id)
         self.assertEqual(image.name, 'Windows 2008 SP2 x86 (B24)')
+        self.assertEqual(image.extra['serverId'], None)
 
     def test_ex_delete_image(self):
         image = NodeImage(id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)
