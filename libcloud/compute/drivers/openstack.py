@@ -843,7 +843,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return images
 
     def _to_image(self, api_image):
-        server = api_image.get('server') or {}
+        server = api_image.get('server', {})
         return NodeImage(
                       id=api_image['id'],
                       name=api_image['name'],
