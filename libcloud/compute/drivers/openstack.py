@@ -843,6 +843,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return images
 
     def _to_image(self, api_image):
+        server = api_image.get('server', {})
         return NodeImage(
                       id=api_image['id'],
                       name=api_image['name'],
@@ -853,6 +854,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  status=api_image['status'],
                                  progress=api_image.get('progress'),
                                  metadata=api_image.get('metadata'),
+                                 serverId=server.get('id'),
                       )
                   )
 
