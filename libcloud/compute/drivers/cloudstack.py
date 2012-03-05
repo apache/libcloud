@@ -19,6 +19,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
                                   NodeSize
 from libcloud.compute.types import NodeState
 
+
 class CloudStackNode(Node):
     "Subclass of Node so we can expose our extension methods."
 
@@ -40,6 +41,7 @@ class CloudStackNode(Node):
         "Delete a NAT/firewall rule."
         return self.driver.ex_delete_ip_forwarding_rule(self, rule)
 
+
 class CloudStackAddress(object):
     "A public IP address."
 
@@ -57,6 +59,7 @@ class CloudStackAddress(object):
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
 
+
 class CloudStackForwardingRule(object):
     "A NAT/firewall forwarding rule."
 
@@ -73,6 +76,7 @@ class CloudStackForwardingRule(object):
 
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
+
 
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.

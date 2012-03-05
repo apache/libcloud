@@ -150,17 +150,22 @@ class LinodeResponse(JsonResponse):
 
 
 class LinodeConnection(ConnectionKey):
-    """A connection to the Linode API
+    """
+    A connection to the Linode API
 
     Wraps SSL connections to the Linode API, automagically injecting the
-    parameters that the API needs for each request."""
+    parameters that the API needs for each request.
+    """
     host = API_HOST
     responseCls = LinodeResponse
 
     def add_default_params(self, params):
-        """Add parameters that are necessary for every request
+        """
+        Add parameters that are necessary for every request
 
-        This method adds C{api_key} and C{api_responseFormat} to the request."""
+        This method adds C{api_key} and C{api_responseFormat} to
+        the request.
+        """
         params["api_key"] = self.key
         # Be explicit about this in case the default changes.
         params["api_responseFormat"] = "json"

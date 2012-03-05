@@ -100,6 +100,7 @@ class DreamhostResponse(JsonResponse):
         else:
             raise DreamhostAPIException("Unknown problem: %s" % (self.body))
 
+
 class DreamhostConnection(ConnectionKey):
     """
     Connection class to connect to DreamHost's API servers
@@ -148,13 +149,13 @@ class DreamhostNodeDriver(NodeDriver):
         }
         data = self.connection.request('/', params).object
         return Node(
-            id = data['added_web'],
-            name = data['added_web'],
-            state = NodeState.PENDING,
-            public_ips = [],
-            private_ips = [],
-            driver = self.connection.driver,
-            extra = {
+            id=data['added_web'],
+            name=data['added_web'],
+            state=NodeState.PENDING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.connection.driver,
+            extra={
                 'type' : kwargs['image'].name
             }
         )
@@ -190,9 +191,9 @@ class DreamhostNodeDriver(NodeDriver):
         images = []
         for img in data:
             images.append(NodeImage(
-                id = img['image'],
-                name = img['image'],
-                driver = self.connection.driver
+                id=img['image'],
+                name=img['image'],
+                driver=self.connection.driver
             ))
         return images
 
@@ -200,7 +201,7 @@ class DreamhostNodeDriver(NodeDriver):
         sizes = []
         for key, values in self._sizes.items():
             attributes = copy.deepcopy(values)
-            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))
 
         return sizes
@@ -232,13 +233,13 @@ class DreamhostNodeDriver(NodeDriver):
         Convert the data from a DreamhostResponse object into a Node
         """
         return Node(
-            id = data['ps'],
-            name = data['ps'],
-            state = NodeState.UNKNOWN,
-            public_ips = [data['ip']],
-            private_ips = [],
-            driver = self.connection.driver,
-            extra = {
+            id=data['ps'],
+            name=data['ps'],
+            state=NodeState.UNKNOWN,
+            public_ips=[data['ip']],
+            private_ips=[],
+            driver=self.connection.driver,
+            extra={
                 'current_size': data['memory_mb'],
                 'account_id': data['account_id'],
                 'type': data['type']})

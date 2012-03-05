@@ -27,7 +27,6 @@ except:
 
 import libcloud
 
-
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
@@ -290,8 +289,10 @@ class LoggingConnection():
             cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend(["--compress"])
-        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host, self.port, url))])
+        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
+                                             self.port, url))])
         return " ".join(cmd)
+
 
 class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     """
@@ -317,6 +318,7 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
             self.log.flush()
         return LibcloudHTTPSConnection.request(self, method, url, body,
                                                headers)
+
 
 class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
@@ -428,9 +430,11 @@ class Connection(object):
         secure = self.secure
 
         if getattr(self, 'base_url', None) and base_url == None:
-            (host, port, secure, request_path) = self._tuple_from_url(self.base_url)
+            (host, port,
+             secure, request_path) = self._tuple_from_url(self.base_url)
         elif base_url != None:
-            (host, port, secure, request_path) = self._tuple_from_url(base_url)
+            (host, port,
+             secure, request_path) = self._tuple_from_url(base_url)
         else:
             host = host or self.host
             port = port or self.port
@@ -456,8 +460,8 @@ class Connection(object):
         """
         Append a token to a user agent string.
 
-        Users of the library should call this to uniquely identify thier requests
-        to a provider.
+        Users of the library should call this to uniquely identify thier
+        requests to a provider.
 
         @type token: C{str}
         @param token: Token to add to the user agent.
@@ -611,6 +615,7 @@ class Connection(object):
         """
         return data
 
+
 class PollingConnection(Connection):
     """
     Connection class which can also work with the async APIs.
@@ -736,19 +741,23 @@ class ConnectionKey(Connection):
         Initialize `user_id` and `key`; set `secure` to an C{int} based on
         passed value.
         """
-        super(ConnectionKey, self).__init__(secure=secure, host=host, port=port, url=url)
+        super(ConnectionKey, self).__init__(secure=secure, host=host,
+                                            port=port, url=url)
         self.key = key
+
 
 class ConnectionUserAndKey(ConnectionKey):
     """
-    Base connection which accepts a user_id and key
+    Base connection which accepts a user_id and key.
     """
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None, url=None):
+    def __init__(self, user_id, key, secure=True,
+                 host=None, port=None, url=None):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
-                                                   host=host, port=port, url=url)
+                                                   host=host, port=port,
+                                                   url=url)
         self.user_id = user_id
 
 

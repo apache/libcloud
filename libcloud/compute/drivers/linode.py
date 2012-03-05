@@ -50,6 +50,7 @@ from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.compute.base import NodeImage
 
+
 class LinodeNodeDriver(NodeDriver):
     """libcloud driver for the Linode API
 
@@ -102,7 +103,7 @@ class LinodeNodeDriver(NodeDriver):
         destruction are a separate grant.
 
         @return: C{list} of L{Node} objects that the API key can access"""
-        params = { "api_action": "linode.list" }
+        params = {"api_action": "linode.list"}
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_nodes(data)
 
@@ -114,7 +115,7 @@ class LinodeNodeDriver(NodeDriver):
 
         @keyword node: the Linode to reboot
         @type node: L{Node}"""
-        params = { "api_action": "linode.reboot", "LinodeID": node.id }
+        params = {"api_action": "linode.reboot", "LinodeID": node.id}
         self.connection.request(API_ROOT, params=params)
         return True
 
@@ -127,12 +128,12 @@ class LinodeNodeDriver(NodeDriver):
 
         In most cases, all disk images must be removed from a Linode before the
         Linode can be removed; however, this call explicitly skips those
-        safeguards.  There is no going back from this method.
+        safeguards. There is no going back from this method.
 
         @keyword node: the Linode to destroy
         @type node: L{Node}"""
-        params = { "api_action": "linode.delete", "LinodeID": node.id,
-            "skipChecks": True }
+        params = {"api_action": "linode.delete", "LinodeID": node.id,
+            "skipChecks": True}
         self.connection.request(API_ROOT, params=params)
         return True
 
@@ -487,6 +488,7 @@ class LinodeNodeDriver(NodeDriver):
         return list(nodes.values())
 
     features = {"create_node": ["ssh_key", "password"]}
+
 
 def _izip_longest(*args, **kwds):
     """Taken from Python docs
