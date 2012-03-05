@@ -179,7 +179,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             'memory': int(size.ram),
             'cores': int(size.id),
             'bandwidth': int(size.bandwidth),
-            'ip_version':  kwargs.get('inet_family', 4),
+            'ip_version': kwargs.get('inet_family', 4),
             }
 
         # Call create_from helper api. Return 3 operations : disk_create,

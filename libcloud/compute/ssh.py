@@ -30,6 +30,7 @@ except ImportError:
 
 from os.path import split as psplit
 
+
 class BaseSSHClient(object):
     """
     Base class representing a connection over SSH/SCP to a remote node.
@@ -114,6 +115,7 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'close not implemented for this ssh client')
 
+
 class ParamikoSSHClient(BaseSSHClient):
     """
     A SSH Client powered by Paramiko.
@@ -160,7 +162,7 @@ class ParamikoSSHClient(BaseSSHClient):
                     # catch EEXIST consistently *sigh*
                     pass
                 sftp.chdir(part)
-        ak = sftp.file(tail,  mode='w')
+        ak = sftp.file(tail, mode='w')
         ak.write(contents)
         if chmod is not None:
             ak.chmod(chmod)
@@ -190,6 +192,7 @@ class ParamikoSSHClient(BaseSSHClient):
 
     def close(self):
         self.client.close()
+
 
 class ShellOutSSHClient(BaseSSHClient):
     # TODO: write this one

@@ -24,7 +24,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 
 from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.compute.types import LibcloudError, InvalidCredsError, MalformedResponseError
+from libcloud.compute.types import (LibcloudError, InvalidCredsError,
+                                    MalformedResponseError)
 
 try:
     import simplejson as json
@@ -53,7 +54,8 @@ class OpenStackAuthResponse(Response):
         elif 'Content-Type' in self.headers:
             key = 'Content-Type'
         else:
-            raise LibcloudError('Missing content-type header', driver=OpenStackAuthConnection)
+            raise LibcloudError('Missing content-type header',
+                                driver=OpenStackAuthConnection)
 
         content_type = self.headers[key]
         if content_type.find(';') != -1:
@@ -125,7 +127,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             raise InvalidCredsError()
         elif resp.status != httplib.NO_CONTENT:
             raise MalformedResponseError('Malformed response',
-                    body='code: %s body:%s headers:%s' % (resp.status, resp.body, resp.headers),
+                    body='code: %s body:%s headers:%s' % (resp.status,
+                                                          resp.body,
+                                                          resp.headers),
                     driver=self.driver)
         else:
             headers = resp.headers
@@ -137,10 +141,12 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             self.auth_token = headers.get('x-auth-token', None)
 
             if not self.auth_token:
-                raise MalformedResponseError('Missing X-Auth-Token in response headers')
+                raise MalformedResponseError('Missing X-Auth-Token in \
+                                              response headers')
 
     def authenticate_1_1(self):
-        reqbody = json.dumps({'credentials': {'username': self.user_id, 'key': self.key}})
+        reqbody = json.dumps({'credentials': {'username': self.user_id,
+                                              'key': self.key}})
         resp = self.request("/v1.1/auth",
                     data=reqbody,
                     headers={},
@@ -164,7 +170,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.urls = body['auth']['serviceCatalog']
             except KeyError:
                 e = sys.exc_info()[1]
-                raise MalformedResponseError('Auth JSON response is missing required elements', e)
+                raise MalformedResponseError('Auth JSON response is \
+                                             missing required elements', e)
 
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
@@ -173,7 +180,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_password(self):
-        # Password based authentication is the only 'core' authentication method in Keystone at this time.
+        # Password based authentication is the only 'core' authentication
+        # method in Keystone at this time.
         # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
         reqbody = json.dumps({'auth': {'passwordCredentials': {'username': self.user_id, 'password': self.key}}})
         return self.authenticate_2_0_with_body(reqbody)
@@ -185,7 +193,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                     method='POST')
         if resp.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
-        elif resp.status not in [httplib.OK, httplib.NON_AUTHORITATIVE_INFORMATION]:
+        elif resp.status not in [httplib.OK,
+                                 httplib.NON_AUTHORITATIVE_INFORMATION]:
             raise MalformedResponseError('Malformed response',
                     body='code: %s body: %s' % (resp.status, resp.body),
                     driver=self.driver)
@@ -203,17 +212,18 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.urls = access['serviceCatalog']
             except KeyError:
                 e = sys.exc_info()[1]
-                raise MalformedResponseError('Auth JSON response is missing required elements', e)
+                raise MalformedResponseError('Auth JSON response is \
+                                             missing required elements', e)
 
 
 class OpenStackServiceCatalog(object):
     """
     http://docs.openstack.org/api/openstack-identity-service/2.0/content/
 
-    This class should be instanciated with the contents of the 'serviceCatalog'
-    in the auth response. This will do the work of figuring out which services
-    actually exist in the catalog as well as split them up by type, name, and
-    region if available
+    This class should be instanciated with the contents of the
+    'serviceCatalog' in the auth response. This will do the work of figuring
+    out which services actually exist in the catalog as well as split them up
+    by type, name, and region if available
     """
 
     _auth_version = None
@@ -223,13 +233,15 @@ class OpenStackServiceCatalog(object):
         self._auth_version = ex_force_auth_version or AUTH_API_VERSION
         self._service_catalog = {}
 
-        # check this way because there are a couple of different 2.0_* auth types
+        # Check this way because there are a couple of different 2.0_*
+        # auth types.
         if '2.0' in self._auth_version:
             self._parse_auth_v2(service_catalog)
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             self._parse_auth_v1(service_catalog)
         else:
-            raise LibcloudError('auth version "%s" not supported' % (self._auth_version))
+            raise LibcloudError('auth version "%s" not supported'
+                                % (self._auth_version))
 
     def get_endpoint(self, service_type=None, name=None, region=None):
 
@@ -303,8 +315,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     def get_endpoint(self):
         """
-        Every openstack driver must have a connection class that subclasses this
-        class and it must implement this method.
+        Every openstack driver must have a connection class that subclasses
+        this class and it must implement this method.
 
         @returns: url of the relevant endpoint for the driver
 
@@ -342,9 +354,11 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 aurl = self._ex_force_auth_url
 
             if aurl == None:
-                raise LibcloudError('OpenStack instance must have auth_url set')
+                raise LibcloudError('OpenStack instance must \
+                                    have auth_url set')
 
-            osa = OpenStackAuthConnection(self, aurl, self._auth_version, self.user_id, self.key)
+            osa = OpenStackAuthConnection(self, aurl, self._auth_version,
+                                          self.user_id, self.key)
 
             # may throw InvalidCreds, etc
             osa.authenticate()

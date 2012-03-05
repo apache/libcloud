@@ -85,8 +85,9 @@ class GoGridNode(Node):
     # so uuid of node should not change after add is completed
     def get_uuid(self):
         return hashlib.sha1(
-            b("%s:%d" % (self.public_ips,self.driver.type))
+            b("%s:%d" % (self.public_ips, self.driver.type))
         ).hexdigest()
+
 
 class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     """
@@ -138,8 +139,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         return n
 
     def _to_images(self, object):
-        return [ self._to_image(el)
-                 for el in object['list'] ]
+        return [self._to_image(el)
+                 for el in object['list']]
 
     def _to_location(self, element):
         location = NodeLocation(id=element['id'],
@@ -221,7 +222,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         sizes = []
         for key, values in self._instance_types.items():
             attributes = copy.deepcopy(values)
-            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))
 
         return sizes

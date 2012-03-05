@@ -38,11 +38,11 @@ class LibvirtNodeDriver(NodeDriver):
         0: NodeState.TERMINATED,
         1: NodeState.RUNNING,
         2: NodeState.PENDING,
-        3: NodeState.TERMINATED, # paused
-        4: NodeState.TERMINATED, # shutting down
+        3: NodeState.TERMINATED,  # paused
+        4: NodeState.TERMINATED,  # shutting down
         5: NodeState.TERMINATED,
-        6: NodeState.UNKNOWN, # crashed
-        7: NodeState.UNKNOWN, # last
+        6: NodeState.UNKNOWN,  # crashed
+        7: NodeState.UNKNOWN,  # last
     }
 
     def __init__(self, uri):
@@ -54,29 +54,29 @@ class LibvirtNodeDriver(NodeDriver):
         self.connection = libvirt.open(uri)
 
     def list_nodes(self):
-       domain_ids = self.connection.listDomainsID()
-       domains = [self.connection.lookupByID(id) for id in domain_ids]
+        domain_ids = self.connection.listDomainsID()
+        domains = [self.connection.lookupByID(id) for id in domain_ids]
 
-       nodes = []
-       for domain in domains:
-           state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
+        nodes = []
+        for domain in domains:
+            state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
 
-           if state in self.NODE_STATE_MAP:
-               state = self.NODE_STATE_MAP[state]
-           else:
-               state = NodeState.UNKNOWN
+            if state in self.NODE_STATE_MAP:
+                state = self.NODE_STATE_MAP[state]
+            else:
+                state = NodeState.UNKNOWN
 
-           # TODO: Use XML config to get Mac address and then parse ips
-           extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
-                    'types': self.connection.getType(),
-                    'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
-                    'used_cpu_time': used_cpu_time}
-           node = Node(id=domain.ID(), name=domain.name(), state=state,
-                       public_ips=[], private_ips=[], driver=self,
-                       extra=extra)
-           nodes.append(node)
+            # TODO: Use XML config to get Mac address and then parse ips
+            extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
+                     'types': self.connection.getType(),
+                     'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
+                     'used_cpu_time': used_cpu_time}
+            node = Node(id=domain.ID(), name=domain.name(), state=state,
+                        public_ips=[], private_ips=[], driver=self,
+                        extra=extra)
+            nodes.append(node)
 
-       return nodes
+        return nodes
 
     def reboot_node(self, node):
         domain = self._get_domain_for_node(node=node)

@@ -66,6 +66,7 @@ __all__ = [
     "LibcloudHTTPConnection"
     ]
 
+
 class UuidMixin(object):
     """
     Mixin class for get_uuid function.
@@ -80,7 +81,7 @@ class UuidMixin(object):
         @return: C{string}
 
         The hash is a function of an SHA1 hash of the node, node image,
-        or node size's ID and its driver which means that it should be 
+        or node size's ID and its driver which means that it should be
         unique between all objects of its type.
         In some subclasses (e.g. GoGridNode) there is no ID
         available so the public IP address is used.  This means that,
