@@ -50,6 +50,9 @@ Changes with Apache Libcloud in development:
       OpenStack driver.
       [Mark Everett]
 
+    - Add new EC2 instance type - m1.medium.
+      [Tomaz Muraus]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;

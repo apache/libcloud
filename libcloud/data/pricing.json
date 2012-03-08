@@ -29,6 +29,7 @@
         "ec2_us_east": {
             "t1.micro": 0.02,
             "m1.small": 0.085,
+            "m1.medium": 0.160,
             "m1.large": 0.34,
             "m1.xlarge": 0.68,
             "c1.medium": 0.17,
@@ -44,6 +45,7 @@
         "ec2_us_west": {
             "t1.micro": 0.025,
             "m1.small": 0.095,
+            "m1.medium": 0.180,
             "m1.large": 0.38,
             "m1.xlarge": 0.76,
             "c1.medium": 0.19,
@@ -56,6 +58,7 @@
         "ec2_us_west_oregon": {
             "t1.micro": 0.02,
             "m1.small": 0.085,
+            "m1.medium": 0.160,
             "m1.large": 0.34,
             "m1.xlarge": 0.68,
             "c1.medium": 0.17,
@@ -68,6 +71,7 @@
        "ec2_eu_west": {
             "t1.micro": 0.025,
             "m1.small": 0.095,
+            "m1.medium": 0.180,
             "m1.large": 0.38,
             "m1.xlarge": 0.76,
             "c1.medium": 0.19,
@@ -80,6 +84,7 @@
        "ec2_ap_southeast": {
             "t1.micro": 0.025,
             "m1.small": 0.095,
+            "m1.medium": 0.180,
             "m1.large": 0.38,
             "m1.xlarge": 0.76,
             "c1.medium": 0.19,
@@ -92,6 +97,7 @@
        "ec2_ap_northeast": {
             "t1.micro": 0.027,
             "m1.small": 0.10,
+            "m1.medium": 0.184,
             "m1.large": 0.40,
             "m1.xlarge": 0.80,
             "c1.medium": 0.20,
@@ -104,6 +110,7 @@
         "ec2_sa_east": {
             "t1.micro": 0.027,
             "m1.small": 0.115,
+            "m1.medium": 0.230,
             "m1.large": 0.46,
             "m1.xlarge": 0.92,
             "c1.medium": 0.23,
