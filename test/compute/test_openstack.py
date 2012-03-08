@@ -171,12 +171,16 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
                          'status': 'ACTIVE',
                          'created': '2009-07-20T09:14:37-05:00',
                          'updated': '2009-07-20T09:14:37-05:00',
-                         'progress': None},
+                         'progress': None,
+                         'minDisk': None,
+                         'minRam': None},
                     11: {'serverId': '91221',
                          'status': 'ACTIVE',
                          'created': '2009-11-29T20:22:09-06:00',
                          'updated': '2009-11-29T20:24:08-06:00',
-                         'progress': '100'}}
+                         'progress': '100',
+                         'minDisk': '5',
+                         'minRam': '256'}}
         for ret_idx, extra in list(expected.items()):
             for key, value in list(extra.items()):
                 self.assertEqual(ret[ret_idx].extra[key], value)
@@ -602,6 +606,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.extra['status'], 'ACTIVE')
         self.assertEqual(image.extra['metadata']['os_type'], 'windows')
         self.assertEqual(image.extra['serverId'], '52415800-8b69-11e0-9b19-734f335aa7b3')
+        self.assertEqual(image.extra['minDisk'], 0)
+        self.assertEqual(image.extra['minRam'], 0)
 
     def test_create_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
@@ -718,6 +724,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.id, image_id)
         self.assertEqual(image.name, 'Windows 2008 SP2 x86 (B24)')
         self.assertEqual(image.extra['serverId'], None)
+        self.assertEqual(image.extra['minDisk'], "5")
+        self.assertEqual(image.extra['minRam'], "256")
 
     def test_ex_delete_image(self):
         image = NodeImage(id='26365521-8c62-11f9-2c33-283d153ecc3a', name='My Backup', driver=self.driver)

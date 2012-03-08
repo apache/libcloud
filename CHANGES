@@ -26,6 +26,10 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-155
       [Chris Gilmer]
 
+    - Include 'minRam' and 'minDisk' attribute in the OpenStack 1.1 driver 
+      Node extra dictionary. ; LIBCLOUD-163
+      [Chris Gilmer]
+
     - Alow users to use a list of tuples for the query string parameters inside
       the OpenStack connection classes. This way same key can be specified
       multiple times ; LIBCLOUD-153

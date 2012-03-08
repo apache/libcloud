@@ -309,7 +309,9 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                              'created': element.get('created'),
                              'status': element.get('status'),
                              'serverId': element.get('serverId'),
-                             'progress': element.get('progress')})
+                             'progress': element.get('progress'),
+                             'minDisk': element.get('minDisk'),
+                             'minRam': element.get('minRam')})
 
     def _change_password_or_name(self, node, name=None, password=None):
         uri = '/servers/%s' % (node.id)
@@ -855,6 +857,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  progress=api_image.get('progress'),
                                  metadata=api_image.get('metadata'),
                                  serverId=server.get('id'),
+                                 minDisk=api_image.get('minDisk'),
+                                 minRam=api_image.get('minRam'),
                       )
                   )
 
