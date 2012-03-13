@@ -53,6 +53,10 @@ Changes with Apache Libcloud in development:
     - Add new EC2 instance type - m1.medium.
       [Tomaz Muraus]
 
+    - Allow user to re-use auth tokens and pass 'ex_force_auth_token' keyword
+      argument to the OpenStack driver constructor.
+      [Dave King]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;

@@ -551,6 +551,29 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(self.driver.connection.port, '666')
         self.assertEqual(self.driver.connection.request_path, '/forced_url')
 
+    def test_get_endpoint_populates_host_port_and_request_path(self):
+        # simulate a subclass overriding this method
+        self.driver.connection.get_endpoint = lambda : 'http://endpoint_auth_url.com:1555/service_url'
+        self.driver.connection.auth_token = None
+        self.driver.connection._ex_force_base_url = None
+        self.driver.connection._populate_hosts_and_request_paths()
+
+        # assert that we use the result of get endpoint
+        self.assertEqual(self.driver.connection.host, 'endpoint_auth_url.com')
+        self.assertEqual(self.driver.connection.port, '1555')
+        self.assertEqual(self.driver.connection.request_path, '/service_url')
+
+    def test_set_auth_token_populates_host_port_and_request_path(self):
+        # change base url and trash the current auth token so we can re-authenticate
+        self.driver.connection._ex_force_base_url = 'http://some_other_ex_force_base_url.com:1222/some-service'
+        self.driver.connection.auth_token = "preset-auth-token"
+        self.driver.connection._populate_hosts_and_request_paths()
+
+        # assert that we use the base url and not the auth url
+        self.assertEqual(self.driver.connection.host, 'some_other_ex_force_base_url.com')
+        self.assertEqual(self.driver.connection.port, '1222')
+        self.assertEqual(self.driver.connection.request_path, '/some-service')
+
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 2)
