@@ -293,6 +293,37 @@ class OpenStackServiceCatalog(object):
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
 
+    """
+    Base class for OpenStack connections.
+
+    @param user_id: User name to use when authenticating
+    @type user_id: C{string}
+
+    @param key: Secret to use when authenticating.
+    @type key: C{string}
+
+    @param secure: Use HTTPS?  (True by default.)
+    @type secure: C{bool}
+
+    @param ex_force_base_url: Base URL for connection requests.  If
+    not specified, this will be determined by authenticating.
+    @type ex_force_base_url: C{string}
+
+    @param ex_force_auth_url: Base URL for authentication requests.
+    @type ex_force_auth_url: C{string}
+
+    @param ex_force_auth_version: Authentication version to use.  If
+    not specified, defaults to AUTH_API_VERSION.
+    @type ex_force_auth_version: C{string}
+
+    @param ex_force_auth_token: Authentication token to use for
+    connection requests.  If specified, the connection will not attempt
+    to authenticate, and the value of ex_force_base_url will be used to
+    determine the base request URL.  If ex_force_auth_token is passed in,
+    ex_force_base_url must also be provided.
+    @type ex_force_auth_token: C{string}
+    """
+
     auth_url = None
     auth_token = None
     service_catalog = None
@@ -301,11 +332,20 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  host=None, port=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
-                 ex_force_auth_version=None):
+                 ex_force_auth_version=None,
+                 ex_force_auth_token=None):
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._auth_version = ex_force_auth_version
+
+        if ex_force_auth_token:
+            self.auth_token = ex_force_auth_token
+
+        if ex_force_auth_token and not ex_force_base_url:
+            raise LibcloudError(
+                'Must also provide ex_force_base_url when specifying '
+                'ex_force_auth_token.')
 
         if not self._auth_version:
             self._auth_version = AUTH_API_VERSION
@@ -368,8 +408,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             # pull out and parse the service catalog
             self.service_catalog = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=self._auth_version)
 
-            # Set up connection info
-            (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._ex_force_base_url or self.get_endpoint())
+        # Set up connection info
+        (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._ex_force_base_url or self.get_endpoint())
 
     def _add_cache_busting_to_params(self, params):
         cache_busting_number = binascii.hexlify(os.urandom(8))
