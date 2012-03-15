@@ -23,7 +23,6 @@ except ImportError:
     import json
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urllib
 from libcloud.utils.py3 import urlencode
 
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
@@ -109,6 +108,21 @@ class RackspaceLBTests(unittest.TestCase):
                                                               'weight': 10}),
                          Member(None, '10.1.0.11', 80))
                 )
+
+        self.assertEquals(balancer.name, 'test2')
+        self.assertEquals(balancer.id, '8290')
+
+    def test_ex_create_balancer(self):
+        RackspaceLBDriver.connectionCls.conn_classes = (None,
+                                                        RackspaceLBWithVIPMockHttp)
+        RackspaceLBMockHttp.type = None
+        driver = RackspaceLBDriver('user', 'key')
+        balancer = driver.ex_create_balancer(name='test2',
+                port=80,
+                algorithm=Algorithm.ROUND_ROBIN,
+                members=(Member(None, '10.1.0.11', 80),),
+                vip='12af'
+        )
 
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
@@ -832,6 +846,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
             self.assertEqual(loadbalancer_json['protocol'], 'HTTP')
             self.assertEqual(loadbalancer_json['algorithm'], 'ROUND_ROBIN')
+            self.assertEqual(loadbalancer_json['virtualIps'][0]['type'],
+                             'PUBLIC')
             self.assertEqual(member_1_json['condition'], 'DISABLED')
             self.assertEqual(member_1_json['weight'], 10)
             self.assertEqual(member_2_json['condition'], 'ENABLED')
@@ -1282,6 +1298,41 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         headers = {'content-type': 'application/json; charset=UTF-8'}
         body = self.auth_fixtures.load('_v1_1__auth.json')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
+
+class RackspaceLBWithVIPMockHttp(MockHttpTestCase):
+    fixtures = LoadBalancerFileFixtures('rackspace')
+    auth_fixtures = OpenStackFixtures()
+
+    def _v1_0(self, method, url, body, headers):
+        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
+                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
+        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _v1_0_slug_loadbalancers(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('v1_slug_loadbalancers.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        elif method == "POST":
+            body_json = json.loads(body)
+            loadbalancer_json = body_json['loadBalancer']
+
+            self.assertEqual(loadbalancer_json['virtualIps'][0]['id'], '12af')
+
+            body = self.fixtures.load('v1_slug_loadbalancers_post.json')
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        raise NotImplementedError
+
+    def _v1_1_auth(self, method, url, body, headers):
+        headers = {'content-type': 'application/json; charset=UTF-8'}
+        body = self.auth_fixtures.load('_v1_1__auth.json')
+        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

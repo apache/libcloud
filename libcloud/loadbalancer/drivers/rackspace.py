@@ -349,21 +349,49 @@ class RackspaceLBDriver(Driver):
 
     def create_balancer(self, name, members, protocol='http',
                         port=80, algorithm=DEFAULT_ALGORITHM):
+        return self.ex_create_balancer(name, members, protocol, port,
+                                       algorithm)
+
+    def ex_create_balancer(self, name, members, protocol='http',
+                           port=80, algorithm=DEFAULT_ALGORITHM, vip='PUBLIC'):
+        """
+        Creates a new load balancer instance
+
+        @keyword name: Name of the new load balancer (required)
+        @type name: C{str}
+
+        @keyword members: C{list} ofL{Member}s to attach to balancer
+        @type: C{list} of L{Member}s
+
+        @keyword protocol: Loadbalancer protocol, defaults to http.
+        @type: C{str}
+
+        @keyword port: Port the load balancer should listen on, defaults to 80
+        @type port: C{str}
+
+        @keyword algorithm: Load balancing algorithm, defaults to
+                            LBAlgorithm.ROUND_ROBIN
+        @type algorithm: C{LBAlgorithm}
+
+        @keyword vip: Virtual ip type of PUBLIC, SERVICENET, or ID of a virtual
+                      ip
+        @type vip: C{str}
+        """
         balancer_attrs = self._kwargs_to_mutable_attrs(
-                                name=name,
-                                protocol=protocol,
-                                port=port,
-                                algorithm=algorithm)
+            name=name,
+            protocol=protocol,
+            port=port,
+            algorithm=algorithm,
+            vip=vip)
 
         balancer_attrs.update({
-            'virtualIps': [{'type': 'PUBLIC'}],
             'nodes': [self._member_attributes(member) for member in members],
             })
         balancer_object = {"loadBalancer": balancer_attrs}
 
         resp = self.connection.request('/loadbalancers',
-                method='POST',
-                data=json.dumps(balancer_object))
+                                       method='POST',
+                                       data=json.dumps(balancer_object))
         return self._to_balancer(resp.object['loadBalancer'])
 
     def _member_attributes(self, member):
@@ -373,8 +401,8 @@ class RackspaceLBDriver(Driver):
         member_attributes.update(self._kwargs_to_mutable_member_attrs(
             **member.extra))
 
-        # If the condition is not specified on the member, then it should be set
-        # to ENABLED by default
+        # If the condition is not specified on the member, then it should be
+        # set to ENABLED by default
         if 'condition' not in member_attributes:
             member_attributes['condition'] = \
             self.CONDITION_LB_MEMBER_MAP[MemberCondition.ENABLED]
@@ -1284,6 +1312,12 @@ class RackspaceLBDriver(Driver):
 
         if "port" in attrs:
             update_attrs['port'] = int(attrs['port'])
+
+        if "vip" in attrs:
+            if attrs['vip'] == 'PUBLIC' or attrs['vip'] == 'SERVICENET':
+                update_attrs['virtualIps'] = [{'type': attrs['vip']}]
+            else:
+                update_attrs['virtualIps'] = [{'id': attrs['vip']}]
 
         return update_attrs
 
