@@ -1,0 +1,19 @@
+{
+   "ERRORARRAY":[],
+   "ACTION":"domain.list",
+   "DATA":[
+      {
+         "DOMAINID":5093,
+         "DESCRIPTION":"",
+         "TYPE":"master",
+         "STATUS":1,
+         "SOA_EMAIL":"dns@example.com",
+         "DOMAIN":"linode.com",
+         "RETRY_SEC":0,
+         "MASTER_IPS":"",
+         "EXPIRE_SEC":0,
+         "REFRESH_SEC":0,
+         "TTL_SEC":0
+      }
+   ]
+}

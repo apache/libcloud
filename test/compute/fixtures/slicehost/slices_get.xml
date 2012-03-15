@@ -1,0 +1,17 @@
+<slices type="array">
+  <slice>
+    <name>libcloud-foo</name>
+    <image-id type="integer">10</image-id>
+    <addresses type="array">
+      <address>174.143.212.229</address>
+      <address>10.176.164.199</address>
+    </addresses>
+    <progress type="integer">0</progress>
+    <id type="integer">1</id>
+    <bw-out type="float">0.0</bw-out>
+    <bw-in type="float">0.0</bw-in>
+    <flavor-id type="integer">1</flavor-id>
+    <status>build</status>
+    <ip-address>174.143.212.229</ip-address>
+  </slice>
+</slices>
