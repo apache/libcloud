@@ -33,6 +33,7 @@ __all__ = ["GoGridResponse",
         "BaseGoGridDriver",
 ]
 
+
 class GoGridResponse(JsonResponse):
 
     def __init__(self, *args, **kwargs):
@@ -58,6 +59,7 @@ class GoGridResponse(JsonResponse):
         except (ValueError, KeyError):
             return None
 
+
 class GoGridConnection(ConnectionUserAndKey):
     """
     Connection class for the GoGrid driver
@@ -79,6 +81,7 @@ class GoGridConnection(ConnectionUserAndKey):
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
+
 class GoGridIpAddress(object):
     """
     IP Address
@@ -90,6 +93,7 @@ class GoGridIpAddress(object):
         self.public = public
         self.state = state
         self.subnet = subnet
+
 
 class BaseGoGridDriver(object):
     """GoGrid has common object model for services they

@@ -118,9 +118,10 @@ class S3Connection(ConnectionUserAndKey):
 
         headers_copy = copy.deepcopy(headers)
         for key, value in list(headers_copy.items()):
-            if key.lower() in special_header_keys:
-                special_header_values[key.lower()] = value.lower().strip()
-            elif key.lower().startswith('x-amz-'):
+            key_lower = key.lower()
+            if key_lower in special_header_keys:
+                special_header_values[key_lower] = value.strip()
+            elif key_lower.startswith('x-amz-'):
                 amz_header_values[key.lower()] = value.strip()
 
         if not 'content-md5' in special_header_values:

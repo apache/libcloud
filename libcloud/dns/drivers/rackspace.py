@@ -35,16 +35,6 @@ from libcloud.dns.base import DNSDriver, Zone, Record
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
 VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment']
 
-RECORD_TYPE_MAP = {
-    RecordType.A: 'A',
-    RecordType.AAAA: 'AAAA',
-    RecordType.CNAME: 'CNAME',
-    RecordType.MX: 'MX',
-    RecordType.NS: 'NS',
-    RecordType.TXT: 'TXT',
-    RecordType.SRV: 'SRV',
-}
-
 
 class RackspaceDNSResponse(OpenStack_1_1_Response):
     """
@@ -82,12 +72,11 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     """
 
     responseCls = RackspaceDNSResponse
-    _url_key = 'dns_url'
     XML_NAMESPACE = None
     poll_interval = 2.5
     timeout = 30
 
-    def get_poll_request_kwargs(self, response, context):
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response.object['jobId']
         kwargs = {'action': '/status/%s' % (job_id),
                 'params': {'showDetails': True}}
@@ -101,6 +90,25 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
 
         return status == 'COMPLETED'
 
+    def get_endpoint(self):
+        """
+        FIXME:
+        Dirty, dirty hack. DNS doesn't get returned in the auth 1.1 service
+        catalog, so we build it from the servers url.
+        """
+
+        if self._auth_version == "1.1":
+            ep = self.service_catalog.get_endpoint(name="cloudServers")
+
+            if 'publicURL' in ep:
+                return ep['publicURL'].replace("servers", "dns")
+            else:
+                raise LibcloudError('Could not find specified endpoint')
+
+        else:
+            raise LibcloudError("Auth version %s not supported" % \
+                self._auth_version)
+
 
 class RackspaceUSDNSConnection(RackspaceDNSConnection):
     auth_url = AUTH_URL_US
@@ -111,8 +119,16 @@ class RackspaceUKDNSConnection(RackspaceDNSConnection):
 
 
 class RackspaceDNSDriver(DNSDriver):
-    def list_record_types(self):
-        return list(RECORD_TYPE_MAP.keys())
+
+    RECORD_TYPE_MAP = {
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.NS: 'NS',
+        RecordType.TXT: 'TXT',
+        RecordType.SRV: 'SRV',
+    }
 
     def list_zones(self):
         response = self.connection.request(action='/domains')
@@ -202,7 +218,8 @@ class RackspaceDNSDriver(DNSDriver):
         extra = extra if extra else {}
 
         name = self._to_full_record_name(domain=zone.domain, name=name)
-        data = {'name': name, 'type': RECORD_TYPE_MAP[type], 'data': data}
+        data = {'name': name, 'type': self.RECORD_TYPE_MAP[type],
+                'data': data}
 
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])

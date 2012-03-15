@@ -33,16 +33,6 @@ VALID_ZONE_EXTRA_PARAMS = ['SOA_Email', 'Refresh_sec', 'Retry_sec',
 VALID_RECORD_EXTRA_PARAMS = ['Priority', 'Weight', 'Port', 'Protocol',
                              'TTL_sec']
 
-RECORD_TYPE_MAP = {
-    RecordType.NS: 'NS',
-    RecordType.MX: 'MX',
-    RecordType.A: 'A',
-    RecordType.AAAA: 'AAAA',
-    RecordType.CNAME: 'CNAME',
-    RecordType.TXT: 'TXT',
-    RecordType.SRV: 'SRV',
-}
-
 
 class LinodeDNSResponse(LinodeResponse):
     def _make_excp(self, error):
@@ -71,8 +61,15 @@ class LinodeDNSDriver(DNSDriver):
     name = 'Linode DNS'
     connectionCls = LinodeDNSConnection
 
-    def list_record_types(self):
-        return list(RECORD_TYPE_MAP.keys())
+    RECORD_TYPE_MAP = {
+        RecordType.NS: 'NS',
+        RecordType.MX: 'MX',
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.TXT: 'TXT',
+        RecordType.SRV: 'SRV',
+    }
 
     def list_zones(self):
         params = {'api_action': 'domain.list'}
@@ -166,7 +163,8 @@ class LinodeDNSDriver(DNSDriver):
         API docs: http://www.linode.com/api/dns/domain.resource.create
         """
         params = {'api_action': 'domain.resource.create', 'DomainID': zone.id,
-                  'Name': name, 'Target': data, 'Type': RECORD_TYPE_MAP[type]}
+                  'Name': name, 'Target': data,
+                  'Type': self.RECORD_TYPE_MAP[type]}
         merged = merge_valid_keys(params=params,
                                   valid_keys=VALID_RECORD_EXTRA_PARAMS,
                                   extra=extra)
@@ -193,7 +191,7 @@ class LinodeDNSDriver(DNSDriver):
             params['Target'] = data
 
         if type:
-            params['Type'] = RECORD_TYPE_MAP[type]
+            params['Type'] = self.RECORD_TYPE_MAP[type]
 
         merged = merge_valid_keys(params=params,
                                   valid_keys=VALID_RECORD_EXTRA_PARAMS,

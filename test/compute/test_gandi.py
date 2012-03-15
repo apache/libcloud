@@ -59,6 +59,7 @@ class GandiTests(unittest.TestCase):
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertTrue(len(nodes) > 0)
+        self.assertTrue(len(nodes[0].public_ips) > 1)
 
     def test_list_locations(self):
         loc = list(filter(lambda x: 'france' in x.country.lower(),

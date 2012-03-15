@@ -67,7 +67,46 @@ __all__ = [
     ]
 
 
-class Node(object):
+class UuidMixin(object):
+    """
+    Mixin class for get_uuid function.
+    """
+
+    def __init__(self):
+        self._uuid = None
+
+    def get_uuid(self):
+        """Unique hash for a node, node image, or node size
+
+        @return: C{string}
+
+        The hash is a function of an SHA1 hash of the node, node image,
+        or node size's ID and its driver which means that it should be
+        unique between all objects of its type.
+        In some subclasses (e.g. GoGridNode) there is no ID
+        available so the public IP address is used.  This means that,
+        unlike a properly done system UUID, the same UUID may mean a
+        different system install at a different time
+
+        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+        >>> driver = DummyNodeDriver(0)
+        >>> node = driver.create_node()
+        >>> node.get_uuid()
+        'd3748461511d8b9b0e0bfa0d4d3383a619a2bb9f'
+
+        Note, for example, that this example will always produce the
+        same UUID!
+        """
+        if not self._uuid:
+            self._uuid = hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
+        return self._uuid
+
+    @property
+    def uuid(self):
+        return self.get_uuid()
+
+
+class Node(UuidMixin):
     """
     Provide a common interface for handling nodes of all types.
 
@@ -121,10 +160,10 @@ class Node(object):
         self.public_ips = public_ips if public_ips else []
         self.private_ips = private_ips if private_ips else []
         self.driver = driver
-        self.uuid = self.get_uuid()
         self.size = size
         self.image = image
         self.extra = extra or {}
+        UuidMixin.__init__(self)
 
     # Note: getters and setters bellow are here only for backward compatibility.
     # They will be removed in the next release.
@@ -143,29 +182,6 @@ class Node(object):
 
     public_ip = property(fget=_get_public_ips, fset=_set_public_ips)
     private_ip = property(fget=_get_private_ips, fset=_set_private_ips)
-
-    def get_uuid(self):
-        """Unique hash for this node
-
-        @return: C{string}
-
-        The hash is a function of an SHA1 hash of the node's ID and
-        its driver which means that it should be unique between all
-        nodes.  In some subclasses (e.g. GoGrid) there is no ID
-        available so the public IP address is used.  This means that,
-        unlike a properly done system UUID, the same UUID may mean a
-        different system install at a different time
-
-        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
-        >>> driver = DummyNodeDriver(0)
-        >>> node = driver.create_node()
-        >>> node.get_uuid()
-        'd3748461511d8b9b0e0bfa0d4d3383a619a2bb9f'
-
-        Note, for example, that this example will always produce the
-        same UUID!
-        """
-        return hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
 
     def reboot(self):
         """Reboot this node
@@ -217,7 +233,7 @@ class Node(object):
                    self.driver.name))
 
 
-class NodeSize(object):
+class NodeSize(UuidMixin):
     """
     A Base NodeSize class to derive from.
 
@@ -249,6 +265,7 @@ class NodeSize(object):
         self.bandwidth = bandwidth
         self.price = price
         self.driver = driver
+        UuidMixin.__init__(self)
 
     def __repr__(self):
         return (('<NodeSize: id=%s, name=%s, ram=%s disk=%s bandwidth=%s '
@@ -257,7 +274,7 @@ class NodeSize(object):
                    self.price, self.driver.name))
 
 
-class NodeImage(object):
+class NodeImage(UuidMixin):
     """
     An operating system image.
 
@@ -285,6 +302,7 @@ class NodeImage(object):
         self.name = name
         self.driver = driver
         self.extra = extra or {}
+        UuidMixin.__init__(self)
 
     def __repr__(self):
         return (('<NodeImage: id=%s, name=%s, driver=%s  ...>')
@@ -411,6 +429,9 @@ class NodeDriver(BaseDriver):
         Depending upon the provider, this may destroy all data associated with
         the node, including backups.
 
+        @param node: The node to be destroyed
+        @type node: L{Node}
+
         @return: C{bool} True if the destroy was successful, otherwise False
         """
         raise NotImplementedError(
@@ -419,6 +440,10 @@ class NodeDriver(BaseDriver):
     def reboot_node(self, node):
         """
         Reboot a node.
+
+        @param node: The node to be rebooted
+        @type node: L{Node}
+
         @return: C{bool} True if the reboot was successful, otherwise False
         """
         raise NotImplementedError(
@@ -435,6 +460,10 @@ class NodeDriver(BaseDriver):
     def list_images(self, location=None):
         """
         List images on a provider
+
+        @keyword location: The location at which to list images
+        @type location: L{NodeLocation}
+
         @return: C{list} of L{NodeImage} objects
         """
         raise NotImplementedError(
@@ -443,6 +472,10 @@ class NodeDriver(BaseDriver):
     def list_sizes(self, location=None):
         """
         List sizes on a provider
+
+        @keyword location: The location at which to list sizes
+        @type location: L{NodeLocation}
+
         @return: C{list} of L{NodeSize} objects
         """
         raise NotImplementedError(
@@ -492,6 +525,10 @@ class NodeDriver(BaseDriver):
                              to attempt to authenticate. (optional)
         @type       ssh_key: C{string} or C{list} of C{string}s
 
+        @keyword    max_tries: How many times to retry if a deployment fails
+                               before giving up (default is 3)
+        @type       max_tries: C{int}
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -535,6 +572,7 @@ class NodeDriver(BaseDriver):
                 password = kwargs['auth'].password
 
         node = self.create_node(**kwargs)
+        max_tries = kwargs.get('max_tries', 3)
 
         if 'generates_password' in self.features['create_node']:
             password = node.extra.get('password')
@@ -563,7 +601,7 @@ class NodeDriver(BaseDriver):
             self._run_deployment_script(task=kwargs['deploy'],
                                         node=node,
                                         ssh_client=ssh_client,
-                                        max_tries=3)
+                                        max_tries=max_tries)
         except Exception:
             e = sys.exc_info()[1]
             raise DeploymentError(node, e)
@@ -672,8 +710,9 @@ class NodeDriver(BaseDriver):
             except Exception:
                 tries += 1
                 if tries >= max_tries:
-                    raise LibcloudError(value='Failed after %d tries'
-                                        % (max_tries), driver=self)
+                    e = sys.exc_info()[1]
+                    raise LibcloudError(value='Failed after %d tries: %s'
+                                        % (max_tries, str(e)), driver=self)
             else:
                 ssh_client.close()
                 return node

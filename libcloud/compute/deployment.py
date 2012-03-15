@@ -21,6 +21,7 @@ import binascii
 
 from libcloud.utils.py3 import basestring
 
+
 class Deployment(object):
     """
     Base class for deployment tasks.
@@ -75,6 +76,7 @@ class SSHKeyDeployment(Deployment):
         client.put(".ssh/authorized_keys", contents=self.key)
         return node
 
+
 class ScriptDeployment(Deployment):
     """
     Runs an arbitrary Shell Script task.
@@ -115,6 +117,7 @@ class ScriptDeployment(Deployment):
         if self.delete:
             client.delete(self.name)
         return node
+
 
 class MultiStepDeployment(Deployment):
     """

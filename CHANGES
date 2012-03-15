@@ -2,6 +2,94 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General:
+
+    - Make parsing of the Auth API responses in the OpenStack drivers more
+      flexible and extensible.
+
+      Now, every connection class that inherits from the openstack base
+      connection must implement get_endpoint(), who's job is to return the
+      correct endpoint out of the service catalog.
+
+      Note: The openstack.py base driver no longer works by default with
+      Rackspace nova. The default endpoint parsed from the service catalog
+      is the default compute endpoint for devstack. ; LIBCLOUD-151
+      [Brad Morgan]
+
+  *) Compute:
+
+    - Add new RackspaceNovaBeta and RackspaveNovaDfw driver based on the
+      OpenStack. ; LIBCLOUD-151
+      [Brad Morgan]
+
+    - Include 'created' and 'updated' attribute in the OpenStack 1.1 driver.
+      ; LIBCLOUD-155
+      [Chris Gilmer]
+
+    - Include 'minRam' and 'minDisk' attribute in the OpenStack 1.1 driver 
+      Node extra dictionary. ; LIBCLOUD-163
+      [Chris Gilmer]
+
+    - Alow users to use a list of tuples for the query string parameters inside
+      the OpenStack connection classes. This way same key can be specified
+      multiple times ; LIBCLOUD-153
+      [Dave King]
+
+    - Allow user to pass 'max_tries' keyword argument to deploy_node method.
+      [Tomaz Muraus]
+
+    - Include original exception error message when re-throwing an exception
+      inside _run_deployment_script method.
+      [Tomaz Muraus]
+
+    - Add support for ElasticHosts new United States (Los Angeles) and Canada
+      (Toronto) locations. ; GITHUB-53
+      [Jaime Irurzun]
+
+    - Add serverId attribute to the NodeImage object extra dictionary in the
+      OpenStack driver.
+      [Mark Everett]
+
+    - Add new EC2 instance type - m1.medium.
+      [Tomaz Muraus]
+
+    - Allow user to re-use auth tokens and pass 'ex_force_auth_token' keyword
+      argument to the OpenStack driver constructor.
+      [Dave King]
+
+  *) Storage:
+
+    - Don't lowercase special header names in the Amazon S3 storage driver. ;
+      LIBCLOUD-149
+      [Tomaz Muraus]
+
+  *) Load-balancer:
+
+    - Allow user to specify a condition and weight when adding a member in
+      the Rackspace driver.
+      [Adam Pickeral]
+
+    - Add an extension method (ex_balancer_attach_members) for attaching 
+      multiple members to a load balancer in the Rackspace driver.
+      LIBCLOUD-152
+      [Adam Pickeral]
+
+Changes with Apache Libcloud 0.8.0:
+
+  *) General:
+
+     - Add 'request_kwargs' argument to the get_poll_request_kwargs method.
+       This argument contains kwargs which were previously used to initiate the
+       poll request.
+       [Mark Everett]
+
+     - Add support for handling compressed responses (deflate, gzip). Also send
+       "Accept-Encoding" "gzip,deflate" header with all the requests.
+       [Tomaz Muraus]
+
+     - Fix debug module (LIBCLOUD_DEBUG env variable) so it works with Python 3
+       [Tomaz Muraus]
+
   *) Compute:
 
      - Added support for retrieving OpenNebula v3.2 instance types, OpenNebula
@@ -18,6 +106,27 @@ Changes with Apache Libcloud in development:
      - Fix a bug in OpenStack driver when 2.0_apikey or 2.0_password
        'auth_version' is used.
        [Tomaz Muraus]
+
+     - Current OpenNebula OCCI implementation does not support a proper
+       restart method. Rather it suspends and resumes. Therefore, restart_node
+       has been removed from the OpenNebula driver.
+       [Hutson Betts]
+
+     - Enable ex_delete_image method in the OpenStack 1.1 driver.
+       [Shawn Smith]
+
+     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method 
+       ; LIBCLOUD-138
+       [Shawn Smith]
+
+     - Enable reboot_node method in the OpenNebula 3.2 driver.
+       [Hutson Betts]
+
+     - Fix a public_ips Node variable assignment in the Gandi.net driver.
+       [Aymeric Barantal]
+
+     - Updated the list of node states for OpenNebula drivers. ; LIBCLOUD-148
+       [Hutson Betts]
 
   *) Storage:
 
@@ -44,11 +153,33 @@ Changes with Apache Libcloud in development:
       - Populate LoadBalancer extra dictionary with more attributes
       - Add support for health monitors and connection throttling
       - Add more balancer states
+      - ex_list_protocols_with_default_ports
       [Dave King]
 
     - Propagate extra keyword arguments passed to the Rackspace driver
       connection class.
       [Dave King]
+
+    - Add 'extra' attribute to the Member object and populate it in
+      the Rackspace driver.
+      [Mark Everett]
+
+    - Adds status to the Member object and conditions an 'enum'
+      (Rackspace driver).
+      [Mark Everett]
+
+    - Add update_balancer method to the base LoadBalancer class.
+      [Mark Everett]
+
+    - Add update_balancer method to the Rackspace driver.
+      [Mark Everett]
+
+    - Add created and updated attribute to the LoadBalancer extra dictionary in
+      the Rackspace driver.
+      [Mark Everett]
+
+    - Fix protocol name maping in the Rackspace driver.
+      [Bill Woodward]
 
 Changes with Apache Libcloud 0.7.1:
 

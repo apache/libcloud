@@ -22,7 +22,7 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.linode import LinodeNodeDriver
-from libcloud.compute.base import Node, NodeAuthPassword
+from libcloud.compute.base import Node, NodeAuthPassword, NodeAuthSSHKey
 
 from test import MockHttp
 from test.compute import TestCaseMixin
@@ -54,13 +54,21 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         node = self.driver.list_nodes()[0]
         self.driver.destroy_node(node)
 
-    def test_create_node(self):
+    def test_create_node_password_auth(self):
         # Will exception on failure
         self.driver.create_node(name="Test",
                                 location=self.driver.list_locations()[0],
                                 size=self.driver.list_sizes()[0],
                                 image=self.driver.list_images()[6],
                                 auth=NodeAuthPassword("test123"))
+
+    def test_create_node_ssh_key_auth(self):
+        # Will exception on failure
+        self.driver.create_node(name="Test",
+                                location=self.driver.list_locations()[0],
+                                size=self.driver.list_sizes()[0],
+                                image=self.driver.list_images()[6],
+                                auth=NodeAuthSSHKey('foo'))
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()

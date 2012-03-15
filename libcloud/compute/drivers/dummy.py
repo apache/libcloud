@@ -24,7 +24,8 @@ import struct
 from libcloud.common.base import ConnectionKey
 from libcloud.compute.base import NodeImage, NodeSize, Node
 from libcloud.compute.base import NodeDriver, NodeLocation
-from libcloud.compute.types import Provider,NodeState
+from libcloud.compute.types import Provider, NodeState
+
 
 class DummyConnection(ConnectionKey):
     """
@@ -33,6 +34,7 @@ class DummyConnection(ConnectionKey):
 
     def connect(self, host=None, port=None):
         pass
+
 
 class DummyNodeDriver(NodeDriver):
     """
@@ -230,7 +232,7 @@ class DummyNodeDriver(NodeDriver):
                      driver=self),
             NodeSize(id=4,
                      name="XXL Big",
-                     ram=4096*2,
+                     ram=4096 * 2,
                      disk=32*4,
                      bandwidth=2500*3,
                      price=32*2,
@@ -295,8 +297,10 @@ class DummyNodeDriver(NodeDriver):
         self.nl.append(n)
         return n
 
+
 def _ip_to_int(ip):
     return socket.htonl(struct.unpack('I', socket.inet_aton(ip))[0])
+
 
 def _int_to_ip(ip):
     return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))

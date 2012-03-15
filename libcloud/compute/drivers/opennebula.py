@@ -55,9 +55,62 @@ DEFAULT_API_VERSION = '3.2'
 
 
 class ACTION(object):
+    """
+    All actions, except RESUME, only apply when the VM is in the "Running"
+    state.
+    """
+
     STOP = 'STOPPED'
-    PAUSE = 'SUSPENDED'
+    """
+    The VM is stopped, and its memory state stored to a checkpoint file. VM
+    state, and disk image, are transferred back to the front-end. Resuming
+    the VM requires the VM instance to be re-scheduled.
+    """
+
+    SUSPEND = 'SUSPENDED'
+    """
+    The VM is stopped, and its memory state stored to a checkpoint file. The VM
+    state, and disk image, are left on the host to be resumed later. Resuming
+    the VM does not require the VM to be re-scheduled. Rather, after
+    suspending, the VM resources are reserved for later resuming.
+    """
+
     RESUME = 'RESUME'
+    """
+    The VM is resumed using the saved memory state from the checkpoint file,
+    and the VM's disk image. The VM is either started immediately, or
+    re-scheduled depending on how it was suspended.
+    """
+
+    CANCEL = 'CANCEL'
+    """
+    The VM is forcibly shutdown, its memory state is deleted. If a persistent
+    disk image was used, that disk image is transferred back to the front-end.
+    Any non-persistent disk images are deleted.
+    """
+
+    SHUTDOWN = 'SHUTDOWN'
+    """
+    The VM is gracefully shutdown by sending the ACPI signal. If the VM does
+    not shutdown, then it is considered to still be running. If successfully,
+    shutdown, its memory state is deleted. If a persistent disk image was used,
+    that disk image is transferred back to the front-end. Any non-persistent
+    disk images are deleted.
+    """
+
+    REBOOT = 'REBOOT'
+    """
+    Introduced in OpenNebula v3.2.
+
+    The VM is gracefully restarted by sending the ACPI signal.
+    """
+
+    DONE = 'DONE'
+    """
+    The VM is forcibly shutdown, its memory state is deleted. If a persistent
+    disk image was used, that disk image is transferred back to the front-end.
+    Any non-persistent disk images are deleted.
+    """
 
 
 class OpenNebulaResponse(XmlResponse):
@@ -214,17 +267,14 @@ class OpenNebulaNodeDriver(NodeDriver):
     type = Provider.OPENNEBULA
 
     NODE_STATE_MAP = {
+        'INIT': NodeState.PENDING,
         'PENDING': NodeState.PENDING,
         'HOLD': NodeState.PENDING,
-        'PROLOG': NodeState.PENDING,
-        'RUNNING': NodeState.RUNNING,
-        'MIGRATE': NodeState.PENDING,
-        'EPILOG': NodeState.TERMINATED,
+        'ACTIVE': NodeState.RUNNING,
         'STOPPED': NodeState.TERMINATED,
         'SUSPENDED': NodeState.PENDING,
-        'FAILED': NodeState.TERMINATED,
-        'UNKNOWN': NodeState.UNKNOWN,
-        'DONE': NodeState.TERMINATED}
+        'DONE': NodeState.TERMINATED,
+        'FAILED': NodeState.TERMINATED}
 
     def __new__(cls, key, secret=None, api_version=DEFAULT_API_VERSION,
                 **kwargs):
@@ -293,15 +343,6 @@ class OpenNebulaNodeDriver(NodeDriver):
         resp = self.connection.request(url, method='DELETE')
 
         return resp.status == httplib.OK
-
-    def reboot_node(self, node):
-        if not self.ex_node_action(node, ACTION.STOP):
-            return False
-
-        if not self.ex_node_action(node, ACTION.RESUME):
-            return False
-
-        return True
 
     def list_nodes(self):
         return self._to_nodes(self.connection.request('/compute').object)
@@ -944,6 +985,9 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
     """
     OpenNebula.org node driver for OpenNebula.org v3.2.
     """
+
+    def reboot_node(self, node):
+        return self.ex_node_action(node, ACTION.REBOOT)
 
     def list_sizes(self, location=None):
         """
