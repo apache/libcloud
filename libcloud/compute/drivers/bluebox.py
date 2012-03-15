@@ -81,6 +81,7 @@ NODE_STATE_MAP = {'queued': NodeState.PENDING,
                   'error': NodeState.TERMINATED,
                   'unknown': NodeState.UNKNOWN}
 
+
 class BlueboxResponse(JsonResponse):
     def parse_error(self):
         if int(self.status) == 401:
@@ -89,6 +90,7 @@ class BlueboxResponse(JsonResponse):
             else:
                 raise InvalidCredsError(self.body)
         return self.body
+
 
 class BlueboxNodeSize(NodeSize):
     def __init__(self, id, name, cpu, ram, disk, price, driver):
@@ -104,6 +106,7 @@ class BlueboxNodeSize(NodeSize):
         return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, price=%s, driver=%s ...>')
                % (self.id, self.name, self.cpu, self.ram, self.disk, self.price, self.driver.name))
 
+
 class BlueboxConnection(ConnectionUserAndKey):
     """
     Connection class for the Bluebox driver
@@ -117,6 +120,7 @@ class BlueboxConnection(ConnectionUserAndKey):
         user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (user_b64)
         return headers
+
 
 class BlueboxNodeDriver(NodeDriver):
     """
@@ -214,7 +218,7 @@ class BlueboxNodeDriver(NodeDriver):
                  state=state,
                  public_ips=[ip['address'] for ip in vm['ips']],
                  private_ips=[],
-                 extra={'storage':vm['storage'], 'cpu':vm['cpu']},
+                 extra={'storage': vm['storage'], 'cpu': vm['cpu']},
                  driver=self.connection.driver)
         return n
 

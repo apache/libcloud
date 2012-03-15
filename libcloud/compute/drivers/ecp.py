@@ -41,7 +41,8 @@ from libcloud.compute.base import is_private_subnet
 
 #Defaults
 API_HOST = ''
-API_PORT = (80,443)
+API_PORT = (80, 443)
+
 
 class ECPResponse(Response):
 
@@ -73,6 +74,7 @@ class ECPResponse(Response):
     def getheaders(self):
         return self.headers
 
+
 class ECPConnection(ConnectionUserAndKey):
     """
     Connection class for the Enomaly ECP driver
@@ -89,7 +91,7 @@ class ECPConnection(ConnectionUserAndKey):
         base64string = base64.encodestring(
                 b('%s:%s' % (username, password)))[:-1]
         authheader = "Basic %s" % base64string
-        headers['Authorization']= authheader
+        headers['Authorization'] = authheader
 
         return headers
 
@@ -112,7 +114,7 @@ class ECPConnection(ConnectionUserAndKey):
         L.append('')
         body = '\r\n'.join(L)
         content_type = 'multipart/form-data; boundary=%s' % boundary
-        header = {'Content-Type':content_type}
+        header = {'Content-Type': content_type}
         return header, body
 
 
@@ -134,7 +136,7 @@ class ECPNodeDriver(NodeDriver):
         res = self.connection.request('/rest/hosting/vm/list').parse_body()
 
         #Put together a list of node objects
-        nodes=[]
+        nodes = []
         for vm in res['vms']:
             node = self._to_node(vm)
             if not node == None:
@@ -188,7 +190,7 @@ class ECPNodeDriver(NodeDriver):
 
         #Turn the VM off
         #Black magic to make the POST requests work
-        d = self.connection._encode_multipart_formdata({'action':'stop'})
+        d = self.connection._encode_multipart_formdata({'action': 'stop'})
         self.connection.request(
                    '/rest/hosting/vm/%s' % node.id,
                    method='POST',
@@ -210,7 +212,7 @@ class ECPNodeDriver(NodeDriver):
 
         #Turn the VM back on.
         #Black magic to make the POST requests work
-        d = self.connection._encode_multipart_formdata({'action':'start'})
+        d = self.connection._encode_multipart_formdata({'action': 'start'})
         self.connection.request(
             '/rest/hosting/vm/%s' % node.id,
             method='POST',
@@ -228,10 +230,10 @@ class ECPNodeDriver(NodeDriver):
 
         #Shut down first
         #Black magic to make the POST requests work
-        d = self.connection._encode_multipart_formdata({'action':'stop'})
+        d = self.connection._encode_multipart_formdata({'action': 'stop'})
         self.connection.request(
             '/rest/hosting/vm/%s' % node.id,
-            method = 'POST',
+            method='POST',
             headers=d[0],
             data=d[1]
         ).parse_body()
@@ -251,7 +253,7 @@ class ECPNodeDriver(NodeDriver):
 
         #Delete the VM
         #Black magic to make the POST requests work
-        d = self.connection._encode_multipart_formdata({'action':'delete'})
+        d = self.connection._encode_multipart_formdata({'action': 'delete'})
         self.connection.request(
             '/rest/hosting/vm/%s' % (node.id),
             method='POST',
@@ -263,7 +265,7 @@ class ECPNodeDriver(NodeDriver):
 
     def list_images(self, location=None):
         """
-        Returns a list of all package templates aka appiances aka images
+        Returns a list of all package templates aka appiances aka images.
         """
 
         #Make the call
@@ -274,9 +276,9 @@ class ECPNodeDriver(NodeDriver):
         images = []
         for ptemplate in response['packages']:
             images.append(NodeImage(
-                id = ptemplate['uuid'],
-                name= '%s: %s' % (ptemplate['name'], ptemplate['description']),
-                driver = self,
+                id=ptemplate['uuid'],
+                name='%s: %s' % (ptemplate['name'], ptemplate['description']),
+                driver=self,
                 ))
 
         return images
@@ -294,13 +296,13 @@ class ECPNodeDriver(NodeDriver):
         sizes = []
         for htemplate in response['templates']:
             sizes.append(NodeSize(
-                id = htemplate['uuid'],
-                name = htemplate['name'],
-                ram = htemplate['memory'],
-                disk = 0,  # Disk is independent of hardware template.
-                bandwidth = 0,  # There is no way to keep track of bandwidth.
-                price = 0,  # The billing system is external.
-                driver = self,
+                id=htemplate['uuid'],
+                name=htemplate['name'],
+                ram=htemplate['memory'],
+                disk=0,  # Disk is independent of hardware template.
+                bandwidth=0,  # There is no way to keep track of bandwidth.
+                price=0,  # The billing system is external.
+                driver=self,
                 ))
 
         return sizes
@@ -344,7 +346,7 @@ class ECPNodeDriver(NodeDriver):
         response = self.connection.request(
             '/rest/hosting/vm/',
             method='PUT',
-            headers = d[0],
+            headers=d[0],
             data=d[1]
         ).parse_body()
 

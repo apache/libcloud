@@ -16,6 +16,9 @@
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
+
 __all__ = [
     'API_HOST',
     'API_ROOT',
@@ -79,7 +82,11 @@ class LinodeResponse(JsonResponse):
 
         @keyword response: The raw response returned by urllib
         @return: parsed L{LinodeResponse}"""
-        self.body = response.read()
+        self.body = self._decompress_response(response=response)
+
+        if PY3:
+            self.body = b(self.body).decode('utf-8')
+
         self.status = response.status
         self.headers = dict(response.getheaders())
         self.error = response.reason
@@ -143,17 +150,22 @@ class LinodeResponse(JsonResponse):
 
 
 class LinodeConnection(ConnectionKey):
-    """A connection to the Linode API
+    """
+    A connection to the Linode API
 
     Wraps SSL connections to the Linode API, automagically injecting the
-    parameters that the API needs for each request."""
+    parameters that the API needs for each request.
+    """
     host = API_HOST
     responseCls = LinodeResponse
 
     def add_default_params(self, params):
-        """Add parameters that are necessary for every request
+        """
+        Add parameters that are necessary for every request
 
-        This method adds C{api_key} and C{api_responseFormat} to the request."""
+        This method adds C{api_key} and C{api_responseFormat} to
+        the request.
+        """
         params["api_key"] = self.key
         # Be explicit about this in case the default changes.
         params["api_responseFormat"] = "json"

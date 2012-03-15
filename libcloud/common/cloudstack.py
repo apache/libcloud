@@ -44,7 +44,8 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         signature.sort(key=lambda x: x[0])
         signature = urlencode(signature)
         signature = signature.lower().replace('+', '%20')
-        signature = hmac.new(b(self.key), msg=b(signature), digestmod=hashlib.sha1)
+        signature = hmac.new(b(self.key), msg=b(signature),
+                             digestmod=hashlib.sha1)
         return base64.b64encode(b(signature.digest()))
 
     def add_default_params(self, params):
@@ -73,7 +74,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
                            method='GET', context=None):
         return context
 
-    def get_poll_request_kwargs(self, response, context):
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response['jobid']
         kwargs = {'command': 'queryAsyncJobResult', 'jobid': job_id}
         return kwargs

@@ -26,10 +26,11 @@ __all__ = [
 
 class Member(object):
 
-    def __init__(self, id, ip, port):
+    def __init__(self, id, ip, port, extra=None):
         self.id = str(id) if id else None
         self.ip = ip
         self.port = port
+        self.extra = extra or {}
 
     def __repr__(self):
         return ('<Member: id=%s, address=%s:%s>' % (self.id,
@@ -161,6 +162,25 @@ class Driver(BaseDriver):
 
         raise NotImplementedError(
                 'get_balancer not implemented for this driver')
+
+    def update_balancer(self, balancer, **kwargs):
+        """
+        Sets the name, algorithm, protocol, or port on a load balancer.
+
+        @keyword    name: New load balancer name
+        @type       metadata: C{str}
+
+        @keyword    algorithm: New load balancer algorithm
+        @type       metadata: C{libcloud.loadbalancer.base.Algorithm}
+
+        @keyword    protocol: New load balancer protocol
+        @type       metadata: C{str}
+
+        @keyword    port: New load balancer port
+        @type       metadata: C{int}
+        """
+        raise NotImplementedError(
+                'update_balancer not implemented for this driver')
 
     def balancer_attach_compute_node(self, balancer, node):
         """

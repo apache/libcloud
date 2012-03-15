@@ -27,20 +27,22 @@ except:
 
 import libcloud
 
-
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import u
 from libcloud.utils.py3 import b
 
 from libcloud.utils.misc import lowercase_keys
+from libcloud.utils.compression import decompress_data
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
 LibcloudHTTPConnection = httplib.HTTPConnection
+
 
 class Response(object):
     """
@@ -57,7 +59,7 @@ class Response(object):
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = response.read().strip()
+        self.body = self._decompress_response(response=response)
 
         if PY3:
             self.body = b(self.body).decode('utf-8')
@@ -105,6 +107,31 @@ class Response(object):
         @return: C{True} or C{False}
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
+
+    def _decompress_response(self, response):
+        """
+        Decompress a response body if it is using deflate or gzip encoding.
+
+        @return: Decompressed response
+        """
+        headers = lowercase_keys(dict(response.getheaders()))
+        encoding = headers.get('content-encoding', None)
+
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data is not None:
+            return original_data
+
+        body = response.read()
+
+        if encoding in  ['zlib', 'deflate']:
+            body = decompress_data('zlib', body)
+        elif encoding in ['gzip', 'x-gzip']:
+            body = decompress_data('gzip', body)
+        else:
+            body = body.strip()
+
+        return body
 
 
 class JsonResponse(Response):
@@ -213,22 +240,40 @@ class LoggingConnection():
             def __init__(self, s):
                 self.s = s
 
-            def makefile(self, mode, foo):
-                return StringIO(self.s)
+            def makefile(self, *args, **kwargs):
+                if PY3:
+                    from io import BytesIO
+                    cls = BytesIO
+                else:
+                    cls = StringIO
+
+                return cls(b(self.s))
         rr = r
+        original_data = body
+        headers = lowercase_keys(dict(r.getheaders()))
+
+        encoding = headers.get('content-encoding', None)
+
+        if encoding in  ['zlib', 'deflate']:
+            body = decompress_data('zlib', body)
+        elif encoding in ['gzip', 'x-gzip']:
+            body = decompress_data('gzip', body)
+
         if r.chunked:
             ht += "%x\r\n" % (len(body))
-            ht += body
+            ht += u(body)
             ht += "\r\n0\r\n"
         else:
-            ht += body
-        rr = httplib.HTTPResponse(fakesock(ht),
+            ht += u(body)
+        rr = httplib.HTTPResponse(sock=fakesock(ht),
                                   method=r._method,
                                   debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
                % (id(self), id(r)))
+
+        rr._original_data = body
         return (rr, rv)
 
     def _log_curl(self, method, url, body, headers):
@@ -243,13 +288,18 @@ class LoggingConnection():
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
 
-        cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
+        cmd.extend(["--compress"])
+        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
+                                             self.port, url))])
         return " ".join(cmd)
+
 
 class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     """
     Utility Class for logging HTTPS connections
     """
+
+    protocol = 'https'
 
     def getresponse(self):
         r = LibcloudHTTPSConnection.getresponse(self)
@@ -269,10 +319,13 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
         return LibcloudHTTPSConnection.request(self, method, url, body,
                                                headers)
 
+
 class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
     Utility Class for logging HTTP connections
     """
+
+    protocol = 'http'
 
     def getresponse(self):
         r = LibcloudHTTPConnection.getresponse(self)
@@ -377,9 +430,11 @@ class Connection(object):
         secure = self.secure
 
         if getattr(self, 'base_url', None) and base_url == None:
-            (host, port, secure, request_path) = self._tuple_from_url(self.base_url)
+            (host, port,
+             secure, request_path) = self._tuple_from_url(self.base_url)
         elif base_url != None:
-            (host, port, secure, request_path) = self._tuple_from_url(base_url)
+            (host, port,
+             secure, request_path) = self._tuple_from_url(base_url)
         else:
             host = host or self.host
             port = port or self.port
@@ -405,8 +460,8 @@ class Connection(object):
         """
         Append a token to a user agent string.
 
-        Users of the library should call this to uniquely identify thier requests
-        to a provider.
+        Users of the library should call this to uniquely identify thier
+        requests to a provider.
 
         @type token: C{str}
         @param token: Token to add to the user agent.
@@ -464,6 +519,9 @@ class Connection(object):
         headers = self.add_default_headers(headers)
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
+
+        # Indicate that support gzip and deflate compression
+        headers.update({'Accept-Encoding': 'gzip,deflate'})
 
         p = int(self.port)
 
@@ -557,6 +615,7 @@ class Connection(object):
         """
         return data
 
+
 class PollingConnection(Connection):
     """
     Connection class which can also work with the async APIs.
@@ -618,14 +677,16 @@ class PollingConnection(Connection):
                                          context=context)
         response = request(**kwargs)
         kwargs = self.get_poll_request_kwargs(response=response,
-                                              context=context)
+                                              context=context,
+                                              request_kwargs=kwargs)
 
         end = time.time() + self.timeout
         completed = False
         while time.time() < end and not completed:
             response = request(**kwargs)
             completed = self.has_completed(response=response)
-            time.sleep(self.poll_interval)
+            if not completed:
+                time.sleep(self.poll_interval)
 
         if not completed:
             raise LibcloudError('Job did not complete in %s seconds' %
@@ -643,13 +704,17 @@ class PollingConnection(Connection):
                   'headers': headers, 'method': method}
         return kwargs
 
-    def get_poll_request_kwargs(self, response, context):
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
         """
         Return keyword arguments which are passed to the request() method when
         polling for the job status.
 
         @param response: Response object returned by poll request.
         @type response: C{HTTPResponse}
+
+        @param request_kwargs: Kwargs previously used to initiate the
+                                  poll request.
+        @type response: C{dict}
 
         @return C{dict} Keyword arguments
         """
@@ -676,19 +741,23 @@ class ConnectionKey(Connection):
         Initialize `user_id` and `key`; set `secure` to an C{int} based on
         passed value.
         """
-        super(ConnectionKey, self).__init__(secure=secure, host=host, port=port, url=url)
+        super(ConnectionKey, self).__init__(secure=secure, host=host,
+                                            port=port, url=url)
         self.key = key
+
 
 class ConnectionUserAndKey(ConnectionKey):
     """
-    Base connection which accepts a user_id and key
+    Base connection which accepts a user_id and key.
     """
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None, url=None):
+    def __init__(self, user_id, key, secure=True,
+                 host=None, port=None, url=None):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
-                                                   host=host, port=port, url=url)
+                                                   host=host, port=port,
+                                                   url=url)
         self.user_id = user_id
 
 

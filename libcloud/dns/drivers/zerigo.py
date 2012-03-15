@@ -45,20 +45,6 @@ VALID_RECORD_EXTRA_PARAMS = ['notes', 'ttl', 'priority']
 # Number of items per page (maximum limit is 1000)
 ITEMS_PER_PAGE = 100
 
-RECORD_TYPE_MAP = {
-    RecordType.A: 'A',
-    RecordType.AAAA: 'AAAA',
-    RecordType.CNAME: 'CNAME',
-    RecordType.MX: 'MX',
-    RecordType.REDIRECT: 'REDIRECT',
-    RecordType.TXT: 'TXT',
-    RecordType.SRV: 'SRV',
-    RecordType.NAPTR: 'NAPTR',
-    RecordType.NS: 'NS',
-    RecordType.PTR: 'PTR',
-    RecordType.SPF: 'SPF',
-}
-
 
 class ZerigoError(LibcloudError):
     def __init__(self, code, errors):
@@ -141,8 +127,19 @@ class ZerigoDNSDriver(DNSDriver):
     name = 'Zerigo DNS'
     connectionCls = ZerigoDNSConnection
 
-    def list_record_types(self):
-        return list(RECORD_TYPE_MAP.keys())
+    RECORD_TYPE_MAP = {
+        RecordType.A: 'A',
+        RecordType.AAAA: 'AAAA',
+        RecordType.CNAME: 'CNAME',
+        RecordType.MX: 'MX',
+        RecordType.REDIRECT: 'REDIRECT',
+        RecordType.TXT: 'TXT',
+        RecordType.SRV: 'SRV',
+        RecordType.NAPTR: 'NAPTR',
+        RecordType.NS: 'NS',
+        RecordType.PTR: 'PTR',
+        RecordType.SPF: 'SPF',
+    }
 
     def list_zones(self):
         value_dict = {'type': 'zones'}
@@ -332,7 +329,7 @@ class ZerigoDNSDriver(DNSDriver):
 
         if type:
             type_elem = ET.SubElement(record_elem, 'host-type')
-            type_elem.text = RECORD_TYPE_MAP[type]
+            type_elem.text = self.RECORD_TYPE_MAP[type]
 
         if data:
             data_elem = ET.SubElement(record_elem, 'data')

@@ -30,13 +30,14 @@ import warnings
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
+from libcloud.utils.py3 import urlparse
 
 import base64
 
 from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation
@@ -106,8 +107,13 @@ class OpenStackResponse(Response):
             text = "; ".join([err.text or '' for err in body.getiterator()
                               if err.text])
         elif self.has_content_type('application/json'):
-            text = ';'.join([fault_data['message'] for fault_data
-                             in body.values()])
+            values = body.values()
+
+            if len(values) > 0 and 'message' in values[0]:
+                text = ';'.join([fault_data['message'] for fault_data
+                                 in values])
+            else:
+                text = body
         else:
             # while we hope a response is always one of xml or json, we have
             # seen html or text in the past, its not clear we can really do
@@ -120,6 +126,17 @@ class OpenStackResponse(Response):
 
 class OpenStackComputeConnection(OpenStackBaseConnection):
 
+    def get_endpoint(self):
+
+        # default config for http://devstack.org/
+        ep = self.service_catalog.get_endpoint(service_type='compute',
+                                               name='nova',
+                                               region='RegionOne')
+        if 'publicURL' in ep:
+            return ep['publicURL']
+
+        raise LibcloudError('Could not find specified endpoint')
+
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
         if not headers:
@@ -131,7 +148,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             headers = {'Content-Type': self.default_content_type}
 
         if method == "GET":
-            params['cache-busting'] = binascii.hexlify(os.urandom(8))
+            self._add_cache_busting_to_params(params)
 
         return super(OpenStackComputeConnection, self).request(
             action=action,
@@ -244,7 +261,6 @@ class OpenStack_1_0_Response(OpenStackResponse):
 
 class OpenStack_1_0_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_0_Response
-    _url_key = "server_url"
     default_content_type = 'application/xml; charset=UTF-8'
     accept_format = 'application/xml'
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
@@ -293,7 +309,9 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                              'created': element.get('created'),
                              'status': element.get('status'),
                              'serverId': element.get('serverId'),
-                             'progress': element.get('progress')})
+                             'progress': element.get('progress'),
+                             'minDisk': element.get('minDisk'),
+                             'minRam': element.get('minRam')})
 
     def _change_password_or_name(self, node, name=None, password=None):
         uri = '/servers/%s' % (node.id)
@@ -765,7 +783,6 @@ class OpenStack_1_1_Response(OpenStackResponse):
 
 class OpenStack_1_1_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_1_Response
-    _url_key = "server_url"
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
 
@@ -828,6 +845,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return images
 
     def _to_image(self, api_image):
+        server = api_image.get('server', {})
         return NodeImage(
                       id=api_image['id'],
                       name=api_image['name'],
@@ -838,6 +856,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  status=api_image['status'],
                                  progress=api_image.get('progress'),
                                  metadata=api_image.get('metadata'),
+                                 serverId=server.get('id'),
+                                 minDisk=api_image.get('minDisk'),
+                                 minRam=api_image.get('minRam'),
                       )
                   )
 
@@ -934,8 +955,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             optional_params['metadata'] = metadata
         resp = self._node_action(node, 'createImage', name=name,
                                  **optional_params)
-        # TODO: concevt location header into NodeImage object
-        return resp.status == httplib.ACCEPTED
+        image_id = self._extract_image_id_from_url(resp.headers['location'])
+        return self.ex_get_image(image_id=image_id)
 
     def ex_set_server_name(self, node, name):
         """
@@ -991,12 +1012,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                    .object['image'])
 
     def ex_delete_image(self, image):
-        # This has not yet been implemented by OpenStack 1.1
-        raise NotImplementedError()
-
         resp = self.connection.request('/images/%s' % (image.id,),
                                        method='DELETE')
-        return resp.status == httplib.ACCEPTED
+        return resp.status == httplib.NO_CONTENT
 
     def _node_action(self, node, action, **params):
         params = params or None
@@ -1040,6 +1058,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                      link['rel'] == 'self'),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass'),
+                created=api_node['created'],
+                updated=api_node['updated'],
             ),
         )
 
@@ -1068,3 +1088,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 )
             except KeyError:
                 return(0.0)
+
+    def _extract_image_id_from_url(self, location_header):
+        path = urlparse.urlparse(location_header).path
+        image_id = path.split('/')[-1]
+        return image_id

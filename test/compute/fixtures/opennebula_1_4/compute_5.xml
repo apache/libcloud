@@ -2,7 +2,7 @@
 <COMPUTE>
     <ID>5</ID>
     <NAME>Compute 5</NAME>
-    <STATE>RUNNING</STATE>
+    <STATE>ACTIVE</STATE>
     <STORAGE>
         <DISK image="5" dev="sda1"/>
         <FS size="512" format="ext3" dev="sda3"/>

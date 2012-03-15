@@ -42,7 +42,15 @@ Making a release (for release managers)
 
   TODO
 
-6. Updating a website and doap_libcloud
+6. Generate API docs and add them to the SVN repository
+
+  python setup.py apidocs
+  cp -r apidocs ../site/content/apidocs/<version>
+
+7. Update latest API doc version in ../site/content/apidocs/index.html and
+  ../site/content./apidocs/.htaccess
+
+8. Updating a website and doap_libcloud
 
  - Update "News" page
 
@@ -50,14 +58,14 @@ Making a release (for release managers)
 
  - Update "Get it" section in the sidebar
 
- - Update doap_libcloud.py and add info about the new version
+ - Update doap_libcloud.rdf and add info about the new version
 
-7. Sending announcements
+9. Sending announcements
 
  - Send a release announcement to {dev,users}@libcloud.apache.org. If it's a
    major release also send it to announce@apache.org.
 
- - Send a release announcement to Twitter
+ - Send a release announcement to Twitter & Google+
 
 Miscellaneous:
 

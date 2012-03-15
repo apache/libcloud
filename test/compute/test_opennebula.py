@@ -38,6 +38,11 @@ from test.compute import TestCaseMixin
 from test.secrets import OPENNEBULA_PARAMS
 
 
+class OpenNebulaCaseMixin(TestCaseMixin):
+    def test_reboot_node_response(self):
+        pass
+
+
 class OpenNebula_ResponseTests(unittest.TestCase):
     XML = """<?xml version="1.0" encoding="UTF-8"?><root/>"""
 
@@ -53,7 +58,7 @@ class OpenNebula_ResponseTests(unittest.TestCase):
             self.assertEqual(exceptionType, type(InvalidCredsError()))
 
 
-class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_1_4_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v1.4.
     """
@@ -85,7 +90,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].name, None)
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -106,26 +111,18 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
-    def test_reboot_node(self):
-        """
-        Test reboot_node functionality.
-        """
-        node = Node(5, None, None, None, None, self.driver)
-        ret = self.driver.reboot_node(node)
-        self.assertTrue(ret)
-
     def test_list_nodes(self):
         """
         Test list_nodes functionality.
         """
         nodes = self.driver.list_nodes()
 
-        self.assertEqual(len(nodes), 2)
+        self.assertEqual(len(nodes), 3)
         node = nodes[0]
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, None)
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -141,7 +138,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '15')
         self.assertEqual(node.name, 'Compute 15')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, None)
         self.assertEqual(node.public_ips[0].address, '192.168.0.2')
@@ -153,6 +150,21 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.private_ips, [])
         self.assertEqual(node.image.id, '15')
         self.assertEqual(node.image.extra['dev'], 'sda1')
+        node = nodes[2]
+        self.assertEqual(node.id, '25')
+        self.assertEqual(node.name, 'Compute 25')
+        self.assertEqual(node.state,
+                         NodeState.UNKNOWN)
+        self.assertEqual(node.public_ips[0].id, '5')
+        self.assertEqual(node.public_ips[0].name, None)
+        self.assertEqual(node.public_ips[0].address, '192.168.0.3')
+        self.assertEqual(node.public_ips[0].size, 1)
+        self.assertEqual(node.public_ips[1].id, '15')
+        self.assertEqual(node.public_ips[1].name, None)
+        self.assertEqual(node.public_ips[1].address, '192.168.1.3')
+        self.assertEqual(node.public_ips[1].size, 1)
+        self.assertEqual(node.private_ips, [])
+        self.assertEqual(node.image, None)
 
     def test_list_images(self):
         """
@@ -242,7 +254,7 @@ class OpenNebula_1_4_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
 
-class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_2_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v2.0 through v2.2.
     """
@@ -277,7 +289,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -306,14 +318,6 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
-    def test_reboot_node(self):
-        """
-        Test reboot_node functionality.
-        """
-        node = Node(5, None, None, None, None, self.driver)
-        ret = self.driver.reboot_node(node)
-        self.assertTrue(ret)
-
     def test_list_nodes(self):
         """
         Test list_nodes functionality.
@@ -325,7 +329,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '5')
         self.assertEqual(node.name, 'Compute 5')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.1')
@@ -342,8 +346,10 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.size.id, '1')
         self.assertEqual(node.size.name, 'small')
         self.assertEqual(node.size.ram, 1024)
-        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu, int))
-        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu, int))
+        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu,
+                                                            int))
+        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu,
+                                                             int))
         self.assertEqual(node.size.cpu, 1)
         self.assertEqual(node.size.vcpu, None)
         self.assertEqual(node.size.disk, None)
@@ -361,7 +367,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '15')
         self.assertEqual(node.name, 'Compute 15')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['RUNNING'])
+                         OpenNebulaNodeDriver.NODE_STATE_MAP['ACTIVE'])
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.2')
@@ -378,8 +384,10 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.size.id, '1')
         self.assertEqual(node.size.name, 'small')
         self.assertEqual(node.size.ram, 1024)
-        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu, int))
-        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu, int))
+        self.assertTrue(node.size.cpu is None or isinstance(node.size.cpu,
+                                                            int))
+        self.assertTrue(node.size.vcpu is None or isinstance(node.size.vcpu,
+                                                             int))
         self.assertEqual(node.size.cpu, 1)
         self.assertEqual(node.size.vcpu, None)
         self.assertEqual(node.size.disk, None)
@@ -397,7 +405,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, '25')
         self.assertEqual(node.name, 'Compute 25')
         self.assertEqual(node.state,
-                         OpenNebulaNodeDriver.NODE_STATE_MAP['UNKNOWN'])
+                         NodeState.UNKNOWN)
         self.assertEqual(node.public_ips[0].id, '5')
         self.assertEqual(node.public_ips[0].name, 'Network 5')
         self.assertEqual(node.public_ips[0].address, '192.168.0.3')
@@ -412,7 +420,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.size, None)
         self.assertEqual(node.image, None)
         context = node.extra['context']
-        self.assertEqual(context['hostname'], 'compute-25')
+        self.assertEqual(context, {})
 
     def test_list_images(self):
         """
@@ -517,7 +525,7 @@ class OpenNebula_2_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(network.size, '256')
 
 
-class OpenNebula_3_0_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_3_0_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v3.0.
     """
@@ -560,7 +568,7 @@ class OpenNebula_3_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
 
-class OpenNebula_3_2_Tests(unittest.TestCase, TestCaseMixin):
+class OpenNebula_3_2_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v3.2.
     """
@@ -572,6 +580,15 @@ class OpenNebula_3_2_Tests(unittest.TestCase, TestCaseMixin):
         OpenNebulaNodeDriver.connectionCls.conn_classes = (
             OpenNebula_3_2_MockHttp, OpenNebula_3_2_MockHttp)
         self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.2',))
+
+    def test_reboot_node(self):
+        """
+        Test reboot_node functionality.
+        """
+        image = NodeImage(id=5, name='Ubuntu 9.04 LAMP', driver=self.driver)
+        node = Node(5, None, None, None, None, self.driver, image=image)
+        ret = self.driver.reboot_node(node)
+        self.assertTrue(ret)
 
     def test_list_sizes(self):
         """
@@ -685,6 +702,24 @@ class OpenNebula_1_4_MockHttp(MockHttp):
         """
         if method == 'GET':
             body = self.fixtures.load('compute_15.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'PUT':
+            body = ""
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.OK, body, {},
+                    httplib.responses[httplib.OK])
+
+    def _compute_25(self, method, url, body, headers):
+        """
+        Compute entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures.load('compute_25.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         if method == 'PUT':
@@ -957,6 +992,24 @@ class OpenNebula_3_2_MockHttp(OpenNebula_3_0_MockHttp):
     """
 
     fixtures_3_2 = ComputeFileFixtures('opennebula_3_2')
+
+    def _compute_5(self, method, url, body, headers):
+        """
+        Compute entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures.load('compute_5.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'PUT':
+            body = ""
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
 
     def _instance_type(self, method, url, body, headers):
         """

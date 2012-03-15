@@ -72,6 +72,13 @@ EC2_INSTANCE_TYPES = {
         'disk': 160,
         'bandwidth': None
     },
+    'm1.medium': {
+        'id': 'm1.medium',
+        'name': 'Medium Instance',
+        'ram': 3700,
+        'disk': 410,
+        'bandwidth': None
+    },
     'm1.large': {
         'id': 'm1.large',
         'name': 'Large Instance',
