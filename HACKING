@@ -1,0 +1,74 @@
+General Information
+===================
+ * URL: http://libcloud.apache.org/libcloud/devinfo.html
+
+Git Repositories
+===================
+ * Official Git Mirror:  git://git.apache.org/libcloud.git
+ * Github Mirror:        git://github.com/apache/libcloud.git
+
+Using The Git-SVN Bridge (For Committers)
+=========================================
+
+ $ git clone git://git.apache.org/libcloud libcloud
+ $ cd libcloud
+
+ $ curl http://git.apache.org/authors.txt > .git/authors.txt
+ $ git config svn.authorsfile ".git/authors.txt"
+
+ # Optionally, set your Apache commiter info, if different from global
+ $ git config user.name "Your Name"
+ $ git config user.email "you@example.org"
+
+ $ git svn init \
+       --prefix=origin/ \
+       --tags=tags \
+       --trunk=trunk \
+       --branches=branches \
+       https://svn.apache.org/repos/asf/incubator/libcloud
+
+ $ git svn rebase
+
+ To push commits back to SVN:
+ $ git svn dcommit
+
+Testing
+=======
+
+ To run the libcloud test suite you need to have the following extra
+ dependencies installed:
+
+ * mock (pip install mock)
+ * coverage (pip install coverage) - you only need this library if you
+   want to generate a test coverage report
+
+ Libcloud includes an example secrets.py file at:
+  test/secrets.py-dist
+
+ To run the test cases, you most likely want to run:
+  $ cp test/secrets.py-dist  test/secrets.py
+
+ This is done to prevent accidental commits of a developers provider credentials.
+
+ To run all suites:
+
+  libcloud$ python setup.py test
+  running test
+  ................................................................................................
+  ----------------------------------------------------------------------
+  Ran 96 tests in 0.182s
+
+  OK
+
+ To run specific tests:
+
+  libcloud$ PYTHONPATH=. python test/compute/test_base.py
+  .......
+  ----------------------------------------------------------------------
+  Ran 7 tests in 0.001s
+
+  OK
+
+ To generate test coverage report run:
+
+  libcloud$ PYTHONPATH=. python setup.py coverage

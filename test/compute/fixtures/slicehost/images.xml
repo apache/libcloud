@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<images type="array">
+  <image>
+    <name>CentOS 5.2</name>
+    <id type="integer">2</id>
+  </image>
+  <image>
+    <name>Gentoo 2008.0</name>
+    <id type="integer">3</id>
+  </image>
+  <image>
+    <name>Debian 5.0 (lenny)</name>
+    <id type="integer">4</id>
+  </image>
+  <image>
+    <name>Fedora 10 (Cambridge)</name>
+    <id type="integer">5</id>
+  </image>
+  <image>
+    <name>CentOS 5.3</name>
+    <id type="integer">7</id>
+  </image>
+  <image>
+    <name>Ubuntu 9.04 (jaunty)</name>
+    <id type="integer">8</id>
+  </image>
+  <image>
+    <name>Arch 2009.02</name>
+    <id type="integer">9</id>
+  </image>
+  <image>
+    <name>Ubuntu 8.04.2 LTS (hardy)</name>
+    <id type="integer">10</id>
+  </image>
+  <image>
+    <name>Ubuntu 8.10 (intrepid)</name>
+    <id type="integer">11</id>
+  </image>
+  <image>
+    <name>Red Hat EL 5.3</name>
+    <id type="integer">12</id>
+  </image>
+  <image>
+    <name>Fedora 11 (Leonidas)</name>
+    <id type="integer">13</id>
+  </image>
+</images>

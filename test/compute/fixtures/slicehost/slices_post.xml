@@ -1,0 +1,16 @@
+<slice>
+  <name>slicetest</name>
+  <image-id type="integer">11</image-id>
+  <addresses type="array">
+    <address>10.176.168.15</address>
+    <address>67.23.20.114</address>
+  </addresses>
+  <root-password>fooadfa1231</root-password>
+  <progress type="integer">0</progress>
+  <id type="integer">71907</id>
+  <bw-out type="float">0.0</bw-out>
+  <bw-in type="float">0.0</bw-in>
+  <flavor-id type="integer">1</flavor-id>
+  <status>build</status>
+  <ip-address>10.176.168.15</ip-address>
+</slice>
