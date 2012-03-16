@@ -418,3 +418,24 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             params['cache-busting'] = cache_busting_number
         else:
             params.append(('cache-busting', cache_busting_number))
+
+
+class OpenStackDriverMixin(object):
+
+    def __init__(self, *args, **kwargs):
+        self._ex_force_base_url = kwargs.get('ex_force_base_url', None)
+        self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
+        self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
+        self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
+
+    def openstack_connection_kwargs(self):
+        rv = {}
+        if self._ex_force_base_url:
+            rv['ex_force_base_url'] = self._ex_force_base_url
+        if self._ex_force_auth_token:
+            rv['ex_force_auth_token'] = self._ex_force_auth_token
+        if self._ex_force_auth_url:
+            rv['ex_force_auth_url'] = self._ex_force_auth_url
+        if self._ex_force_auth_version:
+            rv['ex_force_auth_version'] = self._ex_force_auth_version
+        return rv

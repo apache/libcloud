@@ -29,7 +29,7 @@ from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.common.types import LibcloudError
 from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.loadbalancer.types import State, MemberCondition
-from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackBaseConnection, OpenStackDriverMixin
 from libcloud.common.rackspace import (
         AUTH_URL_US, AUTH_URL_UK)
 
@@ -286,7 +286,7 @@ class RackspaceUKConnection(RackspaceConnection):
     auth_url = AUTH_URL_UK
 
 
-class RackspaceLBDriver(Driver):
+class RackspaceLBDriver(Driver, OpenStackDriverMixin):
     connectionCls = RackspaceConnection
     api_name = 'rackspace_lb'
     name = 'Rackspace LB'
@@ -317,6 +317,13 @@ class RackspaceLBDriver(Driver):
     }
 
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
+
+    def __init__(self, *args, **kwargs):
+        OpenStackDriverMixin.__init__(self, *args, **kwargs)
+        super(RackspaceLBDriver, self).__init__(*args, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        return self.openstack_connection_kwargs()
 
     def list_protocols(self):
         return self._to_protocols(

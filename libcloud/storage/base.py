@@ -164,9 +164,9 @@ class StorageDriver(BaseDriver):
     hash_type = 'md5'
     supports_chunked_encoding = False
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
       super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                          host=host, port=port)
+                                          host=host, port=port, **kwargs)
 
     def list_containters(self):
         """
