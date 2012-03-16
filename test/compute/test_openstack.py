@@ -583,7 +583,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         try:
             self.driver_type(*self.driver_args, **kwargs)
             self.fail('Expected failure setting auth token without base url')
-        except LibcloudError as e:
+        except LibcloudError:
+            e = sys.exc_info()[1]
             pass
         else:
             self.fail('Expected failure setting auth token without base url')
