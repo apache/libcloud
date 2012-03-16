@@ -769,7 +769,7 @@ class BaseDriver(object):
     connectionCls = ConnectionKey
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None):
+                 api_version=None, **kwargs):
         """
         @keyword    key:    API key or username to used
         @type       key:    str

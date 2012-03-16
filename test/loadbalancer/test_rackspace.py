@@ -47,6 +47,32 @@ class RackspaceLBTests(unittest.TestCase):
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
 
+    def test_force_auth_token_kwargs(self):
+        base_url = 'https://ord.loadbalancer.api.rackspacecloud.com/v1.0/slug'
+        kwargs = {
+            'ex_force_auth_token': 'some-auth-token',
+            'ex_force_base_url': base_url
+        }
+        driver = RackspaceLBDriver('user', 'key', **kwargs)
+        driver.list_balancers()
+
+        self.assertEquals(kwargs['ex_force_auth_token'],
+            driver.connection.auth_token)
+        self.assertEquals('/v1.0/slug',
+            driver.connection.request_path)
+
+    def test_force_auth_url_kwargs(self):
+        kwargs = {
+            'ex_force_auth_version': '2.0',
+            'ex_force_auth_url': 'https://identity.api.rackspace.com'
+        }
+        driver = RackspaceLBDriver('user', 'key', **kwargs)
+
+        self.assertEquals(kwargs['ex_force_auth_url'],
+            driver.connection._ex_force_auth_url)
+        self.assertEquals(kwargs['ex_force_auth_version'],
+            driver.connection._auth_version)
+
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
 

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from libcloud.common.openstack import OpenStackDriverMixin
 
 __all__ = [
     'RackspaceUSDNSDriver',
@@ -118,7 +119,14 @@ class RackspaceUKDNSConnection(RackspaceDNSConnection):
     auth_url = AUTH_URL_UK
 
 
-class RackspaceDNSDriver(DNSDriver):
+class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
+
+    def __init__(self, *args, **kwargs):
+        OpenStackDriverMixin.__init__(self, *args, **kwargs)
+        super(RackspaceDNSDriver, self).__init__(*args, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        return self.openstack_connection_kwargs()
 
     RECORD_TYPE_MAP = {
         RecordType.A: 'A',
