@@ -60,6 +60,34 @@ class CloudFilesTests(unittest.TestCase):
     def tearDown(self):
         self._remove_test_file()
 
+    def test_force_auth_token_kwargs(self):
+        base_url = 'https://cdn2.clouddrive.com/v1/MossoCloudFS'
+        kwargs = {
+            'ex_force_auth_token': 'some-auth-token',
+            'ex_force_base_url': base_url
+        }
+        driver = CloudFilesStorageDriver('driver', 'dummy', **kwargs)
+        driver.list_containers()
+
+        self.assertEquals(kwargs['ex_force_auth_token'],
+            driver.connection.auth_token)
+        self.assertEquals('cdn2.clouddrive.com',
+            driver.connection.host)
+        self.assertEquals('/v1/MossoCloudFS',
+            driver.connection.request_path)
+
+    def test_force_auth_url_kwargs(self):
+        kwargs = {
+            'ex_force_auth_version': '2.0',
+            'ex_force_auth_url': 'https://identity.api.rackspace.com'
+        }
+        driver = CloudFilesStorageDriver('driver', 'dummy', **kwargs)
+
+        self.assertEquals(kwargs['ex_force_auth_url'],
+            driver.connection._ex_force_auth_url)
+        self.assertEquals(kwargs['ex_force_auth_version'],
+            driver.connection._auth_version)
+
     def test_invalid_json_throws_exception(self):
         CloudFilesMockHttp.type = 'MALFORMED_JSON'
         try:

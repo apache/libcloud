@@ -392,10 +392,10 @@ class NodeDriver(BaseDriver):
     NODE_STATE_MAP = {}
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None):
+                 api_version=None, **kwargs):
         super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
                                          host=host, port=port,
-                                         api_version=api_version)
+                                         api_version=api_version, **kwargs)
 
     def create_node(self, **kwargs):
         """Create a new node instance.

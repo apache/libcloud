@@ -24,7 +24,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import u
 
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
+                                  LibcloudError
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
@@ -573,6 +574,37 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(self.driver.connection.host, 'some_other_ex_force_base_url.com')
         self.assertEqual(self.driver.connection.port, '1222')
         self.assertEqual(self.driver.connection.request_path, '/some-service')
+
+    def test_auth_token_without_base_url_raises_exception(self):
+        kwargs = {
+            'ex_force_auth_version': '2.0',
+            'ex_force_auth_token': 'preset-auth-token'
+        }
+        try:
+            self.driver_type(*self.driver_args, **kwargs)
+            self.fail('Expected failure setting auth token without base url')
+        except LibcloudError:
+            e = sys.exc_info()[1]
+            pass
+        else:
+            self.fail('Expected failure setting auth token without base url')
+
+    def test_ex_force_auth_token_passed_to_connection(self):
+        base_url = 'https://servers.api.rackspacecloud.com/v1.1/slug'
+        kwargs = {
+            'ex_force_auth_version': '2.0',
+            'ex_force_auth_token': 'preset-auth-token',
+            'ex_force_base_url': base_url
+        }
+        driver = self.driver_type(*self.driver_args, **kwargs)
+        driver.list_nodes()
+
+        self.assertEquals(kwargs['ex_force_auth_token'],
+                          driver.connection.auth_token)
+        self.assertEquals('servers.api.rackspacecloud.com',
+                          driver.connection.host)
+        self.assertEquals('/v1.1/slug', driver.connection.request_path)
+        self.assertEquals(443, driver.connection.port)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
