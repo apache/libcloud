@@ -74,6 +74,10 @@ Changes with Apache Libcloud in development:
       LIBCLOUD-152
       [Adam Pickeral]
 
+    - Add ex_creaate_balancer method to the Rackspace driver and allow user to
+      pass 'vip' argument to it. ; LIBCLOUD-166
+      [Adam Pickeral]
+
 Changes with Apache Libcloud 0.8.0:
 
   *) General:

@@ -36,7 +36,7 @@ import base64
 
 from xml.etree import ElementTree as ET
 
-from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackBaseConnection, OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
@@ -156,7 +156,7 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
             method=method, headers=headers)
 
 
-class OpenStackNodeDriver(NodeDriver):
+class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
     """
@@ -193,6 +193,10 @@ class OpenStackNodeDriver(NodeDriver):
                     (api_version))
         return super(OpenStackNodeDriver, cls).__new__(cls)
 
+    def __init__(self, *args, **kwargs):
+        OpenStackDriverMixin.__init__(self, **kwargs)
+        super(OpenStackNodeDriver, self).__init__(*args, **kwargs)
+
     def destroy_node(self, node):
         uri = '/servers/%s' % (node.id)
         resp = self.connection.request(uri, method='DELETE')
@@ -222,14 +226,7 @@ class OpenStackNodeDriver(NodeDriver):
         return [NodeLocation(0, '', '', self)]
 
     def _ex_connection_class_kwargs(self):
-        rv = {}
-        if self._ex_force_base_url:
-            rv['ex_force_base_url'] = self._ex_force_base_url
-        if self._ex_force_auth_url:
-            rv['ex_force_auth_url'] = self._ex_force_auth_url
-        if self._ex_force_auth_version:
-            rv['ex_force_auth_version'] = self._ex_force_auth_version
-        return rv
+        return self.openstack_connection_kwargs()
 
     def ex_get_node_details(self, node_id):
         # @TODO: Remove this if in 0.6
@@ -284,9 +281,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     features = {"create_node": ["generates_password"]}
 
     def __init__(self, *args, **kwargs):
-        self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
-        self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
-        self._ex_force_auth_version = kwargs.pop('ex_force_auth_version', None)
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
                                                     None))
         self.XML_NAMESPACE = self.connectionCls.XML_NAMESPACE
@@ -802,10 +796,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     features = {"create_node": ["generates_password"]}
 
     def __init__(self, *args, **kwargs):
-        self._ex_force_base_url = kwargs.pop('ex_force_base_url', None)
-        self._ex_force_auth_url = kwargs.pop('ex_force_auth_url', None)
-        self._ex_force_auth_version = kwargs.pop('ex_force_auth_version',
-                                                 None)
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
                                                     None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)

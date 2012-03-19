@@ -40,7 +40,7 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.types import LazyList
-from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackBaseConnection, OpenStackDriverMixin
 
 from libcloud.common.rackspace import (
     AUTH_URL_US, AUTH_URL_UK)
@@ -139,12 +139,14 @@ class CloudFilesConnection(OpenStackBaseConnection):
             params = {}
 
         # FIXME: Massive hack.
-        # This driver dynamically changes the url in it's connection, based on arguments
+        # This driver dynamically changes the url in its connection, based on arguments
         # passed to request(). As such, we have to manually check and reset connection
         # params each request
         self._populate_hosts_and_request_paths()
-        ep = self.get_endpoint(cdn_request)
-        (self.host, self.port, self.secure, self.request_path) = self._ex_force_base_url or self._tuple_from_url(ep)
+        if not self._ex_force_base_url:
+            self._reset_connection_params(self.get_endpoint(cdn_request))
+        else:
+            self._reset_connection_params(self._ex_force_base_url)
 
         params['format'] = 'json'
 
@@ -156,6 +158,9 @@ class CloudFilesConnection(OpenStackBaseConnection):
             params=params, data=data,
             method=method, headers=headers,
             raw=raw)
+
+    def _reset_connection_params(self, endpoint_url):
+        (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(endpoint_url)
 
 
 class CloudFilesUSConnection(CloudFilesConnection):
@@ -174,7 +179,7 @@ class CloudFilesUKConnection(CloudFilesConnection):
     auth_url = AUTH_URL_UK
 
 
-class CloudFilesStorageDriver(StorageDriver):
+class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     """
     Base CloudFiles driver.
 
@@ -186,6 +191,10 @@ class CloudFilesStorageDriver(StorageDriver):
     connectionCls = CloudFilesConnection
     hash_type = 'md5'
     supports_chunked_encoding = True
+
+    def __init__(self, *args, **kwargs):
+        OpenStackDriverMixin.__init__(self, *args, **kwargs)
+        super(CloudFilesStorageDriver, self).__init__(*args, **kwargs)
 
     def list_containers(self):
         response = self.connection.request('')
@@ -538,6 +547,9 @@ class CloudFilesStorageDriver(StorageDriver):
         obj = Object(name=name, size=size, hash=etag, extra=extra,
                      meta_data=meta_data, container=container, driver=self)
         return obj
+
+    def _ex_connection_class_kwargs(self):
+        return self.openstack_connection_kwargs()
 
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     """

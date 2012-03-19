@@ -40,6 +40,31 @@ class RackspaceUSTests(unittest.TestCase):
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
 
+    def test_force_auth_token_kwargs(self):
+        kwargs = {
+            'ex_force_auth_token': 'some-auth-token',
+            'ex_force_base_url': 'https://dns.api.rackspacecloud.com/v1.0/11111'
+        }
+        driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
+        driver.list_zones()
+
+        self.assertEquals(kwargs['ex_force_auth_token'],
+            driver.connection.auth_token)
+        self.assertEquals('/v1.0/11111',
+            driver.connection.request_path)
+
+    def test_force_auth_url_kwargs(self):
+        kwargs = {
+            'ex_force_auth_version': '2.0',
+            'ex_force_auth_url': 'https://identity.api.rackspace.com'
+        }
+        driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
+
+        self.assertEquals(kwargs['ex_force_auth_url'],
+            driver.connection._ex_force_auth_url)
+        self.assertEquals(kwargs['ex_force_auth_version'],
+            driver.connection._auth_version)
+
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
         self.assertEqual(len(record_types), 7)

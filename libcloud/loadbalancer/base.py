@@ -96,9 +96,9 @@ class Driver(BaseDriver):
     _ALGORITHM_TO_VALUE_MAP = {}
     _VALUE_TO_ALGORITHM_MAP = {}
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
         super(Driver, self).__init__(key=key, secret=secret, secure=secure,
-                                     host=host, port=port)
+                                     host=host, port=port, **kwargs)
 
     def list_protocols(self):
         """
