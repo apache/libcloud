@@ -65,6 +65,15 @@ class RackspaceUSTests(unittest.TestCase):
         self.assertEquals(kwargs['ex_force_auth_version'],
             driver.connection._auth_version)
 
+    def test_gets_auth_2_0_endpoint(self):
+        driver = self.klass(*DNS_PARAMS_RACKSPACE,
+            ex_force_auth_version='2.0_password'
+        )
+        driver.connection._populate_hosts_and_request_paths()
+
+        self.assertEquals('https://dns.api.rackspacecloud.com/v1.0/11111',
+            driver.connection.get_endpoint())
+
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
         self.assertEqual(len(record_types), 7)
@@ -297,14 +306,23 @@ class RackspaceMockHttp(MockHttp):
     fixtures = DNSFileFixtures('rackspace')
     base_headers = {'content-type': 'application/json'}
 
-    # fake auth token response
+
     def _v1_1_auth(self, method, url, body, headers):
         body = self.fixtures.load('auth_1_1.json')
+        # fake auth token response
         headers = {'content-length': '657', 'vary': 'Accept,Accept-Encoding',
                    'server': 'Apache/2.2.13 (Red Hat)',
                    'connection': 'Keep-Alive',
                    'date': 'Sat, 29 Oct 2011 19:29:45 GMT',
                    'content-type': 'application/json'}
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
+
+    def _v2_0_tokens(self, method, url, body, headers):
+        body = self.fixtures.load('auth_2_0.json')
+        headers = {
+            'content-type': 'application/json'
+        }
         return (httplib.OK, body, headers,
                 httplib.responses[httplib.OK])
 

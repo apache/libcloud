@@ -101,14 +101,22 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
         if self._auth_version == "1.1":
             ep = self.service_catalog.get_endpoint(name="cloudServers")
 
-            if 'publicURL' in ep:
-                return ep['publicURL'].replace("servers", "dns")
-            else:
-                raise LibcloudError('Could not find specified endpoint')
+            return self._construct_dns_endpoint_from_servers_endpoint(ep)
+        elif "2.0" in self._auth_version:
+            ep = self.service_catalog.get_endpoint(name="cloudServers",
+                service_type="compute",
+                region=None)
 
+            return self._construct_dns_endpoint_from_servers_endpoint(ep)
         else:
             raise LibcloudError("Auth version %s not supported" % \
                 self._auth_version)
+
+    def _construct_dns_endpoint_from_servers_endpoint(self, ep):
+        if 'publicURL' in ep:
+            return ep['publicURL'].replace("servers", "dns")
+        else:
+            raise LibcloudError('Could not find specified endpoint')
 
 
 class RackspaceUSDNSConnection(RackspaceDNSConnection):

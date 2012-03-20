@@ -229,11 +229,13 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
     poll_interval = 2
     timeout = 80
 
-    def __init__(self, user_id, key, secure=True, **kwargs):
+    def __init__(self, user_id, key, secure=True, ex_force_region='ord',
+                 **kwargs):
         super(RackspaceConnection, self).__init__(user_id, key, secure,
                                                   **kwargs)
         self.api_version = 'v1.0'
         self.accept_format = 'application/json'
+        self._ex_force_region = ex_force_region
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -272,14 +274,23 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
         if self._auth_version == "1.1":
             ep = self.service_catalog.get_endpoint(name="cloudServers")
 
-            if 'publicURL' in ep:
-                return ep['publicURL'].replace("servers", "ord.loadbalancers")
-            else:
-                raise LibcloudError('Could not find specified endpoint')
+            return self._construct_loadbalancer_endpoint_from_servers_endpoint(ep)
+        elif "2.0" in self._auth_version:
+            ep = self.service_catalog.get_endpoint(name="cloudServers",
+                service_type="compute",
+                region=None)
 
+            return self._construct_loadbalancer_endpoint_from_servers_endpoint(ep)
         else:
             raise LibcloudError("Auth version %s not supported" % \
                 self._auth_version)
+
+    def _construct_loadbalancer_endpoint_from_servers_endpoint(self, ep):
+        if 'publicURL' in ep:
+            loadbalancer_prefix = "%s.loadbalancers" % self._ex_force_region
+            return ep['publicURL'].replace("servers", loadbalancer_prefix)
+        else:
+            raise LibcloudError('Could not find specified endpoint')
 
 
 class RackspaceUKConnection(RackspaceConnection):
@@ -320,10 +331,15 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
     def __init__(self, *args, **kwargs):
         OpenStackDriverMixin.__init__(self, *args, **kwargs)
+        self._ex_force_region = kwargs.pop('ex_force_region', None)
         super(RackspaceLBDriver, self).__init__(*args, **kwargs)
 
     def _ex_connection_class_kwargs(self):
-        return self.openstack_connection_kwargs()
+        kwargs = self.openstack_connection_kwargs()
+        if self._ex_force_region:
+            kwargs['ex_force_region'] = self._ex_force_region
+
+        return kwargs
 
     def list_protocols(self):
         return self._to_protocols(

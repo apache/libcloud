@@ -78,6 +78,14 @@ Changes with Apache Libcloud in development:
       pass 'vip' argument to it. ; LIBCLOUD-166
       [Adam Pickeral]
 
+    - Update Rackspace driver to support Auth 2.0. ; LIBCLOUD-165
+      [Dave King]
+
+  *) DNS:
+
+    - Update Rackspace driver to support Auth 2.0. ; LIBCLOUD-165
+      [Dave King]
+
 Changes with Apache Libcloud 0.8.0:
 
   *) General:

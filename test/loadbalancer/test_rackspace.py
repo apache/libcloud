@@ -73,6 +73,25 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(kwargs['ex_force_auth_version'],
             driver.connection._auth_version)
 
+    def test_gets_auth_2_0_endpoint_defaults_to_ord_region(self):
+        driver = RackspaceLBDriver('user', 'key',
+            ex_force_auth_version='2.0_password'
+        )
+        driver.connection._populate_hosts_and_request_paths()
+
+        self.assertEquals('https://ord.loadbalancers.api.rackspacecloud.com/v1.0/11111',
+            driver.connection.get_endpoint())
+
+    def test_gets_auth_2_0_endpoint_for_dfw(self):
+        driver = RackspaceLBDriver('user', 'key',
+            ex_force_auth_version='2.0_password',
+            ex_force_region='dfw'
+        )
+        driver.connection._populate_hosts_and_request_paths()
+
+        self.assertEquals('https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/11111',
+            driver.connection.get_endpoint())
+
     def test_list_protocols(self):
         protocols = self.driver.list_protocols()
 
@@ -1325,6 +1344,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         body = self.auth_fixtures.load('_v1_1__auth.json')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
+    def _v2_0_tokens(self, method, url, body, headers):
+        body = self.fixtures.load('auth_2_0.json')
+        headers = {
+            'content-type': 'application/json'
+        }
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
+
 
 class RackspaceLBWithVIPMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
@@ -1359,6 +1386,13 @@ class RackspaceLBWithVIPMockHttp(MockHttpTestCase):
         body = self.auth_fixtures.load('_v1_1__auth.json')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
+    def _v2_0_tokens(self, method, url, body, headers):
+        body = self.fixtures.load('auth_2_0.json')
+        headers = {
+            'content-type': 'application/json'
+        }
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
