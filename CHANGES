@@ -69,7 +69,7 @@ Changes with Apache Libcloud in development:
       the Rackspace driver.
       [Adam Pickeral]
 
-    - Add an extension method (ex_balancer_attach_members) for attaching 
+    - Add an extension method (ex_balancer_attach_members) for attaching
       multiple members to a load balancer in the Rackspace driver.
       LIBCLOUD-152
       [Adam Pickeral]

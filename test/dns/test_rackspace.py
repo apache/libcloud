@@ -66,9 +66,8 @@ class RackspaceUSTests(unittest.TestCase):
             driver.connection._auth_version)
 
     def test_gets_auth_2_0_endpoint(self):
-        driver = self.klass(*DNS_PARAMS_RACKSPACE,
-            ex_force_auth_version='2.0_password'
-        )
+        kwargs = {'ex_force_auth_version': '2.0_password'}
+        driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.connection._populate_hosts_and_request_paths()
 
         self.assertEquals('https://dns.api.rackspacecloud.com/v1.0/11111',
