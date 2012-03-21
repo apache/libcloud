@@ -32,7 +32,21 @@ DRIVERS = {
         Provider.NINEFOLD:
             ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
         Provider.BRIGHTBOX:
-            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver')
+            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
+        Provider.ELB_US_EAST:
+            ('libcloud.loadbalancer.drivers.aws', 'AWSLBDriver'),
+        Provider.ELB_US_WEST:
+            ('libcloud.loadbalancer.drivers.aws', 'ELBUSWestDriver'),
+        Provider.ELB_US_WEST_OREGON:
+            ('libcloud.loadbalancer.drivers.aws', 'ELBUSWestOregonDriver'),
+        Provider.ELB_EU_WEST:
+            ('libcloud.loadbalancer.drivers.aws', 'ELBEUWestDriver'),
+        Provider.ELB_AP_SOUTHEAST:
+            ('libcloud.loadbalancer.drivers.aws', 'ELBAPSEDriver'),
+        Provider.ELB_AP_NORTHEAST:
+            ('libcloud.loadbalancer.drivers.aws', 'ELBAPNEDriver'),
+        Provider.ELB_SA_EAST:
+            ('libcloud.loadbalancer.drivers.aws', 'ELBSAEastDriver'),
 }
 
 
