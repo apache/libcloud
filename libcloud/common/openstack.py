@@ -187,7 +187,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
-        resp = self.request('/v2.0/tokens/',
+        resp = self.request('/v2.0/tokens',
                     data=reqbody,
                     headers={'Content-Type': 'application/json'},
                     method='POST')
