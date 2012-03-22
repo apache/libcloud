@@ -36,6 +36,17 @@ API_VERSION = '2011-11-15'
 
 NAMESPACE = "http://elasticloadbalancing.amazonaws.com/doc/%s/" % (API_VERSION)
 
+AWS_AVAILABILITY_ZONE_MAP = {
+    'us-east-1': ['us-east-1a', 'us-east-1b', 'us-east-1c', 
+        'us-east-1d', 'us-east-1e'],
+    'us-west-1': ['us-west-1a', 'us-west-1b', 'us-west-1c'],
+    'us-west-2': ['us-west-2a', 'us-west-2b'],
+    'eu-west-1': ['eu-west-1a', 'eu-west-1b', 'eu-west-1c'],
+    'ap-northeast-1': ['ap-northeast-1a', 'ap-northeast-1b'],
+    'ap-southeast-1': ['ap-southeast-1a', 'ap-southeast-1b'],
+    'sa-east-1': ['sa-east-1a', 'sa-east-1b']
+}
+
 class ELBResponse(AWSBaseResponse):
     pass
 
@@ -43,6 +54,7 @@ class ELBConnection(EC2Connection):
     host = ELB_US_EAST_HOST
     responseCls = ELBResponse
 
+    # hack to get the new API_VERSION in
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
@@ -81,61 +93,119 @@ class AWSLBDriver(Driver):
                      'Unknown': State.UNKNOWN }
 
     def list_protocols(self):
-        return ['tcp', 'http']
+        return ['TCP', 'HTTP', 'HTTPS']
 
-    def list_balancers(self):
+    def list_balancers(self, ex_balancer_ids=None):
         params = {'Action': 'DescribeLoadBalancers'}
 
-        return self._to_balancers(self.connection.request('/', params=params).object)
+        if ex_balancer_ids:
+            params.update(
+                self._pathlist('LoadBalancerNames.member', ex_balancer_ids))
+
+        return self._to_balancers(
+            self.connection.request('/', params=params).object)
 
     def create_balancer(self, name, port, protocol, algorithm, members):
-        response = self._post('/%s/load_balancers' % API_VERSION, {
-          'name': name,
-          'nodes': list(map(self._member_to_node, members)),
-          'policy': self._algorithm_to_value(algorithm),
-          'listeners': [{'in': port, 'out': port, 'protocol': protocol}],
-          'healthcheck': {'type': protocol, 'port': port}
-        })
+        params = {'Action': 'CreateLoadBalancer', 'LoadBalancerName': name}
 
-        return self._to_balancer(response.object)
+        params.update(
+            {'Listeners.member.1.LoadBalancerPort': str(port),
+            'Listeners.member.1.InstancePort': str(members[0].port),
+            'Listeners.member.1.Protocol': protocol})
+        params.update(
+            self._pathlist('AvailabilityZones.member', 
+            AWS_AVAILABILITY_ZONE_MAP.get(self.region_name)))
+
+        balancer = self._to_balancer_from_response(
+            self.connection.request('/', params=params).object, name, port)
+
+        # will now register instances to the loadbalancer
+        map(self.balancer_attach_member, 
+            [balancer for member in members], members)
+
+        return balancer
 
     def destroy_balancer(self, balancer):
-        response = self.connection.request('/%s/load_balancers/%s' %
-                                           (API_VERSION, balancer.id),
-                                           method='DELETE')
+        params = {'Action': 'DeleteLoadBalancer', 
+            'LoadBalancerName': balancer.name}
 
-        return response.status == httplib.ACCEPTED
+        response = self.connection.request('/', params=params)
+
+        return response.status == httplib.OK
 
     def get_balancer(self, balancer_id):
-        data = self.connection.request('/%s/load_balancers/%s' % (API_VERSION,
-                                                         balancer_id)).object
 
-        return self._to_balancer(data)
+        return self.list_balancers([balancer_id])[0]
 
     def balancer_attach_compute_node(self, balancer, node):
         return self.balancer_attach_member(balancer, node)
 
     def balancer_attach_member(self, balancer, member):
-        path = '/%s/load_balancers/%s/add_nodes' % (API_VERSION, balancer.id)
+        params = {'Action': 'RegisterInstancesWithLoadBalancer', 
+            'LoadBalancerName': balancer.name}
+        params.update({'Instances.member.1.InstanceId': member.id})
 
-        response = self._post(path, {'nodes': [self._member_to_node(member)]})
-
+        self.connection.request('/', params=params)
         return member
 
     def balancer_detach_member(self, balancer, member):
-        path = '/%s/load_balancers/%s/remove_nodes' % (API_VERSION,
-                                                       balancer.id)
+        params = {'Action': 'DeregisterInstancesFromLoadBalancer', 
+            'LoadBalancerName': balancer.name}
+        params.update({'Instances.member.1.InstanceId': member.id})
 
-        response = self._post(path, {'nodes': [self._member_to_node(member)]})
-
-        return response.status == httplib.ACCEPTED
+        response = self.connection.request('/', params=params)
+        return response.status == httplib.OK
 
     def balancer_list_members(self, balancer):
-        path = '/%s/load_balancers/%s' % (API_VERSION, balancer.id)
+        params = {'Action': 'DescribeLoadBalancers'}
+        params.update(self._pathlist('LoadBalancerNames.member', [balancer.id]))
 
-        data = self.connection.request(path).object
+        data = self.connection.request('/', params=params).object
+        rs = findall(
+            element=data,
+            xpath='DescribeLoadBalancersResult/LoadBalancerDescriptions/member',
+            namespace=NAMESPACE)[0]
 
-        return list(map(self._node_to_member, data['nodes']))
+        node_elems = findall(
+            element=rs,
+            xpath='Instances/member',
+            namespace=NAMESPACE)
+
+        listener_elem = findall(
+            element=rs,
+            xpath='ListenerDescriptions/member',
+            namespace=NAMESPACE)[0]
+
+        port = findtext(
+            listener_elem,
+            'Listener/InstancePort',
+            NAMESPACE)
+
+        return list(map(self._node_to_member, node_elems, [port for e in node_elems]))
+
+    def _pathlist(self, key, arr):
+        """
+        Converts a key and an array of values into AWS query param format.
+        """
+        params = {}
+        i = 0
+        for value in arr:
+            i += 1
+            params["%s.%s" % (key, i)] = value
+        return params
+
+    def _to_balancer_from_response(self, response, name, port):
+        # we parse the dns name from the response
+        DNSName = findtext(response, 'DNSName', NAMESPACE)
+
+        return LoadBalancer(
+            id=name,
+            name=name,
+            state=self.LB_STATE_MAP.get('On', State.UNKNOWN),
+            ip=DNSName,
+            port=port,
+            driver=self.connection.driver
+        )
 
     def _post(self, path, data={}):
         headers = {'Content-Type': 'application/json'}
@@ -144,7 +214,8 @@ class AWSLBDriver(Driver):
                                        method='POST')
 
     def _to_balancers(self, elem):
-        return [self._to_balancer(rs) for rs in findall(element=elem, 
+        return [self._to_balancer(rs) for rs in findall(
+            element=elem, 
             xpath='DescribeLoadBalancersResult/LoadBalancerDescriptions/member',
             namespace=NAMESPACE)]
 
@@ -161,11 +232,8 @@ class AWSLBDriver(Driver):
             driver=self.connection.driver
         )
 
-    def _member_to_node(self, member):
-        return {'node': member.id}
-
-    def _node_to_member(self, data):
-        return Member(data['id'], None, None)
+    def _node_to_member(self, data, port):
+        return Member(findtext(data, 'InstanceId', NAMESPACE), None, port)
 
     def _public_ip(self, data):
         if len(data['cloud_ips']) > 0:
