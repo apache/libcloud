@@ -36,6 +36,10 @@ API_VERSION = '2011-11-15'
 
 NAMESPACE = "http://elasticloadbalancing.amazonaws.com/doc/%s/" % (API_VERSION)
 
+"""
+This maps the region names to their corresponding availability zones
+Used while creating a loadbalancer
+"""
 AWS_AVAILABILITY_ZONE_MAP = {
     'us-east-1': ['us-east-1a', 'us-east-1b', 'us-east-1c', 
         'us-east-1d', 'us-east-1e'],
@@ -48,9 +52,36 @@ AWS_AVAILABILITY_ZONE_MAP = {
 }
 
 class ELBResponse(AWSBaseResponse):
-    pass
+    """
+    ELB specific response parsing and error handling.
+    """
+
+    def parse_error(self):
+        err_list = []
+        try:
+            body = ET.XML(self.body)
+        except:
+            raise MalformedResponseError("Failed to parse XML",
+                                         body=self.body, driver=AWSLBDriver)
+
+        for err in body.findall('Errors/Error'):
+            code, message = err.getchildren()
+            err_list.append("%s: %s" % (code.text, message.text))
+            if code.text == "InvalidClientTokenId":
+                raise InvalidCredsError(err_list[-1])
+            if code.text == "SignatureDoesNotMatch":
+                raise InvalidCredsError(err_list[-1])
+            if code.text == "AuthFailure":
+                raise InvalidCredsError(err_list[-1])
+            if code.text == "OptInRequired":
+                raise InvalidCredsError(err_list[-1])
+        return "\n".join(err_list)
 
 class ELBConnection(EC2Connection):
+    """
+    Represents a single connection to the ELB Endpoint
+    """
+
     host = ELB_US_EAST_HOST
     responseCls = ELBResponse
 
@@ -85,17 +116,34 @@ class ELBSAEastConnection(ELBConnection):
     host = ELB_SA_EAST_HOST
 
 class AWSLBDriver(Driver):
+    """
+    Amazon ELB Driver
+    """
     connectionCls = ELBConnection
     path = '/'
     name = 'AWS'
 
-    LB_STATE_MAP = { 'On': State.RUNNING,
-                     'Unknown': State.UNKNOWN }
+    """
+    We don't know if there is a state other than running
+    """
+    LB_STATE_MAP = { 
+        'On': State.RUNNING,
+        'Unknown': State.UNKNOWN 
+    }
 
     def list_protocols(self):
+        """
+        We return static data since we can't get this via an API
+        """
         return ['TCP', 'HTTP', 'HTTPS']
 
     def list_balancers(self, ex_balancer_ids=None):
+        """
+        @type ex_balancer_ids: L{balancer.id}
+        @param ex_balancer_ids: This is an optional argument
+        used to filter the output list of balancers. It is
+        a list of balancer ids (names)
+        """
         params = {'Action': 'DescribeLoadBalancers'}
 
         if ex_balancer_ids:
@@ -103,9 +151,13 @@ class AWSLBDriver(Driver):
                 self._pathlist('LoadBalancerNames.member', ex_balancer_ids))
 
         return self._to_balancers(
-            self.connection.request('/', params=params).object)
+            self.connection.request(self.path, params=params).object)
 
     def create_balancer(self, name, port, protocol, algorithm, members):
+        """
+        The algorithm argument is ignored, as ELB doesn't 
+        support tweakable algorithms
+        """
         params = {'Action': 'CreateLoadBalancer', 'LoadBalancerName': name}
 
         params.update(
@@ -117,7 +169,7 @@ class AWSLBDriver(Driver):
             AWS_AVAILABILITY_ZONE_MAP.get(self.region_name)))
 
         balancer = self._to_balancer_from_response(
-            self.connection.request('/', params=params).object, name, port)
+            self.connection.request(self.path, params=params).object, name, port)
 
         # will now register instances to the loadbalancer
         map(self.balancer_attach_member, 
@@ -129,12 +181,14 @@ class AWSLBDriver(Driver):
         params = {'Action': 'DeleteLoadBalancer', 
             'LoadBalancerName': balancer.name}
 
-        response = self.connection.request('/', params=params)
+        response = self.connection.request(self.path, params=params)
 
         return response.status == httplib.OK
 
     def get_balancer(self, balancer_id):
-
+        """
+        Returns a single balancer with balancer_id
+        """
         return self.list_balancers([balancer_id])[0]
 
     def balancer_attach_compute_node(self, balancer, node):
@@ -145,7 +199,7 @@ class AWSLBDriver(Driver):
             'LoadBalancerName': balancer.name}
         params.update({'Instances.member.1.InstanceId': member.id})
 
-        self.connection.request('/', params=params)
+        self.connection.request(self.path, params=params)
         return member
 
     def balancer_detach_member(self, balancer, member):
@@ -153,14 +207,19 @@ class AWSLBDriver(Driver):
             'LoadBalancerName': balancer.name}
         params.update({'Instances.member.1.InstanceId': member.id})
 
-        response = self.connection.request('/', params=params)
+        response = self.connection.request(self.path, params=params)
         return response.status == httplib.OK
 
     def balancer_list_members(self, balancer):
+        """
+        We create the members, but since we don't have the IPs,
+        nor the ports, we just take a look at the listening ports of the
+        DescribeLoadBalancers call. The ip field is set to None
+        """
         params = {'Action': 'DescribeLoadBalancers'}
         params.update(self._pathlist('LoadBalancerNames.member', [balancer.id]))
 
-        data = self.connection.request('/', params=params).object
+        data = self.connection.request(self.path, params=params).object
         rs = findall(
             element=data,
             xpath='DescribeLoadBalancersResult/LoadBalancerDescriptions/member',
@@ -207,12 +266,6 @@ class AWSLBDriver(Driver):
             driver=self.connection.driver
         )
 
-    def _post(self, path, data={}):
-        headers = {'Content-Type': 'application/json'}
-
-        return self.connection.request(path, data=data, headers=headers,
-                                       method='POST')
-
     def _to_balancers(self, elem):
         return [self._to_balancer(rs) for rs in findall(
             element=elem, 
@@ -241,9 +294,10 @@ class AWSLBDriver(Driver):
         else:
             ip = None
 
+
 class ELBUSWestDriver(AWSLBDriver):
     """
-    Driver class for EC2 in the South America (Sao Paulo) Region
+    Driver class for ELB in the US West (N. California) Region
     """
 
     api_name = 'elb_us_west'
@@ -255,7 +309,7 @@ class ELBUSWestDriver(AWSLBDriver):
 
 class ELBUSWestOregonDriver(AWSLBDriver):
     """
-    Driver class for EC2 in the US West Oregon region.
+    Driver class for ELB in the US West Oregon region.
     """
 
     api_name = 'elb_us_west_oregon'
@@ -267,7 +321,7 @@ class ELBUSWestOregonDriver(AWSLBDriver):
 
 class ELBEUWestDriver(AWSLBDriver):
     """
-    Driver class for EC2 in the Western Europe Region
+    Driver class for ELB in the Western Europe Region
     """
 
     api_name = 'elb_eu_west'
@@ -279,7 +333,7 @@ class ELBEUWestDriver(AWSLBDriver):
 
 class ELBAPSEDriver(AWSLBDriver):
     """
-    Driver class for EC2 in the Southeast Asia Pacific Region
+    Driver class for ELB in the Southeast Asia Pacific Region
     """
 
     api_name = 'elb_ap_southeast'
@@ -291,7 +345,7 @@ class ELBAPSEDriver(AWSLBDriver):
 
 class ELBAPNEDriver(AWSLBDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region
+    Driver class for ELB in the Northeast Asia Pacific Region
     """
 
     api_name = 'elb_ap_northeast'
@@ -303,7 +357,7 @@ class ELBAPNEDriver(AWSLBDriver):
 
 class ELBSAEastDriver(AWSLBDriver):
     """
-    Driver class for EC2 in the South America (Sao Paulo) Region
+    Driver class for ELB in the South America (Sao Paulo) Region
     """
 
     api_name = 'elb_sa_east'
