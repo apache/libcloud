@@ -161,7 +161,6 @@ class XmlResponse(Response):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
 
-        print self.body
         try:
             body = ET.XML(self.body)
         except:
