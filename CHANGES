@@ -1,6 +1,6 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.9.0:
 
   *) General:
 
@@ -36,7 +36,7 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-155
       [Chris Gilmer]
 
-    - Include 'minRam' and 'minDisk' attribute in the OpenStack 1.1 driver 
+    - Include 'minRam' and 'minDisk' attribute in the OpenStack 1.1 driver
       Node extra dictionary. ; LIBCLOUD-163
       [Chris Gilmer]
 
@@ -66,6 +66,9 @@ Changes with Apache Libcloud in development:
     - Allow user to re-use auth tokens and pass 'ex_force_auth_token' keyword
       argument to the OpenStack driver constructor.
       [Dave King]
+
+    - Add new experimental libvirt driver.
+      [Tomaz Muraus]
 
     - Properly handle OpenStack providers which return public IP addresses under
       the 'internet' key in the addresses dictionary.
