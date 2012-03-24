@@ -81,7 +81,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     responseCls = OpenStackAuthResponse
     name = 'OpenStack Auth'
 
-    def __init__(self, parent_conn, auth_url, auth_version, user_id, key):
+    def __init__(self, parent_conn, auth_url, auth_version, user_id, key, tenant_name=None):
         self.parent_conn = parent_conn
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
@@ -93,6 +93,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.auth_url = auth_url
         self.urls = {}
         self.driver = self.parent_conn.driver
+        self.tenant_name = tenant_name
 
     def morph_action_hook(self, action):
         return action
@@ -176,14 +177,24 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
         # https://github.com/openstack/keystone/tree/master/keystone/content/service
-        reqbody = json.dumps({'auth': {'RAX-KSKEY:apiKeyCredentials': {'username': self.user_id, 'apiKey': self.key}}})
+        data = {'auth': 
+                {'RAX-KSKEY:apiKeyCredentials': 
+                 {'username': self.user_id, 'apiKey': self.key}}}
+        if self.tenant_name:
+            data['auth']['tenantName'] = self.tenant_name
+        reqbody = json.dumps(data)
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_password(self):
         # Password based authentication is the only 'core' authentication
         # method in Keystone at this time.
         # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
-        reqbody = json.dumps({'auth': {'passwordCredentials': {'username': self.user_id, 'password': self.key}}})
+        data = {'auth': 
+                {'passwordCredentials': 
+                 {'username': self.user_id, 'password': self.key}}}
+        if self.tenant_name:
+            data['auth']['tenantName'] = self.tenant_name
+        reqbody = json.dumps(data)
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
@@ -322,6 +333,13 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     determine the base request URL.  If ex_force_auth_token is passed in,
     ex_force_base_url must also be provided.
     @type ex_force_auth_token: C{string}
+
+    @param ex_tenant_name: When authenticating, provide this tenant
+    name to the identity service.  A scoped token will be returned.
+    Some cloud providers require the tenant name to be provided at
+    authentication time.  Others will use a default tenant if none
+    is provided.
+    @type ex_tenant_name: C{string}
     """
 
     auth_url = None
@@ -333,12 +351,13 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
-                 ex_force_auth_token=None):
+                 ex_force_auth_token=None,
+                 ex_tenant_name=None):
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._auth_version = ex_force_auth_version
-
+        self._ex_tenant_name = ex_tenant_name
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
 
@@ -398,7 +417,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                     have auth_url set')
 
             osa = OpenStackAuthConnection(self, aurl, self._auth_version,
-                                          self.user_id, self.key)
+                                          self.user_id, self.key, self._ex_tenant_name)
 
             # may throw InvalidCreds, etc
             osa.authenticate()
@@ -427,6 +446,7 @@ class OpenStackDriverMixin(object):
         self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
         self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
         self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
+        self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
 
     def openstack_connection_kwargs(self):
         rv = {}
@@ -438,4 +458,6 @@ class OpenStackDriverMixin(object):
             rv['ex_force_auth_url'] = self._ex_force_auth_url
         if self._ex_force_auth_version:
             rv['ex_force_auth_version'] = self._ex_force_auth_version
+        if self._ex_tenant_name:
+            rv['ex_tenant_name'] = self._ex_tenant_name
         return rv

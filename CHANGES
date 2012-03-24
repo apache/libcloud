@@ -16,6 +16,11 @@ Changes with Apache Libcloud in development:
       is the default compute endpoint for devstack. ; LIBCLOUD-151
       [Brad Morgan]
 
+    - Allow user to pass ex_tenant_name keyword argument to the OpenStack node
+      driver class. This scopes all the endpoints returned by the Auth API
+      endpoint to the provided tenant.
+      [James E. Blair]
+
   *) Compute:
 
     - Add new RackspaceNovaBeta and RackspaveNovaDfw driver based on the
