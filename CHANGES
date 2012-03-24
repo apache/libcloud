@@ -67,6 +67,10 @@ Changes with Apache Libcloud in development:
       argument to the OpenStack driver constructor.
       [Dave King]
 
+    - Properly handle OpenStack providers which return public IP addresses under
+      the 'internet' key in the addresses dictionary.
+      [Tomaz Muraus]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;
