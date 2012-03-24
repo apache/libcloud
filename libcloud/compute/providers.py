@@ -110,7 +110,7 @@ DRIVERS = {
     Provider.RACKSPACE_NOVA_DFW:
         ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaDfwNodeDriver'),
     Provider.LIBVIRT:
-        ('libcloud.compute.drivers.libvirt_driver', 'LinodeNodeDriver')
+        ('libcloud.compute.drivers.libvirt_driver', 'LibvirtNodeDriver')
 }
 
 
