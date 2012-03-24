@@ -18,7 +18,12 @@ Changes with Apache Libcloud in development:
 
     - Allow user to pass ex_tenant_name keyword argument to the OpenStack node
       driver class. This scopes all the endpoints returned by the Auth API
-      endpoint to the provided tenant.
+      endpoint to the provided tenant. ; LIBCLOUD-172
+      [James E. Blair]
+
+    - Allow user to specify OpenStack service catalog parameters (service type,
+      name and region). This way base OpenStack driver can be used with
+      different providers without needing to subclass. ; LIBCLOUD-173
       [James E. Blair]
 
   *) Compute:

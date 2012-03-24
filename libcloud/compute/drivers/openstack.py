@@ -125,17 +125,10 @@ class OpenStackResponse(Response):
 
 
 class OpenStackComputeConnection(OpenStackBaseConnection):
-
-    def get_endpoint(self):
-
-        # default config for http://devstack.org/
-        ep = self.service_catalog.get_endpoint(service_type='compute',
-                                               name='nova',
-                                               region='RegionOne')
-        if 'publicURL' in ep:
-            return ep['publicURL']
-
-        raise LibcloudError('Could not find specified endpoint')
+    # default config for http://devstack.org/
+    service_type = 'compute'
+    service_name = 'nova'
+    service_region = 'RegionOne'
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):

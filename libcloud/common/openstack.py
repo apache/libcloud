@@ -340,11 +340,26 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     authentication time.  Others will use a default tenant if none
     is provided.
     @type ex_tenant_name: C{string}
+
+    @param ex_force_service_type: Service type to use when selecting an 
+    service.  If not specified, a provider specific default will be used.
+    @type ex_force_service_type: C{string}
+
+    @param ex_force_service_name: Service name to use when selecting an 
+    service.  If not specified, a provider specific default will be used.
+    @type ex_force_service_name: C{string}
+
+    @param ex_force_service_region: Region to use when selecting an 
+    service.  If not specified, a provider specific default will be used.
+    @type ex_force_service_region: C{string}
     """
 
     auth_url = None
     auth_token = None
     service_catalog = None
+    service_type = None
+    service_name = None
+    service_region = None
 
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None,
@@ -352,12 +367,18 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
                  ex_force_auth_token=None,
-                 ex_tenant_name=None):
+                 ex_tenant_name=None,
+                 ex_force_service_type=None,
+                 ex_force_service_name=None,
+                 ex_force_service_region=None):
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._auth_version = ex_force_auth_version
         self._ex_tenant_name = ex_tenant_name
+        self._ex_force_service_type = ex_force_service_type
+        self._ex_force_service_name = ex_force_service_name
+        self._ex_force_service_region = ex_force_service_region
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
 
@@ -374,18 +395,28 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     def get_endpoint(self):
         """
-        Every openstack driver must have a connection class that subclasses
-        this class and it must implement this method.
+        Selects the endpoint to use based on provider specific values,
+        or overrides passed in by the user when setting up the driver.
 
         @returns: url of the relevant endpoint for the driver
-
-        Example implementation:
-        ep = self.service_catalog.get_endpoint(service_type='compute',
-                                               name='ServiceName',
-                                               region='US1')
-        return ep['publicURL']
         """
-        raise NotImplementedError
+        service_type = self.service_type
+        service_name = self.service_name
+        service_region = self.service_region
+        if self._ex_force_service_type:
+            service_type = self._ex_force_service_type
+        if self._ex_force_service_name:
+            service_name = self._ex_force_service_name
+        if self._ex_force_service_region:
+            service_region = self._ex_force_service_region
+
+        ep = self.service_catalog.get_endpoint(service_type=service_type,
+                                               name=service_name,
+                                               region=service_region)
+        if 'publicURL' in ep:
+            return ep['publicURL']
+
+        raise LibcloudError('Could not find specified endpoint')
 
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.auth_token
@@ -413,8 +444,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 aurl = self._ex_force_auth_url
 
             if aurl == None:
-                raise LibcloudError('OpenStack instance must \
-                                    have auth_url set')
+                raise LibcloudError('OpenStack instance must ' +
+                                    'have auth_url set')
 
             osa = OpenStackAuthConnection(self, aurl, self._auth_version,
                                           self.user_id, self.key, self._ex_tenant_name)
@@ -447,6 +478,9 @@ class OpenStackDriverMixin(object):
         self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
         self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
         self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
+        self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
+        self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
+        self._ex_force_service_region = kwargs.get('ex_force_service_region', None)
 
     def openstack_connection_kwargs(self):
         rv = {}
@@ -460,4 +494,10 @@ class OpenStackDriverMixin(object):
             rv['ex_force_auth_version'] = self._ex_force_auth_version
         if self._ex_tenant_name:
             rv['ex_tenant_name'] = self._ex_tenant_name
+        if self._ex_force_service_type:
+            rv['ex_force_service_type'] = self._ex_force_service_type
+        if self._ex_force_service_name:
+            rv['ex_force_service_name'] = self._ex_force_service_name
+        if self._ex_force_service_region:
+            rv['ex_force_service_region'] = self._ex_force_service_region
         return rv
