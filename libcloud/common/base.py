@@ -808,6 +808,8 @@ class BaseDriver(object):
         if port is not None:
             args.append(port)
 
+        self.api_version = api_version
+
         self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
 
         self.connection.driver = self
