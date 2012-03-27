@@ -203,7 +203,6 @@ class IBMNodeDriver(NodeDriver):
         return status == 200
     def ex_list_keypairs(self):
         """List Key pairs"""
-        url = REST_BASE + '/keys'
         return self._to_keypairs(self.connection.request(action = REST_BASE + '/keys' , method = 'GET').object)
 
     def _to_keypairs(self, object):
@@ -233,10 +232,12 @@ class IBMNodeDriver(NodeDriver):
         return [ self._to_image(image) for image in object.findall('Image') ]
 
     def _to_image(self, image):
+        
         return NodeImage(id = image.findtext('ID'),
                          name = image.findtext('Name'),
                          driver = self.connection.driver,
-                         extra = {'parametersURL': image.findtext('Manifest')})
+                         extra = {'parametersURL': image.findtext('Manifest'),
+                                  'location': image.findtext('Location')})
 
     def _to_locations(self, object):
         return [ self._to_location(location) for location in object.findall('Location') ]
