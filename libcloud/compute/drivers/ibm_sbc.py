@@ -246,7 +246,6 @@ class IBMNodeDriver(NodeDriver):
                          name=image.findtext('Name'),
                          driver=self.connection.driver,
                          extra={'parametersURL': image.findtext('Manifest')})
-
     def _to_locations(self, object):
         return [self._to_location(location) for location in object.findall('Location')]
 
