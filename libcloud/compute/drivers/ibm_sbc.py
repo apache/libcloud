@@ -242,10 +242,12 @@ class IBMNodeDriver(NodeDriver):
         return [self._to_image(image) for image in object.findall('Image')]
 
     def _to_image(self, image):
-        return NodeImage(id=image.findtext('ID'),
-                         name=image.findtext('Name'),
-                         driver=self.connection.driver,
-                         extra={'parametersURL': image.findtext('Manifest')})
+        return NodeImage(id = image.findtext('ID'),
+                         name = image.findtext('Name'),
+                         driver = self.connection.driver,
+                         extra = {'parametersURL': image.findtext('Manifest'),
+                                  'location': image.findtext('Location')})
+
     def _to_locations(self, object):
         return [self._to_location(location) for location in object.findall('Location')]
 

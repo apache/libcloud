@@ -41,8 +41,7 @@ from libcloud.compute.types import NodeState, Provider
 #   x implement list_images()   (only support Base OS images,
 #                                 no customer images yet)
 #   x implement list_locations()
-#	x implement ex_* extension functions for opsource-specific featurebody =s
-#    x implement ex_* extension functions for opsource-specific features
+#   x implement ex_* extension functions for opsource-specific features
 #       x ex_graceful_shutdown
 #       x ex_start_node
 #       x ex_power_off
@@ -272,8 +271,6 @@ class OpsourceACLRule(object):
                         'action=%s, protocol=%s, type=%s, port1=%s, port2=%s>')
                 % (self.id, self.name, self.status, self.position, self.action, 
                         self.protocol, self.type, self.port1, self.port2))
-
-
 
 class OpsourceNodeDriver(NodeDriver):
     """
@@ -617,7 +614,7 @@ class OpsourceNodeDriver(NodeDriver):
                                            data=ET.tostring(acl_elm)
                                            ).object
  
-        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network.id))[0]
+        return filter(lambda x: x.name == name, self.ex_list_acl_rules(network))[0]
 
     def ex_get_location_by_id(self, id):
         location = None
@@ -662,8 +659,6 @@ class OpsourceNodeDriver(NodeDriver):
                                name = findtext(element, 'name', NETWORK_NS),
                                private_ip = findtext(element, 'sourceIp', NETWORK_NS),
                                public_ip = findtext(element, 'natIp', NETWORK_NS))
-                     
-
 
     def _to_aclrules(self, object):
         acl_elements = findall(object, 'AclRule', NETWORK_NS)
@@ -680,7 +675,6 @@ class OpsourceNodeDriver(NodeDriver):
                                port1 = findtext(element, 'portRange/port1', NETWORK_NS), 
                                port2 = findtext(element, 'portRange/port2', NETWORK_NS))   
  
-          
     def ex_remove_acl_rule(self, acl_rule, network):
         """Remove the ACL rule"""
         body = self.connection.request_with_orgId('network/%s/aclrule/%s?delete' % (network.id, acl_rule.id)).object
