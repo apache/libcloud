@@ -59,7 +59,7 @@
                         "versionId": "2"
                     }
                 ],
-                "name": "nova",
+                "name": "Compute Service",
                 "type": "compute"
             },
             {

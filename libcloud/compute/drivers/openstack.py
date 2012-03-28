@@ -129,7 +129,7 @@ class OpenStackResponse(Response):
 class OpenStackComputeConnection(OpenStackBaseConnection):
     # default config for http://devstack.org/
     service_type = 'compute'
-    service_name = 'nova'
+    service_name = 'Compute Service'
     service_region = 'RegionOne'
 
     def request(self, action, params=None, data='', headers=None,
