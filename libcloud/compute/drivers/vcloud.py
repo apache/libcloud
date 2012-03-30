@@ -38,9 +38,10 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeAuthPassword
 From vcloud api "The VirtualQuantity element defines the number of MB
 of memory. This should be either 512 or a multiple of 1024 (1 GB)."
 """
-VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1,9)]
+VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1, 9)]
 
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
+
 
 def fixxpath(root, xpath):
     """ElementTree wants namespaces in its xpaths, so here we add them."""
@@ -49,8 +50,10 @@ def fixxpath(root, xpath):
                             for e in xpath.split("/")])
     return fixed_xpath
 
+
 def get_url_path(url):
     return urlparse(url.strip()).path
+
 
 class InstantiateVAppXML(object):
 
@@ -80,13 +83,6 @@ class InstantiateVAppXML(object):
         # product and virtual hardware
         self._make_product_section(instantionation_params)
         self._make_virtual_hardware(instantionation_params)
-
-        network_config_section = ET.SubElement(instantionation_params,
-                                               "NetworkConfigSection")
-
-        network_config = ET.SubElement(network_config_section,
-                                       "NetworkConfig")
-        self._add_network_association(network_config)
 
     def _make_instantiation_root(self):
         return ET.Element(
@@ -172,7 +168,7 @@ class InstantiateVAppXML(object):
         elm = ET.SubElement(
             parent,
             "InstanceID",
-            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
+            {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResreourceAllocationSettingData'}
         )
         elm.text = id
         return elm
@@ -204,9 +200,43 @@ class InstantiateVAppXML(object):
 
 class VCloudResponse(XmlResponse):
 
+
     def success(self):
         return self.status in (httplib.OK, httplib.CREATED,
                                httplib.NO_CONTENT, httplib.ACCEPTED)
+
+
+class Vdc(object):
+    """vCloud Datacenter
+    """
+
+    def __init__(self, **kwargs):
+
+        name = kwargs["name"]
+        href = kwargs["href"]
+        profile = kwargs["profile"]
+        networks = kwargs["networks"]
+
+    @classmethod
+    def get_vdc(self, vdc):
+        res = conn.connection.request(conn.org)
+        vdcs = res.object.findall(fixxpath(res.object, "Link"))
+        for i in vdcs:
+            if vdc in i.get('name'):
+                #Find the Name, Type and Available Networks for a vdc
+
+                vdc_name = i.get('name')
+                vdc_href = get_url_path(i.get('href'))
+                v = conn.connection.request(vdc['href'])
+                desc = v.object.findall(fixxpath(v.object, "Description"))[0] 
+                vdc_profile = desc.text.split(';')[0].split('=')[1].strip()
+                networks = v.object.findall(fixxpath(v.object, "AvailableNetworks"))
+                vdc_netorks = [ i.get("name") for i in networks]                
+    
+                return Vdc(vdc_name, vdc_href, vdc_profile, vdc_networks)
+
+        raise ValueError("Cannot find VDC: %s" %vdc)
+ 
 
 class VCloudConnection(ConnectionUserAndKey):
     """
@@ -615,3 +645,343 @@ class TerremarkDriver(VCloudNodeDriver):
 
     def list_locations(self):
         return [NodeLocation(0, "Terremark Texas", 'US', self)]
+
+
+class SavvisConnection(VCloudConnection):
+    """
+    vCloud connection subclass for Savvis
+    """
+
+    host = "api.savvis.net"
+
+    def _get_auth_headers(self):
+        """Some providers need different headers than others"""
+        return {
+            'Authorization':
+                "Basic %s"
+                % base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
+            'Content-Length': 0,
+            'Content-type': 'application/x-www-form-urlencoded' 
+        }
+
+OSType = collections.namedtuple('OSType', 'id type name desc storage arch')
+
+class AddVAppXML(object):
+
+    OS_TYPES = [
+        OSType('77', 'Windows', 'winLonghorn64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
+        
+        OSType('79', 'Linux', 'rhel5Guest', 'RedHat Enterprise Linux 5.x 32-bit', [25, 25], 'i686'),
+        OSType('80', 'Linux', 'rhel5_64Guest', 'RedHat Enterprise Linux 5.x 32-bit', [50, 25], 'x86_64'),
+    
+        OSType('103', 'Windows', 'Windows7Server64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
+                ]
+
+    def __init__(self, name, os, network, cpus, memory):
+        self.name = name
+        self.os = os
+        self.network = network
+        self.cpus = cpus
+        self.memory = memory
+
+        self._build_xmltree()
+
+    def tostring(self):
+        return ET.tostring(self.root)
+
+    def _build_xmltree(self):
+        self.root = self._make_vapp_root()
+
+        self._add_os_section(self.root)
+
+        # product and virtual hardware
+        self._make_virtual_hardware(self.root)
+
+    def _make_vapp_root(self):
+        return ET.Element(
+            "vApp:VApp",
+            {
+                "xmlns:common":"http://schemas.dmtf.org/wbem/wscim/1/common",
+                "xmlns:vApp":"http://www.vmware.com/vcloud/v0.8",
+                "xmlns:rasd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData",
+                "xmlns:vssd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData",
+                "xmlns:ovf":"http://schemas.dmtf.org/ovf/envelope/1", 
+                "name": self.name,
+                "type":"application/vnd.vmware.vcloud.vApp+xml", 
+                "href":""
+            }
+        )
+
+    def _add_os_section(self, parent):
+        os_section = ET.SubElement(
+            parent,
+            "ovf:OperatingSystemSection",
+            {'ovf:id': self.os}
+        )
+        ET.SubElement(os_section, "ovf:Info").text='Specifies the operating system installed'
+        ET.SubElement(os_section, "ovf:Description").text= self.OS_TYPES[self.os].desc
+        return os_section
+
+    def _make_virtual_hardware(self, parent):
+        vh = ET.SubElement(
+            parent,
+            "ovf:VirtualHardwareSection",
+        )
+        instance_id = 1
+        self._add_system(vh, instance_id)
+        instance_id += 1
+        self._add_cpu(vh, instance_id)
+        instance_id += 1
+        self._add_memory(vh, instance_id)
+        instance_id += 1
+        self._add_network(vh, instance_id, network)
+        instance_id += 1
+        self._add_boot_disk(vh, instance_id, self.OS_TYPES[self.os].storage[0])
+        instance_id += 1
+        self._add_storage_disk(vh, instance_id, self.OS_TYPES[self.os].storage[1])
+        #XXX Add support to store more than 2 disks
+
+        return vh
+
+    def _add_storage_disk(self, parent, instance_id, size):
+        sd01 = ET.SubElement(
+            parent,
+            "ovf:Item"
+        )
+        ET.SubElement(sd01, "rasd:AllocationUnits").text='Gigabytes'
+        ET.SubElement(sd01, "rasd:Caption").text=''
+        ET.SubElement(sd01, "rasd:Description").text='Hard Disk'
+        ET.SubElement(sd01, "rasd:ElementName").text='/data'
+        ET.SubElement(sd01, "rasd:HostResource").text='data'
+        ET.SubElement(sd01, "rasd:InstanceID").text=str(instance_id)
+        ET.SubElement(sd01, "rasd:ResourceType").text='26'
+        ET.SubElement(sd01, "rasd:VirtualQuantity").text = size
+        return sd01
+
+
+    def _add_boot_disk(self, parent, instance_id, size):
+        sd01 = ET.SubElement(
+            parent,
+            "ovf:Item"
+        )
+        ET.SubElement(sd01, "rasd:AllocationUnits").text='Gigabytes'
+        ET.SubElement(sd01, "rasd:Caption").text=''
+        ET.SubElement(sd01, "rasd:Description").text='Hard Disk'
+        ET.SubElement(sd01, "rasd:ElementName").text='/'
+        ET.SubElement(sd01, "rasd:HostResource").text='boot'
+        ET.SubElement(sd01, "rasd:InstanceID").text=str(instance_id)
+        ET.SubElement(sd01, "rasd:ResourceType").text='27'
+        ET.SubElement(sd01, "rasd:VirtualQuantity").text = size
+        return sd01
+
+    def _add_network(self, parent, instance_id, network):
+
+        network = ET.SubElement(
+            parent,
+            "ovf:Item",
+        )
+        ET.SubElement(network,"rasd:Caption").text="Nat1to1:true"
+        ET.SubElement(network, "rasd:Connection").text=network
+        ET.SubElement(network, "rasd:ElementName").text="Network"
+        ET.SubElement(network, "rasd:InstanceID").text=str(instance_id)
+        ET.SubElement(network, "rasd:ResourceType").text='10'
+        ET.SubElement(network, "rasd:VirtualQuantity").text='1'
+        return network
+
+
+    def _add_system(self, parent, instance_id):
+
+        ET.SubElement(parent, "ovf:Info").text = "Virtual hardware"
+        system = ET.SubElement(parent, "ovf:System")
+        ET.SubElement(system,"vssd:Description").text = "Virtual Hardware Family"
+        ET.SubElement(system,"vssd:ElementName").text = self.name
+        ET.SubElement(system,"vssd:InstanceID").text = str(instance_id)
+        ET.SubElement(system,"vssd:VirtualSystemIdentifier").text = self.name
+        return system
+    
+    def _add_cpu(self, parent, instance_id):
+        cpu_item = ET.SubElement(
+            parent,
+            "ovf:Item",
+        )
+        speed = str(3 / float(self.cpus))  #3 GHz
+        ET.SubElement(cpu_item, "rasd:AllocationUnits").text = "%s GHz" %sped
+        ET.SubElement(cpu_item, "rasd:Description").text = "Number of Virtual CPUs"
+        ET.SubElement(cpu_item, "rasd:ElementName").text= "%s CPU" %self.cpus
+        self._add_instance_id(cpu_item, str(instance_id))
+        self._add_resource_type(cpu_item, '3')
+        self._add_virtual_quantity(cpu_item, self.cpus)
+
+        return cpu_item
+
+    def _add_memory(self, parent, instance_id):
+        mem_item = ET.SubElement(
+            parent,
+            "ovf:Item",
+        )
+
+        ET.SubElement(mem_item, "rasd:AllocationUnits").text = "Gigabytes"
+        ET.SubElement(mem_item, "rasd:Description").text = "Memory Size"
+        ET.SubElement(mem_item, "rasd:ElementName").text="Memory"
+        self._add_instance_id(mem_item, str(instance_id))
+        self._add_resource_type(mem_item, '4')
+        self._add_virtual_quantity(mem_item,'%s' %self.memory)
+
+        return mem_item
+
+    def _add_instance_id(self, parent, id):
+        elm = ET.SubElement(
+            parent,
+            "rasd:InstanceID",
+        )
+        elm.text = id
+        return elm
+
+    def _add_resource_type(self, parent, type):
+        elm = ET.SubElement(
+            parent,
+            "rasd:ResourceType",
+        )
+        elm.text = type
+        return elm
+
+    def _add_virtual_quantity(self, parent, amount):
+        elm = ET.SubElement(
+             parent,
+            "rasd:VirtualQuantity",
+         )
+        elm.text = amount
+        return elm
+
+class AddFirewallRuleXML(object):           
+    def __init__(self, port, proto, src, dest):
+        self.port = port
+        self.proto = proto
+        self.src = src
+        self.dest = dest
+
+        self._build_xmltree()
+
+    def tostring(self):
+        return ET.tostring(self.root)
+
+    def _build_xmltree(self):
+        self.root = self._make_pfw_root() 
+        
+        self._add_pfw_rule(self.root)
+        return
+   
+    def _add_pfw_rule(self):
+        rule = ET.SubElement(root, "svvs:FireWall")
+        ET.SubElement(rule, "svvs:Description").text = "Perimeter Firewall Rule"
+        ET.SubElement(rule, "svvs:Type").text = "PERIMETER_FIREWALL"
+        ET.SubElement(rule, "svvs:Log").text = "no"
+        ET.SubElement(rule, "svvs:Policy").text = "allow"
+        proto = ET.SubElement(rule, "svvs:Protocols")
+        if "tcp" in proto:
+            ET.SubElement(proto, "svvs:Tcp").text = "true"
+        else:
+            ET.SubElement(proto, "svvs:Udp").text = "true"
+
+        ET.SubElement(rule, "svvs:Port").text = str(port)
+        ET.SubElement(rule, "svvs:Destination").text = dest
+        ET.SubElement(rule, "svvs:Source").text = src
+        return rule
+         
+    def _make_pfw_root(self):
+    return ET.Element(
+        "FirewallService",
+        {
+            "xmlns:common":"http://schemas.dmtf.org/wbem/wscim/1/common",
+            "xmlns:rasd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData",
+            "xmlns:vssd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData",
+            "xmlns:ovf":"http://schemas.dmtf.org/ovf/envelope/1",
+            "xmlns:svvs":"http://schemas.api.savvis.net/vpdci"
+        })
+
+
+
+   
+
+
+class SavvisDriver(VCloudNodeDriver):
+    """
+    vCloud node driver for Savvis
+    """
+    connectionCls = SavvisConnection
+
+    def create_node(self, **kwargs):
+        """Creates and returns node.
+
+
+        See L{NodeDriver.create_node} for more keyword args.
+
+        Non-standard optional keyword arguments:
+        @keyword    ex_network: link to a "Network" e.g., "VM Tier01, VM Tier02, VM Tier03"
+        @type       ex_network: C{string}
+
+        @keyword    ex_vdc: link to a "VDC" e.g., "https://services.vcloudexpress.terremark.com/api/v0.8/vdc/1"
+        @type       ex_vdc: C{string}
+
+        @keyword    ex_cpus: number of virtual cpus (limit depends on provider)
+        @type       ex_cpus: C{int}
+
+        """
+        name = kwargs['name']
+        os = kwargs['ex_os']
+        cpus = kwargs['ex_cpus']
+        network = kwargs['network']
+        size = kwargs['size']
+        vpdc = kwargs['ex_vpdc']
+        memory = size.ram
+
+        vdc = Vdc.get_vdc(vpdc)
+
+        if network not in vdc.network:
+            raise ValueError("%s not available. Available Networks are:%s" %(network, vdc.network))
+
+        vapp_xml = AddVappXML(
+                        name = name, 
+                        os = os, 
+                        network = network, 
+                        cpus = cpus, 
+                        memory = memory
+                    )
+
+        # Instantiate VM and get identifier.
+        res = self.connection.request(
+            '%s/vApp'
+                % kwargs.get('vdc', vdc.href),
+            data=instantiate_xml.tostring(),
+            method='POST',
+            headers={
+                'Content-Type':
+                    'application/xml'
+            }
+        )
+        vapp_name = res.object.get('name')
+        vapp_href = get_url_path(res.object.get('href'))
+
+        self._wait_for_task_completion(res.object.get('href'))
+        node = self._to_node(vapp_name, res.object)
+
+        
+        if vdc.profile not in ('Essential'):
+            #Open the SSH Port on the perimeter Firewall
+            firewall_xml = AddFirewallRuleXML(port = 22, protocol = "tcp", src = "any", dest = vapp_name)
+            
+            res = self.connection.request(
+                '%s/FirewallService'
+                % kwargs.get('vdc', vdc.href),
+            data=instantiate_xml.tostring(),
+            method='PUT',
+            headers={
+                'Content-Type':
+                    'application/xml'
+            }
+        )
+
+            href = get_url_path(res.object.get('href'))
+            self._wait_for_task_completion(res.object.get('href'))
+
+        return node
