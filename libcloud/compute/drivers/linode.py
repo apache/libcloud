@@ -354,7 +354,12 @@ class LinodeNodeDriver(NodeDriver):
         # Make a node out of it and hand it back
         params = { "api_action": "linode.list", "LinodeID": linode["id"] }
         data = self.connection.request(API_ROOT, params=params).objects[0]
-        return self._to_nodes(data)
+        nodes = self._to_nodes(data)
+
+        if len(nodes) == 1:
+            return nodes[0]
+
+        return None
 
     def list_sizes(self, location=None):
         """List available Linode plans

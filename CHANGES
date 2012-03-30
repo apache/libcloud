@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud 0.9.1:
+
+  *) Compute:
+
+    - Update create_node in Linode driver and make it return a Node object
+      instead of a list. Reported by Jouke Waleson. ; LIBCLOUD-175
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.9.0:
 
   *) General:

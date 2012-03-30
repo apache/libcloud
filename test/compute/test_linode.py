@@ -64,11 +64,12 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
 
     def test_create_node_ssh_key_auth(self):
         # Will exception on failure
-        self.driver.create_node(name="Test",
+        node = self.driver.create_node(name="Test",
                                 location=self.driver.list_locations()[0],
                                 size=self.driver.list_sizes()[0],
                                 image=self.driver.list_images()[6],
                                 auth=NodeAuthSSHKey('foo'))
+        self.assertTrue(isinstance(node, Node))
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -87,7 +88,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
                          size=self.driver.list_sizes()[0],
                          image=self.driver.list_images()[0],
                          auth=NodeAuthPassword("foobar"))
-        self.assertTrue(isinstance(node[0], Node))
+        self.assertTrue(isinstance(node, Node))
 
 
 class LinodeMockHttp(MockHttp):
