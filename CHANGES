@@ -2,21 +2,6 @@
 
 Changes with Apache Libcloud 0.9.1:
 
-  *) Compute:
-
-    - Update create_node in Linode driver and make it return a Node object
-      instead of a list. Reported by Jouke Waleson. ; LIBCLOUD-175
-      [Tomaz Muraus]
-
-  *) Load-balancer:
-
-    - Add new ex_create_balancer_access_rule and
-      ex_create_balancer_access_rule_no_poll method to the Rackspace driver. ;
-      LIBCLOUD-170
-      [Dave King]
-
-Changes with Apache Libcloud 0.9.0:
-
   *) General:
 
     - Make parsing of the Auth API responses in the OpenStack drivers more
@@ -89,6 +74,10 @@ Changes with Apache Libcloud 0.9.0:
       the 'internet' key in the addresses dictionary.
       [Tomaz Muraus]
 
+    - Update create_node in Linode driver and make it return a Node object
+      instead of a list. Reported by Jouke Waleson. ; LIBCLOUD-175
+      [Tomaz Muraus]
+
   *) Storage:
 
     - Don't lowercase special header names in the Amazon S3 storage driver. ;
@@ -111,6 +100,11 @@ Changes with Apache Libcloud 0.9.0:
       [Adam Pickeral]
 
     - Update Rackspace driver to support Auth 2.0. ; LIBCLOUD-165
+      [Dave King]
+
+    - Add new ex_create_balancer_access_rule and
+      ex_create_balancer_access_rule_no_poll method to the Rackspace driver. ;
+      LIBCLOUD-170
       [Dave King]
 
   *) DNS:
