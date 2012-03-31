@@ -376,6 +376,33 @@ class RackspaceLBTests(unittest.TestCase):
 
         self.assertTrue(resp)
 
+    def test_ex_create_balancer_access_rules(self):
+        balancer = self.driver.get_balancer(balancer_id='94699')
+
+        rules = [RackspaceAccessRule(rule_type=RackspaceAccessRuleType.ALLOW,
+                                     address='2001:4801:7901::6/64'),
+                 RackspaceAccessRule(rule_type=RackspaceAccessRuleType.DENY,
+                                     address='8.8.8.8/0')]
+
+        rules = self.driver.ex_create_balancer_access_rules(balancer, rules)
+
+        self.assertEquals(2, len(rules))
+        self.assertEquals(2884, rules[0].id)
+        self.assertEquals(3006, rules[1].id)
+
+    def test_ex_create_balancer_access_rules_no_poll(self):
+        balancer = self.driver.get_balancer(balancer_id='94699')
+
+        rules = [RackspaceAccessRule(rule_type=RackspaceAccessRuleType.ALLOW,
+                                     address='2001:4801:7901::6/64'),
+                 RackspaceAccessRule(rule_type=RackspaceAccessRuleType.DENY,
+                                     address='8.8.8.8/0')]
+
+        resp = self.driver.ex_create_balancer_access_rules_no_poll(balancer,
+            rules)
+
+        self.assertTrue(resp)
+
     def test_ex_destroy_balancer_access_rule(self):
         balancer = self.driver.get_balancer(balancer_id='94698')
 
@@ -1238,6 +1265,16 @@ class RackspaceLBMockHttp(MockHttpTestCase):
                 id = access_rule['id']
                 self.assertTrue(urlencode([('id', id)]) in url,
                     msg='Did not delete access rule with id %d' % id)
+
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
+        elif method == 'POST':
+
+            json_body = json.loads(body)
+            access_list = json_body['accessList']
+            self.assertEquals('ALLOW', access_list[0]['type'])
+            self.assertEquals('2001:4801:7901::6/64', access_list[0]['address'])
+            self.assertEquals('DENY', access_list[1]['type'])
+            self.assertEquals('8.8.8.8/0', access_list[1]['address'])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 

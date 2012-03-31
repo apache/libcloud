@@ -1076,17 +1076,12 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         balancer = self._get_updated_balancer(balancer)
         access_list = balancer.extra['accessList']
 
-        # LB API does not return the ID for the newly created item, so we have
-        # to fudge it. Rule types and addresses are unique, so this is a safe
-        # way to uniquely identify the new access rule.
-        created_rule = [r for r in access_list \
-                        if rule.rule_type == r.rule_type and \
-                           rule.address == r.address]
+        created_rule = self._find_matching_rule(rule, access_list)
 
         if not created_rule:
             raise LibcloudError('Could not find created rule')
 
-        return created_rule[0]
+        return created_rule
 
     def ex_create_balancer_access_rule_no_poll(self, balancer, rule):
         """
@@ -1106,6 +1101,76 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         resp = self.connection.request(uri, method='POST',
             data=json.dumps({
                 'networkItem': rule._to_dict()
+            }))
+
+        return resp.status == httplib.ACCEPTED
+
+    def ex_create_balancer_access_rules(self, balancer, rules):
+        """
+        Adds a list of access rules to a Balancer's access list.  This method
+        blocks until the update request has been processed and the balancer is
+        in a RUNNING state again.
+
+        @param balancer: Balancer to create the access rule for.
+        @type balancer: C{Balancer}
+
+        @param rules: List of C{RackspaceAccessRule} to add to the balancer.
+        @type rules: C{list}
+
+        @rtype: C{RackspaceAccessRule}
+        @return: The created access rules.
+        """
+        accepted = self.ex_create_balancer_access_rules_no_poll(balancer, rules)
+        if not accepted:
+            msg = 'Create access rules not accepted'
+            raise LibcloudError(msg, driver=self)
+
+        balancer = self._get_updated_balancer(balancer)
+        access_list = balancer.extra['accessList']
+
+        created_rules = []
+        for r in rules:
+            matched_rule = self._find_matching_rule(r, access_list)
+            if matched_rule:
+                created_rules.append(matched_rule)
+
+        if len(created_rules) != len(rules):
+            raise LibcloudError('Could not find all created rules')
+
+        return created_rules
+
+    def _find_matching_rule(self, rule_to_find, access_list):
+        """
+        LB API does not return the ID for the newly created rules, so we have
+        to search the list to find the rule with a matching rule type and
+        address to return an object with the right identifier.it.  The API
+        enforces rule type and address uniqueness.
+        """
+        for r in access_list:
+            if rule_to_find.rule_type == r.rule_type and \
+               rule_to_find.address == r.address:
+                return r
+
+        return None
+
+    def ex_create_balancer_access_rules_no_poll(self, balancer, rules):
+        """
+        Adds a list of access rules to a Balancer's access list.  This method
+        returns immediately.
+
+        @param balancer: Balancer to create the access rule for.
+        @type balancer: C{Balancer}
+
+        @param rules: List of C{RackspaceAccessRule} to add to the balancer.
+        @type rules: C{list}
+
+        @rtype: C{bool}
+        @return: Returns whether the create request was accepted.
+        """
+        uri = '/loadbalancers/%s/accesslist' % (balancer.id)
+        resp = self.connection.request(uri, method='POST',
+            data=json.dumps({
+                'accessList' : [rule._to_dict() for rule in rules]
             }))
 
         return resp.status == httplib.ACCEPTED
