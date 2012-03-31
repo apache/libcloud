@@ -201,7 +201,7 @@ setup(
     name='apache-libcloud',
     version=read_version_string(),
     description='A standard Python library that abstracts away differences' +
-                'among multiple cloud provider APIs',
+                ' among multiple cloud provider APIs',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
@@ -245,4 +245,5 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.0',
         'Programming Language :: Python :: 3.1',
-        'Programming Language :: Python :: 3.2'])
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: Implementation :: PyPy'])
