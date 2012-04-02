@@ -111,6 +111,7 @@ class Provider(object):
     LIBVIRT = 42
     ELASTICHOSTS_US2 = 43
     ELASTICHOSTS_CA1 = 44
+    SAVVIS = 45
 
 
 class NodeState(object):

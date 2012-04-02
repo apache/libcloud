@@ -23,6 +23,7 @@ from libcloud.utils.py3 import b
 urlparse = urlparse.urlparse
 
 import time
+import collections
 
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
@@ -212,14 +213,14 @@ class Vdc(object):
 
     def __init__(self, **kwargs):
 
-        name = kwargs["name"]
-        href = kwargs["href"]
-        profile = kwargs["profile"]
-        networks = kwargs["networks"]
+        self.name = kwargs["name"]
+        self.href = kwargs["href"]
+        self.profile = kwargs["profile"]
+        self.networks = kwargs["networks"]
 
     @classmethod
-    def get_vdc(self, vdc):
-        res = conn.connection.request(conn.org)
+    def get_vdc(self, vdc, conn, org):
+        res = conn.request(org)
         vdcs = res.object.findall(fixxpath(res.object, "Link"))
         for i in vdcs:
             if vdc in i.get('name'):
@@ -227,13 +228,17 @@ class Vdc(object):
 
                 vdc_name = i.get('name')
                 vdc_href = get_url_path(i.get('href'))
-                v = conn.connection.request(vdc['href'])
+                v = conn.request(vdc_href)
                 desc = v.object.findall(fixxpath(v.object, "Description"))[0] 
                 vdc_profile = desc.text.split(';')[0].split('=')[1].strip()
-                networks = v.object.findall(fixxpath(v.object, "AvailableNetworks"))
-                vdc_netorks = [ i.get("name") for i in networks]                
+                ns = v.object.findall(fixxpath(v.object, "AvailableNetworks"))
+                if not ns:
+                    raise Exception("No Available Networks found")
+                n = ns[0]
+                networks = n.findall(fixxpath(n, "Network"))
+                vdc_networks = [ i.get("name") for i in networks]
     
-                return Vdc(vdc_name, vdc_href, vdc_profile, vdc_networks)
+                return Vdc(name=vdc_name, href=vdc_href, profile=vdc_profile, networks=vdc_networks)
 
         raise ValueError("Cannot find VDC: %s" %vdc)
  
@@ -246,6 +251,7 @@ class VCloudConnection(ConnectionUserAndKey):
     responseCls = VCloudResponse
     token = None
     host = None
+    login_url = '/api/v0.8/login'
 
     def request(self, *args, **kwargs):
         self._get_auth_token()
@@ -268,7 +274,7 @@ class VCloudConnection(ConnectionUserAndKey):
         if not self.token:
             conn = self.conn_classes[self.secure](self.host,
                                                   self.port)
-            conn.request(method='POST', url='/api/v0.8/login',
+            conn.request(method='POST', url=self.login_url,
                          headers=self._get_auth_headers())
 
             resp = conn.getresponse()
@@ -374,11 +380,16 @@ class VCloudNodeDriver(NodeDriver):
 
         return catalogs
 
+    def _fetch_task_info(self, task_href):
+        res = self.connection.request(task_href)
+        return res.object
+
     def _wait_for_task_completion(self, task_href,
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         start_time = time.time()
-        res = self.connection.request(task_href)
-        status = res.object.get('status')
+        task = self._fetch_task_info(task_href)
+        print "Task Status: %s" %task.get("status")
+        status = task.get('status')
         while status != 'success':
             if status == 'error':
                 raise Exception("Error status returned by task %s."
@@ -390,8 +401,9 @@ class VCloudNodeDriver(NodeDriver):
                 raise Exception("Timeout while waiting for task %s."
                                 % task_href)
             time.sleep(5)
-            res = self.connection.request(task_href)
-            status = res.object.get('status')
+            task = self._fetch_task_info(task_href)
+            print "Task Status: %s" %task.get("status")
+            status = task.get('status')
 
     def destroy_node(self, node):
         node_path = get_url_path(node.id)
@@ -653,6 +665,7 @@ class SavvisConnection(VCloudConnection):
     """
 
     host = "api.savvis.net"
+    login_url = '/vpdc/v1.0/login'
 
     def _get_auth_headers(self):
         """Some providers need different headers than others"""
@@ -668,14 +681,12 @@ OSType = collections.namedtuple('OSType', 'id type name desc storage arch')
 
 class AddVAppXML(object):
 
-    OS_TYPES = [
-        OSType('77', 'Windows', 'winLonghorn64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
-        
-        OSType('79', 'Linux', 'rhel5Guest', 'RedHat Enterprise Linux 5.x 32-bit', [25, 25], 'i686'),
-        OSType('80', 'Linux', 'rhel5_64Guest', 'RedHat Enterprise Linux 5.x 32-bit', [50, 25], 'x86_64'),
-    
-        OSType('103', 'Windows', 'Windows7Server64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
-                ]
+    OS_TYPES = {
+        '77' : OSType('77', 'Windows', 'winLonghorn64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
+        '79' : OSType('79', 'Linux', 'rhel5Guest', 'RedHat Enterprise Linux 5.x 32-bit', [25, 25], 'i686'),
+        '80' : OSType('80', 'Linux', 'rhel5_64Guest', 'RedHat Enterprise Linux 5.x 32-bit', [50, 25], 'x86_64'),
+        '103' : OSType('103', 'Windows', 'Windows7Server64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
+    }
 
     def __init__(self, name, os, network, cpus, memory):
         self.name = name
@@ -734,7 +745,7 @@ class AddVAppXML(object):
         instance_id += 1
         self._add_memory(vh, instance_id)
         instance_id += 1
-        self._add_network(vh, instance_id, network)
+        self._add_network(vh, instance_id, self.network)
         instance_id += 1
         self._add_boot_disk(vh, instance_id, self.OS_TYPES[self.os].storage[0])
         instance_id += 1
@@ -744,44 +755,79 @@ class AddVAppXML(object):
         return vh
 
     def _add_storage_disk(self, parent, instance_id, size):
-        sd01 = ET.SubElement(
-            parent,
-            "ovf:Item"
+        return self._add_disk(
+                parent = parent,
+                element = '/data',
+                host_resource = 'data',
+                instance_id = instance_id,
+                res_type = '26',
+                size = size
         )
-        ET.SubElement(sd01, "rasd:AllocationUnits").text='Gigabytes'
-        ET.SubElement(sd01, "rasd:Caption").text=''
-        ET.SubElement(sd01, "rasd:Description").text='Hard Disk'
-        ET.SubElement(sd01, "rasd:ElementName").text='/data'
-        ET.SubElement(sd01, "rasd:HostResource").text='data'
-        ET.SubElement(sd01, "rasd:InstanceID").text=str(instance_id)
-        ET.SubElement(sd01, "rasd:ResourceType").text='26'
-        ET.SubElement(sd01, "rasd:VirtualQuantity").text = size
-        return sd01
-
+##
+#        sd = ET.SubElement(
+#            parent,
+#            "ovf:Item"
+#        )
+#        ET.SubElement(sd, "rasd:AllocationUnits").text='Gigabytes'
+#        ET.SubElement(sd, "rasd:Caption").text=''
+#        ET.SubElement(sd, "rasd:Description").text='Hard Disk'
+#        ET.SubElement(sd, "rasd:ElementName").text='/data'
+#        ET.SubElement(sd, "rasd:HostResource").text='data'
+#        ET.SubElement(sd, "rasd:InstanceID").text=str(instance_id)
+#        ET.SubElement(sd, "rasd:ResourceType").text='26'
+#        ET.SubElement(sd, "rasd:VirtualQuantity").text = str(size)
+#        return sd
+#
 
     def _add_boot_disk(self, parent, instance_id, size):
-        sd01 = ET.SubElement(
+        return self._add_disk(
+                parent = parent,
+                element = '/',
+                host_resource = 'boot',
+                instance_id = instance_id,
+                res_type = '27',
+                size = size
+        )
+#        sd = ET.SubElement(
+#            parent,
+#            "ovf:Item"
+#        )
+#        ET.SubElement(sd, "rasd:AllocationUnits").text='Gigabytes'
+#        ET.SubElement(sd, "rasd:Caption").text=''
+#        ET.SubElement(sd, "rasd:Description").text='Hard Disk'
+#        ET.SubElement(sd, "rasd:ElementName").text='/'
+#        ET.SubElement(sd, "rasd:HostResource").text='boot'
+#        ET.SubElement(sd, "rasd:InstanceID").text=str(instance_id)
+#        ET.SubElement(sd, "rasd:ResourceType").text='27'
+#        ET.SubElement(sd, "rasd:VirtualQuantity").text = str(size)
+#        return sd
+#
+    def _add_disk(self, parent, element, host_resource, instance_id, res_type, size):
+        sd = ET.SubElement(
             parent,
             "ovf:Item"
         )
-        ET.SubElement(sd01, "rasd:AllocationUnits").text='Gigabytes'
-        ET.SubElement(sd01, "rasd:Caption").text=''
-        ET.SubElement(sd01, "rasd:Description").text='Hard Disk'
-        ET.SubElement(sd01, "rasd:ElementName").text='/'
-        ET.SubElement(sd01, "rasd:HostResource").text='boot'
-        ET.SubElement(sd01, "rasd:InstanceID").text=str(instance_id)
-        ET.SubElement(sd01, "rasd:ResourceType").text='27'
-        ET.SubElement(sd01, "rasd:VirtualQuantity").text = size
-        return sd01
+        ET.SubElement(sd, "rasd:AllocationUnits").text='Gigabytes'
+        ET.SubElement(sd, "rasd:Caption").text=''
+        ET.SubElement(sd, "rasd:Description").text='Hard Disk'
+        ET.SubElement(sd, "rasd:ElementName").text=element
+        ET.SubElement(sd, "rasd:HostResource").text=host_resource
+        ET.SubElement(sd, "rasd:InstanceID").text=str(instance_id)
+        ET.SubElement(sd, "rasd:ResourceType").text=res_type
+        ET.SubElement(sd, "rasd:VirtualQuantity").text = str(size)
+        return sd
 
-    def _add_network(self, parent, instance_id, network):
+
+
+
+    def _add_network(self, parent, instance_id, network_type):
 
         network = ET.SubElement(
             parent,
             "ovf:Item",
         )
         ET.SubElement(network,"rasd:Caption").text="Nat1to1:true"
-        ET.SubElement(network, "rasd:Connection").text=network
+        ET.SubElement(network, "rasd:Connection").text=network_type
         ET.SubElement(network, "rasd:ElementName").text="Network"
         ET.SubElement(network, "rasd:InstanceID").text=str(instance_id)
         ET.SubElement(network, "rasd:ResourceType").text='10'
@@ -804,13 +850,13 @@ class AddVAppXML(object):
             parent,
             "ovf:Item",
         )
-        speed = str(3 / float(self.cpus))  #3 GHz
-        ET.SubElement(cpu_item, "rasd:AllocationUnits").text = "%s GHz" %sped
+        speed = str(3 * float(self.cpus))  #3 GHz
+        ET.SubElement(cpu_item, "rasd:AllocationUnits").text = "%s GHz" %speed
         ET.SubElement(cpu_item, "rasd:Description").text = "Number of Virtual CPUs"
         ET.SubElement(cpu_item, "rasd:ElementName").text= "%s CPU" %self.cpus
         self._add_instance_id(cpu_item, str(instance_id))
         self._add_resource_type(cpu_item, '3')
-        self._add_virtual_quantity(cpu_item, self.cpus)
+        self._add_virtual_quantity(cpu_item, '%s' %self.cpus)
 
         return cpu_item
 
@@ -872,7 +918,7 @@ class AddFirewallRuleXML(object):
         return
    
     def _add_pfw_rule(self):
-        rule = ET.SubElement(root, "svvs:FireWall")
+        rule = ET.SubElement(self.root, "svvs:FireWall")
         ET.SubElement(rule, "svvs:Description").text = "Perimeter Firewall Rule"
         ET.SubElement(rule, "svvs:Type").text = "PERIMETER_FIREWALL"
         ET.SubElement(rule, "svvs:Log").text = "no"
@@ -883,32 +929,66 @@ class AddFirewallRuleXML(object):
         else:
             ET.SubElement(proto, "svvs:Udp").text = "true"
 
-        ET.SubElement(rule, "svvs:Port").text = str(port)
-        ET.SubElement(rule, "svvs:Destination").text = dest
-        ET.SubElement(rule, "svvs:Source").text = src
+        ET.SubElement(rule, "svvs:Port").text = str(self.port)
+        ET.SubElement(rule, "svvs:Destination").text = self.dest
+        ET.SubElement(rule, "svvs:Source").text = self.src
         return rule
          
     def _make_pfw_root(self):
-    return ET.Element(
-        "FirewallService",
-        {
-            "xmlns:common":"http://schemas.dmtf.org/wbem/wscim/1/common",
-            "xmlns:rasd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData",
-            "xmlns:vssd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData",
-            "xmlns:ovf":"http://schemas.dmtf.org/ovf/envelope/1",
-            "xmlns:svvs":"http://schemas.api.savvis.net/vpdci"
-        })
+        return ET.Element(
+            "FirewallService",
+            {
+                "xmlns:common":"http://schemas.dmtf.org/wbem/wscim/1/common",
+                "xmlns:rasd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData",
+                "xmlns:vssd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData",
+                "xmlns:ovf":"http://schemas.dmtf.org/ovf/envelope/1",
+                "xmlns:svvs":"http://schemas.api.savvis.net/vpdci"
+            })
 
 
 
    
 
 
-class SavvisDriver(VCloudNodeDriver):
+class SavvisNodeDriver(VCloudNodeDriver):
     """
     vCloud node driver for Savvis
     """
     connectionCls = SavvisConnection
+    type = Provider.VCLOUD
+
+
+    def _fetch_task_info(self, task_href):
+        res = self.connection.request(task_href)
+        task = res.object.findall(fixxpath(res.object, "Task"))[0]
+        return task
+
+    def _to_node(self, name, elm):
+        state = elm.get('status')
+
+        sections = elm.findall('{http://schemas.dmtf.org/ovf/envelope/1}Section')
+        network = sections[0]
+        [networkconfig] = network.findall('{http://www.vmware.com/vcloud/v0.8}NetworkConfig')
+        [features] = networkconfig.findall('{http://www.vmware.com/vcloud/v0.8}Features')
+        [nat] = features.findall('{http://www.vmware.com/vcloud/v0.8}Nat')
+        [nat_rule] = nat.findall('{http://www.vmware.com/vcloud/v0.8}NatRule')
+        
+        private_ips = [nat_rule.get('internalIP')]
+        if nat_rule.get('externalIP') == '0.0.0.0':
+            public_ips = private_ips
+        else:
+            public_ips = [nat_rule.get('externalIP')]
+
+        node = Node(
+                    id=elm.get('href'),
+                    name=name,
+                    state=state,
+                    public_ips=public_ips,
+                    private_ips=private_ips,
+                    driver=self.connection.driver
+                    )
+
+        return node
 
     def create_node(self, **kwargs):
         """Creates and returns node.
@@ -933,14 +1013,15 @@ class SavvisDriver(VCloudNodeDriver):
         network = kwargs['network']
         size = kwargs['size']
         vpdc = kwargs['ex_vpdc']
-        memory = size.ram
+        memory = str(size.ram/1024)
+        #Check ORG is available
+        self.connection.check_org()
+        vdc = Vdc.get_vdc(vpdc, self.connection, self.org)
 
-        vdc = Vdc.get_vdc(vpdc)
-
-        if network not in vdc.network:
+        if network not in vdc.networks:
             raise ValueError("%s not available. Available Networks are:%s" %(network, vdc.network))
 
-        vapp_xml = AddVappXML(
+        vapp_xml = AddVAppXML(
                         name = name, 
                         os = os, 
                         network = network, 
@@ -948,11 +1029,12 @@ class SavvisDriver(VCloudNodeDriver):
                         memory = memory
                     )
 
+        print "VApp XML: %s" %vapp_xml.tostring()
+
         # Instantiate VM and get identifier.
         res = self.connection.request(
-            '%s/vApp'
-                % kwargs.get('vdc', vdc.href),
-            data=instantiate_xml.tostring(),
+            '%s/vApp' %vdc.href,
+            data=vapp_xml.tostring(),
             method='POST',
             headers={
                 'Content-Type':
@@ -960,28 +1042,43 @@ class SavvisDriver(VCloudNodeDriver):
             }
         )
         vapp_name = res.object.get('name')
-        vapp_href = get_url_path(res.object.get('href'))
+        task = res.object.findall(fixxpath(res.object, "Task"))[0]
+        if not task.get('href'):
+            error = task.findall(fixxpath(task, "Error"))
+            raise Exception("Failed to Create Server : Error %s" %error[0].get('message'))
 
-        self._wait_for_task_completion(res.object.get('href'))
+        self._wait_for_task_completion(task.get('href'),timeout=3600)
         node = self._to_node(vapp_name, res.object)
 
-        
-        if vdc.profile not in ('Essential'):
-            #Open the SSH Port on the perimeter Firewall
-            firewall_xml = AddFirewallRuleXML(port = 22, protocol = "tcp", src = "any", dest = vapp_name)
+        return node
+
+        def ex_create_pf_rule(self, vdc, port, proto, src, dest):
+
+            vdc = Vdc.get_vdc(vpdc, self.connection, self.org)
+            #vdc profile example: Balanced(Provisioning)
+
+            if 'Essential' not in vdc.profile:
+                #Open the SSH Port on the perimeter Firewall
+                firewall_xml = AddFirewallRuleXML(
+                                    port = 22, 
+                                    protocol = "tcp", 
+                                    src = "any", 
+                                    dest = vapp_name
+                                )
             
             res = self.connection.request(
-                '%s/FirewallService'
-                % kwargs.get('vdc', vdc.href),
-            data=instantiate_xml.tostring(),
-            method='PUT',
-            headers={
-                'Content-Type':
-                    'application/xml'
-            }
-        )
+                            '%s/FirewallService' %vdc.href,
+                            data=firewall_xml.tostring(),
+                            method='PUT',
+                            headers={'Content-Type':'application/xml'}
+                )   
+            task = res.object.findall(fixxpath(res.object, "Task"))[0]
+            if not task.get('href'):
+                error = task.findall(fixxpath(task, "Error"))
+                #Delete Server
+                self.destroy_node(node)
+                raise Exception("Failed to Create Firewall Rule : Error %s" %error[0].get('message'))
 
-            href = get_url_path(res.object.get('href'))
-            self._wait_for_task_completion(res.object.get('href'))
+            self._wait_for_task_completion(task.get('href'), timeout=3600)
 
-        return node
+        
