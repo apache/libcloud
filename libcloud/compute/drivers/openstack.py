@@ -806,6 +806,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @keyword    ex_files:   File Path => File contents to create on
                                 the node
         @type       ex_files:   C{dict}
+
+        @keyword    ex_keyname:  Name of existing public key to inject into instance
+        @type       ex_keyname:  C{string}
+
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -863,6 +867,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             'personality': self._files_to_personality(kwargs.get("ex_files",
                                                                  {}))
         }
+
+        if 'ex_keyname' in kwargs:
+            server_params['key_name'] = kwargs['ex_keyname']
 
         if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
@@ -1047,6 +1054,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 password=api_node.get('adminPass'),
                 created=api_node['created'],
                 updated=api_node['updated'],
+                key_name=api_node.get('key_name', None),
             ),
         )
 

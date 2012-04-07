@@ -29,7 +29,7 @@
         "addresses": {},
         "accessIPv4": "",
         "accessIPv6": "",
-        "key_name": "",
+        "key_name": "devstack",
         "progress": null,
         "flavor": {
             "id": "1",
