@@ -158,7 +158,7 @@ class DeploymentTests(unittest.TestCase):
                                             timeout=1)
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(e.value.find('is missing from list_nodes') != -1)
+            self.assertTrue(e.value.find('Timed out after 1 second') != -1)
         else:
             self.fail('Exception was not thrown')
 

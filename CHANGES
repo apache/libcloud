@@ -8,6 +8,12 @@ Changes with Apache Libcloud in development:
       driver.
       [Jay Doane]
 
+    - Fix a problem in deploy_node - make it work with providers which
+      don'  instantly return created node in the list_node response.
+      Also add __str__ and __repr__ method to DeploymentError so the
+      error message is more useful.
+      [Jouke Waleson, Tomaz Muraus]
+
 Changes with Apache Libcloud 0.9.1:
 
   *) General:

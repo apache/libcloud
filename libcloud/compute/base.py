@@ -631,20 +631,13 @@ class NodeDriver(BaseDriver):
             nodes = self.list_nodes()
             nodes = list([n for n in nodes if n.uuid == node.uuid])
 
-            if len(nodes) == 0:
-                raise LibcloudError(value=('Booted node[%s] ' % node
-                                    + 'is missing from list_nodes.'),
-                                    driver=self)
-
             if len(nodes) > 1:
                 raise LibcloudError(value=('Booted single node[%s], ' % node
                                     + 'but multiple nodes have same UUID'),
                                     driver=self)
 
-            node = nodes[0]
-
-            if (node.public_ips and node.state == NodeState.RUNNING):
-                return node
+            if (len(nodes) == 1 and nodes[0].public_ips and nodes[0].state == NodeState.RUNNING):
+                return nodes[0]
             else:
                 time.sleep(wait_period)
                 continue
