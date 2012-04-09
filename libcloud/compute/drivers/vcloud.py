@@ -388,7 +388,7 @@ class VCloudNodeDriver(NodeDriver):
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         start_time = time.time()
         task = self._fetch_task_info(task_href)
-        print "Task Status: %s" %task.get("status")
+        print "Task Href %s Task Status: %s" %(task_href, task.get("status"))
         status = task.get('status')
         while status != 'success':
             if status == 'error':
@@ -402,7 +402,7 @@ class VCloudNodeDriver(NodeDriver):
                                 % task_href)
             time.sleep(5)
             task = self._fetch_task_info(task_href)
-            print "Task Status: %s" %task.get("status")
+            print "Task Href %s Task Status: %s" %(task_href, task.get("status"))
             status = task.get('status')
 
     def destroy_node(self, node):
@@ -914,17 +914,18 @@ class AddFirewallRuleXML(object):
     def _build_xmltree(self):
         self.root = self._make_pfw_root() 
         
-        self._add_pfw_rule(self.root)
+        self._add_pfw_rule()
+        print "PFW Rule:%s" %self.tostring()
         return
    
     def _add_pfw_rule(self):
-        rule = ET.SubElement(self.root, "svvs:FireWall")
+        rule = ET.SubElement(self.root, "svvs:FirewallRule")
         ET.SubElement(rule, "svvs:Description").text = "Perimeter Firewall Rule"
         ET.SubElement(rule, "svvs:Type").text = "PERIMETER_FIREWALL"
         ET.SubElement(rule, "svvs:Log").text = "no"
         ET.SubElement(rule, "svvs:Policy").text = "allow"
         proto = ET.SubElement(rule, "svvs:Protocols")
-        if "tcp" in proto:
+        if "tcp" in self.proto.lower():
             ET.SubElement(proto, "svvs:Tcp").text = "true"
         else:
             ET.SubElement(proto, "svvs:Udp").text = "true"
@@ -936,18 +937,15 @@ class AddFirewallRuleXML(object):
          
     def _make_pfw_root(self):
         return ET.Element(
-            "FirewallService",
+            "svvs:FirewallService",
             {
                 "xmlns:common":"http://schemas.dmtf.org/wbem/wscim/1/common",
+                "xmlns:vApp":"http://www.vmware.com/vcloud/v0.8",
                 "xmlns:rasd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData",
                 "xmlns:vssd":"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData",
                 "xmlns:ovf":"http://schemas.dmtf.org/ovf/envelope/1",
-                "xmlns:svvs":"http://schemas.api.savvis.net/vpdci"
+                "xmlns:svvs":"http://schemas.api.sandbox.symphonyVPDC.savvis.net/vpdci"
             })
-
-
-
-   
 
 
 class SavvisNodeDriver(VCloudNodeDriver):
@@ -957,6 +955,8 @@ class SavvisNodeDriver(VCloudNodeDriver):
     connectionCls = SavvisConnection
     type = Provider.VCLOUD
 
+    def list_locations(self):
+        return [NodeLocation(0, "US EAST", 'US', self)]
 
     def _fetch_task_info(self, task_href):
         res = self.connection.request(task_href)
@@ -965,20 +965,33 @@ class SavvisNodeDriver(VCloudNodeDriver):
 
     def _to_node(self, name, elm):
         state = elm.get('status')
-
+        public_ips = None
+        href = elm.get('href')
+        print "Vapp href : %s" %href
         sections = elm.findall('{http://schemas.dmtf.org/ovf/envelope/1}Section')
-        network = sections[0]
-        [networkconfig] = network.findall('{http://www.vmware.com/vcloud/v0.8}NetworkConfig')
-        [features] = networkconfig.findall('{http://www.vmware.com/vcloud/v0.8}Features')
-        [nat] = features.findall('{http://www.vmware.com/vcloud/v0.8}Nat')
-        [nat_rule] = nat.findall('{http://www.vmware.com/vcloud/v0.8}NatRule')
-        
-        private_ips = [nat_rule.get('internalIP')]
-        if nat_rule.get('externalIP') == '0.0.0.0':
-            public_ips = private_ips
-        else:
-            public_ips = [nat_rule.get('externalIP')]
+        for section in sections:
+            network = section if section.get('Network') else None
+            
+            if network.findall('{http://www.vmware.com/vcloud/v0.8}IpAddress'):
+                ip_addr = network.findall('{http://www.vmware.com/vcloud/v0.8}IpAddress')
+                if ip_addr:
+                    private_ips = [ip_addr[0].text]
 
+            elif network.findall('{http://www.vmware.com/vcloud/v0.8}NetworkConfig'):
+                networkconfig = network.findall('{http://www.vmware.com/vcloud/v0.8}NetworkConfig')
+                [features] = networkconfig[0].findall('{http://www.vmware.com/vcloud/v0.8}Features')
+                nat = features.findall('{http://www.vmware.com/vcloud/v0.8}Nat')
+                if nat:
+                    [nat_rule] = nat[0].findall('{http://www.vmware.com/vcloud/v0.8}NatRule')
+            
+                    private_ips = [nat_rule.get('internalIP')]
+                    if nat_rule.get('externalIP') == '0.0.0.0':
+                        public_ips = private_ips
+                    else:
+                        public_ips = [nat_rule.get('externalIP')]
+
+        if not public_ips:
+            public_ips = private_ips
         node = Node(
                     id=elm.get('href'),
                     name=name,
@@ -989,6 +1002,12 @@ class SavvisNodeDriver(VCloudNodeDriver):
                     )
 
         return node
+
+
+    def destroy_node(self, node):
+        node_path = get_url_path(node.id)
+        res = self.connection.request(node_path, method='DELETE')
+        return res.status == 200
 
     def create_node(self, **kwargs):
         """Creates and returns node.
@@ -1041,44 +1060,53 @@ class SavvisNodeDriver(VCloudNodeDriver):
                     'application/xml'
             }
         )
-        vapp_name = res.object.get('name')
+        #Fetch the associate Task
         task = res.object.findall(fixxpath(res.object, "Task"))[0]
         if not task.get('href'):
             error = task.findall(fixxpath(task, "Error"))
             raise Exception("Failed to Create Server : Error %s" %error[0].get('message'))
 
-        self._wait_for_task_completion(task.get('href'),timeout=3600)
-        node = self._to_node(vapp_name, res.object)
+        self._wait_for_task_completion(task.get('href'),timeout=7200)
+
+        #If task succeeds, fetch vapp information
+        task = self._fetch_task_info(task.get('href'))
+        result = task.findall(fixxpath(task, "Result"))
+        vapp_href = result[0].get('href')
+
+        vapp =self.connection.request(vapp_href)
+        vapp_name = vapp.object.get('name')
+        node = self._to_node(vapp_name, vapp.object)
 
         return node
 
-        def ex_create_pf_rule(self, vdc, port, proto, src, dest):
+    def ex_create_pf_rule(self, vpdc, port, proto, src, dest):
 
-            vdc = Vdc.get_vdc(vpdc, self.connection, self.org)
-            #vdc profile example: Balanced(Provisioning)
+        #Check ORG is available
+        self.connection.check_org()
 
-            if 'Essential' not in vdc.profile:
-                #Open the SSH Port on the perimeter Firewall
-                firewall_xml = AddFirewallRuleXML(
-                                    port = 22, 
-                                    protocol = "tcp", 
-                                    src = "any", 
-                                    dest = vapp_name
-                                )
-            
-            res = self.connection.request(
-                            '%s/FirewallService' %vdc.href,
-                            data=firewall_xml.tostring(),
-                            method='PUT',
-                            headers={'Content-Type':'application/xml'}
-                )   
-            task = res.object.findall(fixxpath(res.object, "Task"))[0]
-            if not task.get('href'):
-                error = task.findall(fixxpath(task, "Error"))
-                #Delete Server
-                self.destroy_node(node)
-                raise Exception("Failed to Create Firewall Rule : Error %s" %error[0].get('message'))
+        vdc = Vdc.get_vdc(vpdc, self.connection, self.org)
+        #vdc profile example: Balanced(Provisioning)
 
-            self._wait_for_task_completion(task.get('href'), timeout=3600)
-
+        if 'Essential' not in vdc.profile:
+            #Open the SSH Port on the perimeter Firewall
+            firewall_xml = AddFirewallRuleXML(
+                                port = port, 
+                                proto = proto, 
+                                src = src, 
+                                dest = dest
+                            )
         
+        res = self.connection.request(
+                        '%s/FirewallService' %vdc.href,
+                        data=firewall_xml.tostring(),
+                        method='PUT',
+                        headers={'Content-Type':'application/xml'}
+            )   
+        task = res.object.findall(fixxpath(res.object, "Task"))[0]
+        if not task.get('href'):
+            error = task.findall(fixxpath(task, "Error"))
+            raise Exception("Failed to Create Firewall Rule : Error %s" %error[0].get('message'))
+
+        self._wait_for_task_completion(task.get('href'), timeout=3600)
+
+    
