@@ -63,6 +63,7 @@ class Provider(object):
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
     @cvar LIBVIRT: Libvirt driver
+    @cvar JOYENT: Joyent driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -111,6 +112,7 @@ class Provider(object):
     LIBVIRT = 42
     ELASTICHOSTS_US2 = 43
     ELASTICHOSTS_CA1 = 44
+    JOYENT = 45
 
 
 class NodeState(object):
