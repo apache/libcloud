@@ -18,6 +18,9 @@ Changes with Apache Libcloud in development:
       deploy_node. ; LIBCLOUD-179
       [Neil Wilson]
 
+    - Add Joyent driver.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.9.1:
 
   *) General:
