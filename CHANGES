@@ -4,6 +4,9 @@ Changes with Apache Libcloud in development:
 
   *) Compute:
 
+    - Fix CloudSigmaLvsNodeDriver connectionCls bug.
+      [Jerry Chen]
+
     - Add 'ex_keyname' argument to the create_node method in the OpenStack
       driver.
       [Jay Doane]
