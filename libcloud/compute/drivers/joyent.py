@@ -169,7 +169,7 @@ class JoyentNodeDriver(NodeDriver):
                 public_ips.append(ip)
 
         if 'credentials' in data['metadata']:
-            extra['password'] = data['metadata']['credentials']
+            extra['password'] = data['metadata']['credentials']['root']
 
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
