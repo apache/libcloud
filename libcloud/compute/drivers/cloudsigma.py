@@ -592,5 +592,5 @@ class CloudSigmaLvsNodeDriver(CloudSigmaBaseNodeDriver):
     """
     CloudSigma node driver for the Las Vegas end-point
     """
-    connectionCls = CloudSigmaZrhConnection
+    connectionCls = CloudSigmaLvsConnection
     api_name = 'cloudsigma_lvs'
