@@ -23,13 +23,14 @@ except:
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
+from libcloud.common.types import LibcloudError
 from libcloud.compute.providers import Provider
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.base import is_private_subnet
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize
 
-API_HOST_SUFFIX = 'api.joyentcloud.com'
+API_HOST_SUFFIX = '.api.joyentcloud.com'
 API_VERSION = '~6.5'
 
 
@@ -41,8 +42,14 @@ NODE_STATE_MAP = {
     'deleted': NodeState.TERMINATED
 }
 
+LOCATIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
+DEFAULT_LOCATION = LOCATIONS[0]
+
 
 class JoyentResponse(JsonResponse):
+    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
+                             httplib.NO_CONTENT]
+
     def parse_error(self):
         if self.status == 401:
             data = self.parse_body()
@@ -50,12 +57,10 @@ class JoyentResponse(JsonResponse):
         return self.body
 
     def success(self):
-        return self.status in [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                               httplib.NO_CONTENT]
+        return self.status in self.valid_response_codes
 
 
 class JoyentConnection(ConnectionUserAndKey):
-    host = 'us-east-1.' + API_HOST_SUFFIX
     responseCls = JoyentResponse
 
     def add_default_headers(self, headers):
@@ -72,6 +77,19 @@ class JoyentNodeDriver(NodeDriver):
     type = Provider.JOYENT
     name = 'Joyent'
     connectionCls = JoyentConnection
+    features = {'create_node': ['generates_password']}
+
+    def __init__(self, *args, **kwargs):
+        if 'location' in kwargs:
+            if kwargs['location'] not in LOCATIONS:
+                msg = 'Invalid location: "%s". Valid locations: %s'
+                raise LibcloudError(msg % (kwargs['location'],
+                                ', '.join(LOCATIONS)), driver=self)
+        else:
+            kwargs['location'] = DEFAULT_LOCATION
+
+        super(JoyentNodeDriver, self).__init__(*args, **kwargs)
+        self.connection.host = kwargs['location'] + API_HOST_SUFFIX
 
     def list_images(self):
         result = self.connection.request('/my/datasets').object
@@ -142,6 +160,7 @@ class JoyentNodeDriver(NodeDriver):
         state = NODE_STATE_MAP[data['state']]
         public_ips = []
         private_ips = []
+        extra = {}
 
         for ip in data['ips']:
             if is_private_subnet(ip):
@@ -149,7 +168,10 @@ class JoyentNodeDriver(NodeDriver):
             else:
                 public_ips.append(ip)
 
+        if 'credentials' in data['metadata']:
+            extra['password'] = data['metadata']['credentials']
+
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self.connection.driver)
+                    driver=self.connection.driver, extra=extra)
         return node
