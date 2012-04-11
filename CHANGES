@@ -14,6 +14,10 @@ Changes with Apache Libcloud in development:
       error message is more useful.
       [Jouke Waleson, Tomaz Muraus]
 
+    - Add 'ssh_key' feature to Brigthbox driver. This way it works with
+      deploy_node. ; LIBCLOUD-179
+      [Neil Wilson]
+
 Changes with Apache Libcloud 0.9.1:
 
   *) General:
