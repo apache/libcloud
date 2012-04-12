@@ -405,7 +405,7 @@ class CloudFilesTests(unittest.TestCase):
         except OSError:
             pass
         else:
-            self.fail('Inesitent but an exception was not thrown')
+            self.fail('Inexistent but an exception was not thrown')
         finally:
             libcloud.utils.files.guess_file_mime_type = old_func
 
