@@ -24,6 +24,12 @@ Changes with Apache Libcloud in development:
     - Add Joyent driver.
       [Tomaz Muraus]
 
+  *) Storage
+
+    - Large object upload support for CloudFiles driver
+    - Add CLOUDFILES_SWIFT driver to connect to OpenStack Swift
+      [Dmitry Russkikh, Roman Bogorodskiy]
+
 Changes with Apache Libcloud 0.9.1:
 
   *) General:

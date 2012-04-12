@@ -52,6 +52,7 @@ class Provider(object):
     NINEFOLD = 8
     GOOGLE_STORAGE = 9
     S3_US_WEST_OREGON = 10
+    CLOUDFILES_SWIFT = 11
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
