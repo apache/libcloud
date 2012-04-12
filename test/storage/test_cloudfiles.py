@@ -24,6 +24,7 @@ import mock
 import libcloud.utils.files
 
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 
 if PY3:
@@ -517,10 +518,10 @@ class CloudFilesTests(unittest.TestCase):
 
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
-        hash_function.update('')
+        hash_function.update(b(''))
         data_hash = hash_function.hexdigest()
 
-        fake_response = type('CloudFilesResponse', (), {'headers': 
+        fake_response = type('CloudFilesResponse', (), {'headers':
                 {'etag': data_hash}
             })
 
