@@ -24,6 +24,10 @@ Changes with Apache Libcloud in development:
     - Add Joyent driver.
       [Tomaz Muraus]
 
+    - Store auth token expire times on the connection class in the attribute
+      called 'auth_token_expires'.
+      [Chris Gilmer, Brad Morgan]
+
   *) Storage
 
     - Large object upload support for CloudFiles driver
