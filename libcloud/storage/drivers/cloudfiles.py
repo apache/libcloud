@@ -708,20 +708,19 @@ class FileChunkReader(object):
         return self
 
     def next(self):
-        if not self.stop_iteration:
-            start_block = self.bytes_read
-            end_block = start_block + self.chunk_size
-            if end_block > self.total:
-                end_block = self.total
-                self.stop_iteration = True
-            self.bytes_read += end_block - start_block
-            return ChunkStreamReader(file_path=self.file_path,
-                                     start_block=start_block,
-                                     end_block=end_block,
-                                     chunk_size=8192)
-
-        else:
+        if self.stop_iteration:
             raise StopIteration
+
+        start_block = self.bytes_read
+        end_block = start_block + self.chunk_size
+        if end_block >= self.total:
+            end_block = self.total
+            self.stop_iteration = True
+        self.bytes_read += end_block - start_block
+        return ChunkStreamReader(file_path=self.file_path,
+                                 start_block=start_block,
+                                 end_block=end_block,
+                                 chunk_size=8192)
 
 
 class ChunkStreamReader(object):
