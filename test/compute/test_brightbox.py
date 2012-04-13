@@ -50,7 +50,8 @@ class BrightboxTest(unittest.TestCase, TestCaseMixin):
         self.assertRaises(InvalidCredsError, self.driver.list_nodes)
 
     def test_invalid_api_version(self):
-        self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS, api_version='2.0')
+        kwargs = {'api_version': '2.0'}
+        self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS, **kwargs)
         self.assertRaises(Exception, self.driver.list_locations)
 
     def test_other_host(self):
