@@ -1,5 +1,5 @@
 <VApp deployed="false" status="0" name="testClone" id="urn:vcloud:vapp:5adbcba3-f861-4fd7-a395-f7d82008f8b7" type="application/vnd.vmware.vcloud.vApp+xml"
-      href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" xsi:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://172.17.64.27/api/v1.5/schema/master.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" xsi:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://65.41.64.27/api/v1.5/schema/master.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Link rel="down" type="application/vnd.vmware.vcloud.vAppNetwork+xml" name="Build Private" href="https://vm-vcloud/api/network/c3c3f0dd-ef8f-4e10-90d2-84db7bac7a16"/>
     <Link rel="up" type="application/vnd.vmware.vcloud.vdc+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0"/>
     <Description>testing instance</Description>

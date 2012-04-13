@@ -125,7 +125,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
         self.assertEqual(node.name, 'testNode')
         self.assertEqual(node.state, NodeState.RUNNING)
-        self.assertEqual(node.public_ips, ['172.17.67.2'])
+        self.assertEqual(node.public_ips, ['65.41.67.2'])
         self.assertEqual(node.private_ips, [])
 
     def test_reboot_node(self):

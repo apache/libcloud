@@ -1,4 +1,4 @@
-<VApp deployed="false" status="8" name="undeployTest" id="urn:vcloud:vapp:8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" type="application/vnd.vmware.vcloud.vApp+xml" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://www.vmware.com/vcloud/v1.5 http://172.17.64.27/api/v1.5/schema/master.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<VApp deployed="false" status="8" name="undeployTest" id="urn:vcloud:vapp:8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" type="application/vnd.vmware.vcloud.vApp+xml" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://www.vmware.com/vcloud/v1.5 http://65.41.64.27/api/v1.5/schema/master.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Link rel="power:powerOn" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/power/action/powerOn"/>
     <Link rel="deploy" type="application/vnd.vmware.vcloud.deployVAppParams+xml" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/action/deploy"/>
     <Link rel="down" type="application/vnd.vmware.vcloud.vAppNetwork+xml" name="vCloud - Default" href="https://vm-vcloud/api/network/da178ef6-b21b-4f19-816e-798a294d2b22"/>
@@ -51,15 +51,15 @@
             <Configuration>
                 <IpScope>
                     <IsInherited>true</IsInherited>
-                    <Gateway>172.17.64.1</Gateway>
+                    <Gateway>65.41.64.1</Gateway>
                     <Netmask>255.255.252.0</Netmask>
-                    <Dns1>172.17.42.113</Dns1>
-                    <Dns2>172.17.42.114</Dns2>
+                    <Dns1>65.41.42.113</Dns1>
+                    <Dns2>65.41.42.114</Dns2>
                     <DnsSuffix>vm.myorg.com</DnsSuffix>
                     <IpRanges>
                         <IpRange>
-                            <StartAddress>172.17.67.1</StartAddress>
-                            <EndAddress>172.17.67.254</EndAddress>
+                            <StartAddress>65.41.67.1</StartAddress>
+                            <EndAddress>65.41.67.254</EndAddress>
                         </IpRange>
                     </IpRanges>
                 </IpScope>
@@ -72,8 +72,8 @@
                         <DefaultLeaseTime>3600</DefaultLeaseTime>
                         <MaxLeaseTime>7200</MaxLeaseTime>
                         <IpRange>
-                            <StartAddress>172.17.64.2</StartAddress>
-                            <EndAddress>172.17.67.0</EndAddress>
+                            <StartAddress>65.41.64.2</StartAddress>
+                            <EndAddress>65.41.67.0</EndAddress>
                         </IpRange>
                     </DhcpService>
                     <FirewallService>
@@ -145,7 +145,7 @@
                     <rasd:Address>00:50:56:01:00:99</rasd:Address>
                     <rasd:AddressOnParent>0</rasd:AddressOnParent>
                     <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
-                    <rasd:Connection vcloud:ipAddress="172.17.67.2" vcloud:primaryNetworkConnection="true" vcloud:ipAddressingMode="POOL">vCloud - Default</rasd:Connection>
+                    <rasd:Connection vcloud:ipAddress="65.41.67.2" vcloud:primaryNetworkConnection="true" vcloud:ipAddressingMode="POOL">vCloud - Default</rasd:Connection>
                     <rasd:Description>PCNet32 ethernet adapter</rasd:Description>
                     <rasd:ElementName>Network adapter 0</rasd:ElementName>
                     <rasd:InstanceID>1</rasd:InstanceID>
@@ -240,7 +240,7 @@
                 <PrimaryNetworkConnectionIndex>0</PrimaryNetworkConnectionIndex>
                 <NetworkConnection network="vCloud - Default" needsCustomization="false">
                     <NetworkConnectionIndex>0</NetworkConnectionIndex>
-                    <IpAddress>172.17.67.2</IpAddress>
+                    <IpAddress>65.41.67.2</IpAddress>
                     <IsConnected>true</IsConnected>
                     <MACAddress>00:50:56:01:00:99</MACAddress>
                     <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
