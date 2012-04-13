@@ -64,6 +64,7 @@ class Provider(object):
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
+    @cvar VCL: VCL driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -113,6 +114,7 @@ class Provider(object):
     ELASTICHOSTS_US2 = 43
     ELASTICHOSTS_CA1 = 44
     JOYENT = 45
+    VCL = 46
 
 
 class NodeState(object):

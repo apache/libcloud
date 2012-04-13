@@ -112,7 +112,9 @@ DRIVERS = {
     Provider.LIBVIRT:
         ('libcloud.compute.drivers.libvirt_driver', 'LibvirtNodeDriver'),
     Provider.JOYENT:
-        ('libcloud.compute.drivers.joyent', 'JoyentNodeDriver')
+        ('libcloud.compute.drivers.joyent', 'JoyentNodeDriver'),
+    Provider.VCL:
+        ('libcloud.compute.drivers.vcl', 'VCLNodeDriver')
 }
 
 

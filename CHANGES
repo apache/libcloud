@@ -25,8 +25,12 @@ Changes with Apache Libcloud in development:
       [Tomaz Muraus]
 
     - Store auth token expire times on the connection class in the attribute
-      called 'auth_token_expires'.
+      called 'auth_token_expires'. ; LIBCLOUD-178
       [Chris Gilmer, Brad Morgan]
+
+    - Add new driver for VCL cloud
+      (http://www.educause.edu/blog/hes8/CloudComputingandtheVirtualCom/167931)
+      [Jason Gionta, Tomaz Muraus]
 
   *) Storage
 
