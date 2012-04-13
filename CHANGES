@@ -32,6 +32,18 @@ Changes with Apache Libcloud in development:
       (http://www.educause.edu/blog/hes8/CloudComputingandtheVirtualCom/167931)
       [Jason Gionta, Tomaz Muraus]
 
+    - Improve and add new features to Brightbox driver ; LIBCLOUD-184
+        - Update fixtures to represent actual api output
+        - Update compute tests to 100% coverage
+        - Add userdata and server group extensions to create_node
+        - Add ipv6 support to public ip list
+        - Improve in line documentation
+        - Add lots of api output information to Node and Image
+          'extra' attributes
+        - Allow variable API versions (api_version argument)
+        - Allow reverse dns updates for cloud ip extensions
+      [Neil Wilson, Tomaz Muraus]
+
   *) Storage
 
     - Large object upload support for CloudFiles driver

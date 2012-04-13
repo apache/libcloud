@@ -15,15 +15,24 @@
 """
 Brightbox Driver
 """
+
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+from libcloud.utils.py3 import u
 
 from libcloud.common.brightbox import BrightboxConnection
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
+import base64
+
 
 API_VERSION = '1.0'
+
+
+def _extract(d, keys):
+    return dict((k, d[k]) for k in keys if k in d and d[k] is not None)
 
 
 class BrightboxNodeDriver(NodeDriver):
@@ -45,31 +54,58 @@ class BrightboxNodeDriver(NodeDriver):
                       'failed': NodeState.UNKNOWN,
                       'unavailable': NodeState.UNKNOWN}
 
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=API_VERSION, **kwargs):
+        super(BrightboxNodeDriver, self).__init__(key=key, secret=secret,
+                                                  secure=secure,
+                                                  host=host, port=port,
+                                                  api_version=api_version,
+                                                  **kwargs)
+
     def _to_node(self, data):
+        extra_data = _extract(data, ['fqdn', 'user_data', 'status',
+                                    'interfaces', 'snapshots',
+                                    'server_groups', 'hostname',
+                                    'started_at', 'created_at',
+                                    'deleted_at'])
+        extra_data['zone'] = self._to_location(data['zone'])
         return Node(
             id=data['id'],
             name=data['name'],
             state=self.NODE_STATE_MAP[data['status']],
-            public_ips=list(map(lambda cloud_ip: cloud_ip['public_ip'],
-                                                   data['cloud_ips'])),
-            private_ips=list(map(lambda interface: interface['ipv4_address'],
-                                                     data['interfaces'])),
+
+            private_ips=[interface['ipv4_address']
+                         for interface in data['interfaces']
+                         if 'ipv4_address' in interface],
+
+            public_ips=[cloud_ip['public_ip']
+                        for cloud_ip in data['cloud_ips']] +
+                       [interface['ipv6_address']
+                        for interface in data['interfaces']
+                        if 'ipv6_address' in interface],
+
             driver=self.connection.driver,
-            extra={
-                'status': data['status'],
-                'interfaces': data['interfaces']
-            }
+            size=self._to_size(data['server_type']),
+            image=self._to_image(data['image']),
+            extra=extra_data
         )
 
     def _to_image(self, data):
+        extra_data = _extract(data, ['arch', 'compatibility_mode',
+                                   'created_at', 'description',
+                                   'disk_size', 'min_ram', 'official',
+                                   'owner', 'public', 'source',
+                                   'source_type', 'status', 'username',
+                                   'virtual_size', 'licence_name'])
+
+        if data.get('ancestor', None):
+            extra_data['ancestor'] = self._to_image(data['ancestor'])
+
         return NodeImage(
             id=data['id'],
             name=data['name'],
             driver=self,
-            extra={
-                'description': data['description'],
-                'arch': data['arch']
-            }
+            extra=extra_data
         )
 
     def _to_size(self, data):
@@ -93,68 +129,168 @@ class BrightboxNodeDriver(NodeDriver):
 
     def _post(self, path, data={}):
         headers = {'Content-Type': 'application/json'}
+        return self.connection.request(path, data=data, headers=headers,
+                                       method='POST')
 
-        return self.connection.request(path, data=data, headers=headers, method='POST')
+    def _put(self, path, data={}):
+        headers = {'Content-Type': 'application/json'}
+        return self.connection.request(path, data=data, headers=headers,
+                                       method='PUT')
 
     def create_node(self, **kwargs):
+        """Create a new Brightbox node
+
+        See L{NodeDriver.create_node} for more keyword args.
+        Reference: https://api.gb1.brightbox.com/1.0/#server_create_server
+
+        @keyword    ex_userdata: User data
+        @type       ex_userdata: C{str}
+
+        @keyword    ex_servergroup: Name or list of server group ids to
+                                    add server to
+        @type       ex_servergroup: C{str} or C{list} of C{str}s
+        """
         data = {
             'name': kwargs['name'],
             'server_type': kwargs['size'].id,
             'image': kwargs['image'].id,
-            'user_data': ''
         }
+
+        if 'ex_userdata' in kwargs:
+            data['user_data'] = base64.b64encode(b(kwargs['ex_userdata'])) \
+                                      .decode('ascii')
 
         if 'location' in kwargs:
             data['zone'] = kwargs['location'].id
-        else:
-            data['zone'] = ''
 
-        data = self._post('/%s/servers' % API_VERSION, data).object
+        if 'ex_servergroup' in kwargs:
+            if not isinstance(kwargs['ex_servergroup'], list):
+                kwargs['ex_servergroup'] = [kwargs['ex_servergroup']]
+            data['server_groups'] = kwargs['ex_servergroup']
 
+        data = self._post('/%s/servers' % self.api_version, data).object
         return self._to_node(data)
 
     def destroy_node(self, node):
-        response = self.connection.request('/%s/servers/%s' % (API_VERSION, node.id), method='DELETE')
-
+        """
+        Destroy node by passing in the node object
+        """
+        response = self.connection.request('/%s/servers/%s' % \
+                   (self.api_version, node.id), method='DELETE')
         return response.status == httplib.ACCEPTED
 
     def list_nodes(self):
-        data = self.connection.request('/%s/servers' % API_VERSION).object
-
+        data = self.connection.request('/%s/servers' % self.api_version).object
         return list(map(self._to_node, data))
 
     def list_images(self):
-        data = self.connection.request('/%s/images' % API_VERSION).object
-
+        data = self.connection.request('/%s/images' % self.api_version).object
         return list(map(self._to_image, data))
 
     def list_sizes(self):
-        data = self.connection.request('/%s/server_types' % API_VERSION).object
-
+        data = self.connection.request('/%s/server_types' % self.api_version) \
+                              .object
         return list(map(self._to_size, data))
 
     def list_locations(self):
-        data = self.connection.request('/%s/zones' % API_VERSION).object
-
+        data = self.connection.request('/%s/zones' % self.api_version).object
         return list(map(self._to_location, data))
 
     def ex_list_cloud_ips(self):
-        return self.connection.request('/%s/cloud_ips' % API_VERSION).object
+        """
+        List Cloud IPs
 
-    def ex_create_cloud_ip(self):
-        return self._post('/%s/cloud_ips' % API_VERSION).object
+        @note: This is an API extension for use on Brightbox
+
+        @return: C{list} of C{dict}
+        """
+        return self.connection.request('/%s/cloud_ips' % self.api_version) \
+                              .object
+
+    def ex_create_cloud_ip(self, reverse_dns=None):
+        """
+        Requests a new cloud IP address for the account
+
+        @note: This is an API extension for use on Brightbox
+
+        @param      reverse_dns: Reverse DNS hostname
+        @type       reverse_dns: C{str}
+
+        @return: C{dict}
+        """
+        params = {}
+
+        if reverse_dns:
+            params['reverse_dns'] = reverse_dns
+
+        return self._post('/%s/cloud_ips' % self.api_version, params).object
+
+    def ex_update_cloud_ip(self, cloud_ip_id, reverse_dns):
+        """
+        Update some details of the cloud IP address
+
+        @note: This is an API extension for use on Brightbox
+
+        @param  cloud_ip_id: The id of the cloud ip.
+        @type   cloud_ip_id: C{str}
+
+        @param      reverse_dns: Reverse DNS hostname
+        @type       reverse_dns: C{str}
+
+        @return: C{dict}
+        """
+        response = self._put('/%s/cloud_ips/%s' % (self.api_version,
+            cloud_ip_id), {'reverse_dns': reverse_dns})
+        return response.status == httplib.OK
 
     def ex_map_cloud_ip(self, cloud_ip_id, interface_id):
-        response = self._post('/%s/cloud_ips/%s/map' % (API_VERSION, cloud_ip_id), {'interface': interface_id})
+        """
+        Maps (or points) a cloud IP address at a server's interface
+        or a load balancer to allow them to respond to public requests
 
+        @note: This is an API extension for use on Brightbox
+
+        @param  cloud_ip_id: The id of the cloud ip.
+        @type   cloud_ip_id: C{str}
+
+        @param  interface_id: The Interface ID or LoadBalancer ID to
+                              which this Cloud IP should be mapped to
+        @type   interface_id: C{str}
+
+        @return: C{bool} True if the mapping was successful.
+        """
+        response = self._post('/%s/cloud_ips/%s/map' % (self.api_version,
+            cloud_ip_id), {'destination': interface_id})
         return response.status == httplib.ACCEPTED
 
     def ex_unmap_cloud_ip(self, cloud_ip_id):
-        response = self._post('/%s/cloud_ips/%s/unmap' % (API_VERSION, cloud_ip_id))
+        """
+        Unmaps a cloud IP address from its current destination making
+        it available to remap. This remains in the account's pool
+        of addresses
 
+        @note: This is an API extension for use on Brightbox
+
+        @param  cloud_ip_id: The id of the cloud ip.
+        @type   cloud_ip_id: C{str}
+
+        @return: C{bool} True if the unmap was successful.
+        """
+        response = self._post('/%s/cloud_ips/%s/unmap' % (self.api_version,
+                                                          cloud_ip_id))
         return response.status == httplib.ACCEPTED
 
     def ex_destroy_cloud_ip(self, cloud_ip_id):
-        response = self.connection.request('/%s/cloud_ips/%s' % (API_VERSION, cloud_ip_id), method='DELETE')
+        """
+        Release the cloud IP address from the account's ownership
 
+        @note: This is an API extension for use on Brightbox
+
+        @param  cloud_ip_id: The id of the cloud ip.
+        @type   cloud_ip_id: C{str}
+
+        @return: C{bool} True if the unmap was successful.
+        """
+        response = self.connection.request('/%s/cloud_ips/%s' %
+                           (self.api_version, cloud_ip_id), method='DELETE')
         return response.status == httplib.OK
