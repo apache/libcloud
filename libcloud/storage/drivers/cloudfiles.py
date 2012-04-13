@@ -723,6 +723,8 @@ class FileChunkReader(object):
                                  end_block=end_block,
                                  chunk_size=8192)
 
+    def __next__(self):
+        return self.next()
 
 class ChunkStreamReader(object):
     def __init__(self, file_path, start_block, end_block, chunk_size):
@@ -752,3 +754,6 @@ class ChunkStreamReader(object):
         block = self.fd.read(block_size)
         self.bytes_read += block_size
         return block
+
+    def __next__(self):
+        return self.next()
