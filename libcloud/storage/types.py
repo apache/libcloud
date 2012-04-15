@@ -40,6 +40,7 @@ class Provider(object):
     @cvar NINEFOLD: Ninefold
     @cvar GOOGLE_STORAGE Google Storage
     @cvar: S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    @cvar NIMBUS: Nimbus.io driver
     """
     DUMMY = 0
     CLOUDFILES_US = 1
@@ -53,6 +54,7 @@ class Provider(object):
     GOOGLE_STORAGE = 9
     S3_US_WEST_OREGON = 10
     CLOUDFILES_SWIFT = 11
+    NIMBUS = 12
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
