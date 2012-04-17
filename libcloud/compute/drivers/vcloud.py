@@ -359,13 +359,7 @@ class VCloudNodeDriver(NodeDriver):
             )
         )
         if not connections:
-            connections = elm.findall('%s/%s/%s/%s' % (
-                    fixxpath(elm, 'Children'),
-                    fixxpath(elm, 'Vm'),
-                    fixxpath(elm, 'NetworkConnectionSection'),
-                    fixxpath(elm, 'NetworkConnection')
-                )
-            )
+            connections = elm.findall(fixxpath(elm, 'Children/Vm/NetworkConnectionSection/NetworkConnection'))
 
         for connection in connections:
             ips = [ip.text
@@ -734,10 +728,10 @@ class VCloud_1_5_Connection(VCloudConnection):
 
 
 class Instantiate_1_5_VAppXML(object):
-    def __init__(self, name, template, net_href):
+    def __init__(self, name, template, network):
         self.name = name
         self.template = template
-        self.net_href = net_href
+        self.network = network
         self._build_xmltree()
 
     def tostring(self):
@@ -746,13 +740,14 @@ class Instantiate_1_5_VAppXML(object):
     def _build_xmltree(self):
         self.root = self._make_instantiation_root()
 
-        self._add_vapp_template(self.root)
-
-        if self.net_href:
+        if self.network:
             instantionation_params = ET.SubElement(self.root, "InstantiationParams")
             network_config_section = ET.SubElement(instantionation_params, "NetworkConfigSection")
+            ET.SubElement(network_config_section, "Info", {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"})
             network_config = ET.SubElement(network_config_section, "NetworkConfig")
             self._add_network_association(network_config)
+
+        self._add_vapp_template(self.root)
 
     def _make_instantiation_root(self):
         return ET.Element(
@@ -773,11 +768,10 @@ class Instantiate_1_5_VAppXML(object):
         )
 
     def _add_network_association(self, parent):
-        return ET.SubElement(
-            parent,
-            "NetworkAssociation",
-                {'href': self.net_href}
-        )
+        parent.set('networkName', self.network.get('name'))
+        configuration = ET.SubElement(parent, 'Configuration')
+        ET.SubElement(configuration, 'ParentNetwork', {'href': self.network.get('href')})
+        configuration.append(self.network.find(fixxpath(self.network, 'Configuration/FenceMode')))
 
 
 class VCloud_1_5_NodeDriver(VCloudNodeDriver):
@@ -937,7 +931,11 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._validate_vm_names(ex_vm_names)
 
         # Some providers don't require a network link
-        network = kwargs.get('ex_network', None)
+        network_href = kwargs.get('ex_network', None)
+        if network_href:
+            network_elem = self.connection.request(network_href).object
+        else:
+            network_elem = None
 
         vdc = kwargs.get('ex_vdc', self.vdcs[0])
         if not vdc:
@@ -946,7 +944,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         if self._is_node(image):
             vapp_name, vapp_href = self._clone_node(name, image, vdc)
         else:
-            vapp_name, vapp_href = self._instantiate_node(name, image, network, vdc)
+            vapp_name, vapp_href = self._instantiate_node(name, image, network_elem, vdc)
 
         self._change_vm_names(vapp_href, ex_vm_names)
 
@@ -970,11 +968,11 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         return node
 
-    def _instantiate_node(self, name, image, network, vdc):
+    def _instantiate_node(self, name, image, network_elem, vdc):
         instantiate_xml = Instantiate_1_5_VAppXML(
             name=name,
             template=image.id,
-            net_href=network
+            network=network_elem
         )
 
         # Instantiate VM and get identifier.

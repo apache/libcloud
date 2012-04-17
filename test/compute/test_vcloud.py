@@ -81,8 +81,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = 'test'
-        VCloudNodeDriver.connectionCls.conn_classes = (None, VCloudMockHttp)
-        VCloudMockHttp.type = None
+        VCloudNodeDriver.connectionCls.conn_classes = (None, VCloud_1_5_MockHttp)
+        VCloud_1_5_MockHttp.type = None
         self.driver = VCloud_1_5_NodeDriver(*VCLOUD_PARAMS)
 
     def test_list_images(self):
@@ -105,7 +105,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             image=image,
             size=size,
             ex_vdc=Vdc('https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0', 'MyVdc', self.driver),
-            network='https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4',
+            ex_network='https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4',
             cpus=2,
             )
         self.assertTrue(isinstance(node, Node))
@@ -234,7 +234,7 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
 
-class VCloudMockHttp(MockHttp):
+class VCloud_1_5_MockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
@@ -249,6 +249,10 @@ class VCloudMockHttp(MockHttp):
 
     def _api_org_96726c78_4ae3_402f_b08b_7a78c6903d2a(self, method, url, body, headers):
         body = self.fixtures.load('api_org_96726c78_4ae3_402f_b08b_7a78c6903d2a.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4(self, method, url, body, headers):
+        body = self.fixtures.load('api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0(self, method, url, body, headers):
