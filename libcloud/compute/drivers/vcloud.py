@@ -706,7 +706,7 @@ class VCloud_1_5_Connection(VCloudConnection):
 
             # Set authorization token
             try:
-                self.token = headers['set-cookie']
+                self.token = headers['x-vcloud-authorization']
             except KeyError:
                 raise InvalidCredsError()
 
@@ -725,6 +725,11 @@ class VCloud_1_5_Connection(VCloudConnection):
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                     if org.get('name') == org_name)).get('href')
             )
+
+    def add_default_headers(self, headers):
+        headers['Accept'] = 'application/*+xml;version=1.5'
+        headers['x-vcloud-authorization'] = self.token
+        return headers
 
 
 class Instantiate_1_5_VAppXML(object):
