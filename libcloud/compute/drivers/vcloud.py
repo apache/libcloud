@@ -400,10 +400,15 @@ class VCloudNodeDriver(NodeDriver):
             if (time.time() - start_time >= timeout):
                 raise Exception("Timeout while waiting for task %s."
                                 % task_href)
-            time.sleep(5)
-            task = self._fetch_task_info(task_href)
-            print "Task Href %s Task Status: %s" %(task_href, task.get("status"))
-            status = task.get('status')
+            time.sleep(60)
+            try:
+                task = self._fetch_task_info(task_href)
+                print "Task Href %s Task Status: %s" %(task_href, task.get("status"))
+                status = task.get('status')
+            except Exception as e:
+                print "Exception in Waiting for task completion : %s" %e
+                pass
+
 
     def destroy_node(self, node):
         node_path = get_url_path(node.id)
@@ -956,7 +961,12 @@ class SavvisNodeDriver(VCloudNodeDriver):
     type = Provider.VCLOUD
 
     def list_locations(self):
-        return [NodeLocation(0, "US EAST", 'US', self)]
+        return [
+                NodeLocation(0, "US_EAST", 'US', self),
+                NodeLocation(1, "US_WEST", 'US', self),
+                NodeLocation(2, "EMEA", 'US', self),
+                NodeLocation(3, "ASIA", 'US', self),
+        ]
 
     def _fetch_task_info(self, task_href):
         res = self.connection.request(task_href)
@@ -1029,7 +1039,7 @@ class SavvisNodeDriver(VCloudNodeDriver):
         name = kwargs['name']
         os = kwargs['ex_os']
         cpus = kwargs['ex_cpus']
-        network = kwargs['network']
+        network = kwargs['ex_network']
         size = kwargs['size']
         vpdc = kwargs['ex_vpdc']
         memory = str(size.ram/1024)
