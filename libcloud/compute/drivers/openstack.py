@@ -38,7 +38,8 @@ import base64
 
 from xml.etree import ElementTree as ET
 
-from libcloud.common.openstack import OpenStackBaseConnection, OpenStackDriverMixin
+from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
@@ -807,8 +808,14 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                 the node
         @type       ex_files:   C{dict}
 
-        @keyword    ex_keyname:  Name of existing public key to inject into instance
+        @keyword    ex_keyname:  Name of existing public key to inject into
+                                 instance
         @type       ex_keyname:  C{string}
+
+        @keyword    ex_userdata: String containing user data
+                                 see
+                                 https://help.ubuntu.com/community/CloudInit
+        @type       ex_userdata: C{string}
 
         """
 
@@ -870,6 +877,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if 'ex_keyname' in kwargs:
             server_params['key_name'] = kwargs['ex_keyname']
+
+        if 'ex_userdata' in kwargs:
+            server_params['user_data'] = base64.b64encode(
+                b(kwargs['ex_userdata'])).decode('ascii')
 
         if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
