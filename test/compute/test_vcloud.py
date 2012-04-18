@@ -239,7 +239,7 @@ class VCloud_1_5_MockHttp(MockHttp):
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
     def _api_sessions(self, method, url, body, headers):
-        headers['set-cookie'] = 'vcloud-token=testtoken'
+        headers['x-vcloud-authorization'] = 'testtoken'
         body = self.fixtures.load('api_sessions.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
