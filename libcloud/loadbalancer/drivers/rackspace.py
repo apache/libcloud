@@ -125,7 +125,9 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
         super_dict = super(RackspaceHTTPHealthMonitor, self)._to_dict()
         super_dict['path'] = self.path
         super_dict['statusRegex'] = self.status_regex
-        super_dict['bodyRegex'] = self.body_regex
+
+        if self.body_regex:
+            super_dict['bodyRegex'] = self.body_regex
 
         return super_dict
 
@@ -1455,7 +1457,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                 attempts_before_deactivation=attempts_before_deactivation,
                 path=health_monitor_data.get("path"),
                 status_regex=health_monitor_data.get("statusRegex"),
-                body_regex=health_monitor_data.get("bodyRegex"))
+                body_regex=health_monitor_data.get("bodyRegex", ''))
 
         return None
 

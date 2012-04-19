@@ -30,6 +30,7 @@ Changes with Apache Libcloud in development:
 
     - Add new driver for VCL cloud
       (http://www.educause.edu/blog/hes8/CloudComputingandtheVirtualCom/167931)
+      ; LIBCLOUD-180
       [Jason Gionta, Tomaz Muraus]
 
     - Improve and add new features to Brightbox driver ; LIBCLOUD-184
@@ -44,12 +45,11 @@ Changes with Apache Libcloud in development:
         - Allow reverse dns updates for cloud ip extensions
       [Neil Wilson, Tomaz Muraus]
 
-    - Add ex_userdata argument to the OpenStack 1.1 driver.
+    - Add ex_userdata argument to the OpenStack 1.1 driver. ; LIBCLOUD-185
       [Jay Doane]
 
-
     - Modify Vmware vCloud driver and implement new features
-      for the vCloud version 1.5.
+      for the vCloud version 1.5. LIBCLOUD-183
       [Michal Galet, Sengor Kusturica]
 
   *) Storage
@@ -57,6 +57,12 @@ Changes with Apache Libcloud in development:
     - Large object upload support for CloudFiles driver
     - Add CLOUDFILES_SWIFT driver to connect to OpenStack Swift
       [Dmitry Russkikh, Roman Bogorodskiy]
+
+  *) Load-balancer
+
+    - Don't include 'body_regex' attribute in the Rackspace driver body if
+      body_regex is None or empty string. ; LIBCLOUD-186
+      [Bill Woodward]
 
 Changes with Apache Libcloud 0.9.1:
 
