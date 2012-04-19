@@ -334,7 +334,7 @@ class VCloudNodeDriver(NodeDriver):
             networks.extend(
                 [network
                  for network in res.findall(
-                     fixxpath(res, 'AvailableNetwors/Network')
+                     fixxpath(res, 'AvailableNetworks/Network')
                  )]
             )
 

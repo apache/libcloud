@@ -99,7 +99,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_networks(self):
         ret = self.driver.networks
-        #self.assertEqual(ret[0].get('href'), 'https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4')
+        self.assertEqual(ret[0].get('href'), 'https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4')
 
     def test_create_node(self):
         image = self.driver.list_images()[0]
