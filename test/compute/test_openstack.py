@@ -97,6 +97,14 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
 
+    def test_auth_token_is_set(self):
+        self.driver.connection._populate_hosts_and_request_paths()
+        self.assertEquals(self.driver.connection.auth_token, "603d2bd9-f45c-4583-b91c-2c8eac0b5654")
+
+    def test_auth_token_expires_is_set(self):
+        self.driver.connection._populate_hosts_and_request_paths()
+        self.assertEquals(self.driver.connection.auth_token_expires, "2011-09-18T02:44:17.000-05:00")
+
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
@@ -541,6 +549,24 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
+    def test_auth_token_is_set(self):
+        # change base url and trash the current auth token so we can re-authenticate
+        self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
+        self.driver.connection.auth_token = None
+        self.driver.connection.auth_token_expires = None
+        self.driver.connection._populate_hosts_and_request_paths()
+
+        self.assertEquals(self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
+
+    def test_auth_token_expires_is_set(self):
+        # change base url and trash the current auth token so we can re-authenticate
+        self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
+        self.driver.connection.auth_token = None
+        self.driver.connection.auth_token_expires = None
+        self.driver.connection._populate_hosts_and_request_paths()
+
+        self.assertEquals(self.driver.connection.auth_token_expires, "2011-11-23T21:00:14.000-06:00")
+
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can re-authenticate
         self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
@@ -673,11 +699,12 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['password'], 'racktestvJq7d3')
         self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
 
-    def test_create_node_with_ex_keyname(self):
+    def test_create_node_with_ex_keyname_and_ex_userdata(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size,
-                                       ex_keyname='devstack')
+                                       ex_keyname='devstack',
+                                       ex_userdata='sample data')
         self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra['password'], 'racktestvJq7d3')

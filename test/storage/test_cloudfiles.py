@@ -14,13 +14,17 @@
 # limitations under the License.
 import os
 import os.path                          # pylint: disable-msg=W0404
+import math
 import sys
 import copy
 import unittest
 
+import mock
+
 import libcloud.utils.files
 
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 
 if PY3:
@@ -402,7 +406,7 @@ class CloudFilesTests(unittest.TestCase):
         except OSError:
             pass
         else:
-            self.fail('Inesitent but an exception was not thrown')
+            self.fail('Inexistent but an exception was not thrown')
         finally:
             libcloud.utils.files.guess_file_mime_type = old_func
 
@@ -451,6 +455,115 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('container_count' in meta_data)
         self.assertTrue('bytes_used' in meta_data)
 
+    @mock.patch('os.path.getsize')
+    def test_ex_multipart_upload_object_for_small_files(self, getsize_mock):
+        getsize_mock.return_value = 0
+
+        old_func = CloudFilesStorageDriver.upload_object
+        mocked_upload_object = mock.Mock(return_value="test")
+        CloudFilesStorageDriver.upload_object = mocked_upload_object
+
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = 'foo_test_upload'
+        obj = self.driver.ex_multipart_upload_object(file_path=file_path, container=container,
+                                       object_name=object_name)
+        CloudFilesStorageDriver.upload_object = old_func
+
+        self.assertTrue(mocked_upload_object.called)
+        self.assertEqual(obj, "test")
+
+    def test_ex_multipart_upload_object_success(self):
+        _upload_object_part = CloudFilesStorageDriver._upload_object_part
+        _upload_object_manifest = CloudFilesStorageDriver._upload_object_manifest
+
+        mocked__upload_object_part = mock.Mock(return_value="test_part")
+        mocked__upload_object_manifest = mock.Mock(return_value="test_manifest")
+
+        CloudFilesStorageDriver._upload_object_part = mocked__upload_object_part
+        CloudFilesStorageDriver._upload_object_manifest = mocked__upload_object_manifest
+
+        parts = 5
+        file_path = os.path.abspath(__file__)
+        chunk_size = int(math.ceil(float(os.path.getsize(file_path)) / parts))
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = 'foo_test_upload'
+        self.driver.ex_multipart_upload_object(file_path=file_path, container=container,
+                                       object_name=object_name, chunk_size=chunk_size)
+
+        CloudFilesStorageDriver._upload_object_part = _upload_object_part
+        CloudFilesStorageDriver._upload_object_manifest = _upload_object_manifest
+
+        self.assertEqual(mocked__upload_object_part.call_count, parts)
+        self.assertTrue(mocked__upload_object_manifest.call_count, 1)
+
+    def test__upload_object_part(self):
+        _put_object = CloudFilesStorageDriver._put_object
+        mocked__put_object = mock.Mock(return_value="test")
+        CloudFilesStorageDriver._put_object = mocked__put_object
+
+        part_number = 7
+        object_name = "test_object"
+        expected_name = object_name + '/%08d' % part_number
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+
+        self.driver._upload_object_part(container, object_name,
+                part_number, None)
+
+        CloudFilesStorageDriver._put_object = _put_object
+
+        func_kwargs = tuple(mocked__put_object.call_args)[1]
+        self.assertEquals(func_kwargs['object_name'], expected_name)
+        self.assertEquals(func_kwargs['container'], container)
+
+    def test__upload_object_manifest(self):
+        hash_function = self.driver._get_hash_function()
+        hash_function.update(b(''))
+        data_hash = hash_function.hexdigest()
+
+        fake_response = type('CloudFilesResponse', (), {'headers':
+                {'etag': data_hash}
+            })
+
+        _request = self.driver.connection.request
+        mocked_request = mock.Mock(return_value=fake_response)
+        self.driver.connection.request = mocked_request
+
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = "test_object"
+
+        self.driver._upload_object_manifest(container, object_name)
+
+        func_args, func_kwargs = tuple(mocked_request.call_args)
+
+        self.driver.connection.request = _request
+
+        self.assertEquals(func_args[0], "/" + container.name + "/" + object_name)
+        self.assertEquals(func_kwargs["headers"]["X-Object-Manifest"],
+                container.name + "/" + object_name + "/")
+        self.assertEquals(func_kwargs["method"], "PUT")
+
+    def test__upload_object_manifest_wrong_hash(self):
+        fake_response = type('CloudFilesResponse', (), {'headers':
+            {'etag': '0000000'}})
+
+        _request = self.driver.connection.request
+        mocked_request = mock.Mock(return_value=fake_response)
+        self.driver.connection.request = mocked_request
+
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = "test_object"
+
+
+        try:
+            self.driver._upload_object_manifest(container, object_name)
+        except ObjectHashMismatchError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
+        finally:
+            self.driver.connection.request = _request
+
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
 
@@ -458,6 +571,7 @@ class CloudFilesTests(unittest.TestCase):
             os.unlink(file_path)
         except OSError:
             pass
+
 
 class CloudFilesMockHttp(StorageMockHttp):
 

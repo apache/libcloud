@@ -175,7 +175,7 @@ class InstantiateVAppXML(object):
     def _add_memory(self, parent):
         mem_item = ET.SubElement(
             parent,
-            "Item",
+            'Item',
             {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
         )
         self._add_instance_id(mem_item, '2')
@@ -187,7 +187,7 @@ class InstantiateVAppXML(object):
     def _add_instance_id(self, parent, id):
         elm = ET.SubElement(
             parent,
-            "InstanceID",
+            'InstanceID',
             {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
         )
         elm.text = id
@@ -196,7 +196,7 @@ class InstantiateVAppXML(object):
     def _add_resource_type(self, parent, type):
         elm = ET.SubElement(
             parent,
-            "ResourceType",
+            'ResourceType',
             {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
         )
         elm.text = type
@@ -205,7 +205,7 @@ class InstantiateVAppXML(object):
     def _add_virtual_quantity(self, parent, amount):
         elm = ET.SubElement(
              parent,
-             "VirtualQuantity",
+             'VirtualQuantity',
              {'xmlns': 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData'}
          )
         elm.text = amount
@@ -214,7 +214,7 @@ class InstantiateVAppXML(object):
     def _add_network_association(self, parent):
         return ET.SubElement(
             parent,
-            "NetworkAssociation",
+            'NetworkAssociation',
             {'href': self.net_href}
         )
 
@@ -285,7 +285,7 @@ class VCloudNodeDriver(NodeDriver):
     """
 
     type = Provider.VCLOUD
-    name = "vCloud"
+    name = 'vCloud'
     connectionCls = VCloudConnection
     org = None
     _vdcs = None
@@ -334,7 +334,7 @@ class VCloudNodeDriver(NodeDriver):
             networks.extend(
                 [network
                  for network in res.findall(
-                     fixxpath(res, "AvailableNetworks/Network")
+                     fixxpath(res, 'AvailableNetwors/Network')
                  )]
             )
 
@@ -438,13 +438,13 @@ class VCloudNodeDriver(NodeDriver):
             pass
 
         res = self.connection.request(node_path, method='DELETE')
-        return res.status == 202
+        return res.status == httplib.ACCEPTED
 
     def reboot_node(self, node):
         res = self.connection.request('%s/power/action/reset'
                                       % get_url_path(node.id),
                                       method='POST')
-        return res.status == 202 or res.status == 204
+        return res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]
 
     def list_nodes(self):
         nodes = []
@@ -837,13 +837,13 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             pass
 
         res = self.connection.request(get_url_path(node.id), method='DELETE')
-        return res.status == 202
+        return res.status == httplib.ACCEPTED
 
     def reboot_node(self, node):
         res = self.connection.request('%s/power/action/reset'
                                       % get_url_path(node.id),
                                       method='POST')
-        if res.status == 202 or res.status == 204:
+        if res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]:
             self._wait_for_task_completion(res.object.get('href'))
             return True
         else:

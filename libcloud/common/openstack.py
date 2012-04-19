@@ -168,6 +168,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 raise MalformedResponseError('Failed to parse JSON', e)
             try:
                 self.auth_token = body['auth']['token']['id']
+                self.auth_token_expires = body['auth']['token']['expires']
                 self.urls = body['auth']['serviceCatalog']
             except KeyError:
                 e = sys.exc_info()[1]
@@ -218,8 +219,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
             try:
                 access = body['access']
-                token = access['token']
-                self.auth_token = token['id']
+                self.auth_token = access['token']['id']
+                self.auth_token_expires = access['token']['expires']
                 self.urls = access['serviceCatalog']
             except KeyError:
                 e = sys.exc_info()[1]
@@ -356,6 +357,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
     auth_url = None
     auth_token = None
+    auth_token_expires = None
     service_catalog = None
     service_type = None
     service_name = None
@@ -454,6 +456,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             osa.authenticate()
 
             self.auth_token = osa.auth_token
+            self.auth_token_expires = osa.auth_token_expires
 
             # pull out and parse the service catalog
             self.service_catalog = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=self._auth_version)

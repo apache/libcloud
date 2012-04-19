@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import math
+
 from libcloud.utils.py3 import httplib
 
 try:
@@ -21,11 +24,11 @@ except ImportError:
     import json
 
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlquote
 
 if PY3:
     from io import FileIO as file
-
 
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
@@ -40,7 +43,8 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.types import LazyList
-from libcloud.common.openstack import OpenStackBaseConnection, OpenStackDriverMixin
+from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackDriverMixin
 
 from libcloud.common.rackspace import (
     AUTH_URL_US, AUTH_URL_UK)
@@ -107,15 +111,16 @@ class CloudFilesConnection(OpenStackBaseConnection):
         self.accept_format = 'application/json'
 
     def get_endpoint(self, cdn_request=False):
-
-        # First, we parse out both files and cdn endpoints for each auth version
+        # First, we parse out both files and cdn endpoints
+        # for each auth version
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(service_type='object-store',
                                                    name='cloudFiles',
                                                    region='ORD')
-            cdn_ep = self.service_catalog.get_endpoint(service_type='object-store',
-                                                       name='cloudFilesCDN',
-                                                       region='ORD')
+            cdn_ep = self.service_catalog.get_endpoint(
+                    service_type='object-store',
+                    name='cloudFilesCDN',
+                    region='ORD')
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             ep = self.service_catalog.get_endpoint(name='cloudFiles',
                                                    region='ORD')
@@ -139,9 +144,9 @@ class CloudFilesConnection(OpenStackBaseConnection):
             params = {}
 
         # FIXME: Massive hack.
-        # This driver dynamically changes the url in its connection, based on arguments
-        # passed to request(). As such, we have to manually check and reset connection
-        # params each request
+        # This driver dynamically changes the url in its connection,
+        # based on arguments passed to request(). As such, we have to
+        # manually check and reset connection params each request
         self._populate_hosts_and_request_paths()
         if not self._ex_force_base_url:
             self._reset_connection_params(self.get_endpoint(cdn_request))
@@ -150,7 +155,7 @@ class CloudFilesConnection(OpenStackBaseConnection):
 
         params['format'] = 'json'
 
-        if method in ['POST', 'PUT']:
+        if method in ['POST', 'PUT'] and 'Content-Type' not in headers:
             headers.update({'Content-Type': 'application/json; charset=UTF-8'})
 
         return super(CloudFilesConnection, self).request(
@@ -160,7 +165,8 @@ class CloudFilesConnection(OpenStackBaseConnection):
             raw=raw)
 
     def _reset_connection_params(self, endpoint_url):
-        (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(endpoint_url)
+        (self.host, self.port, self.secure, self.request_path) = \
+                self._tuple_from_url(endpoint_url)
 
 
 class CloudFilesUSConnection(CloudFilesConnection):
@@ -177,6 +183,30 @@ class CloudFilesUKConnection(CloudFilesConnection):
     """
 
     auth_url = AUTH_URL_UK
+
+
+class CloudFilesSwiftConnection(CloudFilesConnection):
+    """
+    Connection class for the Cloudfiles Swift endpoint.
+    """
+    def __init__(self, *args, **kwargs):
+        self.region_name = kwargs.pop('ex_region_name', None)
+        super(CloudFilesSwiftConnection, self).__init__(*args, **kwargs)
+
+    def get_endpoint(self, *args, **kwargs):
+        if '2.0' in self._auth_version:
+            endpoint = self.service_catalog.get_endpoint(
+                    service_type='object-store',
+                    name='swift',
+                    region=self.region_name)
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            endpoint = self.service_catalog.get_endpoint(name='swift',
+                                                   region=self.region_name)
+
+        if 'publicURL' in endpoint:
+            return endpoint['publicURL']
+        else:
+            raise LibcloudError('Could not find specified endpoint')
 
 
 class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
@@ -277,7 +307,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             # Accepted mean that container is not yet created but it will be
             # eventually
             extra = { 'object_count': 0 }
-            container = Container(name=container_name, extra=extra, driver=self)
+            container = Container(name=container_name,
+                    extra=extra, driver=self)
 
             return container
         elif response.status == httplib.ACCEPTED:
@@ -328,7 +359,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
-                                callback_kwargs={ 'iterator': response.response,
+                                callback_kwargs={'iterator': response.response,
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
@@ -393,6 +424,81 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
+    def ex_multipart_upload_object(self, file_path, container, object_name,
+                                   chunk_size=33554432, extra=None,
+                                   verify_hash=True):
+        object_size = os.path.getsize(file_path)
+        if object_size < chunk_size:
+            return self.upload_object(file_path, container, object_name,
+                    extra=extra, verify_hash=verify_hash)
+
+        iter_chunk_reader = FileChunkReader(file_path, chunk_size)
+
+        for index, iterator in enumerate(iter_chunk_reader):
+            self._upload_object_part(container=container,
+                                     object_name=object_name,
+                                     part_number=index,
+                                     iterator=iterator,
+                                     verify_hash=verify_hash)
+
+        return self._upload_object_manifest(container=container,
+                                            object_name=object_name,
+                                            extra=extra,
+                                            verify_hash=verify_hash)
+
+    def _upload_object_part(self, container, object_name, part_number,
+                            iterator, verify_hash=True):
+
+        upload_func = self._stream_data
+        upload_func_kwargs = {'iterator': iterator}
+        part_name = object_name + '/%08d' % part_number
+        extra = {'content_type': 'application/octet-stream'}
+
+        self._put_object(container=container,
+                         object_name=part_name,
+                         upload_func=upload_func,
+                         upload_func_kwargs=upload_func_kwargs,
+                         extra=extra, iterator=iterator,
+                         verify_hash=verify_hash)
+
+    def _upload_object_manifest(self, container, object_name, extra=None,
+                                verify_hash=True):
+        extra = extra or {}
+        meta_data = extra.get('meta_data')
+
+        container_name_cleaned = self._clean_container_name(container.name)
+        object_name_cleaned = self._clean_object_name(object_name)
+        request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
+
+        headers = {'X-Auth-Token': self.connection.auth_token,
+                   'X-Object-Manifest': '%s/%s/' % \
+                       (container_name_cleaned, object_name_cleaned)}
+
+        data = ''
+        response = self.connection.request(request_path,
+                                           method='PUT', data=data,
+                                           headers=headers, raw=True)
+
+        object_hash = None
+
+        if verify_hash:
+            hash_function = self._get_hash_function()
+            hash_function.update(b(data))
+            data_hash = hash_function.hexdigest()
+            object_hash = response.headers.get('etag')
+
+            if object_hash != data_hash:
+                raise ObjectHashMismatchError(
+                    value=('MD5 hash checksum does not match (expected=%s, ' +
+                           'actual=%s)') % \
+                           (data_hash, object_hash),
+                    object_name=object_name, driver=self)
+
+        obj = Object(name=object_name, size=0, hash=object_hash, extra=None,
+                     meta_data=meta_data, container=container, driver=self)
+
+        return obj
+
     def _get_more(self, last_key, value_dict):
         container = value_dict['container']
         params = {}
@@ -407,7 +513,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             # Empty or inexistent container
             return [], None, True
         elif response.status == httplib.OK:
-            objects = self._to_object_list(json.loads(response.body), container)
+            objects = self._to_object_list(json.loads(response.body),
+                    container)
 
             # TODO: Is this really needed?
             if len(objects) == 0:
@@ -434,13 +541,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
         result_dict = self._upload_object(object_name=object_name,
-                                          content_type=content_type,
-                                          upload_func=upload_func,
-                                          upload_func_kwargs=upload_func_kwargs,
-                                          request_path=request_path,
-                                          request_method='PUT',
-                                          headers=headers, file_path=file_path,
-                                          iterator=iterator)
+                                         content_type=content_type,
+                                         upload_func=upload_func,
+                                         upload_func_kwargs=upload_func_kwargs,
+                                         request_path=request_path,
+                                         request_method='PUT',
+                                         headers=headers, file_path=file_path,
+                                         iterator=iterator)
 
         response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
@@ -486,7 +593,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             raise InvalidContainerNameError(value='Container name cannot be'
                                                    ' longer than 256 bytes',
                                             container_name=name, driver=self)
-
 
         return name
 
@@ -542,7 +648,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 key = key.replace('x-object-meta-', '')
                 meta_data[key] = value
 
-        extra = { 'content_type': content_type, 'last_modified': last_modified }
+        extra = {'content_type': content_type, 'last_modified': last_modified}
 
         obj = Object(name=name, size=size, hash=etag, extra=extra,
                      meta_data=meta_data, container=container, driver=self)
@@ -550,6 +656,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _ex_connection_class_kwargs(self):
         return self.openstack_connection_kwargs()
+
 
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     """
@@ -560,6 +667,26 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     name = 'CloudFiles (US)'
     connectionCls = CloudFilesUSConnection
 
+
+class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
+    """
+    Cloudfiles storage driver for the OpenStack Swift.
+    """
+    type = Provider.CLOUDFILES_SWIFT
+    name = 'CloudFiles (SWIFT)'
+    connectionCls = CloudFilesSwiftConnection
+
+    def __init__(self, *args, **kwargs):
+        self._ex_region_name = kwargs.get('ex_region_name', 'RegionOne')
+        super(CloudFilesSwiftStorageDriver, self).__init__(*args, **kwargs)
+
+    def openstack_connection_kwargs(self):
+        rv = super(CloudFilesSwiftStorageDriver, self). \
+                                                  openstack_connection_kwargs()
+        rv['ex_region_name'] = self._ex_region_name
+        return rv
+
+
 class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     """
     Cloudfiles storage driver for the UK endpoint.
@@ -568,3 +695,65 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     type = Provider.CLOUDFILES_UK
     name = 'CloudFiles (UK)'
     connectionCls = CloudFilesUKConnection
+
+
+class FileChunkReader(object):
+    def __init__(self, file_path, chunk_size):
+        self.file_path = file_path
+        self.total = os.path.getsize(file_path)
+        self.chunk_size = chunk_size
+        self.bytes_read = 0
+        self.stop_iteration = False
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.stop_iteration:
+            raise StopIteration
+
+        start_block = self.bytes_read
+        end_block = start_block + self.chunk_size
+        if end_block >= self.total:
+            end_block = self.total
+            self.stop_iteration = True
+        self.bytes_read += end_block - start_block
+        return ChunkStreamReader(file_path=self.file_path,
+                                 start_block=start_block,
+                                 end_block=end_block,
+                                 chunk_size=8192)
+
+    def __next__(self):
+        return self.next()
+
+class ChunkStreamReader(object):
+    def __init__(self, file_path, start_block, end_block, chunk_size):
+        self.fd = open(file_path, 'rb')
+        self.fd.seek(start_block)
+        self.start_block = start_block
+        self.end_block = end_block
+        self.chunk_size = chunk_size
+        self.bytes_read = 0
+        self.stop_iteration = False
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.stop_iteration:
+            self.fd.close()
+            raise StopIteration
+
+        block_size = self.chunk_size
+        if self.bytes_read + block_size > \
+            self.end_block - self.start_block:
+                block_size = self.end_block - self.start_block - \
+                             self.bytes_read
+                self.stop_iteration = True
+
+        block = self.fd.read(block_size)
+        self.bytes_read += block_size
+        return block
+
+    def __next__(self):
+        return self.next()

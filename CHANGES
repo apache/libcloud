@@ -24,6 +24,40 @@ Changes with Apache Libcloud in development:
     - Add Joyent driver.
       [Tomaz Muraus]
 
+    - Store auth token expire times on the connection class in the attribute
+      called 'auth_token_expires'. ; LIBCLOUD-178
+      [Chris Gilmer, Brad Morgan]
+
+    - Add new driver for VCL cloud
+      (http://www.educause.edu/blog/hes8/CloudComputingandtheVirtualCom/167931)
+      [Jason Gionta, Tomaz Muraus]
+
+    - Improve and add new features to Brightbox driver ; LIBCLOUD-184
+        - Update fixtures to represent actual api output
+        - Update compute tests to 100% coverage
+        - Add userdata and server group extensions to create_node
+        - Add ipv6 support to public ip list
+        - Improve in line documentation
+        - Add lots of api output information to Node and Image
+          'extra' attributes
+        - Allow variable API versions (api_version argument)
+        - Allow reverse dns updates for cloud ip extensions
+      [Neil Wilson, Tomaz Muraus]
+
+    - Add ex_userdata argument to the OpenStack 1.1 driver.
+      [Jay Doane]
+
+
+    - Modify Vmware vCloud driver and implement new features
+      for the vCloud version 1.5.
+      [Michal Galet, Sengor Kusturica]
+
+  *) Storage
+
+    - Large object upload support for CloudFiles driver
+    - Add CLOUDFILES_SWIFT driver to connect to OpenStack Swift
+      [Dmitry Russkikh, Roman Bogorodskiy]
+
 Changes with Apache Libcloud 0.9.1:
 
   *) General:

@@ -38,7 +38,12 @@ DRIVERS = {
     Provider.NINEFOLD:
         ('libcloud.storage.drivers.ninefold', 'NinefoldStorageDriver'),
     Provider.GOOGLE_STORAGE:
-        ('libcloud.storage.drivers.google_storage', 'GoogleStorageDriver')
+        ('libcloud.storage.drivers.google_storage', 'GoogleStorageDriver'),
+    Provider.CLOUDFILES_SWIFT:
+        ('libcloud.storage.drivers.cloudfiles',
+         'CloudFilesSwiftStorageDriver'),
+    Provider.NIMBUS:
+        ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver')
 }
 
 def get_driver(provider):
