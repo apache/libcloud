@@ -52,6 +52,14 @@ Changes with Apache Libcloud in development:
       for the vCloud version 1.5. LIBCLOUD-183
       [Michal Galet, Sengor Kusturica]
 
+    - Allow user to pass mode argument to SSHClient.put method and default it to
+      'w'. ; LIBCLOUD-188
+      [Jay Doane]
+
+    - Modify SSHKeyDeployment step to use append mode so it doesn't overwrite
+      existing entries in .ssh/authorized_keys. ; LIBCLOUD-187
+      [Jay Doane]
+
   *) Storage
 
     - Large object upload support for CloudFiles driver

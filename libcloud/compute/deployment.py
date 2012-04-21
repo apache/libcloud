@@ -73,7 +73,7 @@ class SSHKeyDeployment(Deployment):
 
         See also L{Deployment.run}
         """
-        client.put(".ssh/authorized_keys", contents=self.key)
+        client.put(".ssh/authorized_keys", contents=self.key, mode='a')
         return node
 
 
