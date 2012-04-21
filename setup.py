@@ -81,12 +81,22 @@ class TestCommand(Command):
         sys.exit(status)
 
     def _run_tests(self):
-        secrets = pjoin(self._dir, 'test', 'secrets.py')
-        if not os.path.isfile(secrets):
-            print("Missing " + secrets)
+        secrets_current = pjoin(self._dir, 'test', 'secrets.py')
+        secrets_dist = pjoin(self._dir, 'test', 'secrets.py-dist')
+
+        if not os.path.isfile(secrets_current):
+            print("Missing " + secrets_current)
             print("Maybe you forgot to copy it from -dist:")
-            print("  cp test/secrets.py-dist test/secrets.py")
+            print("cp test/secrets.py-dist test/secrets.py")
             sys.exit(1)
+
+        mtime_current = os.path.getmtime(secrets_current)
+        mtime_dist = os.path.getmtime(secrets_dist)
+
+        if mtime_dist > mtime_current:
+            print("It looks like test/secrets.py file is out of date.")
+            print("Please copy the new secret.py-dist file over otherwise" +
+                  " tests might fail")
 
         pre_python26 = (sys.version_info[0] == 2
                         and sys.version_info[1] < 6)
