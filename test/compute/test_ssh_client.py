@@ -23,19 +23,7 @@ from mock import Mock
 
 
 class ParamikoSSHClientTests(unittest.TestCase):
-
-    def test_either_key_or_password_must_be_provided(self):
-        libcloud.compute.ssh.paramiko = Mock()
-        client = libcloud.compute.ssh.ParamikoSSHClient(hostname='foo.bar.com')
-
-        try:
-            client.connect()
-        except Exception:
-            e = sys.exc_info()[1]
-            self.assertTrue(str(e).find('must specify either password or')
-                            != -1)
-        else:
-            self.fail('Exception was not thrown')
+    pass
 
 
 if __name__ == '__main__':

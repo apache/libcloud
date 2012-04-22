@@ -142,7 +142,8 @@ class ParamikoSSHClient(BaseSSHClient):
         elif self.key:
             conninfo['key_filename'] = self.key
         else:
-            raise Exception('must specify either password or key_filename')
+            conninfo['allow_agent'] = True
+            conninfo['look_for_keys'] = True
 
         if self.timeout:
             conninfo['timeout'] = self.timeout

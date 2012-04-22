@@ -60,6 +60,11 @@ Changes with Apache Libcloud in development:
       existing entries in .ssh/authorized_keys. ; LIBCLOUD-187
       [Jay Doane]
 
+    - Modify ParamikoSSHClient to connect to the SSH agent and automatically
+      look for private keys in ~/.ssh if the 'auth' and 'ssh_key' argument
+      is not specified when calling deploy_node. ; LIBCLOUD-182
+      [Tomaz Muraus]
+
   *) Storage
 
     - Large object upload support for CloudFiles driver
