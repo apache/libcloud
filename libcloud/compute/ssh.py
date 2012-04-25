@@ -70,7 +70,7 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'connect not implemented for this ssh client')
 
-    def put(self, path, contents=None, chmod=None):
+    def put(self, path, contents=None, chmod=None, mode='w'):
         """
         Upload a file to the remote node.
 
@@ -82,6 +82,9 @@ class BaseSSHClient(object):
 
         @type chmod: C{int}
         @keyword chmod: chmod file to this after creation.
+
+        @type mode: C{str}
+        @keyword mode: Mode in which the file is opened.
         """
         raise NotImplementedError(
             'put not implemented for this ssh client')
@@ -139,7 +142,8 @@ class ParamikoSSHClient(BaseSSHClient):
         elif self.key:
             conninfo['key_filename'] = self.key
         else:
-            raise Exception('must specify either password or key_filename')
+            conninfo['allow_agent'] = True
+            conninfo['look_for_keys'] = True
 
         if self.timeout:
             conninfo['timeout'] = self.timeout
@@ -147,7 +151,7 @@ class ParamikoSSHClient(BaseSSHClient):
         self.client.connect(**conninfo)
         return True
 
-    def put(self, path, contents=None, chmod=None):
+    def put(self, path, contents=None, chmod=None, mode='w'):
         sftp = self.client.open_sftp()
         # less than ideal, but we need to mkdir stuff otherwise file() fails
         head, tail = psplit(path)
@@ -162,7 +166,7 @@ class ParamikoSSHClient(BaseSSHClient):
                     # catch EEXIST consistently *sigh*
                     pass
                 sftp.chdir(part)
-        ak = sftp.file(tail, mode='w')
+        ak = sftp.file(tail, mode=mode)
         ak.write(contents)
         if chmod is not None:
             ak.chmod(chmod)

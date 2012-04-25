@@ -46,7 +46,7 @@ class MockClient(BaseSSHClient):
         self.stderr = ''
         self.exit_status = 0
 
-    def put(self, path, contents, chmod=755):
+    def put(self, path, contents, chmod=755, mode='w'):
         return contents
 
     def run(self, name):

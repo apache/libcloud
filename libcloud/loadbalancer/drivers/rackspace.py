@@ -125,7 +125,9 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
         super_dict = super(RackspaceHTTPHealthMonitor, self)._to_dict()
         super_dict['path'] = self.path
         super_dict['statusRegex'] = self.status_regex
-        super_dict['bodyRegex'] = self.body_regex
+
+        if self.body_regex:
+            super_dict['bodyRegex'] = self.body_regex
 
         return super_dict
 
@@ -1288,9 +1290,6 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         port = None
         sourceAddresses = {}
 
-        if 'virtualIps' in el:
-            ip = el["virtualIps"][0]["address"]
-
         if 'port' in el:
             port = el["port"]
 
@@ -1298,12 +1297,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
             sourceAddresses = el['sourceAddresses']
 
         extra = {
-            "publicVips": self._ex_public_virtual_ips(el),
-            "privateVips": self._ex_private_virtual_ips(el),
             "ipv6PublicSource": sourceAddresses.get("ipv6Public"),
             "ipv4PublicSource": sourceAddresses.get("ipv4Public"),
             "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet"),
         }
+
+        if 'virtualIps' in el:
+            ip = el['virtualIps'][0]['address']
+            extra['virtualIps'] = el['virtualIps']
 
         if 'protocol' in el:
             extra['protocol'] = el['protocol']
@@ -1420,21 +1421,6 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
         return update_attrs
 
-    def _ex_private_virtual_ips(self, el):
-        if not 'virtualIps' in el:
-            return None
-
-        servicenet_vips = [ip for ip in el['virtualIps']
-                           if ip['type'] == 'SERVICENET']
-        return [vip["address"] for vip in servicenet_vips]
-
-    def _ex_public_virtual_ips(self, el):
-        if not 'virtualIps' in el:
-            return None
-
-        public_vips = [ip for ip in el['virtualIps'] if ip['type'] == 'PUBLIC']
-        return [vip["address"] for vip in public_vips]
-
     def _to_health_monitor(self, el):
         health_monitor_data = el["healthMonitor"]
 
@@ -1455,7 +1441,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                 attempts_before_deactivation=attempts_before_deactivation,
                 path=health_monitor_data.get("path"),
                 status_regex=health_monitor_data.get("statusRegex"),
-                body_regex=health_monitor_data.get("bodyRegex"))
+                body_regex=health_monitor_data.get("bodyRegex", ''))
 
         return None
 

@@ -189,19 +189,13 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
 
-    def test_get_balancer_extra_public_vips(self):
+    def test_get_balancer_extra_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.extra["publicVips"], ['50.56.49.149'])
-
-    def test_get_balancer_extra_private_vips(self):
-        balancer = self.driver.get_balancer(balancer_id='18941')
-
-        self.assertEquals(balancer.extra["privateVips"], ['10.183.252.175'])
-
-    def test_get_balancer_extra_private_vips_empty(self):
-        balancer = self.driver.get_balancer(balancer_id='18945')
-
-        self.assertEquals(balancer.extra['privateVips'], [])
+        self.assertEquals(balancer.extra["virtualIps"],
+            [{"address":"50.56.49.149",
+              "id":2359,
+              "type":"PUBLIC",
+              "ipVersion":"IPV4"}])
 
     def test_get_balancer_extra_public_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
@@ -499,6 +493,25 @@ class RackspaceLBTests(unittest.TestCase):
             monitor)
 
         self.assertTrue(resp)
+
+    def test_ex_update_balancer_http_health_monitor_with_no_option_body_regex(self):
+        balancer = self.driver.get_balancer(balancer_id='94700')
+        monitor = RackspaceHTTPHealthMonitor(type='HTTP', delay=10, timeout=5,
+            attempts_before_deactivation=2,
+            path='/',
+            status_regex='^[234][0-9][0-9]$',
+            body_regex='')
+
+        balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
+        updated_monitor = balancer.extra['healthMonitor']
+
+        self.assertEquals('HTTP', updated_monitor.type)
+        self.assertEquals(10, updated_monitor.delay)
+        self.assertEquals(5, updated_monitor.timeout)
+        self.assertEquals(2, updated_monitor.attempts_before_deactivation)
+        self.assertEquals('/', updated_monitor.path)
+        self.assertEquals('^[234][0-9][0-9]$', updated_monitor.status_regex)
+        self.assertEquals('', updated_monitor.body_regex)
 
     def test_ex_disable_balancer_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -1282,6 +1295,29 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_loadbalancers_94698_accesslist_1007(self, method, url, body, headers):
         if method == 'DELETE':
+            return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_94700(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("v1_slug_loadbalancers_94700_http_health_monitor_no_body_regex.json")
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_94700_healthmonitor(self, method, url, body, headers):
+        if method == 'PUT':
+            json_body = json.loads(body)
+
+            self.assertEquals('HTTP', json_body['type'])
+            self.assertEquals(10, json_body['delay'])
+            self.assertEquals(5, json_body['timeout'])
+            self.assertEquals(2, json_body['attemptsBeforeDeactivation'])
+            self.assertEquals('/', json_body['path'])
+            self.assertEquals('^[234][0-9][0-9]$', json_body['statusRegex'])
+            self.assertFalse('bodyRegex' in json_body)
+
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
