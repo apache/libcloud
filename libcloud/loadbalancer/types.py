@@ -37,6 +37,13 @@ class Provider(object):
     NINEFOLD = 2
     RACKSPACE_UK = 3
     BRIGHTBOX = 4
+    ELB_US_EAST = 5
+    ELB_US_WEST = 6
+    ELB_EU_WEST = 7
+    ELB_US_WEST_OREGON = 8
+    ELB_AP_SOUTHEAST = 9
+    ELB_AP_NORTHEAST = 10
+    ELB_SA_EAST = 11
 
 
 class State(object):

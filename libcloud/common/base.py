@@ -123,7 +123,6 @@ class Response(object):
             return original_data
 
         body = response.read()
-
         if encoding in  ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
