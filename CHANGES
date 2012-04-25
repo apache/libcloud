@@ -77,6 +77,11 @@ Changes with Apache Libcloud in development:
       body_regex is None or empty string. ; LIBCLOUD-186
       [Bill Woodward]
 
+    - Don't split Load balancer IP addresses into public and private list.
+      Include all the addresses in the 'virtualIps' variable in the extra
+      dictionary (Rackspace driver). ; LIBCLOUD-191
+      [Adam Pickeral]
+
 Changes with Apache Libcloud 0.9.1:
 
   *) General:

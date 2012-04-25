@@ -189,19 +189,13 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEquals(balancer.name, 'test2')
         self.assertEquals(balancer.id, '8290')
 
-    def test_get_balancer_extra_public_vips(self):
+    def test_get_balancer_extra_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.extra["publicVips"], ['50.56.49.149'])
-
-    def test_get_balancer_extra_private_vips(self):
-        balancer = self.driver.get_balancer(balancer_id='18941')
-
-        self.assertEquals(balancer.extra["privateVips"], ['10.183.252.175'])
-
-    def test_get_balancer_extra_private_vips_empty(self):
-        balancer = self.driver.get_balancer(balancer_id='18945')
-
-        self.assertEquals(balancer.extra['privateVips'], [])
+        self.assertEquals(balancer.extra["virtualIps"],
+            [{"address":"50.56.49.149",
+              "id":2359,
+              "type":"PUBLIC",
+              "ipVersion":"IPV4"}])
 
     def test_get_balancer_extra_public_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')

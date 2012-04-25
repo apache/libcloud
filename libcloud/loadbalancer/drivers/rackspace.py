@@ -1290,9 +1290,6 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         port = None
         sourceAddresses = {}
 
-        if 'virtualIps' in el:
-            ip = el["virtualIps"][0]["address"]
-
         if 'port' in el:
             port = el["port"]
 
@@ -1300,12 +1297,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
             sourceAddresses = el['sourceAddresses']
 
         extra = {
-            "publicVips": self._ex_public_virtual_ips(el),
-            "privateVips": self._ex_private_virtual_ips(el),
             "ipv6PublicSource": sourceAddresses.get("ipv6Public"),
             "ipv4PublicSource": sourceAddresses.get("ipv4Public"),
             "ipv4PrivateSource": sourceAddresses.get("ipv4Servicenet"),
         }
+
+        if 'virtualIps' in el:
+            ip = el['virtualIps'][0]['address']
+            extra['virtualIps'] = el['virtualIps']
 
         if 'protocol' in el:
             extra['protocol'] = el['protocol']
@@ -1421,21 +1420,6 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
             update_attrs['weight'] = attrs['weight']
 
         return update_attrs
-
-    def _ex_private_virtual_ips(self, el):
-        if not 'virtualIps' in el:
-            return None
-
-        servicenet_vips = [ip for ip in el['virtualIps']
-                           if ip['type'] == 'SERVICENET']
-        return [vip["address"] for vip in servicenet_vips]
-
-    def _ex_public_virtual_ips(self, el):
-        if not 'virtualIps' in el:
-            return None
-
-        public_vips = [ip for ip in el['virtualIps'] if ip['type'] == 'PUBLIC']
-        return [vip["address"] for vip in public_vips]
 
     def _to_health_monitor(self, el):
         health_monitor_data = el["healthMonitor"]
