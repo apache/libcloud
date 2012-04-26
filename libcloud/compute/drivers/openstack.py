@@ -1099,3 +1099,17 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         path = urlparse.urlparse(location_header).path
         image_id = path.split('/')[-1]
         return image_id
+
+    def ex_rescue(self, node, password=None):
+        # Requires Rescue Mode extension
+        if password:
+            resp = self._node_action(node, 'rescue', adminPass=password)
+        else:
+            resp = self._node_action(node, 'rescue')
+            password = json.loads(resp.body)['adminPass']
+        node.extra['password'] = password
+        return node
+
+    def ex_unrescue(self, node):
+        resp = self._node_action(node, 'unrescue')
+        return resp.status == httplib.ACCEPTED

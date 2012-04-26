@@ -65,6 +65,9 @@ Changes with Apache Libcloud in development:
       is not specified when calling deploy_node. ; LIBCLOUD-182
       [Tomaz Muraus]
 
+    - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver.
+      [Shawn Smith] 
+
   *) Storage
 
     - Large object upload support for CloudFiles driver
