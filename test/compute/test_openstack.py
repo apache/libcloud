@@ -840,6 +840,24 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         params = [("key", "value1"), ("key", "value2") ]
         self.driver.connection.request("/servers/12067", params=params)
 
+    def test_ex_rescue_with_password(self):
+        node = Node(id=12064, name=None, state=None, public_ips=None,
+                    private_ips=None, driver=self.driver)
+        n = self.driver.ex_rescue(node, 'foo')
+        self.assertEqual(n.extra['password'], 'foo')
+
+    def test_ex_rescue_no_password(self):
+        node = Node(id=12064, name=None, state=None, public_ips=None,
+                    private_ips=None, driver=self.driver)
+        n = self.driver.ex_rescue(node)
+        self.assertEqual(n.extra['password'], 'foo')
+
+    def test_ex_unrescue(self):
+        node = Node(id=12064, name=None, state=None, public_ips=None,
+                    private_ips=None, driver=self.driver)
+        result = self.driver.ex_unrescue(node)
+        self.assertTrue(result)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -909,6 +927,9 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.ACCEPTED, "",
                     {"location": "http://127.0.0.1/v1.1/68/images/4949f9ee-2421-4c81-8b49-13119446008b"},
                     httplib.responses[httplib.ACCEPTED])
+        elif "rescue" in json.loads(body):
+            return (httplib.OK, '{"adminPass": "foo"}', {},
+                    httplib.responses[httplib.OK])
 
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
