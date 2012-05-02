@@ -15,7 +15,6 @@
 
 import sys
 import unittest
-from xml.etree import ElementTree as ET
 
 from xml.etree import ElementTree as ET
 
