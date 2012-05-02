@@ -776,8 +776,7 @@ class Instantiate_1_5_VAppXML(object):
         parent.set('networkName', self.network.get('name'))
         configuration = ET.SubElement(parent, 'Configuration')
         ET.SubElement(configuration, 'ParentNetwork', {'href': self.network.get('href')})
-        fencemode = self.network.find(fixxpath(self.network, 'Configuration/FenceMode')).text
-        ET.SubElement(configuration, 'FenceMode').text = fencemode
+        configuration.append(self.network.find(fixxpath(self.network, 'Configuration/FenceMode')))
 
 
 class VCloud_1_5_NodeDriver(VCloudNodeDriver):
