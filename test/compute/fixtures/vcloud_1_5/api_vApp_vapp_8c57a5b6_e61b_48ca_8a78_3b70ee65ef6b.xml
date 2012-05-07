@@ -1,5 +1,5 @@
-<VApp deployed="true" status="4" name="testNode" id="urn:vcloud:vapp:8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" type="application/vnd.vmware.vcloud.vApp+xml"
-      href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://schemas.dmtf.org/ovf/environment/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8027_1.1.0.xsd http://www.vmware.com/vcloud/v1.5 http://65.41.64.27/api/v1.5/schema/master.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:ovfenv="http://schemas.dmtf.org/ovf/environment/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<VApp deployed="true" status="4" name="testNode2" id="urn:vcloud:vapp:8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a" type="application/vnd.vmware.vcloud.vApp+xml"
+      href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://schemas.dmtf.org/ovf/environment/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8027_1.1.0.xsd http://www.vmware.com/vcloud/v1.5 http://65.41.64.27/api/v1.5/schema/master.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:ovfenv="http://schemas.dmtf.org/ovf/environment/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <Link rel="power:powerOff" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/power/action/powerOff"/>
    <Link rel="power:reboot" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/power/action/reboot"/>
    <Link rel="power:reset" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/power/action/reset"/>
@@ -111,7 +111,7 @@
    </Owner>
    <InMaintenanceMode>false</InMaintenanceMode>
    <Children>
-      <Vm needsCustomization="false" deployed="true" status="4" name="testVm" id="urn:vcloud:vm:dd75d1d3-5b7b-48f0-aff3-69622ab7e045" type="application/vnd.vmware.vcloud.vm+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045">
+      <Vm needsCustomization="false" deployed="true" status="4" name="testVm2" id="urn:vcloud:vm:dd75d1d3-5b7b-48f0-aff3-69622ab7e045" type="application/vnd.vmware.vcloud.vm+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046">
          <Link rel="power:powerOff" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/power/action/powerOff"/>
          <Link rel="power:reboot" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/power/action/reboot"/>
          <Link rel="power:reset" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/power/action/reset"/>
@@ -229,19 +229,19 @@
             <ovf:Description>Red Hat Enterprise Linux 5 (64-bit)</ovf:Description>
             <Link rel="edit" type="application/vnd.vmware.vcloud.operatingSystemSection+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/operatingSystemSection/"/>
          </ovf:OperatingSystemSection>
-         <NetworkConnectionSection type="application/vnd.vmware.vcloud.networkConnectionSection+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/networkConnectionSection/" ovf:required="false">
-            <ovf:Info>Specifies the available VM network connections</ovf:Info>
-            <PrimaryNetworkConnectionIndex>0</PrimaryNetworkConnectionIndex>
-            <NetworkConnection network="vCloud - Default" needsCustomization="false">
-               <NetworkConnectionIndex>0</NetworkConnectionIndex>
-               <IpAddress>65.41.67.2</IpAddress>
-               <IsConnected>true</IsConnected>
-               <MACAddress>00:50:56:01:00:99</MACAddress>
-               <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
-            </NetworkConnection>
-            <Link rel="edit" type="application/vnd.vmware.vcloud.networkConnectionSection+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/networkConnectionSection/"/>
-         </NetworkConnectionSection>
-         <GuestCustomizationSection type="application/vnd.vmware.vcloud.guestCustomizationSection+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/guestCustomizationSection/" ovf:required="false">
+          <NetworkConnectionSection type="application/vnd.vmware.vcloud.networkConnectionSection+xml" href="https://vm-vcloud/api/vApp/vm-cbfe57d5-7362-482b-b313-e5b5bcff3309/networkConnectionSection/" ovf:required="false">
+              <ovf:Info>Specifies the available VM network connections</ovf:Info>
+              <PrimaryNetworkConnectionIndex>0</PrimaryNetworkConnectionIndex>
+              <NetworkConnection network="mgalet-test-network" needsCustomization="true">
+                  <NetworkConnectionIndex>0</NetworkConnectionIndex>
+                  <IpAddress>192.168.0.100</IpAddress>
+                  <ExternalIpAddress>192.168.0.103</ExternalIpAddress>
+                  <IsConnected>true</IsConnected>
+                  <MACAddress>00:50:56:01:00:d9</MACAddress>
+                  <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
+              </NetworkConnection>
+          </NetworkConnectionSection>
+          <GuestCustomizationSection type="application/vnd.vmware.vcloud.guestCustomizationSection+xml" href="https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045/guestCustomizationSection/" ovf:required="false">
             <ovf:Info>Specifies Guest OS Customization Settings</ovf:Info>
             <Enabled>true</Enabled>
             <ChangeSid>false</ChangeSid>

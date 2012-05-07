@@ -15,7 +15,6 @@
 
 import sys
 import unittest
-
 from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import httplib, b
@@ -30,6 +29,7 @@ from test.compute import TestCaseMixin
 from test.file_fixtures import ComputeFileFixtures
 
 from test.secrets import VCLOUD_PARAMS
+
 
 class TerremarkTests(unittest.TestCase, TestCaseMixin):
 
@@ -81,6 +81,7 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
+
 class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
@@ -108,8 +109,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             name='testNode',
             image=image,
             size=size,
-            ex_vdc=Vdc('https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0', 'MyVdc', self.driver),
-            ex_network='https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4',
+            ex_vdc='MyVdc',
+            ex_network='vCloud - Default',
             cpus=2,
             )
         self.assertTrue(isinstance(node, Node))
@@ -130,7 +131,27 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'testNode')
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['65.41.67.2'])
-        self.assertEqual(node.private_ips, [])
+        self.assertEqual(node.private_ips, ['65.41.67.2'])
+        self.assertEqual(node.extra, {'vms': [{
+            'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045',
+            'name': 'testVm',
+            'state': NodeState.RUNNING,
+            'public_ips': ['65.41.67.2'],
+            'private_ips': ['65.41.67.2'],
+        }]})
+        node = ret[1]
+        self.assertEqual(node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b')
+        self.assertEqual(node.name, 'testNode2')
+        self.assertEqual(node.state, NodeState.RUNNING)
+        self.assertEqual(node.public_ips, ['192.168.0.103'])
+        self.assertEqual(node.private_ips, ['192.168.0.100'])
+        self.assertEqual(node.extra, {'vms': [{
+            'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046',
+            'name': 'testVm2',
+            'state': NodeState.RUNNING,
+            'public_ips': ['192.168.0.103'],
+            'private_ips': ['192.168.0.100'],
+            }]})
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
@@ -175,6 +196,27 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, "testNode")
         node = self.driver.ex_find_node('testNonExisting', self.driver.vdcs[0])
         self.assertEqual(node, None)
+
+    def test_ex_add_vm_disk__with_invalid_values(self):
+        self.assertRaises(ValueError, self.driver.ex_add_vm_disk, 'dummy', 'invalid value')
+        self.assertRaises(ValueError, self.driver.ex_add_vm_disk, 'dummy', '-1')
+
+    def test_ex_add_vm_disk(self):
+        self.driver.ex_add_vm_disk('https://test/api/vApp/vm-test', '20')
+
+    def test_ex_set_vm_cpu__with_invalid_values(self):
+        self.assertRaises(ValueError, self.driver.ex_set_vm_cpu, 'dummy', 50)
+        self.assertRaises(ValueError, self.driver.ex_set_vm_cpu, 'dummy', -1)
+
+    def test_ex_set_vm_cpu(self):
+        self.driver.ex_set_vm_cpu('https://test/api/vApp/vm-test', 4)
+
+    def test_ex_set_vm_memory__with_invalid_values(self):
+        self.assertRaises(ValueError, self.driver.ex_set_vm_memory, 'dummy', 777)
+        self.assertRaises(ValueError, self.driver.ex_set_vm_memory, 'dummy', -1024)
+
+    def test_ex_set_vm_memory(self):
+        self.driver.ex_set_vm_memory('https://test/api/vApp/vm-test', 1024)
 
 
 class TerremarkMockHttp(MockHttp):
@@ -290,6 +332,10 @@ class VCloud_1_5_MockHttp(MockHttp):
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b(self, method, url, body, headers):
+        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
     def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045(self, method, url, body, headers):
         body = self.fixtures.load('put_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
@@ -348,6 +394,37 @@ class VCloud_1_5_MockHttp(MockHttp):
 
     def _api_vApp_vapp_access_to_resource_forbidden(self, method, url, body, headers):
         raise Exception(ET.fromstring(self.fixtures.load('api_vApp_vapp_access_to_resource_forbidden.xml')))
+
+    def _api_vApp_vm_test(self, method, url, body, headers):
+        body = self.fixtures.load('api_vApp_vm_test.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vm_test_virtualHardwareSection_disks(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('get_api_vApp_vm_test_virtualHardwareSection_disks.xml')
+            status = httplib.OK
+        else:
+            body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_disks.xml')
+            status = httplib.ACCEPTED
+        return status, body, headers, httplib.responses[status]
+
+    def _api_vApp_vm_test_virtualHardwareSection_cpu(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('get_api_vApp_vm_test_virtualHardwareSection_cpu.xml')
+            status = httplib.OK
+        else:
+            body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_cpu.xml')
+            status = httplib.ACCEPTED
+        return status, body, headers, httplib.responses[status]
+
+    def _api_vApp_vm_test_virtualHardwareSection_memory(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('get_api_vApp_vm_test_virtualHardwareSection_memory.xml')
+            status = httplib.OK
+        else:
+            body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_memory.xml')
+            status = httplib.ACCEPTED
+        return status, body, headers, httplib.responses[status]
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
