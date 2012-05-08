@@ -168,7 +168,7 @@ class StorageDriver(BaseDriver):
       super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
                                           host=host, port=port, **kwargs)
 
-    def list_containters(self):
+    def list_containers(self):
         """
         Return a list of containers.
 
