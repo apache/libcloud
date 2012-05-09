@@ -582,6 +582,9 @@ class NodeDriver(BaseDriver):
             node = self._wait_until_running(node=node, wait_period=3,
                                             timeout=NODE_ONLINE_WAIT_TIMEOUT)
 
+            # Add password info to node 
+            node.extra.update({'password': password})
+
             ssh_username = kwargs.get('ssh_username', 'root')
             ssh_port = kwargs.get('ssh_port', 22)
             ssh_timeout = kwargs.get('ssh_timeout', 10)
