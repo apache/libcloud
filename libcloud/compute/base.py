@@ -605,6 +605,10 @@ class NodeDriver(BaseDriver):
         except Exception:
             e = sys.exc_info()[1]
             raise DeploymentError(node, e)
+
+        if password:
+            node.extra['password'] = password
+
         return node
 
     def _wait_until_running(self, node, wait_period=3, timeout=600):
