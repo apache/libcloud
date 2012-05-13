@@ -18,6 +18,7 @@ Gandi driver base classes
 
 import time
 import hashlib
+import sys
 
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b

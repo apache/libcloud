@@ -249,7 +249,6 @@ class LoggingConnection():
 
                 return cls(b(self.s))
         rr = r
-        original_data = body
         headers = lowercase_keys(dict(r.getheaders()))
 
         encoding = headers.get('content-encoding', None)

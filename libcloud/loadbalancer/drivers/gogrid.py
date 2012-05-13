@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import time
+
 from libcloud.utils.py3 import httplib
 
 try:
@@ -177,7 +179,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
             if "Update already pending" in str(e):
                 raise LibcloudLBImmutableError("Balancer is immutable", GoGridLBDriver)
 
-        raise LibcloudError(value='Exception: %s' % str(err), driver=self)
+        raise LibcloudError(value='Exception: %s' % str(e), driver=self)
 
     def _members_to_params(self, members):
         """

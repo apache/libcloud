@@ -16,6 +16,7 @@
 Softlayer driver
 """
 
+import sys
 import time
 
 import libcloud
