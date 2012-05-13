@@ -68,6 +68,10 @@ Changes with Apache Libcloud in development:
     - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver.
       [Shawn Smith] 
 
+    - Include 'password' in the node extra dictionary when calling deploy_node
+      if the password auth is used.
+      [Juan Carlos Moreno]
+
   *) Storage
 
     - Large object upload support for CloudFiles driver
