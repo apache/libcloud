@@ -55,7 +55,8 @@ class BrightboxTest(unittest.TestCase, TestCaseMixin):
         self.assertRaises(Exception, self.driver.list_locations)
 
     def test_other_host(self):
-        self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS, host='api.gbt.brightbox.com')
+        kwargs = {'host': 'api.gbt.brightbox.com'}
+        self.driver = BrightboxNodeDriver(*BRIGHTBOX_PARAMS, **kwargs)
         locations = self.driver.list_locations()
         self.assertEqual(len(locations), 0)
 
