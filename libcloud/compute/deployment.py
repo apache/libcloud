@@ -17,7 +17,7 @@
 Provides generic deployment steps for machines post boot.
 """
 
-from __future__ import with_statemen
+from __future__ import with_statement
 
 import os
 import binascii
