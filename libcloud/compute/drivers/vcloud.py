@@ -23,6 +23,7 @@ import os
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import next
 
 urlparse = urlparse.urlparse
 
