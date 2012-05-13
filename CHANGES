@@ -72,6 +72,11 @@ Changes with Apache Libcloud in development:
       if the password auth is used.
       [Juan Carlos Moreno]
 
+    - Add FileDeployment class to libcloud.compute.deployment module. This can
+      be used as a replacemtnt for ex_files argument if the provider supports
+      deployment functionality.
+      [Jay Doane]
+
   *) Storage
 
     - Large object upload support for CloudFiles driver

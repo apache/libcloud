@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import time
 import unittest
@@ -23,6 +24,7 @@ from libcloud.utils.py3 import u
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
+from libcloud.compute.deployment import FileDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
@@ -83,6 +85,15 @@ class DeploymentTests(unittest.TestCase):
 
         self.assertEqual(self.node, sshd.run(node=self.node,
                         client=MockClient(hostname='localhost')))
+
+    def test_file_deployment(self):
+        # use this file (__file__) for obtaining permissions
+        target = os.path.join('/tmp', os.path.basename(__file__))
+        fd = FileDeployment(__file__, target)
+        self.assertEqual(target, fd.target)
+        self.assertEqual(__file__, fd.source)
+        self.assertEqual(self.node, fd.run(
+                node=self.node, client=MockClient(hostname='localhost')))
 
     def test_script_deployment(self):
         sd1 = ScriptDeployment(script='foobar', delete=True)
