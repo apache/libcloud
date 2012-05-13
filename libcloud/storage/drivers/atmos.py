@@ -370,13 +370,13 @@ class AtmosDriver(StorageDriver):
             ('uid', self.key),
             ('expires', expiry),
         ]
-        params.append(('signature', self._cdn_signature(path, params)))
+        params.append(('signature', self._cdn_signature(path, params, expiry)))
 
         params = urlencode(params)
         path = self.path + path
         return urlparse.urlunparse((protocol, self.host, path, '', params, ''))
 
-    def _cdn_signature(self, path, params):
+    def _cdn_signature(self, path, params, expiry):
         key = base64.b64decode(self.secret)
         signature = '\n'.join(['GET', path.lower(), self.key, expiry])
         signature = hmac.new(key, signature, hashlib.sha1).digest()
