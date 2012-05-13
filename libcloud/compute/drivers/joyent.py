@@ -134,7 +134,6 @@ class JoyentNodeDriver(NodeDriver):
         return result.status == httplib.ACCEPTED
 
     def destroy_node(self, node):
-        data = json.dumps({'action': 'reboot'})
         result = self.connection.request('/my/machines/%s' % (node.id),
                                          method='DELETE')
         return result.status == httplib.NO_CONTENT

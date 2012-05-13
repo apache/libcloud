@@ -16,14 +16,10 @@
 OpenStack driver
 """
 
-import binascii
-
 try:
     import simplejson as json
 except ImportError:
     import json
-
-import os
 
 import warnings
 
@@ -40,7 +36,7 @@ from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.types import MalformedResponseError, LibcloudError
+from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation

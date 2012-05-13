@@ -18,7 +18,6 @@ import gzip
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
-from libcloud.utils.py3 import b
 
 
 __all__ = [

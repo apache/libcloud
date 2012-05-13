@@ -21,7 +21,6 @@ __all__ = [
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.linode import (API_ROOT, LinodeException,
                                     LinodeConnection, LinodeResponse)
-from libcloud.common.linode import API_ROOT, LinodeException
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
@@ -197,7 +196,7 @@ class LinodeDNSDriver(DNSDriver):
                                   valid_keys=VALID_RECORD_EXTRA_PARAMS,
                                   extra=extra)
 
-        result = self.connection.request(API_ROOT, params=params).objects[0]
+        self.connection.request(API_ROOT, params=params).objects[0]
         updated_record = get_new_obj(obj=record, klass=Record,
                                      attributes={'name': name, 'data': data,
                                                  'type': type,

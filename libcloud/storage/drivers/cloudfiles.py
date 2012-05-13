@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import math
 
 from libcloud.utils.py3 import httplib
 

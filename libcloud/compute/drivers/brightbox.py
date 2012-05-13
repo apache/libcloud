@@ -18,7 +18,6 @@ Brightbox Driver
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-from libcloud.utils.py3 import u
 
 from libcloud.common.brightbox import BrightboxConnection
 from libcloud.compute.types import Provider, NodeState

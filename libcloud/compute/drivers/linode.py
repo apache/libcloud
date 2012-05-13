@@ -28,7 +28,6 @@ Linode(R) is a registered trademark of Linode, LLC.
 """
 
 import os
-import hashlib
 
 try:
     import simplejson as json
@@ -41,7 +40,6 @@ import binascii
 from copy import copy
 
 from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import u
 
 from libcloud.common.linode import (API_ROOT, LinodeException, LinodeConnection,
     LINODE_PLAN_IDS)

@@ -23,7 +23,6 @@ Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/inde
 """
 
 import copy
-from libcloud.utils.py3 import urllib
 import base64
 
 from libcloud.utils.py3 import urlencode
