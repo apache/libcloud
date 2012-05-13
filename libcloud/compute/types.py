@@ -151,16 +151,17 @@ class DeploymentError(LibcloudError):
 
     @ivar node: L{Node} on which this exception happened, you might want to call L{Node.destroy}
     """
-    def __init__(self, node, original_exception=None):
+    def __init__(self, node, original_exception=None, driver=None):
         self.node = node
         self.value = original_exception
+        self.driver = driver
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return (('<DeploymentError: node=%s, error=%s>'
-                % (self.node.id, str(self.value))))
+        return (('<DeploymentError: node=%s, error=%s, driver=%s>'
+                % (self.node.id, str(self.value), str(self.driver))))
 
 
 """Deprecated alias of L{DeploymentException}"""

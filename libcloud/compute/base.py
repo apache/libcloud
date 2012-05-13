@@ -607,7 +607,7 @@ class NodeDriver(BaseDriver):
                                         max_tries=max_tries)
         except Exception:
             e = sys.exc_info()[1]
-            raise DeploymentError(node, e)
+            raise DeploymentError(node=node, original_exception=e, driver=self)
 
         return node
 
