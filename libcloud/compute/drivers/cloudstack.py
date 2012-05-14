@@ -297,7 +297,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return rule
 
     def ex_delete_ip_forwarding_rule(self, node, rule):
-        "Remove a NAT/firewall forwading rule."
+        "Remove a NAT/firewall forwarding rule."
 
         node.extra['ip_forwarding_rules'].remove(rule)
         self._async_request('deleteIpForwardingRule', id=rule.id)
