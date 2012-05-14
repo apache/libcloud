@@ -33,7 +33,7 @@ class Provider(object):
     ZERIGO = 2
     RACKSPACE_US = 3
     RACKSPACE_UK = 4
-    ROUTE_53 = 5
+    ROUTE53 = 5
 
 
 class RecordType(object):
