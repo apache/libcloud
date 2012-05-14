@@ -8,7 +8,7 @@ Changes with Apache Libcloud in development:
       [Jerry Chen]
 
     - Add 'ex_keyname' argument to the create_node method in the OpenStack
-      driver.
+      driver. ; LIBCLOUD-177
       [Jay Doane]
 
     - Fix a problem in deploy_node - make it work with providers which
@@ -65,7 +65,8 @@ Changes with Apache Libcloud in development:
       is not specified when calling deploy_node. ; LIBCLOUD-182
       [Tomaz Muraus]
 
-    - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver.
+    - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver. ;
+      LIBCLOUD-193
       [Shawn Smith] 
 
     - Include 'password' in the node extra dictionary when calling deploy_node
@@ -74,7 +75,7 @@ Changes with Apache Libcloud in development:
 
     - Add FileDeployment class to libcloud.compute.deployment module. This can
       be used as a replacemtnt for ex_files argument if the provider supports
-      deployment functionality.
+      deployment functionality. ; LIBCLOUD-190
       [Jay Doane]
 
   *) Storage
