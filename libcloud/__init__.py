@@ -20,7 +20,7 @@ libcloud provides a unified interface to the cloud computing resources.
 """
 
 __all__ = ['__version__', 'enable_debug']
-__version__ = '0.9.1'
+__version__ = '0.10.0'
 
 try:
     import paramiko
