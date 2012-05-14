@@ -12,7 +12,7 @@ Changes with Apache Libcloud in development:
       [Jay Doane]
 
     - Fix a problem in deploy_node - make it work with providers which
-      don'  instantly return created node in the list_node response.
+      don't  instantly return created node in the list_node response.
       Also add __str__ and __repr__ method to DeploymentError so the
       error message is more useful.
       [Jouke Waleson, Tomaz Muraus]
@@ -21,7 +21,7 @@ Changes with Apache Libcloud in development:
       deploy_node. ; LIBCLOUD-179
       [Neil Wilson]
 
-    - Add Joyent driver.
+    - Add Joyent compute driver.
       [Tomaz Muraus]
 
     - Store auth token expire times on the connection class in the attribute
@@ -74,7 +74,7 @@ Changes with Apache Libcloud in development:
       [Juan Carlos Moreno]
 
     - Add FileDeployment class to libcloud.compute.deployment module. This can
-      be used as a replacemtnt for ex_files argument if the provider supports
+      be used as a replacement for ex_files argument if the provider supports
       deployment functionality. ; LIBCLOUD-190
       [Jay Doane]
 
