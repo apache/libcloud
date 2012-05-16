@@ -82,7 +82,7 @@ DRIVERS = {
     Provider.EUCALYPTUS:
         ('libcloud.compute.drivers.ec2', 'EucNodeDriver'),
     Provider.IBM:
-        ('libcloud.compute.drivers.ibm_sbc', 'IBMNodeDriver'),
+        ('libcloud.compute.drivers.ibm_sce', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
         ('libcloud.compute.drivers.opennebula', 'OpenNebulaNodeDriver'),
     Provider.DREAMHOST:
