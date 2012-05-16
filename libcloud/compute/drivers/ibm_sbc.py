@@ -14,7 +14,11 @@
 # limitations under the License.
 
 """
-Driver for the IBM Developer Cloud.
+Driver for IBM SmartCloud Enterprise
+
+Formerly known as:
+- IBM Developer Cloud.
+- IBM SmartBusiness Cloud
 """
 
 import base64
@@ -66,11 +70,11 @@ class IBMConnection(ConnectionUserAndKey):
 
 class IBMNodeDriver(NodeDriver):
     """
-    IBM Developer Cloud node driver.
+    Node driver for IBM SmartCloud Enterprise
     """
     connectionCls = IBMConnection
     type = Provider.IBM
-    name = "IBM Developer Cloud"
+    name = "IBM SmartCloud Enterprise"
 
     NODE_STATE_MAP = {0: NodeState.PENDING,      # New
                       1: NodeState.PENDING,      # Provisioning
@@ -162,6 +166,10 @@ class IBMNodeDriver(NodeDriver):
         return self._to_images(self.connection.request(REST_BASE + '/offerings/image').object)
 
     def list_sizes(self, location = None):
+        """
+        Returns a generic list of sizes.  See list_images() for a list of supported sizes for specific
+        images.
+        """
         return [NodeSize('BRZ32.1/2048/60*175', 'Bronze 32 bit', None, None, None, None, self.connection.driver),
                 NodeSize('BRZ64.2/4096/60*500*350', 'Bronze 64 bit', None, None, None, None, self.connection.driver),
                 NodeSize('COP32.1/2048/60', 'Copper 32 bit', None, None, None, None, self.connection.driver),
@@ -193,20 +201,60 @@ class IBMNodeDriver(NodeDriver):
                     driver=self.connection.driver)
 
     def _to_images(self, object):
+        # Converts data retrieved from SCE /offerings/image REST call to a NodeImage
         return [self._to_image(image) for image in object.findall('Image')]
 
     def _to_image(self, image):
-        return NodeImage(id=image.findtext('ID'),
-                         name=image.findtext('Name'),
+        # Converts an SCE Image object to a NodeImage
+        imageID=image.findtext('ID')
+        imageName=image.findtext('Name')
+        parametersURL=image.findtext('Manifest')
+        location=image.findtext('Location')
+        state=image.findtext('State')
+        owner=image.findtext('Owner')
+        visibility=image.findtext('Visibility')
+        platform=image.findtext('Platform')
+        description=image.findtext('Description')
+        documentation=image.findtext('Documentation')
+        instanceTypes=image.findall('SupportedInstanceTypes')
+        nodeSizes=self._to_node_sizes(image.find('SupportedInstanceTypes'))
+        return NodeImage(id=imageID,
+                         name=imageName,
                          driver=self.connection.driver,
-                         extra={'parametersURL': image.findtext('Manifest')})
+                         extra={'parametersURL': parametersURL,
+                                'location' : location,
+                                'state' : state,
+                                'owner' : owner,
+                                'visibility' : visibility,
+                                'platform' : platform,
+                                'description' : description,
+                                'documentation' : documentation,
+                                'supportedInstanceTypes' : nodeSizes
+                                }
+                         )
 
     def _to_locations(self, object):
         return [self._to_location(location) for location in object.findall('Location')]
 
     def _to_location(self, location):
-        # NOTE: country currently hardcoded
+        # Converts an SCE Location object to a Libcloud NodeLocation object
+        name_text = location.findtext('Name')
+        (nameVal, separator, countryVal) = name_text.partition(',')
         return NodeLocation(id=location.findtext('ID'),
-                            name=location.findtext('Name'),
-                            country='US',
+                            name=nameVal,
+                            country=countryVal.strip(),
                             driver=self.connection.driver)
+
+    def _to_node_sizes(self, object):
+        # Converts SCE SupportedInstanceTypes object to a list of Libcloud NodeSize objects
+        return [self._to_node_size(iType) for iType in object.findall('InstanceType')]
+
+    def _to_node_size(self, object):
+        # Converts to an SCE InstanceType to a Libcloud NodeSize
+        return NodeSize(object.findtext('ID'), 
+                        object.findtext('Label'), 
+                        None,
+                        None,
+                        None,
+                        object.findtext('Price/Rate'),
+                        self.connection.driver)

@@ -74,10 +74,10 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_locations(self):
         ret = self.driver.list_locations()
-        self.assertEquals(len(ret), 1)
-        self.assertEquals(ret[0].id, '1')
-        self.assertEquals(ret[0].name, 'US North East: Poughkeepsie, NY')
-        self.assertEquals(ret[0].country, 'US')
+        self.assertEquals(len(ret), 6)
+        self.assertEquals(ret[0].id, '41')
+        self.assertEquals(ret[0].name, 'Raleigh')
+        self.assertEquals(ret[0].country, 'U.S.A')
 
     def test_create_node(self):
         # Test creation of node

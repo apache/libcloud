@@ -1,5 +1,12 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Compute:
+    - Update IBM SBC driver so it works with IBM Smart Cloud Enterprise.
+      ; LIBCLOUD-195
+    [Sengor Kusturica]
+
 Changes with Apache Libcloud 0.10.0:
 
   *) Compute:
