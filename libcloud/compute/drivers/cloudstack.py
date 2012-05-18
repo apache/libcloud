@@ -17,7 +17,7 @@ from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
                                   NodeSize
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import NodeState, LibcloudError
 
 
 class CloudStackNode(Node):
@@ -302,3 +302,25 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node.extra['ip_forwarding_rules'].remove(rule)
         self._async_request('deleteIpForwardingRule', id=rule.id)
         return True
+
+    def ex_register_iso(self, name, url, location=None, **kwargs):
+        "Registers an existing ISO by URL."
+        if location is None:
+            location = self.list_locations()[0]
+
+        extra_args = {}
+        extra_args['bootable'] = kwargs.pop('bootable', False)
+        if extra_args['bootable']:
+            os_type_id = kwargs.pop('ostypeid', None)
+
+            if not os_type_id:
+                raise LibcloudError('If bootable=True, ostypeid is required!')
+
+            extra_args['ostypeid'] = os_type_id
+
+        return self._sync_request('registerIso',
+                                  name=name,
+                                  displaytext=name,
+                                  url=url,
+                                  zoneid=location.id,
+                                  **extra_args)

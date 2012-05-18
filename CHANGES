@@ -7,6 +7,9 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-195
     [Sengor Kusturica]
 
+    - Add ex_register_iso method to the CloudStack driver. ; LIBCLOUD-196
+    [Daemian Mack]
+
 Changes with Apache Libcloud 0.10.0:
 
   *) Compute:
