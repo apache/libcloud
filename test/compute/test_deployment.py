@@ -139,15 +139,33 @@ class DeploymentTests(unittest.TestCase):
             self.fail('TypeError was not thrown')
 
     def test_wait_until_running_running_instantly(self):
-        node2 = self.driver._wait_until_running(node=self.node, wait_period=1,
-                                                timeout=10)
+        node2, ips = self.driver._wait_until_running(node=self.node, wait_period=1,
+                                                     timeout=10)
         self.assertEqual(self.node.uuid, node2.uuid)
+        self.assertEqual(['67.23.21.33'], ips)
 
     def test_wait_until_running_running_after_1_second(self):
         RackspaceMockHttp.type = '1_SECOND_DELAY'
-        node2 = self.driver._wait_until_running(node=self.node, wait_period=1,
-                                                timeout=10)
+        node2, ips = self.driver._wait_until_running(node=self.node, wait_period=1,
+                                                     timeout=10)
         self.assertEqual(self.node.uuid, node2.uuid)
+        self.assertEqual(['67.23.21.33'], ips)
+
+    def test_wait_until_running_running_after_1_second_private_ips(self):
+        RackspaceMockHttp.type = '1_SECOND_DELAY'
+        node2, ips = self.driver._wait_until_running(node=self.node, wait_period=1,
+                                                     timeout=10, ssh_interface='private_ips')
+        self.assertEqual(self.node.uuid, node2.uuid)
+        self.assertEqual(['10.176.168.218'], ips)
+
+    def test_wait_until_running_invalid_ssh_interface_argument(self):
+        try:
+            self.driver._wait_until_running(node=self.node, wait_period=1,
+                                            ssh_interface='invalid')
+        except ValueError:
+            pass
+        else:
+            self.fail('Exception was not thrown')
 
     def test_wait_until_running_timeout(self):
         RackspaceMockHttp.type = 'TIMEOUT'

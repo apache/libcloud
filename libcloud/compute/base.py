@@ -578,9 +578,9 @@ class NodeDriver(BaseDriver):
             password = node.extra.get('password')
 
         try:
-            # Wait until node is up and running and has public IP assigned
-            node = self._wait_until_running(node=node, wait_period=3,
-                                            timeout=NODE_ONLINE_WAIT_TIMEOUT)
+            # Wait until node is up and running and has IP assigned
+            node, ip_addresses = self._wait_until_running(
+                node=node, wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT)
 
             if password:
                 node.extra['password'] = password
@@ -590,7 +590,7 @@ class NodeDriver(BaseDriver):
             ssh_timeout = kwargs.get('ssh_timeout', 10)
             ssh_key_file = kwargs.get('ssh_key', None)
 
-            ssh_client = SSHClient(hostname=node.public_ips[0],
+            ssh_client = SSHClient(hostname=ip_addresses[0],
                                    port=ssh_port, username=ssh_username,
                                    password=password,
                                    key=ssh_key_file,
@@ -611,7 +611,8 @@ class NodeDriver(BaseDriver):
 
         return node
 
-    def _wait_until_running(self, node, wait_period=3, timeout=600):
+    def _wait_until_running(self, node, wait_period=3, timeout=600,
+                            ssh_interface='public_ips'):
         """
         Block until node is fully booted and has an IP address assigned.
 
@@ -626,10 +627,20 @@ class NodeDriver(BaseDriver):
                              (default is 600)
         @type       timeout: C{int}
 
-        @return: C{Node} Node instance on success.
+        @keyword    ssh_interface: The interface to wait for.
+                                   Default is 'public_ips', other option is
+                                   'private_ips'.
+        @type       ssh_interface: C{str}
+
+        @return: C{(Node, ip_addresses)} tuple of Node instance and
+                 list of ip_address on success.
         """
         start = time.time()
         end = start + timeout
+
+        if ssh_interface not in ['public_ips', 'private_ips']:
+            raise ValueError('ssh_interface argument must either be' +
+                             'public_ips or private_ips')
 
         while time.time() < end:
             nodes = self.list_nodes()
@@ -640,8 +651,9 @@ class NodeDriver(BaseDriver):
                                     + 'but multiple nodes have same UUID'),
                                     driver=self)
 
-            if (len(nodes) == 1 and nodes[0].public_ips and nodes[0].state == NodeState.RUNNING):
-                return nodes[0]
+            if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and \
+                getattr(nodes[0], ssh_interface)):
+                return (nodes[0], getattr(nodes[0], ssh_interface))
             else:
                 time.sleep(wait_period)
                 continue

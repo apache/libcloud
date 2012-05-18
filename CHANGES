@@ -5,10 +5,16 @@ Changes with Apache Libcloud in development:
   *) Compute:
     - Update IBM SBC driver so it works with IBM Smart Cloud Enterprise.
       ; LIBCLOUD-195
-    [Sengor Kusturica]
+      [Sengor Kusturica]
 
     - Add ex_register_iso method to the CloudStack driver. ; LIBCLOUD-196
-    [Daemian Mack]
+      [Daemian Mack]
+
+    - Allow user to specify which IP to use when calling _wait_until_running.
+      (defaults to 'public_ips'). Previously it only worked with public IP, now
+      user can pass 'private_ips' as an argument and SSH client will try to
+      connect to the node first private IP address.
+      [Jay Doane]
 
 Changes with Apache Libcloud 0.10.0:
 
