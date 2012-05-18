@@ -10,7 +10,7 @@ Changes with Apache Libcloud in development:
     - Add ex_register_iso method to the CloudStack driver. ; LIBCLOUD-196
       [Daemian Mack]
 
-    - Allow user to specify which IP to use when calling _wait_until_running.
+    - Allow user to specify which IP to use when calling deploy_node.
       (defaults to 'public_ips'). Previously it only worked with public IP, now
       user can pass 'private_ips' as an argument and SSH client will try to
       connect to the node first private IP address.

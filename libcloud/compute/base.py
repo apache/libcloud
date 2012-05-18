@@ -529,6 +529,10 @@ class NodeDriver(BaseDriver):
                                before giving up (default is 3)
         @type       max_tries: C{int}
 
+        @keyword    ssh_interface: The interface to wait for. Default is
+                                   'public_ips', other option is 'private_ips'.
+        @type       ssh_interface: C{str}
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -579,8 +583,10 @@ class NodeDriver(BaseDriver):
 
         try:
             # Wait until node is up and running and has IP assigned
-            node, ip_addresses = self._wait_until_running(
-                node=node, wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT)
+            ssh_interface = kwargs.get('ssh_interface', 'public_ips')
+            node, ip_addresses = self._wait_until_running(node=node,
+                    wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
+                    ssh_interface=ssh_interface)
 
             if password:
                 node.extra['password'] = password
