@@ -26,9 +26,7 @@ DRIVERS = {
     Provider.RACKSPACE_US:
         ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
     Provider.RACKSPACE_UK:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver'),
-    Provider.ROUTE53:
-        ('libcloud.dns.drivers.route53', 'Route53DNSDriver')
+        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
 }
 
 
