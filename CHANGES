@@ -9,6 +9,7 @@ Changes with Apache Libcloud 0.10.1:
       [Chris Gilmer]
 
   *) Compute:
+
     - Update IBM SBC driver so it works with IBM Smart Cloud Enterprise.
       ; LIBCLOUD-195
       [Sengor Kusturica]
@@ -21,10 +22,6 @@ Changes with Apache Libcloud 0.10.1:
       user can pass 'private_ips' as an argument and SSH client will try to
       connect to the node first private IP address.
       [Jay Doane]
-
-Changes with Apache Libcloud 0.10.0:
-
-  *) Compute:
 
     - Fix CloudSigmaLvsNodeDriver connectionCls bug.
       [Jerry Chen]
