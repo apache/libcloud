@@ -1,6 +1,12 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.10.1:
+
+  *) General:
+
+    - Add timeout attribute to base 'Connection' class and pass it to the
+      connection class constructor if Python version is not 2.5.
+      [Chris Gilmer]
 
   *) Compute:
     - Update IBM SBC driver so it works with IBM Smart Cloud Enterprise.

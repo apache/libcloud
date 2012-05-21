@@ -27,7 +27,7 @@ except:
 
 import libcloud
 
-from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import PY3, PY25
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
@@ -249,6 +249,7 @@ class LoggingConnection():
 
                 return cls(b(self.s))
         rr = r
+        original_data = body
         headers = lowercase_keys(dict(r.getheaders()))
 
         encoding = headers.get('content-encoding', None)
@@ -357,11 +358,13 @@ class Connection(object):
     connection = None
     host = '127.0.0.1'
     port = 443
+    timeout = None
     secure = 1
     driver = None
     action = None
 
-    def __init__(self, secure=True, host=None, port=None, url=None):
+    def __init__(self, secure=True, host=None, port=None, url=None,
+                 timeout=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
@@ -382,6 +385,9 @@ class Connection(object):
         if url:
             (self.host, self.port, self.secure,
              self.request_path) = self._tuple_from_url(url)
+
+        if timeout:
+            self.timeout = timeout
 
     def set_context(self, context):
         self.context = context
@@ -439,6 +445,11 @@ class Connection(object):
             port = port or self.port
 
         kwargs = {'host': host, 'port': int(port)}
+
+        # Timeout is only supported in Python 2.6 and later
+        # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
+        if self.timeout and not PY25:
+            kwargs.update({'timeout': self.timeout})
 
         connection = self.conn_classes[secure](**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server
@@ -735,13 +746,14 @@ class ConnectionKey(Connection):
     """
     A Base Connection class to derive from, which includes a
     """
-    def __init__(self, key, secure=True, host=None, port=None, url=None):
+    def __init__(self, key, secure=True, host=None, port=None, url=None,
+                 timeout=None):
         """
         Initialize `user_id` and `key`; set `secure` to an C{int} based on
         passed value.
         """
         super(ConnectionKey, self).__init__(secure=secure, host=host,
-                                            port=port, url=url)
+                                            port=port, url=url, timeout=timeout)
         self.key = key
 
 
@@ -753,10 +765,10 @@ class ConnectionUserAndKey(ConnectionKey):
     user_id = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None, url=None):
+                 host=None, port=None, url=None, timeout=None):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
                                                    host=host, port=port,
-                                                   url=url)
+                                                   url=url, timeout=timeout)
         self.user_id = user_id
 
 
