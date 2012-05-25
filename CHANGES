@@ -1,5 +1,12 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Compute:
+    - Add a timeout of 10 seconds to OpenStackAuthConnection class.
+      ; LIBCLOUD-199
+      [Chris Gilmer]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:

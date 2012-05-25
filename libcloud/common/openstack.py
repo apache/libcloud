@@ -79,14 +79,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
     responseCls = OpenStackAuthResponse
     name = 'OpenStack Auth'
+    timeout = None
 
-    def __init__(self, parent_conn, auth_url, auth_version, user_id, key, tenant_name=None):
+    def __init__(self, parent_conn, auth_url, auth_version, user_id, key,
+                 tenant_name=None, timeout=None):
         self.parent_conn = parent_conn
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
 
+        if timeout:
+            self.timeout = timeout
+
         super(OpenStackAuthConnection, self).__init__(
-            user_id, key, url=auth_url)
+            user_id, key, url=auth_url, timeout=self.timeout)
 
         self.auth_version = auth_version
         self.auth_url = auth_url
@@ -363,7 +368,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     service_region = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None,
+                 host=None, port=None, timeout=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
@@ -392,7 +397,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self._auth_version = AUTH_API_VERSION
 
         super(OpenStackBaseConnection, self).__init__(
-            user_id, key, secure=secure)
+            user_id, key, secure=secure, timeout=timeout)
 
     def get_endpoint(self):
         """
@@ -449,7 +454,9 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                     'have auth_url set')
 
             osa = OpenStackAuthConnection(self, aurl, self._auth_version,
-                                          self.user_id, self.key, self._ex_tenant_name)
+                                          self.user_id, self.key,
+                                          tenant_name=self._ex_tenant_name,
+                                          timeout=self.timeout)
 
             # may throw InvalidCreds, etc
             osa.authenticate()

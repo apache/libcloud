@@ -16,7 +16,7 @@ import sys
 import unittest
 
 from libcloud.common.base import Response
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
+from libcloud.common.base import Connection, ConnectionKey, ConnectionUserAndKey
 from libcloud.compute.base import Node, NodeSize, NodeImage, NodeDriver
 
 from test import MockResponse           # pylint: disable-msg=E0611
@@ -48,6 +48,9 @@ class BaseTests(unittest.TestCase):
 
     def test_base_connection_userkey(self):
         ConnectionUserAndKey('foo', 'bar')
+
+    def test_base_connection_timeout(self):
+        Connection(timeout=10)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
