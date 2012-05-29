@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-199
       [Chris Gilmer]
 
+    - Add time.sleep(wait_period) to _ssh_client_connect to prevent busy loops
+      when we immediately can't connect to a server. ; LIBCLOUD-197
+      [Jay Doane]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:

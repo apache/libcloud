@@ -667,13 +667,17 @@ class NodeDriver(BaseDriver):
         raise LibcloudError(value='Timed out after %s seconds' % (timeout),
                             driver=self)
 
-    def _ssh_client_connect(self, ssh_client, timeout=300):
+    def _ssh_client_connect(self, ssh_client, wait_period=1.5, timeout=300):
         """
         Try to connect to the remote SSH server. If a connection times out or
         is refused it is retried up to timeout number of seconds.
 
         @keyword    ssh_client: A configured SSHClient instance
         @type       ssh_client: C{SSHClient}
+
+        @keyword    wait_period: How many seconds to wait between each loop
+                                 iteration (default is 1.5)
+        @type       wait_period: C{int}
 
         @keyword    timeout: How many seconds to wait before timing out
                              (default is 600)
@@ -691,6 +695,7 @@ class NodeDriver(BaseDriver):
                 # Retry if a connection is refused or timeout
                 # occurred
                 ssh_client.close()
+                time.sleep(wait_period)
                 continue
             else:
                 return ssh_client
