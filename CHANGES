@@ -151,6 +151,10 @@ Changes with Apache Libcloud 0.9.1:
       different providers without needing to subclass. ; LIBCLOUD-173
       [James E. Blair]
 
+    - Fix a bug with handling compressed responses in the Linode driver. ;
+      LIBCLOUD-158
+      [Ben Agricola]
+
   *) Compute:
 
     - Add new RackspaceNovaBeta and RackspaveNovaDfw driver based on the
@@ -189,7 +193,7 @@ Changes with Apache Libcloud 0.9.1:
       [Tomaz Muraus]
 
     - Allow user to re-use auth tokens and pass 'ex_force_auth_token' keyword
-      argument to the OpenStack driver constructor.
+      argument to the OpenStack driver constructor. ; LIBCLOUD-164
       [Dave King]
 
     - Add new experimental libvirt driver.
