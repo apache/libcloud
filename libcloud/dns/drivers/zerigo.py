@@ -430,8 +430,8 @@ class ZerigoDNSDriver(DNSDriver):
             transform_func = self._to_zones
         elif value_dict['type'] == 'records':
             zone = value_dict['zone']
-            path = API_ROOT + 'zones/%s/hosts.xml' % (zone)
-            self.connection.set_context({'resource': 'zone', 'id': zone})
+            path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
+            self.connection.set_context({'resource': 'zone', 'id': zone.id})
             response = self.connection.request(path, params=params)
             transform_func = self._to_records
             transform_func_kwargs['zone'] = value_dict['zone']
