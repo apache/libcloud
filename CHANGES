@@ -11,6 +11,10 @@ Changes with Apache Libcloud in development:
       when we immediately can't connect to a server. ; LIBCLOUD-197
       [Jay Doane]
 
+  *) DNS:
+    - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
+      [Gary Wilson]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:

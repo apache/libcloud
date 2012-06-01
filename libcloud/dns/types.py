@@ -54,6 +54,7 @@ class RecordType(object):
     PTR = 11
     NAPTR = 12
     REDIRECT = 13
+    GEO = 14
 
     @classmethod
     def __repr__(self, value):
