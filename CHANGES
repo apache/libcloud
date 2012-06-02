@@ -11,6 +11,9 @@ Changes with Apache Libcloud in development:
       when we immediately can't connect to a server. ; LIBCLOUD-197
       [Jay Doane]
 
+    - Fix a bug with Python 3 support in IBM SCE driver. ; LIBCLOUD-204
+      [Sengor Kusturica, Hutson Betts]
+
   *) DNS:
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
       [Gary Wilson]

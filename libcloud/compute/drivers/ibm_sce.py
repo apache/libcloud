@@ -59,7 +59,7 @@ class IBMConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers['Accept'] = 'text/xml'
         headers['Authorization'] = ('Basic %s' % (base64.b64encode(b('%s:%s' %
-                                                 (self.user_id, self.key)))))
+                                                 (self.user_id, self.key))).decode('utf-8')))
         if not 'Content-Type' in headers:
             headers['Content-Type'] = 'text/xml'
         return headers
