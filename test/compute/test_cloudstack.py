@@ -58,6 +58,12 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
             return
         self.assertTrue(False)
 
+    def test_list_images_no_images_available(self):
+        CloudStackMockHttp.fixture_tag = 'notemplates'
+
+        images = self.driver.list_images()
+        self.assertEquals(0, len(images))
+
 class CloudStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('cloudstack')
     fixture_tag = 'default'

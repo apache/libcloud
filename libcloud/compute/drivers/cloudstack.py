@@ -124,7 +124,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             args['zoneid'] = location.id
         imgs = self._sync_request('listTemplates', **args)
         images = []
-        for img in imgs['template']:
+        for img in imgs.get('template', []):
             images.append(NodeImage(img['id'], img['name'], self, {
                 'hypervisor': img['hypervisor'],
                 'format': img['format'],

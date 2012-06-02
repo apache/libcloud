@@ -14,6 +14,10 @@ Changes with Apache Libcloud in development:
     - Fix a bug with Python 3 support in IBM SCE driver. ; LIBCLOUD-204
       [Sengor Kusturica, Hutson Betts]
 
+    - Make CloudStuck driver more robust and make it work if list_images() call
+      returns no images. ; LIBCLOUD-202
+      [Gabriel Reid]
+
   *) DNS:
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
       [Gary Wilson]
