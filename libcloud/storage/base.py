@@ -76,8 +76,8 @@ class Object(object):
     def get_cdn_url(self):
         return self.driver.get_object_cdn_url(obj=self)
 
-    def enable_cdn(self):
-        return self.driver.enable_object_cdn(obj=self)
+    def enable_cdn(self, **kwargs):
+        return self.driver.enable_object_cdn(obj=self, **kwargs)
 
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
@@ -122,8 +122,8 @@ class Container(object):
     def get_cdn_url(self):
         return self.driver.get_container_cdn_url(container=self)
 
-    def enable_cdn(self):
-        return self.driver.enable_container_cdn(container=self)
+    def enable_cdn(self, **kwargs):
+        return self.driver.enable_container_cdn(container=self, **kwargs)
 
     def get_object(self, object_name):
         return self.driver.get_object(container_name=self.name,

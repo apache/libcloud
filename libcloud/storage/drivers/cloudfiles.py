@@ -274,9 +274,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         container_cdn_url = self.get_container_cdn_url(container=obj.container)
         return '%s/%s' % (container_cdn_url, obj.name)
 
-    def enable_container_cdn(self, container):
+    def enable_container_cdn(self, container, ex_ttl=None):
         container_name = container.name
         headers = {'X-CDN-Enabled': 'True'}
+
+        if ex_ttl:
+            headers['X-TTL'] = ex_ttl
+
         response = self.connection.request('/%s' % (container_name),
                                            method='PUT',
                                            headers=headers,
