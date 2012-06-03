@@ -618,7 +618,7 @@ class NodeDriver(BaseDriver):
         return node
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
-                            ssh_interface='public_ips'):
+                            ssh_interface='public_ips', force_ipv4=True):
         """
         Block until node is fully booted and has an IP address assigned.
 
@@ -638,9 +638,23 @@ class NodeDriver(BaseDriver):
                                    'private_ips'.
         @type       ssh_interface: C{str}
 
+        @keyword    force_ipv4: Ignore ipv6 IP addresses (default is True).
+        @type       force_ipv4: C{bool}
+
         @return: C{(Node, ip_addresses)} tuple of Node instance and
                  list of ip_address on success.
         """
+        def is_supported(address):
+            """Return True for supported address"""
+            if force_ipv4 and not is_valid_ip_address(address=address,
+                                                      family=socket.AF_INET):
+                return False
+            return True
+
+        def filter_addresses(addresses):
+            """Return list of supported addresses"""
+            return [a for a in addresses if is_supported(a)]
+
         start = time.time()
         end = start + timeout
 
@@ -658,8 +672,8 @@ class NodeDriver(BaseDriver):
                                     driver=self)
 
             if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and \
-                getattr(nodes[0], ssh_interface)):
-                return (nodes[0], getattr(nodes[0], ssh_interface))
+                filter_addresses(getattr(nodes[0], ssh_interface))):
+                return (nodes[0], filter_addresses(getattr(nodes[0], ssh_interface)))
             else:
                 time.sleep(wait_period)
                 continue
@@ -766,6 +780,19 @@ def is_private_subnet(ip):
             return True
 
     return False
+
+
+def is_valid_ip_address(address, family=socket.AF_INET):
+    """
+    Check if the provided address is valid IPv4 or IPv6 adddress.
+
+    @return: C{bool} True if the provided address is valid.
+    """
+    try:
+        socket.inet_pton(family, address)
+    except socket.error:
+        return False
+    return True
 
 
 if __name__ == "__main__":
