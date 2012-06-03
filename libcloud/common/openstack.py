@@ -447,7 +447,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         return super(OpenStackBaseConnection, self).morph_action_hook(action)
 
     def request(self, **kwargs):
-        self._populate_hosts_and_request_paths()
         return super(OpenStackBaseConnection, self).request(**kwargs)
 
     def _populate_hosts_and_request_paths(self):

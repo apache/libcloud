@@ -105,9 +105,12 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(
              'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS',
              self.driver.connection.get_endpoint())
+
+        self.driver.connection.cdn_request = True
         self.assertEqual(
              'https://cdn2.clouddrive.com/v1/MossoCloudFS',
-             self.driver.connection.get_endpoint(cdn_request=True))
+             self.driver.connection.get_endpoint())
+        self.driver.connection.cdn_request = False
 
     def test_list_containers(self):
         CloudFilesMockHttp.type = 'EMPTY'
