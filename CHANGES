@@ -30,6 +30,10 @@ Changes with Apache Libcloud in development:
       returns no images. ; LIBCLOUD-202
       [Gabriel Reid]
 
+    - Add force_ipv4 argument to _wait_until_running and default it to True.
+      This will make Libcloud ignore IPv6 addresses when using deploy_node.
+      [Jay Doane, Tomaz muraus]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
@@ -46,6 +50,10 @@ Changes with Apache Libcloud in development:
       - Google Storage
       - Amazon S3
       [Tomaz Muraus]
+
+    - Fix a bug in the CloudFiles driver which prevented it to work with
+      accounts which use a non ORD endpoint. ; LIBCLOUD-205
+      [Geoff Greer]
 
 Changes with Apache Libcloud 0.10.1:
 

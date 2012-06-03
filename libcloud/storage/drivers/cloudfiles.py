@@ -113,23 +113,23 @@ class CloudFilesConnection(OpenStackBaseConnection):
         # First, we parse out both files and cdn endpoints
         # for each auth version
         if '2.0' in self._auth_version:
-            ep = self.service_catalog.get_endpoint(service_type='object-store',
-                                                   name='cloudFiles',
-                                                   region='ORD')
-            cdn_ep = self.service_catalog.get_endpoint(
+            eps = self.service_catalog.get_endpoints(service_type='object-store',
+                                                     name='cloudFiles')
+            cdn_eps = self.service_catalog.get_endpoints(
                     service_type='object-store',
-                    name='cloudFilesCDN',
-                    region='ORD')
+                    name='cloudFilesCDN')
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-            ep = self.service_catalog.get_endpoint(name='cloudFiles',
-                                                   region='ORD')
-            cdn_ep = self.service_catalog.get_endpoint(name='cloudFilesCDN',
-                                                       region='ORD')
+            eps = self.service_catalog.get_endpoints(name='cloudFiles')
+            cdn_eps = self.service_catalog.get_endpoints(name='cloudFilesCDN')
 
         # if this is a CDN request, return the cdn url instead
         if cdn_request:
-            ep = cdn_ep
+            eps = cdn_eps
 
+        if len(eps) == 0:
+            raise LibcloudError('Could not find specified endpoint')
+
+        ep = eps[0]
         if 'publicURL' in ep:
             return ep['publicURL']
         else:
