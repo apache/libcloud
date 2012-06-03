@@ -55,6 +55,13 @@ Changes with Apache Libcloud in development:
       accounts which use a non ORD endpoint. ; LIBCLOUD-205
       [Geoff Greer]
 
+    - Fix a bug in the enable_container_cdn method. ; LIBCLOUD-206
+      [Geoff Greer]
+
+    - Allow user to specify container CDN TTL when calling container.enable_cd()
+      using ex_ttl keyword argument in the CloudFiles driver.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:
