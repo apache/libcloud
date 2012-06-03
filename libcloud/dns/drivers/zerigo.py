@@ -103,7 +103,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         auth_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-        headers['Authorization'] = 'Basic %s' % (auth_b64)
+        headers['Authorization'] = 'Basic %s' % (auth_b64.decode('utf-8'))
         return headers
 
     def request(self, action, params=None, data='', headers=None,

@@ -2,7 +2,8 @@
 
 Changes with Apache Libcloud in development:
 
-  *) Compute:
+  *) Compute
+
     - Add a timeout of 10 seconds to OpenStackAuthConnection class.
       ; LIBCLOUD-199
       [Chris Gilmer]
@@ -11,16 +12,40 @@ Changes with Apache Libcloud in development:
       when we immediately can't connect to a server. ; LIBCLOUD-197
       [Jay Doane]
 
-    - Fix a bug with Python 3 support in IBM SCE driver. ; LIBCLOUD-204
-      [Sengor Kusturica, Hutson Betts]
+    - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
+      - IBM SCE,
+      - CloudStack
+      - CloudSigma
+      - OpenNebula
+      - VpsNet
+      - EC2
+      - ElasticStack
+      - vCloud
+      - OpSource
+      - Slicehost
+      - Joyent
+      [Sengor Kusturica, Hutson Betts, Tomaz Muraus]
 
     - Make CloudStuck driver more robust and make it work if list_images() call
       returns no images. ; LIBCLOUD-202
       [Gabriel Reid]
 
-  *) DNS:
+  *) DNS
+
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
       [Gary Wilson]
+
+    - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
+      - Zerigo
+      [Tomaz Muraus]
+
+  *) Storage
+
+    - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
+      - Atmos
+      - Google Storage
+      - Amazon S3
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.10.1:
 

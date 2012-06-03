@@ -263,7 +263,8 @@ class VCloudConnection(ConnectionUserAndKey):
         return {
             'Authorization':
                 "Basic %s"
-                % base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
+                % base64.b64encode(b('%s:%s' % (self.user_id,
+                    self.key))).decode('utf-8'),
             'Content-Length': 0,
             'Accept': 'application/*+xml'
         }

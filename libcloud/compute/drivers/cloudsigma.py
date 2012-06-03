@@ -195,7 +195,8 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
         headers['Content-Type'] = 'application/json'
 
         headers['Authorization'] = 'Basic %s' % (base64.b64encode(b('%s:%s' %
-                                                 (self.user_id, self.key))))
+                                                 (self.user_id,
+                                                     self.key))).decode('utf-8'))
 
         return headers
 

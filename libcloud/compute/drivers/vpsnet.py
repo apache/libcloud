@@ -71,7 +71,7 @@ class VPSNetConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-        headers['Authorization'] = 'Basic %s' % (user_b64)
+        headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
 
 class VPSNetNodeDriver(NodeDriver):

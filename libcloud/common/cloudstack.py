@@ -55,7 +55,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         return params
 
     def pre_connect_hook(self, params, headers):
-        params['signature'] = self._make_signature(params)
+        params['signature'] = self._make_signature(params).decode('utf-8')
 
         return params, headers
 

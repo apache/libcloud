@@ -69,7 +69,7 @@ class JoyentConnection(ConnectionUserAndKey):
         headers['X-Api-Version'] = API_VERSION
 
         user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-        headers['Authorization'] = 'Basic %s' % (user_b64)
+        headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
 
 

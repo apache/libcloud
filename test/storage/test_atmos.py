@@ -372,7 +372,8 @@ class AtmosTests(unittest.TestCase):
             c.driver = d
             headers = c.add_default_headers(headers)
             headers['Date'] = headers['x-emc-date'] = test_date
-            self.assertEqual(c._calculate_signature({}, headers), b(expected))
+            self.assertEqual(c._calculate_signature({}, headers),
+                             b(expected).decode('utf-8'))
 
 class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')

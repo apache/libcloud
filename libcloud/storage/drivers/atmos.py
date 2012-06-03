@@ -108,7 +108,7 @@ class AtmosConnection(ConnectionUserAndKey):
         signature = '\n'.join(signature)
         key = base64.b64decode(self.key)
         signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
-        return base64.b64encode(b(signature))
+        return base64.b64encode(b(signature)).decode('utf-8')
 
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection

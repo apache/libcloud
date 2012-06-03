@@ -107,7 +107,7 @@ class Route53Connection(ConnectionUserAndKey):
             hmac.new(b(secret_key), b(time_string), digestmod=sha1).digest()
         )
 
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 
 class Route53DNSDriver(DNSDriver):

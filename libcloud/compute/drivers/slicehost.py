@@ -52,7 +52,8 @@ class SlicehostConnection(ConnectionKey):
 
     def add_default_headers(self, headers):
         headers['Authorization'] = ('Basic %s'
-                              % (base64.b64encode(b('%s:' % self.key))))
+                              % (base64.b64encode(b('%s:' %
+                                  self.key))).decode('utf-8'))
         return headers
 
 

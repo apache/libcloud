@@ -257,7 +257,7 @@ class EC2Connection(ConnectionUserAndKey):
         b64_hmac = base64.b64encode(
             hmac.new(b(secret_key), b(string_to_sign), digestmod=sha256).digest()
         )
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 
 class ExEC2AvailabilityZone(object):

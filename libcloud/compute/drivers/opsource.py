@@ -136,7 +136,8 @@ class OpsourceConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
-                                                (self.user_id, self.key))))
+                                                (self.user_id,
+                                                 self.key))).decode('utf-8'))
         return headers
 
     def request(self, action, params=None, data='',

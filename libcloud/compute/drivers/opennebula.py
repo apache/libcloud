@@ -168,7 +168,8 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         """
         pass_sha1 = hashlib.sha1(b(self.key)).hexdigest()
         headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
-                                                (self.user_id, pass_sha1))))
+                                                (self.user_id,
+                                                 pass_sha1))).decode('utf-8'))
         return headers
 
 
