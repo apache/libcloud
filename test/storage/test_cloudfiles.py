@@ -575,6 +575,12 @@ class CloudFilesTests(unittest.TestCase):
         finally:
             self.driver.connection.request = _request
 
+    def test_ex_enable_static_website(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        result = self.driver.ex_enable_static_website(container=container,
+                                                      index_file='index.html')
+        self.assertTrue(result)
+
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
 
@@ -744,6 +750,11 @@ class CloudFilesMockHttp(StorageMockHttp):
             body = self.fixtures.load('list_container_objects_empty.json')
             headers = self.base_headers
             status_code = httplib.NO_CONTENT
+        elif method == 'POST':
+            # test_ex_enable_static_website
+            body = ''
+            headers = self.base_headers
+            status_code = httplib.ACCEPTED
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_NOT_FOUND(
