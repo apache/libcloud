@@ -286,10 +286,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                            headers=headers,
                                            cdn_request=True)
 
-        if response.status in [ httplib.CREATED, httplib.ACCEPTED ]:
-            return True
-
-        return False
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
     def ex_enable_static_website(self, container, index_file='index.html'):
         """
