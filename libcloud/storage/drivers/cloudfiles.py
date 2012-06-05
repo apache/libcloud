@@ -291,6 +291,24 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return False
 
+    def ex_enable_static_website(self, container, index_file='index.html'):
+        """
+        Enable serving a static website.
+
+        @param index_file: Name of the object which becomes an index page for
+        every sub-directory in this container.
+        @type index_file: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Index': index_file}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=True)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
     def create_container(self, container_name):
         container_name = self._clean_container_name(container_name)
         response = self.connection.request(
