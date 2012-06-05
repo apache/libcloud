@@ -101,6 +101,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.openstack', 'OpenStackNodeDriver'),
     Provider.NINEFOLD:
         ('libcloud.compute.drivers.ninefold', 'NinefoldNodeDriver'),
+    Provider.VCLOUD:
+        ('libcloud.compute.drivers.vcloud', 'VCloudNodeDriver'),
     Provider.TERREMARK:
         ('libcloud.compute.drivers.vcloud', 'TerremarkDriver'),
     Provider.CLOUDSTACK:
