@@ -973,6 +973,10 @@ class SavvisNodeDriver(VCloudNodeDriver):
         task = res.object.findall(fixxpath(res.object, "Task"))[0]
         return task
 
+    def get_vpdc_info(self, vpdc):
+        self.connection.check_org()
+        return Vdc.get_vdc(vpdc, self.connection, self.org)
+
     def _to_node(self, name, elm):
         state = elm.get('status')
         public_ips = None
