@@ -730,6 +730,21 @@ class SavvisConnection(VCloudConnection):
     host = "api.savvis.net"
     login_url = '/vpdc/v1.0/login'
 
+
+    def request(self, *args, **kwargs):
+        retry = 3
+        while retry > 0:
+            try:
+                self._get_auth_token()
+                return super(VCloudConnection, self).request(*args, **kwargs)
+            except ParseError as err:
+                if 'line 1, column 0' in err.msg:
+                    #Indicates that the Savvis servers are overloaded atm. Retry again
+                    retry -= 1
+                    time.sleep(60)
+                else:
+                    raise err
+
     def _get_auth_headers(self):
         """Some providers need different headers than others"""
         return {
@@ -747,7 +762,7 @@ class AddVAppXML(object):
     OS_TYPES = {
         '77' : OSType('77', 'Windows', 'winLonghorn64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
         '79' : OSType('79', 'Linux', 'rhel5Guest', 'RedHat Enterprise Linux 5.x 32-bit', [25, 25], 'i686'),
-        '80' : OSType('80', 'Linux', 'rhel5_64Guest', 'RedHat Enterprise Linux 5.x 32-bit', [50, 25], 'x86_64'),
+        '80' : OSType('80', 'Linux', 'rhel5_64Guest', 'RedHat Enterprise Linux 5.x 32-bit', [25, 25], 'x86_64'),
         '103' : OSType('103', 'Windows', 'Windows7Server64Guest', 'MS Windows Server 2008 (Enterprise 64-bit)', [50, 25], 'x86_64'),
     }
 
@@ -1138,7 +1153,7 @@ class SavvisNodeDriver(VCloudNodeDriver):
             error = task.findall(fixxpath(task, "Error"))
             raise Exception("Failed to Create Server : Error %s" %error[0].get('message'))
 
-        self._wait_for_task_completion(task.get('href'),timeout=7200)
+        self._wait_for_task_completion(task.get('href'),timeout=14400)
 
         #If task succeeds, fetch vapp information
         task = self._fetch_task_info(task.get('href'))
