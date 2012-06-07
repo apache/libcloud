@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Joyent Driver
+"""
 
 import base64
 
@@ -47,6 +50,10 @@ DEFAULT_LOCATION = LOCATIONS[0]
 
 
 class JoyentResponse(JsonResponse):
+    """
+    Response class for Joyent
+    """
+
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                              httplib.NO_CONTENT]
 
@@ -61,6 +68,10 @@ class JoyentResponse(JsonResponse):
 
 
 class JoyentConnection(ConnectionUserAndKey):
+    """
+    Connection class for Joyent
+    """
+
     responseCls = JoyentResponse
 
     def add_default_headers(self, headers):
@@ -74,6 +85,10 @@ class JoyentConnection(ConnectionUserAndKey):
 
 
 class JoyentNodeDriver(NodeDriver):
+    """
+    NodeDriver class for Joyent
+    """
+
     type = Provider.JOYENT
     name = 'Joyent'
     connectionCls = JoyentConnection
