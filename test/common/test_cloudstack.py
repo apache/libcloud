@@ -21,6 +21,7 @@ from libcloud.common.types import MalformedResponseError
 
 from test import MockHttpTestCase
 
+
 async_delay = 0
 
 class CloudStackMockDriver(object):
@@ -63,7 +64,9 @@ class CloudStackCommonTest(unittest.TestCase):
         self.driver.path = '/async/fail'
         try:
             self.connection._async_request('fake')
-        except:
+        except Exception:
+            e = sys.exc_info()[1]
+            self.assertEquals(CloudStackMockHttp.ERROR_TEXT, str(e))
             return
         self.assertFalse(True)
 
@@ -109,6 +112,9 @@ class CloudStackCommonTest(unittest.TestCase):
             self.assertEqual(connection._make_signature(params), b(case[1]))
 
 class CloudStackMockHttp(MockHttpTestCase):
+
+    ERROR_TEXT = 'ERROR TEXT'
+
     def _response(self, status, result, response):
         return (status, json.dumps(result), result, response)
 
@@ -156,7 +162,7 @@ class CloudStackMockHttp(MockHttpTestCase):
             result = {
                 query['command'].lower() + 'response': {
                     'jobstatus': 2,
-                    'jobresult': {'fake': 'failresult'}
+                    'jobresult': {'errortext': self.ERROR_TEXT}
                 }
             }
         else:

@@ -34,6 +34,10 @@ Changes with Apache Libcloud in development:
       This will make Libcloud ignore IPv6 addresses when using deploy_node.
       [Jay Doane, Tomaz muraus]
 
+    - Include error text if a CloudStack async job returns an error code. ;
+      LIBCLOUD-207
+      [Gabriel Reid]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203

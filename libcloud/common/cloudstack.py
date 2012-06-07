@@ -55,7 +55,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         return params
 
     def pre_connect_hook(self, params, headers):
-        params['signature'] = self._make_signature(params).decode('utf-8')
+        params['signature'] = self._make_signature(params)
 
         return params, headers
 
@@ -83,7 +83,8 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         status = response.get('jobstatus', self.ASYNC_PENDING)
 
         if status == self.ASYNC_FAILURE:
-            raise Exception(status)
+            msg = response.get('jobresult', {}).get('errortext', status)
+            raise Exception(msg)
 
         return status == self.ASYNC_SUCCESS
 
