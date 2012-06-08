@@ -1,0 +1,4 @@
+--- /dev/null
++++ test/compute/fixtures/cloudstack/attachVolume_default.json
+@@ -0,0 +1 @@
++{ "attachvolumeresponse" : {"jobid":"attachvolumejob"} }

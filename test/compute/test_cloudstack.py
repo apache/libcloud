@@ -16,7 +16,7 @@ except AttributeError:
     parse_qsl = cgi.parse_qsl
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
-from libcloud.compute.types import DeploymentError
+from libcloud.compute.types import DeploymentError, LibcloudError
 
 from test import MockHttpTestCase
 from test.compute import TestCaseMixin
@@ -63,6 +63,61 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         images = self.driver.list_images()
         self.assertEquals(0, len(images))
+
+    def test_ex_list_disk_offerings(self):
+        diskOfferings = self.driver.ex_list_disk_offerings()
+        self.assertEquals(1, len(diskOfferings))
+
+        diskOffering, = diskOfferings
+
+        self.assertEquals('Disk offer 1', diskOffering.name)
+        self.assertEquals(10, diskOffering.size)
+
+    def test_ex_create_volume(self):
+        volumeName = 'vol-0'
+        location = self.driver.list_locations()[0]
+
+        volume = self.driver.ex_create_volume(
+                                volumeName, location, size=10)
+
+        self.assertEquals(volumeName, volume.name)
+
+    def test_ex_create_volume_no_noncustomized_offering_with_size(self):
+        """If the sizes of disk offerings are not configurable and there
+        are no disk offerings with the requested size, an exception should
+        be thrown."""
+
+        location = self.driver.list_locations()[0]
+
+        self.assertRaises(
+                LibcloudError,
+                self.driver.ex_create_volume,
+                    'vol-0', location, 11)
+
+    def test_ex_create_volume_with_custom_disk_size_offering(self):
+
+        CloudStackMockHttp.fixture_tag = 'withcustomdisksize'
+
+        volumeName = 'vol-0'
+        location = self.driver.list_locations()[0]
+
+        volume = self.driver.ex_create_volume(
+                                volumeName, location, size=11)
+
+        self.assertEquals(volumeName, volume.name)
+
+    def test_ex_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volumeName = 'vol-0'
+        location = self.driver.list_locations()[0]
+
+        volume = self.driver.ex_create_volume(
+                                volumeName, location, 10)
+
+        attachReturnVal = self.driver.ex_attach_volume(volume, node)
+
+        self.assertTrue(attachReturnVal)
+
 
 class CloudStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('cloudstack')

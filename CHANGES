@@ -38,6 +38,10 @@ Changes with Apache Libcloud in development:
       LIBCLOUD-207
       [Gabriel Reid]
 
+    - Add extenstion methods for block storage volume management to the
+      CloudStack driver. ; LIBCLOUD-208
+      [Gabriel Reid]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
