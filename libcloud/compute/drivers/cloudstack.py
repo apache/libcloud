@@ -78,6 +78,31 @@ class CloudStackForwardingRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
+class CloudStackDiskOffering(object):
+    """A disk offering within CloudStack."""
+
+    def __init__(self, id, name, size, customizable):
+        self.id = id
+        self.name = name
+        self.size = size
+        self.customizable = customizable
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
+
+
+class CloudStackVolume(object):
+    """A storage volume within CloudStack."""
+
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
+
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
 
@@ -200,6 +225,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   0, self))
         return sizes
 
+
     def create_node(self, name, size, image, location=None, **kwargs):
         extra_args = {}
         if location is None:
@@ -246,6 +272,58 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def reboot_node(self, node):
         self._async_request('rebootVirtualMachine', id=node.id)
         return True
+
+    def ex_list_disk_offerings(self):
+        """Fetch a list of all available disk offerings."""
+
+        diskOfferings = []
+
+        diskOfferResponse = self._sync_request('listDiskOfferings')
+        for diskOfferDict in diskOfferResponse.get('diskoffering', ()):
+            diskOfferings.append(
+                    CloudStackDiskOffering(
+                        id=diskOfferDict['id'],
+                        name=diskOfferDict['name'],
+                        size=diskOfferDict['disksize'],
+                        customizable=diskOfferDict['iscustomized']))
+
+        return diskOfferings
+
+    def ex_create_volume(self, name, location, size):
+        """Create a new detached storage volume."""
+
+        for diskOffering in self.ex_list_disk_offerings():
+            if diskOffering.size == size or diskOffering.customizable:
+                break
+        else:
+            raise LibcloudError(
+                    "Disk offering with size=%s not found" % size)
+
+        extraParams = dict()
+        if diskOffering.customizable:
+            extraParams['size'] = size
+
+        requestResult = self._async_request('createVolume', 
+                                name=name,
+                                diskOfferingId=diskOffering.id,
+                                zoneId=location.id,
+                                **extraParams)
+
+        volumeResponse = requestResult['volume']
+
+        return CloudStackVolume(
+                            id = volumeResponse['id'],
+                            name = volumeResponse['name'])
+
+
+    def ex_attach_volume(self, node, volume):
+        """Attach a storage volume to a node"""
+
+        self._async_request('attachVolume', 
+                                id=volume.id, 
+                                virtualMachineId=node.id)
+        return True
+
 
     def ex_allocate_public_ip(self, node):
         "Allocate a public IP and bind it to a node."
