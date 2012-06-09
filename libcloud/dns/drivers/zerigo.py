@@ -140,6 +140,7 @@ class ZerigoDNSDriver(DNSDriver):
         RecordType.PTR: 'PTR',
         RecordType.SPF: 'SPF',
         RecordType.GEO: 'GEO',
+        RecordType.URL: 'URL',
     }
 
     def list_zones(self):

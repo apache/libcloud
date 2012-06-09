@@ -51,6 +51,9 @@ Changes with Apache Libcloud in development:
       - Zerigo
       [Tomaz Muraus]
 
+    - Add support for URL RecordType to Zerigo driver. ; LIBCLOUD-209
+      [Bojan Mihelac]
+
   *) Storage
 
     - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
