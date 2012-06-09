@@ -302,7 +302,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         response = self.connection.request('/%s' % (container_name),
                                            method='POST',
                                            headers=headers,
-                                           cdn_request=True)
+                                           cdn_request=False)
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
