@@ -288,42 +288,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
-    def ex_enable_static_website(self, container, index_file='index.html'):
-        """
-        Enable serving a static website.
-
-        @param index_file: Name of the object which becomes an index page for
-        every sub-directory in this container.
-        @type index_file: C{str}
-        """
-        container_name = container.name
-        headers = {'X-Container-Meta-Web-Index': index_file}
-
-        response = self.connection.request('/%s' % (container_name),
-                                           method='POST',
-                                           headers=headers,
-                                           cdn_request=False)
-
-        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
-
-    def ex_set_error_page(self, container, file_name='error.html'):
-        """
-        Set a custom error page which is displayed if file is not found and
-        serving of a static website is enabled.
-
-        @param file_name: Name of the object which becomes the error page.
-        @type file_name: C{str}
-        """
-        container_name = container.name
-        headers = {'X-Container-Meta-Web-Error': file_name}
-
-        response = self.connection.request('/%s' % (container_name),
-                                           method='POST',
-                                           headers=headers,
-                                           cdn_request=False)
-
-        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
-
     def create_container(self, container_name):
         container_name = self._clean_container_name(container_name)
         response = self.connection.request(
@@ -471,6 +435,42 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                             object_name=object_name,
                                             extra=extra,
                                             verify_hash=verify_hash)
+
+    def ex_enable_static_website(self, container, index_file='index.html'):
+        """
+        Enable serving a static website.
+
+        @param index_file: Name of the object which becomes an index page for
+        every sub-directory in this container.
+        @type index_file: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Index': index_file}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
+    def ex_set_error_page(self, container, file_name='error.html'):
+        """
+        Set a custom error page which is displayed if file is not found and
+        serving of a static website is enabled.
+
+        @param file_name: Name of the object which becomes the error page.
+        @type file_name: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Error': file_name}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
     def _upload_object_part(self, container, object_name, part_number,
                             iterator, verify_hash=True):

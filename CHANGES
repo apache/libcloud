@@ -73,6 +73,10 @@ Changes with Apache Libcloud in development:
       using ex_ttl keyword argument in the CloudFiles driver.
       [Tomaz Muraus]
 
+    - Add ex_enable_static_website and ex_set_error_page method to the
+      CloudFiles driver.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:
