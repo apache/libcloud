@@ -581,6 +581,12 @@ class CloudFilesTests(unittest.TestCase):
                                                       index_file='index.html')
         self.assertTrue(result)
 
+    def test_ex_set_error_page(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        result = self.driver.ex_set_error_page(container=container,
+                                              file_name='error.html')
+        self.assertTrue(result)
+
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
 

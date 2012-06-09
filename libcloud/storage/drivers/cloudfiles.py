@@ -306,6 +306,24 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
+    def ex_set_error_page(self, container, file_name='error.html'):
+        """
+        Set a custom error page which is displayed if file is not found and
+        serving of a static website is enabled.
+
+        @param file_name: Name of the object which becomes the error page.
+        @type file_name: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Error': file_name}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
     def create_container(self, container_name):
         container_name = self._clean_container_name(container_name)
         response = self.connection.request(
