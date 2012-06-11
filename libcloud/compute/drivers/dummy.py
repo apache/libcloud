@@ -67,6 +67,9 @@ class DummyNodeDriver(NodeDriver):
     type = Provider.DUMMY
 
     def __init__(self, creds):
+        """
+        @requires: creds
+        """
         self.creds = creds
         try:
             num = int(creds)

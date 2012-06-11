@@ -125,6 +125,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, *args, **kwargs):
+        """
+        @requires: key, secret, host or path
+        """
         host = host if host else self.host
 
         if path is not None:

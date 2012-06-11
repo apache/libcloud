@@ -124,7 +124,7 @@ class Response(object):
 
         body = response.read()
 
-        if encoding in  ['zlib', 'deflate']:
+        if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
@@ -138,6 +138,7 @@ class JsonResponse(Response):
     """
     A Base JSON Response class to derive from.
     """
+
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -158,6 +159,7 @@ class XmlResponse(Response):
     """
     A Base XML Response class to derive from.
     """
+
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -254,7 +256,7 @@ class LoggingConnection():
 
         encoding = headers.get('content-encoding', None)
 
-        if encoding in  ['zlib', 'deflate']:
+        if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)
         elif encoding in ['gzip', 'x-gzip']:
             body = decompress_data('gzip', body)
@@ -802,7 +804,9 @@ class BaseDriver(object):
                                  which support multiple API versions.
         @type       api_version: str
 
+        @requires: key, secret
         """
+
         self.key = key
         self.secret = secret
         self.secure = secure
