@@ -128,6 +128,9 @@ class VCLNodeDriver(NodeDriver):
 
     def __init__(self, key, secret, secure=True, host=None, port=None, *args,
                  **kwargs):
+        """
+        @requires: key, secret, host
+        """
         if not host:
             raise Exception('When instantiating VCL driver directly ' +
                             'you also need to provide host')

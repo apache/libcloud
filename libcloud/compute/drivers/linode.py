@@ -78,7 +78,10 @@ class LinodeNodeDriver(NodeDriver):
         """Instantiate the driver with the given API key
 
         @keyword key: the API key to use
-        @type key: C{str}"""
+        @type key: C{str}
+
+        @requires: key
+        """
         self.datacenter = None
         NodeDriver.__init__(self, key)
 

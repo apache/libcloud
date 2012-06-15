@@ -105,6 +105,9 @@ class BaseGandiDriver(object):
     name = 'Gandi'
 
     def __init__(self, key, secret=None, secure=False):
+        """
+        @requires: key, secret
+        """
         self.key = key
         self.secret = secret
         self.connection = self.connectionCls(key, secret)

@@ -46,6 +46,9 @@ class LibvirtNodeDriver(NodeDriver):
     }
 
     def __init__(self, uri):
+        """
+        @requires: uri
+        """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
                                'package')

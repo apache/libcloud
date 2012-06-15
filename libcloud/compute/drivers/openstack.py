@@ -174,6 +174,9 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
                  api_version=DEFAULT_API_VERSION, **kwargs):
+        """
+        @requires: key, secret
+        """
         if cls is OpenStackNodeDriver:
             if api_version == '1.0':
                 cls = OpenStack_1_0_NodeDriver
@@ -789,6 +792,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     features = {"create_node": ["generates_password"]}
 
     def __init__(self, *args, **kwargs):
+
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
                                                     None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)

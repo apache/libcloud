@@ -1217,6 +1217,9 @@ class EucNodeDriver(EC2NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
+        """
+        @requires: key, secret
+        """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
             path = "/services/Eucalyptus"

@@ -96,6 +96,9 @@ class JoyentNodeDriver(NodeDriver):
     features = {'create_node': ['generates_password']}
 
     def __init__(self, *args, **kwargs):
+        """
+        @requires: key, secret
+        """
         if 'location' in kwargs:
             if kwargs['location'] not in LOCATIONS:
                 msg = 'Invalid location: "%s". Valid locations: %s'

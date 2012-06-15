@@ -55,6 +55,9 @@ class BrightboxNodeDriver(NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=API_VERSION, **kwargs):
+        """
+        @requires: key, secret
+        """
         super(BrightboxNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure,
                                                   host=host, port=port,

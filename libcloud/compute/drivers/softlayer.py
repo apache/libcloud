@@ -245,6 +245,9 @@ class SoftLayerNodeDriver(NodeDriver):
     features = {"create_node": ["generates_password"]}
 
     def __init__(self, key, secret=None, secure=False):
+        """
+        @requires: key, secret
+        """
         self.key = key
         self.secret = secret
         self.connection = self.connectionCls(key, secret)
