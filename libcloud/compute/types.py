@@ -65,6 +65,7 @@ class Provider(object):
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
     @cvar VCL: VCL driver
+    @cvar KTUCLOUD: kt ucloud driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -115,6 +116,7 @@ class Provider(object):
     ELASTICHOSTS_CA1 = 44
     JOYENT = 45
     VCL = 46
+    KTUCLOUD=47
 
 
 class NodeState(object):

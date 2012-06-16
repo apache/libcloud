@@ -42,6 +42,10 @@ Changes with Apache Libcloud in development:
       CloudStack driver. ; LIBCLOUD-208
       [Gabriel Reid]
 
+    - New driver for KT UCloud (http://home.ucloud.olleh.com/main.kt) based on
+      CloudStack driver.
+      [DaeMyung Kang]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
