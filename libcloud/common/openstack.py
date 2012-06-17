@@ -140,9 +140,12 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             headers = resp.headers
             # emulate the auth 1.1 URL list
             self.urls = {}
-            self.urls['cloudServers'] = [{'publicURL': headers.get('x-server-management-url', None)}]
-            self.urls['cloudFilesCDN'] = [{'publicURL': headers.get('x-cdn-management-url', None)}]
-            self.urls['cloudFiles'] = [{'publicURL': headers.get('x-storage-url', None)}]
+            self.urls['cloudServers'] = \
+                [{'publicURL': headers.get('x-server-management-url', None)}]
+            self.urls['cloudFilesCDN'] = \
+                [{'publicURL': headers.get('x-cdn-management-url', None)}]
+            self.urls['cloudFiles'] = \
+                [{'publicURL': headers.get('x-storage-url', None)}]
             self.auth_token = headers.get('x-auth-token', None)
 
             if not self.auth_token:
@@ -181,9 +184,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
-        # https://github.com/openstack/keystone/tree/master/keystone/content/service
-        data = {'auth': 
-                {'RAX-KSKEY:apiKeyCredentials': 
+        # http://s.apache.org/oAi
+        data = {'auth':
+                {'RAX-KSKEY:apiKeyCredentials':
                  {'username': self.user_id, 'apiKey': self.key}}}
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
@@ -193,9 +196,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_2_0_with_password(self):
         # Password based authentication is the only 'core' authentication
         # method in Keystone at this time.
-        # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
-        data = {'auth': 
-                {'passwordCredentials': 
+        # 'keystone' - http://s.apache.org/e8h
+        data = {'auth': \
+                {'passwordCredentials': \
                  {'username': self.user_id, 'password': self.key}}}
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
@@ -263,7 +266,8 @@ class OpenStackServiceCatalog(object):
         eps = []
 
         if '2.0' in self._auth_version:
-            endpoints = self._service_catalog.get(service_type, {}).get(name, {})
+            endpoints = self._service_catalog.get(service_type, {}) \
+                                             .get(name, {})
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             endpoints = self._service_catalog.get(name, {})
 
@@ -275,7 +279,8 @@ class OpenStackServiceCatalog(object):
     def get_endpoint(self, service_type=None, name=None, region=None):
 
         if '2.0' in self._auth_version:
-            endpoint = self._service_catalog.get(service_type, {}).get(name, {}).get(region, [])
+            endpoint = self._service_catalog.get(service_type, {}) \
+                                            .get(name, {}).get(region, [])
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             endpoint = self._service_catalog.get(name, {}).get(region, [])
 
@@ -300,9 +305,7 @@ class OpenStackServiceCatalog(object):
                 self._service_catalog[service][region].append(endpoint)
 
     def _parse_auth_v2(self, service_catalog):
-
         for service in service_catalog:
-
             service_type = service['type']
             service_name = service.get('name', None)
 
@@ -314,10 +317,12 @@ class OpenStackServiceCatalog(object):
 
             for endpoint in service.get('endpoints', []):
                 region = endpoint.get('region', None)
-                if region not in self._service_catalog[service_type][service_name]:
-                    self._service_catalog[service_type][service_name][region] = []
 
-                self._service_catalog[service_type][service_name][region].append(endpoint)
+                catalog = self._service_catalog[service_type][service_name]
+                if region not in catalog:
+                    catalog[region] = []
+
+                catalog[region].append(endpoint)
 
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
@@ -359,15 +364,15 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     is provided.
     @type ex_tenant_name: C{string}
 
-    @param ex_force_service_type: Service type to use when selecting an 
+    @param ex_force_service_type: Service type to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_type: C{string}
 
-    @param ex_force_service_name: Service name to use when selecting an 
+    @param ex_force_service_name: Service name to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_name: C{string}
 
-    @param ex_force_service_region: Region to use when selecting an 
+    @param ex_force_service_region: Region to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_region: C{string}
     """
@@ -477,10 +482,13 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_token_expires = osa.auth_token_expires
 
             # pull out and parse the service catalog
-            self.service_catalog = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=self._auth_version)
+            self.service_catalog = OpenStackServiceCatalog(osa.urls,
+                    ex_force_auth_version=self._auth_version)
 
         # Set up connection info
-        (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._ex_force_base_url or self.get_endpoint())
+        url = self._ex_force_base_url or self.get_endpoint()
+        (self.host, self.port, self.secure, self.request_path) = \
+                self._tuple_from_url(url)
 
     def _add_cache_busting_to_params(self, params):
         cache_busting_number = binascii.hexlify(os.urandom(8))
@@ -501,7 +509,8 @@ class OpenStackDriverMixin(object):
         self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
         self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
         self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
-        self._ex_force_service_region = kwargs.get('ex_force_service_region', None)
+        self._ex_force_service_region = kwargs.get('ex_force_service_region',
+                                                   None)
 
     def openstack_connection_kwargs(self):
         rv = {}

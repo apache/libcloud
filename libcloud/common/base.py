@@ -655,8 +655,8 @@ class PollingConnection(Connection):
 
         - Returned 'job_id' is then used to construct a URL which is used for
           retrieving job status. Constructed URL is then periodically polled
-          until the response indicates that the job has completed or the timeout
-          of 'self.timeout' seconds has been reached.
+          until the response indicates that the job has completed or the
+          timeout of 'self.timeout' seconds has been reached.
 
         @type action: C{str}
         @param action: A path
@@ -755,7 +755,8 @@ class ConnectionKey(Connection):
         passed value.
         """
         super(ConnectionKey, self).__init__(secure=secure, host=host,
-                                            port=port, url=url, timeout=timeout)
+                                            port=port, url=url,
+                                            timeout=timeout)
         self.key = key
 
 
@@ -825,7 +826,8 @@ class BaseDriver(object):
 
         self.api_version = api_version
 
-        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
+        self.connection = self.connectionCls(*args,
+            **self._ex_connection_class_kwargs())
 
         self.connection.driver = self
         self.connection.connect()

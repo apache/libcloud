@@ -44,7 +44,8 @@ class GoGridResponse(JsonResponse):
         if self.status == 403:
             raise InvalidCredsError('Invalid credentials', self.driver)
         if self.status == 401:
-            raise InvalidCredsError('API Key has insufficient rights', self.driver)
+            raise InvalidCredsError('API Key has insufficient rights',
+                self.driver)
         if not self.body:
             return None
         try:
