@@ -98,7 +98,8 @@ class UuidMixin(object):
         same UUID!
         """
         if not self._uuid:
-            self._uuid = hashlib.sha1(b('%s:%d' % (self.id, self.driver.type))).hexdigest()
+            self._uuid = hashlib.sha1(b('%s:%d' %
+                                      (self.id, self.driver.type))).hexdigest()
 
         return self._uuid
 
@@ -166,8 +167,8 @@ class Node(UuidMixin):
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
-    # Note: getters and setters bellow are here only for backward compatibility.
-    # They will be removed in the next release.
+    # Note: getters and setters bellow are here only for backward
+    # compatibility. They will be removed in the next release.
 
     def _set_public_ips(self, value):
         self.public_ips = value
@@ -362,6 +363,7 @@ class NodeAuthPassword(object):
 
     def __repr__(self):
         return '<NodeAuthPassword>'
+
 
 class StorageVolume(UuidMixin):
     """
@@ -624,7 +626,8 @@ class NodeDriver(BaseDriver):
                     'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
-                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(os.urandom(16)))
+                value = os.urandom(16)
+                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(value))
 
             if 'ssh_key' not in kwargs:
                 password = kwargs['auth'].password
@@ -681,8 +684,9 @@ class NodeDriver(BaseDriver):
         @keyword    name: Name of the volume to be created
         @type       name: C{str}
 
-        @keyword    location: Which data center to create a volume in. If empty,
-                              undefined behavoir will be selected. (optional)
+        @keyword    location: Which data center to create a volume in. If
+                               empty, undefined behavoir will be selected.
+                               (optional)
         @type       location: L{NodeLocation}
 
         @keyword    snapshot:  Name of snapshot from which to create the new
@@ -793,7 +797,8 @@ class NodeDriver(BaseDriver):
 
             if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and \
                 filter_addresses(getattr(nodes[0], ssh_interface))):
-                return (nodes[0], filter_addresses(getattr(nodes[0], ssh_interface)))
+                return (nodes[0], filter_addresses(getattr(nodes[0],
+                                                   ssh_interface)))
             else:
                 time.sleep(wait_period)
                 continue
