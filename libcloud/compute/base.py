@@ -98,7 +98,8 @@ class UuidMixin(object):
         same UUID!
         """
         if not self._uuid:
-            self._uuid = hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
+            self._uuid = hashlib.sha1(b('%s:%d' % (self.id, self.driver.type))).hexdigest()
+
         return self._uuid
 
     @property
@@ -362,6 +363,56 @@ class NodeAuthPassword(object):
     def __repr__(self):
         return '<NodeAuthPassword>'
 
+class StorageVolume(UuidMixin):
+    """
+    A base StorageVolume class to derive from.
+    """
+
+    def __init__(self, id, name, size, driver, extra=None):
+        self.id = id
+        self.name = name
+        self.size = size
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def attach(self, node, device=None):
+        """
+        Attach this volume to a node.
+
+        @param      node: Node to attach volume to
+        @type       node: L{Node}
+
+        @param      device: Where the device is exposed,
+                            e.g. '/dev/sdb (optional)
+        @type       device: C{str}
+
+        @returns C{bool}
+        """
+
+        return self.driver.attach_volume(node=node, volume=self, device=device)
+
+    def detach(self):
+        """
+        Detach this volume from its node
+
+        @returns C{bool}
+        """
+
+        return self.driver.detach_volume(volume=self)
+
+    def destroy(self):
+        """Destroy this storage volume.
+
+        @returns C{bool}
+        """
+
+        return self.driver.destroy_volume(volume=self)
+
+    def __repr__(self):
+        return '<StorageVolume id=%s size=%s driver=%s>' % (
+                        self.id, self.size, self.driver.name)
+
 
 class NodeDriver(BaseDriver):
     """
@@ -619,6 +670,72 @@ class NodeDriver(BaseDriver):
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
         return node
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a new volume.
+
+        @param      size: Size of volume in gigabytes (required)
+        @type       size: C{int}
+
+        @keyword    name: Name of the volume to be created
+        @type       name: C{str}
+
+        @keyword    location: Which data center to create a volume in. If empty,
+                              undefined behavoir will be selected. (optional)
+        @type       location: L{NodeLocation}
+
+        @keyword    snapshot:  Name of snapshot from which to create the new
+                               volume.  (optional)
+        @type       snapshot:  C{str}
+
+        @return: The newly created L{StorageVolume}.
+        """
+        raise NotImplementedError(
+           'create_volume not implemented for this driver')
+
+    def destroy_volume(self, volume):
+        """
+        Destroys a storage volume.
+
+        @param      volume: Volume to be destroyed
+        @type       volume: L{StorageVolume}
+
+        @return: C{bool}
+        """
+
+        raise NotImplementedError(
+               'destroy_volume not implemented for this driver')
+
+    def attach_volume(self, node, volume, device=None):
+        """
+        Attaches volume to node.
+
+        @param      node: Node to attach volume to
+        @type       node: L{Node}
+
+        @param      volume: Volume to attach
+        @type       volume: L{StorageVolume}
+
+        @param      device: Where the device is exposed,
+                            e.g. '/dev/sdb (optional)
+        @type       device: C{str}
+
+        @return: C{bool}
+        """
+        raise NotImplementedError('attach not implemented for this driver')
+
+    def detach_volume(self, volume):
+        """
+        Detaches a volume from a node.
+
+        @param      volume: Volume to be detached
+        @type       volume: L{StorageVolume}
+
+        @returns C{bool}
+        """
+
+        raise NotImplementedError('detach not implemented for this driver')
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):

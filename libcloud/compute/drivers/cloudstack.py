@@ -16,7 +16,7 @@
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
-                                  NodeSize
+                                  NodeSize, StorageVolume
 from libcloud.compute.types import NodeState, LibcloudError
 
 
@@ -89,18 +89,6 @@ class CloudStackDiskOffering(object):
 
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
-
-
-class CloudStackVolume(object):
-    """A storage volume within CloudStack."""
-
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
-
-    def __eq__(self, other):
-        return self.__class__ is other.__class__ and self.id == other.id
-
 
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
@@ -290,34 +278,20 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return diskOfferings
 
-    def ex_create_volume(self, name, location, size):
-        """
-        Create a new detached storage volume.
-
-        @type name: C{str}
-        @param name: Name to be given to the created volume
-
-        @type location: L{NodeLocation}
-        @param location: The location where the volume is to be created
-
-        @type size: C{int}
-        @param location: The size of the volume to be created, in GB
-
-        @returns: The newly-created detached volume
-        """
-
+    def create_volume(self, size, name, location, snapshot=None):
+        # TODO Add snapshot handling
         for diskOffering in self.ex_list_disk_offerings():
             if diskOffering.size == size or diskOffering.customizable:
                 break
         else:
             raise LibcloudError(
-                    "Disk offering with size=%s not found" % size)
+                    'Disk offering with size=%s not found' % size)
 
         extraParams = dict()
         if diskOffering.customizable:
             extraParams['size'] = size
 
-        requestResult = self._async_request('createVolume', 
+        requestResult = self._async_request('createVolume',
                                 name=name,
                                 diskOfferingId=diskOffering.id,
                                 zoneId=location.id,
@@ -325,25 +299,24 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         volumeResponse = requestResult['volume']
 
-        return CloudStackVolume(
-                            id = volumeResponse['id'],
-                            name = volumeResponse['name'])
+        return StorageVolume(id=volumeResponse['id'],
+                            name=name,
+                            size=size,
+                            driver=self,
+                            extra=dict(name=volumeResponse['name']))
 
+    def attach_volume(self, node, volume, device=None):
+        # TODO Add handling for device name
+        self._async_request('attachVolume', id=volume.id,
+                            virtualMachineId=node.id)
+        return True
 
-    def ex_attach_volume(self, node, volume):
-        """
-        Attach a storage volume to a node.
+    def detach_volume(self, volume):
+        self._async_request('detachVolume', id=volume.id)
+        return True
 
-        @type node: L{CloudStackNode}
-        @param node: The node to which the volume is to be attached
-
-        @type volume: L{CloudStackVolume}
-        @param volume: The volume to be attached
-        """
-
-        self._async_request('attachVolume', 
-                                id=volume.id, 
-                                virtualMachineId=node.id)
+    def destroy_volume(self, volume):
+        self._sync_request('deleteVolume', id=volume.id)
         return True
 
     def ex_allocate_public_ip(self, node):

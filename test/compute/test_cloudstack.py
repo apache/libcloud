@@ -73,16 +73,16 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEquals('Disk offer 1', diskOffering.name)
         self.assertEquals(10, diskOffering.size)
 
-    def test_ex_create_volume(self):
+    def test_create_volume(self):
         volumeName = 'vol-0'
         location = self.driver.list_locations()[0]
 
-        volume = self.driver.ex_create_volume(
-                                volumeName, location, size=10)
+        volume = self.driver.create_volume(10, volumeName, location)
 
         self.assertEquals(volumeName, volume.name)
+        self.assertEquals(10, volume.size)
 
-    def test_ex_create_volume_no_noncustomized_offering_with_size(self):
+    def test_create_volume_no_noncustomized_offering_with_size(self):
         """If the sizes of disk offerings are not configurable and there
         are no disk offerings with the requested size, an exception should
         be thrown."""
@@ -91,30 +91,26 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         self.assertRaises(
                 LibcloudError,
-                self.driver.ex_create_volume,
+                self.driver.create_volume,
                     'vol-0', location, 11)
 
-    def test_ex_create_volume_with_custom_disk_size_offering(self):
-
+    def test_create_volume_with_custom_disk_size_offering(self):
         CloudStackMockHttp.fixture_tag = 'withcustomdisksize'
 
         volumeName = 'vol-0'
         location = self.driver.list_locations()[0]
 
-        volume = self.driver.ex_create_volume(
-                                volumeName, location, size=11)
+        volume = self.driver.create_volume(10, volumeName, location)
 
         self.assertEquals(volumeName, volume.name)
 
-    def test_ex_attach_volume(self):
+    def test_attach_volume(self):
         node = self.driver.list_nodes()[0]
         volumeName = 'vol-0'
         location = self.driver.list_locations()[0]
 
-        volume = self.driver.ex_create_volume(
-                                volumeName, location, 10)
-
-        attachReturnVal = self.driver.ex_attach_volume(volume, node)
+        volume = self.driver.create_volume(10, volumeName, location)
+        attachReturnVal = self.driver.attach_volume(volume, node)
 
         self.assertTrue(attachReturnVal)
 

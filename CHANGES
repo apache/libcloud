@@ -46,6 +46,18 @@ Changes with Apache Libcloud in development:
       CloudStack driver.
       [DaeMyung Kang]
 
+    - Add a standard API and methods for managing storage volumes to the
+      EC2 and CloudStack drivers. Base API consistent of the following methods:
+      create_volume, destroy_volume, attach_volume, detach_volume. ;
+      LIBCLOUD-213
+      [Gabriel Reid]
+
+    - Change ex_describe_tags, ex_create_tags and ex_delete_tags methods
+      signature in the EC2 driver. Argument is now called resource (previously
+      it was called node). This methods work with both Node and StorageVolume
+      objects. ; LIBCLOUD-213
+      [Gabriel Reid, Tomaz Muraus]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203

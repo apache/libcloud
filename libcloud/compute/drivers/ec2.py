@@ -39,7 +39,7 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage
+from libcloud.compute.base import NodeImage, StorageVolume
 
 EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
@@ -460,6 +460,17 @@ class EC2NodeDriver(NodeDriver):
         )
         return n
 
+    def _to_volume(self, element, name):
+        volId = findtext(element=element, xpath='volumeId',
+                         namespace=NAMESPACE)
+        size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+
+        return StorageVolume(
+                        id=volId,
+                        name=name,
+                        size=int(size),
+                        driver=self)
+
     def list_nodes(self, ex_node_ids=None):
         """
         @type node.id: C{list}
@@ -522,6 +533,45 @@ class EC2NodeDriver(NodeDriver):
                                              self,
                                              availability_zone))
         return locations
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        params = {
+                'Action': 'CreateVolume',
+                'Size': str(size) }
+
+        if location is not None:
+            params['AvailabilityZone'] = location.availability_zone.name
+
+        volume = self._to_volume(
+                   self.connection.request(self.path, params=params).object,
+                   name=name)
+        self.ex_create_tags(volume, {'Name': name})
+        return volume
+
+    def destroy_volume(self, volume):
+        params = {
+                'Action': 'DeleteVolume',
+                'VolumeId': volume.id }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def attach_volume(self, node, volume, device):
+        params = {
+                'Action': 'AttachVolume',
+                'VolumeId': volume.id,
+                'InstanceId': node.id,
+                'Device': device }
+
+        self.connection.request(self.path, params=params)
+        return True
+
+    def detach_volume(self, volume):
+        params = {
+                'Action': 'DetachVolume',
+                'VolumeId': volume.id }
+
+        self.connection.request(self.path, params=params)
+        return True
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
@@ -711,9 +761,9 @@ class EC2NodeDriver(NodeDriver):
 
         return availability_zones
 
-    def ex_describe_tags(self, node):
+    def ex_describe_tags(self, resource):
         """
-        Return a dictionary of tags for this instance.
+        Return a dictionary of tags for a resource (Node or StorageVolume).
 
         @type node: C{Node}
         @param node: Node instance
@@ -722,7 +772,7 @@ class EC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
-                  'Filter.0.Value.0': node.id,
+                  'Filter.0.Value.0': resource.id,
                   'Filter.1.Name': 'resource-type',
                   'Filter.1.Value.0': 'instance',
                   }
@@ -740,12 +790,12 @@ class EC2NodeDriver(NodeDriver):
             tags[key] = value
         return tags
 
-    def ex_create_tags(self, node, tags):
+    def ex_create_tags(self, resource, tags):
         """
-        Create tags for an instance.
+        Create tags for a resource (Node or StorageVolume).
 
-        @type node: C{Node}
-        @param node: Node instance
+        @type resource: EC2 resource
+        @param resource: Resource to be tagged
         @param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
         """
@@ -753,7 +803,7 @@ class EC2NodeDriver(NodeDriver):
             return
 
         params = {'Action': 'CreateTags',
-                  'ResourceId.0': node.id}
+                  'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
@@ -761,12 +811,12 @@ class EC2NodeDriver(NodeDriver):
         self.connection.request(self.path,
                                 params=params.copy()).object
 
-    def ex_delete_tags(self, node, tags):
+    def ex_delete_tags(self, resource, tags):
         """
-        Delete tags from an instance.
+        Delete tags from a resource.
 
-        @type node: C{Node}
-        @param node: Node instance
+        @type resource: EC2 resource
+        @param resource: Resource to be tagged
         @param tags: A dictionary or other mapping of strings to strings,
                      specifying the tag names and tag values to be deleted.
         """
@@ -774,7 +824,7 @@ class EC2NodeDriver(NodeDriver):
             return
 
         params = {'Action': 'DeleteTags',
-                  'ResourceId.0': node.id}
+                  'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
@@ -1006,7 +1056,7 @@ class EC2NodeDriver(NodeDriver):
             tags = {'Name': kwargs['name']}
 
             try:
-                self.ex_create_tags(node=node, tags=tags)
+                self.ex_create_tags(resource=node, tags=tags)
             except Exception:
                 continue
 
@@ -1294,7 +1344,7 @@ class NimbusNodeDriver(EC2NodeDriver):
             nodes_elastic_ip_mappings[node.id] = []
         return nodes_elastic_ip_mappings
 
-    def ex_create_tags(self, node, tags):
+    def ex_create_tags(self, resource, tags):
         """
         Nimbus doesn't support creating tags, so this is a passthrough
         """
