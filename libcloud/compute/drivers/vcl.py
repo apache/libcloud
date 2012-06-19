@@ -124,6 +124,7 @@ class VCLNodeDriver(NodeDriver):
 
     connectionCls = VCLConnection
     name = 'VCL'
+    website = 'http://incubator.apache.org/vcl/'
     type = Provider.VCL
 
     def __init__(self, key, secret, secure=True, host=None, port=None, *args,

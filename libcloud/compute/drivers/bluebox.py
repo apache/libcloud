@@ -130,6 +130,7 @@ class BlueboxNodeDriver(NodeDriver):
     type = Provider.BLUEBOX
     api_name = 'bluebox'
     name = 'Bluebox Blocks'
+    website = 'http://bluebox.net'
 
     def list_nodes(self):
         result = self.connection.request('/api/blocks.json')

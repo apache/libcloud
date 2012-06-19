@@ -58,6 +58,7 @@ class RackspaceNovaDfwConnection(RackspaceNovaConnection):
 
 class RackspaceNovaDfwNodeDriver(OpenStack_1_1_NodeDriver):
     name = 'RackspaceNovadfw'
+    website = 'http://www.rackspace.com/'
     connectionCls = RackspaceNovaDfwConnection
     type = Provider.RACKSPACE_NOVA_DFW
     api_name = 'rackspacenovadfw'
@@ -65,6 +66,7 @@ class RackspaceNovaDfwNodeDriver(OpenStack_1_1_NodeDriver):
 
 class RackspaceNovaBetaNodeDriver(OpenStack_1_1_NodeDriver):
     name = 'RackspaceNovaBeta'
+    website = 'http://www.rackspace.com/'
     connectionCls = RackspaceNovaBetaConnection
     type = Provider.RACKSPACE_NOVA_BETA
     api_name = 'rackspacenovabeta'

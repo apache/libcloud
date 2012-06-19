@@ -75,6 +75,7 @@ class IBMNodeDriver(NodeDriver):
     connectionCls = IBMConnection
     type = Provider.IBM
     name = "IBM SmartCloud Enterprise"
+    website = 'http://ibm.com/services/us/en/cloud-enterprise/'
 
     NODE_STATE_MAP = {0: NodeState.PENDING,      # New
                       1: NodeState.PENDING,      # Provisioning

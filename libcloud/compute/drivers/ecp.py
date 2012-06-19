@@ -124,6 +124,7 @@ class ECPNodeDriver(NodeDriver):
     """
 
     name = "Enomaly Elastic Computing Platform"
+    website = 'http://www.enomaly.com/'
     type = Provider.ECP
     connectionCls = ECPConnection
 

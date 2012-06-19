@@ -115,6 +115,7 @@ class ElasticHostsBaseNodeDriver(ElasticStackBaseNodeDriver):
     type = Provider.ELASTICHOSTS
     api_name = 'elastichosts'
     name = 'ElasticHosts'
+    website = 'http://www.elastichosts.com/'
     connectionCls = ElasticHostsBaseConnection
     features = {"create_node": ["generates_password"]}
     _standard_drives = STANDARD_DRIVES

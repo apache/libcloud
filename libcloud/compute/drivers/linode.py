@@ -71,6 +71,7 @@ class LinodeNodeDriver(NodeDriver):
     """
     type = Provider.LINODE
     name = "Linode"
+    website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
 

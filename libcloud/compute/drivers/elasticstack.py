@@ -163,6 +163,7 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
 
 
 class ElasticStackBaseNodeDriver(NodeDriver):
+    website = 'http://www.elasticstack.com'
     connectionCls = ElasticStackBaseConnection
     features = {"create_node": ["generates_password"]}
 

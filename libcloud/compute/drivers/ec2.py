@@ -287,6 +287,7 @@ class EC2NodeDriver(NodeDriver):
     type = Provider.EC2
     api_name = 'ec2_us_east'
     name = 'Amazon EC2 (us-east-1)'
+    website = 'http://aws.amazon.com/ec2/'
     friendly_name = 'Amazon US N. Virginia'
     country = 'US'
     region_name = 'us-east-1'

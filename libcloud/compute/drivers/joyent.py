@@ -92,6 +92,7 @@ class JoyentNodeDriver(NodeDriver):
 
     type = Provider.JOYENT
     name = 'Joyent'
+    website = 'http://www.joyentcloud.com'
     connectionCls = JoyentConnection
     features = {'create_node': ['generates_password']}
 

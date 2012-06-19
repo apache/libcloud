@@ -49,6 +49,7 @@ class RackspaceConnection(OpenStack_1_0_Connection):
 
 class RackspaceNodeDriver(OpenStack_1_0_NodeDriver):
     name = 'Rackspace'
+    website = 'http://www.rackspace.com/'
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
     api_name = 'rackspace'

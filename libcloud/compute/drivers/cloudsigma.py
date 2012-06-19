@@ -204,6 +204,7 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
 class CloudSigmaBaseNodeDriver(NodeDriver):
     type = Provider.CLOUDSIGMA
     name = 'CloudSigma'
+    website = 'http://www.cloudsigma.com/'
     connectionCls = CloudSigmaBaseConnection
 
     def reboot_node(self, node):

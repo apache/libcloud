@@ -239,6 +239,7 @@ class OpsourceNodeDriver(NodeDriver):
 
     connectionCls = OpsourceConnection
     name = 'Opsource'
+    website = 'http://www.opsource.net/'
     type = Provider.OPSOURCE
     features = {"create_node": ["password"]}
 

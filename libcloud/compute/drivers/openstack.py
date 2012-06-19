@@ -152,6 +152,9 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
     """
+    api_name = 'openstack'
+    name = 'OpenStack'
+    website = 'http://openstack.org/'
 
     NODE_STATE_MAP = {
         'BUILD': NodeState.PENDING,
@@ -270,8 +273,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     """
     connectionCls = OpenStack_1_0_Connection
     type = Provider.OPENSTACK
-    api_name = 'openstack'
-    name = 'OpenStack'
 
     features = {"create_node": ["generates_password"]}
 
@@ -786,8 +787,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     """
     connectionCls = OpenStack_1_1_Connection
     type = Provider.OPENSTACK
-    api_name = 'openstack'
-    name = 'OpenStack'
 
     features = {"create_node": ["generates_password"]}
 

@@ -25,6 +25,7 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
 
     type = Provider.KTUCLOUD
     name = 'KTUCloud'
+    website = 'https://ucloudbiz.olleh.com/'
 
     def list_images(self, location=None):
         args = {

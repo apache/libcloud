@@ -302,6 +302,7 @@ class VCloudNodeDriver(NodeDriver):
 
     type = Provider.VCLOUD
     name = 'vCloud'
+    website = 'http://www.vmware.com/products/vcloud/'
     connectionCls = VCloudConnection
     org = None
     _vdcs = None

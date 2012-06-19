@@ -66,6 +66,7 @@ class SlicehostNodeDriver(NodeDriver):
 
     type = Provider.SLICEHOST
     name = 'Slicehost'
+    website = 'http://slicehost.com/'
 
     features = {"create_node": ["generates_password"]}
 

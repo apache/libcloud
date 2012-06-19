@@ -64,6 +64,7 @@ class DummyNodeDriver(NodeDriver):
     """
 
     name = "Dummy Node Provider"
+    website = 'http://example.com'
     type = Provider.DUMMY
 
     def __init__(self, creds):

@@ -33,6 +33,8 @@ class LibvirtNodeDriver(NodeDriver):
     """
 
     type = Provider.LIBVIRT
+    name = 'Libvirt'
+    website = 'http://libvirt.org/'
 
     NODE_STATE_MAP = {
         0: NodeState.TERMINATED,

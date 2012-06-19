@@ -43,6 +43,7 @@ class BrightboxNodeDriver(NodeDriver):
 
     type = Provider.BRIGHTBOX
     name = 'Brightbox'
+    website = 'http://www.brightbox.co.uk/'
     features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {'creating': NodeState.PENDING,

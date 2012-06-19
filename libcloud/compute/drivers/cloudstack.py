@@ -101,6 +101,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     name = 'CloudStack'
     api_name = 'cloudstack'
+    website = 'http://cloudstack.org/'
     type = Provider.CLOUDSTACK
 
     NODE_STATE_MAP = {

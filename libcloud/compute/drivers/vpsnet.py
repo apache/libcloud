@@ -82,6 +82,7 @@ class VPSNetNodeDriver(NodeDriver):
     type = Provider.VPSNET
     api_name = 'vps_net'
     name = "vps.net"
+    website = 'http://vps.net/'
     connectionCls = VPSNetConnection
 
     def _to_node(self, vm):

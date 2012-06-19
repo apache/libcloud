@@ -240,6 +240,7 @@ class SoftLayerNodeDriver(NodeDriver):
     """
     connectionCls = SoftLayerConnection
     name = 'SoftLayer'
+    website = 'http://www.softlayer.com/'
     type = Provider.SOFTLAYER
 
     features = {"create_node": ["generates_password"]}

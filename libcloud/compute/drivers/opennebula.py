@@ -265,6 +265,7 @@ class OpenNebulaNodeDriver(NodeDriver):
 
     connectionCls = OpenNebulaConnection
     name = 'OpenNebula'
+    website = 'http://opennebula.org/'
     type = Provider.OPENNEBULA
 
     NODE_STATE_MAP = {
