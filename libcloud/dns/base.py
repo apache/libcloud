@@ -133,6 +133,9 @@ class DNSDriver(BaseDriver):
     name = None
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
+        """
+        @requires: key, secret
+        """
         super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
                                         host=host, port=port, **kwargs)
 
