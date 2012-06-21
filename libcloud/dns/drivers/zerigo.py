@@ -125,6 +125,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
 class ZerigoDNSDriver(DNSDriver):
     type = Provider.ZERIGO
     name = 'Zerigo DNS'
+    website = 'http://www.zerigo.com/'
     connectionCls = ZerigoDNSConnection
 
     RECORD_TYPE_MAP = {

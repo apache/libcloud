@@ -58,6 +58,7 @@ class LinodeDNSConnection(LinodeConnection):
 class LinodeDNSDriver(DNSDriver):
     type = Provider.LINODE
     name = 'Linode DNS'
+    website = 'http://www.linode.com/'
     connectionCls = LinodeDNSConnection
 
     RECORD_TYPE_MAP = {

@@ -131,6 +131,7 @@ class DNSDriver(BaseDriver):
     """
     connectionCls = ConnectionUserAndKey
     name = None
+    website = None
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
         """

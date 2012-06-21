@@ -128,6 +128,7 @@ class RackspaceUKDNSConnection(RackspaceDNSConnection):
 
 
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
+    website = 'http://www.rackspace.com/'
 
     def __init__(self, *args, **kwargs):
         """

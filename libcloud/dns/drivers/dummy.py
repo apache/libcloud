@@ -31,6 +31,7 @@ class DummyDNSDriver(DNSDriver):
     """
 
     name = 'Dummy DNS Provider'
+    website = 'http://example.com'
 
     def __init__(self, api_key, api_secret):
         """

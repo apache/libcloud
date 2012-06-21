@@ -113,6 +113,7 @@ class Route53Connection(ConnectionUserAndKey):
 class Route53DNSDriver(DNSDriver):
     type = Provider.ROUTE53
     name = 'Route53 DNS'
+    website = 'http://aws.amazon.com/route53/'
     connectionCls = Route53Connection
 
     RECORD_TYPE_MAP = {
