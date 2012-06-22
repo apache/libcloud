@@ -56,12 +56,27 @@ class RackspaceNovaDfwConnection(RackspaceNovaConnection):
                          'region': 'DFW'}
 
 
+class RackspaceNovaLonConnection(RackspaceNovaConnection):
+
+    get_endpoint_args = {'service_type': 'compute',
+                         'name': 'cloudServersOpenStack',
+                         'region': 'LON'}
+
+
 class RackspaceNovaDfwNodeDriver(OpenStack_1_1_NodeDriver):
     name = 'RackspaceNovadfw'
     website = 'http://www.rackspace.com/'
     connectionCls = RackspaceNovaDfwConnection
     type = Provider.RACKSPACE_NOVA_DFW
     api_name = 'rackspacenovadfw'
+
+
+class RackspaceNovaLonNodeDriver(OpenStack_1_1_NodeDriver):
+    name = 'RackspaceNovalon'
+    website = 'http://www.rackspace.com/'
+    connectionCls = RackspaceNovaLonConnection
+    type = Provider.RACKSPACE_NOVA_LON
+    api_name = 'rackspacenovalon'
 
 
 class RackspaceNovaBetaNodeDriver(OpenStack_1_1_NodeDriver):

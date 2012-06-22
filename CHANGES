@@ -58,6 +58,9 @@ Changes with Apache Libcloud in development:
       objects. ; LIBCLOUD-213
       [Gabriel Reid, Tomaz Muraus]
 
+    - Add Rackspace Nova London driver.
+      [Chris Gilmer]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203

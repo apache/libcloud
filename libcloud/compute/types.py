@@ -62,6 +62,8 @@ class Provider(object):
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
+    @cvar RACKSPACE_NOVA_DFW: Rackspace Nova Private DFW (DFW)
+    @cvar RACKSPACE_NOVA_LON: Rackspace Nova Private LON (LON)
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
     @cvar VCL: VCL driver
@@ -117,6 +119,7 @@ class Provider(object):
     JOYENT = 45
     VCL = 46
     KTUCLOUD=47
+    RACKSPACE_NOVA_LON = 48
 
 
 class NodeState(object):
