@@ -220,14 +220,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         extra_args = {}
         if location is None:
             location = self.list_locations()[0]
-
-        network_id = kwargs.pop('network_id', None)
-        if network_id is None:
-            networks = self._sync_request('listNetworks')
-
-            if networks:
-                extra_args['networkids'] = networks['network'][0]['id']
-        else:
+        
+        if 'network_id' in kwargs:
             extra_args['networkids'] = network_id
 
         result = self._async_request('deployVirtualMachine',

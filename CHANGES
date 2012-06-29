@@ -61,6 +61,11 @@ Changes with Apache Libcloud in development:
     - Add Rackspace Nova London driver.
       [Chris Gilmer]
 
+    - Fix a bug - If user doesn't pass in 'network_id' argument to the
+      create_node method in the CloudStack driver, don't explicitly define it.
+      ; LIBCLOUD-219
+      [Bruno Mahé, Tomaz Muraus]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
