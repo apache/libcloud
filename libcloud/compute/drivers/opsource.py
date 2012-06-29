@@ -41,8 +41,7 @@ from libcloud.compute.types import NodeState, Provider
 #   x implement list_images()   (only support Base OS images,
 #                                 no customer images yet)
 #   x implement list_locations()
-#	x implement ex_* extension functions for opsource-specific featurebody =s
-#    x implement ex_* extension functions for opsource-specific features
+#   x implement ex_* extension functions for opsource-specific features
 #       x ex_graceful_shutdown
 #       x ex_start_node
 #       x ex_power_off
@@ -274,7 +273,6 @@ class OpsourceACLRule(object):
                 % (self.id, self.name, self.status, self.position, self.action, 
                         self.protocol, self.type, self.port1, self.port2))
 
-
 class OpsourceNodeDriver(NodeDriver):
     """
     Opsource node driver.
@@ -482,7 +480,6 @@ class OpsourceNodeDriver(NodeDriver):
         shutdown sequence within the guest operating system. A successful response
         on this function means the system has successfully passed the
         request into the operating system.
-        add support to create/delete networks, acls, nat rules
         """
         body = self.connection.request_with_orgId('server/%s?shutdown' %
                                                   (node.id)).object
@@ -546,7 +543,7 @@ class OpsourceNodeDriver(NodeDriver):
     def ex_list_nat_rules(self, network):
         """List NAT rules for a particular network
         """
-        return self._to_natrules(self.connection.request_with_orgId('network/%s/natrule' %network.id).object)
+        return self._to_natrules(self.connection.request_with_orgId('network/%s/natrule' %(network.id)).object)
 
     def ex_list_acl_rules(self, network):
         """List ACL rules for a particular network
@@ -567,7 +564,7 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(nat_elm, "name").text = private_ip
         ET.SubElement(nat_elm, "sourceIp").text = private_ip
 
-        self.connection.request_with_orgId('network/%s/natrule' %network.id, 
+        self.connection.request_with_orgId('network/%s/natrule' %(network.id), 
                                            method='POST',
                                            data=ET.tostring(nat_elm)
                                            ).object
@@ -611,7 +608,7 @@ class OpsourceNodeDriver(NodeDriver):
         port_elm = ET.SubElement(acl_elm, 'portRange')
         ET.SubElement(port_elm, "type").text = _type
         ET.SubElement(port_elm, "port1").text = start_port
-        if port2:
+        if end_port:
             ET.SubElement(port_elm, "port2").text = end_port
 
         self.connection.request_with_orgId('network/%s/aclrule' %network.id, 
@@ -682,12 +679,12 @@ class OpsourceNodeDriver(NodeDriver):
                                port1 = findtext(element, 'portRange/port1', NETWORK_NS),   
                                port2 = findtext(element, 'portRange/port2', NETWORK_NS))   
           
+ 
     def ex_remove_acl_rule(self, acl_rule, network):
         """Remove the ACL rule"""
         body = self.connection.request_with_orgId('network/%s/aclrule/%s?delete' % (network.id, acl_rule.id)).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
-
 
     def ex_remove_nat_rule(self, nat_rule, network):
         """Remove the NAT rule"""

@@ -122,6 +122,7 @@ class Provider(object):
     RACKSPACE_NOVA_LON = 48
     HPCLOUD_AZ1 = 49
     HPCLOUD_AZ2 = 50
+    SAVVIS = 51
 
 
 class NodeState(object):

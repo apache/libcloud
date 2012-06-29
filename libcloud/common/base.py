@@ -559,6 +559,11 @@ class Connection(object):
         # Removed terrible hack...this a less-bad hack that doesn't execute a
         # request twice, but it's still a hack.
         self.connect()
+        print "Method : %s" % method
+        print "Headers : %s" % headers
+        print "URL : %s" % url
+        print "Body : %s" % data
+
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?

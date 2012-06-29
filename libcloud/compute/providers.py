@@ -123,6 +123,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ1NodeDriver'),
     Provider.HPCLOUD_AZ2:
         ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ2NodeDriver'),
+    Provider.SAVVIS:
+        ('libcloud.compute.drivers.vcloud', 'SavvisNodeDriver')
 }
 
 
