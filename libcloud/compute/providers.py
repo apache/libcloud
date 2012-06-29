@@ -118,7 +118,11 @@ DRIVERS = {
     Provider.JOYENT:
         ('libcloud.compute.drivers.joyent', 'JoyentNodeDriver'),
     Provider.VCL:
-        ('libcloud.compute.drivers.vcl', 'VCLNodeDriver')
+        ('libcloud.compute.drivers.vcl', 'VCLNodeDriver'),
+    Provider.HPCLOUD_AZ1:
+        ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ1NodeDriver'),
+    Provider.HPCLOUD_AZ2:
+        ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ2NodeDriver'),
 }
 
 

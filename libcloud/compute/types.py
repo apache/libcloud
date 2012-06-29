@@ -120,6 +120,8 @@ class Provider(object):
     VCL = 46
     KTUCLOUD=47
     RACKSPACE_NOVA_LON = 48
+    HPCLOUD_AZ1 = 49
+    HPCLOUD_AZ2 = 50
 
 
 class NodeState(object):

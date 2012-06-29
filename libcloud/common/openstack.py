@@ -203,7 +203,53 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
         reqbody = json.dumps(data)
-        return self.authenticate_2_0_with_body(reqbody)
+        self.authenticate_2_0_with_body(reqbody)
+
+        #We now need to find a tenant & authenticate the tenant for further
+        #operations.Rescope the token to the tenant instead of creating one
+        if not self.tenant_name:
+            #Fetch tenants
+            resp = self.request('/v2.0/tenants',
+                    headers={'Content-Type': 'application/json',
+                            'X-Auth-Token': self.auth_token},
+                    method='GET')
+
+            if resp.status == httplib.UNAUTHORIZED:
+                raise InvalidCredsError()
+            try:
+                body = json.loads(resp.body)
+                print "Tenants body: %s" %body
+                tenants = body["tenants"]
+
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+
+            #rescope token and tenant
+            data = {'auth': \
+                    {'tenantName': tenants[0]["name"],
+                     'token': \
+                     {"id": self.auth_token}}}
+            reqbody = json.dumps(data)
+            resp = self.request('/v2.0/tokens',
+                    data=reqbody,
+                    headers={'Content-Type': 'application/json'},
+                    method='POST')
+
+            if resp.status == httplib.UNAUTHORIZED:
+                raise InvalidCredsError()
+            try:
+                body = json.loads(resp.body)
+            except Exception:
+                e = sys.exc_info()[1]
+                raise MalformedResponseError('Failed to parse JSON', e)
+
+            #Reload the Auth token, service Catalog etc.
+            access = body['access']
+            self.auth_token = access['token']['id']
+            self.auth_token_expires = access['token']['expires']
+            self.urls = access['serviceCatalog']
+        return
 
     def authenticate_2_0_with_body(self, reqbody):
         resp = self.request('/v2.0/tokens',
