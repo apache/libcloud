@@ -1046,7 +1046,7 @@ class EC2NodeDriver(NodeDriver):
 
         if 'ex_userdata' in kwargs:
             params['UserData'] = base64.b64encode(b(kwargs['ex_userdata'])) \
-                                       .decode('utf8')
+                                       .decode('utf-8')
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
