@@ -220,7 +220,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         extra_args = {}
         if location is None:
             location = self.list_locations()[0]
-        
+
         if 'network_id' in kwargs:
             extra_args['networkids'] = network_id
 
