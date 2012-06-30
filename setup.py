@@ -29,8 +29,9 @@ libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
-TEST_PATHS = ['test', 'test/common', 'test/compute', 'test/storage',
-              'test/loadbalancer', 'test/dns']
+TEST_PATHS = ['libcloud/test', 'libcloud/test/common', 'libcloud/test/compute',
+              'libcloud/test/storage', 'libcloud/test/loadbalancer',
+              'libcloud/test/dns']
 DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy',
                      'libcloud.dns.drivers.dummy']
@@ -81,13 +82,13 @@ class TestCommand(Command):
         sys.exit(status)
 
     def _run_tests(self):
-        secrets_current = pjoin(self._dir, 'test', 'secrets.py')
-        secrets_dist = pjoin(self._dir, 'test', 'secrets.py-dist')
+        secrets_current = pjoin(self._dir, 'libcloud/test', 'secrets.py')
+        secrets_dist = pjoin(self._dir, 'libcloud/test', 'secrets.py-dist')
 
         if not os.path.isfile(secrets_current):
             print("Missing " + secrets_current)
             print("Maybe you forgot to copy it from -dist:")
-            print("cp test/secrets.py-dist test/secrets.py")
+            print("cp libcloud/test/secrets.py-dist libcloud/test/secrets.py")
             sys.exit(1)
 
         mtime_current = os.path.getmtime(secrets_current)
