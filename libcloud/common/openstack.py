@@ -383,6 +383,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     auth_url = None
     auth_token = None
     auth_token_expires = None
+    auth_user_info = None
     service_catalog = None
     service_type = None
     service_name = None
