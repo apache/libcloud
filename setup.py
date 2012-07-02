@@ -24,6 +24,7 @@ from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
 import libcloud.utils.misc
+from libcloud.utils.dist import get_packages, get_data_files
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
 
@@ -156,8 +157,8 @@ class Pep8Command(Command):
             sys.exit(1)
 
         cwd = os.getcwd()
-        retcode = call(('pep8 %s/libcloud/ %s/test/' %
-                (cwd, cwd)).split(' '))
+        retcode = call(('pep8 %s/libcloud/' %
+                (cwd)).split(' '))
         sys.exit(retcode)
 
 
@@ -217,24 +218,11 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
-    packages=[
-        'libcloud',
-        'libcloud.utils',
-        'libcloud.common',
-        'libcloud.compute',
-        'libcloud.compute.drivers',
-        'libcloud.storage',
-        'libcloud.storage.drivers',
-        'libcloud.loadbalancer',
-        'libcloud.loadbalancer.drivers',
-        'libcloud.dns',
-        'libcloud.dns.drivers'],
+    packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
     },
-    package_data={
-        'libcloud': ['data/*.json']
-    },
+    package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
     cmdclass={
