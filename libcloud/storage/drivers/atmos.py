@@ -44,8 +44,8 @@ def collapse(s):
 
 class AtmosError(Exception):
     def __init__(self, code, message):
+        super(AtmosError, self).__init__(message)
         self.code = code
-        self.message = message
 
 class AtmosResponse(XmlResponse):
     def success(self):
