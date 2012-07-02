@@ -31,7 +31,7 @@ if PY3:
 
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.common.types import LazyList
+from libcloud.common.types import LazyList, LibcloudError
 
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
 from libcloud.storage.types import ContainerAlreadyExistsError, \
@@ -42,10 +42,10 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
 
-class AtmosError(Exception):
-    def __init__(self, code, message):
+class AtmosError(LibcloudError):
+    def __init__(self, code, message, driver=None):
+        super(AtmosError, self).__init__(value=message, driver=driver)
         self.code = code
-        self.message = message
 
 class AtmosResponse(XmlResponse):
     def success(self):
@@ -60,7 +60,8 @@ class AtmosResponse(XmlResponse):
 
         code = int(tree.find('Code').text)
         message = tree.find('Message').text
-        raise AtmosError(code, message)
+        raise AtmosError(code=code, message=message,
+                         driver=self.connection.driver)
 
 class AtmosConnection(ConnectionUserAndKey):
     responseCls = AtmosResponse
