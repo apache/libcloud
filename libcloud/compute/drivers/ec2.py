@@ -500,17 +500,22 @@ class EC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        # Cluster instances are currently only available
-        # in the US - N. Virginia Region
-        include_ci = self.region_name == 'us-east-1'
-        sizes = self._get_sizes(include_cluser_instances=include_ci)
+        # Cluster instances are not available in all the regions
+        if self.region_name == 'us-east-1':
+          ignored_size_ids = None
+        elif self.region_name == 'eu-west-1':
+          ignored_size_ids = CLUSTER_INSTANCES_IDS[:-1]
+        else:
+          ignored_size_ids = CLUSTER_INSTANCES_IDS
+
+        sizes = self._get_sizes(ignored_size_ids=ignored_size_ids)
         return sizes
 
-    def _get_sizes(self, include_cluser_instances=False):
+    def _get_sizes(self, ignored_size_ids=None):
+        ignored_size_ids = ignored_size_ids or []
         sizes = []
         for key, values in self._instance_types.items():
-            if not include_cluser_instances and\
-               key in CLUSTER_INSTANCES_IDS:
+            if key in ignored_size_ids:
                 continue
             attributes = copy.deepcopy(values)
             attributes.update({'price': self._get_size_price(size_id=key)})

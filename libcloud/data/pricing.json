@@ -78,7 +78,8 @@
             "c1.xlarge": 0.76,
             "m2.xlarge": 0.57,
             "m2.2xlarge": 1.14,
-            "m2.4xlarge": 2.28
+            "m2.4xlarge": 2.28,
+            "cc2.8xlarge": 2.7
         },
 
        "ec2_ap_southeast": {

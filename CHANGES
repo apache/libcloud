@@ -66,6 +66,10 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-219
       [Bruno Mahé, Tomaz Muraus]
 
+    - Modify EC2 driver to also return cc2.8xlarge cluster compute instance in
+      the eu-west-1 region.
+      [Tomaz Muraus]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
