@@ -70,6 +70,9 @@ Changes with Apache Libcloud in development:
       the eu-west-1 region.
       [Tomaz Muraus]
 
+    - Add 'auth_user_variable' to the  OpenStackAuthConnection class.
+      [Mark Everett]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203

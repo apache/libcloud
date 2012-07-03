@@ -1046,5 +1046,15 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
+    def test_auth_user_info_is_set(self):
+        self.driver.connection._populate_hosts_and_request_paths()
+        self.assertEquals(self.driver.connection.auth_user_info, {
+            'id': '7',
+            'name': 'testuser',
+            'roles': [{'description': 'Default Role.',
+                        'id': 'identity:default',
+                        'name': 'identity:default'}]})
+
+
 if __name__ == '__main__':
     sys.exit(unittest.main())

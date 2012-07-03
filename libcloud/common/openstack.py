@@ -147,6 +147,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             self.urls['cloudFiles'] = \
                 [{'publicURL': headers.get('x-storage-url', None)}]
             self.auth_token = headers.get('x-auth-token', None)
+            self.auth_auth_user_info = None
 
             if not self.auth_token:
                 raise MalformedResponseError('Missing X-Auth-Token in \
@@ -177,6 +178,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.auth_token = body['auth']['token']['id']
                 self.auth_token_expires = body['auth']['token']['expires']
                 self.urls = body['auth']['serviceCatalog']
+                self.auth_user_info = None
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
@@ -229,6 +231,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.auth_token = access['token']['id']
                 self.auth_token_expires = access['token']['expires']
                 self.urls = access['serviceCatalog']
+                self.auth_user_info = access.get('user', {})
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
@@ -380,6 +383,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     auth_url = None
     auth_token = None
     auth_token_expires = None
+    auth_user_info = None
     service_catalog = None
     service_type = None
     service_name = None
@@ -480,6 +484,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
             self.auth_token = osa.auth_token
             self.auth_token_expires = osa.auth_token_expires
+            self.auth_user_info = osa.auth_user_info
 
             # pull out and parse the service catalog
             self.service_catalog = OpenStackServiceCatalog(osa.urls,
