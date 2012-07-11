@@ -82,7 +82,7 @@ DRIVERS = {
     Provider.EUCALYPTUS:
         ('libcloud.compute.drivers.ec2', 'EucNodeDriver'),
     Provider.IBM:
-        ('libcloud.compute.drivers.ibm_sbc', 'IBMNodeDriver'),
+        ('libcloud.compute.drivers.ibm_sce', 'IBMNodeDriver'),
     Provider.OPENNEBULA:
         ('libcloud.compute.drivers.opennebula', 'OpenNebulaNodeDriver'),
     Provider.DREAMHOST:
@@ -111,12 +111,16 @@ DRIVERS = {
         ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaBetaNodeDriver'),
     Provider.RACKSPACE_NOVA_DFW:
         ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaDfwNodeDriver'),
+    Provider.RACKSPACE_NOVA_LON:
+        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaLonNodeDriver'),
     Provider.LIBVIRT:
         ('libcloud.compute.drivers.libvirt_driver', 'LibvirtNodeDriver'),
     Provider.JOYENT:
         ('libcloud.compute.drivers.joyent', 'JoyentNodeDriver'),
     Provider.VCL:
-        ('libcloud.compute.drivers.vcl', 'VCLNodeDriver')
+        ('libcloud.compute.drivers.vcl', 'VCLNodeDriver'),
+    Provider.KTUCLOUD:
+        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver')
 }
 
 

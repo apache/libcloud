@@ -23,6 +23,7 @@ import os
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import next
 
 urlparse = urlparse.urlparse
 
@@ -262,7 +263,8 @@ class VCloudConnection(ConnectionUserAndKey):
         return {
             'Authorization':
                 "Basic %s"
-                % base64.b64encode(b('%s:%s' % (self.user_id, self.key))),
+                % base64.b64encode(b('%s:%s' % (self.user_id,
+                    self.key))).decode('utf-8'),
             'Content-Length': 0,
             'Accept': 'application/*+xml'
         }
@@ -300,6 +302,7 @@ class VCloudNodeDriver(NodeDriver):
 
     type = Provider.VCLOUD
     name = 'vCloud'
+    website = 'http://www.vmware.com/products/vcloud/'
     connectionCls = VCloudConnection
     org = None
     _vdcs = None
@@ -991,7 +994,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         """
         name = kwargs['name']
         image = kwargs['image']
-        size = kwargs.get('size', None)
         ex_vm_names = kwargs.get('ex_vm_names')
         ex_vm_cpu = kwargs.get('ex_vm_cpu')
         ex_vm_memory = kwargs.get('ex_vm_memory')

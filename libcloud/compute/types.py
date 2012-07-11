@@ -62,9 +62,12 @@ class Provider(object):
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
+    @cvar RACKSPACE_NOVA_DFW: Rackspace Nova Private DFW (DFW)
+    @cvar RACKSPACE_NOVA_LON: Rackspace Nova Private LON (LON)
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
     @cvar VCL: VCL driver
+    @cvar KTUCLOUD: kt ucloud driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -115,6 +118,8 @@ class Provider(object):
     ELASTICHOSTS_CA1 = 44
     JOYENT = 45
     VCL = 46
+    KTUCLOUD=47
+    RACKSPACE_NOVA_LON = 48
 
 
 class NodeState(object):
@@ -151,16 +156,17 @@ class DeploymentError(LibcloudError):
 
     @ivar node: L{Node} on which this exception happened, you might want to call L{Node.destroy}
     """
-    def __init__(self, node, original_exception=None):
+    def __init__(self, node, original_exception=None, driver=None):
         self.node = node
         self.value = original_exception
+        self.driver = driver
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return (('<DeploymentError: node=%s, error=%s>'
-                % (self.node.id, str(self.value))))
+        return (('<DeploymentError: node=%s, error=%s, driver=%s>'
+                % (self.node.id, str(self.value), str(self.driver))))
 
 
 """Deprecated alias of L{DeploymentException}"""

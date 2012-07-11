@@ -76,6 +76,7 @@ class ServerLoveConnection(ElasticStackBaseConnection):
 class ServerLoveNodeDriver(ElasticStackBaseNodeDriver):
     type = Provider.SERVERLOVE
     api_name = 'serverlove'
+    website = 'http://www.serverlove.com/'
     name = 'ServerLove'
     connectionCls = ServerLoveConnection
     features = {'create_node': ['generates_password']}

@@ -16,6 +16,7 @@
 Softlayer driver
 """
 
+import sys
 import time
 
 import libcloud
@@ -239,11 +240,15 @@ class SoftLayerNodeDriver(NodeDriver):
     """
     connectionCls = SoftLayerConnection
     name = 'SoftLayer'
+    website = 'http://www.softlayer.com/'
     type = Provider.SOFTLAYER
 
     features = {"create_node": ["generates_password"]}
 
     def __init__(self, key, secret=None, secure=False):
+        """
+        @requires: key, secret
+        """
         self.key = key
         self.secret = secret
         self.connection = self.connectionCls(key, secret)

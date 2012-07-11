@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.compute.base import NodeDriver, NodeSize, Node
-from libcloud.compute.base import NodeImage, NodeState
+from libcloud.compute.base import NodeDriver, Node
+from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 
 try:
@@ -33,6 +33,8 @@ class LibvirtNodeDriver(NodeDriver):
     """
 
     type = Provider.LIBVIRT
+    name = 'Libvirt'
+    website = 'http://libvirt.org/'
 
     NODE_STATE_MAP = {
         0: NodeState.TERMINATED,
@@ -46,6 +48,9 @@ class LibvirtNodeDriver(NodeDriver):
     }
 
     def __init__(self, uri):
+        """
+        @requires: uri
+        """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
                                'package')

@@ -83,7 +83,8 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         status = response.get('jobstatus', self.ASYNC_PENDING)
 
         if status == self.ASYNC_FAILURE:
-            raise Exception(status)
+            msg = response.get('jobresult', {}).get('errortext', status)
+            raise Exception(msg)
 
         return status == self.ASYNC_SUCCESS
 

@@ -16,14 +16,10 @@
 OpenStack driver
 """
 
-import binascii
-
 try:
     import simplejson as json
 except ImportError:
     import json
-
-import os
 
 import warnings
 
@@ -40,7 +36,7 @@ from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.types import MalformedResponseError, LibcloudError
+from libcloud.common.types import MalformedResponseError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation
@@ -156,6 +152,9 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
     """
+    api_name = 'openstack'
+    name = 'OpenStack'
+    website = 'http://openstack.org/'
 
     NODE_STATE_MAP = {
         'BUILD': NodeState.PENDING,
@@ -178,6 +177,9 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
                  api_version=DEFAULT_API_VERSION, **kwargs):
+        """
+        @requires: key, secret
+        """
         if cls is OpenStackNodeDriver:
             if api_version == '1.0':
                 cls = OpenStack_1_0_NodeDriver
@@ -271,8 +273,6 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     """
     connectionCls = OpenStack_1_0_Connection
     type = Provider.OPENSTACK
-    api_name = 'openstack'
-    name = 'OpenStack'
 
     features = {"create_node": ["generates_password"]}
 
@@ -787,12 +787,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     """
     connectionCls = OpenStack_1_1_Connection
     type = Provider.OPENSTACK
-    api_name = 'openstack'
-    name = 'OpenStack'
 
     features = {"create_node": ["generates_password"]}
 
     def __init__(self, *args, **kwargs):
+
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
                                                     None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)

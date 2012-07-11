@@ -28,7 +28,6 @@ Linode(R) is a registered trademark of Linode, LLC.
 """
 
 import os
-import hashlib
 
 try:
     import simplejson as json
@@ -41,7 +40,6 @@ import binascii
 from copy import copy
 
 from libcloud.utils.py3 import PY3
-from libcloud.utils.py3 import u
 
 from libcloud.common.linode import (API_ROOT, LinodeException, LinodeConnection,
     LINODE_PLAN_IDS)
@@ -73,6 +71,7 @@ class LinodeNodeDriver(NodeDriver):
     """
     type = Provider.LINODE
     name = "Linode"
+    website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
 
@@ -80,7 +79,10 @@ class LinodeNodeDriver(NodeDriver):
         """Instantiate the driver with the given API key
 
         @keyword key: the API key to use
-        @type key: C{str}"""
+        @type key: C{str}
+
+        @requires: key
+        """
         self.datacenter = None
         NodeDriver.__init__(self, key)
 

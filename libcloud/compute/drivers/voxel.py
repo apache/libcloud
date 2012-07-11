@@ -118,6 +118,7 @@ class VoxelNodeDriver(NodeDriver):
     connectionCls = VoxelConnection
     type = Provider.VOXEL
     name = 'Voxel VoxCLOUD'
+    website = 'http://www.voxel.net/'
 
     def _initialize_instance_types():
         for cpus in range(1,14):

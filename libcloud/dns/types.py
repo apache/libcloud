@@ -33,7 +33,7 @@ class Provider(object):
     ZERIGO = 2
     RACKSPACE_US = 3
     RACKSPACE_UK = 4
-    ROUTE_53 = 5
+    ROUTE53 = 5
 
 
 class RecordType(object):
@@ -54,6 +54,8 @@ class RecordType(object):
     PTR = 11
     NAPTR = 12
     REDIRECT = 13
+    GEO = 14
+    URL = 15
 
     @classmethod
     def __repr__(self, value):

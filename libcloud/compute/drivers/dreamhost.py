@@ -128,6 +128,7 @@ class DreamhostNodeDriver(NodeDriver):
     type = Provider.DREAMHOST
     api_name = 'dreamhost'
     name = "Dreamhost"
+    website = 'http://dreamhost.com/'
     connectionCls = DreamhostConnection
 
     _sizes = DH_PS_SIZES

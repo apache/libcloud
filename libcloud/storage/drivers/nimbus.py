@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import time
 import hashlib
 import hmac
@@ -28,7 +27,7 @@ from libcloud.utils.py3 import urlencode
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.storage.base import Object, Container, StorageDriver
+from libcloud.storage.base import Container, StorageDriver
 
 
 class NimbusResponse(JsonResponse):

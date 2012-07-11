@@ -84,7 +84,7 @@ class BrightboxLBDriver(Driver):
     def balancer_attach_member(self, balancer, member):
         path = '/%s/load_balancers/%s/add_nodes' % (API_VERSION, balancer.id)
 
-        response = self._post(path, {'nodes': [self._member_to_node(member)]})
+        self._post(path, {'nodes': [self._member_to_node(member)]})
 
         return member
 
@@ -130,3 +130,5 @@ class BrightboxLBDriver(Driver):
             ip = data['cloud_ips'][0]['public_ip']
         else:
             ip = None
+
+        return ip

@@ -31,7 +31,7 @@ if PY3:
 
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.common.types import LazyList
+from libcloud.common.types import LazyList, LibcloudError
 
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
 from libcloud.storage.types import ContainerAlreadyExistsError, \
@@ -42,10 +42,10 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
 
-class AtmosError(Exception):
-    def __init__(self, code, message):
+class AtmosError(LibcloudError):
+    def __init__(self, code, message, driver=None):
+        super(AtmosError, self).__init__(value=message, driver=driver)
         self.code = code
-        self.message = message
 
 class AtmosResponse(XmlResponse):
     def success(self):
@@ -60,7 +60,8 @@ class AtmosResponse(XmlResponse):
 
         code = int(tree.find('Code').text)
         message = tree.find('Message').text
-        raise AtmosError(code, message)
+        raise AtmosError(code=code, message=message,
+                         driver=self.connection.driver)
 
 class AtmosConnection(ConnectionUserAndKey):
     responseCls = AtmosResponse
@@ -108,7 +109,7 @@ class AtmosConnection(ConnectionUserAndKey):
         signature = '\n'.join(signature)
         key = base64.b64decode(self.key)
         signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
-        return base64.b64encode(b(signature))
+        return base64.b64encode(b(signature)).decode('utf-8')
 
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
@@ -370,13 +371,13 @@ class AtmosDriver(StorageDriver):
             ('uid', self.key),
             ('expires', expiry),
         ]
-        params.append(('signature', self._cdn_signature(path, params)))
+        params.append(('signature', self._cdn_signature(path, params, expiry)))
 
         params = urlencode(params)
         path = self.path + path
         return urlparse.urlunparse((protocol, self.host, path, '', params, ''))
 
-    def _cdn_signature(self, path, params):
+    def _cdn_signature(self, path, params, expiry):
         key = base64.b64decode(self.secret)
         signature = '\n'.join(['GET', path.lower(), self.key, expiry])
         signature = hmac.new(key, signature, hashlib.sha1).digest()

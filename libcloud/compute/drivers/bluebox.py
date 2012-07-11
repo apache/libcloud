@@ -23,7 +23,6 @@ Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/inde
 """
 
 import copy
-from libcloud.utils.py3 import urllib
 import base64
 
 from libcloud.utils.py3 import urlencode
@@ -131,6 +130,7 @@ class BlueboxNodeDriver(NodeDriver):
     type = Provider.BLUEBOX
     api_name = 'bluebox'
     name = 'Bluebox Blocks'
+    website = 'http://bluebox.net'
 
     def list_nodes(self):
         result = self.connection.request('/api/blocks.json')

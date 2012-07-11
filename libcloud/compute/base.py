@@ -98,7 +98,9 @@ class UuidMixin(object):
         same UUID!
         """
         if not self._uuid:
-            self._uuid = hashlib.sha1(b("%s:%d" % (self.id, self.driver.type))).hexdigest()
+            self._uuid = hashlib.sha1(b('%s:%d' %
+                                      (self.id, self.driver.type))).hexdigest()
+
         return self._uuid
 
     @property
@@ -165,8 +167,8 @@ class Node(UuidMixin):
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
-    # Note: getters and setters bellow are here only for backward compatibility.
-    # They will be removed in the next release.
+    # Note: getters and setters bellow are here only for backward
+    # compatibility. They will be removed in the next release.
 
     def _set_public_ips(self, value):
         self.public_ips = value
@@ -363,6 +365,57 @@ class NodeAuthPassword(object):
         return '<NodeAuthPassword>'
 
 
+class StorageVolume(UuidMixin):
+    """
+    A base StorageVolume class to derive from.
+    """
+
+    def __init__(self, id, name, size, driver, extra=None):
+        self.id = id
+        self.name = name
+        self.size = size
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def attach(self, node, device=None):
+        """
+        Attach this volume to a node.
+
+        @param      node: Node to attach volume to
+        @type       node: L{Node}
+
+        @param      device: Where the device is exposed,
+                            e.g. '/dev/sdb (optional)
+        @type       device: C{str}
+
+        @returns C{bool}
+        """
+
+        return self.driver.attach_volume(node=node, volume=self, device=device)
+
+    def detach(self):
+        """
+        Detach this volume from its node
+
+        @returns C{bool}
+        """
+
+        return self.driver.detach_volume(volume=self)
+
+    def destroy(self):
+        """Destroy this storage volume.
+
+        @returns C{bool}
+        """
+
+        return self.driver.destroy_volume(volume=self)
+
+    def __repr__(self):
+        return '<StorageVolume id=%s size=%s driver=%s>' % (
+                        self.id, self.size, self.driver.name)
+
+
 class NodeDriver(BaseDriver):
     """
     A base NodeDriver class to derive from
@@ -393,6 +446,9 @@ class NodeDriver(BaseDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, **kwargs):
+        """
+        @requires: key, secret
+        """
         super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
@@ -529,6 +585,10 @@ class NodeDriver(BaseDriver):
                                before giving up (default is 3)
         @type       max_tries: C{int}
 
+        @keyword    ssh_interface: The interface to wait for. Default is
+                                   'public_ips', other option is 'private_ips'.
+        @type       ssh_interface: C{str}
+
         See L{NodeDriver.create_node} for more keyword args.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
@@ -566,7 +626,8 @@ class NodeDriver(BaseDriver):
                     'deploy_node not implemented for this driver')
 
             if 'auth' not in kwargs:
-                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(os.urandom(16)))
+                value = os.urandom(16)
+                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(value))
 
             if 'ssh_key' not in kwargs:
                 password = kwargs['auth'].password
@@ -578,16 +639,21 @@ class NodeDriver(BaseDriver):
             password = node.extra.get('password')
 
         try:
-            # Wait until node is up and running and has public IP assigned
-            node = self._wait_until_running(node=node, wait_period=3,
-                                            timeout=NODE_ONLINE_WAIT_TIMEOUT)
+            # Wait until node is up and running and has IP assigned
+            ssh_interface = kwargs.get('ssh_interface', 'public_ips')
+            node, ip_addresses = self._wait_until_running(node=node,
+                    wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
+                    ssh_interface=ssh_interface)
+
+            if password:
+                node.extra['password'] = password
 
             ssh_username = kwargs.get('ssh_username', 'root')
             ssh_port = kwargs.get('ssh_port', 22)
             ssh_timeout = kwargs.get('ssh_timeout', 10)
             ssh_key_file = kwargs.get('ssh_key', None)
 
-            ssh_client = SSHClient(hostname=node.public_ips[0],
+            ssh_client = SSHClient(hostname=ip_addresses[0],
                                    port=ssh_port, username=ssh_username,
                                    password=password,
                                    key=ssh_key_file,
@@ -604,10 +670,79 @@ class NodeDriver(BaseDriver):
                                         max_tries=max_tries)
         except Exception:
             e = sys.exc_info()[1]
-            raise DeploymentError(node, e)
+            raise DeploymentError(node=node, original_exception=e, driver=self)
+
         return node
 
-    def _wait_until_running(self, node, wait_period=3, timeout=600):
+    def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        Create a new volume.
+
+        @param      size: Size of volume in gigabytes (required)
+        @type       size: C{int}
+
+        @keyword    name: Name of the volume to be created
+        @type       name: C{str}
+
+        @keyword    location: Which data center to create a volume in. If
+                               empty, undefined behavoir will be selected.
+                               (optional)
+        @type       location: L{NodeLocation}
+
+        @keyword    snapshot:  Name of snapshot from which to create the new
+                               volume.  (optional)
+        @type       snapshot:  C{str}
+
+        @return: The newly created L{StorageVolume}.
+        """
+        raise NotImplementedError(
+           'create_volume not implemented for this driver')
+
+    def destroy_volume(self, volume):
+        """
+        Destroys a storage volume.
+
+        @param      volume: Volume to be destroyed
+        @type       volume: L{StorageVolume}
+
+        @return: C{bool}
+        """
+
+        raise NotImplementedError(
+               'destroy_volume not implemented for this driver')
+
+    def attach_volume(self, node, volume, device=None):
+        """
+        Attaches volume to node.
+
+        @param      node: Node to attach volume to
+        @type       node: L{Node}
+
+        @param      volume: Volume to attach
+        @type       volume: L{StorageVolume}
+
+        @param      device: Where the device is exposed,
+                            e.g. '/dev/sdb (optional)
+        @type       device: C{str}
+
+        @return: C{bool}
+        """
+        raise NotImplementedError('attach not implemented for this driver')
+
+    def detach_volume(self, volume):
+        """
+        Detaches a volume from a node.
+
+        @param      volume: Volume to be detached
+        @type       volume: L{StorageVolume}
+
+        @returns C{bool}
+        """
+
+        raise NotImplementedError('detach not implemented for this driver')
+
+    def _wait_until_running(self, node, wait_period=3, timeout=600,
+                            ssh_interface='public_ips', force_ipv4=True):
         """
         Block until node is fully booted and has an IP address assigned.
 
@@ -622,10 +757,34 @@ class NodeDriver(BaseDriver):
                              (default is 600)
         @type       timeout: C{int}
 
-        @return: C{Node} Node instance on success.
+        @keyword    ssh_interface: The interface to wait for.
+                                   Default is 'public_ips', other option is
+                                   'private_ips'.
+        @type       ssh_interface: C{str}
+
+        @keyword    force_ipv4: Ignore ipv6 IP addresses (default is True).
+        @type       force_ipv4: C{bool}
+
+        @return: C{(Node, ip_addresses)} tuple of Node instance and
+                 list of ip_address on success.
         """
+        def is_supported(address):
+            """Return True for supported address"""
+            if force_ipv4 and not is_valid_ip_address(address=address,
+                                                      family=socket.AF_INET):
+                return False
+            return True
+
+        def filter_addresses(addresses):
+            """Return list of supported addresses"""
+            return [a for a in addresses if is_supported(a)]
+
         start = time.time()
         end = start + timeout
+
+        if ssh_interface not in ['public_ips', 'private_ips']:
+            raise ValueError('ssh_interface argument must either be' +
+                             'public_ips or private_ips')
 
         while time.time() < end:
             nodes = self.list_nodes()
@@ -636,8 +795,10 @@ class NodeDriver(BaseDriver):
                                     + 'but multiple nodes have same UUID'),
                                     driver=self)
 
-            if (len(nodes) == 1 and nodes[0].public_ips and nodes[0].state == NodeState.RUNNING):
-                return nodes[0]
+            if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and \
+                filter_addresses(getattr(nodes[0], ssh_interface))):
+                return (nodes[0], filter_addresses(getattr(nodes[0],
+                                                   ssh_interface)))
             else:
                 time.sleep(wait_period)
                 continue
@@ -645,13 +806,17 @@ class NodeDriver(BaseDriver):
         raise LibcloudError(value='Timed out after %s seconds' % (timeout),
                             driver=self)
 
-    def _ssh_client_connect(self, ssh_client, timeout=300):
+    def _ssh_client_connect(self, ssh_client, wait_period=1.5, timeout=300):
         """
         Try to connect to the remote SSH server. If a connection times out or
         is refused it is retried up to timeout number of seconds.
 
         @keyword    ssh_client: A configured SSHClient instance
         @type       ssh_client: C{SSHClient}
+
+        @keyword    wait_period: How many seconds to wait between each loop
+                                 iteration (default is 1.5)
+        @type       wait_period: C{int}
 
         @keyword    timeout: How many seconds to wait before timing out
                              (default is 600)
@@ -669,6 +834,7 @@ class NodeDriver(BaseDriver):
                 # Retry if a connection is refused or timeout
                 # occurred
                 ssh_client.close()
+                time.sleep(wait_period)
                 continue
             else:
                 return ssh_client
@@ -739,6 +905,19 @@ def is_private_subnet(ip):
             return True
 
     return False
+
+
+def is_valid_ip_address(address, family=socket.AF_INET):
+    """
+    Check if the provided address is valid IPv4 or IPv6 adddress.
+
+    @return: C{bool} True if the provided address is valid.
+    """
+    try:
+        socket.inet_pton(family, address)
+    except socket.error:
+        return False
+    return True
 
 
 if __name__ == "__main__":

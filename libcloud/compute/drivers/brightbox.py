@@ -18,7 +18,6 @@ Brightbox Driver
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-from libcloud.utils.py3 import u
 
 from libcloud.common.brightbox import BrightboxConnection
 from libcloud.compute.types import Provider, NodeState
@@ -44,6 +43,7 @@ class BrightboxNodeDriver(NodeDriver):
 
     type = Provider.BRIGHTBOX
     name = 'Brightbox'
+    website = 'http://www.brightbox.co.uk/'
     features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {'creating': NodeState.PENDING,
@@ -56,6 +56,9 @@ class BrightboxNodeDriver(NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=API_VERSION, **kwargs):
+        """
+        @requires: key, secret
+        """
         super(BrightboxNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure,
                                                   host=host, port=port,

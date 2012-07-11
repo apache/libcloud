@@ -109,10 +109,14 @@ class RimuHostingNodeDriver(NodeDriver):
 
     type = Provider.RIMUHOSTING
     name = 'RimuHosting'
+    website = 'http://rimuhosting.com/'
     connectionCls = RimuHostingConnection
 
     def __init__(self, key, host=API_HOST, port=443,
                  api_context=API_CONTEXT, secure=True):
+        """
+        @requires: key, secret
+        """
         # Pass in some extra vars so that
         self.key = key
         self.secure = secure

@@ -16,6 +16,9 @@
 """
 Provides generic deployment steps for machines post boot.
 """
+
+from __future__ import with_statement
+
 import os
 import binascii
 
@@ -74,6 +77,38 @@ class SSHKeyDeployment(Deployment):
         See also L{Deployment.run}
         """
         client.put(".ssh/authorized_keys", contents=self.key, mode='a')
+        return node
+
+
+class FileDeployment(Deployment):
+    """
+    Installs a file.
+    """
+
+    def __init__(self, source, target):
+        """
+        @type source: C{str}
+        @keyword source: Local path of file to be installed
+
+        @type target: C{str}
+        @keyword target: Path to install file on node 
+        """
+        self.source = source
+        self.target = target
+
+    def run(self, node, client):
+        """
+        Upload the file, retaining permissions
+
+        See also L{Deployment.run}
+        """
+        perms = int(oct(os.stat(self.source).st_mode)[4:], 8)
+
+        with open(self.source, 'rb') as fp:
+            content = fp.read()
+
+        client.put(path=self.target, chmod=perms,
+                   contents=content)
         return node
 
 

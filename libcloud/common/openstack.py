@@ -21,7 +21,6 @@ import binascii
 import os
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlparse
 
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import (LibcloudError, InvalidCredsError,
@@ -80,14 +79,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
     responseCls = OpenStackAuthResponse
     name = 'OpenStack Auth'
+    timeout = None
 
-    def __init__(self, parent_conn, auth_url, auth_version, user_id, key, tenant_name=None):
+    def __init__(self, parent_conn, auth_url, auth_version, user_id, key,
+                 tenant_name=None, timeout=None):
         self.parent_conn = parent_conn
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
 
+        if timeout:
+            self.timeout = timeout
+
         super(OpenStackAuthConnection, self).__init__(
-            user_id, key, url=auth_url)
+            user_id, key, url=auth_url, timeout=self.timeout)
 
         self.auth_version = auth_version
         self.auth_url = auth_url
@@ -136,10 +140,14 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             headers = resp.headers
             # emulate the auth 1.1 URL list
             self.urls = {}
-            self.urls['cloudServers'] = [{'publicURL': headers.get('x-server-management-url', None)}]
-            self.urls['cloudFilesCDN'] = [{'publicURL': headers.get('x-cdn-management-url', None)}]
-            self.urls['cloudFiles'] = [{'publicURL': headers.get('x-storage-url', None)}]
+            self.urls['cloudServers'] = \
+                [{'publicURL': headers.get('x-server-management-url', None)}]
+            self.urls['cloudFilesCDN'] = \
+                [{'publicURL': headers.get('x-cdn-management-url', None)}]
+            self.urls['cloudFiles'] = \
+                [{'publicURL': headers.get('x-storage-url', None)}]
             self.auth_token = headers.get('x-auth-token', None)
+            self.auth_auth_user_info = None
 
             if not self.auth_token:
                 raise MalformedResponseError('Missing X-Auth-Token in \
@@ -170,6 +178,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.auth_token = body['auth']['token']['id']
                 self.auth_token_expires = body['auth']['token']['expires']
                 self.urls = body['auth']['serviceCatalog']
+                self.auth_user_info = None
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
@@ -177,9 +186,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
-        # https://github.com/openstack/keystone/tree/master/keystone/content/service
-        data = {'auth': 
-                {'RAX-KSKEY:apiKeyCredentials': 
+        # http://s.apache.org/oAi
+        data = {'auth':
+                {'RAX-KSKEY:apiKeyCredentials':
                  {'username': self.user_id, 'apiKey': self.key}}}
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
@@ -189,9 +198,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_2_0_with_password(self):
         # Password based authentication is the only 'core' authentication
         # method in Keystone at this time.
-        # 'keystone' - http://docs.openstack.org/api/openstack-identity-service/2.0/content/Identity-Service-Concepts-e1362.html
-        data = {'auth': 
-                {'passwordCredentials': 
+        # 'keystone' - http://s.apache.org/e8h
+        data = {'auth': \
+                {'passwordCredentials': \
                  {'username': self.user_id, 'password': self.key}}}
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
@@ -222,6 +231,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.auth_token = access['token']['id']
                 self.auth_token_expires = access['token']['expires']
                 self.urls = access['serviceCatalog']
+                self.auth_user_info = access.get('user', {})
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
@@ -255,10 +265,25 @@ class OpenStackServiceCatalog(object):
             raise LibcloudError('auth version "%s" not supported'
                                 % (self._auth_version))
 
+    def get_endpoints(self, service_type=None, name=None):
+        eps = []
+
+        if '2.0' in self._auth_version:
+            endpoints = self._service_catalog.get(service_type, {}) \
+                                             .get(name, {})
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            endpoints = self._service_catalog.get(name, {})
+
+        for regionName, values in endpoints.items():
+            eps.append(values[0])
+
+        return eps
+
     def get_endpoint(self, service_type=None, name=None, region=None):
 
         if '2.0' in self._auth_version:
-            endpoint = self._service_catalog.get(service_type, {}).get(name, {}).get(region, [])
+            endpoint = self._service_catalog.get(service_type, {}) \
+                                            .get(name, {}).get(region, [])
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             endpoint = self._service_catalog.get(name, {}).get(region, [])
 
@@ -283,9 +308,7 @@ class OpenStackServiceCatalog(object):
                 self._service_catalog[service][region].append(endpoint)
 
     def _parse_auth_v2(self, service_catalog):
-
         for service in service_catalog:
-
             service_type = service['type']
             service_name = service.get('name', None)
 
@@ -297,10 +320,12 @@ class OpenStackServiceCatalog(object):
 
             for endpoint in service.get('endpoints', []):
                 region = endpoint.get('region', None)
-                if region not in self._service_catalog[service_type][service_name]:
-                    self._service_catalog[service_type][service_name][region] = []
 
-                self._service_catalog[service_type][service_name][region].append(endpoint)
+                catalog = self._service_catalog[service_type][service_name]
+                if region not in catalog:
+                    catalog[region] = []
+
+                catalog[region].append(endpoint)
 
 
 class OpenStackBaseConnection(ConnectionUserAndKey):
@@ -342,15 +367,15 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     is provided.
     @type ex_tenant_name: C{string}
 
-    @param ex_force_service_type: Service type to use when selecting an 
+    @param ex_force_service_type: Service type to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_type: C{string}
 
-    @param ex_force_service_name: Service name to use when selecting an 
+    @param ex_force_service_name: Service name to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_name: C{string}
 
-    @param ex_force_service_region: Region to use when selecting an 
+    @param ex_force_service_region: Region to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_region: C{string}
     """
@@ -358,13 +383,14 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     auth_url = None
     auth_token = None
     auth_token_expires = None
+    auth_user_info = None
     service_catalog = None
     service_type = None
     service_name = None
     service_region = None
 
     def __init__(self, user_id, key, secure=True,
-                 host=None, port=None,
+                 host=None, port=None, timeout=None,
                  ex_force_base_url=None,
                  ex_force_auth_url=None,
                  ex_force_auth_version=None,
@@ -393,7 +419,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self._auth_version = AUTH_API_VERSION
 
         super(OpenStackBaseConnection, self).__init__(
-            user_id, key, secure=secure)
+            user_id, key, secure=secure, timeout=timeout)
 
     def get_endpoint(self):
         """
@@ -430,7 +456,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         return super(OpenStackBaseConnection, self).morph_action_hook(action)
 
     def request(self, **kwargs):
-        self._populate_hosts_and_request_paths()
         return super(OpenStackBaseConnection, self).request(**kwargs)
 
     def _populate_hosts_and_request_paths(self):
@@ -450,19 +475,25 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                     'have auth_url set')
 
             osa = OpenStackAuthConnection(self, aurl, self._auth_version,
-                                          self.user_id, self.key, self._ex_tenant_name)
+                                          self.user_id, self.key,
+                                          tenant_name=self._ex_tenant_name,
+                                          timeout=self.timeout)
 
             # may throw InvalidCreds, etc
             osa.authenticate()
 
             self.auth_token = osa.auth_token
             self.auth_token_expires = osa.auth_token_expires
+            self.auth_user_info = osa.auth_user_info
 
             # pull out and parse the service catalog
-            self.service_catalog = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=self._auth_version)
+            self.service_catalog = OpenStackServiceCatalog(osa.urls,
+                    ex_force_auth_version=self._auth_version)
 
         # Set up connection info
-        (self.host, self.port, self.secure, self.request_path) = self._tuple_from_url(self._ex_force_base_url or self.get_endpoint())
+        url = self._ex_force_base_url or self.get_endpoint()
+        (self.host, self.port, self.secure, self.request_path) = \
+                self._tuple_from_url(url)
 
     def _add_cache_busting_to_params(self, params):
         cache_busting_number = binascii.hexlify(os.urandom(8))
@@ -483,7 +514,8 @@ class OpenStackDriverMixin(object):
         self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
         self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
         self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
-        self._ex_force_service_region = kwargs.get('ex_force_service_region', None)
+        self._ex_force_service_region = kwargs.get('ex_force_service_region',
+                                                   None)
 
     def openstack_connection_kwargs(self):
         rv = {}

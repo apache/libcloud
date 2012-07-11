@@ -25,3 +25,4 @@ class NinefoldNodeDriver(CloudStackNodeDriver):
 
     type = Provider.NINEFOLD
     name = 'Ninefold'
+    website = 'http://ninefold.com/'

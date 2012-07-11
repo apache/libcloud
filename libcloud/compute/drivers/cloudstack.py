@@ -16,8 +16,8 @@
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
-                                  NodeSize
-from libcloud.compute.types import NodeState
+                                  NodeSize, StorageVolume
+from libcloud.compute.types import NodeState, LibcloudError
 
 
 class CloudStackNode(Node):
@@ -78,6 +78,18 @@ class CloudStackForwardingRule(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
+class CloudStackDiskOffering(object):
+    """A disk offering within CloudStack."""
+
+    def __init__(self, id, name, size, customizable):
+        self.id = id
+        self.name = name
+        self.size = size
+        self.customizable = customizable
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and self.id == other.id
+
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
 
@@ -89,6 +101,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     name = 'CloudStack'
     api_name = 'cloudstack'
+    website = 'http://cloudstack.org/'
     type = Provider.CLOUDSTACK
 
     NODE_STATE_MAP = {
@@ -101,6 +114,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, *args, **kwargs):
+        """
+        @requires: key, secret, host or path
+        """
         host = host if host else self.host
 
         if path is not None:
@@ -124,7 +140,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             args['zoneid'] = location.id
         imgs = self._sync_request('listTemplates', **args)
         images = []
-        for img in imgs['template']:
+        for img in imgs.get('template', []):
             images.append(NodeImage(img['id'], img['name'], self, {
                 'hypervisor': img['hypervisor'],
                 'format': img['format'],
@@ -205,13 +221,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if location is None:
             location = self.list_locations()[0]
 
-        network_id = kwargs.pop('network_id', None)
-        if network_id is None:
-            networks = self._sync_request('listNetworks')
-
-            if networks:
-                extra_args['networkids'] = networks['network'][0]['id']
-        else:
+        if 'network_id' in kwargs:
             extra_args['networkids'] = network_id
 
         result = self._async_request('deployVirtualMachine',
@@ -245,6 +255,63 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def reboot_node(self, node):
         self._async_request('rebootVirtualMachine', id=node.id)
+        return True
+
+    def ex_list_disk_offerings(self):
+        """Fetch a list of all available disk offerings."""
+
+        diskOfferings = []
+
+        diskOfferResponse = self._sync_request('listDiskOfferings')
+        for diskOfferDict in diskOfferResponse.get('diskoffering', ()):
+            diskOfferings.append(
+                    CloudStackDiskOffering(
+                        id=diskOfferDict['id'],
+                        name=diskOfferDict['name'],
+                        size=diskOfferDict['disksize'],
+                        customizable=diskOfferDict['iscustomized']))
+
+        return diskOfferings
+
+    def create_volume(self, size, name, location, snapshot=None):
+        # TODO Add snapshot handling
+        for diskOffering in self.ex_list_disk_offerings():
+            if diskOffering.size == size or diskOffering.customizable:
+                break
+        else:
+            raise LibcloudError(
+                    'Disk offering with size=%s not found' % size)
+
+        extraParams = dict()
+        if diskOffering.customizable:
+            extraParams['size'] = size
+
+        requestResult = self._async_request('createVolume',
+                                name=name,
+                                diskOfferingId=diskOffering.id,
+                                zoneId=location.id,
+                                **extraParams)
+
+        volumeResponse = requestResult['volume']
+
+        return StorageVolume(id=volumeResponse['id'],
+                            name=name,
+                            size=size,
+                            driver=self,
+                            extra=dict(name=volumeResponse['name']))
+
+    def attach_volume(self, node, volume, device=None):
+        # TODO Add handling for device name
+        self._async_request('attachVolume', id=volume.id,
+                            virtualMachineId=node.id)
+        return True
+
+    def detach_volume(self, volume):
+        self._async_request('detachVolume', id=volume.id)
+        return True
+
+    def destroy_volume(self, volume):
+        self._sync_request('deleteVolume', id=volume.id)
         return True
 
     def ex_allocate_public_ip(self, node):
@@ -297,8 +364,30 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return rule
 
     def ex_delete_ip_forwarding_rule(self, node, rule):
-        "Remove a NAT/firewall forwading rule."
+        "Remove a NAT/firewall forwarding rule."
 
         node.extra['ip_forwarding_rules'].remove(rule)
         self._async_request('deleteIpForwardingRule', id=rule.id)
         return True
+
+    def ex_register_iso(self, name, url, location=None, **kwargs):
+        "Registers an existing ISO by URL."
+        if location is None:
+            location = self.list_locations()[0]
+
+        extra_args = {}
+        extra_args['bootable'] = kwargs.pop('bootable', False)
+        if extra_args['bootable']:
+            os_type_id = kwargs.pop('ostypeid', None)
+
+            if not os_type_id:
+                raise LibcloudError('If bootable=True, ostypeid is required!')
+
+            extra_args['ostypeid'] = os_type_id
+
+        return self._sync_request('registerIso',
+                                  name=name,
+                                  displaytext=name,
+                                  url=url,
+                                  zoneid=location.id,
+                                  **extra_args)

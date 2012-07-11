@@ -46,6 +46,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     """
     api_name = 'gandi'
     friendly_name = 'Gandi.net'
+    website = 'http://www.gandi.net/'
     country = 'FR'
     type = Provider.GANDI
     # TODO : which features to enable ?

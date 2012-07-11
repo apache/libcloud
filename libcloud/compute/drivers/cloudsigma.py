@@ -195,7 +195,8 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
         headers['Content-Type'] = 'application/json'
 
         headers['Authorization'] = 'Basic %s' % (base64.b64encode(b('%s:%s' %
-                                                 (self.user_id, self.key))))
+                                                 (self.user_id,
+                                                     self.key))).decode('utf-8'))
 
         return headers
 
@@ -203,6 +204,7 @@ class CloudSigmaBaseConnection(ConnectionUserAndKey):
 class CloudSigmaBaseNodeDriver(NodeDriver):
     type = Provider.CLOUDSIGMA
     name = 'CloudSigma'
+    website = 'http://www.cloudsigma.com/'
     connectionCls = CloudSigmaBaseConnection
 
     def reboot_node(self, node):

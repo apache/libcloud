@@ -18,6 +18,7 @@ Gandi driver base classes
 
 import time
 import hashlib
+import sys
 
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b
@@ -104,6 +105,9 @@ class BaseGandiDriver(object):
     name = 'Gandi'
 
     def __init__(self, key, secret=None, secure=False):
+        """
+        @requires: key, secret
+        """
         self.key = key
         self.secret = secret
         self.connection = self.connectionCls(key, secret)

@@ -123,7 +123,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         b64_hmac = base64.b64encode(
             hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 
 class GoogleStorageDriver(S3StorageDriver):

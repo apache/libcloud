@@ -157,11 +157,13 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
         headers['Authorization'] = ('Basic %s'
                                     % (base64.b64encode(b('%s:%s'
                                                         % (self.user_id,
-                                                           self.key)))))
+                                                           self.key))))
+                                                        .decode('utf-8'))
         return headers
 
 
 class ElasticStackBaseNodeDriver(NodeDriver):
+    website = 'http://www.elasticstack.com'
     connectionCls = ElasticStackBaseConnection
     features = {"create_node": ["generates_password"]}
 

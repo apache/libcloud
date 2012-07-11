@@ -19,13 +19,12 @@ VCL driver
 import sys
 import time
 
-import libcloud
 from libcloud.utils.py3 import xmlrpclib
 
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.base import NodeLocation, NodeSize, NodeImage
+from libcloud.compute.base import NodeSize, NodeImage
 
 
 class VCLSafeTransport(xmlrpclib.SafeTransport):
@@ -125,10 +124,14 @@ class VCLNodeDriver(NodeDriver):
 
     connectionCls = VCLConnection
     name = 'VCL'
+    website = 'http://incubator.apache.org/vcl/'
     type = Provider.VCL
 
     def __init__(self, key, secret, secure=True, host=None, port=None, *args,
                  **kwargs):
+        """
+        @requires: key, secret, host
+        """
         if not host:
             raise Exception('When instantiating VCL driver directly ' +
                             'you also need to provide host')
@@ -187,7 +190,7 @@ class VCLNodeDriver(NodeDriver):
         Throws error if request fails.
         """
         try:
-            res = self._vcl_request(
+            self._vcl_request(
                 'XMLRPCendRequest',
                 node.id
             )
