@@ -73,6 +73,9 @@ Changes with Apache Libcloud in development:
     - Add 'auth_user_variable' to the  OpenStackAuthConnection class.
       [Mark Everett]
 
+    - Fix a bug with double quoted URLs in the vCloud driver. ; LIBCLOUD-22
+      [Michal Galet]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203

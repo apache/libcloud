@@ -284,6 +284,12 @@ class VCloud_1_5_MockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
+    def request(self, method, url, body=None, headers=None, raw=False):
+        assert url.startswith('/api/'), '"{0}" is invalid. Needs to start with "/api". ' \
+        'The passed URL should be just the path, not full URL.'.format(url)
+        super(VCloud_1_5_MockHttp, self).request(method, url, body, headers,
+                                                 raw)
+
     def _api_sessions(self, method, url, body, headers):
         headers['x-vcloud-authorization'] = 'testtoken'
         body = self.fixtures.load('api_sessions.xml')
