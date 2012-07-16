@@ -68,6 +68,7 @@ class Provider(object):
     @cvar JOYENT: Joyent driver
     @cvar VCL: VCL driver
     @cvar KTUCLOUD: kt ucloud driver
+    @cvar GRIDSPOT: Gridspot driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -118,8 +119,9 @@ class Provider(object):
     ELASTICHOSTS_CA1 = 44
     JOYENT = 45
     VCL = 46
-    KTUCLOUD=47
+    KTUCLOUD = 47
     RACKSPACE_NOVA_LON = 48
+    GRIDSPOT = 49
 
 
 class NodeState(object):
