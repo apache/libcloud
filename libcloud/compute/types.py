@@ -58,7 +58,7 @@ class Provider(object):
     @cvar OPSOURCE: Opsource Cloud
     @cvar NINEFOLD: Ninefold
     @cvar TERREMARK: Terremark
-    @cvar: EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    @cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)

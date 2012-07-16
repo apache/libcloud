@@ -39,7 +39,7 @@ class Provider(object):
     @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     @cvar NINEFOLD: Ninefold
     @cvar GOOGLE_STORAGE Google Storage
-    @cvar: S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    @cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     @cvar NIMBUS: Nimbus.io driver
     """
     DUMMY = 0
