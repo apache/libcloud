@@ -147,7 +147,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             self.urls['cloudFiles'] = \
                 [{'publicURL': headers.get('x-storage-url', None)}]
             self.auth_token = headers.get('x-auth-token', None)
-            self.auth_auth_user_info = None
+            self.auth_user_info = None
 
             if not self.auth_token:
                 raise MalformedResponseError('Missing X-Auth-Token in \
