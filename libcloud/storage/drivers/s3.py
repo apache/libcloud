@@ -14,8 +14,6 @@
 # limitations under the License.
 
 import time
-import httplib
-import urllib
 import copy
 import base64
 import hmac
@@ -23,8 +21,13 @@ import hmac
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from libcloud.utils import fixxpath, findtext, in_development_warning
-from libcloud.utils import read_in_chunks
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import b
+
+from libcloud.utils.xml import fixxpath, findtext
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse
@@ -42,6 +45,7 @@ EXPIRATION_SECONDS = 15 * 60
 
 S3_US_STANDARD_HOST = 's3.amazonaws.com'
 S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
+S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
 S3_AP_NORTHEAST_HOST = 's3-ap-northeast-1.amazonaws.com'
@@ -113,22 +117,23 @@ class S3Connection(ConnectionUserAndKey):
         amz_header_values = {}
 
         headers_copy = copy.deepcopy(headers)
-        for key, value in headers_copy.iteritems():
-            if key.lower() in special_header_keys:
-                special_header_values[key.lower()] = value.lower().strip()
-            elif key.lower().startswith('x-amz-'):
+        for key, value in list(headers_copy.items()):
+            key_lower = key.lower()
+            if key_lower in special_header_keys:
+                special_header_values[key_lower] = value.strip()
+            elif key_lower.startswith('x-amz-'):
                 amz_header_values[key.lower()] = value.strip()
 
-        if not special_header_values.has_key('content-md5'):
+        if not 'content-md5' in special_header_values:
             special_header_values['content-md5'] = ''
 
-        if not special_header_values.has_key('content-type'):
+        if not 'content-type' in special_header_values:
             special_header_values['content-type'] = ''
 
         if expires:
             special_header_values['date'] = str(expires)
 
-        keys_sorted = special_header_values.keys()
+        keys_sorted = list(special_header_values.keys())
         keys_sorted.sort()
 
         buf = [ method ]
@@ -137,7 +142,7 @@ class S3Connection(ConnectionUserAndKey):
             buf.append(value)
         string_to_sign = '\n'.join(buf)
 
-        keys_sorted = amz_header_values.keys()
+        keys_sorted = list(amz_header_values.keys())
         keys_sorted.sort()
 
         amz_header_string = []
@@ -153,15 +158,17 @@ class S3Connection(ConnectionUserAndKey):
 
         string_to_sign = '\n'.join(values_to_sign)
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha1).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 class S3StorageDriver(StorageDriver):
     name = 'Amazon S3 (standard)'
     connectionCls = S3Connection
     hash_type = 'md5'
+    supports_chunked_encoding = False
     ex_location_name = ''
+    namespace = NAMESPACE
 
     def list_containers(self):
         response = self.connection.request('/')
@@ -211,7 +218,12 @@ class S3StorageDriver(StorageDriver):
             root = Element('CreateBucketConfiguration')
             child = SubElement(root, 'LocationConstraint')
             child.text = self.ex_location_name
-            data = tostring(root)
+
+            if PY3:
+                encoding = 'unicode'
+            else:
+                encoding = None
+            data = tostring(root, encoding=encoding)
         else:
             data = ''
 
@@ -300,11 +312,17 @@ class S3StorageDriver(StorageDriver):
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  extra=None, ex_storage_class=None):
-        # Amazon S3 does not support chunked transfer encoding.
-        # Using multipart upload to "emulate" it would mean unnecessary
-        # buffering of data in memory.
-        raise NotImplementedError(
-            'upload_object_via_stream not implemented for this driver')
+        # Amazon S3 does not support chunked transfer encoding so the whole data
+        # is read into memory before uploading the object.
+        upload_func = self._upload_data
+        upload_func_kwargs = {}
+
+        return self._put_object(container=container, object_name=object_name,
+                                upload_func=upload_func,
+                                upload_func_kwargs=upload_func_kwargs,
+                                extra=extra, iterator=iterator,
+                                verify_hash=False,
+                                storage_class=ex_storage_class)
 
     def delete_object(self, obj):
         object_name = self._clean_object_name(name=obj.name)
@@ -320,7 +338,7 @@ class S3StorageDriver(StorageDriver):
         return False
 
     def _clean_object_name(self, name):
-        name = urllib.quote(name)
+        name = urlquote(name)
         return name
 
     def _get_more(self, last_key, value_dict):
@@ -337,7 +355,7 @@ class S3StorageDriver(StorageDriver):
             objects = self._to_objs(obj=response.object,
                                        xpath='Contents', container=container)
             is_truncated = response.object.findtext(fixxpath(xpath='IsTruncated',
-                                                   namespace=NAMESPACE)).lower()
+                                                   namespace=self.namespace)).lower()
             exhausted = (is_truncated == 'false')
 
             if (len(objects) > 0):
@@ -366,7 +384,7 @@ class S3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
 
         if meta_data:
-            for key, value in meta_data.iteritems():
+            for key, value in list(meta_data.items()):
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
 
@@ -407,21 +425,21 @@ class S3StorageDriver(StorageDriver):
 
     def _to_containers(self, obj, xpath):
         return [ self._to_container(element) for element in \
-                 obj.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))]
+                 obj.findall(fixxpath(xpath=xpath, namespace=self.namespace))]
 
     def _to_objs(self, obj, xpath, container):
         return [ self._to_obj(element, container) for element in \
-                 obj.findall(fixxpath(xpath=xpath, namespace=NAMESPACE))]
+                 obj.findall(fixxpath(xpath=xpath, namespace=self.namespace))]
 
     def _to_container(self, element):
         extra = {
             'creation_date': findtext(element=element, xpath='CreationDate',
-                                      namespace=NAMESPACE)
+                                      namespace=self.namespace)
         }
 
         container = Container(
                         name=findtext(element=element, xpath='Name',
-                                      namespace=NAMESPACE),
+                                      namespace=self.namespace),
                         extra=extra,
                         driver=self
                     )
@@ -441,19 +459,19 @@ class S3StorageDriver(StorageDriver):
 
     def _to_obj(self, element, container):
         owner_id = findtext(element=element, xpath='Owner/ID',
-                            namespace=NAMESPACE)
+                            namespace=self.namespace)
         owner_display_name = findtext(element=element,
                                       xpath='Owner/DisplayName',
-                                      namespace=NAMESPACE)
+                                      namespace=self.namespace)
         meta_data = { 'owner': { 'id': owner_id,
                                  'display_name':owner_display_name }}
 
         obj = Object(name=findtext(element=element, xpath='Key',
-                                   namespace=NAMESPACE),
+                                   namespace=self.namespace),
                      size=int(findtext(element=element, xpath='Size',
-                                       namespace=NAMESPACE)),
+                                       namespace=self.namespace)),
                      hash=findtext(element=element, xpath='ETag',
-                                   namespace=NAMESPACE).replace('"', ''),
+                                   namespace=self.namespace).replace('"', ''),
                      extra=None,
                      meta_data=meta_data,
                      container=container,
@@ -469,6 +487,14 @@ class S3USWestStorageDriver(S3StorageDriver):
     name = 'Amazon S3 (us-west-1)'
     connectionCls = S3USWestConnection
     ex_location_name = 'us-west-1'
+
+class S3USWestOregonConnection(S3Connection):
+    host = S3_US_WEST_OREGON_HOST
+
+class S3USWestOregonStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (us-west-2)'
+    connectionCls = S3USWestOregonConnection
+    ex_location_name = 'us-west-2'
 
 class S3EUWestConnection(S3Connection):
     host = S3_EU_WEST_HOST

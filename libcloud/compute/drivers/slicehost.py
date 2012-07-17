@@ -21,40 +21,19 @@ import socket
 from xml.etree import ElementTree as ET
 from xml.parsers.expat import ExpatError
 
-from libcloud.common.base import ConnectionKey, Response
-from libcloud.compute.types import (
-    NodeState, Provider, InvalidCredsError, MalformedResponseError)
+from libcloud.utils.py3 import b
+
+from libcloud.common.base import ConnectionKey, XmlResponse
+from libcloud.compute.types import NodeState, Provider, InvalidCredsError
 from libcloud.compute.base import NodeSize, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import Node, is_private_subnet
 
-class SlicehostResponse(Response):
-
-    def parse_body(self):
-        # length of 1 can't be valid XML, but on destroy node,
-        # slicehost returns a 1 byte response with a "Content-Type:
-        # application/xml" header. booya.
-        if not self.body or len(self.body) <= 1:
-            return None
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse XML",
-                body=self.body,
-                driver=SlicehostNodeDriver)
-        return body
-
+class SlicehostResponse(XmlResponse):
     def parse_error(self):
         if self.status == 401:
             raise InvalidCredsError(self.body)
 
-        try:
-            body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError(
-                "Failed to parse XML",
-                body=self.body,
-                driver=SlicehostNodeDriver)
+        body = super(SlicehostResponse, self).parse_body()
         try:
             return "; ".join([ err.text
                                for err in
@@ -73,7 +52,8 @@ class SlicehostConnection(ConnectionKey):
 
     def add_default_headers(self, headers):
         headers['Authorization'] = ('Basic %s'
-                              % (base64.b64encode('%s:' % self.key)))
+                              % (base64.b64encode(b('%s:' %
+                                  self.key))).decode('utf-8'))
         return headers
 
 
@@ -86,6 +66,7 @@ class SlicehostNodeDriver(NodeDriver):
 
     type = Provider.SLICEHOST
     name = 'Slicehost'
+    website = 'http://slicehost.com/'
 
     features = {"create_node": ["generates_password"]}
 
@@ -214,14 +195,14 @@ class SlicehostNodeDriver(NodeDriver):
         # for consistency with other drivers, we put this in two places.
         node_attrs['password'] = node_attrs['root-password']
         extra = {}
-        for k in node_attrs.keys():
+        for k in list(node_attrs.keys()):
             ek = k.replace("-", "_")
             extra[ek] = node_attrs[k]
         n = Node(id=element.findtext('id'),
                  name=element.findtext('name'),
                  state=state,
-                 public_ip=public_ip,
-                 private_ip=private_ip,
+                 public_ips=public_ip,
+                 private_ips=private_ip,
                  driver=self.connection.driver,
                  extra=extra)
         return n
@@ -236,8 +217,8 @@ class SlicehostNodeDriver(NodeDriver):
         s = NodeSize(id=int(element.findtext('id')),
                      name=str(element.findtext('name')),
                      ram=int(element.findtext('ram')),
-                     disk=None, # XXX: needs hardcode
-                     bandwidth=None, # XXX: needs hardcode
+                     disk=None,  # XXX: needs hardcode
+                     bandwidth=None,  # XXX: needs hardcode
                      price=float(element.findtext('price'))/(100*24*30),
                      driver=self.connection.driver)
         return s

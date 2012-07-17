@@ -20,14 +20,17 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
-import httplib
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
 
-from libcloud import utils
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import next
+from libcloud.utils.py3 import b
+
+import libcloud.utils.files
 from libcloud.common.types import LibcloudError
-from libcloud.common.base import ConnectionKey
+from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
@@ -73,8 +76,8 @@ class Object(object):
     def get_cdn_url(self):
         return self.driver.get_object_cdn_url(obj=self)
 
-    def enable_cdn(self):
-        return self.driver.enable_object_cdn(obj=self)
+    def enable_cdn(self, **kwargs):
+        return self.driver.enable_object_cdn(obj=self, **kwargs)
 
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
@@ -119,16 +122,16 @@ class Container(object):
     def get_cdn_url(self):
         return self.driver.get_container_cdn_url(container=self)
 
-    def enable_cdn(self):
-        return self.driver.enable_container_cdn(container=self)
+    def enable_cdn(self, **kwargs):
+        return self.driver.enable_container_cdn(container=self, **kwargs)
 
     def get_object(self, object_name):
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None, verify_hash=True):
+    def upload_object(self, file_path, object_name, extra=None):
         return self.driver.upload_object(
-            file_path, self, object_name, extra, verify_hash)
+            file_path, self, object_name, extra)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None):
         return self.driver.upload_object_via_stream(
@@ -151,38 +154,21 @@ class Container(object):
         return ('<Container: name=%s, provider=%s>'
                 % (self.name, self.driver.name))
 
-class StorageDriver(object):
+class StorageDriver(BaseDriver):
     """
     A base StorageDriver to derive from.
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionUserAndKey
     name = None
     hash_type = 'md5'
+    supports_chunked_encoding = False
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
-        self.key = key
-        self.secret = secret
-        self.secure = secure
-        args = [self.key]
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
+      super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
+                                          host=host, port=port, **kwargs)
 
-        if self.secret != None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host != None:
-            args.append(host)
-
-        if port != None:
-            args.append(port)
-
-        self.connection = self.connectionCls(*args)
-
-        self.connection.driver = self
-        self.connection.connect()
-
-    def list_containters(self):
+    def list_containers(self):
         """
         Return a list of containers.
 
@@ -303,7 +289,7 @@ class StorageDriver(object):
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
         """
-        Upload an object.
+        Upload an object currently located on a disk.
 
         @type file_path: C{str}
         @param file_path: Path to the object on disk.
@@ -316,9 +302,6 @@ class StorageDriver(object):
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
-
-        @type verify_hash: C{boolean}
-        @param verify_hash: True to do a file integrity check.
         """
         raise NotImplementedError(
             'upload_object not implemented for this driver')
@@ -327,6 +310,22 @@ class StorageDriver(object):
                                  object_name,
                                  extra=None):
         """
+        Upload an object using an iterator.
+
+        If a provider supports it, chunked transfer encoding is used and you
+        don't need to know in advance the amount of data to be uploaded.
+
+        Otherwise if a provider doesn't support it, iterator will be exhausted
+        so a total size for data to be uploaded can be determined.
+
+        Note: Exhausting the iterator means that the whole data must be buffered
+        in memory which might result in memory exhausting when uploading a very
+        large object.
+
+        If a file is located on a disk you are advised to use upload_object
+        function which uses fs.stat function to determine the file size and it
+        doesn't need to buffer whole object in the memory.
+
         @type iterator: C{object}
         @param iterator: An object which implements the iterator interface.
 
@@ -338,6 +337,9 @@ class StorageDriver(object):
 
         @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+
+        Note: This dictionary must contain a 'content_type' key which represents
+        a content type of the stored object.
         """
         raise NotImplementedError(
             'upload_object_via_stream not implemented for this driver')
@@ -464,10 +466,10 @@ class StorageDriver(object):
                 'overwrite_existing=False',
                 driver=self)
 
-        stream = utils.read_in_chunks(response, chunk_size)
+        stream = libcloud.utils.files.read_in_chunks(response, chunk_size)
 
         try:
-            data_read = stream.next()
+            data_read = next(stream)
         except StopIteration:
             # Empty response?
             return False
@@ -476,11 +478,11 @@ class StorageDriver(object):
 
         with open(file_path, 'wb') as file_handle:
             while len(data_read) > 0:
-                file_handle.write(data_read)
+                file_handle.write(b(data_read))
                 bytes_transferred += len(data_read)
 
                 try:
-                    data_read = stream.next()
+                    data_read = next(stream)
                 except StopIteration:
                     data_read = ''
 
@@ -506,27 +508,45 @@ class StorageDriver(object):
         headers = headers or {}
 
         if file_path and not os.path.exists(file_path):
-          raise OSError('File %s does not exist' % (file_path))
+            raise OSError('File %s does not exist' % (file_path))
+
+        if iterator is not None and not hasattr(iterator, 'next') and not \
+           hasattr(iterator, '__next__'):
+            raise AttributeError('iterator object must implement next() ' +
+                                 'method.')
 
         if not content_type:
             if file_path:
                 name = file_path
             else:
                 name = object_name
-            content_type, _ = utils.guess_file_mime_type(name)
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
             if not content_type:
                 raise AttributeError(
                     'File content-type could not be guessed and' +
                     ' no content_type value provided')
 
+        file_size = None
+
         if iterator:
-            headers['Transfer-Encoding'] = 'chunked'
-            upload_func_kwargs['chunked'] = True
+            if self.supports_chunked_encoding:
+                headers['Transfer-Encoding'] = 'chunked'
+                upload_func_kwargs['chunked'] = True
+            else:
+                # Chunked transfer encoding is not supported. Need to buffer all
+                # the data in memory so we can determine file size.
+                iterator = libcloud.utils.files.read_in_chunks(iterator=iterator)
+                data = libcloud.utils.files.exhaust_iterator(iterator=iterator)
+
+                file_size = len(data)
+                upload_func_kwargs['data'] = data
         else:
             file_size = os.path.getsize(file_path)
-            headers['Content-Length'] = file_size
             upload_func_kwargs['chunked'] = False
+
+        if file_size:
+            headers['Content-Length'] = file_size
 
         headers['Content-Type'] = content_type
         response = self.connection.request(request_path,
@@ -544,6 +564,46 @@ class StorageDriver(object):
                         'bytes_transferred': bytes_transferred }
         return result_dict
 
+    def _upload_data(self, response, data, calculate_hash=True):
+        """
+        Upload data stored in a string.
+
+        @type response: C{RawResponse}
+        @param response: RawResponse object.
+
+        @type data: C{str}
+        @param data: Data to upload.
+
+        @type calculate_hash: C{boolean}
+        @param calculate_hash: True to calculate hash of the transfered data.
+                               (defauls to True).
+
+        @rtype: C{tuple}
+        @return: First item is a boolean indicator of success, second
+                 one is the uploaded data MD5 hash and the third one
+                 is the number of transferred bytes.
+        """
+        bytes_transferred = 0
+        data_hash = None
+
+        if calculate_hash:
+            data_hash = self._get_hash_function()
+            data_hash.update(b(data))
+
+        try:
+            response.connection.connection.send(b(data))
+        except Exception:
+            # TODO: let this exception propagate
+            # Timeout, etc.
+            return False, None, bytes_transferred
+
+        bytes_transferred = len(data)
+
+        if calculate_hash:
+            data_hash = data_hash.hexdigest()
+
+        return True, data_hash, bytes_transferred
+
     def _stream_data(self, response, iterator, chunked=False,
                      calculate_hash=True, chunk_size=None):
         """
@@ -555,6 +615,14 @@ class StorageDriver(object):
         @type iterator: C{}
         @param response: An object which implements an iterator interface
                          or a File like object with read method.
+
+        @type chunked: C{boolean}
+        @param chunked: True if the chunked transfer encoding should be used
+                        (defauls to False).
+
+        @type calculate_hash: C{boolean}
+        @param calculate_hash: True to calculate hash of the transfered data.
+                               (defauls to True).
 
         @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
@@ -569,26 +637,36 @@ class StorageDriver(object):
 
         data_hash = None
         if calculate_hash:
-            data_hash = hashlib.md5()
+            data_hash = self._get_hash_function()
 
-        generator = utils.read_in_chunks(iterator, chunk_size)
+        generator = libcloud.utils.files.read_in_chunks(iterator, chunk_size)
 
         bytes_transferred = 0
         try:
-            chunk = generator.next()
+            chunk = next(generator)
         except StopIteration:
-            # No data?
-            return False, None, None
+            # Special case when StopIteration is thrown on the first iteration -
+            # create a 0-byte long object
+            chunk = ''
+            if chunked:
+                response.connection.connection.send(b('%X\r\n' %
+                                                   (len(chunk))))
+                response.connection.connection.send(chunk)
+                response.connection.connection.send(b('\r\n'))
+                response.connection.connection.send(b('0\r\n\r\n'))
+            else:
+                response.connection.connection.send(chunk)
+            return True, data_hash.hexdigest(), bytes_transferred
 
         while len(chunk) > 0:
             try:
                 if chunked:
-                    response.connection.connection.send('%X\r\n' %
-                                                       (len(chunk)))
-                    response.connection.connection.send(chunk)
-                    response.connection.connection.send('\r\n')
+                    response.connection.connection.send(b('%X\r\n' %
+                                                       (len(chunk))))
+                    response.connection.connection.send(b(chunk))
+                    response.connection.connection.send(b('\r\n'))
                 else:
-                    response.connection.connection.send(chunk)
+                    response.connection.connection.send(b(chunk))
             except Exception:
                 # TODO: let this exception propagate
                 # Timeout, etc.
@@ -596,15 +674,15 @@ class StorageDriver(object):
 
             bytes_transferred += len(chunk)
             if calculate_hash:
-                data_hash.update(chunk)
+                data_hash.update(b(chunk))
 
             try:
-                chunk = generator.next()
+                chunk = next(generator)
             except StopIteration:
                 chunk = ''
 
         if chunked:
-            response.connection.connection.send('0\r\n\r\n')
+            response.connection.connection.send(b('0\r\n\r\n'))
 
         if calculate_hash:
             data_hash = data_hash.hexdigest()
@@ -631,7 +709,7 @@ class StorageDriver(object):
                  one is the uploaded data MD5 hash and the third one
                  is the number of transferred bytes.
         """
-        with open (file_path, 'rb') as file_handle:
+        with open(file_path, 'rb') as file_handle:
             success, data_hash, bytes_transferred = (
                 self._stream_data(
                     response=response,
@@ -640,3 +718,16 @@ class StorageDriver(object):
                     calculate_hash=calculate_hash))
 
         return success, data_hash, bytes_transferred
+
+    def _get_hash_function(self):
+        """
+        Return instantiated hash function for the hash type supported by
+        the provider.
+        """
+        try:
+            func = getattr(hashlib, self.hash_type)()
+        except AttributeError:
+            raise RuntimeError('Invalid or unsupported hash type: %s' %
+                               (self.hash_type))
+
+        return func

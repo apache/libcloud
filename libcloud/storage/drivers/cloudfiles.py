@@ -13,15 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httplib
-import urllib
+import os
+
+from libcloud.utils.py3 import httplib
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
-from libcloud.utils import read_in_chunks
+from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
+from libcloud.utils.py3 import urlquote
+
+if PY3:
+    from io import FileIO as file
+
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import MalformedResponseError, LibcloudError
 from libcloud.common.base import Response, RawResponse
 
@@ -34,9 +42,11 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.types import LazyList
+from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackDriverMixin
 
 from libcloud.common.rackspace import (
-    AUTH_HOST_US, AUTH_HOST_UK, RackspaceBaseConnection)
+    AUTH_URL_US, AUTH_URL_UK)
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
@@ -79,23 +89,52 @@ class CloudFilesResponse(Response):
 
         return data
 
+
 class CloudFilesRawResponse(CloudFilesResponse, RawResponse):
     pass
 
-class CloudFilesConnection(RackspaceBaseConnection):
+
+class CloudFilesConnection(OpenStackBaseConnection):
     """
     Base connection class for the Cloudfiles driver.
     """
 
+    auth_url = AUTH_URL_US
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
-    auth_host = None
-    _url_key = "storage_url"
 
-    def __init__(self, user_id, key, secure=True):
-        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure)
+    def __init__(self, user_id, key, secure=True, **kwargs):
+        super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
+                                                   **kwargs)
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
+        self.cdn_request = False
+
+    def get_endpoint(self):
+        # First, we parse out both files and cdn endpoints
+        # for each auth version
+        if '2.0' in self._auth_version:
+            eps = self.service_catalog.get_endpoints(service_type='object-store',
+                                                     name='cloudFiles')
+            cdn_eps = self.service_catalog.get_endpoints(
+                    service_type='object-store',
+                    name='cloudFilesCDN')
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            eps = self.service_catalog.get_endpoints(name='cloudFiles')
+            cdn_eps = self.service_catalog.get_endpoints(name='cloudFilesCDN')
+
+        # if this is a CDN request, return the cdn url instead
+        if self.cdn_request:
+            eps = cdn_eps
+
+        if len(eps) == 0:
+            raise LibcloudError('Could not find specified endpoint')
+
+        ep = eps[0]
+        if 'publicURL' in ep:
+            return ep['publicURL']
+        else:
+            raise LibcloudError('Could not find specified endpoint')
 
     def request(self, action, params=None, data='', headers=None, method='GET',
                 raw=False, cdn_request=False):
@@ -104,24 +143,17 @@ class CloudFilesConnection(RackspaceBaseConnection):
         if not params:
             params = {}
 
-        if cdn_request:
-            host = self._get_host(url_key='cdn_management_url')
-        else:
-            host = None
+        self.cdn_request = cdn_request
+        params['format'] = 'json'
 
-        # Due to first-run authentication request, we may not have a path
-        if self.request_path:
-            action = self.request_path + action
-            params['format'] = 'json'
-        if method in [ 'POST', 'PUT' ]:
+        if method in ['POST', 'PUT'] and 'Content-Type' not in headers:
             headers.update({'Content-Type': 'application/json; charset=UTF-8'})
 
         return super(CloudFilesConnection, self).request(
             action=action,
             params=params, data=data,
             method=method, headers=headers,
-            raw=raw, host=host
-        )
+            raw=raw)
 
 
 class CloudFilesUSConnection(CloudFilesConnection):
@@ -129,7 +161,7 @@ class CloudFilesUSConnection(CloudFilesConnection):
     Connection class for the Cloudfiles US endpoint.
     """
 
-    auth_host = AUTH_HOST_US
+    auth_url = AUTH_URL_US
 
 
 class CloudFilesUKConnection(CloudFilesConnection):
@@ -137,10 +169,34 @@ class CloudFilesUKConnection(CloudFilesConnection):
     Connection class for the Cloudfiles UK endpoint.
     """
 
-    auth_host = AUTH_HOST_UK
+    auth_url = AUTH_URL_UK
 
 
-class CloudFilesStorageDriver(StorageDriver):
+class CloudFilesSwiftConnection(CloudFilesConnection):
+    """
+    Connection class for the Cloudfiles Swift endpoint.
+    """
+    def __init__(self, *args, **kwargs):
+        self.region_name = kwargs.pop('ex_region_name', None)
+        super(CloudFilesSwiftConnection, self).__init__(*args, **kwargs)
+
+    def get_endpoint(self, *args, **kwargs):
+        if '2.0' in self._auth_version:
+            endpoint = self.service_catalog.get_endpoint(
+                    service_type='object-store',
+                    name='swift',
+                    region=self.region_name)
+        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
+            endpoint = self.service_catalog.get_endpoint(name='swift',
+                                                   region=self.region_name)
+
+        if 'publicURL' in endpoint:
+            return endpoint['publicURL']
+        else:
+            raise LibcloudError('Could not find specified endpoint')
+
+
+class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     """
     Base CloudFiles driver.
 
@@ -148,8 +204,14 @@ class CloudFilesStorageDriver(StorageDriver):
     class.
     """
     name = 'CloudFiles'
+
     connectionCls = CloudFilesConnection
     hash_type = 'md5'
+    supports_chunked_encoding = True
+
+    def __init__(self, *args, **kwargs):
+        OpenStackDriverMixin.__init__(self, *args, **kwargs)
+        super(CloudFilesStorageDriver, self).__init__(*args, **kwargs)
 
     def list_containers(self):
         response = self.connection.request('')
@@ -212,16 +274,19 @@ class CloudFilesStorageDriver(StorageDriver):
         container_cdn_url = self.get_container_cdn_url(container=obj.container)
         return '%s/%s' % (container_cdn_url, obj.name)
 
-    def enable_container_cdn(self, container):
+    def enable_container_cdn(self, container, ex_ttl=None):
         container_name = container.name
+        headers = {'X-CDN-Enabled': 'True'}
+
+        if ex_ttl:
+            headers['X-TTL'] = ex_ttl
+
         response = self.connection.request('/%s' % (container_name),
                                            method='PUT',
+                                           headers=headers,
                                            cdn_request=True)
 
-        if response.status in [ httplib.CREATED, httplib.ACCEPTED ]:
-            return True
-
-        return False
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
     def create_container(self, container_name):
         container_name = self._clean_container_name(container_name)
@@ -232,7 +297,8 @@ class CloudFilesStorageDriver(StorageDriver):
             # Accepted mean that container is not yet created but it will be
             # eventually
             extra = { 'object_count': 0 }
-            container = Container(name=container_name, extra=extra, driver=self)
+            container = Container(name=container_name,
+                    extra=extra, driver=self)
 
             return container
         elif response.status == httplib.ACCEPTED:
@@ -283,7 +349,7 @@ class CloudFilesStorageDriver(StorageDriver):
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
-                                callback_kwargs={ 'iterator': response.response,
+                                callback_kwargs={'iterator': response.response,
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
@@ -348,6 +414,117 @@ class CloudFilesStorageDriver(StorageDriver):
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
+    def ex_multipart_upload_object(self, file_path, container, object_name,
+                                   chunk_size=33554432, extra=None,
+                                   verify_hash=True):
+        object_size = os.path.getsize(file_path)
+        if object_size < chunk_size:
+            return self.upload_object(file_path, container, object_name,
+                    extra=extra, verify_hash=verify_hash)
+
+        iter_chunk_reader = FileChunkReader(file_path, chunk_size)
+
+        for index, iterator in enumerate(iter_chunk_reader):
+            self._upload_object_part(container=container,
+                                     object_name=object_name,
+                                     part_number=index,
+                                     iterator=iterator,
+                                     verify_hash=verify_hash)
+
+        return self._upload_object_manifest(container=container,
+                                            object_name=object_name,
+                                            extra=extra,
+                                            verify_hash=verify_hash)
+
+    def ex_enable_static_website(self, container, index_file='index.html'):
+        """
+        Enable serving a static website.
+
+        @param index_file: Name of the object which becomes an index page for
+        every sub-directory in this container.
+        @type index_file: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Index': index_file}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
+    def ex_set_error_page(self, container, file_name='error.html'):
+        """
+        Set a custom error page which is displayed if file is not found and
+        serving of a static website is enabled.
+
+        @param file_name: Name of the object which becomes the error page.
+        @type file_name: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Error': file_name}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
+    def _upload_object_part(self, container, object_name, part_number,
+                            iterator, verify_hash=True):
+
+        upload_func = self._stream_data
+        upload_func_kwargs = {'iterator': iterator}
+        part_name = object_name + '/%08d' % part_number
+        extra = {'content_type': 'application/octet-stream'}
+
+        self._put_object(container=container,
+                         object_name=part_name,
+                         upload_func=upload_func,
+                         upload_func_kwargs=upload_func_kwargs,
+                         extra=extra, iterator=iterator,
+                         verify_hash=verify_hash)
+
+    def _upload_object_manifest(self, container, object_name, extra=None,
+                                verify_hash=True):
+        extra = extra or {}
+        meta_data = extra.get('meta_data')
+
+        container_name_cleaned = self._clean_container_name(container.name)
+        object_name_cleaned = self._clean_object_name(object_name)
+        request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
+
+        headers = {'X-Auth-Token': self.connection.auth_token,
+                   'X-Object-Manifest': '%s/%s/' % \
+                       (container_name_cleaned, object_name_cleaned)}
+
+        data = ''
+        response = self.connection.request(request_path,
+                                           method='PUT', data=data,
+                                           headers=headers, raw=True)
+
+        object_hash = None
+
+        if verify_hash:
+            hash_function = self._get_hash_function()
+            hash_function.update(b(data))
+            data_hash = hash_function.hexdigest()
+            object_hash = response.headers.get('etag')
+
+            if object_hash != data_hash:
+                raise ObjectHashMismatchError(
+                    value=('MD5 hash checksum does not match (expected=%s, ' +
+                           'actual=%s)') % \
+                           (data_hash, object_hash),
+                    object_name=object_name, driver=self)
+
+        obj = Object(name=object_name, size=0, hash=object_hash, extra=None,
+                     meta_data=meta_data, container=container, driver=self)
+
+        return obj
+
     def _get_more(self, last_key, value_dict):
         container = value_dict['container']
         params = {}
@@ -362,7 +539,8 @@ class CloudFilesStorageDriver(StorageDriver):
             # Empty or inexistent container
             return [], None, True
         elif response.status == httplib.OK:
-            objects = self._to_object_list(json.loads(response.body), container)
+            objects = self._to_object_list(json.loads(response.body),
+                    container)
 
             # TODO: Is this really needed?
             if len(objects) == 0:
@@ -383,19 +561,19 @@ class CloudFilesStorageDriver(StorageDriver):
 
         headers = {}
         if meta_data:
-            for key, value in meta_data.iteritems():
+            for key, value in list(meta_data.items()):
                 key = 'X-Object-Meta-%s' % (key)
                 headers[key] = value
 
         request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
         result_dict = self._upload_object(object_name=object_name,
-                                          content_type=content_type,
-                                          upload_func=upload_func,
-                                          upload_func_kwargs=upload_func_kwargs,
-                                          request_path=request_path,
-                                          request_method='PUT',
-                                          headers=headers, file_path=file_path,
-                                          iterator=iterator)
+                                         content_type=content_type,
+                                         upload_func=upload_func,
+                                         upload_func_kwargs=upload_func_kwargs,
+                                         request_path=request_path,
+                                         request_method='PUT',
+                                         headers=headers, file_path=file_path,
+                                         iterator=iterator)
 
         response = result_dict['response'].response
         bytes_transferred = result_dict['bytes_transferred']
@@ -430,7 +608,7 @@ class CloudFilesStorageDriver(StorageDriver):
         """
         if name.startswith('/'):
             name = name[1:]
-        name = urllib.quote(name)
+        name = urlquote(name)
 
         if name.find('/') != -1:
             raise InvalidContainerNameError(value='Container name cannot'
@@ -442,11 +620,10 @@ class CloudFilesStorageDriver(StorageDriver):
                                                    ' longer than 256 bytes',
                                             container_name=name, driver=self)
 
-
         return name
 
     def _clean_object_name(self, name):
-        name = urllib.quote(name)
+        name = urlquote(name)
         return name
 
     def _to_container_list(self, response):
@@ -492,16 +669,20 @@ class CloudFilesStorageDriver(StorageDriver):
         content_type = headers.pop('content-type', None)
 
         meta_data = {}
-        for key, value in headers.iteritems():
+        for key, value in list(headers.items()):
             if key.find('x-object-meta-') != -1:
                 key = key.replace('x-object-meta-', '')
                 meta_data[key] = value
 
-        extra = { 'content_type': content_type, 'last_modified': last_modified }
+        extra = {'content_type': content_type, 'last_modified': last_modified}
 
         obj = Object(name=name, size=size, hash=etag, extra=extra,
                      meta_data=meta_data, container=container, driver=self)
         return obj
+
+    def _ex_connection_class_kwargs(self):
+        return self.openstack_connection_kwargs()
+
 
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     """
@@ -512,6 +693,26 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
     name = 'CloudFiles (US)'
     connectionCls = CloudFilesUSConnection
 
+
+class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
+    """
+    Cloudfiles storage driver for the OpenStack Swift.
+    """
+    type = Provider.CLOUDFILES_SWIFT
+    name = 'CloudFiles (SWIFT)'
+    connectionCls = CloudFilesSwiftConnection
+
+    def __init__(self, *args, **kwargs):
+        self._ex_region_name = kwargs.get('ex_region_name', 'RegionOne')
+        super(CloudFilesSwiftStorageDriver, self).__init__(*args, **kwargs)
+
+    def openstack_connection_kwargs(self):
+        rv = super(CloudFilesSwiftStorageDriver, self). \
+                                                  openstack_connection_kwargs()
+        rv['ex_region_name'] = self._ex_region_name
+        return rv
+
+
 class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     """
     Cloudfiles storage driver for the UK endpoint.
@@ -520,3 +721,65 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     type = Provider.CLOUDFILES_UK
     name = 'CloudFiles (UK)'
     connectionCls = CloudFilesUKConnection
+
+
+class FileChunkReader(object):
+    def __init__(self, file_path, chunk_size):
+        self.file_path = file_path
+        self.total = os.path.getsize(file_path)
+        self.chunk_size = chunk_size
+        self.bytes_read = 0
+        self.stop_iteration = False
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.stop_iteration:
+            raise StopIteration
+
+        start_block = self.bytes_read
+        end_block = start_block + self.chunk_size
+        if end_block >= self.total:
+            end_block = self.total
+            self.stop_iteration = True
+        self.bytes_read += end_block - start_block
+        return ChunkStreamReader(file_path=self.file_path,
+                                 start_block=start_block,
+                                 end_block=end_block,
+                                 chunk_size=8192)
+
+    def __next__(self):
+        return self.next()
+
+class ChunkStreamReader(object):
+    def __init__(self, file_path, start_block, end_block, chunk_size):
+        self.fd = open(file_path, 'rb')
+        self.fd.seek(start_block)
+        self.start_block = start_block
+        self.end_block = end_block
+        self.chunk_size = chunk_size
+        self.bytes_read = 0
+        self.stop_iteration = False
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.stop_iteration:
+            self.fd.close()
+            raise StopIteration
+
+        block_size = self.chunk_size
+        if self.bytes_read + block_size > \
+            self.end_block - self.start_block:
+                block_size = self.end_block - self.start_block - \
+                             self.bytes_read
+                self.stop_iteration = True
+
+        block = self.fd.read(block_size)
+        self.bytes_read += block_size
+        return block
+
+    def __next__(self):
+        return self.next()

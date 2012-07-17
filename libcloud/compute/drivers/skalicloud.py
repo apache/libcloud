@@ -77,6 +77,7 @@ class SkaliCloudNodeDriver(ElasticStackBaseNodeDriver):
     type = Provider.SKALICLOUD
     api_name = 'skalicloud'
     name = 'skalicloud'
+    website = 'http://www.skalicloud.com/'
     connectionCls = SkaliCloudConnection
     features = {"create_node": ["generates_password"]}
     _standard_drives = STANDARD_DRIVES

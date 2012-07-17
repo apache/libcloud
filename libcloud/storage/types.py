@@ -37,6 +37,10 @@ class Provider(object):
     @cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     @cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
     @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
+    @cvar NINEFOLD: Ninefold
+    @cvar GOOGLE_STORAGE Google Storage
+    @cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    @cvar NIMBUS: Nimbus.io driver
     """
     DUMMY = 0
     CLOUDFILES_US = 1
@@ -46,6 +50,11 @@ class Provider(object):
     S3_EU_WEST = 5
     S3_AP_SOUTHEAST = 6
     S3_AP_NORTHEAST = 7
+    NINEFOLD = 8
+    GOOGLE_STORAGE = 9
+    S3_US_WEST_OREGON = 10
+    CLOUDFILES_SWIFT = 11
+    NIMBUS = 12
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
@@ -67,6 +76,9 @@ class ObjectError(LibcloudError):
         super(ObjectError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return '<%s in %s, value=%s, object = %s>' % (self.error_type, repr(self.driver),
                                                       self.value, self.object_name)
 

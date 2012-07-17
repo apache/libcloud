@@ -16,14 +16,9 @@
 DreamHost Driver
 """
 
-try:
-    import json
-except:
-    import simplejson as json
-
 import copy
 
-from libcloud.common.base import ConnectionKey, Response
+from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver, NodeSize
 from libcloud.compute.base import NodeImage
@@ -81,13 +76,13 @@ class DreamhostAPIException(Exception):
         return "<DreamhostException '%s'>" % (self.args[0])
 
 
-class DreamhostResponse(Response):
+class DreamhostResponse(JsonResponse):
     """
     Response class for DreamHost PS
     """
 
     def parse_body(self):
-        resp = json.loads(self.body)
+        resp = super(DreamhostResponse, self).parse_body()
         if resp['result'] != 'success':
             raise Exception(self._api_parse_error(resp))
         return resp['data']
@@ -104,6 +99,7 @@ class DreamhostResponse(Response):
                 raise DreamhostAPIException(response['data'])
         else:
             raise DreamhostAPIException("Unknown problem: %s" % (self.body))
+
 
 class DreamhostConnection(ConnectionKey):
     """
@@ -132,6 +128,7 @@ class DreamhostNodeDriver(NodeDriver):
     type = Provider.DREAMHOST
     api_name = 'dreamhost'
     name = "Dreamhost"
+    website = 'http://dreamhost.com/'
     connectionCls = DreamhostConnection
 
     _sizes = DH_PS_SIZES
@@ -153,13 +150,13 @@ class DreamhostNodeDriver(NodeDriver):
         }
         data = self.connection.request('/', params).object
         return Node(
-            id = data['added_web'],
-            name = data['added_web'],
-            state = NodeState.PENDING,
-            public_ip = [],
-            private_ip = [],
-            driver = self.connection.driver,
-            extra = {
+            id=data['added_web'],
+            name=data['added_web'],
+            state=NodeState.PENDING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.connection.driver,
+            extra={
                 'type' : kwargs['image'].name
             }
         )
@@ -195,17 +192,17 @@ class DreamhostNodeDriver(NodeDriver):
         images = []
         for img in data:
             images.append(NodeImage(
-                id = img['image'],
-                name = img['image'],
-                driver = self.connection.driver
+                id=img['image'],
+                name=img['image'],
+                driver=self.connection.driver
             ))
         return images
 
     def list_sizes(self, **kwargs):
         sizes = []
-        for key, values in self._sizes.iteritems():
+        for key, values in self._sizes.items():
             attributes = copy.deepcopy(values)
-            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))
 
         return sizes
@@ -237,13 +234,13 @@ class DreamhostNodeDriver(NodeDriver):
         Convert the data from a DreamhostResponse object into a Node
         """
         return Node(
-            id = data['ps'],
-            name = data['ps'],
-            state = NodeState.UNKNOWN,
-            public_ip = [data['ip']],
-            private_ip = [],
-            driver = self.connection.driver,
-            extra = {
-                'current_size' : data['memory_mb'],
-                'account_id' : data['account_id'],
-                'type' : data['type']})
+            id=data['ps'],
+            name=data['ps'],
+            state=NodeState.UNKNOWN,
+            public_ips=[data['ip']],
+            private_ips=[],
+            driver=self.connection.driver,
+            extra={
+                'current_size': data['memory_mb'],
+                'account_id': data['account_id'],
+                'type': data['type']})

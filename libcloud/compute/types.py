@@ -30,6 +30,8 @@ __all__ = [
     "InvalidCredsError",
     "InvalidCredsException"
     ]
+
+
 class Provider(object):
     """
     Defines for each of the supported providers
@@ -55,11 +57,23 @@ class Provider(object):
     @cvar BLUEBOX: Bluebox
     @cvar OPSOURCE: Opsource Cloud
     @cvar NINEFOLD: Ninefold
+    @cvar TERREMARK: Terremark
+    @cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    @cvar CLOUDSTACK: CloudStack
+    @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
+    @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
+    @cvar RACKSPACE_NOVA_DFW: Rackspace Nova Private DFW (DFW)
+    @cvar RACKSPACE_NOVA_LON: Rackspace Nova Private LON (LON)
+    @cvar LIBVIRT: Libvirt driver
+    @cvar JOYENT: Joyent driver
+    @cvar VCL: VCL driver
+    @cvar KTUCLOUD: kt ucloud driver
+    @cvar GRIDSPOT: Gridspot driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
     EC2_US_EAST = 1
-    EC2_EU = 2 # deprecated name
+    EC2_EU = 2  # deprecated name
     EC2_EU_WEST = 2
     RACKSPACE = 3
     SLICEHOST = 4
@@ -93,6 +107,22 @@ class Provider(object):
     SKALICLOUD = 32
     SERVERLOVE = 33
     NINEFOLD = 34
+    TERREMARK = 35
+    EC2_US_WEST_OREGON = 36
+    CLOUDSTACK = 37
+    CLOUDSIGMA_US = 38
+    EC2_SA_EAST = 39
+    RACKSPACE_NOVA_BETA = 40
+    RACKSPACE_NOVA_DFW = 41
+    LIBVIRT = 42
+    ELASTICHOSTS_US2 = 43
+    ELASTICHOSTS_CA1 = 44
+    JOYENT = 45
+    VCL = 46
+    KTUCLOUD = 47
+    RACKSPACE_NOVA_LON = 48
+    GRIDSPOT = 49
+
 
 class NodeState(object):
     """
@@ -110,6 +140,7 @@ class NodeState(object):
     PENDING = 3
     UNKNOWN = 4
 
+
 class Architecture(object):
     """
     Image and size architectures.
@@ -120,17 +151,25 @@ class Architecture(object):
     I386 = 0
     X86_X64 = 1
 
+
 class DeploymentError(LibcloudError):
     """
     Exception used when a Deployment Task failed.
 
     @ivar node: L{Node} on which this exception happened, you might want to call L{Node.destroy}
     """
-    def __init__(self, node, original_exception=None):
+    def __init__(self, node, original_exception=None, driver=None):
         self.node = node
         self.value = original_exception
+        self.driver = driver
+
     def __str__(self):
-        return repr(self.value)
+        return self.__repr__()
+
+    def __repr__(self):
+        return (('<DeploymentError: node=%s, error=%s, driver=%s>'
+                % (self.node.id, str(self.value), str(self.driver))))
+
 
 """Deprecated alias of L{DeploymentException}"""
 DeploymentException = DeploymentError

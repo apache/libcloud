@@ -19,10 +19,14 @@ libcloud provides a unified interface to the cloud computing resources.
 @var __version__: Current version of libcloud
 """
 
-__all__ = ["__version__", "enable_debug"]
-__version__ = '0.5.2'
+__all__ = ['__version__', 'enable_debug']
+__version__ = '0.10.1'
 
-DEFAULT_LOG_PATH = '/tmp/libcloud_debug.log'
+try:
+    import paramiko
+    have_paramiko = True
+except ImportError:
+    have_paramiko = False
 
 
 def enable_debug(fo):
@@ -32,12 +36,12 @@ def enable_debug(fo):
     @param fo: Where to append debugging information
     @type fo: File like object, only write operations are used.
     """
-    from libcloud.base import (ConnectionKey,
+    from libcloud.common.base import (Connection,
                                LoggingHTTPConnection,
                                LoggingHTTPSConnection)
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
-    ConnectionKey.conn_classes = (LoggingHTTPConnection,
+    Connection.conn_classes = (LoggingHTTPConnection,
                                   LoggingHTTPSConnection)
 
 
@@ -47,16 +51,14 @@ def _init_once():
 
     This checks for the LIBCLOUD_DEBUG enviroment variable, which if it exists
     is where we will log debug information about the provider transports.
-
-    If LIBCLOUD_DEBUG is not a path, C{/tmp/libcloud_debug.log} is used by
-    default.
     """
     import os
-    d = os.getenv('LIBCLOUD_DEBUG')
-    if d:
-        if d.isdigit():
-            d = DEFAULT_LOG_PATH
-        fo = open(d, 'a')
+    path = os.getenv('LIBCLOUD_DEBUG')
+    if path:
+        fo = open(path, 'a')
         enable_debug(fo)
+
+        if have_paramiko:
+            paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
 
 _init_once()

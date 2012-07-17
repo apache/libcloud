@@ -21,9 +21,11 @@ import uuid
 import socket
 import struct
 
-from libcloud.base import ConnectionKey, NodeDriver, NodeSize, NodeLocation
-from libcloud.compute.base import NodeImage, Node
-from libcloud.compute.types import Provider,NodeState
+from libcloud.common.base import ConnectionKey
+from libcloud.compute.base import NodeImage, NodeSize, Node
+from libcloud.compute.base import NodeDriver, NodeLocation
+from libcloud.compute.types import Provider, NodeState
+
 
 class DummyConnection(ConnectionKey):
     """
@@ -32,6 +34,7 @@ class DummyConnection(ConnectionKey):
 
     def connect(self, host=None, port=None):
         pass
+
 
 class DummyNodeDriver(NodeDriver):
     """
@@ -43,7 +46,7 @@ class DummyNodeDriver(NodeDriver):
     >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
     >>> driver = DummyNodeDriver(0)
     >>> node=driver.create_node()
-    >>> node.public_ip[0]
+    >>> node.public_ips[0]
     '127.0.0.3'
     >>> node.name
     'dummy-3'
@@ -61,45 +64,49 @@ class DummyNodeDriver(NodeDriver):
     """
 
     name = "Dummy Node Provider"
+    website = 'http://example.com'
     type = Provider.DUMMY
 
     def __init__(self, creds):
+        """
+        @requires: creds
+        """
         self.creds = creds
         try:
-          num = int(creds)
+            num = int(creds)
         except ValueError:
-          num = None
+            num = None
         if num:
-          self.nl = []
-          startip = _ip_to_int('127.0.0.1')
-          for i in xrange(num):
-            ip = _int_to_ip(startip + i)
-            self.nl.append(
-              Node(id=i,
-                   name='dummy-%d' % (i),
-                   state=NodeState.RUNNING,
-                   public_ip=[ip],
-                   private_ip=[],
-                   driver=self,
-                   extra={'foo': 'bar'})
-            )
+            self.nl = []
+            startip = _ip_to_int('127.0.0.1')
+            for i in range(num):
+                ip = _int_to_ip(startip + i)
+                self.nl.append(
+                Node(id=i,
+                    name='dummy-%d' % (i),
+                    state=NodeState.RUNNING,
+                    public_ips=[ip],
+                    private_ips=[],
+                    driver=self,
+                    extra={'foo': 'bar'})
+                )
         else:
-          self.nl = [
-              Node(id=1,
-                   name='dummy-1',
-                   state=NodeState.RUNNING,
-                   public_ip=['127.0.0.1'],
-                   private_ip=[],
-                   driver=self,
-                   extra={'foo': 'bar'}),
-              Node(id=2,
-                   name='dummy-2',
-                   state=NodeState.RUNNING,
-                   public_ip=['127.0.0.1'],
-                   private_ip=[],
-                   driver=self,
-                   extra={'foo': 'bar'}),
-          ]
+            self.nl = [
+                Node(id=1,
+                    name='dummy-1',
+                    state=NodeState.RUNNING,
+                    public_ips=['127.0.0.1'],
+                    private_ips=[],
+                    driver=self,
+                    extra={'foo': 'bar'}),
+                Node(id=2,
+                    name='dummy-2',
+                    state=NodeState.RUNNING,
+                    public_ips=['127.0.0.1'],
+                    private_ips=[],
+                    driver=self,
+                    extra={'foo': 'bar'}),
+            ]
         self.connection = DummyConnection(self.creds)
 
     def get_uuid(self, unique_field=None):
@@ -125,6 +132,10 @@ class DummyNodeDriver(NodeDriver):
         As more nodes are added, list_nodes will return them
 
         >>> node=driver.create_node()
+        >>> node.size.id
+        's1'
+        >>> node.image.id
+        'i2'
         >>> sorted([node.name for node in driver.list_nodes()])
         ['dummy-1', 'dummy-2', 'dummy-3']
         """
@@ -225,7 +236,7 @@ class DummyNodeDriver(NodeDriver):
                      driver=self),
             NodeSize(id=4,
                      name="XXL Big",
-                     ram=4096*2,
+                     ram=4096 * 2,
                      disk=32*4,
                      bandwidth=2500*3,
                      price=32*2,
@@ -279,15 +290,21 @@ class DummyNodeDriver(NodeDriver):
         n = Node(id=l,
                  name='dummy-%d' % l,
                  state=NodeState.RUNNING,
-                 public_ip=['127.0.0.%d' % l],
-                 private_ip=[],
+                 public_ips=['127.0.0.%d' % l],
+                 private_ips=[],
                  driver=self,
+                 size=NodeSize(id='s1', name='foo', ram=2048,
+                               disk=160, bandwidth=None, price=0.0,
+                               driver=self),
+                 image=NodeImage(id='i2', name='image', driver=self),
                  extra={'foo': 'bar'})
         self.nl.append(n)
         return n
 
+
 def _ip_to_int(ip):
     return socket.htonl(struct.unpack('I', socket.inet_aton(ip))[0])
+
 
 def _int_to_ip(ip):
     return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))

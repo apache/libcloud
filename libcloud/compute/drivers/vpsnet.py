@@ -18,12 +18,14 @@ VPS.net driver
 import base64
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.types import InvalidCredsError
+from libcloud.utils.py3 import b
+
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver
@@ -37,13 +39,12 @@ DISK_PER_NODE = 10
 BANDWIDTH_PER_NODE = 250
 
 
-class VPSNetResponse(Response):
+class VPSNetResponse(JsonResponse):
 
     def parse_body(self):
         try:
-            js = json.loads(self.body)
-            return js
-        except ValueError:
+            return super(VPSNetResponse, self).parse_body()
+        except MalformedResponseError:
             return self.body
 
     def success(self):
@@ -54,8 +55,8 @@ class VPSNetResponse(Response):
 
     def parse_error(self):
         try:
-            errors = json.loads(self.body)['errors'][0]
-        except ValueError:
+            errors = super(VPSNetResponse, self).parse_body()['errors'][0]
+        except MalformedResponseError:
             return self.body
         else:
             return "\n".join(errors)
@@ -69,8 +70,8 @@ class VPSNetConnection(ConnectionUserAndKey):
     responseCls = VPSNetResponse
 
     def add_default_headers(self, headers):
-        user_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
-        headers['Authorization'] = 'Basic %s' % (user_b64)
+        user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
+        headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
 
 class VPSNetNodeDriver(NodeDriver):
@@ -81,6 +82,7 @@ class VPSNetNodeDriver(NodeDriver):
     type = Provider.VPSNET
     api_name = 'vps_net'
     name = "vps.net"
+    website = 'http://vps.net/'
     connectionCls = VPSNetConnection
 
     def _to_node(self, vm):
@@ -92,8 +94,8 @@ class VPSNetNodeDriver(NodeDriver):
         n = Node(id=vm['id'],
                  name=vm['label'],
                  state=state,
-                 public_ip=[vm.get('primary_ip_address', None)],
-                 private_ip=[],
+                 public_ips=[vm.get('primary_ip_address', None)],
+                 private_ips=[],
                  extra={'slices_count':vm['slices_count']}, # Number of nodes consumed by VM
                  driver=self.connection.driver)
         return n

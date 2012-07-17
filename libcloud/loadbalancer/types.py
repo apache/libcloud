@@ -22,18 +22,26 @@ __all__ = [
 
 from libcloud.common.types import LibcloudError
 
-class LibcloudLBError(LibcloudError): pass
 
-class LibcloudLBImmutableError(LibcloudLBError): pass
+class LibcloudLBError(LibcloudError):
+    pass
+
+
+class LibcloudLBImmutableError(LibcloudLBError):
+    pass
+
 
 class Provider(object):
     RACKSPACE_US = 0
     GOGRID = 1
     NINEFOLD = 2
+    RACKSPACE_UK = 3
+    BRIGHTBOX = 4
+
 
 class State(object):
     """
-    Standart states for a loadbalancer
+    Standard states for a loadbalancer
 
     @cvar RUNNING: loadbalancer is running and ready to use
     @cvar UNKNOWN: loabalancer state is unknown
@@ -42,3 +50,14 @@ class State(object):
     RUNNING = 0
     PENDING = 1
     UNKNOWN = 2
+    ERROR = 3
+    DELETED = 4
+
+class MemberCondition(object):
+    """
+    Each member of a load balancer can have an associated condition 
+    which determines its role within the load balancer.
+    """
+    ENABLED = 0
+    DISABLED = 1
+    DRAINING = 2

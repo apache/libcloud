@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.utils import get_driver as get_provider_driver
+from libcloud.utils.misc import get_driver as get_provider_driver
 from libcloud.loadbalancer.types import Provider
 
 __all__ = [
@@ -25,11 +25,16 @@ __all__ = [
 DRIVERS = {
         Provider.RACKSPACE_US:
             ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
+        Provider.RACKSPACE_UK:
+            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver'),
         Provider.GOGRID:
             ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
         Provider.NINEFOLD:
             ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
+        Provider.BRIGHTBOX:
+            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver')
 }
+
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)

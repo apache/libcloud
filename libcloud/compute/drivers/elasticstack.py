@@ -21,15 +21,17 @@ http://www.elasticstack.com.
 import re
 import time
 import base64
-import httplib
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
 
 try:
-    import json
-except:
     import simplejson as json
+except ImportError:
+    import json
 
-from libcloud.common.base import ConnectionUserAndKey, Response
-from libcloud.common.types import InvalidCredsError, MalformedResponseError
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node
 from libcloud.compute.base import NodeImage
@@ -111,25 +113,12 @@ class ElasticStackException(Exception):
         return "<ElasticStackException '%s'>" % (self.args[0])
 
 
-class ElasticStackResponse(Response):
+class ElasticStackResponse(JsonResponse):
     def success(self):
         if self.status == 401:
             raise InvalidCredsError()
 
         return self.status >= 200 and self.status <= 299
-
-    def parse_body(self):
-        if not self.body:
-            return self.body
-
-        try:
-            data = json.loads(self.body)
-        except:
-            raise MalformedResponseError('Failed to parse JSON',
-                                         body=self.body,
-                                         driver=ElasticStackBaseNodeDriver)
-
-        return data
 
     def parse_error(self):
         error_header = self.headers.get('x-elastic-error', '')
@@ -166,13 +155,15 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
         headers['Authorization'] = ('Basic %s'
-                                    % (base64.b64encode('%s:%s'
+                                    % (base64.b64encode(b('%s:%s'
                                                         % (self.user_id,
                                                            self.key))))
+                                                        .decode('utf-8'))
         return headers
 
 
 class ElasticStackBaseNodeDriver(NodeDriver):
+    website = 'http://www.elasticstack.com'
     connectionCls = ElasticStackBaseConnection
     features = {"create_node": ["generates_password"]}
 
@@ -195,7 +186,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     def list_images(self, location=None):
         # Returns a list of available pre-installed system drive images
         images = []
-        for key, value in self._standard_drives.iteritems():
+        for key, value in self._standard_drives.items():
             image = NodeImage(
                 id=value['uuid'],
                 name=value['description'],
@@ -210,7 +201,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, value in INSTANCE_TYPES.iteritems():
+        for key, value in INSTANCE_TYPES.items():
             size = ElasticStackNodeSize(
                 id=value['id'],
                 name=value['name'], cpu=value['cpu'], ram=value['memory'],
@@ -344,7 +335,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                       '^scsi:0:[0-7](:media)?$', '^block:[0-7](:media)?$')
 
         invalid_keys = []
-        for key in kwargs.keys():
+        keys = list(kwargs.keys())
+        for key in keys:
             matches = False
             for regex in valid_keys:
                 if re.match(regex, key):
@@ -458,7 +450,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             extra.update({'password': ssh_password})
 
         node = Node(id=data['server'], name=data['name'], state=state,
-                    public_ip=public_ip, private_ip=None,
+                    public_ips=public_ip, private_ips=None,
                     driver=self.connection.driver,
                     extra=extra)
 

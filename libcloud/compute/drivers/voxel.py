@@ -19,9 +19,9 @@ Voxel VoxCloud driver
 import datetime
 import hashlib
 
-from xml.etree import ElementTree as ET
+from libcloud.utils.py3 import b
 
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
@@ -30,17 +30,18 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 VOXEL_API_HOST = "api.voxel.net"
 
-class VoxelResponse(Response):
+class VoxelResponse(XmlResponse):
 
-    def __init__(self, response):
+    def __init__(self, response, connection):
         self.parsed = None
-        super(VoxelResponse, self).__init__(response)
+        super(VoxelResponse, self).__init__(response=response,
+                                            connection=connection)
 
     def parse_body(self):
         if not self.body:
             return None
         if not self.parsed:
-            self.parsed = ET.XML(self.body)
+            self.parsed = super(VoxelResponse, self).parse_body()
         return self.parsed
 
     def parse_error(self):
@@ -48,7 +49,7 @@ class VoxelResponse(Response):
         if not self.body:
             return None
         if not self.parsed:
-            self.parsed = ET.XML(self.body)
+            self.parsed = super(VoxelResponse, self).parse_body()
         for err in self.parsed.findall('err'):
             code = err.get('code')
             err_list.append("(%s) %s" % (code, err.get('msg')))
@@ -63,7 +64,7 @@ class VoxelResponse(Response):
 
     def success(self):
         if not self.parsed:
-            self.parsed = ET.XML(self.body)
+            self.parsed = super(VoxelResponse, self).parse_body()
         stat = self.parsed.get('stat')
         if stat != "ok":
             return False
@@ -78,24 +79,22 @@ class VoxelConnection(ConnectionUserAndKey):
     responseCls = VoxelResponse
 
     def add_default_params(self, params):
+        params = dict([(k, v) for k, v in list(params.items())
+                       if v is not None])
         params["key"] = self.user_id
         params["timestamp"] = datetime.datetime.utcnow().isoformat()+"+0000"
 
-        for param in params.keys():
-            if params[param] is None:
-                del params[param]
-
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
 
         md5 = hashlib.md5()
-        md5.update(self.key)
+        md5.update(b(self.key))
         for key in keys:
             if params[key]:
                 if not params[key] is None:
-                    md5.update("%s%s"% (key, params[key]))
+                    md5.update(b("%s%s"% (key, params[key])))
                 else:
-                    md5.update(key)
+                    md5.update(b(key))
         params['api_sig'] = md5.hexdigest()
         return params
 
@@ -119,6 +118,7 @@ class VoxelNodeDriver(NodeDriver):
     connectionCls = VoxelConnection
     type = Provider.VOXEL
     name = 'Voxel VoxCLOUD'
+    website = 'http://www.voxel.net/'
 
     def _initialize_instance_types():
         for cpus in range(1,14):
@@ -149,7 +149,7 @@ class VoxelNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         return [ NodeSize(driver=self.connection.driver, **i)
-                 for i in VOXEL_INSTANCE_TYPES.values() ]
+                 for i in list(VOXEL_INSTANCE_TYPES.values()) ]
 
     def list_images(self, location=None):
         params = {"method": "voxel.images.list"}
@@ -232,8 +232,8 @@ class VoxelNodeDriver(NodeDriver):
                 id = object.findtext("device/id"),
                 name = kwargs["name"],
                 state = NODE_STATE_MAP[object.findtext("device/status")],
-                public_ip = kwargs.get("publicip", None),
-                private_ip = kwargs.get("privateip", None),
+                public_ips = kwargs.get("publicip", None),
+                private_ips = kwargs.get("privateip", None),
                 driver = self.connection.driver
             )
         else:
@@ -266,7 +266,6 @@ class VoxelNodeDriver(NodeDriver):
         status = element.attrib["stat"]
         return status == "ok"
 
-
     def _to_locations(self, object):
         return [NodeLocation(element.attrib["label"],
                              element.findtext("description"),
@@ -294,8 +293,8 @@ class VoxelNodeDriver(NodeDriver):
                 nodes.append(Node(id= element.attrib['id'],
                                  name=element.attrib['label'],
                                  state=state,
-                                 public_ip= public_ip,
-                                 private_ip= private_ip,
+                                 public_ips= public_ip,
+                                 private_ips= private_ip,
                                  driver=self.connection.driver))
         return nodes
 

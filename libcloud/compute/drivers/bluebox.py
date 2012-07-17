@@ -23,15 +23,12 @@ Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/inde
 """
 
 import copy
-import urllib
 import base64
 
-try:
-    import json
-except:
-    import simplejson as json
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import b
 
-from libcloud.common.base import Response, ConnectionUserAndKey
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver
@@ -77,20 +74,14 @@ BLUEBOX_INSTANCE_TYPES = {
 
 RAM_PER_CPU = 2048
 
-NODE_STATE_MAP = { 'queued': NodeState.PENDING,
-                   'building': NodeState.PENDING,
-                   'running': NodeState.RUNNING,
-                   'error': NodeState.TERMINATED,
-                   'unknown': NodeState.UNKNOWN }
+NODE_STATE_MAP = {'queued': NodeState.PENDING,
+                  'building': NodeState.PENDING,
+                  'running': NodeState.RUNNING,
+                  'error': NodeState.TERMINATED,
+                  'unknown': NodeState.UNKNOWN}
 
-class BlueboxResponse(Response):
-    def parse_body(self):
-        try:
-            js = json.loads(self.body)
-            return js
-        except ValueError:
-            return self.body
 
+class BlueboxResponse(JsonResponse):
     def parse_error(self):
         if int(self.status) == 401:
             if not self.body:
@@ -98,6 +89,7 @@ class BlueboxResponse(Response):
             else:
                 raise InvalidCredsError(self.body)
         return self.body
+
 
 class BlueboxNodeSize(NodeSize):
     def __init__(self, id, name, cpu, ram, disk, price, driver):
@@ -113,6 +105,7 @@ class BlueboxNodeSize(NodeSize):
         return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, price=%s, driver=%s ...>')
                % (self.id, self.name, self.cpu, self.ram, self.disk, self.price, self.driver.name))
 
+
 class BlueboxConnection(ConnectionUserAndKey):
     """
     Connection class for the Bluebox driver
@@ -123,9 +116,10 @@ class BlueboxConnection(ConnectionUserAndKey):
     responseCls = BlueboxResponse
 
     def add_default_headers(self, headers):
-        user_b64 = base64.b64encode('%s:%s' % (self.user_id, self.key))
+        user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
         headers['Authorization'] = 'Basic %s' % (user_b64)
         return headers
+
 
 class BlueboxNodeDriver(NodeDriver):
     """
@@ -136,6 +130,7 @@ class BlueboxNodeDriver(NodeDriver):
     type = Provider.BLUEBOX
     api_name = 'bluebox'
     name = 'Bluebox Blocks'
+    website = 'http://bluebox.net'
 
     def list_nodes(self):
         result = self.connection.request('/api/blocks.json')
@@ -143,9 +138,9 @@ class BlueboxNodeDriver(NodeDriver):
 
     def list_sizes(self, location=None):
         sizes = []
-        for key, values in BLUEBOX_INSTANCE_TYPES.iteritems():
+        for key, values in list(BLUEBOX_INSTANCE_TYPES.items()):
             attributes = copy.deepcopy(values)
-            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(BlueboxNodeSize(driver=self.connection.driver,
                                          **attributes))
 
@@ -155,12 +150,12 @@ class BlueboxNodeDriver(NodeDriver):
         result = self.connection.request('/api/block_templates.json')
         images = []
         for image in result.object:
-          images.extend([self._to_image(image)])
+            images.extend([self._to_image(image)])
 
         return images
 
     def create_node(self, **kwargs):
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         size = kwargs["size"]
 
         name = kwargs['name']
@@ -194,7 +189,7 @@ class BlueboxNodeDriver(NodeDriver):
         if not ssh and not password:
             raise Exception("SSH public key or password required.")
 
-        params = urllib.urlencode(data)
+        params = urlencode(data)
         result = self.connection.request('/api/blocks.json', headers=headers, data=params, method='POST')
         node = self._to_node(result.object)
         return node
@@ -221,9 +216,9 @@ class BlueboxNodeDriver(NodeDriver):
         n = Node(id=vm['id'],
                  name=vm['hostname'],
                  state=state,
-                 public_ip=[ ip['address'] for ip in vm['ips'] ],
-                 private_ip=[],
-                 extra={'storage':vm['storage'], 'cpu':vm['cpu']},
+                 public_ips=[ip['address'] for ip in vm['ips']],
+                 private_ips=[],
+                 extra={'storage': vm['storage'], 'cpu': vm['cpu']},
                  driver=self.connection.driver)
         return n
 

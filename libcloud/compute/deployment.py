@@ -16,7 +16,14 @@
 """
 Provides generic deployment steps for machines post boot.
 """
+
+from __future__ import with_statement
+
 import os
+import binascii
+
+from libcloud.utils.py3 import basestring
+
 
 class Deployment(object):
     """
@@ -35,8 +42,8 @@ class Deployment(object):
 
         @return: L{Node}
         """
-        raise NotImplementedError, \
-            'run not implemented for this deployment'
+        raise NotImplementedError(
+            'run not implemented for this deployment')
 
     def _get_string_value(self, argument_name, argument_value):
         if not isinstance(argument_value, basestring) and \
@@ -69,8 +76,41 @@ class SSHKeyDeployment(Deployment):
 
         See also L{Deployment.run}
         """
-        client.put(".ssh/authorized_keys", contents=self.key)
+        client.put(".ssh/authorized_keys", contents=self.key, mode='a')
         return node
+
+
+class FileDeployment(Deployment):
+    """
+    Installs a file.
+    """
+
+    def __init__(self, source, target):
+        """
+        @type source: C{str}
+        @keyword source: Local path of file to be installed
+
+        @type target: C{str}
+        @keyword target: Path to install file on node 
+        """
+        self.source = source
+        self.target = target
+
+    def run(self, node, client):
+        """
+        Upload the file, retaining permissions
+
+        See also L{Deployment.run}
+        """
+        perms = int(oct(os.stat(self.source).st_mode)[4:], 8)
+
+        with open(self.source, 'rb') as fp:
+            content = fp.read()
+
+        client.put(path=self.target, chmod=perms,
+                   contents=content)
+        return node
+
 
 class ScriptDeployment(Deployment):
     """
@@ -98,7 +138,7 @@ class ScriptDeployment(Deployment):
         self.delete = delete
         self.name = name
         if self.name is None:
-            self.name = "/root/deployment_%s.sh" % (os.urandom(4).encode('hex'))
+            self.name = "/root/deployment_%s.sh" % (binascii.hexlify(os.urandom(4)))
 
     def run(self, node, client):
         """
@@ -106,17 +146,19 @@ class ScriptDeployment(Deployment):
 
         See also L{Deployment.run}
         """
-        client.put(path=self.name, chmod=755, contents=self.script)
+
+        client.put(path=self.name, chmod=int('755', 8), contents=self.script)
         self.stdout, self.stderr, self.exit_status = client.run(self.name)
         if self.delete:
             client.delete(self.name)
         return node
 
+
 class MultiStepDeployment(Deployment):
     """
     Runs a chain of Deployment steps.
     """
-    def __init__(self, add = None):
+    def __init__(self, add=None):
         """
         @type add: C{list}
         @keyword add: Deployment steps to add.

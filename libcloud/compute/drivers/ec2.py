@@ -18,17 +18,20 @@ Amazon EC2 driver
 """
 from __future__ import with_statement
 
+import sys
 import base64
 import hmac
 import os
 import time
-import urllib
 import copy
 
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.utils import fixxpath, findtext, findattr, findall
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import b
+
+from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.aws import AWSBaseResponse
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
@@ -36,13 +39,15 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage
+from libcloud.compute.base import NodeImage, StorageVolume
 
 EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
+EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
 EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
 EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
 EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
+EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
 
 API_VERSION = '2010-08-31'
 
@@ -65,6 +70,13 @@ EC2_INSTANCE_TYPES = {
         'name': 'Small Instance',
         'ram': 1740,
         'disk': 160,
+        'bandwidth': None
+    },
+    'm1.medium': {
+        'id': 'm1.medium',
+        'name': 'Medium Instance',
+        'ram': 3700,
+        'disk': 410,
         'bandwidth': None
     },
     'm1.large': {
@@ -130,15 +142,24 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'cc2.8xlarge': {
+        'id': 'cc2.8xlarge',
+        'name': 'Cluster Compute Eight Extra Large Instance',
+        'ram': 63488,
+        'disk': 3370,
+        'bandwidth': None
     }
+}
 
-CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge']
+CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge', 'cc2.8xlarge']
 
 EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_US_WEST_OREGON_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+EC2_SA_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
 
 
 class EC2NodeLocation(NodeLocation):
@@ -190,7 +211,7 @@ class EC2Response(AWSBaseResponse):
 
 class EC2Connection(ConnectionUserAndKey):
     """
-    Repersents a single connection to the EC2 Endpoint
+    Represents a single connection to the EC2 Endpoint
     """
 
     host = EC2_US_EAST_HOST
@@ -217,20 +238,26 @@ class EC2Connection(ConnectionUserAndKey):
                        HTTPRequestURI + "\n" +
                        CanonicalizedQueryString <from the preceding step>
         """
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
         pairs = []
         for key in keys:
-            pairs.append(urllib.quote(key, safe='') + '=' +
-                         urllib.quote(params[key], safe='-_~'))
+            pairs.append(urlquote(key, safe='') + '=' +
+                         urlquote(params[key], safe='-_~'))
 
         qs = '&'.join(pairs)
-        string_to_sign = '\n'.join(('GET', self.host, path, qs))
+
+        hostname = self.host
+        if (self.secure and self.port != 443) or \
+           (not self.secure and self.port != 80):
+            hostname += ":" + str(self.port)
+
+        string_to_sign = '\n'.join(('GET', hostname, path, qs))
 
         b64_hmac = base64.b64encode(
-            hmac.new(secret_key, string_to_sign, digestmod=sha256).digest()
+            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha256).digest()
         )
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 
 class ExEC2AvailabilityZone(object):
@@ -260,12 +287,14 @@ class EC2NodeDriver(NodeDriver):
     type = Provider.EC2
     api_name = 'ec2_us_east'
     name = 'Amazon EC2 (us-east-1)'
+    website = 'http://aws.amazon.com/ec2/'
     friendly_name = 'Amazon US N. Virginia'
     country = 'US'
     region_name = 'us-east-1'
     path = '/'
 
     _instance_types = EC2_US_EAST_INSTANCE_TYPES
+    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -288,6 +317,16 @@ class EC2NodeDriver(NodeDriver):
     def _get_boolean(self, element):
         tag = "{%s}%s" % (NAMESPACE, 'return')
         return element.findtext(tag) == 'true'
+
+    def _get_state_boolean(self, element):
+        """
+        Checks for the instances's state
+        """
+        state = findall(element=element,
+                        xpath='instancesSet/item/currentState/name',
+                        namespace=NAMESPACE)[0].text
+
+        return state in ('stopping', 'pending', 'starting')
 
     def _get_terminate_boolean(self, element):
         status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
@@ -319,15 +358,20 @@ class EC2NodeDriver(NodeDriver):
 
         name = tags.get('Name', instance_id)
 
+        public_ip = findtext(element=element, xpath='ipAddress',
+                              namespace=NAMESPACE)
+        public_ips = [public_ip] if public_ip else []
+        private_ip = findtext(element=element, xpath='privateIpAddress',
+                                 namespace=NAMESPACE)
+        private_ips = [private_ip] if private_ip else []
+
         n = Node(
             id=findtext(element=element, xpath='instanceId',
                         namespace=NAMESPACE),
             name=name,
             state=state,
-            public_ip=[findtext(element=element, xpath='ipAddress',
-                                namespace=NAMESPACE)],
-            private_ip=[findtext(element=element, xpath='privateIpAddress',
-                                 namespace=NAMESPACE)],
+            public_ips=public_ips,
+            private_ips=private_ips,
             driver=self.connection.driver,
             extra={
                 'dns_name': findattr(element=element, xpath="dnsName",
@@ -381,11 +425,64 @@ class EC2NodeDriver(NodeDriver):
                                   namespace=NAMESPACE),
                       name=findtext(element=element, xpath='imageLocation',
                                     namespace=NAMESPACE),
-                      driver=self.connection.driver)
+                      driver=self.connection.driver,
+                      extra={
+                          'state': findattr(element=element,
+                                            xpath="imageState",
+                                            namespace=NAMESPACE),
+                          'ownerid': findattr(element=element,
+                                        xpath="imageOwnerId",
+                                        namespace=NAMESPACE),
+                          'owneralias': findattr(element=element,
+                                        xpath="imageOwnerAlias",
+                                        namespace=NAMESPACE),
+                          'ispublic': findattr(element=element,
+                                        xpath="isPublic",
+                                        namespace=NAMESPACE),
+                          'architecture': findattr(element=element,
+                                        xpath="architecture",
+                                        namespace=NAMESPACE),
+                          'imagetype': findattr(element=element,
+                                        xpath="imageType",
+                                        namespace=NAMESPACE),
+                          'platform': findattr(element=element,
+                                        xpath="platform",
+                                        namespace=NAMESPACE),
+                          'rootdevicetype': findattr(element=element,
+                                        xpath="rootDeviceType",
+                                        namespace=NAMESPACE),
+                          'virtualizationtype': findattr(element=element,
+                                        xpath="virtualizationType",
+                                        namespace=NAMESPACE),
+                          'hypervisor': findattr(element=element,
+                                        xpath="hypervisor",
+                                        namespace=NAMESPACE)
+                      }
+        )
         return n
 
-    def list_nodes(self):
+    def _to_volume(self, element, name):
+        volId = findtext(element=element, xpath='volumeId',
+                         namespace=NAMESPACE)
+        size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+
+        return StorageVolume(
+                        id=volId,
+                        name=name,
+                        size=int(size),
+                        driver=self)
+
+    def list_nodes(self, ex_node_ids=None):
+        """
+        @type node.id: C{list}
+        @param ex_node_ids: List of C{node.id}
+        This parameter is used to filter the list of
+        nodes that should be returned. Only the nodes
+        with the corresponding node ids will be returned.
+        """
         params = {'Action': 'DescribeInstances'}
+        if ex_node_ids:
+            params.update(self._pathlist('InstanceId', ex_node_ids))
         elem = self.connection.request(self.path, params=params).object
         nodes = []
         for rs in findall(element=elem, xpath='reservationSet/item',
@@ -398,21 +495,27 @@ class EC2NodeDriver(NodeDriver):
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
-            node.public_ip.extend(nodes_elastic_ips_mappings[node.id])
+            ips = nodes_elastic_ips_mappings[node.id]
+            node.public_ips.extend(ips)
         return nodes
 
     def list_sizes(self, location=None):
-        # Cluster instances are currently only available
-        # in the US - N. Virginia Region
-        include_ci = self.region_name == 'us-east-1'
-        sizes = self._get_sizes(include_cluser_instances=include_ci)
+        # Cluster instances are not available in all the regions
+        if self.region_name == 'us-east-1':
+          ignored_size_ids = None
+        elif self.region_name == 'eu-west-1':
+          ignored_size_ids = CLUSTER_INSTANCES_IDS[:-1]
+        else:
+          ignored_size_ids = CLUSTER_INSTANCES_IDS
+
+        sizes = self._get_sizes(ignored_size_ids=ignored_size_ids)
         return sizes
 
-    def _get_sizes(self, include_cluser_instances=False):
+    def _get_sizes(self, ignored_size_ids=None):
+        ignored_size_ids = ignored_size_ids or []
         sizes = []
-        for key, values in self._instance_types.iteritems():
-            if not include_cluser_instances and\
-               key in CLUSTER_INSTANCES_IDS:
+        for key, values in self._instance_types.items():
+            if key in ignored_size_ids:
                 continue
             attributes = copy.deepcopy(values)
             attributes.update({'price': self._get_size_price(size_id=key)})
@@ -436,6 +539,45 @@ class EC2NodeDriver(NodeDriver):
                                              self,
                                              availability_zone))
         return locations
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        params = {
+                'Action': 'CreateVolume',
+                'Size': str(size) }
+
+        if location is not None:
+            params['AvailabilityZone'] = location.availability_zone.name
+
+        volume = self._to_volume(
+                   self.connection.request(self.path, params=params).object,
+                   name=name)
+        self.ex_create_tags(volume, {'Name': name})
+        return volume
+
+    def destroy_volume(self, volume):
+        params = {
+                'Action': 'DeleteVolume',
+                'VolumeId': volume.id }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def attach_volume(self, node, volume, device):
+        params = {
+                'Action': 'AttachVolume',
+                'VolumeId': volume.id,
+                'InstanceId': node.id,
+                'Device': device }
+
+        self.connection.request(self.path, params=params)
+        return True
+
+    def detach_volume(self, volume):
+        params = {
+                'Action': 'DetachVolume',
+                'VolumeId': volume.id }
+
+        self.connection.request(self.path, params=params)
+        return True
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
@@ -496,7 +638,7 @@ class EC2NodeDriver(NodeDriver):
             }
 
     def ex_describe_keypairs(self, name):
-        """Describes a keypiar by name
+        """Describes a keypair by name
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -553,7 +695,8 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params['IpProtocol'] = 'udp'
@@ -562,7 +705,8 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
 
@@ -572,7 +716,9 @@ class EC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
+
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         return results
@@ -621,9 +767,9 @@ class EC2NodeDriver(NodeDriver):
 
         return availability_zones
 
-    def ex_describe_tags(self, node):
+    def ex_describe_tags(self, resource):
         """
-        Return a dictionary of tags for this instance.
+        Return a dictionary of tags for a resource (Node or StorageVolume).
 
         @type node: C{Node}
         @param node: Node instance
@@ -632,7 +778,7 @@ class EC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
-                  'Filter.0.Value.0': node.id,
+                  'Filter.0.Value.0': resource.id,
                   'Filter.1.Name': 'resource-type',
                   'Filter.1.Value.0': 'instance',
                   }
@@ -650,12 +796,12 @@ class EC2NodeDriver(NodeDriver):
             tags[key] = value
         return tags
 
-    def ex_create_tags(self, node, tags):
+    def ex_create_tags(self, resource, tags):
         """
-        Create tags for an instance.
+        Create tags for a resource (Node or StorageVolume).
 
-        @type node: C{Node}
-        @param node: Node instance
+        @type resource: EC2 resource
+        @param resource: Resource to be tagged
         @param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
         """
@@ -663,7 +809,7 @@ class EC2NodeDriver(NodeDriver):
             return
 
         params = {'Action': 'CreateTags',
-                  'ResourceId.0': node.id}
+                  'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
@@ -671,12 +817,12 @@ class EC2NodeDriver(NodeDriver):
         self.connection.request(self.path,
                                 params=params.copy()).object
 
-    def ex_delete_tags(self, node, tags):
+    def ex_delete_tags(self, resource, tags):
         """
-        Delete tags from an instance.
+        Delete tags from a resource.
 
-        @type node: C{Node}
-        @param node: Node instance
+        @type resource: EC2 resource
+        @param resource: Resource to be tagged
         @param tags: A dictionary or other mapping of strings to strings,
                      specifying the tag names and tag values to be deleted.
         """
@@ -684,13 +830,71 @@ class EC2NodeDriver(NodeDriver):
             return
 
         params = {'Action': 'DeleteTags',
-                  'ResourceId.0': node.id}
+                  'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
 
         self.connection.request(self.path,
                                 params=params.copy()).object
+
+    def _add_instance_filter(self, params, node):
+        """
+        Add instance filter to the provided params dictionary.
+        """
+        params.update({
+            'Filter.0.Name': 'instance-id',
+            'Filter.0.Value.0': node.id
+        })
+
+    def ex_describe_all_addresses(self, only_allocated=False):
+        """
+        Return all the Elastic IP addresses for this account
+        optionally, return only the allocated addresses
+
+        @keyword  only_allocated: If true, return only those addresses
+                                  that are associated with an instance
+        @type     only_allocated: C{string}
+
+        @return   list list of elastic ips for this particular account.
+        """
+        params = {'Action': 'DescribeAddresses'}
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        # the list which we return
+        elastic_ip_addresses = []
+        for element in findall(element=result, xpath='addressesSet/item',
+                               namespace=NAMESPACE):
+            instance_id = findtext(element=element, xpath='instanceId',
+                                   namespace=NAMESPACE)
+
+            # if only allocated addresses are requested
+            if only_allocated and not instance_id:
+                continue
+
+            ip_address = findtext(element=element, xpath='publicIp',
+                                  namespace=NAMESPACE)
+
+            elastic_ip_addresses.append(ip_address)
+
+        return elastic_ip_addresses
+
+    def ex_associate_addresses(self, node, elastic_ip_address):
+        """
+        Associate an IP address with a particular node.
+
+        @type node: C{Node}
+        @param node: Node instance
+
+        """
+        params = {'Action': 'AssociateAddress'}
+
+        params.update(self._pathlist('InstanceId', [node.id]))
+        params.update({'PublicIp': elastic_ip_address})
+        res = self.connection.request(self.path, params=params).object
+        return self._get_boolean(res)
 
     def ex_describe_addresses(self, nodes):
         """
@@ -709,10 +913,7 @@ class EC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeAddresses'}
 
         if len(nodes) == 1:
-            params.update({
-                'Filter.0.Name': 'instance-id',
-                'Filter.0.Value.0': nodes[0].id
-            })
+            self._add_instance_filter(params, nodes[0])
 
         result = self.connection.request(self.path,
                                          params=params.copy()).object
@@ -849,7 +1050,8 @@ class EC2NodeDriver(NodeDriver):
             params['KeyName'] = kwargs['ex_keyname']
 
         if 'ex_userdata' in kwargs:
-            params['UserData'] = base64.b64encode(kwargs['ex_userdata'])
+            params['UserData'] = base64.b64encode(b(kwargs['ex_userdata'])) \
+                                       .decode('utf-8')
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
@@ -859,7 +1061,12 @@ class EC2NodeDriver(NodeDriver):
 
         for node in nodes:
             tags = {'Name': kwargs['name']}
-            self.ex_create_tags(node=node, tags=tags)
+
+            try:
+                self.ex_create_tags(resource=node, tags=tags)
+            except Exception:
+                continue
+
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 
@@ -876,6 +1083,26 @@ class EC2NodeDriver(NodeDriver):
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
+
+    def ex_start_node(self, node):
+        """
+        Start the node by passing in the node object, does not work with
+        instance store backed instances
+        """
+        params = {'Action': 'StartInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
+
+    def ex_stop_node(self, node):
+        """
+        Stop the node by passing in the node object, does not work with
+        instance store backed instances
+        """
+        params = {'Action': 'StopInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
 
     def destroy_node(self, node):
         """
@@ -940,6 +1167,28 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
 
+class EC2USWestOregonConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Western US Region (Oregon).
+    """
+
+    host = EC2_US_WEST_OREGON_HOST
+
+
+class EC2USWestOregonNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the US West Oregon region.
+    """
+
+    api_name = 'ec2_us_west_oregon'
+    name = 'Amazon EC2 (us-west-2)'
+    friendly_name = 'Amazon US West - Oregon'
+    country = 'US'
+    region_name = 'us-west-2'
+    connectionCls = EC2USWestOregonConnection
+    _instance_types = EC2_US_WEST_OREGON_INSTANCE_TYPES
+
+
 class EC2APSEConnection(EC2Connection):
     """
     Connection class for EC2 in the Southeast Asia Pacific Region
@@ -984,6 +1233,28 @@ class EC2APNENodeDriver(EC2NodeDriver):
     _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
 
 
+class EC2SAEastConnection(EC2Connection):
+    """
+    Connection class for EC2 in the South America (Sao Paulo) Region
+    """
+
+    host = EC2_SA_EAST_HOST
+
+
+class EC2SAEastNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the South America (Sao Paulo) Region
+    """
+
+    api_name = 'ec2_sa_east'
+    name = 'Amazon EC2 (sa-east-1)'
+    friendly_name = 'Amazon South America Sao Paulo'
+    country = 'BR'
+    region_name = 'sa-east-1'
+    connectionCls = EC2SAEastConnection
+    _instance_types = EC2_SA_EAST_INSTANCE_TYPES
+
+
 class EucConnection(EC2Connection):
     """
     Connection class for Eucalyptus
@@ -1003,6 +1274,9 @@ class EucNodeDriver(EC2NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
+        """
+        @requires: key, secret
+        """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
             path = "/services/Eucalyptus"
@@ -1012,6 +1286,12 @@ class EucNodeDriver(EC2NodeDriver):
         raise NotImplementedError(
                 'list_locations not implemented for this driver')
 
+    def _add_instance_filter(self, params, node):
+        """
+        Eucalyptus driver doesn't support filtering on instance id so this is a
+        no-op.
+        """
+        pass
 
 # Nimbus clouds have 3 EC2-style instance types but their particular RAM
 # allocations are configured by the admin
@@ -1071,7 +1351,7 @@ class NimbusNodeDriver(EC2NodeDriver):
             nodes_elastic_ip_mappings[node.id] = []
         return nodes_elastic_ip_mappings
 
-    def ex_create_tags(self, node, tags):
+    def ex_create_tags(self, resource, tags):
         """
         Nimbus doesn't support creating tags, so this is a passthrough
         """

@@ -16,18 +16,15 @@
 import hashlib
 import time
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+from libcloud.utils.py3 import b
 
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import MalformedResponseError
-from libcloud.common.base import ConnectionUserAndKey, Response
+from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import NodeLocation
 
 HOST = 'api.gogrid.com'
-PORTS_BY_SECURITY = { True: 443, False: 80 }
+PORTS_BY_SECURITY = {True: 443, False: 80}
 API_VERSION = '1.8'
 
 __all__ = ["GoGridResponse",
@@ -36,35 +33,33 @@ __all__ = ["GoGridResponse",
         "BaseGoGridDriver",
 ]
 
-class GoGridResponse(Response):
+
+class GoGridResponse(JsonResponse):
 
     def __init__(self, *args, **kwargs):
-       self.driver = BaseGoGridDriver
-       super(GoGridResponse, self).__init__(*args, **kwargs)
+        self.driver = BaseGoGridDriver
+        super(GoGridResponse, self).__init__(*args, **kwargs)
 
     def success(self):
         if self.status == 403:
             raise InvalidCredsError('Invalid credentials', self.driver)
         if self.status == 401:
-            raise InvalidCredsError('API Key has insufficient rights', self.driver)
+            raise InvalidCredsError('API Key has insufficient rights',
+                self.driver)
         if not self.body:
             return None
         try:
-            return json.loads(self.body)['status'] == 'success'
+            return self.parse_body()['status'] == 'success'
         except ValueError:
             raise MalformedResponseError('Malformed reply',
                     body=self.body, driver=self.driver)
 
-    def parse_body(self):
-        if not self.body:
-            return None
-        return json.loads(self.body)
-
     def parse_error(self):
         try:
-            return json.loads(self.body)["list"][0]['message']
+            return self.parse_body()["list"][0]["message"]
         except (ValueError, KeyError):
             return None
+
 
 class GoGridConnection(ConnectionUserAndKey):
     """
@@ -84,8 +79,9 @@ class GoGridConnection(ConnectionUserAndKey):
 
     def get_signature(self, key, secret):
         """ create sig from md5 of key + secret + time """
-        m = hashlib.md5(key+secret+str(int(time.time())))
+        m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
+
 
 class GoGridIpAddress(object):
     """
@@ -98,6 +94,7 @@ class GoGridIpAddress(object):
         self.public = public
         self.state = state
         self.subnet = subnet
+
 
 class BaseGoGridDriver(object):
     """GoGrid has common object model for services they
@@ -119,8 +116,8 @@ class BaseGoGridDriver(object):
         return ip
 
     def _to_ips(self, object):
-        return [ self._to_ip(el)
-                for el in object['list'] ]
+        return [self._to_ip(el)
+                for el in object['list']]
 
     def _to_location(self, element):
         location = NodeLocation(id=element['id'],
@@ -132,7 +129,6 @@ class BaseGoGridDriver(object):
     def _to_locations(self, object):
         return [self._to_location(el)
                 for el in object['list']]
-
 
     def ex_list_ips(self, **kwargs):
         """Return list of IP addresses assigned to
