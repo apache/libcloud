@@ -20,11 +20,13 @@ import hmac
 import time
 
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import next
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import urlunquote
 
 if PY3:
     from io import FileIO as file
@@ -85,7 +87,7 @@ class AtmosConnection(ConnectionUserAndKey):
         return params, headers
 
     def _calculate_signature(self, params, headers):
-        pathstring = self.action
+        pathstring = urlunquote(self.action)
         if pathstring.startswith(self.driver.path):
             pathstring = pathstring[len(self.driver.path):]
         if params:
@@ -137,7 +139,7 @@ class AtmosDriver(StorageDriver):
         return containers
 
     def get_container(self, container_name):
-        path = self._namespace_path(container_name + '/?metadata/system')
+        path = self._namespace_path(container_name) + '/?metadata/system'
         try:
             result = self.connection.request(path)
         except AtmosError:
@@ -152,7 +154,7 @@ class AtmosDriver(StorageDriver):
         return Container(container_name, extra, self)
 
     def create_container(self, container_name):
-        path = self._namespace_path(container_name + '/')
+        path = self._namespace_path(container_name) + '/'
         try:
             self.connection.request(path, method='POST')
         except AtmosError:
@@ -164,7 +166,7 @@ class AtmosDriver(StorageDriver):
 
     def delete_container(self, container):
         try:
-            self.connection.request(self._namespace_path(container.name + '/'),
+            self.connection.request(self._namespace_path(container.name) + '/',
                                     method='DELETE')
         except AtmosError:
             e = sys.exc_info()[1]
@@ -176,8 +178,8 @@ class AtmosDriver(StorageDriver):
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name)
-        path = container_name + '/' + object_name
-        path = self._namespace_path(path)
+        object_name_cleaned = self._clean_object_name(object_name)
+        path = self._namespace_path(container_name) + '/' + object_name_cleaned
 
         try:
             result = self.connection.request(path + '?metadata/system')
@@ -206,12 +208,12 @@ class AtmosDriver(StorageDriver):
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
         upload_func = self._upload_file
-        upload_func_kwargs = { 'file_path': file_path }
+        upload_func_kwargs = {'file_path': file_path}
         method = 'PUT'
 
         extra = extra or {}
-        request_path = container.name + '/' + object_name
-        request_path = self._namespace_path(request_path)
+        object_name_cleaned = self._clean_object_name(object_name)
+        request_path = self._namespace_path(container.name) + '/' + object_name_cleaned
         content_type = extra.get('content_type', None)
 
         try:
@@ -338,7 +340,7 @@ class AtmosDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def delete_object(self, obj):
-        path = self._namespace_path(obj.container.name + '/' + obj.name)
+        path = self._namespace_path(obj.container.name) + '/' + self._clean_object_name(obj.name)
         try:
             self.connection.request(path, method='DELETE')
         except AtmosError:
@@ -398,8 +400,12 @@ class AtmosDriver(StorageDriver):
             })
         return entries
 
+    def _clean_object_name(self, name):
+        name = urlquote(name)
+        return name
+
     def _namespace_path(self, path):
-        return self.path + '/rest/namespace/' + path
+        return self.path + '/rest/namespace/' + urlquote(path)
 
     def _object_path(self, object_id):
         return self.path + '/rest/objects/' + object_id
@@ -418,7 +424,7 @@ class AtmosDriver(StorageDriver):
     def _get_more(self, last_key, value_dict):
         container = value_dict['container']
         headers = {'x-emc-include-meta': '1'}
-        path = self._namespace_path(container.name + '/')
+        path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type='regular')
         objects = []

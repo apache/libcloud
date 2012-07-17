@@ -158,7 +158,7 @@ class MockHttp(BaseMockHttpObject):
         meth_name = self._get_method_name(type=self.type,
                                           use_param=self.use_param,
                                           qs=qs, path=path)
-        meth = getattr(self, meth_name)
+        meth = getattr(self, meth_name.replace('%', '_'))
 
         if self.test and isinstance(self.test, LibcloudTestCase):
             self.test._add_visited_url(url=url)
@@ -281,7 +281,7 @@ class MockRawResponse(BaseMockHttpObject):
             meth_name = self._get_method_name(type=self.type,
                                               use_param=False, qs=None,
                                               path=self.connection.action)
-            meth = getattr(self, meth_name)
+            meth = getattr(self, meth_name.replace('%', '_'))
             result = meth(self.connection.method, None, None, None)
             self._status, self._body, self._headers, self._reason = result
             self._response = self.responseCls(self._status, self._body,
