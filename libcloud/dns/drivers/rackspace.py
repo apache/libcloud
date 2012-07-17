@@ -363,7 +363,11 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         @param name: Record name.
         @type name: C{str}
         """
-        name = '%s.%s' % (name, domain)
+        if name:
+            name = '%s.%s' % (name, domain)
+        else:
+            name = domain
+
         return name
 
     def _to_partial_record_name(self, domain, name):

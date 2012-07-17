@@ -93,6 +93,11 @@ Changes with Apache Libcloud in development:
     - Add support for URL RecordType to Zerigo driver. ; LIBCLOUD-209
       [Bojan Mihelac]
 
+    - Properly handle record creation when user doesn't provider a record name
+      and wants to create a record for the actual domain.
+      Reported by Matt Perry ; LIBCLOUD-224
+      [Tomaz Muraus]
+
   *) Storage
 
     - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
