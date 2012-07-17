@@ -139,7 +139,9 @@ class Container(object):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        return self.driver.download_object(obj, destination_path)
+        return self.driver.download_object(
+            obj, destination_path, overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
 
     def download_object_as_stream(self, obj, chunk_size=None):
         return self.driver.download_object_as_stream(obj, chunk_size)
