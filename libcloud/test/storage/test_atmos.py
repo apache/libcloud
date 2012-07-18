@@ -90,6 +90,12 @@ class AtmosTests(unittest.TestCase):
         self.assertEqual(container.extra['object_id'],
                          'b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9')
 
+    def test_get_container_escaped(self):
+        container = self.driver.get_container(container_name='test & container')
+        self.assertEqual(container.name, 'test & container')
+        self.assertEqual(container.extra['object_id'],
+                         'b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9')
+
     def test_get_container_not_found(self):
         try:
             self.driver.get_container(container_name='not_found')
@@ -157,6 +163,18 @@ class AtmosTests(unittest.TestCase):
         self.assertEqual(obj.meta_data['foo-bar'], 'test 1')
         self.assertEqual(obj.meta_data['bar-foo'], 'test 2')
 
+    def test_get_object_escaped(self):
+        obj = self.driver.get_object(container_name='test & container',
+                                     object_name='test & object')
+        self.assertEqual(obj.container.name, 'test & container')
+        self.assertEqual(obj.size, 555)
+        self.assertEqual(obj.hash, '6b21c4a111ac178feacf9ec9d0c71f17')
+        self.assertEqual(obj.extra['object_id'],
+                         '322dce3763aadc41acc55ef47867b8d74e45c31d6643')
+        self.assertEqual(
+            obj.extra['last_modified'], 'Tue, 25 Jan 2011 22:01:49 GMT')
+        self.assertEqual(obj.meta_data['foo-bar'], 'test 1')
+        self.assertEqual(obj.meta_data['bar-foo'], 'test 2')
 
     def test_get_object_not_found(self):
         try:
@@ -171,6 +189,15 @@ class AtmosTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        status = self.driver.delete_object(obj=obj)
+        self.assertTrue(status)
+
+    def test_delete_object_escaped_success(self):
+        container = Container(name='foo & bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo & bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver)
         status = self.driver.delete_object(obj=obj)
@@ -194,6 +221,19 @@ class AtmosTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=False,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+    def test_download_object_escaped_success(self):
+        container = Container(name='foo & bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo & bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver)
         destination_path = os.path.abspath(__file__) + '.temp'
@@ -234,6 +274,16 @@ class AtmosTests(unittest.TestCase):
         stream = self.driver.download_object_as_stream(obj=obj, chunk_size=None)
         self.assertTrue(hasattr(stream, '__iter__'))
 
+    def test_download_object_as_stream_escaped(self):
+        container = Container(name='foo & bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo & bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+
+        stream = self.driver.download_object_as_stream(obj=obj, chunk_size=None)
+        self.assertTrue(hasattr(stream, '__iter__'))
+
     def test_upload_object_success(self):
         def upload_file(self, response, file_path, chunked=False,
                      calculate_hash=True):
@@ -244,7 +294,7 @@ class AtmosTests(unittest.TestCase):
         path = os.path.abspath(__file__)
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftu'
-        extra = {'meta_data': { 'some-value': 'foobar'}}
+        extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=path, container=container,
                                         extra=extra, object_name=object_name)
         self.assertEqual(obj.name, 'ftu')
@@ -347,6 +397,8 @@ class AtmosTests(unittest.TestCase):
         test_values = [
             ('GET', '/rest/namespace/foo', '', {},
                 'WfSASIA25TuqO2n0aO9k/dtg6S0='),
+            ('GET', '/rest/namespace/foo%20%26%20bar', '', {},
+                'vmlqXqcInxxoP4YX5mR09BonjX4='),
             ('POST', '/rest/namespace/foo', '', {},
                 'oYKdsF+1DOuUT7iX5CJCDym2EQk='),
             ('PUT', '/rest/namespace/foo', '', {},
@@ -422,6 +474,13 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
+    def _rest_namespace_test_20_26_20container__metadata_system(self, method, url, body,
+                                                                headers):
+        headers = {
+            'x-emc-meta': 'objectid=b21cb59a2ba339d1afdd4810010b0a5aba2ab6b9'
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
     def _rest_namespace_not_found__metadata_system(self, method, url, body,
                                                    headers):
         body = self.fixtures.load('not_found.xml')
@@ -473,9 +532,35 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
 
+    def _rest_namespace_test_20_26_20container_test_20_26_20object_metadata_system(self, method,
+                                                                                    url, body,
+                                                                                    headers):
+        meta = {
+            'objectid': '322dce3763aadc41acc55ef47867b8d74e45c31d6643',
+            'size': '555',
+            'mtime': '2011-01-25T22:01:49Z'
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
     def _rest_namespace_test_container_test_object_metadata_user(self, method,
                                                                  url, body,
                                                                  headers):
+        meta = {
+            'md5': '6b21c4a111ac178feacf9ec9d0c71f17',
+            'foo-bar': 'test 1',
+            'bar-foo': 'test 2',
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_test_20_26_20container_test_20_26_20object_metadata_user(self, method,
+                                                                                 url, body,
+                                                                                 headers):
         meta = {
             'md5': '6b21c4a111ac178feacf9ec9d0c71f17',
             'foo-bar': 'test 1',
@@ -495,6 +580,10 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
 
     def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
                                                          body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object(self, method, url,
+                                                                         body, headers):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_foo_bar_container_foo_bar_object_NOT_FOUND(self, method,
@@ -553,6 +642,12 @@ class AtmosMockRawResponse(MockRawResponse):
 
     def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
                                                          body, headers):
+        body = 'test'
+        self._data = self._generate_random_data(1000)
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object(self, method, url,
+                                                                         body, headers):
         body = 'test'
         self._data = self._generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

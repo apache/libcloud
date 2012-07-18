@@ -125,6 +125,9 @@ Changes with Apache Libcloud in development:
       driver.download_object(). ; LIBCLOUD-227
       [Benno Rice]
 
+    - Fix a bug with not escaping container and object name in the Atmos driver.
+      [Russell Keith-Magee, Benno Rice]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:
