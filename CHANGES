@@ -93,6 +93,11 @@ Changes with Apache Libcloud in development:
     - Add support for URL RecordType to Zerigo driver. ; LIBCLOUD-209
       [Bojan Mihelac]
 
+    - Properly handle record creation when user doesn't provider a record name
+      and wants to create a record for the actual domain.
+      Reported by Matt Perry ; LIBCLOUD-224
+      [Tomaz Muraus]
+
   *) Storage
 
     - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
@@ -115,6 +120,13 @@ Changes with Apache Libcloud in development:
     - Add ex_enable_static_website and ex_set_error_page method to the
       CloudFiles driver.
       [Tomaz Muraus]
+
+    - Propagate kwargs passed to container.download_object() to
+      driver.download_object(). ; LIBCLOUD-227
+      [Benno Rice]
+
+    - Fix a bug with not escaping container and object name in the Atmos driver.
+      [Russell Keith-Magee, Benno Rice]
 
 Changes with Apache Libcloud 0.10.1:
 

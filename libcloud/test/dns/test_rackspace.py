@@ -296,6 +296,18 @@ class RackspaceUSTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    def test_to_full_record_name_name_provided(self):
+        domain = 'foo.bar'
+        name = 'test'
+        self.assertEquals(self.driver._to_full_record_name(domain, name),
+                          'test.foo.bar')
+
+    def test_to_full_record_name_name_not_provided(self):
+        domain = 'foo.bar'
+        name = None
+        self.assertEquals(self.driver._to_full_record_name(domain, name),
+                          'foo.bar')
+
 
 class RackspaceUK1Tests(RackspaceUSTests):
     klass = RackspaceUKDNSDriver
