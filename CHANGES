@@ -121,6 +121,10 @@ Changes with Apache Libcloud in development:
       CloudFiles driver.
       [Tomaz Muraus]
 
+    - Propagate kwargs passed to container.download_object() to
+      driver.download_object(). ; LIBCLOUD-227
+      [Benno Rice]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:
