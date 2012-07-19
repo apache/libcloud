@@ -268,6 +268,15 @@ class AtmosDriver(StorageDriver):
             chunk = ''
 
         path = self._namespace_path(container.name + '/' + object_name)
+        method = 'PUT'
+
+        try:
+            self.connection.request(path + '?metadata/system')
+        except AtmosError:
+            e = sys.exc_info()[1]
+            if e.code != 1003:
+                raise
+            method = 'POST'
 
         while True:
             end = bytes_transferred + len(chunk) - 1
@@ -275,9 +284,12 @@ class AtmosDriver(StorageDriver):
             headers = {
                 'x-emc-meta': 'md5=' + data_hash.hexdigest(),
             }
-            if len(chunk) > 0:
+
+            if len(chunk) > 0 and bytes_transferred > 0:
                 headers['Range'] = 'Bytes=%d-%d' % (bytes_transferred, end)
-            result = self.connection.request(path, method='PUT', data=chunk,
+                method = 'PUT'
+
+            result = self.connection.request(path, method=method, data=chunk,
                                              headers=headers)
             bytes_transferred += len(chunk)
 

@@ -437,6 +437,8 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         if kwargs.get('host', None) and kwargs.get('port', None):
             StorageMockHttp.__init__(self, *args, **kwargs)
 
+        self._upload_object_via_stream_first_request = True
+
     def runTest(self):
         pass
 
@@ -617,7 +619,13 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftsd(self, method, url, body, headers):
-        self.assertTrue('Range' in headers)
+        if self._upload_object_via_stream_first_request:
+            self.assertTrue('Range' not in headers)
+            self.assertEqual(method, 'POST')
+            self._upload_object_via_stream_first_request = False
+        else:
+            self.assertTrue('Range' in headers)
+            self.assertEqual(method, 'PUT')
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftsd_metadata_user(self, method, url, body,
