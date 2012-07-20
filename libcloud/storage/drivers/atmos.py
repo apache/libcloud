@@ -31,7 +31,7 @@ from libcloud.utils.py3 import urlunquote
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks
+from libcloud.utils.files import read_in_chunks, guess_file_mime_type
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LazyList, LibcloudError
 
@@ -41,13 +41,16 @@ from libcloud.storage.types import ContainerAlreadyExistsError, \
                                    ContainerIsNotEmptyError, \
                                    ObjectDoesNotExistError
 
+
 def collapse(s):
     return ' '.join([x for x in s.split(' ') if x])
+
 
 class AtmosError(LibcloudError):
     def __init__(self, code, message, driver=None):
         super(AtmosError, self).__init__(value=message, driver=driver)
         self.code = code
+
 
 class AtmosResponse(XmlResponse):
     def success(self):
@@ -64,6 +67,7 @@ class AtmosResponse(XmlResponse):
         message = tree.find('Message').text
         raise AtmosError(code=code, message=message,
                          driver=self.connection.driver)
+
 
 class AtmosConnection(ConnectionUserAndKey):
     responseCls = AtmosResponse
@@ -113,6 +117,7 @@ class AtmosConnection(ConnectionUserAndKey):
         signature = hmac.new(b(key), b(signature), hashlib.sha1).digest()
         return base64.b64encode(b(signature)).decode('utf-8')
 
+
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
 
@@ -121,7 +126,7 @@ class AtmosDriver(StorageDriver):
     api_name = 'atmos'
     supports_chunked_encoding = True
 
-    DEFAULT_CDN_TTL = 60 * 60 * 24 * 7 # 1 week
+    DEFAULT_CDN_TTL = 60 * 60 * 24 * 7  # 1 week
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
         host = host or self.host
@@ -268,16 +273,41 @@ class AtmosDriver(StorageDriver):
             chunk = ''
 
         path = self._namespace_path(container.name + '/' + object_name)
+        method = 'PUT'
+
+        if extra is not None:
+            content_type = extra.get('content_type', None)
+        else:
+            content_type = None
+        if not content_type:
+            content_type, _ = guess_file_mime_type(object_name)
+
+            if not content_type:
+                raise AttributeError(
+                    'File content-type could not be guessed and' +
+                    ' no content_type value provided')
+
+        try:
+            self.connection.request(path + '?metadata/system')
+        except AtmosError:
+            e = sys.exc_info()[1]
+            if e.code != 1003:
+                raise
+            method = 'POST'
 
         while True:
             end = bytes_transferred + len(chunk) - 1
             data_hash.update(b(chunk))
             headers = {
                 'x-emc-meta': 'md5=' + data_hash.hexdigest(),
+                'Content-Type': content_type,
             }
-            if len(chunk) > 0:
+
+            if len(chunk) > 0 and bytes_transferred > 0:
                 headers['Range'] = 'Bytes=%d-%d' % (bytes_transferred, end)
-            result = self.connection.request(path, method='PUT', data=chunk,
+                method = 'PUT'
+
+            result = self.connection.request(path, method=method, data=chunk,
                                              headers=headers)
             bytes_transferred += len(chunk)
 
