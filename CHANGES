@@ -128,6 +128,9 @@ Changes with Apache Libcloud in development:
     - Fix a bug with not escaping container and object name in the Atmos driver.
       [Russell Keith-Magee, Benno Rice]
 
+    - Fix upload_object_via_stream method in the Atmos driver. ; LIBCLOUD-228
+      [Benno Rice]
+
 Changes with Apache Libcloud 0.10.1:
 
   *) General:

@@ -373,7 +373,7 @@ class AtmosTests(unittest.TestCase):
         finally:
             libcloud.utils.files.guess_file_mime_type = old_func
 
-    def test_upload_object_via_stream(self):
+    def test_upload_object_via_stream_new_object(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
@@ -381,7 +381,24 @@ class AtmosTests(unittest.TestCase):
         libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
-        object_name = 'ftsd'
+        object_name = 'ftsdn'
+        iterator = DummyIterator(data=['2', '3', '5'])
+        try:
+            self.driver.upload_object_via_stream(container=container,
+                                                 object_name=object_name,
+                                                 iterator=iterator)
+        finally:
+            libcloud.utils.files.guess_file_mime_type = old_func
+
+    def test_upload_object_via_stream_existing_object(self):
+        def dummy_content_type(name):
+            return 'application/zip', None
+
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
+
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftsde'
         iterator = DummyIterator(data=['2', '3', '5'])
         try:
             self.driver.upload_object_via_stream(container=container,
@@ -430,12 +447,15 @@ class AtmosTests(unittest.TestCase):
 class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')
     upload_created = False
+    upload_stream_created = False
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self)
 
         if kwargs.get('host', None) and kwargs.get('port', None):
             StorageMockHttp.__init__(self, *args, **kwargs)
+
+        self._upload_object_via_stream_first_request = True
 
     def runTest(self):
         pass
@@ -616,11 +636,62 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         self.assertTrue('x-emc-meta' in headers)
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
-    def _rest_namespace_fbc_ftsd(self, method, url, body, headers):
-        self.assertTrue('Range' in headers)
+    def _rest_namespace_fbc_ftsdn_metadata_system(self, method, url, body,
+                                                  headers):
+        if not self.upload_stream_created:
+            self.__class__.upload_stream_created = True
+            body = self.fixtures.load('not_found.xml')
+            return (httplib.NOT_FOUND, body, {},
+                    httplib.responses[httplib.NOT_FOUND])
+
+        self.__class__.upload_stream_created = False
+        meta = {
+            'objectid': '322dce3763aadc41acc55ef47867b8d74e45c31d6643',
+            'size': '555',
+            'mtime': '2011-01-25T22:01:49Z'
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsdn(self, method, url, body, headers):
+        if self._upload_object_via_stream_first_request:
+            self.assertTrue('Range' not in headers)
+            self.assertEqual(method, 'POST')
+            self._upload_object_via_stream_first_request = False
+        else:
+            self.assertTrue('Range' in headers)
+            self.assertEqual(method, 'PUT')
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
-    def _rest_namespace_fbc_ftsd_metadata_user(self, method, url, body,
+    def _rest_namespace_fbc_ftsdn_metadata_user(self, method, url, body,
+                                               headers):
+        self.assertTrue('x-emc-meta' in headers)
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsde_metadata_system(self, method, url, body,
+                                                  headers):
+        meta = {
+            'objectid': '322dce3763aadc41acc55ef47867b8d74e45c31d6643',
+            'size': '555',
+            'mtime': '2011-01-25T22:01:49Z'
+        }
+        headers = {
+            'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
+        }
+        return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsde(self, method, url, body, headers):
+        if self._upload_object_via_stream_first_request:
+            self.assertTrue('Range' not in headers)
+            self._upload_object_via_stream_first_request = False
+        else:
+            self.assertTrue('Range' in headers)
+        self.assertEqual(method, 'PUT')
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _rest_namespace_fbc_ftsde_metadata_user(self, method, url, body,
                                                headers):
         self.assertTrue('x-emc-meta' in headers)
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
