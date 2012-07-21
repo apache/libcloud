@@ -518,6 +518,10 @@ class OpenStackDriverMixin(object):
                                                    None)
 
     def openstack_connection_kwargs(self):
+        """
+
+        @rtype: C{dict}
+        """
         rv = {}
         if self._ex_force_base_url:
             rv['ex_force_base_url'] = self._ex_force_base_url

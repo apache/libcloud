@@ -94,6 +94,11 @@ class LibvirtNodeDriver(NodeDriver):
     def ex_start(self, node):
         """
         Start a stopped node.
+
+        @param  node: Node which should be used
+        @type   node: L{Node}
+
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.create() == 0
@@ -101,6 +106,11 @@ class LibvirtNodeDriver(NodeDriver):
     def ex_shutdown(self, node):
         """
         Shutdown a running node.
+
+        @param  node: Node which should be used
+        @type   node: L{Node}
+
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.shutdown() == 0
@@ -108,6 +118,11 @@ class LibvirtNodeDriver(NodeDriver):
     def ex_suspend(self, node):
         """
         Suspend a running node.
+
+        @param  node: Node which should be used
+        @type   node: L{Node}
+
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.suspend() == 0
@@ -115,6 +130,11 @@ class LibvirtNodeDriver(NodeDriver):
     def ex_resume(self, node):
         """
         Resume a suspended node.
+
+        @param  node: Node which should be used
+        @type   node: L{Node}
+
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0

@@ -18,7 +18,7 @@ Gandi driver for compute
 import sys
 from datetime import datetime
 
-from libcloud.common.gandi import BaseGandiDriver, GandiException, \
+from libcloud.common.gandi import BaseGandiDriver, GandiException,\
     NetworkInterface, IPAddress, Disk
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import Node, NodeDriver
@@ -119,58 +119,66 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return False
 
     def deploy_node(self, **kwargs):
+        """
+        deploy_node is not implemented for gandi driver
+
+        @rtype: C{bool}
+        """
         raise NotImplementedError(
             'deploy_node not implemented for gandi driver')
 
     def create_node(self, **kwargs):
-        """Create a new Gandi node
+        """
+        Create a new Gandi node
 
         @keyword    name:   String with a name for this new node (required)
-        @type       name:   str
+        @type       name:   C{str}
 
         @keyword    image:  OS Image to boot on node. (required)
         @type       image:  L{NodeImage}
 
         @keyword    location: Which data center to create a node in. If empty,
-                              undefined behavoir will be selected. (optional)
+                              undefined behavior will be selected. (optional)
         @type       location: L{NodeLocation}
 
         @keyword    size:   The size of resources allocated to this node.
                             (required)
         @type       size:   L{NodeSize}
 
-        @keyword    login:  user name to create for login on machine (required)
-        @type       login: String
+        @keyword    login: user name to create for login on machine (required)
+        @type       login: C{str}
 
         @keyword    password: password for user that'll be created (required)
-        @type       password: String
+        @type       password: C{str}
 
-        @keywork    inet_family: version of ip to use, default 4 (optional)
-        @type       inet_family: int
+        @keyword    inet_family: version of ip to use, default 4 (optional)
+        @type       inet_family: C{int}
+
+        @rtype: L{Node}
         """
 
         if kwargs.get('login') is None or kwargs.get('password') is None:
-            raise GandiException(1020,
-                'login and password must be defined for node creation')
+            raise GandiException(
+                1020, 'login and password must be defined for node creation')
 
         location = kwargs.get('location')
         if location and isinstance(location, NodeLocation):
             dc_id = int(location.id)
         else:
-            raise GandiException(1021,
-                'location must be a subclass of NodeLocation')
+            raise GandiException(
+                1021, 'location must be a subclass of NodeLocation')
 
         size = kwargs.get('size')
         if not size and not isinstance(size, NodeSize):
-            raise GandiException(1022,
-                'size must be a subclass of NodeSize')
+            raise GandiException(
+                1022, 'size must be a subclass of NodeSize')
 
         src_disk_id = int(kwargs['image'].id)
 
         disk_spec = {
             'datacenter_id': dc_id,
             'name': 'disk_%s' % kwargs['name']
-            }
+        }
 
         vm_spec = {
             'datacenter_id': dc_id,
@@ -181,7 +189,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             'cores': int(size.id),
             'bandwidth': int(size.bandwidth),
             'ip_version': kwargs.get('inet_family', 4),
-            }
+        }
 
         # Call create_from helper api. Return 3 operations : disk_create,
         # iface_create,vm_create
@@ -289,7 +297,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 self.connection.driver,
                 version=ip.get('version'),
                 extra={'reverse': ip['reverse']}
-                )
+            )
             ips.append(new_ip)
         return NetworkInterface(
             iface['id'],
@@ -308,11 +316,16 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return [self._to_iface(i) for i in ifaces]
 
     def ex_list_interfaces(self):
-        """Specific method to list network interfaces"""
+        """
+        Specific method to list network interfaces
+
+        @rtype: C{list} of L{GandiNetworkInterface}
+        """
         ifaces = self.connection.request('iface.list')
         ips = self.connection.request('ip.list')
         for iface in ifaces:
-            iface['ips'] = list(filter(lambda i: i['iface_id'] == iface['id'], ips))
+            iface['ips'] = list(
+                filter(lambda i: i['iface_id'] == iface['id'], ips))
         return self._to_ifaces(ifaces)
 
     def _to_disk(self, element):
@@ -333,56 +346,109 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return [self._to_disk(el) for el in elements]
 
     def ex_list_disks(self):
-        """Specific method to list all disk"""
+        """
+        Specific method to list all disk
+
+        @rtype: C{list} of L{GandiDisk}
+        """
         res = self.connection.request('disk.list', {})
         return self._to_disks(res)
 
     def ex_node_attach_disk(self, node, disk):
-        """Specific method to attach a disk to a node"""
+        """
+        Specific method to attach a disk to a node
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @param      disk: Disk which should be used
+        @type       disk: L{GandiDisk}
+
+        @rtype: C{bool}
+        """
         op = self.connection.request('vm.disk_attach',
-            int(node.id), int(disk.id))
+                                     int(node.id), int(disk.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
     def ex_node_detach_disk(self, node, disk):
-        """Specific method to detach a disk from a node"""
+        """
+        Specific method to detach a disk from a node
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @param      disk: Disk which should be used
+        @type       disk: L{GandiDisk}
+
+        @rtype: C{bool}
+        """
         op = self.connection.request('vm.disk_detach',
-            int(node.id), int(disk.id))
+                                     int(node.id), int(disk.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
     def ex_node_attach_interface(self, node, iface):
-        """Specific method to attach an interface to a node"""
+        """
+        Specific method to attach an interface to a node
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+
+        @param      iface: Network interface which should be used
+        @type       iface: L{GandiNetworkInterface}
+
+        @rtype: C{bool}
+        """
         op = self.connection.request('vm.iface_attach',
-            int(node.id), int(iface.id))
+                                     int(node.id), int(iface.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
     def ex_node_detach_interface(self, node, iface):
-        """Specific method to detach an interface from a node"""
+        """
+        Specific method to detach an interface from a node
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+
+        @param      iface: Network interface which should be used
+        @type       iface: L{GandiNetworkInterface}
+
+        @rtype: C{bool}
+        """
         op = self.connection.request('vm.iface_detach',
-            int(node.id), int(iface.id))
+                                     int(node.id), int(iface.id))
         if self._wait_operation(op['id']):
             return True
         return False
 
     def ex_snapshot_disk(self, disk, name=None):
-        """Specific method to make a snapshot of a disk"""
+        """
+        Specific method to make a snapshot of a disk
+
+        @param      disk: Disk which should be used
+        @type       disk: L{GandiDisk}
+
+        @param      name: Name which should be used
+        @type       name: C{str}
+
+        @rtype: C{bool}
+        """
         if not disk.extra.get('can_snapshot'):
             raise GandiException(1021, "Disk %s can't snapshot" % disk.id)
         if not name:
             suffix = datetime.today().strftime("%Y%m%d")
             name = "snap_%s" % (suffix)
         op = self.connection.request('disk.create_from',
-            {
-                'name': name,
-                'type': 'snapshot',
-            },
-            int(disk.id),
-            )
+                                     {'name': name, 'type': 'snapshot', },
+                                     int(disk.id),
+                                     )
         if self._wait_operation(op['id']):
             return True
         return False
@@ -390,6 +456,17 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def ex_update_disk(self, disk, new_size=None, new_name=None):
         """Specific method to update size or name of a disk
         WARNING: if a server is attached it'll be rebooted
+
+        @param      disk: Disk which should be used
+        @type       disk: L{GandiDisk}
+
+        @param      new_size: New size
+        @type       new_size: C{int}
+
+        @param      new_name: New name
+        @type       new_name: C{str}
+
+        @rtype: C{bool}
         """
         params = {}
         if new_size:
@@ -397,8 +474,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         if new_name:
             params.update({'name': new_name})
         op = self.connection.request('disk.update',
-            int(disk.id),
-            params)
+                                     int(disk.id),
+                                     params)
         if self._wait_operation(op['id']):
             return True
         return False

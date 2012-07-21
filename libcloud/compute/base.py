@@ -64,7 +64,7 @@ __all__ = [
     "ConnectionUserAndKey",
     "LibcloudHTTPSConnection",
     "LibcloudHTTPConnection"
-    ]
+]
 
 
 class UuidMixin(object):
@@ -413,7 +413,7 @@ class StorageVolume(UuidMixin):
 
     def __repr__(self):
         return '<StorageVolume id=%s size=%s driver=%s>' % (
-                        self.id, self.size, self.driver.name)
+               self.id, self.size, self.driver.name)
 
 
 class NodeDriver(BaseDriver):
@@ -457,7 +457,7 @@ class NodeDriver(BaseDriver):
         """Create a new node instance.
 
         @keyword    name:   String with a name for this new node (required)
-        @type       name:   str
+        @type       name:   C{str}
 
         @keyword    size:   The size of resources allocated to this node.
                             (required)
@@ -474,7 +474,8 @@ class NodeDriver(BaseDriver):
                             (optional)
         @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
 
-        @return: The newly created L{Node}.
+        @return: The newly created node.
+        @rtype: L{Node}
         """
         raise NotImplementedError(
             'create_node not implemented for this driver')
@@ -488,7 +489,8 @@ class NodeDriver(BaseDriver):
         @param node: The node to be destroyed
         @type node: L{Node}
 
-        @return: C{bool} True if the destroy was successful, otherwise False
+        @return: True if the destroy was successful, otherwise False
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'destroy_node not implemented for this driver')
@@ -500,7 +502,8 @@ class NodeDriver(BaseDriver):
         @param node: The node to be rebooted
         @type node: L{Node}
 
-        @return: C{bool} True if the reboot was successful, otherwise False
+        @return: True if the reboot was successful, otherwise False
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'reboot_node not implemented for this driver')
@@ -508,7 +511,8 @@ class NodeDriver(BaseDriver):
     def list_nodes(self):
         """
         List all nodes
-        @return: C{list} of L{Node} objects
+        @return:  list of node objects
+        @rtype: C{list} of L{Node}
         """
         raise NotImplementedError(
             'list_nodes not implemented for this driver')
@@ -520,7 +524,8 @@ class NodeDriver(BaseDriver):
         @keyword location: The location at which to list images
         @type location: L{NodeLocation}
 
-        @return: C{list} of L{NodeImage} objects
+        @return: list of node image objects
+        @rtype: C{list} of L{NodeImage}
         """
         raise NotImplementedError(
             'list_images not implemented for this driver')
@@ -532,7 +537,8 @@ class NodeDriver(BaseDriver):
         @keyword location: The location at which to list sizes
         @type location: L{NodeLocation}
 
-        @return: C{list} of L{NodeSize} objects
+        @return: list of node size objects
+        @rtype: C{list} of L{NodeSize}
         """
         raise NotImplementedError(
             'list_sizes not implemented for this driver')
@@ -540,7 +546,9 @@ class NodeDriver(BaseDriver):
     def list_locations(self):
         """
         List data centers for a provider
-        @return: C{list} of L{NodeLocation} objects
+
+        @return: list of node location objects
+        @rtype: C{list} of L{NodeLocation}
         """
         raise NotImplementedError(
             'list_locations not implemented for this driver')
@@ -556,6 +564,27 @@ class NodeDriver(BaseDriver):
         call was successful, but there is a later error (like SSH failing or
         timing out).  This exception includes a Node object which you may want
         to destroy if incomplete deployments are not desirable.
+
+        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+        >>> from libcloud.compute.deployment import ScriptDeployment
+        >>> from libcloud.compute.deployment import MultiStepDeployment
+        >>> from libcloud.compute.base import NodeAuthSSHKey
+        >>> driver = DummyNodeDriver(0)
+        >>> key = NodeAuthSSHKey('...') # read from file
+        >>> script = ScriptDeployment("yum -y install emacs strace tcpdump")
+        >>> msd = MultiStepDeployment([key, script])
+        >>> def d():
+        ...     try:
+        ...         node = driver.deploy_node(deploy=msd)
+        ...     except NotImplementedError:
+        ...         print ("not implemented for dummy driver")
+        >>> d()
+        not implemented for dummy driver
+
+        Deploy node is typically not overridden in subclasses.  The
+        existing implementation should be able to handle most such.
+
+        @inherits: L{NodeDriver.create_node}
 
         @keyword    deploy: Deployment to run once machine is online and
                             availble to SSH.
@@ -579,7 +608,7 @@ class NodeDriver(BaseDriver):
 
         @keyword    ssh_key: A path (or paths) to an SSH private key with which
                              to attempt to authenticate. (optional)
-        @type       ssh_key: C{string} or C{list} of C{string}s
+        @type       ssh_key: C{str} or C{list} of C{str}
 
         @keyword    max_tries: How many times to retry if a deployment fails
                                before giving up (default is 3)
@@ -588,27 +617,6 @@ class NodeDriver(BaseDriver):
         @keyword    ssh_interface: The interface to wait for. Default is
                                    'public_ips', other option is 'private_ips'.
         @type       ssh_interface: C{str}
-
-        See L{NodeDriver.create_node} for more keyword args.
-
-        >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
-        >>> from libcloud.compute.deployment import ScriptDeployment
-        >>> from libcloud.compute.deployment import MultiStepDeployment
-        >>> from libcloud.compute.base import NodeAuthSSHKey
-        >>> driver = DummyNodeDriver(0)
-        >>> key = NodeAuthSSHKey('...') # read from file
-        >>> script = ScriptDeployment("yum -y install emacs strace tcpdump")
-        >>> msd = MultiStepDeployment([key, script])
-        >>> def d():
-        ...     try:
-        ...         node = driver.deploy_node(deploy=msd)
-        ...     except NotImplementedError:
-        ...         print ("not implemented for dummy driver")
-        >>> d()
-        not implemented for dummy driver
-
-        Deploy node is typically not overridden in subclasses.  The
-        existing implementation should be able to handle most such.
         """
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError('paramiko is not installed. You can install ' +
@@ -618,7 +626,7 @@ class NodeDriver(BaseDriver):
 
         if 'create_node' not in self.features:
             raise NotImplementedError(
-                    'deploy_node not implemented for this driver')
+                'deploy_node not implemented for this driver')
         elif 'generates_password' not in self.features["create_node"]:
             if 'password' not in self.features["create_node"] and \
                'ssh_key' not in self.features["create_node"]:
@@ -641,9 +649,10 @@ class NodeDriver(BaseDriver):
         try:
             # Wait until node is up and running and has IP assigned
             ssh_interface = kwargs.get('ssh_interface', 'public_ips')
-            node, ip_addresses = self._wait_until_running(node=node,
-                    wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
-                    ssh_interface=ssh_interface)
+            node, ip_addresses = self._wait_until_running(
+                node=node,
+                wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
+                ssh_interface=ssh_interface)
 
             if password:
                 node.extra['password'] = password
@@ -693,10 +702,11 @@ class NodeDriver(BaseDriver):
                                volume.  (optional)
         @type       snapshot:  C{str}
 
-        @return: The newly created L{StorageVolume}.
+        @return: The newly created volume.
+        @rtype: L{StorageVolume}
         """
         raise NotImplementedError(
-           'create_volume not implemented for this driver')
+            'create_volume not implemented for this driver')
 
     def destroy_volume(self, volume):
         """
@@ -705,11 +715,11 @@ class NodeDriver(BaseDriver):
         @param      volume: Volume to be destroyed
         @type       volume: L{StorageVolume}
 
-        @return: C{bool}
+        @rtype: C{bool}
         """
 
         raise NotImplementedError(
-               'destroy_volume not implemented for this driver')
+            'destroy_volume not implemented for this driver')
 
     def attach_volume(self, node, volume, device=None):
         """
@@ -725,7 +735,7 @@ class NodeDriver(BaseDriver):
                             e.g. '/dev/sdb (optional)
         @type       device: C{str}
 
-        @return: C{bool}
+        @rtype: C{bool}
         """
         raise NotImplementedError('attach not implemented for this driver')
 
@@ -736,7 +746,7 @@ class NodeDriver(BaseDriver):
         @param      volume: Volume to be detached
         @type       volume: L{StorageVolume}
 
-        @returns C{bool}
+        @rtype: C{bool}
         """
 
         raise NotImplementedError('detach not implemented for this driver')
@@ -795,8 +805,8 @@ class NodeDriver(BaseDriver):
                                     + 'but multiple nodes have same UUID'),
                                     driver=self)
 
-            if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and \
-                filter_addresses(getattr(nodes[0], ssh_interface))):
+            if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and
+                    filter_addresses(getattr(nodes[0], ssh_interface))):
                 return (nodes[0], filter_addresses(getattr(nodes[0],
                                                    ssh_interface)))
             else:

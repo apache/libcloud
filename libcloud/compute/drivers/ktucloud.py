@@ -15,7 +15,7 @@
 
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
-                                  NodeSize
+    NodeSize
 from libcloud.compute.types import NodeState
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
@@ -38,14 +38,18 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         images = []
 
         for img in imgs['producttypes']:
-            images.append(NodeImage(img['serviceofferingid'],
-                img['serviceofferingdesc'], self, {
-                'hypervisor': '',
-                'format': '',
-                'os': img['templatedesc'],
-                'templateid': img['templateid'],
-                'zoneid': img['zoneid']
-            }))
+            images.append(
+                NodeImage(
+                    img['serviceofferingid'],
+                    img['serviceofferingdesc'],
+                    self,
+                    {'hypervisor': '',
+                     'format': '',
+                     'os': img['templatedesc'],
+                     'templateid': img['templateid'],
+                     'zoneid': img['zoneid']}
+                )
+            )
 
         return images
 
@@ -53,8 +57,11 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         szs = self._sync_request('listAvailableProductTypes')
         sizes = []
         for sz in szs['producttypes']:
-            sizes.append(NodeSize(sz['diskofferingid'],
-            sz['diskofferingdesc'], 0, 0, 0, 0, self))
+            sizes.append(NodeSize(
+                sz['diskofferingid'],
+                sz['diskofferingdesc'],
+                0, 0, 0, 0, self)
+            )
         return sizes
 
     def create_node(self, name, size, image, location=None, **kwargs):
@@ -65,7 +72,8 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         else:
             extra_args['usageplantype'] = usageplantype
 
-        result = self._async_request('deployVirtualMachine',
+        result = self._async_request(
+            'deployVirtualMachine',
             displayname=name,
             serviceofferingid=image.id,
             diskofferingid=size.id,

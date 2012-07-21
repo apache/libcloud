@@ -82,30 +82,30 @@ class DummyNodeDriver(NodeDriver):
             for i in range(num):
                 ip = _int_to_ip(startip + i)
                 self.nl.append(
-                Node(id=i,
-                    name='dummy-%d' % (i),
-                    state=NodeState.RUNNING,
-                    public_ips=[ip],
-                    private_ips=[],
-                    driver=self,
-                    extra={'foo': 'bar'})
+                    Node(id=i,
+                         name='dummy-%d' % (i),
+                         state=NodeState.RUNNING,
+                         public_ips=[ip],
+                         private_ips=[],
+                         driver=self,
+                         extra={'foo': 'bar'})
                 )
         else:
             self.nl = [
                 Node(id=1,
-                    name='dummy-1',
-                    state=NodeState.RUNNING,
-                    public_ips=['127.0.0.1'],
-                    private_ips=[],
-                    driver=self,
-                    extra={'foo': 'bar'}),
+                     name='dummy-1',
+                     state=NodeState.RUNNING,
+                     public_ips=['127.0.0.1'],
+                     private_ips=[],
+                     driver=self,
+                     extra={'foo': 'bar'}),
                 Node(id=2,
-                    name='dummy-2',
-                    state=NodeState.RUNNING,
-                    public_ips=['127.0.0.1'],
-                    private_ips=[],
-                    driver=self,
-                    extra={'foo': 'bar'}),
+                     name='dummy-2',
+                     state=NodeState.RUNNING,
+                     public_ips=['127.0.0.1'],
+                     private_ips=[],
+                     driver=self,
+                     extra={'foo': 'bar'}),
             ]
         self.connection = DummyConnection(self.creds)
 
@@ -237,9 +237,9 @@ class DummyNodeDriver(NodeDriver):
             NodeSize(id=4,
                      name="XXL Big",
                      ram=4096 * 2,
-                     disk=32*4,
-                     bandwidth=2500*3,
-                     price=32*2,
+                     disk=32 * 4,
+                     bandwidth=2500 * 3,
+                     price=32 * 2,
                      driver=self),
         ]
 

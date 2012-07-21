@@ -25,7 +25,8 @@ from libcloud.utils.py3 import xmlrpclib
 
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, NodeImage
+from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
+    NodeImage
 
 DATACENTERS = {
     'sea01': {'country': 'US'},
@@ -46,21 +47,32 @@ SL_IMAGES = [
     {'id': 1685, 'name': 'CentOS 5 - Minimal Install (64 bit)'},
     {'id': 1686, 'name': 'CentOS 5 - LAMP Install (32 bit)'},
     {'id': 1687, 'name': 'CentOS 5 - LAMP Install (64 bit)'},
-    {'id': 1688, 'name': 'Red Hat Enterprise Linux 5 - Minimal Install (32 bit)'},
-    {'id': 1689, 'name': 'Red Hat Enterprise Linux 5 - Minimal Install (64 bit)'},
+    {'id': 1688,
+     'name': 'Red Hat Enterprise Linux 5 - Minimal Install (32 bit)'},
+    {'id': 1689,
+     'name': 'Red Hat Enterprise Linux 5 - Minimal Install (64 bit)'},
     {'id': 1690, 'name': 'Red Hat Enterprise Linux 5 - LAMP Install (32 bit)'},
     {'id': 1691, 'name': 'Red Hat Enterprise Linux 5 - LAMP Install (64 bit)'},
-    {'id': 1692, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (32 bit)'},
-    {'id': 1693, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (64 bit)'},
-    {'id': 1694, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (32 bit)'},
-    {'id': 1695, 'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (64 bit)'},
-    {'id': 1696, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (32 bit)'},
-    {'id': 1697, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (64 bit)'},
-    {'id': 1698, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (32 bit)'},
-    {'id': 1699, 'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (64 bit)'},
+    {'id': 1692,
+     'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (32 bit)'},
+    {'id': 1693,
+     'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (64 bit)'},
+    {'id': 1694,
+     'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (32 bit)'},
+    {'id': 1695,
+     'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (64 bit)'},
+    {'id': 1696,
+     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (32 bit)'},
+    {'id': 1697,
+     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (64 bit)'},
+    {'id': 1698,
+     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (32 bit)'},
+    {'id': 1699,
+     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (64 bit)'},
     {'id': 1700, 'name': 'Windows Server 2003 Standard SP2 with R2 (32 bit)'},
     {'id': 1701, 'name': 'Windows Server 2003 Standard SP2 with R2 (64 bit)'},
-    {'id': 1703, 'name': 'Windows Server 2003 Enterprise SP2 with R2 (64 bit)'},
+    {'id': 1703,
+     'name': 'Windows Server 2003 Enterprise SP2 with R2 (64 bit)'},
     {'id': 1705, 'name': 'Windows Server 2008 Standard Edition (64bit)'},
     {'id': 1715, 'name': 'Windows Server 2003 Datacenter SP2 (64 bit)'},
     {'id': 1716, 'name': 'Windows Server 2003 Datacenter SP2 (32 bit)'},
@@ -96,7 +108,7 @@ SL_TEMPLATES = {
             'disk': 100,
             'bandwidth': None
         },
-        'prices':[
+        'prices': [
             {'id': 1644},  # 1 GB
             {'id': 1639},  # 100 GB (SAN)
             {'id': 1963},  # Private 2 x 2.0 GHz Cores
@@ -136,17 +148,21 @@ SL_TEMPLATES = {
     }
 }
 
+
 class SoftLayerException(LibcloudError):
     """
     Exception class for SoftLayer driver
     """
     pass
 
+
 class SoftLayerSafeTransport(xmlrpclib.SafeTransport):
     pass
 
+
 class SoftLayerTransport(xmlrpclib.Transport):
     pass
+
 
 class SoftLayerProxy(xmlrpclib.ServerProxy):
     transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
@@ -164,6 +180,7 @@ class SoftLayerProxy(xmlrpclib.ServerProxy):
             transport=t,
             verbose=verbose
         )
+
 
 class SoftLayerConnection(object):
     """
@@ -184,7 +201,8 @@ class SoftLayerConnection(object):
         headers = {}
         headers.update(self._get_auth_headers())
         headers.update(self._get_init_params(service, kwargs.get('id')))
-        headers.update(self._get_object_mask(service, kwargs.get('object_mask')))
+        headers.update(
+            self._get_object_mask(service, kwargs.get('object_mask')))
         params = [{'headers': headers}] + list(args)
 
         try:
@@ -196,10 +214,9 @@ class SoftLayerConnection(object):
             raise SoftLayerException(e)
 
     def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (
-                libcloud.__version__,
-                self.driver.name,
-                "".join([" (%s)" % x for x in self.ua]))
+        return 'libcloud/%s (%s)%s' % (libcloud.__version__,
+                                       self.driver.name,
+                                       "".join([" (%s)" % x for x in self.ua]))
 
     def user_agent_append(self, s):
         self.ua.append(s)
@@ -228,6 +245,7 @@ class SoftLayerConnection(object):
         else:
             return {}
 
+
 class SoftLayerNodeDriver(NodeDriver):
     """
     SoftLayer node driver
@@ -236,7 +254,8 @@ class SoftLayerNodeDriver(NodeDriver):
         - password: root password
         - hourlyRecurringFee: hourly price (if applicable)
         - recurringFee      : flat rate    (if applicable)
-        - recurringMonths   : The number of months in which the recurringFee will be incurred.
+        - recurringMonths   : The number of months in which the recurringFee
+         will be incurred.
     """
     connectionCls = SoftLayerConnection
     name = 'SoftLayer'
@@ -256,11 +275,13 @@ class SoftLayerNodeDriver(NodeDriver):
 
     def _to_node(self, host):
         try:
-            password = host['softwareComponents'][0]['passwords'][0]['password']
+            password = \
+                host['softwareComponents'][0]['passwords'][0]['password']
         except (IndexError, KeyError):
             password = None
 
-        hourlyRecurringFee = host.get('billingItem', {}).get('hourlyRecurringFee', 0)
+        hourlyRecurringFee = host.get('billingItem', {}).get(
+            'hourlyRecurringFee', 0)
         recurringFee = host.get('billingItem', {}).get('recurringFee', 0)
         recurringMonths = host.get('billingItem', {}).get('recurringMonths', 0)
 
@@ -305,16 +326,14 @@ class SoftLayerNodeDriver(NodeDriver):
     def _get_order_information(self, order_id, timeout=1200, check_interval=5):
         mask = {
             'orderTopLevelItems': {
-                'billingItem':  {
+                'billingItem': {
                     'resource': {
-                        'softwareComponents': {
-                            'passwords': ''
-                        },
+                        'softwareComponents': {'passwords': ''},
                         'powerState': '',
                     }
                 },
             }
-         }
+        }
 
         for i in range(0, timeout, check_interval):
             try:
@@ -338,20 +357,21 @@ class SoftLayerNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new SoftLayer node
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: L{NodeDriver.create_node}
+
         @keyword    ex_domain: e.g. libcloud.org
-        @type       ex_domain: C{string}
+        @type       ex_domain: C{str}
         """
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
         domain = kwargs.get('ex_domain')
         location = kwargs['location']
-        if domain == None:
+        if domain is None:
             if name.find(".") != -1:
-                domain = name[name.find('.')+1:]
+                domain = name[name.find('.') + 1:]
 
-        if domain == None:
+        if domain is None:
             # TODO: domain is a required argument for the Sofylayer API, but it
             # it shouldn't be.
             domain = "exmaple.com"
@@ -420,16 +440,15 @@ class SoftLayerNodeDriver(NodeDriver):
             "getDatacenters"
         )
 
-        # checking "in DATACENTERS", because some of the locations returned by getDatacenters are not useable.
+        # checking "in DATACENTERS", because some of the locations returned
+        # by getDatacenters are not useable.
         return [self._to_loc(l) for l in res if l['name'] in DATACENTERS]
 
     def list_nodes(self):
         mask = {
             'virtualGuests': {
                 'powerState': '',
-                'softwareComponents': {
-                    'passwords': ''
-                },
+                'softwareComponents': {'passwords': ''},
                 'billingItem': '',
             },
         }

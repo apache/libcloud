@@ -29,7 +29,8 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import NodeDriver, Node, NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
+from libcloud.compute.base import NodeDriver, Node, NodeImage, \
+    NodeSize, NodeLocation, NodeAuthSSHKey
 
 HOST = 'www-147.ibm.com'
 REST_BASE = '/computecloud/enterprise/api/rest/20100331'
@@ -58,8 +59,8 @@ class IBMConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'text/xml'
-        headers['Authorization'] = ('Basic %s' % (base64.b64encode(b('%s:%s' %
-                                                 (self.user_id, self.key))).decode('utf-8')))
+        headers['Authorization'] = ('Basic %s' % (base64.b64encode(
+            b('%s:%s' % (self.user_id, self.key))).decode('utf-8')))
         if not 'Content-Type' in headers:
             headers['Content-Type'] = 'text/xml'
         return headers
@@ -77,46 +78,43 @@ class IBMNodeDriver(NodeDriver):
     name = "IBM SmartCloud Enterprise"
     website = 'http://ibm.com/services/us/en/cloud-enterprise/'
 
-    NODE_STATE_MAP = {0: NodeState.PENDING,      # New
-                      1: NodeState.PENDING,      # Provisioning
-                      2: NodeState.TERMINATED,   # Failed
-                      3: NodeState.TERMINATED,   # Removed
-                      4: NodeState.TERMINATED,   # Rejected
-                      5: NodeState.RUNNING,      # Active
-                      6: NodeState.UNKNOWN,      # Unknown
-                      7: NodeState.PENDING,      # Deprovisioning
-                      8: NodeState.REBOOTING,    # Restarting
-                      9: NodeState.PENDING,      # Starting
-                      10: NodeState.PENDING,     # Stopping
-                      11: NodeState.TERMINATED,  # Stopped
-                      12: NodeState.PENDING,     # Deprovision Pending
-                      13: NodeState.PENDING,     # Restart Pending
-                      14: NodeState.PENDING,     # Attaching
-                      15: NodeState.PENDING }    # Detaching
+    NODE_STATE_MAP = {
+        0: NodeState.PENDING,      # New
+        1: NodeState.PENDING,      # Provisioning
+        2: NodeState.TERMINATED,   # Failed
+        3: NodeState.TERMINATED,   # Removed
+        4: NodeState.TERMINATED,   # Rejected
+        5: NodeState.RUNNING,      # Active
+        6: NodeState.UNKNOWN,      # Unknown
+        7: NodeState.PENDING,      # Deprovisioning
+        8: NodeState.REBOOTING,    # Restarting
+        9: NodeState.PENDING,      # Starting
+        10: NodeState.PENDING,     # Stopping
+        11: NodeState.TERMINATED,  # Stopped
+        12: NodeState.PENDING,     # Deprovision Pending
+        13: NodeState.PENDING,     # Restart Pending
+        14: NodeState.PENDING,     # Attaching
+        15: NodeState.PENDING,      # Detaching
+    }
 
     def create_node(self, **kwargs):
         """
         Creates a node in the IBM Developer Cloud.
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: L{NodeDriver.create_node}
 
-        @keyword    auth Name of the pubkey to use. When constructing
-                         C{NodeAuthSSHKey} instance, 'pubkey' argument must be
-                         the name of the public key to use.
-                         You chose this name when creating a new public key on
-                         the IBM server.
-        @type       auth C{NodeAuthSSHKey}
+        @keyword    auth: Name of the pubkey to use. When constructing
+            C{NodeAuthSSHKey} instance, 'pubkey' argument must be the name of
+            the public key to use. You chose this name when creating
+            a new public key on the IBM server.
+        @type       auth: L{NodeAuthSSHKey}
 
-        @keyword    ex_configurationData: Image-specific configuration parameters.
-                                       Configuration parameters are defined in
-                                       the parameters.xml file.  The URL to
-                                       this file is defined in the NodeImage
-                                       at extra[parametersURL].
-
-                                       Note: This argument must be specified
-                                       when launching a Windows instance. It
-                                       must contain 'UserName' and 'Password'
-                                       keys.
+        @keyword    ex_configurationData: Image-specific configuration
+            parameters. Configuration parameters are defined in the parameters
+            .xml file.  The URL to this file is defined in the NodeImage at
+            extra[parametersURL].
+            Note: This argument must be specified when launching a Windows
+            instance. It must contain 'UserName' and 'Password' keys.
         @type       ex_configurationData: C{dict}
         """
 
@@ -137,10 +135,11 @@ class IBMNodeDriver(NodeDriver):
                 data.update({key: configurationData.get(key)})
 
         # Send request!
-        resp = self.connection.request(action=REST_BASE + '/instances',
-                                       headers={'Content-Type': 'application/x-www-form-urlencoded'},
-                                       method='POST',
-                                       data=data).object
+        resp = self.connection.request(
+            action=REST_BASE + '/instances',
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            method='POST',
+            data=data).object
         return self._to_nodes(resp)[0]
 
     def destroy_node(self, node):
@@ -154,38 +153,54 @@ class IBMNodeDriver(NodeDriver):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {'state': 'restart'}
 
-        resp = self.connection.request(action = url,
-                                       method = 'PUT',
-                                       headers = headers,
-                                       data = data)
+        resp = self.connection.request(action=url,
+                                       method='PUT',
+                                       headers=headers,
+                                       data=data)
         return int(resp.status) == 200
 
     def list_nodes(self):
-        return self._to_nodes(self.connection.request(REST_BASE + '/instances').object)
+        return self._to_nodes(
+            self.connection.request(REST_BASE + '/instances').object)
 
-    def list_images(self, location = None):
-        return self._to_images(self.connection.request(REST_BASE + '/offerings/image').object)
+    def list_images(self, location=None):
+        return self._to_images(
+            self.connection.request(REST_BASE + '/offerings/image').object)
 
-    def list_sizes(self, location = None):
+    def list_sizes(self, location=None):
         """
-        Returns a generic list of sizes.  See list_images() for a list of supported sizes for specific
-        images.
+        Returns a generic list of sizes.  See list_images() for a
+        list of supported sizes for specific images.
+
+        @inherits: L{NodeDriver.list_sizes}
         """
-        return [NodeSize('BRZ32.1/2048/60*175', 'Bronze 32 bit', None, None, None, None, self.connection.driver),
-                NodeSize('BRZ64.2/4096/60*500*350', 'Bronze 64 bit', None, None, None, None, self.connection.driver),
-                NodeSize('COP32.1/2048/60', 'Copper 32 bit', None, None, None, None, self.connection.driver),
-                NodeSize('COP64.2/4096/60', 'Copper 64 bit', None, None, None, None, self.connection.driver),
-                NodeSize('SLV32.2/4096/60*350', 'Silver 32 bit', None, None, None, None, self.connection.driver),
-                NodeSize('SLV64.4/8192/60*500*500', 'Silver 64 bit', None, None, None, None, self.connection.driver),
-                NodeSize('GLD32.4/4096/60*350', 'Gold 32 bit', None, None, None, None, self.connection.driver),
-                NodeSize('GLD64.8/16384/60*500*500', 'Gold 64 bit', None, None, None, None, self.connection.driver),
-                NodeSize('PLT64.16/16384/60*500*500*500*500', 'Platinum 64 bit', None, None, None, None, self.connection.driver)]
+        return [
+            NodeSize('BRZ32.1/2048/60*175', 'Bronze 32 bit', None, None, None,
+                     None, self.connection.driver),
+            NodeSize('BRZ64.2/4096/60*500*350', 'Bronze 64 bit', None, None,
+                     None, None, self.connection.driver),
+            NodeSize('COP32.1/2048/60', 'Copper 32 bit', None, None, None,
+                     None, self.connection.driver),
+            NodeSize('COP64.2/4096/60', 'Copper 64 bit', None, None, None,
+                     None, self.connection.driver),
+            NodeSize('SLV32.2/4096/60*350', 'Silver 32 bit', None, None, None,
+                     None, self.connection.driver),
+            NodeSize('SLV64.4/8192/60*500*500', 'Silver 64 bit', None, None,
+                     None, None, self.connection.driver),
+            NodeSize('GLD32.4/4096/60*350', 'Gold 32 bit', None, None, None,
+                     None, self.connection.driver),
+            NodeSize('GLD64.8/16384/60*500*500', 'Gold 64 bit', None, None,
+                     None, None, self.connection.driver),
+            NodeSize('PLT64.16/16384/60*500*500*500*500', 'Platinum 64 bit',
+                     None, None, None, None, self.connection.driver)]
 
     def list_locations(self):
-        return self._to_locations(self.connection.request(REST_BASE + '/locations').object)
+        return self._to_locations(
+            self.connection.request(REST_BASE + '/locations').object)
 
     def _to_nodes(self, object):
-        return [ self._to_node(instance) for instance in object.findall('Instance') ]
+        return [self._to_node(instance) for instance in
+                object.findall('Instance')]
 
     def _to_node(self, instance):
         public_ips = []
@@ -194,48 +209,52 @@ class IBMNodeDriver(NodeDriver):
         if ip:
             public_ips.append(ip)
 
-        return Node(id=instance.findtext('ID'),
-                    name=instance.findtext('Name'),
-                    state=self.NODE_STATE_MAP[int(instance.findtext('Status'))],
-                    public_ips=public_ips,
-                    private_ips=[],
-                    driver=self.connection.driver)
+        return Node(
+            id=instance.findtext('ID'),
+            name=instance.findtext('Name'),
+            state=self.NODE_STATE_MAP[int(instance.findtext('Status'))],
+            public_ips=public_ips,
+            private_ips=[],
+            driver=self.connection.driver
+        )
 
     def _to_images(self, object):
-        # Converts data retrieved from SCE /offerings/image REST call to a NodeImage
+    #Converts data retrieved from SCE /offerings/image REST call to a NodeImage
         return [self._to_image(image) for image in object.findall('Image')]
 
     def _to_image(self, image):
         # Converts an SCE Image object to a NodeImage
-        imageID=image.findtext('ID')
-        imageName=image.findtext('Name')
-        parametersURL=image.findtext('Manifest')
-        location=image.findtext('Location')
-        state=image.findtext('State')
-        owner=image.findtext('Owner')
-        visibility=image.findtext('Visibility')
-        platform=image.findtext('Platform')
-        description=image.findtext('Description')
-        documentation=image.findtext('Documentation')
-        instanceTypes=image.findall('SupportedInstanceTypes')
-        nodeSizes=self._to_node_sizes(image.find('SupportedInstanceTypes'))
+        imageID = image.findtext('ID')
+        imageName = image.findtext('Name')
+        parametersURL = image.findtext('Manifest')
+        location = image.findtext('Location')
+        state = image.findtext('State')
+        owner = image.findtext('Owner')
+        visibility = image.findtext('Visibility')
+        platform = image.findtext('Platform')
+        description = image.findtext('Description')
+        documentation = image.findtext('Documentation')
+        instanceTypes = image.findall('SupportedInstanceTypes')
+        nodeSizes = self._to_node_sizes(image.find('SupportedInstanceTypes'))
         return NodeImage(id=imageID,
                          name=imageName,
                          driver=self.connection.driver,
-                         extra={'parametersURL': parametersURL,
-                                'location' : location,
-                                'state' : state,
-                                'owner' : owner,
-                                'visibility' : visibility,
-                                'platform' : platform,
-                                'description' : description,
-                                'documentation' : documentation,
-                                'supportedInstanceTypes' : nodeSizes
-                                }
+                         extra={
+                             'parametersURL': parametersURL,
+                             'location': location,
+                             'state': state,
+                             'owner': owner,
+                             'visibility': visibility,
+                             'platform': platform,
+                             'description': description,
+                             'documentation': documentation,
+                             'supportedInstanceTypes': nodeSizes
+                         }
                          )
 
     def _to_locations(self, object):
-        return [self._to_location(location) for location in object.findall('Location')]
+        return [self._to_location(location) for location in
+                object.findall('Location')]
 
     def _to_location(self, location):
         # Converts an SCE Location object to a Libcloud NodeLocation object
@@ -247,13 +266,15 @@ class IBMNodeDriver(NodeDriver):
                             driver=self.connection.driver)
 
     def _to_node_sizes(self, object):
-        # Converts SCE SupportedInstanceTypes object to a list of Libcloud NodeSize objects
-        return [self._to_node_size(iType) for iType in object.findall('InstanceType')]
+        # Converts SCE SupportedInstanceTypes object to
+        # a list of Libcloud NodeSize objects
+        return [self._to_node_size(iType) for iType in
+                object.findall('InstanceType')]
 
     def _to_node_size(self, object):
         # Converts to an SCE InstanceType to a Libcloud NodeSize
-        return NodeSize(object.findtext('ID'), 
-                        object.findtext('Label'), 
+        return NodeSize(object.findtext('ID'),
+                        object.findtext('Label'),
                         None,
                         None,
                         None,
