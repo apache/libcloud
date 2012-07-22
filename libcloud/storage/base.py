@@ -547,7 +547,7 @@ class StorageDriver(BaseDriver):
             file_size = os.path.getsize(file_path)
             upload_func_kwargs['chunked'] = False
 
-        if file_size:
+        if file_size is not None:
             headers['Content-Length'] = file_size
 
         headers['Content-Type'] = content_type

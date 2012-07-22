@@ -131,6 +131,10 @@ Changes with Apache Libcloud in development:
     - Fix upload_object_via_stream method in the Atmos driver. ; LIBCLOUD-228
       [Benno Rice]
 
+    - Fix a bug with uploading zero-sized files in the OpenStack Swift /
+      CloudFiles driver.
+      [Tomaz Muraus]
+
   *) Other:
 
     - Unify docstrings formatting in the compute drivers. ; LIBCLOUD-229
