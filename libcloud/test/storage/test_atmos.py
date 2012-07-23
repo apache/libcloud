@@ -36,6 +36,7 @@ from libcloud.storage.drivers.dummy import DummyIterator
 from libcloud.test import StorageMockHttp, MockRawResponse
 from libcloud.test.file_fixtures import StorageFileFixtures
 
+
 class AtmosTests(unittest.TestCase):
     def setUp(self):
         AtmosDriver.connectionCls.conn_classes = (None, AtmosMockHttp)
@@ -377,8 +378,8 @@ class AtmosTests(unittest.TestCase):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.utils.files.guess_file_mime_type
-        libcloud.utils.files.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.storage.drivers.atmos.guess_file_mime_type
+        libcloud.storage.drivers.atmos.guess_file_mime_type = dummy_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftsdn'
@@ -388,14 +389,14 @@ class AtmosTests(unittest.TestCase):
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
-            libcloud.utils.files.guess_file_mime_type = old_func
+            libcloud.storage.drivers.atmos.guess_file_mime_type = old_func
 
     def test_upload_object_via_stream_existing_object(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.utils.files.guess_file_mime_type
-        libcloud.utils.files.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.storage.drivers.atmos.guess_file_mime_type
+        libcloud.storage.drivers.atmos.guess_file_mime_type = dummy_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftsde'
@@ -405,7 +406,30 @@ class AtmosTests(unittest.TestCase):
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
-            libcloud.utils.files.guess_file_mime_type = old_func
+            libcloud.storage.drivers.atmos.guess_file_mime_type = old_func
+
+    def test_upload_object_via_stream_no_content_type(self):
+        def no_content_type(name):
+            return None, None
+
+        old_func = libcloud.storage.drivers.atmos.guess_file_mime_type
+        libcloud.storage.drivers.atmos.guess_file_mime_type = no_content_type
+
+        container = Container(name='fbc', extra={}, driver=self)
+        object_name = 'ftsdct'
+        iterator = DummyIterator(data=['2', '3', '5'])
+        try:
+            self.driver.upload_object_via_stream(container=container,
+                                                 object_name=object_name,
+                                                 iterator=iterator)
+        except AttributeError:
+            pass
+        else:
+            self.fail(
+                'File content type not provided'
+                ' but an exception was not thrown')
+        finally:
+            libcloud.storage.drivers.atmos.guess_file_mime_type = old_func
 
     def test_signature_algorithm(self):
         test_uid = 'fredsmagicuid'
@@ -443,6 +467,7 @@ class AtmosTests(unittest.TestCase):
             headers['Date'] = headers['x-emc-date'] = test_date
             self.assertEqual(c._calculate_signature({}, headers),
                              b(expected).decode('utf-8'))
+
 
 class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
     fixtures = StorageFileFixtures('atmos')
@@ -666,7 +691,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftsdn_metadata_user(self, method, url, body,
-                                               headers):
+                                                headers):
         self.assertTrue('x-emc-meta' in headers)
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
@@ -692,7 +717,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_fbc_ftsde_metadata_user(self, method, url, body,
-                                               headers):
+                                                headers):
         self.assertTrue('x-emc-meta' in headers)
         return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
@@ -707,6 +732,7 @@ class AtmosMockHttp(StorageMockHttp, unittest.TestCase):
             'x-emc-meta': ', '.join([k + '=' + v for k, v in list(meta.items())])
         }
         return (httplib.OK, '', headers, httplib.responses[httplib.OK])
+
 
 class AtmosMockRawResponse(MockRawResponse):
     fixtures = StorageFileFixtures('atmos')
