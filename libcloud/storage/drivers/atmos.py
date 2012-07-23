@@ -431,14 +431,13 @@ class AtmosDriver(StorageDriver):
         return entries
 
     def _clean_object_name(self, name):
-        name = urlquote(name)
-        return name
+        return urlquote(name.encode('ascii'))
 
     def _namespace_path(self, path):
-        return self.path + '/rest/namespace/' + urlquote(path)
+        return self.path + '/rest/namespace/' + urlquote(path.encode('ascii'))
 
     def _object_path(self, object_id):
-        return self.path + '/rest/objects/' + object_id
+        return self.path + '/rest/objects/' + object_id.encode('ascii')
 
     @staticmethod
     def _emc_tag(tag):
