@@ -139,6 +139,10 @@ Changes with Apache Libcloud in development:
       CloudFiles driver.
       [Tomaz Muraus]
 
+    - Fix a bug with content_type and and encoding of object and path names in 
+      the Atmos driver.
+      [Russell Keith-Magee]
+
   *) Other:
 
     - Unify docstrings formatting in the compute drivers. ; LIBCLOUD-229
