@@ -26,7 +26,7 @@ Changes with Apache Libcloud 0.11.0:
       - Joyent
       [Sengor Kusturica, Hutson Betts, Tomaz Muraus]
 
-    - Make CloudStuck driver more robust and make it work if list_images() call
+    - Make CloudStack driver more robust and make it work if list_images() call
       returns no images. ; LIBCLOUD-202
       [Gabriel Reid]
 
@@ -43,7 +43,7 @@ Changes with Apache Libcloud 0.11.0:
       [Gabriel Reid]
 
     - New driver for KT UCloud (http://home.ucloud.olleh.com/main.kt) based on
-      CloudStack driver.
+      the CloudStack driver.
       [DaeMyung Kang]
 
     - Add a standard API and methods for managing storage volumes to the
