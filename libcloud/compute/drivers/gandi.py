@@ -20,6 +20,7 @@ from datetime import datetime
 
 from libcloud.common.gandi import BaseGandiDriver, GandiException,\
     NetworkInterface, IPAddress, Disk
+from libcloud.compute.base import StorageVolume
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
@@ -52,14 +53,20 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     # TODO : which features to enable ?
     features = {}
 
-    def _node_info(self, id):
+    def _resource_info(self, type, id):
         try:
-            obj = self.connection.request('vm.info', int(id))
+            obj = self.connection.request('%s.info' % type, int(id))
             return obj
         except Exception:
             e = sys.exc_info()[1]
             raise GandiException(1003, e)
         return None
+
+    def _node_info(self, id):
+        return self._resource_info('vm', id)
+
+    def _volume_info(self, id):
+        return self._resource_info('disk', id)
 
     # Generic methods for driver
     def _to_node(self, vm):
@@ -83,6 +90,54 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def _to_nodes(self, vms):
         return [self._to_node(v) for v in vms]
 
+    def _to_volume(self, disk):
+        extra = {'can_snapshot': disk['can_snapshot']}
+        return StorageVolume(
+            id=disk['id'],
+            name=disk['name'],
+            size=int(disk['size']),
+            driver=self,
+            extra=extra)
+
+    def _to_volumes(self, disks):
+        return [self._to_volume(d) for d in disks]
+
+    def _to_volume(self, disk):
+        extra = {'can_snapshot': disk['can_snapshot']}
+        return StorageVolume(
+            id=disk['id'],
+            name=disk['name'],
+            size=int(disk['size']),
+            driver=self,
+            extra=extra)
+
+    def _to_volumes(self, disks):
+        return [self._to_volume(d) for d in disks]
+
+    def _to_volume(self, disk):
+        extra = {'can_snapshot': disk['can_snapshot']}
+        return StorageVolume(
+            id=disk['id'],
+            name=disk['name'],
+            size=int(disk['size']),
+            driver=self,
+            extra=extra)
+
+    def _to_volumes(self, disks):
+        return [self._to_volume(d) for d in disks]
+
+    def _to_volume(self, disk):
+        extra = {'can_snapshot': disk['can_snapshot']}
+        return StorageVolume(
+            id=disk['id'],
+            name=disk['name'],
+            size=int(disk['size']),
+            driver=self,
+            extra=extra)
+
+    def _to_volumes(self, disks):
+        return [self._to_volume(d) for d in disks]
+
     def list_nodes(self):
         vms = self.connection.request('vm.list')
         ips = self.connection.request('ip.list')
@@ -100,7 +155,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def reboot_node(self, node):
         op = self.connection.request('vm.reboot', int(node.id))
         self._wait_operation(op['id'])
-        vm = self.connection.request('vm.info', int(node.id))
+        vm = self._node_info(int(node.id))
         if vm['state'] == 'running':
             return True
         return False
@@ -283,6 +338,178 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def list_locations(self):
         res = self.connection.request("datacenter.list")
         return [self._to_loc(l) for l in res]
+
+    def list_volumes(self):
+        """List all volumes"""
+        res = self.connection.request('disk.list', {})
+        return self._to_volumes(res)
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        disk_param = {
+            'name': name,
+            'size': int(size),
+            'datacenter_id': int(location.id)
+        }
+        if snapshot:
+            op = self.connection.request('disk.create_from',
+                disk_param, int(snapshot.id))
+        else:
+            op = self.connection.request('disk.create', disk_param)
+        if self._wait_operation(op['id']):
+            disk = self._volume_info(op['disk_id'])
+            return self._to_volume(disk)
+        return None
+
+    def attach_volume(self, node, volume, device=None):
+        """Attach a volume to a node"""
+        op = self.connection.request('vm.disk_attach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def detach_volume(self, node, volume):
+        """Detach a volume from a node"""
+        op = self.connection.request('vm.disk_detach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def destroy_volume(self, volume):
+        op = self.connection.request('disk.delete', int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def list_volumes(self):
+        """List all volumes"""
+        res = self.connection.request('disk.list', {})
+        return self._to_volumes(res)
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        disk_param = {
+            'name': name,
+            'size': int(size),
+            'datacenter_id': int(location.id)
+        }
+        if snapshot:
+            op = self.connection.request('disk.create_from',
+                disk_param, int(snapshot.id))
+        else:
+            op = self.connection.request('disk.create', disk_param)
+        if self._wait_operation(op['id']):
+            disk = self._volume_info(op['disk_id'])
+            return self._to_volume(disk)
+        return None
+
+    def attach_volume(self, node, volume, device=None):
+        """Attach a volume to a node"""
+        op = self.connection.request('vm.disk_attach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def detach_volume(self, node, volume):
+        """Detach a volume from a node"""
+        op = self.connection.request('vm.disk_detach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def destroy_volume(self, volume):
+        op = self.connection.request('disk.delete', int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def list_volumes(self):
+        """List all volumes"""
+        res = self.connection.request('disk.list', {})
+        return self._to_volumes(res)
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        disk_param = {
+            'name': name,
+            'size': int(size),
+            'datacenter_id': int(location.id)
+        }
+        if snapshot:
+            op = self.connection.request('disk.create_from',
+                disk_param, int(snapshot.id))
+        else:
+            op = self.connection.request('disk.create', disk_param)
+        if self._wait_operation(op['id']):
+            disk = self._volume_info(op['disk_id'])
+            return self._to_volume(disk)
+        return None
+
+    def attach_volume(self, node, volume, device=None):
+        """Attach a volume to a node"""
+        op = self.connection.request('vm.disk_attach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def detach_volume(self, node, volume):
+        """Detach a volume from a node"""
+        op = self.connection.request('vm.disk_detach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def destroy_volume(self, volume):
+        op = self.connection.request('disk.delete', int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def list_volumes(self):
+        """List all volumes"""
+        res = self.connection.request('disk.list', {})
+        return self._to_volumes(res)
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        disk_param = {
+            'name': name,
+            'size': int(size),
+            'datacenter_id': int(location.id)
+        }
+        if snapshot:
+            op = self.connection.request('disk.create_from',
+                disk_param, int(snapshot.id))
+        else:
+            op = self.connection.request('disk.create', disk_param)
+        if self._wait_operation(op['id']):
+            disk = self._volume_info(op['disk_id'])
+            return self._to_volume(disk)
+        return None
+
+    def attach_volume(self, node, volume, device=None):
+        """Attach a volume to a node"""
+        op = self.connection.request('vm.disk_attach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def detach_volume(self, node, volume):
+        """Detach a volume from a node"""
+        op = self.connection.request('vm.disk_detach',
+            int(node.id), int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
+
+    def destroy_volume(self, volume):
+        op = self.connection.request('disk.delete', int(volume.id))
+        if self._wait_operation(op['id']):
+            return True
+        return False
 
     def _to_iface(self, iface):
         ips = []

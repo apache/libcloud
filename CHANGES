@@ -81,6 +81,10 @@ Changes with Apache Libcloud in development:
       LIBCLOUD-223
       [Amir Elaguizy]
 
+    - Add methods for managing storage volumes to the Gandi driver. ;
+      LIBCLOUD-225
+      [Aymeric Barantal]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203

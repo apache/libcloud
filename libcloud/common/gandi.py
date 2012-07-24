@@ -26,8 +26,8 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionKey
 
 # Global constants
-API_VERSION = '2.0'
-API_PREFIX = "https://rpc.gandi.net/xmlrpc/%s/" % API_VERSION
+
+API_URL = "https://rpc.gandi.net/xmlrpc/"
 
 DEFAULT_TIMEOUT = 600   # operation pooling max seconds
 DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
@@ -57,13 +57,13 @@ class GandiProxy(xmlrpclib.ServerProxy):
 
     def __init__(self, user_agent, verbose=0):
         cls = self.transportCls[0]
-        if API_PREFIX.startswith("https://"):
+        if API_URL.startswith("https://"):
             cls = self.transportCls[1]
         t = cls(use_datetime=0)
         t.user_agent = user_agent
         xmlrpclib.ServerProxy.__init__(
             self,
-            uri="%s" % (API_PREFIX),
+            uri=API_URL,
             transport=t,
             verbose=verbose,
             allow_none=True
