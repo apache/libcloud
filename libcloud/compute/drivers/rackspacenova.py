@@ -74,6 +74,21 @@ class RackspaceNovaDfwNodeDriver(OpenStack_1_1_NodeDriver):
     api_name = 'rackspacenovadfw'
 
 
+class RackspaceNovaOrdConnection(RackspaceNovaConnection):
+
+    get_endpoint_args = {'service_type': 'compute',
+                         'name': 'cloudServersOpenStack',
+                         'region': 'ORD'}
+
+
+class RackspaceNovaOrdNodeDriver(OpenStack_1_1_NodeDriver):
+    name = 'RackspaceNovaord'
+    website = 'http://www.rackspace.com/'
+    connectionCls = RackspaceNovaOrdConnection
+    type = Provider.RACKSPACE_NOVA_ORD
+    api_name = 'rackspacenovaord'
+
+
 class RackspaceNovaLonNodeDriver(OpenStack_1_1_NodeDriver):
     name = 'RackspaceNovalon'
     website = 'http://www.rackspace.com/'

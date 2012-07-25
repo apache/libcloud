@@ -1,5 +1,12 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Compute
+
+    - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
+      [Brian McDaniel]
+
 Changes with Apache Libcloud 0.11.0:
 
   *) Compute

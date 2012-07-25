@@ -19,6 +19,7 @@ from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.rackspacenova import RackspaceNovaBetaNodeDriver, \
                                                    RackspaceNovaDfwNodeDriver, \
+                                                   RackspaceNovaOrdNodeDriver, \
                                                    RackspaceNovaLonNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests, OpenStack_1_1_MockHttp
 from libcloud.pricing import clear_pricing_data
@@ -39,13 +40,6 @@ class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
                 RackspaceNovaMockHttp))
-
-
-class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
-
-    def _v2_0_tokens(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v2_0__auth_lon.json')
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 
 class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
@@ -103,10 +97,10 @@ class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
         self.assertEqual('https://dfw.servers.api.rackspacecloud.com/v2/1337', self.driver.connection.get_endpoint())
 
 
-class RackspaceNovaLonTests(OpenStack_1_1_Tests):
+class RackspaceNovaOrdTests(OpenStack_1_1_Tests):
 
-    driver_klass = RackspaceNovaLonNodeDriver
-    driver_type = RackspaceNovaLonNodeDriver
+    driver_klass = RackspaceNovaOrdNodeDriver
+    driver_type = RackspaceNovaOrdNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
     driver_kwargs = {'ex_force_auth_version': '2.0'}
 
@@ -115,8 +109,8 @@ class RackspaceNovaLonTests(OpenStack_1_1_Tests):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
 
     def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (RackspaceNovaLonMockHttp, RackspaceNovaLonMockHttp)
-        self.driver_klass.connectionCls.auth_url = "https://lon.auth.api.example.com/v2.0/"
+        self.driver_klass.connectionCls.conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
         self.driver = self.create_driver()
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
@@ -124,7 +118,7 @@ class RackspaceNovaLonTests(OpenStack_1_1_Tests):
         self.node = self.driver.list_nodes()[1]
 
     def test_service_catalog(self):
-        self.assertEqual('https://lon.servers.api.rackspacecloud.com/v2/1337', self.driver.connection.get_endpoint())
+        self.assertEqual('https://ord.servers.api.rackspacecloud.com/v2/1337', self.driver.connection.get_endpoint())
 
 
 class RackspaceNovaLonTests(OpenStack_1_1_Tests):
