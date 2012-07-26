@@ -103,6 +103,12 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     _instance_types = GOGRID_INSTANCE_TYPES
 
+    def __init__(self, *args, **kwargs):
+        """
+        @inherits: L{NodeDriver.__init__}
+        """
+        super(GoGridNodeDriver, self).__init__(*args, **kwargs)
+
     def _get_state(self, element):
         try:
             return STATE[element['state']['name']]
@@ -345,10 +351,10 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def ex_edit_node(self, **kwargs):
         """Change attributes of a node.
 
-        @keyword    node: node to be edited
+        @keyword    node: node to be edited (required)
         @type       node: L{Node}
 
-        @keyword    size: new size of a node
+        @keyword    size: new size of a node (required)
         @type       size: L{NodeSize}
 
         @keyword    ex_description: new description of a node
@@ -373,10 +379,10 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def ex_edit_image(self, **kwargs):
         """Edit metadata of a server image.
 
-        @keyword    image: image to be edited
+        @keyword    image: image to be edited (required)
         @type       image: L{NodeImage}
 
-        @keyword    public: should be the image public?
+        @keyword    public: should be the image public (required)
         @type       public: C{bool}
 
         @keyword    ex_description: description of the image (optional)

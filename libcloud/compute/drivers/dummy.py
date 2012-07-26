@@ -69,7 +69,10 @@ class DummyNodeDriver(NodeDriver):
 
     def __init__(self, creds):
         """
-        @requires: creds
+        @param  creds: Credentials
+        @type   creds: C{str}
+
+        @rtype: C{None}
         """
         self.creds = creds
         try:

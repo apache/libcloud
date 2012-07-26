@@ -130,7 +130,22 @@ class VCLNodeDriver(NodeDriver):
     def __init__(self, key, secret, secure=True, host=None, port=None, *args,
                  **kwargs):
         """
-        @requires: key, secret, host
+        @param    key:    API key or username to used (required)
+        @type     key:    C{str}
+
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP.
+        @type     secure: C{bool}
+
+        @param    host: Override hostname used for connections. (required)
+        @type     host: C{str}
+
+        @param    port: Override port used for connections.
+        @type     port: C{int}
+
+        @rtype: C{None}
         """
         if not host:
             raise Exception('When instantiating VCL driver directly ' +

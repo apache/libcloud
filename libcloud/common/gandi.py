@@ -106,7 +106,14 @@ class BaseGandiDriver(object):
 
     def __init__(self, key, secret=None, secure=False):
         """
-        @requires: key, secret
+        @param    key:    API key or username to used (required)
+        @type     key:    C{str}
+
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP.
+        @type     secure: C{bool}
         """
         self.key = key
         self.secret = secret

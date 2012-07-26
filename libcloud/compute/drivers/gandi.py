@@ -53,6 +53,12 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     # TODO : which features to enable ?
     features = {}
 
+    def __init__(self, *args, **kwargs):
+        """
+        @inherits: L{NodeDriver.__init__}
+        """
+        super(BaseGandiDriver, self).__init__(*args, **kwargs)
+
     def _resource_info(self, type, id):
         try:
             obj = self.connection.request('%s.info' % type, int(id))

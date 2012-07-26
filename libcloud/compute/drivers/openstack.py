@@ -175,9 +175,6 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
                 api_version=DEFAULT_API_VERSION, **kwargs):
-        """
-        @requires: key, secret
-        """
         if cls is OpenStackNodeDriver:
             if api_version == '1.0':
                 cls = OpenStack_1_0_NodeDriver
@@ -367,6 +364,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         @keyword    ex_files:   File Path => File contents to create on
                                 the node
         @type       ex_files:   C{dict}
+
+        @keyword    ex_shared_ip_group_id: The server is launched into
+            that shared IP group
+        @type       ex_shared_ip_group_id: C{str}
         """
         name = kwargs['name']
         image = kwargs['image']

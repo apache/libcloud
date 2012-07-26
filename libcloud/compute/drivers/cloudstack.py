@@ -116,7 +116,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, *args, **kwargs):
         """
-        @requires: key, secret, host or path
+        @inherits: L{NodeDriver.__init__}
+
+        @param    host: The host where the API can be reached. (required)
+        @type     host: C{str}
+
+        @param    path: The host where the API can be reached. (required)
+        @type     path: C{str}
         """
         host = host if host else self.host
 
@@ -146,7 +152,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 'hypervisor': img['hypervisor'],
                 'format': img['format'],
                 'os': img['ostypename'],
-            }))
+                }))
         return images
 
     def list_locations(self):
@@ -242,7 +248,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 'zoneid': location.id,
                 'ip_addresses': [],
                 'forwarding_rules': [],
-            }
+                }
         )
 
     def destroy_node(self, node):

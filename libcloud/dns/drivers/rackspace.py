@@ -131,9 +131,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
     website = 'http://www.rackspace.com/'
 
     def __init__(self, *args, **kwargs):
-        """
-        @requires: key, secret
-        """
         OpenStackDriverMixin.__init__(self, *args, **kwargs)
         super(RackspaceDNSDriver, self).__init__(*args, **kwargs)
 

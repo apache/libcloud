@@ -1321,7 +1321,10 @@ class EucNodeDriver(EC2NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
         """
-        @requires: key, secret
+        @inherits: L{EC2NodeDriver.__init__}
+
+        @param    path: The host where the API can be reached.
+        @type     path: C{str}
         """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:

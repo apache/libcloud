@@ -785,27 +785,27 @@ class BaseDriver(object):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, **kwargs):
         """
-        @keyword    key:    API key or username to used
-        @type       key:    str
+        @param    key:    API key or username to used (required)
+        @type     key:    C{str}
 
-        @keyword    secret: Secret password to be used
-        @type       secret: str
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
 
-        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        @param    secure: Weither to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
-        @type       secure: bool
+        @type     secure: C{bool}
 
-        @keyword    host: Override hostname used for connections.
-        @type       host: str
+        @param    host: Override hostname used for connections.
+        @type     host: C{str}
 
-        @keyword    port: Override port used for connections.
-        @type       port: int
+        @param    port: Override port used for connections.
+        @type     port: C{int}
 
-        @keyword    api_version: Optional API version. Only used by drivers
+        @param    api_version: Optional API version. Only used by drivers
                                  which support multiple API versions.
-        @type       api_version: str
+        @type     api_version: C{str}
 
-        @requires: key, secret
+        @rtype: C{None}
         """
 
         self.key = key
