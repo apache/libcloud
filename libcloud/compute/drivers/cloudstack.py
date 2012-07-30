@@ -21,25 +21,36 @@ from libcloud.compute.types import NodeState, LibcloudError
 
 
 class CloudStackNode(Node):
-    "Subclass of Node so we can expose our extension methods."
+    """Subclass of Node so we can expose our extension methods."""
 
     def ex_allocate_public_ip(self):
-        "Allocate a public IP and bind it to this node."
+        """Allocate a public IP and bind it to this node."""
         return self.driver.ex_allocate_public_ip(self)
 
     def ex_release_public_ip(self, address):
-        "Release a public IP that this node holds."
+        """Release a public IP that this node holds."""
         return self.driver.ex_release_public_ip(self, address)
 
     def ex_add_ip_forwarding_rule(self, address, protocol, start_port,
                                   end_port=None):
-        "Add a NAT/firewall forwarding rule for a port or ports."
+        """Add a NAT/firewall forwarding rule for a port or ports."""
         return self.driver.ex_add_ip_forwarding_rule(self, address, protocol,
                                                      start_port, end_port)
 
     def ex_delete_ip_forwarding_rule(self, rule):
-        "Delete a NAT/firewall rule."
+        """Delete a NAT/firewall rule."""
         return self.driver.ex_delete_ip_forwarding_rule(self, rule)
+
+    def ex_add_port_forwarding_rule(self, address, protocol,
+                                    public_port, private_port,
+                                    public_end_port=None, private_end_port=None, openfirewall=True):
+        """Add port forwarding rule"""
+        return self.driver.ex_add_port_forwarding_rule(self, address, protocol, public_port, private_port,
+                                                    public_end_port, private_end_port, openfirewall)
+
+    def ex_delete_port_forwarding_rule(self, rule):
+        """Delete port forwarding rule"""
+        return self.driver.ex_delete_port_forwarding_rule(self, rule)
 
 
 class CloudStackAddress(object):
@@ -61,15 +72,19 @@ class CloudStackAddress(object):
 
 
 class CloudStackForwardingRule(object):
-    "A NAT/firewall forwarding rule."
+    """A NAT/firewall forwarding rule."""
 
-    def __init__(self, node, id, address, protocol, start_port, end_port=None):
+    def __init__(self, node, id, address, protocol, public_port, private_port,
+                 public_end_port=None, private_end_port=None, state=None):
         self.node = node
         self.id = id
         self.address = address
         self.protocol = protocol
-        self.start_port = start_port
-        self.end_port = end_port
+        self.public_port = public_port
+        self.public_end_port = public_end_port
+        self.private_port = private_port
+        self.private_end_port = private_end_port
+        self.state = state
 
     def delete(self):
         self.node.ex_delete_ip_forwarding_rule(self)
@@ -191,7 +206,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 public_ips=public_ips.get(vm['id'], {}).keys(),
                 private_ips=private_ips,
                 driver=self,
-                extra={'zoneid': vm['zoneid'], }
+                extra={'zoneid': vm['zoneid'], 'port_forwarding_rules': []}
             )
 
             addrs = public_ips.get(vm['id'], {}).items()
@@ -204,13 +219,31 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 for r in result.get('ipforwardingrule', []):
                     rule = CloudStackForwardingRule(node, r['id'], addr,
                                                     r['protocol'].upper(),
-                                                    r['startport'],
-                                                    r['endport'])
+                                                    r['publicport'],
+                                                    r['privateport'],
+                                                    r['publicendport'],
+                                                    r['privateendport'],
+                                                    r['state'])
                     rules.append(rule)
             node.extra['ip_forwarding_rules'] = rules
 
-            nodes.append(node)
+            rules = self._sync_request('listPortForwardingRules')['portforwardingrule']
+            adresses = self.ex_list_public_ip()
+            port_rules = []
+            for rule in rules:
+                if str(rule['virtualmachineid']) == node.id:
+                    port_rules.append(CloudStackForwardingRule(node=node,
+                        id=rule['id'],
+                        address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+                        protocol=rule['protocol'],
+                        public_port=rule['publicport'],
+                        private_port=rule['privateport'],
+                        public_end_port=rule.get('publicendport', None),
+                        private_end_port=rule.get('privateendport', None),
+                        state=rule['state']))
+            node.extra['port_forwarding_rules'] = port_rules
 
+            nodes.append(node)
         return nodes
 
     def list_sizes(self, location=None):
@@ -227,7 +260,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             location = self.list_locations()[0]
 
         if 'network_id' in kwargs:
-            extra_args['networkids'] = network_id
+            extra_args['networkids'] = kwargs['network_id']
 
         result = self._async_request(
             'deployVirtualMachine', name=name, displayname=name,
@@ -401,7 +434,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         result = self._async_request('createIpForwardingRule', **args)
         result = result['ipforwardingrule']
         rule = CloudStackForwardingRule(node, result['id'], address,
-                                        protocol, start_port, end_port)
+                                        protocol, result['publicport'], result['privateport'],
+                                        result['publicendport'], result['privateendport'], result['state'])
         node.extra['ip_forwarding_rules'].append(rule)
         return rule
 
@@ -456,3 +490,88 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   url=url,
                                   zoneid=location.id,
                                   **extra_args)
+
+    def ex_list_public_ip(self):
+        addresses = self._sync_request('listPublicIpAddresses')
+        return [CloudStackAddress(None, addr['id'], addr['ipaddress']) for addr in addresses['publicipaddress']]
+
+    def ex_add_port_forwarding_rule(self, node, address, protocol,
+                                  public_port, private_port,
+                                  public_end_port=None, private_end_port=None, openfirewall=True):
+        """Add a NAT/firewall forwarding rule."""
+
+        protocol = protocol.upper()
+        if protocol not in ('TCP', 'UDP'):
+            return None
+
+        args = {
+            'ipaddressid': address.id,
+            'protocol': protocol,
+            'publicport': int(public_port),
+            'privateport': int(private_port),
+            'virtualmachineid': node.id,
+            'openfirewall': openfirewall,
+            }
+
+        if public_end_port is not None:
+            args['publicendport'] = int(public_end_port)
+        if private_end_port is not None:
+            args['privateendport'] = int(private_end_port)
+
+        result = self._async_request('createPortForwardingRule', **args)
+        result = result['portforwardingrule']
+        adresses = self.ex_list_public_ip()
+        rule = CloudStackForwardingRule(node=node,
+            id=result['id'],
+            address=filter(lambda addr: addr.address == result['ipaddress'], adresses)[0],
+            protocol=result['protocol'],
+            public_port=result['publicport'],
+            private_port=result['privateport'],
+            public_end_port=result.get('publicendport', None),
+            private_end_port=result.get('privateendport', None),
+            state=result['state']
+        )
+        node.extra['port_forwarding_rules'].append(rule)
+        node.public_ip.append(result['ipaddress'])
+        return rule
+
+    def ex_list_port_forwarding_rule(self):
+        rules = self._sync_request('listPortForwardingRules')['portforwardingrule']
+        adresses = self.ex_list_public_ip()
+        nodes = self.list_nodes()
+        return [CloudStackForwardingRule(node=filter(lambda node: int(node.id) == rule['virtualmachineid'], nodes)[0],
+            id=rule['id'],
+            address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+            protocol=rule['protocol'],
+            public_port=rule['publicport'],
+            private_port=rule['privateport'],
+            public_end_port=rule.get('publicendport', None),
+            private_end_port=rule.get('privateendport', None),
+            state=rule['state']
+        ) for rule in rules]
+
+    def ex_delete_port_forwarding_rule(self, node, rule):
+        """Remove a NAT/firewall forwarding rule."""
+
+        node.extra['port_forwarding_rules'].remove(rule)
+        self._async_request('deletePortForwardingRule', id=rule.id)
+        return True
+
+    def ex_create_keypair(self, name):
+        keypair = self._sync_request('createSSHKeyPair', name=name)
+        return keypair['keypair']
+
+    def ex_list_keypair(self, name=None):
+        if name is None:
+            keypair_list = self._sync_request('listSSHKeyPairs')
+        else:
+            keypair_list = self._sync_request('listSSHKeyPairs', name=name)
+        return keypair_list['keypair']
+
+    def ex_import_keypair(self, name, publickey):
+        keypair = self._sync_request('registerSSHKeyPair', name=name, publickey=publickey)
+        return keypair['keypair']
+
+    def ex_delete_keypair(self, name):
+        keypair = self._sync_request('deleteSSHKeyPair', name=name)
+        return keypair['success']
