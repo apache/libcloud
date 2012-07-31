@@ -54,7 +54,7 @@ class CloudStackNode(Node):
 
 
 class CloudStackAddress(object):
-    "A public IP address."
+    """A public IP address."""
 
     def __init__(self, node, id, address):
         self.node = node
@@ -339,9 +339,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                              extra=dict(name=volumeResponse['name']))
 
     def attach_volume(self, node, volume, device=None):
-        # TODO Add handling for device name
-        self._async_request('attachVolume', id=volume.id,
-                            virtualMachineId=node.id)
+        opts = {'id': volume.id, 'virtualMachineId': node.id}
+        if device:
+            opts.update({'deviceid': device})
+        self._async_request('attachVolume', **opts)
         return True
 
     def detach_volume(self, volume):
@@ -474,8 +475,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if location is None:
             location = self.list_locations()[0]
 
-        extra_args = {}
-        extra_args['bootable'] = kwargs.pop('bootable', False)
+        extra_args = {'bootable': kwargs.pop('bootable', False)}
         if extra_args['bootable']:
             os_type_id = kwargs.pop('ostypeid', None)
 
