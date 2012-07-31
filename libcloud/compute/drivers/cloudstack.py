@@ -559,18 +559,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_create_keypair(self, name):
         keypair = self._sync_request('createSSHKeyPair', name=name)
-        return keypair['keypair']
+        return keypair['sshkeypair']
 
     def ex_list_keypair(self, name=None):
         if name is None:
             keypair_list = self._sync_request('listSSHKeyPairs')
         else:
             keypair_list = self._sync_request('listSSHKeyPairs', name=name)
-        return keypair_list['keypair']
+        return keypair_list['sshkeypair']
 
     def ex_import_keypair(self, name, publickey):
         keypair = self._sync_request('registerSSHKeyPair', name=name, publickey=publickey)
-        return keypair['keypair']
+        return keypair['sshkeypair']
 
     def ex_delete_keypair(self, name):
         keypair = self._sync_request('deleteSSHKeyPair', name=name)
