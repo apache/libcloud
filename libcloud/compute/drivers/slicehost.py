@@ -119,8 +119,6 @@ class SlicehostNodeDriver(NodeDriver):
         return node
 
     def reboot_node(self, node):
-        """Reboot the node by passing in the node object"""
-
         # 'hard' could bubble up as kwarg depending on how reboot_node
         # turns out. Defaulting to soft reboot.
         #hard = False
@@ -142,6 +140,8 @@ class SlicehostNodeDriver(NodeDriver):
               <error>You must enable slice deletes in the SliceManager</error>
               <error>Permission denied</error>
             </errors>
+
+        @inherits: L{NodeDriver.destroy_node}
         """
         uri = '/slices/%s/destroy.xml' % (node.id)
         self.connection.request(uri, method='PUT')
