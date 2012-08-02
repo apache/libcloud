@@ -1,5 +1,14 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud 0.11.1:
+
+  *) General
+
+    - Fix hostname validation in the SSL verification code (CVE-2012-3446).
+
+      Reported by researchers from the University of Texas at Austin (Martin
+      Georgiev, Suman Jana and Vitaly Shmatikov).
+
 Changes with Apache Libcloud 0.11.0:
 
   *) Compute
@@ -139,7 +148,7 @@ Changes with Apache Libcloud 0.11.0:
       CloudFiles driver.
       [Tomaz Muraus]
 
-    - Fix a bug with content_type and and encoding of object and path names in 
+    - Fix a bug with content_type and and encoding of object and path names in
       the Atmos driver.
       [Russell Keith-Magee]
 
@@ -234,7 +243,7 @@ Changes with Apache Libcloud 0.10.1:
 
     - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver. ;
       LIBCLOUD-193
-      [Shawn Smith] 
+      [Shawn Smith]
 
     - Include 'password' in the node extra dictionary when calling deploy_node
       if the password auth is used.
@@ -419,7 +428,7 @@ Changes with Apache Libcloud 0.8.0:
      - Enable ex_delete_image method in the OpenStack 1.1 driver.
        [Shawn Smith]
 
-     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method 
+     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method
        ; LIBCLOUD-138
        [Shawn Smith]
 
