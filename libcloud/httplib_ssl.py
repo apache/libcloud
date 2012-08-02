@@ -122,13 +122,8 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
         # replace * with alphanumeric and dash
         # replace . with literal .
         valid_patterns = [
-            re.compile(
-                pattern.replace(
-                    r".", r"\."
-                ).replace(
-                    r"*", r"[0-9A-Za-z]+"
-                )
-            )
+            re.compile('^' + pattern.replace(r".", r"\.") \
+                                    .replace(r"*", r"[0-9A-Za-z]+") + '$')
             for pattern in (set(common_name) | set(alt_names))]
 
         return any(
