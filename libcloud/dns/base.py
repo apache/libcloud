@@ -135,7 +135,23 @@ class DNSDriver(BaseDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
         """
-        @requires: key, secret
+        @param    key:    API key or username to used (required)
+        @type     key:    C{str}
+
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+                only support HTTPS, and it is on by default.
+        @type     secure: C{bool}
+
+        @param    host: Override hostname used for connections.
+        @type     host: C{str}
+
+        @param    port: Override port used for connections.
+        @type     port: C{int}
+
+        @rtype: C{None}
         """
         super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
                                         host=host, port=port, **kwargs)

@@ -17,7 +17,8 @@ Rackspace driver
 """
 from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.base import NodeLocation
-from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection, OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
+from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
+    OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 
 from libcloud.common.rackspace import (
     AUTH_URL_US, AUTH_URL_UK)
@@ -37,7 +38,7 @@ class RackspaceConnection(OpenStack_1_0_Connection):
         ep = {}
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(service_type='compute',
-                                                     name='cloudServers')
+                                                   name='cloudServers')
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             ep = self.service_catalog.get_endpoint(name='cloudServers')
 
@@ -59,6 +60,8 @@ class RackspaceNodeDriver(OpenStack_1_0_NodeDriver):
 
         Locations cannot be set or retrieved via the API, but currently
         there are two locations, DFW and ORD.
+
+        @inherits: L{OpenStack_1_0_NodeDriver.list_locations}
         """
         return [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
 

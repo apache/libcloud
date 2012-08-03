@@ -35,7 +35,13 @@ class DummyDNSDriver(DNSDriver):
 
     def __init__(self, api_key, api_secret):
         """
-        @requires: api_key, api_secret
+        @param    api_key:    API key or username to used (required)
+        @type     api_key:    C{str}
+
+        @param    api_secret: Secret password to be used (required)
+        @type     api_secret: C{str}
+
+        @rtype: C{None}
         """
         self._zones = {}
 

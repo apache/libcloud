@@ -15,8 +15,8 @@
 
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
-                                  NodeSize, StorageVolume
+from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
+    NodeSize, StorageVolume
 from libcloud.compute.types import NodeState, LibcloudError
 
 
@@ -90,6 +90,7 @@ class CloudStackDiskOffering(object):
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
 
+
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
 
@@ -115,7 +116,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, *args, **kwargs):
         """
-        @requires: key, secret, host or path
+        @inherits: L{NodeDriver.__init__}
+
+        @param    host: The host where the API can be reached. (required)
+        @type     host: C{str}
+
+        @param    path: The host where the API can be reached. (required)
+        @type     path: C{str}
         """
         host = host if host else self.host
 
@@ -145,7 +152,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 'hypervisor': img['hypervisor'],
                 'format': img['format'],
                 'os': img['ostypename'],
-            }))
+                }))
         return images
 
     def list_locations(self):
@@ -184,9 +191,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 public_ips=public_ips.get(vm['id'], {}).keys(),
                 private_ips=private_ips,
                 driver=self,
-                extra={
-                    'zoneid': vm['zoneid'],
-                }
+                extra={'zoneid': vm['zoneid'], }
             )
 
             addrs = public_ips.get(vm['id'], {}).items()
@@ -224,13 +229,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if 'network_id' in kwargs:
             extra_args['networkids'] = network_id
 
-        result = self._async_request('deployVirtualMachine',
-            name=name,
-            displayname=name,
-            serviceofferingid=size.id,
-            templateid=image.id,
-            zoneid=location.id,
-            **extra_args
+        result = self._async_request(
+            'deployVirtualMachine', name=name, displayname=name,
+            serviceofferingid=size.id, templateid=image.id,
+            zoneid=location.id, **extra_args
         )
 
         node = result['virtualmachine']
@@ -246,7 +248,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 'zoneid': location.id,
                 'ip_addresses': [],
                 'forwarding_rules': [],
-            }
+                }
         )
 
     def destroy_node(self, node):
@@ -258,18 +260,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return True
 
     def ex_list_disk_offerings(self):
-        """Fetch a list of all available disk offerings."""
+        """Fetch a list of all available disk offerings.
+
+        @rtype: C{list} of L{CloudStackDiskOffering}
+        """
 
         diskOfferings = []
 
         diskOfferResponse = self._sync_request('listDiskOfferings')
         for diskOfferDict in diskOfferResponse.get('diskoffering', ()):
             diskOfferings.append(
-                    CloudStackDiskOffering(
-                        id=diskOfferDict['id'],
-                        name=diskOfferDict['name'],
-                        size=diskOfferDict['disksize'],
-                        customizable=diskOfferDict['iscustomized']))
+                CloudStackDiskOffering(
+                    id=diskOfferDict['id'],
+                    name=diskOfferDict['name'],
+                    size=diskOfferDict['disksize'],
+                    customizable=diskOfferDict['iscustomized']))
 
         return diskOfferings
 
@@ -280,25 +285,25 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 break
         else:
             raise LibcloudError(
-                    'Disk offering with size=%s not found' % size)
+                'Disk offering with size=%s not found' % size)
 
         extraParams = dict()
         if diskOffering.customizable:
             extraParams['size'] = size
 
         requestResult = self._async_request('createVolume',
-                                name=name,
-                                diskOfferingId=diskOffering.id,
-                                zoneId=location.id,
-                                **extraParams)
+                                            name=name,
+                                            diskOfferingId=diskOffering.id,
+                                            zoneId=location.id,
+                                            **extraParams)
 
         volumeResponse = requestResult['volume']
 
         return StorageVolume(id=volumeResponse['id'],
-                            name=name,
-                            size=size,
-                            driver=self,
-                            extra=dict(name=volumeResponse['name']))
+                             name=name,
+                             size=size,
+                             driver=self,
+                             extra=dict(name=volumeResponse['name']))
 
     def attach_volume(self, node, volume, device=None):
         # TODO Add handling for device name
@@ -315,13 +320,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return True
 
     def ex_allocate_public_ip(self, node):
-        "Allocate a public IP and bind it to a node."
+        """
+        "Allocate a public IP and bind it to a node.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: L{CloudStackAddress}
+        """
 
         zoneid = node.extra['zoneid']
         addr = self._async_request('associateIpAddress', zoneid=zoneid)
         addr = addr['ipaddress']
-        result = self._sync_request('enableStaticNat', virtualmachineid=node.id,
-                                   ipaddressid=addr['id'])
+        result = self._sync_request('enableStaticNat',
+                                    virtualmachineid=node.id,
+                                    ipaddressid=addr['id'])
         if result.get('success', '').lower() != 'true':
             return None
 
@@ -331,7 +344,17 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return addr
 
     def ex_release_public_ip(self, node, address):
-        "Release a public IP."
+        """
+        Release a public IP.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @param      address: CloudStackAddress which should be used
+        @type       address: L{CloudStackAddress}
+
+        @rtype: C{bool}
+        """
 
         node.extra['ip_addresses'].remove(address)
         node.public_ips.remove(address.address)
@@ -342,7 +365,26 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_add_ip_forwarding_rule(self, node, address, protocol,
                                   start_port, end_port=None):
-        "Add a NAT/firewall forwarding rule."
+        """
+        "Add a NAT/firewall forwarding rule.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @param      address: CloudStackAddress which should be used
+        @type       address: L{CloudStackAddress}
+
+        @param      protocol: Protocol which should be used (TCP or UDP)
+        @type       protocol: C{str}
+
+        @param      start_port: Start port which should be used
+        @type       start_port: C{int}
+
+        @param end_port: End port which should be used
+        @type end_port: C{int}
+
+        @rtype: L{CloudStackForwardingRule}
+        """
 
         protocol = protocol.upper()
         if protocol not in ('TCP', 'UDP'):
@@ -364,14 +406,37 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return rule
 
     def ex_delete_ip_forwarding_rule(self, node, rule):
-        "Remove a NAT/firewall forwarding rule."
+        """
+        Remove a NAT/firewall forwarding rule.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @param rule: Forwarding rule which should be used
+        @type rule: L{CloudStackForwardingRule}
+
+        @rtype: C{bool}
+        """
 
         node.extra['ip_forwarding_rules'].remove(rule)
         self._async_request('deleteIpForwardingRule', id=rule.id)
         return True
 
     def ex_register_iso(self, name, url, location=None, **kwargs):
-        "Registers an existing ISO by URL."
+        """
+        Registers an existing ISO by URL.
+
+        @param      name: Name which should be used
+        @type       name: C{str}
+
+        @param      url: Url should be used
+        @type       url: C{str}
+
+        @param      location: Location which should be used
+        @type       location: L{NodeLocation}
+
+        @rtype: C{str}
+        """
         if location is None:
             location = self.list_locations()[0]
 

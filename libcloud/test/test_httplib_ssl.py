@@ -45,15 +45,48 @@ class TestHttpLibSSLTests(unittest.TestCase):
          'subjectAltName': ((('DNS', 'foo.alt.name')),
                            (('DNS', 'foo.alt.name.1')))}
 
+        cert3 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
+         'subject': ((('countryName', 'US'),),
+                     (('stateOrProvinceName', 'Delaware'),),
+                     (('localityName', 'Wilmington'),),
+                     (('organizationName', 'Python Software Foundation'),),
+                     (('organizationalUnitName', 'SSL'),),
+                     (('commonName', 'python.org'),))}
+
         self.assertFalse(self.httplib_object._verify_hostname(
                          hostname='invalid', cert=cert1))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='machine.python.org', cert=cert1))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='foomachine.python.org', cert=cert1))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='somesomemachine.python.org', cert=cert1))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='somemachine.python.orga', cert=cert1))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='somemachine.python.org.org', cert=cert1))
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='somemachine.python.org', cert=cert1))
 
         self.assertFalse(self.httplib_object._verify_hostname(
                          hostname='invalid', cert=cert2))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='afoo.alt.name.1', cert=cert2))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='a.foo.alt.name.1', cert=cert2))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='foo.alt.name.1.2', cert=cert2))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='afoo.alt.name.1.2', cert=cert2))
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='foo.alt.name.1', cert=cert2))
+
+        self.assertTrue(self.httplib_object._verify_hostname(
+                        hostname='python.org', cert=cert3))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='opython.org', cert=cert3))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                        hostname='ython.org', cert=cert3))
 
     def test_get_subject_alt_names(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',

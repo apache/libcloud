@@ -19,7 +19,8 @@ libcloud driver for the Blue Box Blocks API
 This driver implements all libcloud functionality for the Blue Box Blocks API.
 
 Blue Box home page            http://bluebox.net
-Blue Box API documentation    https://boxpanel.bluebox.net/public/the_vault/index.php/Blocks_API
+Blue Box API documentation    https://boxpanel.bluebox
+.net/public/the_vault/index.php/Blocks_API
 """
 
 import copy
@@ -42,34 +43,34 @@ BLUEBOX_API_HOST = "boxpanel.bluebox.net"
 # so we simply list what's available right now, along with all of the various
 # attributes that are needed by libcloud.
 BLUEBOX_INSTANCE_TYPES = {
-  '1gb': {
-    'id': '94fd37a7-2606-47f7-84d5-9000deda52ae',
-    'name': 'Block 1GB Virtual Server',
-    'ram': 1024,
-    'disk': 20,
-    'cpu': 0.5
-  },
-  '2gb': {
-    'id': 'b412f354-5056-4bf0-a42f-6ddd998aa092',
-    'name': 'Block 2GB Virtual Server',
-    'ram': 2048,
-    'disk': 25,
-    'cpu': 1
-  },
-  '4gb': {
-    'id': '0cd183d3-0287-4b1a-8288-b3ea8302ed58',
-    'name': 'Block 4GB Virtual Server',
-    'ram': 4096,
-    'disk': 50,
-    'cpu': 2
-  },
-  '8gb': {
-    'id': 'b9b87a5b-2885-4a2e-b434-44a163ca6251',
-    'name': 'Block 8GB Virtual Server',
-    'ram': 8192,
-    'disk': 100,
-    'cpu': 4
-  }
+    '1gb': {
+        'id': '94fd37a7-2606-47f7-84d5-9000deda52ae',
+        'name': 'Block 1GB Virtual Server',
+        'ram': 1024,
+        'disk': 20,
+        'cpu': 0.5
+    },
+    '2gb': {
+        'id': 'b412f354-5056-4bf0-a42f-6ddd998aa092',
+        'name': 'Block 2GB Virtual Server',
+        'ram': 2048,
+        'disk': 25,
+        'cpu': 1
+    },
+    '4gb': {
+        'id': '0cd183d3-0287-4b1a-8288-b3ea8302ed58',
+        'name': 'Block 4GB Virtual Server',
+        'ram': 4096,
+        'disk': 50,
+        'cpu': 2
+    },
+    '8gb': {
+        'id': 'b9b87a5b-2885-4a2e-b434-44a163ca6251',
+        'name': 'Block 8GB Virtual Server',
+        'ram': 8192,
+        'disk': 100,
+        'cpu': 4
+    }
 }
 
 RAM_PER_CPU = 2048
@@ -102,8 +103,11 @@ class BlueboxNodeSize(NodeSize):
         self.driver = driver
 
     def __repr__(self):
-        return (('<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, price=%s, driver=%s ...>')
-               % (self.id, self.name, self.cpu, self.ram, self.disk, self.price, self.driver.name))
+        return ((
+                '<NodeSize: id=%s, name=%s, cpu=%s, ram=%s, disk=%s, '
+                'price=%s, driver=%s ...>')
+                % (self.id, self.name, self.cpu, self.ram, self.disk,
+                   self.price, self.driver.name))
 
 
 class BlueboxConnection(ConnectionUserAndKey):
@@ -190,14 +194,12 @@ class BlueboxNodeDriver(NodeDriver):
             raise Exception("SSH public key or password required.")
 
         params = urlencode(data)
-        result = self.connection.request('/api/blocks.json', headers=headers, data=params, method='POST')
+        result = self.connection.request('/api/blocks.json', headers=headers,
+                                         data=params, method='POST')
         node = self._to_node(result.object)
         return node
 
     def destroy_node(self, node):
-        """
-        Destroy node by passing in the node object
-        """
         url = '/api/blocks/%s.json' % (node.id)
         result = self.connection.request(url, method='DELETE')
 

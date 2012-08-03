@@ -326,6 +326,34 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('some-value' in obj.meta_data)
         CloudFilesStorageDriver._upload_file = old_func
 
+    def test_upload_object_zero_size_object(self):
+        def upload_file(self, response, file_path, chunked=False,
+                     calculate_hash=True):
+            return True, 'hash343hhash89h932439jsaa89', 0
+
+        old_func = CloudFilesStorageDriver._upload_file
+        old_request = self.driver.connection.request
+        CloudFilesStorageDriver._upload_file = upload_file
+        file_path = os.path.join(os.path.dirname(__file__), '__init__.py')
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = 'empty'
+        extra = {}
+
+        def func(*args, **kwargs):
+            self.assertEqual(kwargs['headers']['Content-Length'], 0)
+            func.called = True
+            return old_request(*args, **kwargs)
+
+        self.driver.connection.request = func
+        func.called = False
+        obj = self.driver.upload_object(file_path=file_path, container=container,
+                                        extra=extra, object_name=object_name)
+        self.assertEqual(obj.name, 'empty')
+        self.assertEqual(obj.size, 0)
+        self.assertTrue(func.called)
+        CloudFilesStorageDriver._upload_file = old_func
+        self.driver.connection.request = old_request
+
     def test_upload_object_invalid_hash(self):
         def upload_file(self, response, file_path, chunked=False,
                      calculate_hash=True):
@@ -814,7 +842,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
     fixtures = StorageFileFixtures('cloudfiles')
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
 
-    def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload(
+    def _v1_MossoCloudFS_foo_bar_container_foo_test_upload(
         self, method, url, body, headers):
         # test_object_upload_success
 
@@ -824,7 +852,16 @@ class CloudFilesMockRawResponse(MockRawResponse):
         headers['etag'] = 'hash343hhash89h932439jsaa89'
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
 
-    def  _v1_MossoCloudFS_foo_bar_container_foo_test_upload_INVALID_HASH(
+    def _v1_MossoCloudFS_foo_bar_container_empty(self, method, url, body,
+                                                 headers):
+        # test_upload_object_zero_size_object
+        body = ''
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = 'hash343hhash89h932439jsaa89'
+        return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_test_upload_INVALID_HASH(
         self, method, url, body, headers):
         # test_object_upload_invalid_hash
         body = ''

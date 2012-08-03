@@ -58,16 +58,18 @@ class Provider(object):
     @cvar OPSOURCE: Opsource Cloud
     @cvar NINEFOLD: Ninefold
     @cvar TERREMARK: Terremark
-    @cvar: EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    @cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
     @cvar RACKSPACE_NOVA_DFW: Rackspace Nova Private DFW (DFW)
+    @cvar RACKSPACE_NOVA_ORD: Rackspace Nova Private ORD (ORD)
     @cvar RACKSPACE_NOVA_LON: Rackspace Nova Private LON (LON)
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
     @cvar VCL: VCL driver
     @cvar KTUCLOUD: kt ucloud driver
+    @cvar GRIDSPOT: Gridspot driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -118,8 +120,10 @@ class Provider(object):
     ELASTICHOSTS_CA1 = 44
     JOYENT = 45
     VCL = 46
-    KTUCLOUD=47
+    KTUCLOUD = 47
     RACKSPACE_NOVA_LON = 48
+    GRIDSPOT = 49
+    RACKSPACE_NOVA_ORD = 50
 
 
 class NodeState(object):

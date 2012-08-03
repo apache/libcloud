@@ -4,6 +4,22 @@ Changes with Apache Libcloud in development:
 
   *) Compute
 
+    - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
+      [Brian McDaniel]
+
+Changes with Apache Libcloud 0.11.1:
+
+  *) General
+
+    - Fix hostname validation in the SSL verification code (CVE-2012-3446).
+
+      Reported by researchers from the University of Texas at Austin (Martin
+      Georgiev, Suman Jana and Vitaly Shmatikov).
+
+Changes with Apache Libcloud 0.11.0:
+
+  *) Compute
+
     - Add a timeout of 10 seconds to OpenStackAuthConnection class.
       ; LIBCLOUD-199
       [Chris Gilmer]
@@ -26,7 +42,7 @@ Changes with Apache Libcloud in development:
       - Joyent
       [Sengor Kusturica, Hutson Betts, Tomaz Muraus]
 
-    - Make CloudStuck driver more robust and make it work if list_images() call
+    - Make CloudStack driver more robust and make it work if list_images() call
       returns no images. ; LIBCLOUD-202
       [Gabriel Reid]
 
@@ -43,7 +59,7 @@ Changes with Apache Libcloud in development:
       [Gabriel Reid]
 
     - New driver for KT UCloud (http://home.ucloud.olleh.com/main.kt) based on
-      CloudStack driver.
+      the CloudStack driver.
       [DaeMyung Kang]
 
     - Add a standard API and methods for managing storage volumes to the
@@ -73,6 +89,18 @@ Changes with Apache Libcloud in development:
     - Add 'auth_user_variable' to the  OpenStackAuthConnection class.
       [Mark Everett]
 
+    - Fix a bug with repeated URLs in some requests the vCloud driver.
+      ; LIBCLOUD-222
+      [Michal Galet]
+
+    - New Gridspot driver with basic list and destroy functionality. ;
+      LIBCLOUD-223
+      [Amir Elaguizy]
+
+    - Add methods for managing storage volumes to the Gandi driver. ;
+      LIBCLOUD-225
+      [Aymeric Barantal]
+
   *) DNS
 
     - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
@@ -84,6 +112,11 @@ Changes with Apache Libcloud in development:
 
     - Add support for URL RecordType to Zerigo driver. ; LIBCLOUD-209
       [Bojan Mihelac]
+
+    - Properly handle record creation when user doesn't provider a record name
+      and wants to create a record for the actual domain.
+      Reported by Matt Perry ; LIBCLOUD-224
+      [Tomaz Muraus]
 
   *) Storage
 
@@ -107,6 +140,29 @@ Changes with Apache Libcloud in development:
     - Add ex_enable_static_website and ex_set_error_page method to the
       CloudFiles driver.
       [Tomaz Muraus]
+
+    - Propagate kwargs passed to container.download_object() to
+      driver.download_object(). ; LIBCLOUD-227
+      [Benno Rice]
+
+    - Fix a bug with not escaping container and object name in the Atmos driver.
+      [Russell Keith-Magee, Benno Rice]
+
+    - Fix upload_object_via_stream method in the Atmos driver. ; LIBCLOUD-228
+      [Benno Rice]
+
+    - Fix a bug with uploading zero-sized files in the OpenStack Swift /
+      CloudFiles driver.
+      [Tomaz Muraus]
+
+    - Fix a bug with content_type and and encoding of object and path names in
+      the Atmos driver.
+      [Russell Keith-Magee]
+
+  *) Other:
+
+    - Unify docstrings formatting in the compute drivers. ; LIBCLOUD-229
+      [Ilgiz Islamgulov]
 
 Changes with Apache Libcloud 0.10.1:
 
@@ -194,7 +250,7 @@ Changes with Apache Libcloud 0.10.1:
 
     - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver. ;
       LIBCLOUD-193
-      [Shawn Smith] 
+      [Shawn Smith]
 
     - Include 'password' in the node extra dictionary when calling deploy_node
       if the password auth is used.
@@ -379,7 +435,7 @@ Changes with Apache Libcloud 0.8.0:
      - Enable ex_delete_image method in the OpenStack 1.1 driver.
        [Shawn Smith]
 
-     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method 
+     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method
        ; LIBCLOUD-138
        [Shawn Smith]
 

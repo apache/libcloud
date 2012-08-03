@@ -17,6 +17,7 @@ from libcloud.loadbalancer.providers import Provider
 
 from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 
+
 class NinefoldLBDriver(CloudStackLBDriver):
     "Driver for load balancers on Ninefold's Compute platform."
 
@@ -25,3 +26,4 @@ class NinefoldLBDriver(CloudStackLBDriver):
 
     type = Provider.NINEFOLD
     name = 'Ninefold LB'
+    website = 'http://ninefold.com/'

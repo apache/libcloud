@@ -71,6 +71,14 @@
                         "versionInfo": "https://dfw.servers.api.rackspacecloud.com/v2/",
                         "versionList": "https://dfw.servers.api.rackspacecloud.com/",
                         "versionId": "2"
+                    },
+                    {
+                        "region": "ORD",
+                        "tenantId": "613469",
+                        "publicURL": "https://ord.servers.api.rackspacecloud.com/v2/1337",
+                        "versionInfo": "https://ord.servers.api.rackspacecloud.com/v2/",
+                        "versionList": "https://ord.servers.api.rackspacecloud.com/",
+                        "versionId": "2"
                     }
                 ],
                 "name": "cloudServersOpenStack",

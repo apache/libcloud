@@ -23,6 +23,12 @@ from glob import glob
 from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
+try:
+    import epydoc
+    has_epydoc = True
+except ImportError:
+    has_epydoc = False
+
 import libcloud.utils.misc
 from libcloud.utils.dist import get_packages, get_data_files
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
@@ -173,6 +179,9 @@ class ApiDocsCommand(Command):
         pass
 
     def run(self):
+        if not has_epydoc:
+            raise RuntimeError('Missing "epydoc" package!')
+
         os.system(
             'pydoctor'
             ' --add-package=libcloud'

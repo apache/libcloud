@@ -39,41 +39,41 @@ STATE = {
 }
 
 GOGRID_INSTANCE_TYPES = {
-        '512MB': {'id': '512MB',
-                       'name': '512MB',
-                       'ram': 512,
-                       'disk': 30,
-                       'bandwidth': None},
-        '1GB': {'id': '1GB',
-                       'name': '1GB',
-                       'ram': 1024,
-                       'disk': 60,
-                       'bandwidth': None},
-        '2GB': {'id': '2GB',
-                       'name': '2GB',
-                       'ram': 2048,
-                       'disk': 120,
-                       'bandwidth': None},
-        '4GB': {'id': '4GB',
-                       'name': '4GB',
-                       'ram': 4096,
-                       'disk': 240,
-                       'bandwidth': None},
-        '8GB': {'id': '8GB',
-                       'name': '8GB',
-                       'ram': 8192,
-                       'disk': 480,
-                       'bandwidth': None},
-        '16GB': {'id': '16GB',
-                       'name': '16GB',
-                       'ram': 16384,
-                       'disk': 960,
-                       'bandwidth': None},
-        '24GB': {'id': '24GB',
-                       'name': '24GB',
-                       'ram': 24576,
-                       'disk': 960,
-                       'bandwidth': None},
+    '512MB': {'id': '512MB',
+              'name': '512MB',
+              'ram': 512,
+              'disk': 30,
+              'bandwidth': None},
+    '1GB': {'id': '1GB',
+            'name': '1GB',
+            'ram': 1024,
+            'disk': 60,
+            'bandwidth': None},
+    '2GB': {'id': '2GB',
+            'name': '2GB',
+            'ram': 2048,
+            'disk': 120,
+            'bandwidth': None},
+    '4GB': {'id': '4GB',
+            'name': '4GB',
+            'ram': 4096,
+            'disk': 240,
+            'bandwidth': None},
+    '8GB': {'id': '8GB',
+            'name': '8GB',
+            'ram': 8192,
+            'disk': 480,
+            'bandwidth': None},
+    '16GB': {'id': '16GB',
+             'name': '16GB',
+             'ram': 16384,
+             'disk': 960,
+             'bandwidth': None},
+    '24GB': {'id': '24GB',
+             'name': '24GB',
+             'ram': 24576,
+             'disk': 960,
+             'bandwidth': None},
 }
 
 
@@ -103,6 +103,12 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     _instance_types = GOGRID_INSTANCE_TYPES
 
+    def __init__(self, *args, **kwargs):
+        """
+        @inherits: L{NodeDriver.__init__}
+        """
+        super(GoGridNodeDriver, self).__init__(*args, **kwargs)
+
     def _get_state(self, element):
         try:
             return STATE[element['state']['name']]
@@ -121,13 +127,13 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         ip = self._get_ip(element)
         id = self._get_id(element)
         n = GoGridNode(id=id,
-                 name=element['name'],
-                 state=state,
-                 public_ips=[ip],
-                 private_ips=[],
-                 extra={'ram': element.get('ram').get('name'),
-                     'description': element.get('description', '')},
-                 driver=self.connection.driver)
+                       name=element['name'],
+                       state=state,
+                       public_ips=[ip],
+                       private_ips=[],
+                       extra={'ram': element.get('ram').get('name'),
+                              'description': element.get('description', '')},
+                       driver=self.connection.driver)
         if password:
             n.extra['password'] = password
 
@@ -141,13 +147,13 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     def _to_images(self, object):
         return [self._to_image(el)
-                 for el in object['list']]
+                for el in object['list']]
 
     def _to_location(self, element):
         location = NodeLocation(id=element['id'],
-                name=element['name'],
-                country="US",
-                driver=self.connection.driver)
+                                name=element['name'],
+                                country="US",
+                                driver=self.connection.driver)
         return location
 
     def _to_locations(self, object):
@@ -159,7 +165,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         if location is not None:
             params["datacenter"] = location.id
         images = self._to_images(
-                self.connection.request('/api/grid/image/list', params).object)
+            self.connection.request('/api/grid/image/list', params).object)
         return images
 
     def list_nodes(self):
@@ -169,15 +175,17 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         try:
             for password in self._password_list()['list']:
                 try:
-                    passwords_map[password['server']['id']] = password['password']
+                    passwords_map[password['server']['id']] = \
+                        password['password']
                 except KeyError:
                     pass
         except InvalidCredsError:
-            # some gogrid API keys don't have permission to access the password list.
+            # some gogrid API keys don't have permission to access the
+            # password list.
             pass
 
         return [self._to_node(el, passwords_map.get(el.get('id')))
-                 for el in res['list']]
+                for el in res['list']]
 
     def reboot_node(self, node):
         id = node.id
@@ -204,12 +212,12 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         # power in ['start', 'stop', 'restart']
         params = {'id': id, 'power': power}
         return self.connection.request("/api/grid/server/power", params,
-                                         method='POST')
+                                       method='POST')
 
     def _server_delete(self, id):
         params = {'id': id}
         return self.connection.request("/api/grid/server/delete", params,
-                                        method='POST')
+                                       method='POST')
 
     def _get_first_ip(self, location=None):
         ips = self.ex_list_ips(public=True, assigned=False, location=location)
@@ -217,7 +225,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             return ips[0].ip
         except IndexError:
             raise LibcloudError('No public unassigned IPs left',
-                    GoGridNodeDriver)
+                                GoGridNodeDriver)
 
     def list_sizes(self, location=None):
         sizes = []
@@ -231,7 +239,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def list_locations(self):
         locations = self._to_locations(
             self.connection.request('/api/common/lookup/list',
-                params={'lookup': 'ip.datacenter'}).object)
+                                    params={'lookup': 'ip.datacenter'}).object)
         return locations
 
     def ex_create_node_nowait(self, **kwargs):
@@ -240,7 +248,28 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         The existance of this method is explained by the fact
         that GoGrid assigns id to a node only few minutes after
-        creation."""
+        creation.
+
+
+        @keyword    name:   String with a name for this new node (required)
+        @type       name:   C{str}
+
+        @keyword    size:   The size of resources allocated to this node .
+                            (required)
+        @type       size:   L{NodeSize}
+
+        @keyword    image:  OS Image to boot on node. (required)
+        @type       image:  L{NodeImage}
+
+        @keyword    ex_description: Description of a Node
+        @type       ex_description: C{str}
+
+        @keyword    ex_ip: Public IP address to use for a Node. If not
+            specified, first available IP address will be picked
+        @type       ex_ip: C{str}
+
+        @rtype: L{Node}
+        """
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
@@ -264,13 +293,14 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def create_node(self, **kwargs):
         """Create a new GoGird node
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: L{NodeDriver.create_node}
 
         @keyword    ex_description: Description of a Node
-        @type       ex_description: C{string}
+        @type       ex_description: C{str}
+
         @keyword    ex_ip: Public IP address to use for a Node. If not
                     specified, first available IP address will be picked
-        @type       ex_ip: C{string}
+        @type       ex_ip: C{str}
         """
         node = self.ex_create_node_nowait(**kwargs)
 
@@ -289,7 +319,9 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             time.sleep(interval)
 
         if id is None:
-            raise Exception("Wasn't able to wait for id allocation for the node %s" % str(node))
+            raise Exception(
+                "Wasn't able to wait for id allocation for the node %s"
+                % str(node))
 
         return node
 
@@ -303,8 +335,11 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         @keyword    node: node to use as a base for image
         @type       node: L{Node}
+
         @keyword    name: name for new image
-        @type       name: C{string}
+        @type       name: C{str}
+
+        @rtype: L{NodeImage}
         """
         params = {'server': node.id,
                   'friendlyName': name}
@@ -316,46 +351,54 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def ex_edit_node(self, **kwargs):
         """Change attributes of a node.
 
-        @keyword    node: node to be edited
+        @keyword    node: node to be edited (required)
         @type       node: L{Node}
-        @keyword    size: new size of a node
+
+        @keyword    size: new size of a node (required)
         @type       size: L{NodeSize}
+
         @keyword    ex_description: new description of a node
-        @type       ex_description: C{string}
+        @type       ex_description: C{str}
+
+        @rtype: L{Node}
         """
         node = kwargs['node']
         size = kwargs['size']
 
         params = {'id': node.id,
-                'server.ram': size.id}
+                  'server.ram': size.id}
 
         if 'ex_description' in kwargs:
             params['description'] = kwargs['ex_description']
 
         object = self.connection.request('/api/grid/server/edit',
-                params=params).object
+                                         params=params).object
 
         return self._to_node(object['list'][0])
 
     def ex_edit_image(self, **kwargs):
         """Edit metadata of a server image.
 
-        @keyword    image: image to be edited
+        @keyword    image: image to be edited (required)
         @type       image: L{NodeImage}
-        @keyword    public: should be the image public?
-        @type       public: C{bool}
-        @keyword    ex_description: description of the image (optional)
-        @type       ex_description: C{string}
-        @keyword    name: name of the image
-        @type       name C{string}
 
+        @keyword    public: should be the image public (required)
+        @type       public: C{bool}
+
+        @keyword    ex_description: description of the image (optional)
+        @type       ex_description: C{str}
+
+        @keyword    name: name of the image
+        @type       name C{str}
+
+        @rtype: L{NodeImage}
         """
 
         image = kwargs['image']
         public = kwargs['public']
 
         params = {'id': image.id,
-                'isPublic': str(public).lower()}
+                  'isPublic': str(public).lower()}
 
         if 'ex_description' in kwargs:
             params['description'] = kwargs['ex_description']
@@ -364,7 +407,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             params['friendlyName'] = kwargs['name']
 
         object = self.connection.request('/api/grid/image/edit',
-                params=params).object
+                                         params=params).object
 
         return self._to_image(object['list'][0])
 
@@ -377,28 +420,31 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
                     private IPs. Set to None or not specify
                     at all not to filter by type
         @type       public: C{bool}
+
         @keyword    assigned: set to True to list only addresses
                     assigned to servers, False to list unassigned
                     addresses and set to None or don't set at all
                     not no filter by state
         @type       assigned: C{bool}
+
         @keyword    location: filter IP addresses by location
         @type       location: L{NodeLocation}
-        @return:    C{list} of L{GoGridIpAddress}es
+
+        @rtype: C{list} of L{GoGridIpAddress}
         """
 
         params = {}
 
         if "public" in kwargs and kwargs["public"] is not None:
             params["ip.type"] = {True: "Public",
-                    False: "Private"}[kwargs["public"]]
+                                 False: "Private"}[kwargs["public"]]
         if "assigned" in kwargs and kwargs["assigned"] is not None:
             params["ip.state"] = {True: "Assigned",
-                    False: "Unassigned"}[kwargs["assigned"]]
+                                  False: "Unassigned"}[kwargs["assigned"]]
         if "location" in kwargs and kwargs['location'] is not None:
             params['datacenter'] = kwargs['location'].id
 
         ips = self._to_ips(
-                self.connection.request('/api/grid/ip/list',
-                    params=params).object)
+            self.connection.request('/api/grid/ip/list',
+                                    params=params).object)
         return ips
