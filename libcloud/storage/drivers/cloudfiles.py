@@ -469,7 +469,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                            headers=headers,
                                            cdn_request=False)
 
-        return response.status in [ httplib.OK, httplib.NO_CONTENT, httplib.CREATED, httplib.ACCEPTED ]
+        return response.status in [httplib.OK, httplib.NO_CONTENT,
+                                   httplib.CREATED, httplib.ACCEPTED]
 
     def ex_set_error_page(self, container, file_name='error.html'):
         """
