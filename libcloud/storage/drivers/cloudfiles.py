@@ -517,19 +517,19 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         path = self.connection.request_path + '/' + container.name
         try:
             key = self.ex_get_meta_data()['temp_url_key']
-            assert(key != None)
+            assert key is not None
         except:
             raise KeyError("You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \
                             Cloud Files account using \
                             ex_set_account_metadata_temp_url_key before \
                             you can use this method.")
-        hmac_body = "%s\n%s\n%s" % (method, expires, path)
+        hmac_body = '%s\n%s\n%s' % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urllib.urlencode({'temp_url_sig': sig,
                                    'temp_url_expires': expires})
 
-        temp_url = "https://%s/%s?%s" % \
+        temp_url = 'https://%s/%s?%s' % \
             (self.connection.host + self.connection.request_path,
                     container.name, params)
 
@@ -556,19 +556,19 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                             obj.container.name, obj.name)
         try:
             key = self.ex_get_meta_data()['temp_url_key']
-            assert(key != None)
+            assert key is not None
         except:
             raise KeyError("You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \
                             Cloud Files account using \
                             ex_set_account_metadata_temp_url_key before \
                             you can use this method.")
-        hmac_body = "%s\n%s\n%s" % (method, expires, path)
+        hmac_body = '%s\n%s\n%s' % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urllib.urlencode({'temp_url_sig': sig,
                                    'temp_url_expires': expires})
 
-        temp_url = "https://%s/%s/%s?%s" % \
+        temp_url = 'https://%s/%s/%s?%s' % \
             (self.connection.host + self.connection.request_path,
                     obj.container.name, obj.name, params)
 
