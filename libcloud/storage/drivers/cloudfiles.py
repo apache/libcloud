@@ -504,7 +504,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         items from or put items into a container.
 
         @param container: The container that contains the file.
-        @type container: C{str}
+        @type container: C{Container}
         @param method: Which method you would like to allow, 'PUT' or 'GET'
         @type method: C{str}
         @param timeout: Time (in seconds) after which you want the TempURL
@@ -514,6 +514,33 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         self.driver.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
         path = self.driver.connection.request_path + container.name
+        key = self.driver.ex_get_meta_data()['temp_url_key']
+        hmac_body = "%s\n%s\n%s" % (method, expires, path)
+        sig = hmac.new(key, hmac_body, sha1).hexdigest()
+
+        temp_url = "%s/temp_url_sig=%s&temp_url_expires=%s" % \
+            (self.driver.connection.host +
+             self.driver.connection.request_path, sig, expires)
+
+    def ex_get_object_temp_url(self, obj, method, timeout):
+        """
+        Create a temporary URL to allow others to retrieve or put objects
+        in your Cloud Files account for as long or as short a time as you
+        wish.  This method is specifically for allowing users to retrieve
+        or update an object.
+
+        @param object: The object that you wish to make temporarily public
+        @type container: C{Object}
+        @param method: Which method you would like to allow, 'PUT' or 'GET'
+        @type method: C{str}
+        @param timeout: Time (in seconds) after which you want the TempURL
+        to expire.
+        @type timeout: C{int}
+        """
+        self.driver.connection._populate_hosts_and_request_paths()
+        expires = int(time() + timeout)
+        path = "%s%s/%s" % (self.driver.connection.request_path,
+                            obj.container.name, obj.name)
         key = self.driver.ex_get_meta_data()['temp_url_key']
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
