@@ -640,6 +640,26 @@ class CloudFilesTests(unittest.TestCase):
 
         self.assertEquals(ret, temp_url)
 
+    @mock.patch("libcloud.storage.drivers.cloudfiles.time")
+    def test_ex_get_object_temp_url(self, time):
+        time.return_value = 0
+        self.driver.ex_get_meta_data = mock.Mock()
+        self.driver.ex_get_meta_data.return_value = {'container_count': 1,
+                                                     'object_count': 1,
+                                                     'bytes_used': 1,
+                                                     'temp_url_key': "foo"}
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
+        hmac_body = "%s\n%s\n%s" % ('GET', 60,
+                                    "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
+        sig = hmac.new("foo", hmac_body, sha1).hexdigest()
+        ret = self.driver.ex_get_object_temp_url(obj, 'GET')
+        temp_url = "https://storage101.ord1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s" % sig
+
+        self.assertEquals(ret, temp_url)
+
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
 
