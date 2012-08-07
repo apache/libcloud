@@ -17,6 +17,7 @@ from hashlib import sha1
 import hmac
 import os
 from time import time
+from urllib import urlencode
 
 from libcloud.utils.py3 import httplib
 
@@ -513,14 +514,16 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
-        path = self.connection.request_path + container.name
+        path = self.connection.request_path + '/' + container.name
         key = self.ex_get_meta_data()['temp_url_key']
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
+        params = urlencode({'temp_url_sig': sig,
+                            'temp_url_expires': expires})
 
-        temp_url = "%s/temp_url_sig=%s&temp_url_expires=%s" % \
-            (self.connection.host +
-             self.connection.request_path, sig, expires)
+        temp_url = "%s/%s?%s" % \
+            (self.connection.host + self.connection.request_path,
+                    container.name, params)
 
         return temp_url
 
@@ -541,15 +544,17 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
-        path = "%s%s/%s" % (self.connection.request_path,
+        path = "%s/%s/%s" % (self.connection.request_path,
                             obj.container.name, obj.name)
         key = self.ex_get_meta_data()['temp_url_key']
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
+        params = urlencode({'temp_url_sig': sig,
+                            'temp_url_expires': expires})
 
-        temp_url = "%s/%s/%s?temp_url_sig=%s&temp_url_expires=%s" % \
+        temp_url = "https://%s/%s/%s?%s" % \
             (self.connection.host + self.connection.request_path,
-                    obj.container.name, obj.name, sig, expires)
+                    obj.container.name, obj.name, params)
 
         return temp_url
 
