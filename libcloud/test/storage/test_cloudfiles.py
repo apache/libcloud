@@ -615,6 +615,10 @@ class CloudFilesTests(unittest.TestCase):
                                               file_name='error.html')
         self.assertTrue(result)
 
+    def test_ex_set_account_metadata_temp_url_key(self):
+        result = self.driver.ex_set_account_metadata_temp_url_key("a key")
+        self.assertTrue(result)
+
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
 
@@ -674,6 +678,9 @@ class CloudFilesMockHttp(StorageMockHttp):
                              'x-account-object-count': 400,
                              'x-account-bytes-used': 1234567
                            })
+        elif method == 'POST':
+            body = ''
+            status_code = httplib.NO_CONTENT
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_not_found(self, method, url, body, headers):
