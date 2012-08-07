@@ -496,7 +496,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return response.status in [httplib.OK, httplib.NO_CONTENT,
                                    httplib.CREATED, httplib.ACCEPTED]
 
-    def ex_get_container_temp_url(self, container, method, timeout):
+    def ex_get_container_temp_url(self, container, method, timeout=60):
         """
         Create a temporary URL to allow others to retrieve or put objects
         in your Cloud Files account for as long or as short a time as you
@@ -511,18 +511,20 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         to expire.
         @type timeout: C{int}
         """
-        self.driver.connection._populate_hosts_and_request_paths()
+        self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
-        path = self.driver.connection.request_path + container.name
-        key = self.driver.ex_get_meta_data()['temp_url_key']
+        path = self.connection.request_path + container.name
+        key = self.ex_get_meta_data()['temp_url_key']
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
         temp_url = "%s/temp_url_sig=%s&temp_url_expires=%s" % \
-            (self.driver.connection.host +
-             self.driver.connection.request_path, sig, expires)
+            (self.connection.host +
+             self.connection.request_path, sig, expires)
 
-    def ex_get_object_temp_url(self, obj, method, timeout):
+        return temp_url
+
+    def ex_get_object_temp_url(self, obj, method, timeout=60):
         """
         Create a temporary URL to allow others to retrieve or put objects
         in your Cloud Files account for as long or as short a time as you
@@ -537,17 +539,19 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         to expire.
         @type timeout: C{int}
         """
-        self.driver.connection._populate_hosts_and_request_paths()
+        self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
-        path = "%s%s/%s" % (self.driver.connection.request_path,
+        path = "%s%s/%s" % (self.connection.request_path,
                             obj.container.name, obj.name)
-        key = self.driver.ex_get_meta_data()['temp_url_key']
+        key = self.ex_get_meta_data()['temp_url_key']
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
-        temp_url = "%s/temp_url_sig=%s&temp_url_expires=%s" % \
-            (self.driver.connection.host +
-             self.driver.connection.request_path, sig, expires)
+        temp_url = "%s/%s/%s?temp_url_sig=%s&temp_url_expires=%s" % \
+            (self.connection.host + self.connection.request_path,
+                    obj.container.name, obj.name, sig, expires)
+
+        return temp_url
 
     def _upload_object_part(self, container, object_name, part_number,
                             iterator, verify_hash=True):
