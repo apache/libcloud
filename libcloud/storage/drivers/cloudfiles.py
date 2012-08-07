@@ -519,8 +519,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
         temp_url = "%s/temp_url_sig=%s&temp_url_expires=%s" % \
-                (self.driver.connection.host + \
-                self.driver.connection.request_path, sig, expires)
+            (self.driver.connection.host +
+             self.driver.connection.request_path, sig, expires)
 
     def _upload_object_part(self, container, object_name, part_number,
                             iterator, verify_hash=True):
