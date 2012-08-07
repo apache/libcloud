@@ -17,9 +17,9 @@ from hashlib import sha1
 import hmac
 import os
 from time import time
-from urllib import urlencode
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urllib
 
 try:
     import simplejson as json
@@ -525,8 +525,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                             you can use this method.")
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
-        params = urlencode({'temp_url_sig': sig,
-                            'temp_url_expires': expires})
+        params = urllib.urlencode({'temp_url_sig': sig,
+                                   'temp_url_expires': expires})
 
         temp_url = "https://%s/%s?%s" % \
             (self.connection.host + self.connection.request_path,
@@ -563,8 +563,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                             you can use this method.")
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
-        params = urlencode({'temp_url_sig': sig,
-                            'temp_url_expires': expires})
+        params = urllib.urlencode({'temp_url_sig': sig,
+                                   'temp_url_expires': expires})
 
         temp_url = "https://%s/%s/%s?%s" % \
             (self.connection.host + self.connection.request_path,
