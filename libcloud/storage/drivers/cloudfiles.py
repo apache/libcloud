@@ -497,7 +497,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return response.status in [httplib.OK, httplib.NO_CONTENT,
                                    httplib.CREATED, httplib.ACCEPTED]
 
-    def ex_get_container_temp_url(self, container, method, timeout=60):
+    def ex_get_container_temp_url(self, container, timeout=60):
         """
         Create a temporary URL to allow others to retrieve or put objects
         in your Cloud Files account for as long or as short a time as you
@@ -506,8 +506,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         @param container: The container that contains the file.
         @type container: C{Container}
-        @param method: Which method you would like to allow, 'PUT' or 'GET'
-        @type method: C{str}
         @param timeout: Time (in seconds) after which you want the TempURL
         to expire.
         @type timeout: C{int}
@@ -524,7 +522,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                             Cloud Files account using \
                             ex_set_account_metadata_temp_url_key before \
                             you can use this method.")
-        hmac_body = '%s\n%s\n%s' % (method, expires, path)
+        hmac_body = '%s\n%s\n%s' % ('PUT', expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urllib.urlencode({'temp_url_sig': sig,
                                    'temp_url_expires': expires})
