@@ -528,7 +528,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         params = urlencode({'temp_url_sig': sig,
                             'temp_url_expires': expires})
 
-        temp_url = "%s/%s?%s" % \
+        temp_url = "https://%s/%s?%s" % \
             (self.connection.host + self.connection.request_path,
                     container.name, params)
 
