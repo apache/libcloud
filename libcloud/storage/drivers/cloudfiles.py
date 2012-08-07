@@ -454,7 +454,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
-    def ex_set_account_metadata_key(self, key):
+    def ex_set_account_metadata_temp_url_key(self, key):
         """
         Set the metadata header X-Account-Meta-Temp-URL-Key on your Cloud
         Files account.
