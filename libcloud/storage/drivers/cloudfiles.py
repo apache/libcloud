@@ -515,7 +515,14 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
         path = self.connection.request_path + '/' + container.name
-        key = self.ex_get_meta_data()['temp_url_key']
+        try:
+            key = self.ex_get_meta_data()['temp_url_key']
+        except:
+            raise KeyError("You must first set the \
+                            X-Account-Meta-Temp-URL-Key header on your \
+                            Cloud Files account using \
+                            ex_set_account_metadata_temp_url_key before \
+                            you can use this method.")
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urlencode({'temp_url_sig': sig,
@@ -546,7 +553,14 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         expires = int(time() + timeout)
         path = "%s/%s/%s" % (self.connection.request_path,
                             obj.container.name, obj.name)
-        key = self.ex_get_meta_data()['temp_url_key']
+        try:
+            key = self.ex_get_meta_data()['temp_url_key']
+        except:
+            raise KeyError("You must first set the \
+                            X-Account-Meta-Temp-URL-Key header on your \
+                            Cloud Files account using \
+                            ex_set_account_metadata_temp_url_key before \
+                            you can use this method.")
         hmac_body = "%s\n%s\n%s" % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urlencode({'temp_url_sig': sig,
