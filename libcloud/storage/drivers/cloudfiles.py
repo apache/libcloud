@@ -517,7 +517,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         path = self.connection.request_path + '/' + container.name
         try:
             key = self.ex_get_meta_data()['temp_url_key']
-            key != None
+            assert(key != None)
         except:
             raise KeyError("You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \
@@ -556,7 +556,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                             obj.container.name, obj.name)
         try:
             key = self.ex_get_meta_data()['temp_url_key']
-            key != None
+            assert(key != None)
         except:
             raise KeyError("You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \
