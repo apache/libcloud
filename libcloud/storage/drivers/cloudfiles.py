@@ -454,6 +454,23 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
+    def ex_set_account_metadata_key(self, key):
+        """
+        Set the metadata header X-Account-Meta-Temp-URL-Key on your Cloud
+        Files account.
+
+        @param key: X-Account-Meta-Temp-URL-Key
+        @type key: C{str}
+        """
+        headers = {'X-Account-Meta-Temp-URL-Key': key}
+
+        response = self.connection.request('',
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.OK, httplib.NO_CONTENT, httplib.CREATED, httplib.ACCEPTED ]
+
     def ex_set_error_page(self, container, file_name='error.html'):
         """
         Set a custom error page which is displayed if file is not found and
