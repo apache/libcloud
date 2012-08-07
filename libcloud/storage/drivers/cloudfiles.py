@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hashlib import sha1
+import hmac
 import os
+from time import time
 
 from libcloud.utils.py3 import httplib
 
@@ -407,10 +410,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 'x-account-object-count', 'unknown')
             bytes_used = response.headers.get(
                 'x-account-bytes-used', 'unknown')
+            temp_url_key = response.headers.get(
+                'x-account-meta-temp-url-key', 'unknown')
 
             return { 'container_count': int(container_count),
                       'object_count': int(object_count),
-                      'bytes_used': int(bytes_used) }
+                      'bytes_used': int(bytes_used),
+                      'temp_url_key': temp_url_key }
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
@@ -454,6 +460,24 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
 
+    def ex_set_error_page(self, container, file_name='error.html'):
+        """
+        Set a custom error page which is displayed if file is not found and
+        serving of a static website is enabled.
+
+        @param file_name: Name of the object which becomes the error page.
+        @type file_name: C{str}
+        """
+        container_name = container.name
+        headers = {'X-Container-Meta-Web-Error': file_name}
+
+        response = self.connection.request('/%s' % (container_name),
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
     def ex_set_account_metadata_temp_url_key(self, key):
         """
         Set the metadata header X-Account-Meta-Temp-URL-Key on your Cloud
@@ -472,23 +496,31 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return response.status in [httplib.OK, httplib.NO_CONTENT,
                                    httplib.CREATED, httplib.ACCEPTED]
 
-    def ex_set_error_page(self, container, file_name='error.html'):
+    def ex_get_container_temp_url(self, container, method, timeout):
         """
-        Set a custom error page which is displayed if file is not found and
-        serving of a static website is enabled.
+        Create a temporary URL to allow others to retrieve or put objects
+        in your Cloud Files account for as long or as short a time as you
+        wish.  This method is specifically for allowing users to retrieve
+        items from or put items into a container.
 
-        @param file_name: Name of the object which becomes the error page.
-        @type file_name: C{str}
+        @param container: The container that contains the file.
+        @type container: C{str}
+        @param method: Which method you would like to allow, 'PUT' or 'GET'
+        @type method: C{str}
+        @param timeout: Time (in seconds) after which you want the TempURL
+        to expire.
+        @type timeout: C{int}
         """
-        container_name = container.name
-        headers = {'X-Container-Meta-Web-Error': file_name}
+        self.driver.connection._populate_hosts_and_request_paths()
+        expires = int(time() + timeout)
+        path = self.driver.connection.request_path + container.name
+        key = self.driver.ex_get_meta_data()['temp_url_key']
+        hmac_body = "%s\n%s\n%s" % (method, expires, path)
+        sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
-        response = self.connection.request('/%s' % (container_name),
-                                           method='POST',
-                                           headers=headers,
-                                           cdn_request=False)
-
-        return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+        temp_url = "%s/temp_url_sig=%s&temp_url_expires=%s" % \
+                (self.driver.connection.host + \
+                self.driver.connection.request_path, sig, expires)
 
     def _upload_object_part(self, container, object_name, part_number,
                             iterator, verify_hash=True):
