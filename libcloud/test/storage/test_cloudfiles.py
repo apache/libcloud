@@ -493,6 +493,7 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('object_count' in meta_data)
         self.assertTrue('container_count' in meta_data)
         self.assertTrue('bytes_used' in meta_data)
+        self.assertTrue('temp_url_key' in meta_data)
 
     @mock.patch('os.path.getsize')
     def test_ex_multipart_upload_object_for_small_files(self, getsize_mock):
