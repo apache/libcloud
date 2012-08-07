@@ -633,12 +633,10 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={},
                               driver=self)
         hmac_body = "%s\n%s\n%s" % ('GET', 60,
-                                    "v1/MossoCloudFS/foo_bar_container")
+                                    "/v1/MossoCloudFS/foo_bar_container")
         sig = hmac.new("foo", hmac_body, sha1).hexdigest()
         ret = self.driver.ex_get_container_temp_url(container, 'GET')
-        temp_url = "https://storage101.ord1.clouddrive.com/v1/\
-                    MossoCloudFS/foo_bar_container?\
-                    temp_url_expires=60&temp_url_sig=%s" % sig
+        temp_url = "https://storage101.ord1.clouddrive.com/v1/MossoCloudFS/foo_bar_container?temp_url_expires=60&temp_url_sig=%s" % sig
 
         self.assertEquals(ret, temp_url)
 

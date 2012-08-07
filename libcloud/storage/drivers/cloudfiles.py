@@ -516,7 +516,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         expires = int(time() + timeout)
         path = self.connection.request_path + '/' + container.name
         try:
-            key = self.ex_get_meta_data()['temp_url_key'] and key != None
+            key = self.ex_get_meta_data()['temp_url_key']
+            key != None
         except:
             raise KeyError("You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \
