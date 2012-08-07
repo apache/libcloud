@@ -412,7 +412,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             bytes_used = response.headers.get(
                 'x-account-bytes-used', 'unknown')
             temp_url_key = response.headers.get(
-                'x-account-meta-temp-url-key', 'unknown')
+                'x-account-meta-temp-url-key', None)
 
             return { 'container_count': int(container_count),
                       'object_count': int(object_count),
@@ -516,7 +516,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         expires = int(time() + timeout)
         path = self.connection.request_path + '/' + container.name
         try:
-            key = self.ex_get_meta_data()['temp_url_key']
+            key = self.ex_get_meta_data()['temp_url_key'] and key != None
         except:
             raise KeyError("You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \

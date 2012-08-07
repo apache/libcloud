@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from hashlib import sha1
+import hmac
 import os
 import os.path                          # pylint: disable-msg=W0404
 import math
@@ -619,6 +621,26 @@ class CloudFilesTests(unittest.TestCase):
     def test_ex_set_account_metadata_temp_url_key(self):
         result = self.driver.ex_set_account_metadata_temp_url_key("a key")
         self.assertTrue(result)
+
+    @mock.patch("libcloud.storage.drivers.cloudfiles.time")
+    def test_ex_get_container_temp_url(self, time):
+        time.return_value = 0
+        self.driver.ex_get_meta_data = mock.Mock()
+        self.driver.ex_get_meta_data.return_value = {'container_count': 1,
+                                                     'object_count': 1,
+                                                     'bytes_used': 1,
+                                                     'temp_url_key': "foo"}
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self)
+        hmac_body = "%s\n%s\n%s" % ('GET', 60,
+                                    "v1/MossoCloudFS/foo_bar_container")
+        sig = hmac.new("foo", hmac_body, sha1).hexdigest()
+        ret = self.driver.ex_get_container_temp_url(container, 'GET')
+        temp_url = "https://storage101.ord1.clouddrive.com/v1/\
+                    MossoCloudFS/foo_bar_container?\
+                    temp_url_expires=60&temp_url_sig=%s" % sig
+
+        self.assertEquals(ret, temp_url)
 
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
