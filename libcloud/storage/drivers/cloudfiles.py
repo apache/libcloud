@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hashlib import sha1
+import hmac
 import os
+from time import time
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlencode
 
 try:
     import simplejson as json
@@ -407,10 +411,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 'x-account-object-count', 'unknown')
             bytes_used = response.headers.get(
                 'x-account-bytes-used', 'unknown')
+            temp_url_key = response.headers.get(
+                'x-account-meta-temp-url-key', None)
 
             return { 'container_count': int(container_count),
                       'object_count': int(object_count),
-                      'bytes_used': int(bytes_used) }
+                      'bytes_used': int(bytes_used),
+                      'temp_url_key': temp_url_key }
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
@@ -471,6 +478,63 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                            cdn_request=False)
 
         return response.status in [ httplib.CREATED, httplib.ACCEPTED ]
+
+    def ex_set_account_metadata_temp_url_key(self, key):
+        """
+        Set the metadata header X-Account-Meta-Temp-URL-Key on your Cloud
+        Files account.
+
+        @param key: X-Account-Meta-Temp-URL-Key
+        @type key: C{str}
+        """
+        headers = {'X-Account-Meta-Temp-URL-Key': key}
+
+        response = self.connection.request('',
+                                           method='POST',
+                                           headers=headers,
+                                           cdn_request=False)
+
+        return response.status in [httplib.OK, httplib.NO_CONTENT,
+                                   httplib.CREATED, httplib.ACCEPTED]
+
+    def ex_get_object_temp_url(self, obj, method='GET', timeout=60):
+        """
+        Create a temporary URL to allow others to retrieve or put objects
+        in your Cloud Files account for as long or as short a time as you
+        wish.  This method is specifically for allowing users to retrieve
+        or update an object.
+
+        @param object: The object that you wish to make temporarily public
+        @type container: C{Object}
+        @param method: Which method you would like to allow, 'PUT' or 'GET'
+        @type method: C{str}
+        @param timeout: Time (in seconds) after which you want the TempURL
+        to expire.
+        @type timeout: C{int}
+        """
+        self.connection._populate_hosts_and_request_paths()
+        expires = int(time() + timeout)
+        path = '%s/%s/%s' % (self.connection.request_path,
+                            obj.container.name, obj.name)
+        try:
+            key = self.ex_get_meta_data()['temp_url_key']
+            assert key is not None
+        except Exception:
+            raise KeyError('You must first set the ' +
+                           'X-Account-Meta-Temp-URL-Key header on your ' +
+                           'Cloud Files account using ' +
+                           'ex_set_account_metadata_temp_url_key before ' +
+                           'you can use this method.')
+        hmac_body = '%s\n%s\n%s' % (method, expires, path)
+        sig = hmac.new(b(key), b(hmac_body), sha1).hexdigest()
+        params = urlencode({'temp_url_sig': sig,
+                            'temp_url_expires': expires})
+
+        temp_url = 'https://%s/%s/%s?%s' % \
+            (self.connection.host + self.connection.request_path,
+                    obj.container.name, obj.name, params)
+
+        return temp_url
 
     def _upload_object_part(self, container, object_name, part_number,
                             iterator, verify_hash=True):
