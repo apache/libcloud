@@ -497,42 +497,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return response.status in [httplib.OK, httplib.NO_CONTENT,
                                    httplib.CREATED, httplib.ACCEPTED]
 
-    def ex_get_container_temp_url(self, container, timeout=60):
-        """
-        Create a temporary URL to allow others to retrieve or put objects
-        in your Cloud Files account for as long or as short a time as you
-        wish.  This method is specifically for allowing users to retrieve
-        items from or put items into a container.
-
-        @param container: The container that contains the file.
-        @type container: C{Container}
-        @param timeout: Time (in seconds) after which you want the TempURL
-        to expire.
-        @type timeout: C{int}
-        """
-        self.connection._populate_hosts_and_request_paths()
-        expires = int(time() + timeout)
-        path = self.connection.request_path + '/' + container.name
-        try:
-            key = self.ex_get_meta_data()['temp_url_key']
-            assert key is not None
-        except:
-            raise KeyError("You must first set the \
-                            X-Account-Meta-Temp-URL-Key header on your \
-                            Cloud Files account using \
-                            ex_set_account_metadata_temp_url_key before \
-                            you can use this method.")
-        hmac_body = '%s\n%s\n%s' % ('PUT', expires, path)
-        sig = hmac.new(key, hmac_body, sha1).hexdigest()
-        params = urllib.urlencode({'temp_url_sig': sig,
-                                   'temp_url_expires': expires})
-
-        temp_url = 'https://%s/%s?%s' % \
-            (self.connection.host + self.connection.request_path,
-                    container.name, params)
-
-        return temp_url
-
     def ex_get_object_temp_url(self, obj, method, timeout=60):
         """
         Create a temporary URL to allow others to retrieve or put objects
@@ -550,17 +514,17 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)
-        path = "%s/%s/%s" % (self.connection.request_path,
+        path = '%s/%s/%s' % (self.connection.request_path,
                             obj.container.name, obj.name)
         try:
             key = self.ex_get_meta_data()['temp_url_key']
             assert key is not None
         except:
-            raise KeyError("You must first set the \
+            raise KeyError('You must first set the \
                             X-Account-Meta-Temp-URL-Key header on your \
                             Cloud Files account using \
                             ex_set_account_metadata_temp_url_key before \
-                            you can use this method.")
+                            you can use this method.')
         hmac_body = '%s\n%s\n%s' % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urllib.urlencode({'temp_url_sig': sig,
