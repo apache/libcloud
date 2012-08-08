@@ -652,8 +652,7 @@ class CloudFilesTests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self)
-        exception_string = 'You must first set the X-Account-Meta-Temp-URL-Key header on your Cloud Files account using ex_set_account_metadata_temp_url_key before you can use this method.'
-        with self.assertRaisesRegexp(KeyError, exception_string):
+        with self.assertRaises(KeyError):
             self.driver.ex_get_object_temp_url(obj, 'GET')
 
     def _remove_test_file(self):
