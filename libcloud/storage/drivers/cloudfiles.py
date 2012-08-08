@@ -519,12 +519,12 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         try:
             key = self.ex_get_meta_data()['temp_url_key']
             assert key is not None
-        except:
-            raise KeyError('You must first set the \
-                            X-Account-Meta-Temp-URL-Key header on your \
-                            Cloud Files account using \
-                            ex_set_account_metadata_temp_url_key before \
-                            you can use this method.')
+        except Exception:
+            raise KeyError('You must first set the ' +
+                           'X-Account-Meta-Temp-URL-Key header on your ' +
+                           'Cloud Files account using ' +
+                           'ex_set_account_metadata_temp_url_key before ' +
+                           'you can use this method.')
         hmac_body = '%s\n%s\n%s' % (method, expires, path)
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
         params = urllib.urlencode({'temp_url_sig': sig,
