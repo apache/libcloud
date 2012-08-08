@@ -652,8 +652,7 @@ class CloudFilesTests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self)
-        with self.assertRaises(KeyError):
-            self.driver.ex_get_object_temp_url(obj, 'GET')
+        self.assertRaises(KeyError, self.driver.ex_get_object_temp_url, obj, 'GET')
 
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
