@@ -7,6 +7,12 @@ Changes with Apache Libcloud in development:
     - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
       [Brian McDaniel]
 
+  *) Storage
+
+    - Add the following new methods to the CloudFiles driver:
+      ex_set_account_metadata_temp_url_key, ex_get_object_temp_url. ; GITHUB-72
+      [Shawn Smith]
+
 Changes with Apache Libcloud 0.11.1:
 
   *) General
