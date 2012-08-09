@@ -674,7 +674,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         @param balancer: Balancer which should be used
         @type balancer: L{LoadBalancer}
 
-        @rtype: C{list} of L{RackspaceAccessRuleType}
+        @rtype: C{list} of L{RackspaceAccessRule}
         """
         uri = '/loadbalancers/%s/accesslist' % (balancer.id)
         resp = self.connection.request(uri)
