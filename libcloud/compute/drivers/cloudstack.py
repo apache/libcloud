@@ -227,22 +227,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                     rules.append(rule)
             node.extra['ip_forwarding_rules'] = rules
 
-            rules = self._sync_request('listPortForwardingRules')['portforwardingrule']
+            rules = self._sync_request('listPortForwardingRules')
             adresses = self.ex_list_public_ip()
             port_rules = []
-            for rule in rules:
+            for rule in rules.get('portforwardingrule', []):
                 if str(rule['virtualmachineid']) == node.id:
-                    port_rules.append(CloudStackForwardingRule(node=node,
-                        id=rule['id'],
-                        address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
-                        protocol=rule['protocol'],
-                        public_port=rule['publicport'],
-                        private_port=rule['privateport'],
-                        public_end_port=rule.get('publicendport', None),
-                        private_end_port=rule.get('privateendport', None),
-                        state=rule['state']))
+                        port_rules.append(CloudStackForwardingRule(node=node,
+                            id=rule['id'],
+                            address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+                            protocol=rule['protocol'],
+                            public_port=rule['publicport'],
+                            private_port=rule['privateport'],
+                            public_end_port=rule.get('publicendport', None),
+                            private_end_port=rule.get('privateendport', None),
+                            state=rule['state']))
             node.extra['port_forwarding_rules'] = port_rules
-
             nodes.append(node)
         return nodes
 
@@ -493,7 +492,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_list_public_ip(self):
         addresses = self._sync_request('listPublicIpAddresses')
-        return [CloudStackAddress(None, addr['id'], addr['ipaddress']) for addr in addresses['publicipaddress']]
+        return [CloudStackAddress(None, addr['id'], addr['ipaddress']) for addr in addresses.get('publicipaddress', [])]
 
     def ex_add_port_forwarding_rule(self, node, address, protocol,
                                   public_port, private_port,
@@ -536,19 +535,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return rule
 
     def ex_list_port_forwarding_rule(self):
-        rules = self._sync_request('listPortForwardingRules')['portforwardingrule']
+        rules = self._sync_request('listPortForwardingRules')
         adresses = self.ex_list_public_ip()
         nodes = self.list_nodes()
         return [CloudStackForwardingRule(node=filter(lambda node: int(node.id) == rule['virtualmachineid'], nodes)[0],
-            id=rule['id'],
-            address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
-            protocol=rule['protocol'],
-            public_port=rule['publicport'],
-            private_port=rule['privateport'],
-            public_end_port=rule.get('publicendport', None),
-            private_end_port=rule.get('privateendport', None),
-            state=rule['state']
-        ) for rule in rules]
+                id=rule['id'],
+                address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+                protocol=rule['protocol'],
+                public_port=rule['publicport'],
+                private_port=rule['privateport'],
+                public_end_port=rule.get('publicendport', None),
+                private_end_port=rule.get('privateendport', None),
+                state=rule['state']
+            ) for rule in rules.get('portforwardingrule', [])]
 
     def ex_delete_port_forwarding_rule(self, node, rule):
         """Remove a NAT/firewall forwarding rule."""
@@ -559,7 +558,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_create_keypair(self, name):
         keypair = self._sync_request('createSSHKeyPair', name=name)
-        return keypair['sshkeypair']
+        return keypair['keypair']
 
     def ex_list_keypair(self, name=None):
         if name is None:
