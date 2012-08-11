@@ -13,6 +13,12 @@ Changes with Apache Libcloud in development:
       ex_set_account_metadata_temp_url_key, ex_get_object_temp_url. ; GITHUB-72
       [Shawn Smith]
 
+  *) Load-balancer
+
+    - Add 'balancer' attribute to the Member instance. This attribute refers to
+      the LoadBalancer instance this member belongs to.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.11.1:
 
   *) General

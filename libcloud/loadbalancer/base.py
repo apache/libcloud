@@ -26,10 +26,11 @@ __all__ = [
 
 class Member(object):
 
-    def __init__(self, id, ip, port, extra=None):
+    def __init__(self, id, ip, port, balancer=None, extra=None):
         self.id = str(id) if id else None
         self.ip = ip
         self.port = port
+        self.balancer = balancer
         self.extra = extra or {}
 
     def __repr__(self):
@@ -210,9 +211,9 @@ class Driver(BaseDriver):
         @rtype: L{Member}
         """
 
-        return self.balancer_attach_member(balancer, Member(None,
-                                                            node.public_ips[0],
-                                                            balancer.port))
+        return self.balancer_attach_member(balancer, Member(id=None,
+                                                            ip=node.public_ips[0],
+                                                            port=balancer.port))
 
     def balancer_attach_member(self, balancer, member):
         """
