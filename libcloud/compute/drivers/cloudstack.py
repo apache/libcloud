@@ -125,7 +125,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.TERMINATED,
         'Stopping': NodeState.TERMINATED,
-        'Destroyed': NodeState.TERMINATED
+        'Destroyed': NodeState.TERMINATED,
+        'Expunging': NodeState.TERMINATED,
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
