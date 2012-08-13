@@ -74,14 +74,30 @@ def get_url_path(url):
 class Vdc:
     """Virtual datacenter (vDC) representation"""
 
-    def __init__(self, id, name, driver):
+    def __init__(self, id, name, driver, allocation_model=None, cpu=None, memory=None, storage=None):
         self.id = id
         self.name = name
         self.driver = driver
+        self.allocation_model = allocation_model
+        self.cpu = cpu
+        self.memory = memory
+        self.storage = storage
 
     def __repr__(self):
         return (('<Vdc: id=%s, name=%s, driver=%s  ...>')
                 % (self.id, self.name, self.driver.name))
+
+
+class Capacity:
+    """Represents CPU, Memory or Storage capacity of vDC."""
+    def __init__(self, limit, used, units):
+        self.limit = limit
+        self.used = used
+        self.units = units
+
+    def __repr__(self):
+        return (('<Capacity: limit=%s, used=%s, units=%s>')
+                % (self.limit, self.used, self.units))
 
 
 class InstantiateVAppXML(object):
@@ -338,11 +354,16 @@ class VCloudNodeDriver(NodeDriver):
             self.connection.check_org()  # make sure the org is set.  # pylint: disable-msg=E1101
             res = self.connection.request(self.org)
             self._vdcs = [
-                Vdc(i.get('href'), i.get('name'), self)
+                self._to_vdc(
+                    self.connection.request(get_url_path(i.get('href'))).object
+                )
                 for i in res.object.findall(fixxpath(res.object, "Link"))
                 if i.get('type') == 'application/vnd.vmware.vcloud.vdc+xml'
             ]
         return self._vdcs
+
+    def _to_vdc(self, vdc_elm):
+        return Vdc(vdc_elm.get('href'), vdc_elm.get('name'), self)
 
     def _get_vdc(self, vdc_name):
         vdc = None
@@ -442,8 +463,8 @@ class VCloudNodeDriver(NodeDriver):
                 raise Exception("Canceled status returned by task %s."
                                 % task_href)
             if (time.time() - start_time >= timeout):
-                raise Exception("Timeout while waiting for task %s."
-                                % task_href)
+                raise Exception("Timeout (%s sec) while waiting for task %s."
+                                % (timeout, task_href))
             time.sleep(5)
             res = self.connection.request(get_url_path(task_href))
             status = res.object.get('status')
@@ -482,8 +503,25 @@ class VCloudNodeDriver(NodeDriver):
         return res.status in [httplib.ACCEPTED, httplib.NO_CONTENT]
 
     def list_nodes(self):
+        return self.ex_list_nodes()
+
+    def ex_list_nodes(self, vdcs=None):
+        """
+        List all nodes across all vDCs. Using 'vdcs' you can specify which vDCs
+        should be queried.
+
+        @param vdcs: None, vDC or a list of vDCs to query. If None all vDCs
+                     will be queried.
+        @type vdcs: L{Vdc}
+
+        @rtype: C{list} of L{Node} objects
+        """
+        if not vdcs:
+            vdcs = self.vdcs
+        if not isinstance(vdcs, (list, tuple)):
+            vdcs = [vdcs]
         nodes = []
-        for vdc in self.vdcs:
+        for vdc in vdcs:
             res = self.connection.request(get_url_path(vdc.id))
             elms = res.object.findall(fixxpath(
                 res.object, "ResourceEntities/ResourceEntity")
@@ -577,10 +615,10 @@ class VCloudNodeDriver(NodeDriver):
                 res = self._get_catalogitem(cat_item)
                 res_ents = res.findall(fixxpath(res, 'Entity'))
                 images += [
-                self._to_image(i)
-                for i in res_ents
-                if i.get('type') ==
-                   'application/vnd.vmware.vcloud.vAppTemplate+xml'
+                    self._to_image(i)
+                    for i in res_ents
+                    if i.get('type') ==
+                        'application/vnd.vmware.vcloud.vAppTemplate+xml'
                 ]
 
         def idfun(image):
@@ -950,6 +988,62 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 })
             self._wait_for_task_completion(res.object.get('href'))
 
+        res = self.connection.request(get_url_path(node.id))
+        return self._to_node(res.object)
+
+    def ex_power_off_node(self, node):
+        """
+        Powers on all VMs under specified node. VMs need to be This operation
+        is allowed only when the vApp/VM is powered on.
+
+        @param  node: The node to be powered off
+        @type   node: L{Node}
+
+        @rtype: L{Node}
+        """
+        return self._perform_power_operation(node, 'powerOff')
+
+    def ex_power_on_node(self, node):
+        """
+        Powers on all VMs under specified node. This operation is allowed
+        only when the vApp/VM is powered off or suspended.
+
+        @param  node: The node to be powered on
+        @type   node: L{Node}
+
+        @rtype: L{Node}
+        """
+        return self._perform_power_operation(node, 'powerOn')
+
+    def ex_shutdown_node(self, node):
+        """
+        Shutdowns all VMs under specified node. This operation is allowed only
+        when the vApp/VM is powered on.
+
+        @param  node: The node to be shut down
+        @type   node: L{Node}
+
+        @rtype: L{Node}
+        """
+        return self._perform_power_operation(node, 'shutdown')
+
+    def ex_suspend_node(self, node):
+        """
+        Suspends all VMs under specified node. This operation is allowed only
+        when the vApp/VM is powered on.
+
+        @param  node: The node to be suspended
+        @type   node: L{Node}
+
+        @rtype: L{Node}
+        """
+        return self._perform_power_operation(node, 'suspend')
+
+    def _perform_power_operation(self, node, operation):
+        res = self.connection.request(
+            '%s/power/action/%s' % (get_url_path(node.id), operation),
+            method='POST')
+        self._wait_for_task_completion(res.object.get('href'))
         res = self.connection.request(get_url_path(node.id))
         return self._to_node(res.object)
 
@@ -1529,11 +1623,38 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             public_ips.extend(vm['public_ips'])
             private_ips.extend(vm['private_ips'])
 
+        # Find vDC
+        vdc_id = next(link.get('href') for link in node_elm.findall(fixxpath(node_elm, 'Link'))
+            if link.get('type') == 'application/vnd.vmware.vcloud.vdc+xml')
+        vdc = next(vdc for vdc in self.vdcs if vdc.id == vdc_id)
+
         node = Node(id=node_elm.get('href'),
                     name=node_elm.get('name'),
                     state=self.NODE_STATE_MAP[node_elm.get('status')],
                     public_ips=public_ips,
                     private_ips=private_ips,
                     driver=self.connection.driver,
-                    extra={'vms': vms})
+                    extra={'vdc': vdc.name, 'vms': vms})
         return node
+
+    def _to_vdc(self, vdc_elm):
+
+        def get_capacity_values(capacity_elm):
+            if capacity_elm is None:
+                return None
+            limit = int(capacity_elm.findtext(fixxpath(capacity_elm, 'Limit')))
+            used = int(capacity_elm.findtext(fixxpath(capacity_elm, 'Used')))
+            units = capacity_elm.findtext(fixxpath(capacity_elm, 'Units'))
+            return Capacity(limit, used, units)
+
+        cpu = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'ComputeCapacity/Cpu')))
+        memory = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'ComputeCapacity/Memory')))
+        storage = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'StorageCapacity')))
+
+        return Vdc(id=vdc_elm.get('href'),
+                   name=vdc_elm.get('name'),
+                   driver=self,
+                   allocation_model=vdc_elm.findtext(fixxpath(vdc_elm, 'AllocationModel')),
+                   cpu=cpu,
+                   memory=memory,
+                   storage=storage)

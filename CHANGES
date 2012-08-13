@@ -7,6 +7,10 @@ Changes with Apache Libcloud in development:
     - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
       [Brian McDaniel]
 
+    - Add capacity information to Vdc objects and implement power operations. ;
+      LIBCLOUD-239
+      [Michal Galet]
+
   *) Storage
 
     - Add the following new methods to the CloudFiles driver:
