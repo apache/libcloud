@@ -35,6 +35,7 @@ from libcloud.storage.types import ObjectDoesNotExistError
 
 CHUNK_SIZE = 8096
 
+
 class Object(object):
     """
     Represents an object (BLOB).
@@ -43,26 +44,26 @@ class Object(object):
     def __init__(self, name, size, hash, extra, meta_data, container,
                  driver):
         """
-        @type name: C{str}
         @param name: Object name (must be unique per container).
+        @type  name: C{str}
 
-        @type size: C{int}
         @param size: Object size in bytes.
+        @type  size: C{int}
 
-        @type hash: C{string}
         @param hash Object hash.
+        @type  hash: C{str}
 
-        @type container: C{Container}
         @param container: Object container.
+        @type  container: L{Container}
 
-        @type extra: C{dict}
         @param extra: Extra attributes.
+        @type  extra: C{dict}
 
-        @type meta_data: C{dict}
         @param meta_data: Optional object meta data.
+        @type  meta_data: C{dict}
 
-        @type driver: C{StorageDriver}
         @param driver: StorageDriver instance.
+        @type  driver: L{StorageDriver}
         """
 
         self.name = name
@@ -95,6 +96,7 @@ class Object(object):
         return ('<Object: name=%s, size=%s, hash=%s, provider=%s ...>' %
                 (self.name, self.size, self.hash, self.driver.name))
 
+
 class Container(object):
     """
     Represents a container (bucket) which can hold multiple objects.
@@ -102,14 +104,14 @@ class Container(object):
 
     def __init__(self, name, extra, driver):
         """
-        @type name: C{str}
         @param name: Container name (must be unique).
+        @type name: C{str}
 
-        @type extra: C{dict}
         @param extra: Extra attributes.
+        @type extra: C{dict}
 
-        @type driver: C{StorageDriver}
         @param driver: StorageDriver instance.
+        @type driver: L{StorageDriver}
         """
 
         self.name = name
@@ -156,6 +158,7 @@ class Container(object):
         return ('<Container: name=%s, provider=%s>'
                 % (self.name, self.driver.name))
 
+
 class StorageDriver(BaseDriver):
     """
     A base StorageDriver to derive from.
@@ -166,15 +169,18 @@ class StorageDriver(BaseDriver):
     hash_type = 'md5'
     supports_chunked_encoding = False
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
-      super(StorageDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                          host=host, port=port, **kwargs)
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 **kwargs):
+        super(StorageDriver, self).__init__(key=key, secret=secret,
+                                            secure=secure, host=host,
+                                            port=port, **kwargs)
 
     def list_containers(self):
         """
         Return a list of containers.
 
         @return: A list of Container instances.
+        @rtype: C{list} of L{Container}
         """
         raise NotImplementedError(
             'list_containers not implemented for this driver')
@@ -183,10 +189,11 @@ class StorageDriver(BaseDriver):
         """
         Return a list of objects for the given container.
 
-        @type container: C{Container}
         @param container: Container instance
+        @type container: L{Container}
 
         @return: A list of Object instances.
+        @rtype: C{list} of L{Object}
         """
         raise NotImplementedError(
             'list_objects not implemented for this driver')
@@ -195,10 +202,11 @@ class StorageDriver(BaseDriver):
         """
         Return a container instance.
 
-        @type container_name: C{str}
         @param container_name: Container name.
+        @type container_name: C{str}
 
-        @return: C{Container} instance.
+        @return: L{Container} instance.
+        @rtype: L{Container}
         """
         raise NotImplementedError(
             'get_object not implemented for this driver')
@@ -207,10 +215,11 @@ class StorageDriver(BaseDriver):
         """
         Return a container CDN URL.
 
-        @type container: C{Container}
         @param container: Container instance
+        @type  container: L{Container}
 
         @return: A CDN URL for this container.
+        @rtype: C{str}
         """
         raise NotImplementedError(
             'get_container_cdn_url not implemented for this driver')
@@ -219,58 +228,78 @@ class StorageDriver(BaseDriver):
         """
         Return an object instance.
 
-        @type container_name: C{str}
         @param container_name: Container name.
+        @type  container_name: C{str}
 
-        @type object_name: C{str}
         @param object_name: Object name.
+        @type  object_name: C{str}
 
-        @return: C{Object} instance.
+        @return: L{Object} instance.
+        @rtype: L{Object}
         """
         raise NotImplementedError(
             'get_object not implemented for this driver')
 
     def get_object_cdn_url(self, obj):
         """
-        Return a container CDN URL.
+        Return a object CDN URL.
 
-        @type obj: C{Object}
         @param obj: Object instance
+        @type  obj: L{Object}
 
         @return: A CDN URL for this object.
+        @rtype: C{str}
         """
         raise NotImplementedError(
             'get_object_cdn_url not implemented for this driver')
 
     def enable_container_cdn(self, container):
+        """
+        Enable container CDN.
+
+        @param container: Container instance
+        @type  container: L{Container}
+
+        @rtype: C{bool}
+        """
         raise NotImplementedError(
             'enable_container_cdn not implemented for this driver')
 
     def enable_object_cdn(self, obj):
+        """
+        Enable object CDN.
+
+        @param obj: Object instance
+        @type  obj: L{Object}
+
+        @rtype: C{bool}
+        """
         raise NotImplementedError(
             'enable_object_cdn not implemented for this driver')
 
-    def download_object(self, obj, destination_path, overwrite_existing=False, delete_on_failure=True):
+    def download_object(self, obj, destination_path, overwrite_existing=False,
+                        delete_on_failure=True):
         """
         Download an object to the specified destination path.
 
-        @type obj: C{Object}
         @param obj: Object instance.
+        @type obj: L{Object}
 
-        @type destination_path: C{str}
         @param destination_path: Full path to a file or a directory where the
                                 incoming file will be saved.
+        @type destination_path: C{str}
 
+        @param overwrite_existing: True to overwrite an existing file,
+            defaults to False.
         @type overwrite_existing: C{bool}
-        @param overwrite_existing: True to overwrite an existing file, defaults to False.
 
-        @type delete_on_failure: C{bool}
         @param delete_on_failure: True to delete a partially downloaded file if
         the download was not successful (hash mismatch / file size).
+        @type delete_on_failure: C{bool}
 
-        @rtype: C{bool}
         @return: True if an object has been successfully downloaded, False
         otherwise.
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'download_object not implemented for this driver')
@@ -279,11 +308,13 @@ class StorageDriver(BaseDriver):
         """
         Return a generator which yields object data.
 
-        @type obj: C{Object}
         @param obj: Object instance
+        @type obj: L{Object}
 
-        @type chunk_size: C{int}
         @param chunk_size: Optional chunk size (in bytes).
+        @type chunk_size: C{int}
+
+        @rtype: C{object}
         """
         raise NotImplementedError(
             'download_object_as_stream not implemented for this driver')
@@ -293,17 +324,22 @@ class StorageDriver(BaseDriver):
         """
         Upload an object currently located on a disk.
 
-        @type file_path: C{str}
         @param file_path: Path to the object on disk.
+        @type file_path: C{str}
 
-        @type container: C{Container}
         @param container: Destination container.
+        @type container: L{Container}
 
-        @type object_name: C{str}
         @param object_name: Object name.
+        @type object_name: C{str}
 
-        @type extra: C{dict}
+        @param verify_hash: Verify hast
+        @type verify_hash: C{bool}
+
         @param extra: (optional) Extra attributes (driver specific).
+        @type extra: C{dict}
+
+        @rtype: C{object}
         """
         raise NotImplementedError(
             'upload_object not implemented for this driver')
@@ -320,9 +356,9 @@ class StorageDriver(BaseDriver):
         Otherwise if a provider doesn't support it, iterator will be exhausted
         so a total size for data to be uploaded can be determined.
 
-        Note: Exhausting the iterator means that the whole data must be buffered
-        in memory which might result in memory exhausting when uploading a very
-        large object.
+        Note: Exhausting the iterator means that the whole data must be
+        buffered in memory which might result in memory exhausting when
+        uploading a very large object.
 
         If a file is located on a disk you are advised to use upload_object
         function which uses fs.stat function to determine the file size and it
@@ -331,17 +367,18 @@ class StorageDriver(BaseDriver):
         @type iterator: C{object}
         @param iterator: An object which implements the iterator interface.
 
-        @type container: C{Container}
+        @type container: L{Container}
         @param container: Destination container.
 
         @type object_name: C{str}
         @param object_name: Object name.
 
         @type extra: C{dict}
-        @param extra: (optional) Extra attributes (driver specific).
+        @param extra: (optional) Extra attributes (driver specific). Note:
+            This dictionary must contain a 'content_type' key which represents
+            a content type of the stored object.
 
-        Note: This dictionary must contain a 'content_type' key which represents
-        a content type of the stored object.
+        @rtype: C{object}
         """
         raise NotImplementedError(
             'upload_object_via_stream not implemented for this driver')
@@ -350,10 +387,11 @@ class StorageDriver(BaseDriver):
         """
         Delete an object.
 
-        @type obj: C{Object}
+        @type obj: L{Object}
         @param obj: Object instance.
 
         @return: C{bool} True on success.
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'delete_object not implemented for this driver')
@@ -366,6 +404,7 @@ class StorageDriver(BaseDriver):
         @param container_name: Container name.
 
         @return: C{Container} instance on success.
+        @rtype: L{Container}
         """
         raise NotImplementedError(
             'create_container not implemented for this driver')
@@ -374,11 +413,11 @@ class StorageDriver(BaseDriver):
         """
         Delete a container.
 
-        @type container: C{Container}
+        @type container: L{Container}
         @param container: Container instance
 
-        @rtype: C{bool}
         @return: True on success, False otherwise.
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'delete_container not implemented for this driver')
@@ -392,20 +431,22 @@ class StorageDriver(BaseDriver):
         @param obj: Object instance.
 
         @type callback: C{Function}
-        @param callback: Function which is called with the passed callback_kwargs
+        @param callback: Function which is called with the passed
+            callback_kwargs
 
         @type callback_kwargs: C{dict}
-        @param callback_kwargs: Keyword arguments which are passed to the callback.
+        @param callback_kwargs: Keyword arguments which are passed to the
+             callback.
 
-        @typed response: C{Response}
+        @typed response: L{Response}
         @param response: Response instance.
 
         @type success_status_code: C{int}
         @param success_status_code: Status code which represents a successful
                                     transfer (defaults to httplib.OK)
 
-        @rtype: C{bool}
         @return: True on success, False otherwise.
+        @rtype: C{bool}
         """
         success_status_code = success_status_code or httplib.OK
 
@@ -425,27 +466,29 @@ class StorageDriver(BaseDriver):
         """
         Save object to the provided path.
 
-        @type response: C{RawResponse}
+        @type response: L{RawResponse}
         @param response: RawResponse instance.
 
-        @type obj: C{Object}
+        @type obj: L{Object}
         @param obj: Object instance.
 
-        @type destination_path: C{Str}
+        @type destination_path: C{str}
         @param destination_path: Destination directory.
 
         @type delete_on_failure: C{bool}
         @param delete_on_failure: True to delete partially downloaded object if
                                   the download fails.
+
         @type overwrite_existing: C{bool}
         @param overwrite_existing: True to overwrite a local path if it already
                                    exists.
 
         @type chunk_size: C{int}
-        @param chunk_size: Optional chunk size (defaults to L{libcloud.storage.base.CHUNK_SIZE}, 8kb)
+        @param chunk_size: Optional chunk size
+            (defaults to L{libcloud.storage.base.CHUNK_SIZE}, 8kb)
 
-        @rtype: C{bool}
         @return: True on success, False otherwise.
+        @rtype: C{bool}
         """
 
         chunk_size = chunk_size or CHUNK_SIZE
@@ -513,7 +556,7 @@ class StorageDriver(BaseDriver):
             raise OSError('File %s does not exist' % (file_path))
 
         if iterator is not None and not hasattr(iterator, 'next') and not \
-           hasattr(iterator, '__next__'):
+                hasattr(iterator, '__next__'):
             raise AttributeError('iterator object must implement next() ' +
                                  'method.')
 
@@ -536,9 +579,10 @@ class StorageDriver(BaseDriver):
                 headers['Transfer-Encoding'] = 'chunked'
                 upload_func_kwargs['chunked'] = True
             else:
-                # Chunked transfer encoding is not supported. Need to buffer all
-                # the data in memory so we can determine file size.
-                iterator = libcloud.utils.files.read_in_chunks(iterator=iterator)
+                # Chunked transfer encoding is not supported. Need to buffer
+                # all the data in memory so we can determine file size.
+                iterator = libcloud.utils.files.read_in_chunks(
+                    iterator=iterator)
                 data = libcloud.utils.files.exhaust_iterator(iterator=iterator)
 
                 file_size = len(data)
@@ -556,14 +600,15 @@ class StorageDriver(BaseDriver):
                                            headers=headers, raw=True)
 
         upload_func_kwargs['response'] = response
-        success, data_hash, bytes_transferred = upload_func(**upload_func_kwargs)
+        success, data_hash, bytes_transferred = upload_func(
+            **upload_func_kwargs)
 
         if not success:
-            raise LibcloudError(value='Object upload failed, Perhaps a timeout?',
-                                driver=self)
+            raise LibcloudError(
+                value='Object upload failed, Perhaps a timeout?', driver=self)
 
-        result_dict = { 'response': response, 'data_hash': data_hash,
-                        'bytes_transferred': bytes_transferred }
+        result_dict = {'response': response, 'data_hash': data_hash,
+                       'bytes_transferred': bytes_transferred}
         return result_dict
 
     def _upload_data(self, response, data, calculate_hash=True):
@@ -647,7 +692,7 @@ class StorageDriver(BaseDriver):
         try:
             chunk = next(generator)
         except StopIteration:
-            # Special case when StopIteration is thrown on the first iteration -
+            # Special case when StopIteration is thrown on the first iteration
             # create a 0-byte long object
             chunk = ''
             if chunked:

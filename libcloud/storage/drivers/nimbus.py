@@ -80,6 +80,7 @@ class NimbusConnection(ConnectionUserAndKey):
 
 class NimbusStorageDriver(StorageDriver):
     name = 'Nimbus'
+    website = 'http://www.nimbusproject.org/'
     connectionCls = NimbusConnection
 
     def __init__(self, *args, **kwargs):
