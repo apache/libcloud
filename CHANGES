@@ -11,6 +11,9 @@ Changes with Apache Libcloud in development:
       LIBCLOUD-239
       [Michal Galet]
 
+    - Allow user to pass 'timeout' argument to the 'deploy_node' method.
+      [Tomaz Muraus]
+
   *) Storage
 
     - Add the following new methods to the CloudFiles driver:
