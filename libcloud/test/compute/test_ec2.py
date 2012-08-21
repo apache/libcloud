@@ -221,6 +221,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
+    def test_ex_describe_all_keypairs(self):
+        keys = self.driver.ex_describe_all_keypairs()
+        self.assertEqual(keys, ['gsg-keypair'])
+
     def test_ex_describe_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         tags = self.driver.ex_describe_tags(resource=node)
@@ -393,6 +397,10 @@ class EC2MockHttp(MockHttp):
 
     def _TerminateInstances(self, method, url, body, headers):
         body = self.fixtures.load('terminate_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeKeyPairs(self, method, url, body, headers):
+        body = self.fixtures.load('describe_key_pairs.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeTags(self, method, url, body, headers):

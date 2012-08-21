@@ -644,6 +644,28 @@ class EC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
+    def ex_describe_all_keypairs(self):
+        """
+        Describes all keypairs.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @rtype: C{list}
+        """
+
+        params = {
+            'Action': 'DescribeKeyPairs'
+        }
+
+        response = self.connection.request(self.path, params=params).object
+        names = []
+        for elem in findall(element=response, xpath='keySet/item',
+                            namespace=NAMESPACE):
+            name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
+            names.append(name)
+
+        return names
+
     def ex_describe_keypairs(self, name):
         """Describes a keypair by name
 
