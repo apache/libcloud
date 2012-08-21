@@ -139,6 +139,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(len(locations) > 0)
         self.assertTrue(locations[0].availability_zone != None)
 
+    def test_list_security_groups(self):
+        groups = self.driver.ex_list_security_groups()
+        self.assertEqual(groups, ['WebServers', 'RangedPortsBySource'])
+
+    def test_authorize_security_group(self):
+        resp = self.driver.ex_authorize_security_group('TestGroup', '22', '22',
+                                                       '0.0.0.0/0')
+        self.assertTrue(resp)
+
     def test_reboot_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.reboot_node(node)
@@ -356,6 +365,14 @@ class EC2MockHttp(MockHttp):
 
     def _StopInstances(self, method, url, body, headers):
         body = self.fixtures.load('stop_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeSecurityGroups(self, method, url, body, headers):
+        body = self.fixtures.load('describe_security_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _AuthorizeSecurityGroupIngress(self, method, url, body, headers):
+        body = self.fixtures.load('authorize_security_group_ingress.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeImages(self, method, url, body, headers):

@@ -14,6 +14,10 @@ Changes with Apache Libcloud in development:
     - Allow user to pass 'timeout' argument to the 'deploy_node' method.
       [Tomaz Muraus]
 
+    - Add ex_list_security_groups and ex_authorize_security_group methods to
+      the EC2 driver.
+      [Nick Bailey]
+
   *) Storage
 
     - Add the following new methods to the CloudFiles driver:
