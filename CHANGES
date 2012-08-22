@@ -19,6 +19,10 @@ Changes with Apache Libcloud in development:
       LIBCLOUD-243
       [Nick Bailey]
 
+    - Add new methods for managing storage volumes and other extenstion methods
+      to the IBM SCE driver. ; LIBCLOUD-242
+      [Sengor Kusturica]
+
   *) Storage
 
     - Add the following new methods to the CloudFiles driver:
