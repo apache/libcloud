@@ -28,6 +28,7 @@ class BrightboxLBDriver(Driver):
     connectionCls = BrightboxConnection
 
     name = 'Brightbox'
+    website = 'http://www.brightbox.co.uk/'
 
     LB_STATE_MAP = {
         'creating': State.PENDING,
@@ -55,13 +56,14 @@ class BrightboxLBDriver(Driver):
         return list(map(self._to_balancer, data))
 
     def create_balancer(self, name, port, protocol, algorithm, members):
-        response = self._post('/%s/load_balancers' % API_VERSION, {
-          'name': name,
-          'nodes': list(map(self._member_to_node, members)),
-          'policy': self._algorithm_to_value(algorithm),
-          'listeners': [{'in': port, 'out': port, 'protocol': protocol}],
-          'healthcheck': {'type': protocol, 'port': port}
-        })
+        response = self._post(
+            '/%s/load_balancers' % API_VERSION,
+            {'name': name,
+             'nodes': list(map(self._member_to_node, members)),
+             'policy': self._algorithm_to_value(algorithm),
+             'listeners': [{'in': port, 'out': port, 'protocol': protocol}],
+             'healthcheck': {'type': protocol, 'port': port}}
+        )
 
         return self._to_balancer(response.object)
 
@@ -73,9 +75,8 @@ class BrightboxLBDriver(Driver):
         return response.status == httplib.ACCEPTED
 
     def get_balancer(self, balancer_id):
-        data = self.connection.request('/%s/load_balancers/%s' % (API_VERSION,
-                                                         balancer_id)).object
-
+        data = self.connection.request(
+            '/%s/load_balancers/%s' % (API_VERSION, balancer_id)).object
         return self._to_balancer(data)
 
     def balancer_attach_compute_node(self, balancer, node):
@@ -101,7 +102,8 @@ class BrightboxLBDriver(Driver):
 
         data = self.connection.request(path).object
 
-        return list(map(self._node_to_member, data['nodes']))
+        func = lambda data: self._node_to_member(data, balancer)
+        return list(map(func, data['nodes']))
 
     def _post(self, path, data={}):
         headers = {'Content-Type': 'application/json'}
@@ -122,8 +124,8 @@ class BrightboxLBDriver(Driver):
     def _member_to_node(self, member):
         return {'node': member.id}
 
-    def _node_to_member(self, data):
-        return Member(data['id'], None, None)
+    def _node_to_member(self, data, balancer):
+        return Member(id=data['id'], ip=None, port=None, balancer=balancer)
 
     def _public_ip(self, data):
         if len(data['cloud_ips']) > 0:

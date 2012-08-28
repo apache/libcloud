@@ -1,4 +1,4 @@
-<Vdc status="1" name="MyOrg" id="urn:vcloud:vdc:3d9ae28c-1de9-4307-8107-9356ff8ba6d0" type="application/vnd.vmware.vcloud.vdc+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0" xsi:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://65.41.64.27/api/v1.5/schema/master.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Vdc status="1" name="MyVdc" id="urn:vcloud:vdc:3d9ae28c-1de9-4307-8107-9356ff8ba6d0" type="application/vnd.vmware.vcloud.vdc+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0" xsi:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://65.41.64.27/api/v1.5/schema/master.xsd" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <Link rel="up" type="application/vnd.vmware.vcloud.org+xml" href="https://vm-vcloud/api/org/96726c78-4ae3-402f-b08b-7a78c6903d2a"/>
    <Link rel="down" type="application/vnd.vmware.vcloud.metadata+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0/metadata"/>
    <Link rel="add" type="application/vnd.vmware.vcloud.uploadVAppTemplateParams+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0/action/uploadVAppTemplate"/>
@@ -9,27 +9,27 @@
    <Link rel="add" type="application/vnd.vmware.vcloud.cloneMediaParams+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0/action/cloneMedia"/>
    <Link rel="add" type="application/vnd.vmware.vcloud.captureVAppParams+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0/action/captureVApp"/>
    <Link rel="add" type="application/vnd.vmware.vcloud.composeVAppParams+xml" href="https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0/action/composeVApp"/>
-   <AllocationModel>AllocationVApp</AllocationModel>
+   <AllocationModel>AllocationPool</AllocationModel>
    <StorageCapacity>
       <Units>MB</Units>
-      <Allocated>0</Allocated>
-      <Limit>0</Limit>
-      <Used>126976</Used>
+      <Allocated>5120000</Allocated>
+      <Limit>5120000</Limit>
+      <Used>1984512</Used>
       <Overhead>0</Overhead>
    </StorageCapacity>
    <ComputeCapacity>
       <Cpu>
          <Units>MHz</Units>
-         <Allocated>0</Allocated>
-         <Limit>0</Limit>
-         <Used>6000</Used>
+         <Allocated>130000</Allocated>
+         <Limit>160000</Limit>
+         <Used>0</Used>
          <Overhead>0</Overhead>
       </Cpu>
       <Memory>
          <Units>MB</Units>
-         <Allocated>0</Allocated>
-         <Limit>0</Limit>
-         <Used>4255</Used>
+         <Allocated>527360</Allocated>
+         <Limit>527360</Limit>
+         <Used>130752</Used>
          <Overhead>0</Overhead>
       </Memory>
    </ComputeCapacity>

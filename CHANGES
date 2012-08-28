@@ -7,6 +7,43 @@ Changes with Apache Libcloud in development:
     - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
       [Brian McDaniel]
 
+    - Add capacity information to Vdc objects and implement power operations. ;
+      LIBCLOUD-239
+      [Michal Galet]
+
+    - Allow user to pass 'timeout' argument to the 'deploy_node' method.
+      [Tomaz Muraus]
+
+    - Add ex_list_security_groups, ex_authorize_security_group and
+      ex_describe_all_keypairs methods to the EC2 driver. ; LIBCLOUD-241,
+      LIBCLOUD-243
+      [Nick Bailey]
+
+    - Add new methods for managing storage volumes and other extenstion methods
+      to the IBM SCE driver. ; LIBCLOUD-242
+      [Sengor Kusturica]
+
+  *) Storage
+
+    - Add the following new methods to the CloudFiles driver:
+      ex_set_account_metadata_temp_url_key, ex_get_object_temp_url. ; GITHUB-72
+      [Shawn Smith]
+
+  *) Load-balancer
+
+    - Add 'balancer' attribute to the Member instance. This attribute refers to
+      the LoadBalancer instance this member belongs to.
+      [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.11.1:
+
+  *) General
+
+    - Fix hostname validation in the SSL verification code (CVE-2012-3446).
+
+      Reported by researchers from the University of Texas at Austin (Martin
+      Georgiev, Suman Jana and Vitaly Shmatikov).
+
 Changes with Apache Libcloud 0.11.0:
 
   *) Compute
@@ -146,7 +183,7 @@ Changes with Apache Libcloud 0.11.0:
       CloudFiles driver.
       [Tomaz Muraus]
 
-    - Fix a bug with content_type and and encoding of object and path names in 
+    - Fix a bug with content_type and and encoding of object and path names in
       the Atmos driver.
       [Russell Keith-Magee]
 
@@ -241,7 +278,7 @@ Changes with Apache Libcloud 0.10.1:
 
     - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver. ;
       LIBCLOUD-193
-      [Shawn Smith] 
+      [Shawn Smith]
 
     - Include 'password' in the node extra dictionary when calling deploy_node
       if the password auth is used.
@@ -426,7 +463,7 @@ Changes with Apache Libcloud 0.8.0:
      - Enable ex_delete_image method in the OpenStack 1.1 driver.
        [Shawn Smith]
 
-     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method 
+     - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method
        ; LIBCLOUD-138
        [Shawn Smith]
 

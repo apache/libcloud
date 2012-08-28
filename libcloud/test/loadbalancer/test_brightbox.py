@@ -74,6 +74,7 @@ class BrightboxLBTests(unittest.TestCase):
         members = balancer.list_members()
 
         self.assertEquals(len(members), 1)
+        self.assertEquals(members[0].balancer, balancer)
         self.assertEquals('srv-lv426', members[0].id)
 
     def test_balancer_attach_member(self):
