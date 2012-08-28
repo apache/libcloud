@@ -68,7 +68,6 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
                                                                headers=None,
                                                                method=None,
                                                                context=context)
-        print result
         return result['jobresult']
 
     def get_request_kwargs(self, action, params=None, data='', headers=None,
@@ -101,7 +100,6 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
                 "Unknown response format",
                 body=result.body,
                 driver=self.driver)
-        print result.object
         result = result.object[command]
         return result
 

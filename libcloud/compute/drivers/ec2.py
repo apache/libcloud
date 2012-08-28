@@ -1013,6 +1013,33 @@ class EC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
+    def ex_modify_image_attribute(self, image_id, attributes):
+        """
+        Modify image attributes.
+        A list of valid attributes can be found at http://goo.gl/Ne9Bv
+
+        @param      image_id: Image id
+        @type       image_id: L{str}
+
+        @param      attributes: Dictionary with node attributes
+        @type       attributes: C{dict}
+
+        @return: True on success, False otherwise.
+        @rtype: C{bool}
+        """
+        attributes = attributes or {}
+        attributes.update({'ImageId': image_id})
+
+        params = {'Action': 'ModifyImageAttribute'}
+        params.update(attributes)
+
+        result = self.connection.request(self.path,
+            params=params.copy()).object
+
+        element = findtext(element=result, xpath='return',
+            namespace=NAMESPACE)
+        return element == 'true'
+
     def ex_change_node_size(self, node, new_size):
         """
         Change the node size.
