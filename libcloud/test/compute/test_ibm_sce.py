@@ -26,7 +26,7 @@ from libcloud.test.secrets import IBM_PARAMS
 
 class IBMTests(unittest.TestCase, TestCaseMixin):
     """
-    Tests the IBM Developer Cloud driver.
+    Tests the IBM SmartCloud Enterprise driver.
     """
 
     def setUp(self):
@@ -117,7 +117,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_destroy_node(self):
-        # Delete existant node
+        # Delete existent node
         nodes = self.driver.list_nodes()            # retrieves 3 nodes
         self.assertEquals(len(nodes), 3)
         IBMMockHttp.type = 'DELETE'
@@ -154,6 +154,71 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             self.assertEquals(e.args[0], 'Error 412: Instance must be in the Active state')
         else:
             self.fail('test should have thrown')
+
+    def test_list_volumes(self):
+        ret = self.driver.list_volumes()
+        self.assertEqual(len(ret), 1)
+        self.assertEqual(ret[0].name, 'libcloudvol')
+        self.assertEqual(ret[0].extra['location'], '141')
+        self.assertEqual(ret[0].size, '2048')
+        self.assertEqual(ret[0].id, '39281')
+
+    def test_attach_volume(self):
+        vols = self.driver.list_volumes()
+        nodes = self.driver.list_nodes()
+        IBMMockHttp.type = 'ATTACH'
+        ret = self.driver.attach_volume(nodes[0], vols[0])
+        self.assertTrue(ret)
+
+    def test_create_volume(self):
+        IBMMockHttp.type = 'CREATE'
+        ret = self.driver.create_volume('256',
+                                        'test-volume',
+                                        location='141',
+                                        format='RAW',
+                                        offering_id='20001208')
+        self.assertEqual(ret.id, '39293')
+        self.assertEqual(ret.size, '256')
+        self.assertEqual(ret.name, 'test-volume')
+        self.assertEqual(ret.extra['location'], '141')
+
+    def test_destroy_volume(self):
+        vols = self.driver.list_volumes()
+        IBMMockHttp.type = 'DESTROY'
+        ret = self.driver.destroy_volume(vols[0])
+        self.assertTrue(ret)
+
+    def test_detach_volume(self):
+        nodes = self.driver.list_nodes()
+        vols = self.driver.list_volumes()
+        IBMMockHttp.type = 'DETACH'
+        ret = self.driver.detach_volume(nodes[0], vols[0])
+        self.assertTrue(ret)
+
+    def test_ex_allocate_address(self):
+        IBMMockHttp.type = 'ALLOCATE'
+        ret = self.driver.ex_allocate_address('141', '20001223')
+        self.assertEqual(ret.id, '292795')
+        self.assertEqual(ret.state, '0')
+        self.assertEqual(ret.options['location'], '141')
+
+    def test_ex_delete_address(self):
+        IBMMockHttp.type = 'DELETE'
+        ret = self.driver.ex_delete_address('292795')
+        self.assertTrue(ret)
+
+    def test_ex_list_addresses(self):
+        ret = self.driver.ex_list_addresses()
+        self.assertEqual(ret[0].ip, '170.225.160.218')
+        self.assertEqual(ret[0].options['location'], '141')
+        self.assertEqual(ret[0].id, '292795')
+        self.assertEqual(ret[0].state, '2')
+
+    def test_ex_list_storage_offerings(self):
+        ret = self.driver.ex_list_storage_offerings()
+        self.assertEqual(ret[0].name, 'Small')
+        self.assertEqual(ret[0].location, '61')
+        self.assertEqual(ret[0].id, '20001208')
 
 class IBMMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ibm_sce')
@@ -197,6 +262,42 @@ class IBMMockHttp(MockHttp):
 
     def _computecloud_enterprise_api_rest_20100331_instances_CREATE_INVALID(self, method, url, body, headers):
         return (412, 'Error 412: No DataCenter with id: 3', {}, 'Precondition Failed')
+
+    def _computecloud_enterprise_api_rest_20100331_storage(self, method, url, body, headers):
+        body = self.fixtures.load('list_volumes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_instances_26557_ATTACH(self, method, url, body, headers):
+        body = self.fixtures.load('attach_volume.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_storage_CREATE(self, method, url, body, headers):
+        body = self.fixtures.load('create_volume.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_storage_39281_DESTROY(self, method, url, body, headers):
+        body = self.fixtures.load('destroy_volume.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_instances_26557_DETACH(self, method, url, body, headers):
+        body = self.fixtures.load('detach_volume.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_addresses_ALLOCATE(self, method, url, body, headers):
+        body = self.fixtures.load('allocate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_addresses_292795_DELETE(self, method, url, body, headers):
+        body = self.fixtures.load('delete_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_addresses(self, method, url, body, headers):
+        body = self.fixtures.load('list_addresses.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _computecloud_enterprise_api_rest_20100331_offerings_storage(self, method, url, body, headers):
+        body = self.fixtures.load('list_storage_offerings.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     # This is only to accomodate the response tests built into test\__init__.py
     def _computecloud_enterprise_api_rest_20100331_instances_26557(self, method, url, body, headers):

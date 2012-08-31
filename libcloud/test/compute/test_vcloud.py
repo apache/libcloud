@@ -132,7 +132,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['65.41.67.2'])
         self.assertEqual(node.private_ips, ['65.41.67.2'])
-        self.assertEqual(node.extra, {'vms': [{
+        self.assertEqual(node.extra, {'vdc': 'MyVdc',
+            'vms': [{
             'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045',
             'name': 'testVm',
             'state': NodeState.RUNNING,
@@ -145,7 +146,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['192.168.0.103'])
         self.assertEqual(node.private_ips, ['192.168.0.100'])
-        self.assertEqual(node.extra, {'vms': [{
+        self.assertEqual(node.extra, {'vdc': 'MyVdc',
+            'vms': [{
             'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046',
             'name': 'testVm2',
             'state': NodeState.RUNNING,
@@ -217,6 +219,30 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_set_vm_memory(self):
         self.driver.ex_set_vm_memory('https://test/api/vApp/vm-test', 1024)
+
+    def test_vdcs(self):
+        vdcs = self.driver.vdcs
+        self.assertEqual(len(vdcs), 1)
+        self.assertEqual(vdcs[0].id, 'https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0')
+        self.assertEqual(vdcs[0].name, 'MyVdc')
+        self.assertEqual(vdcs[0].allocation_model, 'AllocationPool')
+        self.assertEqual(vdcs[0].storage.limit, 5120000)
+        self.assertEqual(vdcs[0].storage.used, 1984512)
+        self.assertEqual(vdcs[0].storage.units, 'MB')
+        self.assertEqual(vdcs[0].cpu.limit, 160000)
+        self.assertEqual(vdcs[0].cpu.used, 0)
+        self.assertEqual(vdcs[0].cpu.units, 'MHz')
+        self.assertEqual(vdcs[0].memory.limit, 527360)
+        self.assertEqual(vdcs[0].memory.used, 130752)
+        self.assertEqual(vdcs[0].memory.units, 'MB')
+
+    def test_ex_list_nodes(self):
+        self.assertEqual(len(self.driver.ex_list_nodes()), len(self.driver.list_nodes()))
+
+    def test_ex_power_off(self):
+        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        self.driver.ex_power_off_node(node)
+
 
 
 class TerremarkMockHttp(MockHttp):
@@ -316,8 +342,7 @@ class VCloud_1_5_MockHttp(MockHttp):
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_powerOn(self, method, url, body, headers):
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_powerOn.xml')
-        return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
+        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(method, url, body, headers)
 
     # Clone
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_cloneVApp(self, method, url, body, headers):
@@ -356,8 +381,7 @@ class VCloud_1_5_MockHttp(MockHttp):
         return status, body, headers, httplib.responses[status]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_reset(self, method, url, body, headers):
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_reset.xml')
-        return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
+        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(method, url, body, headers)
 
     def _api_task_b034df55_fe81_4798_bc81_1f0fd0ead450(self, method, url, body, headers):
         body = self.fixtures.load('api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
@@ -431,6 +455,14 @@ class VCloud_1_5_MockHttp(MockHttp):
             body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_memory.xml')
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_powerOff(self, method, url, body, headers):
+        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(method, url, body, headers)
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(self, method, url, body, headers):
+        assert method == 'POST'
+        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_all.xml')
+        return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

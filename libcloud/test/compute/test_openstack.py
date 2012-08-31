@@ -656,8 +656,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
-            self.assertEqual(size.price, 0,
-                             'Size price should be zero by default')
 
     def test_list_sizes_with_specified_pricing(self):
 

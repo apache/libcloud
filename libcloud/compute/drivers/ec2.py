@@ -644,6 +644,28 @@ class EC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
+    def ex_describe_all_keypairs(self):
+        """
+        Describes all keypairs.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @rtype: C{list}
+        """
+
+        params = {
+            'Action': 'DescribeKeyPairs'
+        }
+
+        response = self.connection.request(self.path, params=params).object
+        names = []
+        for elem in findall(element=response, xpath='keySet/item',
+                            namespace=NAMESPACE):
+            name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
+            names.append(name)
+
+        return names
+
     def ex_describe_keypairs(self, name):
         """Describes a keypair by name
 
@@ -653,7 +675,6 @@ class EC2NodeDriver(NodeDriver):
         @type       name: C{str}
 
         @rtype: C{dict}
-
         """
 
         params = {
@@ -668,13 +689,34 @@ class EC2NodeDriver(NodeDriver):
             'keyName': key_name
         }
 
+    def ex_list_security_groups(self):
+        """
+        List existing Security Groups.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @rtype: C{list} of C{str}
+        """
+        params = {'Action': 'DescribeSecurityGroups'}
+        response = self.connection.request(self.path, params=params).object
+
+        groups = []
+        for group in findall(element=response, xpath='securityGroupInfo/item',
+                             namespace=NAMESPACE):
+            name = findtext(element=group, xpath='groupName',
+                            namespace=NAMESPACE)
+            groups.append(name)
+
+        return groups
+
     def ex_create_security_group(self, name, description):
-        """Creates a new Security Group
+        """
+        Creates a new Security Group
 
         @note: This is a non-standard extension API, and only works for EC2.
 
         @param      name: The name of the security group to Create.
-                     This must be unique.
+                          This must be unique.
         @type       name: C{str}
 
         @param      description: Human readable description of a Security
@@ -687,6 +729,46 @@ class EC2NodeDriver(NodeDriver):
                   'GroupName': name,
                   'GroupDescription': description}
         return self.connection.request(self.path, params=params).object
+
+    def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
+                                    protocol='tcp'):
+        """
+        Edit a Security Group to allow specific traffic.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @param      name: The name of the security group to edit
+        @type       name: C{str}
+
+        @param      from_port: The beginning of the port range to open
+        @type       from_port: C{str}
+
+        @param      end_port: The end of the port range to open
+        @type       end_port: C{str}
+
+        @param      cidr_ip: The ip to allow traffic for.
+        @type       cidr_ip: C{str}
+
+        @param      protocol: tcp/udp/icmp
+        @type       protocol: C{str}
+
+        @rtype: C{boolean}
+        """
+
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupName': name,
+                  'IpProtocol': protocol,
+                  'FromPort': str(from_port),
+                  'ToPort': str(to_port),
+                  'CidrIp': cidr_ip}
+        try:
+            resp = self.connection.request(self.path, params=params.copy()).object
+            return bool(findtext(element=resp, xpath='return',
+                                 namespace=NAMESPACE))
+        except Exception:
+            e = sys.exc_info()[1]
+            if e.args[0].find('InvalidPermission.Duplicate') == -1:
+                raise e
 
     def ex_authorize_security_group_permissive(self, name):
         """

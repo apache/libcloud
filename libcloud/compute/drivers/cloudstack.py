@@ -163,6 +163,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return locations
 
     def list_nodes(self):
+        """
+        @inherits: L{NodeDriver.list_nodes}
+        @rtype: C{list} of L{CloudStackNode}
+        """
         vms = self._sync_request('listVirtualMachines')
         addrs = self._sync_request('listPublicIpAddresses')
 
@@ -222,6 +226,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         return sizes
 
     def create_node(self, name, size, image, location=None, **kwargs):
+        """
+        @inherits: L{NodeDriver.create_node}
+        @rtype: L{CloudStackNode}
+        """
         extra_args = {}
         if location is None:
             location = self.list_locations()[0]
@@ -252,10 +260,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         )
 
     def destroy_node(self, node):
+        """
+        @inherits: L{NodeDriver.reboot_node}
+        @type node: L{CloudStackNode}
+        """
         self._async_request('destroyVirtualMachine', id=node.id)
         return True
 
     def reboot_node(self, node):
+        """
+        @inherits: L{NodeDriver.reboot_node}
+        @type node: L{CloudStackNode}
+        """
         self._async_request('rebootVirtualMachine', id=node.id)
         return True
 
@@ -306,6 +322,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                              extra=dict(name=volumeResponse['name']))
 
     def attach_volume(self, node, volume, device=None):
+        """
+        @inherits: L{NodeDriver.attach_volume}
+        @type node: L{CloudStackNode}
+        """
         # TODO Add handling for device name
         self._async_request('attachVolume', id=volume.id,
                             virtualMachineId=node.id)
@@ -323,8 +343,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         "Allocate a public IP and bind it to a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        @param node: Node which should be used
+        @type  node: L{CloudStackNode}
 
         @rtype: L{CloudStackAddress}
         """
@@ -347,11 +367,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Release a public IP.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        @param node: Node which should be used
+        @type  node: L{CloudStackNode}
 
-        @param      address: CloudStackAddress which should be used
-        @type       address: L{CloudStackAddress}
+        @param address: CloudStackAddress which should be used
+        @type  address: L{CloudStackAddress}
 
         @rtype: C{bool}
         """
@@ -368,8 +388,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         "Add a NAT/firewall forwarding rule.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        @param node: Node which should be used
+        @type  node: L{CloudStackNode}
 
         @param      address: CloudStackAddress which should be used
         @type       address: L{CloudStackAddress}
@@ -409,8 +429,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Remove a NAT/firewall forwarding rule.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        @param node: Node which should be used
+        @type  node: L{CloudStackNode}
 
         @param rule: Forwarding rule which should be used
         @type rule: L{CloudStackForwardingRule}

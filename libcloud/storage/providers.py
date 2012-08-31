@@ -46,5 +46,6 @@ DRIVERS = {
         ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver')
 }
 
+
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)

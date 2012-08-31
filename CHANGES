@@ -7,11 +7,33 @@ Changes with Apache Libcloud in development:
     - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
       [Brian McDaniel]
 
+    - Add capacity information to Vdc objects and implement power operations. ;
+      LIBCLOUD-239
+      [Michal Galet]
+
+    - Allow user to pass 'timeout' argument to the 'deploy_node' method.
+      [Tomaz Muraus]
+
+    - Add ex_list_security_groups, ex_authorize_security_group and
+      ex_describe_all_keypairs methods to the EC2 driver. ; LIBCLOUD-241,
+      LIBCLOUD-243
+      [Nick Bailey]
+
+    - Add new methods for managing storage volumes and other extenstion methods
+      to the IBM SCE driver. ; LIBCLOUD-242
+      [Sengor Kusturica]
+
   *) Storage
 
     - Add the following new methods to the CloudFiles driver:
       ex_set_account_metadata_temp_url_key, ex_get_object_temp_url. ; GITHUB-72
       [Shawn Smith]
+
+  *) Load-balancer
+
+    - Add 'balancer' attribute to the Member instance. This attribute refers to
+      the LoadBalancer instance this member belongs to.
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.11.1:
 

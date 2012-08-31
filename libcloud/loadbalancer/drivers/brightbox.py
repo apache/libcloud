@@ -102,7 +102,8 @@ class BrightboxLBDriver(Driver):
 
         data = self.connection.request(path).object
 
-        return list(map(self._node_to_member, data['nodes']))
+        func = lambda data: self._node_to_member(data, balancer)
+        return list(map(func, data['nodes']))
 
     def _post(self, path, data={}):
         headers = {'Content-Type': 'application/json'}
@@ -123,8 +124,8 @@ class BrightboxLBDriver(Driver):
     def _member_to_node(self, member):
         return {'node': member.id}
 
-    def _node_to_member(self, data):
-        return Member(data['id'], None, None)
+    def _node_to_member(self, data, balancer):
+        return Member(id=data['id'], ip=None, port=None, balancer=balancer)
 
     def _public_ip(self, data):
         if len(data['cloud_ips']) > 0:

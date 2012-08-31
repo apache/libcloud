@@ -667,6 +667,7 @@ class RackspaceLBTests(unittest.TestCase):
         members = balancer.list_members()
 
         self.assertEquals(len(members), 3)
+        self.assertEquals(members[0].balancer, balancer)
         self.assertEquals(expected, set(["%s:%s" % (member.ip, member.port) for
                                          member in members]))
 

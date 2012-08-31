@@ -128,6 +128,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
 
 class GoogleStorageDriver(S3StorageDriver):
     name = 'Google Storage'
+    website = 'http://cloud.google.com/'
     connectionCls = GoogleStorageConnection
     hash_type = 'md5'
     namespace = NAMESPACE

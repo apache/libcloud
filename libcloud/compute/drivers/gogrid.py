@@ -169,6 +169,10 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         return images
 
     def list_nodes(self):
+        """
+        @inherits: L{NodeDriver.list_nodes}
+        @rtype: C{list} of L{GoGridNode}
+        """
         passwords_map = {}
 
         res = self._server_list()
@@ -188,6 +192,10 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
                 for el in res['list']]
 
     def reboot_node(self, node):
+        """
+        @inherits: L{NodeDriver.reboot_node}
+        @type node: L{GoGridNode}
+        """
         id = node.id
         power = 'restart'
         res = self._server_power(id, power)
@@ -196,6 +204,10 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         return True
 
     def destroy_node(self, node):
+        """
+        @inherits: L{NodeDriver.reboot_node}
+        @type node: L{GoGridNode}
+        """
         id = node.id
         res = self._server_delete(id)
         if not res.success():
@@ -268,7 +280,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
             specified, first available IP address will be picked
         @type       ex_ip: C{str}
 
-        @rtype: L{Node}
+        @rtype: L{GoGridNode}
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -301,6 +313,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         @keyword    ex_ip: Public IP address to use for a Node. If not
                     specified, first available IP address will be picked
         @type       ex_ip: C{str}
+
+        @rtype: L{GoGridNode}
         """
         node = self.ex_create_node_nowait(**kwargs)
 
@@ -334,7 +348,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         http://wiki.gogrid.com/wiki/index.php/MyGSI
 
         @keyword    node: node to use as a base for image
-        @type       node: L{Node}
+        @type       node: L{GoGridNode}
 
         @keyword    name: name for new image
         @type       name: C{str}
@@ -352,7 +366,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         """Change attributes of a node.
 
         @keyword    node: node to be edited (required)
-        @type       node: L{Node}
+        @type       node: L{GoGridNode}
 
         @keyword    size: new size of a node (required)
         @type       size: L{NodeSize}

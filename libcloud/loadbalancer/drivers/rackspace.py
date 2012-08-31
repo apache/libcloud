@@ -474,7 +474,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         resp = self.connection.request(uri, method='POST',
                                        data=json.dumps(member_object))
-        return self._to_members(resp.object)[0]
+        return self._to_members(resp.object, balancer)[0]
 
     def ex_balancer_attach_members(self, balancer, members):
         """
@@ -494,7 +494,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         resp = self.connection.request(uri, method='POST',
                                        data=json.dumps(member_objects))
-        return self._to_members(resp.object)
+        return self._to_members(resp.object, balancer)
 
     def balancer_detach_member(self, balancer, member):
         # Loadbalancer always needs to have at least 1 member.
@@ -550,8 +550,8 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
     def balancer_list_members(self, balancer):
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
-        return self._to_members(
-            self.connection.request(uri).object)
+        data = self.connection.request(uri).object
+        return self._to_members(data, balancer)
 
     def update_balancer(self, balancer, **kwargs):
         attrs = self._kwargs_to_mutable_attrs(**kwargs)
@@ -674,7 +674,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         @param balancer: Balancer which should be used
         @type balancer: L{LoadBalancer}
 
-        @rtype: C{list} of L{RackspaceAccessRuleType}
+        @rtype: C{list} of L{RackspaceAccessRule}
         """
         uri = '/loadbalancers/%s/accesslist' % (balancer.id)
         resp = self.connection.request(uri)
@@ -1383,10 +1383,10 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                             driver=self.connection.driver,
                             extra=extra)
 
-    def _to_members(self, object):
-        return [self._to_member(el) for el in object["nodes"]]
+    def _to_members(self, object, balancer=None):
+        return [self._to_member(el, balancer) for el in object["nodes"]]
 
-    def _to_member(self, el):
+    def _to_member(self, el, balancer=None):
         extra = {}
         if 'weight' in el:
             extra['weight'] = el["weight"]
@@ -1402,6 +1402,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         lbmember = Member(id=el["id"],
                           ip=el["address"],
                           port=el["port"],
+                          balancer=balancer,
                           extra=extra)
         return lbmember
 

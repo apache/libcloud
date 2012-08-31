@@ -55,9 +55,8 @@ class ZerigoError(LibcloudError):
         return 'Errors: %s' % (', '.join(self.errors))
 
     def __repr__(self):
-        return ('<ZerigoError response code=%s, errors count=%s>' %
-                                                          (self.code,
-                                                           len(self.errors)))
+        return ('<ZerigoError response code=%s, errors count=%s>' % (
+            self.code, len(self.errors)))
 
 
 class ZerigoDNSResponse(XmlResponse):
@@ -173,6 +172,8 @@ class ZerigoDNSDriver(DNSDriver):
 
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/zones/create
+
+        @inherits: L{DNSDriver.create_zone}
         """
         path = API_ROOT + 'zones.xml'
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
@@ -189,6 +190,8 @@ class ZerigoDNSDriver(DNSDriver):
 
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/zones/update
+
+        @inherits: L{DNSDriver.update_zone}
         """
         if domain:
             raise LibcloudError('Domain cannot be changed', driver=self)
@@ -197,8 +200,8 @@ class ZerigoDNSDriver(DNSDriver):
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
                                        extra=extra)
         response = self.connection.request(action=path,
-                                       data=ET.tostring(zone_elem),
-                                       method='PUT')
+                                           data=ET.tostring(zone_elem),
+                                           method='PUT')
         assert response.status == httplib.OK
 
         merged = merge_valid_keys(params=copy.deepcopy(zone.extra),
@@ -216,6 +219,8 @@ class ZerigoDNSDriver(DNSDriver):
 
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/hosts/create
+
+        @inherits: L{DNSDriver.create_record}
         """
         path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
         record_elem = self._to_record_elem(name=name, type=type, data=data,
@@ -261,6 +266,11 @@ class ZerigoDNSDriver(DNSDriver):
     def ex_get_zone_by_domain(self, domain):
         """
         Retrieve a zone object by the domain name.
+
+        @param domain: The domain which should be used
+        @type  domain: C{str}
+
+        @rtype: L{Zone}
         """
         path = API_ROOT + 'zones/%s.xml' % (domain)
         self.connection.set_context({'resource': 'zone', 'id': domain})
@@ -271,6 +281,11 @@ class ZerigoDNSDriver(DNSDriver):
     def ex_force_slave_axfr(self, zone):
         """
         Force a zone transfer.
+
+        @param zone: Zone which should be used.
+        @type  zone: L{Zone}
+
+        @rtype: L{Zone}
         """
         path = API_ROOT + 'zones/%s/force_slave_axfr.xml' % (zone.id)
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
@@ -308,7 +323,7 @@ class ZerigoDNSDriver(DNSDriver):
 
                 ns_type_elem.text = 'pri'
                 slave_nameservers_elem = ET.SubElement(zone_elem,
-                                                      'slave-nameservers')
+                                                       'slave-nameservers')
                 slave_nameservers_elem.text = extra['slave-nameservers']
 
         if ttl:
@@ -383,9 +398,9 @@ class ZerigoDNSDriver(DNSDriver):
         tags = tags.split(' ') if tags else []
 
         extra = {'hostmaster': hostmaster, 'custom-ns': custom_ns,
-                'custom-nameservers': custom_nameservers, 'notes': notes,
-                'nx-ttl': nx_ttl, 'slave-nameservers': slave_nameservers,
-                'tags': tags}
+                 'custom-nameservers': custom_nameservers, 'notes': notes,
+                 'nx-ttl': nx_ttl, 'slave-nameservers': slave_nameservers,
+                 'tags': tags}
         zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl),
                     driver=self, extra=extra)
         return zone

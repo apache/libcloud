@@ -164,8 +164,8 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
 
         resp = self._update_balancer(params)
         return [m for m in
-                self._to_members(resp.object["list"][0]["realiplist"])
-                if m.ip == member.ip][0]
+               self._to_members(resp.object["list"][0]["realiplist"], balancer)
+               if m.ip == member.ip][0]
 
     def balancer_detach_member(self, balancer, member):
         members = self.balancer_list_members(balancer)
@@ -182,7 +182,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
     def balancer_list_members(self, balancer):
         resp = self.connection.request('/api/grid/loadbalancer/get',
                                        params={'id': balancer.id})
-        return self._to_members(resp.object["list"][0]["realiplist"])
+        return self._to_members(resp.object["list"][0]["realiplist"], balancer)
 
     def _update_balancer(self, params):
         try:
@@ -227,11 +227,12 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
                           driver=self.connection.driver)
         return lb
 
-    def _to_members(self, object):
-        return [self._to_member(el) for el in object]
+    def _to_members(self, object, balancer=None):
+        return [self._to_member(el, balancer) for el in object]
 
-    def _to_member(self, el):
+    def _to_member(self, el, balancer=None):
         member = Member(id=el["ip"]["id"],
                         ip=el["ip"]["ip"],
-                        port=el["port"])
+                        port=el["port"],
+                        balancer=balancer)
         return member
