@@ -155,9 +155,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         NodeDriver.__init__(self, key=key, secret=secret, secure=secure,
                             host=host, port=port)
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, templatefilter='executable'):
         args = {
-            'templatefilter': 'executable'
+            'templatefilter': templatefilter,
         }
         if location is not None:
             args['zoneid'] = location.id
@@ -373,6 +373,31 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def destroy_volume(self, volume):
         self._sync_request('deleteVolume', id=volume.id)
         return True
+
+    def ex_list_volumes(self, node=None):
+        """
+        @type node: L{CloudStackNode}
+        """
+        if node:
+            requestResult = self._sync_request('listVolumes', hostid=node.id)
+        else:
+            requestResult = self._sync_request('listVolumes')
+        volumeResponse = requestResult['volume']
+
+        volumes = []
+
+        for vol in volumeResponse:
+            volumes.append(StorageVolume(id=vol['id'],
+                name=vol['name'],
+                driver=self,
+                size=vol['size'],
+                extra=dict(state=vol['state'],
+                    storagetype=vol['storagetype'],
+                    type=vol['type']
+                )
+            ))
+        return volumes
+
 
     def ex_allocate_public_ip(self, node):
         """

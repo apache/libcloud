@@ -462,6 +462,11 @@ class EC2NodeDriver(NodeDriver):
         )
         return n
 
+    def _to_volumes(self, object, xpath):
+        return [self._to_volume(el, '')
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
     def _to_volume(self, element, name):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
@@ -582,6 +587,16 @@ class EC2NodeDriver(NodeDriver):
 
         self.connection.request(self.path, params=params)
         return True
+
+    def ex_list_volumes(self, node=None):
+        params = {
+            'Action': 'DescribeVolumes',
+        }
+        if node:
+            params.update({'attachment.instance-id':node.id})
+        request = self.connection.request(self.path, params=params)
+        volumes = self._to_volumes(request.object, 'volumeSet/item')
+        return volumes
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
