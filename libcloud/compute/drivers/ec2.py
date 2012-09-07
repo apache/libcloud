@@ -471,11 +471,15 @@ class EC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        device = findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE)
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
-                             driver=self)
+                             driver=self,
+                             extra={'state': state,
+                                    'device': device})
 
     def list_nodes(self, ex_node_ids=None):
         """

@@ -127,6 +127,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Stopping': NodeState.TERMINATED,
         'Destroyed': NodeState.TERMINATED,
         'Expunging': NodeState.TERMINATED,
+        'Error': NodeState.TERMINATED,
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
@@ -379,7 +380,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         @type node: L{CloudStackNode}
         """
         if node:
-            requestResult = self._sync_request('listVolumes', hostid=node.id)
+            requestResult = self._sync_request('listVolumes', virtualmachineid=node.id)
         else:
             requestResult = self._sync_request('listVolumes')
         volumeResponse = requestResult['volume']
@@ -392,10 +393,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 driver=self,
                 size=vol['size'],
                 extra=dict(state=vol['state'],
-                    storagetype=vol['storagetype'],
-                    type=vol['type']
-                )
-            ))
+                        storage=vol['storage'],
+                        storagetype=vol['storagetype'],
+                        type=vol['type'],
+                        vmname=vol['vmname'] if 'vmname' in vol else 'detached',
+                    )
+                ))
         return volumes
 
 
@@ -585,16 +588,24 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         rules = self._sync_request('listPortForwardingRules')
         adresses = self.ex_list_public_ip()
         nodes = self.list_nodes()
-        return [CloudStackForwardingRule(node=filter(lambda node: int(node.id) == rule['virtualmachineid'], nodes)[0],
-                id=rule['id'],
-                address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
-                protocol=rule['protocol'],
-                public_port=rule['publicport'],
-                private_port=rule['privateport'],
-                public_end_port=rule.get('publicendport', None),
-                private_end_port=rule.get('privateendport', None),
-                state=rule['state']
-            ) for rule in rules.get('portforwardingrule', [])]
+        all_rules = []
+        for rule in rules.get('portforwardingrule', []):
+            node = filter(lambda node: int(node.id) == rule['virtualmachineid'], nodes)
+            if node:
+                node = node[0]
+            else:
+                continue
+            all_rules.append(CloudStackForwardingRule(node=node,
+                                     id=rule['id'],
+                                     address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+                                     protocol=rule['protocol'],
+                                     public_port=rule['publicport'],
+                                     private_port=rule['privateport'],
+                                     public_end_port=rule.get('publicendport', None),
+                                     private_end_port=rule.get('privateendport', None),
+                                     state=rule['state']
+                            ))
+        return all_rules
 
     def ex_delete_port_forwarding_rule(self, node, rule):
         """Remove a NAT/firewall forwarding rule."""
