@@ -53,6 +53,14 @@ class TestHttpLibSSLTests(unittest.TestCase):
                      (('organizationalUnitName', 'SSL'),),
                      (('commonName', 'python.org'),))}
 
+        cert4 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
+         'subject': ((('countryName', 'US'),),
+                     (('stateOrProvinceName', 'Delaware'),),
+                     (('localityName', 'Wilmington'),),
+                     (('organizationName', 'Python Software Foundation'),),
+                     (('organizationalUnitName', 'SSL'),),
+                     (('commonName', '*.api.joyentcloud.com'),))}
+
         self.assertFalse(self.httplib_object._verify_hostname(
                          hostname='invalid', cert=cert1))
         self.assertFalse(self.httplib_object._verify_hostname(
@@ -87,6 +95,11 @@ class TestHttpLibSSLTests(unittest.TestCase):
                         hostname='opython.org', cert=cert3))
         self.assertFalse(self.httplib_object._verify_hostname(
                         hostname='ython.org', cert=cert3))
+
+        self.assertTrue(self.httplib_object._verify_hostname(
+                        hostname='us-east-1.api.joyentcloud.com', cert=cert4))
+        self.assertTrue(self.httplib_object._verify_hostname(
+                        hostname='useast-1.api.joyentcloud.com', cert=cert4))
 
     def test_get_subject_alt_names(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',

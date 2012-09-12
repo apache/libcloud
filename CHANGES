@@ -2,6 +2,15 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General
+
+    Fix a bug with the Libcloud SSL verification code. Code was too strict and
+    didn't allow "-" character in the sub-domain when using a wildcard
+    certificate.
+
+    Note: This is NOT a security vulnerability. ; LIBCLOUD-244
+    [Tomaz Muraus]
+
   *) Compute
 
     - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
