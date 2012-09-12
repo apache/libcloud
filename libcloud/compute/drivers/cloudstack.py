@@ -590,7 +590,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         nodes = self.list_nodes()
         all_rules = []
         for rule in rules.get('portforwardingrule', []):
-            node = filter(lambda node: int(node.id) == rule['virtualmachineid'], nodes)
+            node = filter(lambda node: node.id == str(rule['virtualmachineid']), nodes)
             if node:
                 node = node[0]
             else:
