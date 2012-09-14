@@ -1,5 +1,15 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Storage
+
+    - Include 'last_modified' and 'content_type' attribute in the Object
+      'extra' dictionary when retrieving object using get_object in the S3
+      driver. Also modify 'meta_data' dictionary to include all the headers
+      prefixed with 'x-amz-meta-'.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.11.2:
 
   *) General

@@ -101,7 +101,9 @@ class S3MockHttp(StorageMockHttp):
         body = self.fixtures.load('list_containers.xml')
         headers = {'content-type': 'application/zip',
                     'etag': '"e31208wqsdoj329jd"',
+                    'x-amz-meta-rabbits': 'monkeys',
                     'content-length': 12345,
+                    'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
                     }
 
         return (httplib.OK,
@@ -375,6 +377,9 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.container.name, 'test2')
         self.assertEqual(obj.size, 12345)
         self.assertEqual(obj.hash, 'e31208wqsdoj329jd')
+        self.assertEqual(obj.extra['last_modified'], 'Thu, 13 Sep 2012 07:13:22 GMT')
+        self.assertEqual(obj.extra['content_type'], 'application/zip')
+        self.assertEqual(obj.meta_data['rabbits'], 'monkeys')
 
     def test_create_container_invalid_name(self):
         # invalid container name
