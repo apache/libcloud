@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Compute
+
+    - Fix string interpolation bug in __repr__ methods in the IBM SCE driver. ;
+      LIBCLOUD-242
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.11.3:
 
   *) Storage
