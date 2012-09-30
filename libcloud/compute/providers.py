@@ -64,9 +64,9 @@ DRIVERS = {
     Provider.GOGRID:
         ('libcloud.compute.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
-        ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
-    Provider.RACKSPACE_UK:
-        ('libcloud.compute.drivers.rackspace', 'RackspaceUKNodeDriver'),
+        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNodeDriver'),
+    Provider.RACKSPACE_FIRST_GEN:
+        ('libcloud.compute.drivers.rackspace', 'RackspaceFirstGenNodeDriver'),
     Provider.SLICEHOST:
         ('libcloud.compute.drivers.slicehost', 'SlicehostNodeDriver'),
     Provider.VPSNET:
@@ -107,14 +107,6 @@ DRIVERS = {
         ('libcloud.compute.drivers.vcloud', 'TerremarkDriver'),
     Provider.CLOUDSTACK:
         ('libcloud.compute.drivers.cloudstack', 'CloudStackNodeDriver'),
-    Provider.RACKSPACE_NOVA_BETA:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaBetaNodeDriver'),
-    Provider.RACKSPACE_NOVA_DFW:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaDfwNodeDriver'),
-    Provider.RACKSPACE_NOVA_ORD:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaOrdNodeDriver'),
-    Provider.RACKSPACE_NOVA_LON:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaLonNodeDriver'),
     Provider.LIBVIRT:
         ('libcloud.compute.drivers.libvirt_driver', 'LibvirtNodeDriver'),
     Provider.JOYENT:

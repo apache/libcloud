@@ -40,8 +40,8 @@ class Provider(object):
     @cvar EC2_US_EAST: Amazon AWS US N. Virgina
     @cvar EC2_US_WEST: Amazon AWS US N. California
     @cvar EC2_EU_WEST: Amazon AWS EU Ireland
-    @cvar RACKSPACE: Rackspace Cloud Servers
-    @cvar RACKSPACE_UK: Rackspace UK Cloud Servers
+    @cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
+    @cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     @cvar SLICEHOST: Slicehost.com
     @cvar GOGRID: GoGrid
     @cvar VPSNET: VPS.net
@@ -61,10 +61,6 @@ class Provider(object):
     @cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
     @cvar CLOUDSTACK: CloudStack
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
-    @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
-    @cvar RACKSPACE_NOVA_DFW: Rackspace Nova Private DFW (DFW)
-    @cvar RACKSPACE_NOVA_ORD: Rackspace Nova Private ORD (ORD)
-    @cvar RACKSPACE_NOVA_LON: Rackspace Nova Private LON (LON)
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
     @cvar VCL: VCL driver
@@ -96,7 +92,6 @@ class Provider(object):
     ELASTICHOSTS_UK2 = 20
     ELASTICHOSTS_US1 = 21
     EC2_AP_SOUTHEAST = 22
-    RACKSPACE_UK = 23
     BRIGHTBOX = 24
     CLOUDSIGMA = 25
     EC2_AP_NORTHEAST = 26
@@ -113,17 +108,14 @@ class Provider(object):
     CLOUDSTACK = 37
     CLOUDSIGMA_US = 38
     EC2_SA_EAST = 39
-    RACKSPACE_NOVA_BETA = 40
-    RACKSPACE_NOVA_DFW = 41
     LIBVIRT = 42
     ELASTICHOSTS_US2 = 43
     ELASTICHOSTS_CA1 = 44
     JOYENT = 45
     VCL = 46
     KTUCLOUD = 47
-    RACKSPACE_NOVA_LON = 48
     GRIDSPOT = 49
-    RACKSPACE_NOVA_ORD = 50
+    RACKSPACE_FIRST_GEN = 51
 
 
 class NodeState(object):

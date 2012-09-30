@@ -24,9 +24,9 @@ from libcloud.common.rackspace import (
     AUTH_URL_US, AUTH_URL_UK)
 
 
-class RackspaceConnection(OpenStack_1_0_Connection):
+class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
     """
-    Connection class for the Rackspace driver
+    Connection class for the Rackspace first-gen driver.
     """
 
     responseCls = OpenStack_1_0_Response
@@ -34,7 +34,6 @@ class RackspaceConnection(OpenStack_1_0_Connection):
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
     def get_endpoint(self):
-
         ep = {}
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(service_type='compute',
@@ -48,37 +47,40 @@ class RackspaceConnection(OpenStack_1_0_Connection):
         raise LibcloudError('Could not find specified endpoint')
 
 
-class RackspaceNodeDriver(OpenStack_1_0_NodeDriver):
-    name = 'Rackspace'
-    website = 'http://www.rackspace.com/'
-    connectionCls = RackspaceConnection
-    type = Provider.RACKSPACE
+class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
+    name = 'Rackspace Cloud'
+    website = 'http://www.rackspace.com'
+    connectionCls = RackspaceFirstGenConnection
+    type = Provider.RACKSPACE_FIRST_GEN
     api_name = 'rackspace'
 
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us', **kwargs):
+        if region not in ['us', 'uk']:
+            raise ValueError('Invalid region: %s' % (region))
+
+        if region == 'us':
+            self.connectionCls.auth_url = AUTH_URL_US
+        elif region == 'uk':
+            self.connectionCls.auth_url = AUTH_URL_UK
+
+        self.region = region
+
+        super(RackspaceFirstGenNodeDriver, self).__init__(key=key, secret=secret,
+                       secure=secure, host=host, port=port, **kwargs)
+
     def list_locations(self):
-        """Lists available locations
+        """
+        Lists available locations
 
         Locations cannot be set or retrieved via the API, but currently
         there are two locations, DFW and ORD.
 
         @inherits: L{OpenStack_1_0_NodeDriver.list_locations}
         """
-        return [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
+        if self.region == 'us':
+            locations = [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
+        elif self.region == 'uk':
+            locations = [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
 
-
-class RackspaceUKConnection(RackspaceConnection):
-    """
-    Connection class for the Rackspace UK driver
-    """
-    auth_url = AUTH_URL_UK
-
-
-class RackspaceUKNodeDriver(RackspaceNodeDriver):
-    """Driver for Rackspace in the UK (London)
-    """
-
-    name = 'Rackspace (UK)'
-    connectionCls = RackspaceUKConnection
-
-    def list_locations(self):
-        return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
+        return locations

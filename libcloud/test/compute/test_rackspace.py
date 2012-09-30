@@ -15,25 +15,43 @@
 import sys
 import unittest
 
-from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
+from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_0_Tests
 
 from libcloud.test.secrets import RACKSPACE_PARAMS
 
 
-class RackspaceTests(OpenStack_1_0_Tests):
+class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
     should_list_locations = True
     should_have_pricing = True
 
-    driver_klass = RackspaceNodeDriver
-    driver_type = RackspaceNodeDriver
+    driver_klass = RackspaceFirstGenNodeDriver
+    driver_type = RackspaceFirstGenNodeDriver
     driver_args = RACKSPACE_PARAMS
+    driver_kwargs = {'region': 'us'}
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
 
         for size in sizes:
             self.assertTrue(size.price > 0)
+
+
+class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
+    should_list_locations = True
+    should_have_pricing = True
+
+    driver_klass = RackspaceFirstGenNodeDriver
+    driver_type = RackspaceFirstGenNodeDriver
+    driver_args = RACKSPACE_PARAMS
+    driver_kwargs = {'region': 'uk'}
+
+    def test_list_sizes_pricing(self):
+        sizes = self.driver.list_sizes()
+
+        for size in sizes:
+            self.assertTrue(size.price > 0)
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

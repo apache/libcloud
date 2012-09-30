@@ -17,10 +17,7 @@ import unittest
 
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
-from libcloud.compute.drivers.rackspacenova import RackspaceNovaBetaNodeDriver, \
-                                                   RackspaceNovaDfwNodeDriver, \
-                                                   RackspaceNovaOrdNodeDriver, \
-                                                   RackspaceNovaLonNodeDriver
+from libcloud.compute.drivers.rackspacenova import RackspaceNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests, OpenStack_1_1_MockHttp
 from libcloud.pricing import clear_pricing_data
 
@@ -49,12 +46,13 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 
+"""
 class RackspaceNovaBetaTests(OpenStack_1_1_Tests):
 
-    driver_klass = RackspaceNovaBetaNodeDriver
-    driver_type = RackspaceNovaBetaNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
-    driver_kwargs = {'ex_force_auth_version': '2.0'}
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'beta', 'ex_force_auth_version': '2.0'}
 
     @classmethod
     def create_driver(self):
@@ -71,14 +69,15 @@ class RackspaceNovaBetaTests(OpenStack_1_1_Tests):
 
     def test_service_catalog(self):
         self.assertEqual('https://preprod.dfw.servers.api.rackspacecloud.com/v2/1337', self.driver.connection.get_endpoint())
+"""
 
 
 class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
 
-    driver_klass = RackspaceNovaDfwNodeDriver
-    driver_type = RackspaceNovaDfwNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
-    driver_kwargs = {'ex_force_auth_version': '2.0'}
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'us', 'datacenter': 'dfw', 'ex_force_auth_version': '2.0'}
 
     @classmethod
     def create_driver(self):
@@ -99,10 +98,10 @@ class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
 
 class RackspaceNovaOrdTests(OpenStack_1_1_Tests):
 
-    driver_klass = RackspaceNovaOrdNodeDriver
-    driver_type = RackspaceNovaOrdNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
-    driver_kwargs = {'ex_force_auth_version': '2.0'}
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'us', 'datacenter': 'ord', 'ex_force_auth_version': '2.0'}
 
     @classmethod
     def create_driver(self):
@@ -123,10 +122,10 @@ class RackspaceNovaOrdTests(OpenStack_1_1_Tests):
 
 class RackspaceNovaLonTests(OpenStack_1_1_Tests):
 
-    driver_klass = RackspaceNovaLonNodeDriver
-    driver_type = RackspaceNovaLonNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS + ('1.1',)
-    driver_kwargs = {'ex_force_auth_version': '2.0'}
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'uk', 'datacenter': 'ord', 'ex_force_auth_version': '2.0'}
 
     @classmethod
     def create_driver(self):
