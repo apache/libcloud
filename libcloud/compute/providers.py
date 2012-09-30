@@ -64,7 +64,7 @@ DRIVERS = {
     Provider.GOGRID:
         ('libcloud.compute.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNodeDriver'),
+        ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.RACKSPACE_FIRST_GEN:
         ('libcloud.compute.drivers.rackspace', 'RackspaceFirstGenNodeDriver'),
     Provider.SLICEHOST:
