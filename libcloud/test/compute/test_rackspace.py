@@ -95,43 +95,13 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
                 httplib.responses[httplib.OK])
 
 
-"""
-class RackspaceNovaBetaTests(OpenStack_1_1_Tests):
-
-    driver_klass = RackspaceNodeDriver
-    driver_type = RackspaceNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'beta', 'ex_force_auth_version': '2.0'}
-
-    @classmethod
-    def create_driver(self):
-        return self.driver_type(*self.driver_args, **self.driver_kwargs)
-
-    def setUp(self):
-        self.driver_klass.connectionCls.conn_classes = (RackspaceNovaMockHttp,
-                                                        RackspaceNovaMockHttp)
-        self.driver_klass.connectionCls.auth_url = \
-                "https://auth.api.example.com/v2.0/"
-        self.driver = self.create_driver()
-        # normally authentication happens lazily, but we force it here
-        self.driver.connection._populate_hosts_and_request_paths()
-        clear_pricing_data()
-        self.node = self.driver.list_nodes()[1]
-
-    def test_service_catalog(self):
-        self.assertEqual(
-            'https://preprod.dfw.servers.api.rackspacecloud.com/v2/1337',
-            self.driver.connection.get_endpoint())
-"""
-
 
 class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
 
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'us', 'datacenter': 'dfw',
-                     'ex_force_auth_version': '2.0'}
+    driver_kwargs = {'datacenter': 'dfw'}
 
     @classmethod
     def create_driver(self):
@@ -159,8 +129,7 @@ class RackspaceNovaOrdTests(OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'us', 'datacenter': 'ord',
-                     'ex_force_auth_version': '2.0'}
+    driver_kwargs = {'datacenter': 'ord'}
 
     @classmethod
     def create_driver(self):
@@ -187,8 +156,7 @@ class RackspaceNovaLonTests(OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'uk', 'datacenter': 'ord',
-                     'ex_force_auth_version': '2.0'}
+    driver_kwargs = {'datacenter': 'lon'}
 
     @classmethod
     def create_driver(self):

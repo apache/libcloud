@@ -27,24 +27,15 @@ from libcloud.common.rackspace import (
 
 
 ENDPOINT_ARGS_MAP = {
-    'us': {
-        'dfw':  {'service_type': 'compute',
-                  'name': 'cloudServersOpenStack',
-                  'region': 'DFW'},
-        'ord':  {'service_type': 'compute',
-                  'name': 'cloudServersOpenStack',
-                  'region': 'ORD'}
-    },
-    'uk': {
-        'default':  {'service_type': 'compute',
-                     'name': 'cloudServersOpenStack',
-                     'region': 'LON'}
-    },
-    'beta': {
-        'dfw':  {'service_type': 'compute',
-                 'name': 'cloudServersPreprod',
-                 'region': 'DFW'}
-    }
+    'dfw':  {'service_type': 'compute',
+              'name': 'cloudServersOpenStack',
+              'region': 'DFW'},
+    'ord':  {'service_type': 'compute',
+              'name': 'cloudServersOpenStack',
+              'region': 'ORD'},
+    'lon':  {'service_type': 'compute',
+             'name': 'cloudServersOpenStack',
+             'region': 'LON'}
 }
 
 
@@ -144,25 +135,20 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
     api_name = None
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region='us', datacenter='dfw', **kwargs):
-        if region not in ['us', 'uk']:
-            raise ValueError('Invalid region: %s' % (region))
+                 datacenter='dfw', **kwargs):
 
-        if region == 'us' and datacenter not in ['dfw', 'ord']:
+        if datacenter not in ['dfw', 'ord', 'lon']:
             raise ValueError('Invalid datacenter: %s' % (datacenter))
-        elif region in ['uk']:
-            datacenter = 'default'
 
-        if region == 'us':
+        if datacenter in ['dfw', 'ord']:
             self.connectionCls.auth_url = AUTH_URL_US
-        elif region == 'uk':
+        elif datacenter == 'lon':
             self.connectionCls.auth_url = AUTH_URL_UK
 
         self.connectionCls._auth_version = '2.0'
         self.connectionCls.get_endpoint_args = \
-                ENDPOINT_ARGS_MAP[region][datacenter]
+                ENDPOINT_ARGS_MAP[datacenter]
 
-        self.region = region
         self.datacenter = datacenter
 
         super(RackspaceNodeDriver, self).__init__(key=key, secret=secret,
