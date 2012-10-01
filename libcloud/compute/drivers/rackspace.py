@@ -153,6 +153,12 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         elif region in ['uk']:
             datacenter = 'default'
 
+        if region == 'us':
+            self.connectionCls.auth_url = AUTH_URL_US
+        elif region == 'uk':
+            self.connectionCls.auth_url = AUTH_URL_UK
+
+        self.connectionCls._auth_version = '2.0'
         self.connectionCls.get_endpoint_args = \
                 ENDPOINT_ARGS_MAP[region][datacenter]
 
