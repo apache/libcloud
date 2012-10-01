@@ -8,6 +8,13 @@ Changes with Apache Libcloud in development:
       LIBCLOUD-242
       [Tomaz Muraus]
 
+    - Fix test failures which happened in Python 3.3 due to:
+      - hash randomization
+      - changes in xml.etree module
+      - changes in xmlrpc module
+      ; LIBCLOUD-245
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.11.3:
 
   *) Storage
