@@ -17,6 +17,8 @@ import unittest
 
 from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
+from libcloud.compute.providers import DEPRECATED_RACKSPACE_PROVIDERS
+from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_0_Tests
@@ -36,6 +38,16 @@ class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
     driver_type = RackspaceFirstGenNodeDriver
     driver_args = RACKSPACE_PARAMS
     driver_kwargs = {'region': 'us'}
+
+    def test_error_is_thrown_on_accessing_old_constant(self):
+        for provider in DEPRECATED_RACKSPACE_PROVIDERS:
+            try:
+                get_driver(provider)
+            except Exception:
+                e = sys.exc_info()[1]
+                self.assertTrue(str(e).find('has been removed') != -1)
+            else:
+                self.fail('Exception was not thrown')
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()

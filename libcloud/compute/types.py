@@ -18,6 +18,7 @@ Base types used by other parts of libcloud
 
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.types import InvalidCredsError, InvalidCredsException
+
 __all__ = [
     "Provider",
     "NodeState",
@@ -28,7 +29,9 @@ __all__ = [
     "LibcloudError",
     "MalformedResponseError",
     "InvalidCredsError",
-    "InvalidCredsException"
+    "InvalidCredsException",
+    "DEPRECATED_RACKSPACE_PROVIDERS",
+    "OLD_CONSTANT_TO_NEW_MAPPING"
     ]
 
 
@@ -116,6 +119,29 @@ class Provider(object):
     KTUCLOUD = 47
     GRIDSPOT = 49
     RACKSPACE_FIRST_GEN = 51
+
+    # Deprecated constants
+    RACKSPACE_UK = 23
+    RACKSPACE_NOVA_BETA = 40
+    RACKSPACE_NOVA_DFW = 41
+    RACKSPACE_NOVA_LON = 48
+    RACKSPACE_NOVA_ORD = 50
+
+
+DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
+                                  Provider.RACKSPACE_NOVA_BETA,
+                                  Provider.RACKSPACE_NOVA_DFW,
+                                  Provider.RACKSPACE_NOVA_LON,
+                                  Provider.RACKSPACE_NOVA_ORD]
+OLD_CONSTANT_TO_NEW_MAPPING = {
+    Provider.RACKSPACE: Provider.RACKSPACE_FIRST_GEN,
+    Provider.RACKSPACE_UK: Provider.RACKSPACE_FIRST_GEN,
+
+    Provider.RACKSPACE_NOVA_BETA: Provider.RACKSPACE,
+    Provider.RACKSPACE_NOVA_DFW: Provider.RACKSPACE,
+    Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
+    Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE
+}
 
 
 class NodeState(object):
