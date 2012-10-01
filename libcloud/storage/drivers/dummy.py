@@ -107,14 +107,22 @@ class DummyStorageDriver(StorageDriver):
     def get_meta_data(self):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
-        >>> driver.get_meta_data()
-        {'object_count': 0, 'container_count': 0, 'bytes_used': 0}
+        >>> driver.get_meta_data()['object_count']
+        0
+        >>> driver.get_meta_data()['container_count']
+        0
+        >>> driver.get_meta_data()['bytes_used']
+        0
         >>> container = driver.create_container(container_name='test container 1')
         >>> container = driver.create_container(container_name='test container 2')
         >>> obj = container.upload_object_via_stream(
         ...  object_name='test object', iterator=DummyFileObject(5, 10), extra={})
-        >>> driver.get_meta_data()
-        {'object_count': 1, 'container_count': 2, 'bytes_used': 50}
+        >>> driver.get_meta_data()['object_count']
+        1
+        >>> driver.get_meta_data()['container_count']
+        2
+        >>> driver.get_meta_data()['bytes_used']
+        50
 
         @rtype: C{dict}
         """
