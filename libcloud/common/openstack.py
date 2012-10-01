@@ -31,7 +31,7 @@ try:
 except ImportError:
     import json
 
-AUTH_API_VERSION = '1.1'
+AUTH_API_VERSION = '2.0'
 
 __all__ = [
     "OpenStackBaseConnection",
