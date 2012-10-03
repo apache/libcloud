@@ -597,7 +597,8 @@ class EC2NodeDriver(NodeDriver):
             'Action': 'DescribeVolumes',
         }
         if node:
-            params.update({'attachment.instance-id':node.id})
+            params.update({'Filter.1.Name': 'attachment.instance-id',
+                           'Filter.1.Value.1': node.id})
         request = self.connection.request(self.path, params=params)
         volumes = self._to_volumes(request.object, 'volumeSet/item')
         return volumes

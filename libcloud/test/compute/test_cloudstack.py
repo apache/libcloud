@@ -115,6 +115,25 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertTrue(attachReturnVal)
 
 
+    def test_list_keypair(self):
+        keypairs = self.driver.ex_list_keypair()
+        self.assertEqual(len(keypairs), 8)
+
+    def test_list_public_ips(self):
+        ips = self.driver.ex_list_public_ip()
+        self.assertEqual(len(ips), 4)
+
+    def test_list_port_forwarding(self):
+        rules = self.driver.ex_list_port_forwarding_rule()
+        self.assertEqual(len(rules), 2)
+
+        self.assertTrue(rules[0].node)
+        self.assertTrue(rules[1].node)
+
+    def test_create_port_forwarding(self):
+        pass
+
+
 class CloudStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('cloudstack')
     fixture_tag = 'default'
