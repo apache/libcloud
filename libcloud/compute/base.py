@@ -416,6 +416,31 @@ class StorageVolume(UuidMixin):
                self.id, self.size, self.driver.name)
 
 
+class StorageSnapshot(UuidMixin):
+    """
+    A base StorageSnapshot class
+    """
+
+    def __init__(self, id, size, description, driver, extra=None):
+        self.id = id
+        self.size = size
+        self.description = description
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        """Destroy this storage volume.
+
+        @returns C{bool}
+        """
+        return self.driver.ex_destroy_snapshot(self.id)
+
+    def __repr__(self):
+        return '<StorageSnapshot id=%s size=%s driver=%s>' % (
+            self.id, self.size, self.driver.name)
+
+
 class NodeDriver(BaseDriver):
     """
     A base NodeDriver class to derive from

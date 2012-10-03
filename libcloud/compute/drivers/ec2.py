@@ -39,7 +39,7 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import NodeImage, StorageVolume, StorageSnapshot
 
 EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
 EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
@@ -481,6 +481,24 @@ class EC2NodeDriver(NodeDriver):
                              extra={'state': state,
                                     'device': device})
 
+    def _to_snapshots(self, object, xpath):
+        return [self._to_snapshot(el, '')
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
+    def _to_snapshot(self, element, name):
+        snapId = findtext(element=element, xpath='snapshotId',
+                          namespace=NAMESPACE)
+        status = findtext(element=element, xpath='status',
+                          namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
+        description = findtext(element=element, xpath='description', namespace=NAMESPACE)
+        return StorageSnapshot(id=snapId,
+                               size=int(size),
+                               description=description,
+                               driver=self,
+                               extra={'state': status})
+
     def list_nodes(self, ex_node_ids=None):
         """
         List all nodes
@@ -602,6 +620,30 @@ class EC2NodeDriver(NodeDriver):
         request = self.connection.request(self.path, params=params)
         volumes = self._to_volumes(request.object, 'volumeSet/item')
         return volumes
+
+    def ex_create_snapshot(self, volume):
+        params = {
+            'Action': 'CreateSnapshot',
+            'VolumeId': volume.id,
+        }
+        request = self.connection.request(self.path, params=params)
+        snapshot = self._to_snapshots(request.object, '/')
+        if snapshot:
+            return snapshot[0]
+        else:
+            return  None
+
+    def ex_list_snapshots(self, snapshot=None, owner='self'):
+        params = {
+            'Action': 'DescribeSnapshots'
+        }
+        if snapshot:
+            params.update({'SnapshotId': snapshot.id})
+        if owner:
+            params.update({'Owner': owner})
+        request = self.connection.request(self.path, params=params)
+        snapshots = self._to_snapshots(request.object, 'snapshotSet/item')
+        return snapshots
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
