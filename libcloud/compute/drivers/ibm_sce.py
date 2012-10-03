@@ -84,8 +84,8 @@ class IBMNodeLocation(NodeLocation):
 
     def __repr__(self):
         return ('<IBMNodeLocation: id=%s, name=%s, country=%s, '
-                'driver=%s, extra=%s>' % self.id, self.name, self.country,
-                self.driver.name, self.extra)
+                'driver=%s, extra=%s>' % (self.id, self.name, self.country,
+                self.driver.name, self.extra))
 
 
 class VolumeState(object):
@@ -123,7 +123,7 @@ class VolumeOffering(object):
 
     def __repr__(self):
         return ('<VolumeOffering: id=%s, location=%s, name=%s, extra=%s>' %
-                 self.id, self.location, self.name, self.extra)
+                (self.id, self.location, self.name, self.extra))
 
 
 class Address(object):
@@ -140,7 +140,7 @@ class Address(object):
 
     def __repr__(self):
         return ('<Address: id=%s, ip=%s, state=%s, options=%s>' %
-                 self.id, self.ip, self.state, self.options)
+                (self.id, self.ip, self.state, self.options))
 
 class IBMNodeDriver(NodeDriver):
     """

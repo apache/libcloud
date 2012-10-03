@@ -71,7 +71,8 @@ class SoftLayerTests(unittest.TestCase):
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 2)
-        self.assertEqual(sizes[0].id, 'sl1')
+        size = [s for s in sizes if s.id == 'sl1']
+        self.assertEqual(len(size), 1)
 
 class SoftLayerMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('softlayer')

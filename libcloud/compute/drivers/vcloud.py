@@ -544,8 +544,7 @@ class VCloudNodeDriver(NodeDriver):
                 except Exception:
                     # The vApp was probably removed since the previous vDC query, ignore
                     e = sys.exc_info()[1]
-                    if not (isinstance(e.args[0], _ElementInterface) and
-                            e.args[0].tag.endswith('Error') and
+                    if not (e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') == 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
                         raise e
 

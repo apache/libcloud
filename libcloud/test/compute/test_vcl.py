@@ -35,6 +35,7 @@ class MockVCLTransport(xmlrpclib.Transport):
         self._use_datetime = datetime
         self._connection = (None, None)
         self._extra_headers = []
+        self._use_builtin_types = False
 
     def request(self, host, handler, request_body, verbose=0):
         self.verbose = 0
