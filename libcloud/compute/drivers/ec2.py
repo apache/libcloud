@@ -621,17 +621,16 @@ class EC2NodeDriver(NodeDriver):
         volumes = self._to_volumes(request.object, 'volumeSet/item')
         return volumes
 
-    def ex_create_snapshot(self, volume):
+    def ex_create_snapshot(self, volume, description=None):
         params = {
             'Action': 'CreateSnapshot',
             'VolumeId': volume.id,
         }
+        if description:
+            params.update({'Description': description})
         request = self.connection.request(self.path, params=params)
-        snapshot = self._to_snapshots(request.object, '/')
-        if snapshot:
-            return snapshot[0]
-        else:
-            return  None
+        snapshot = self._to_snapshot(request.object, name='')
+        return snapshot
 
     def ex_list_snapshots(self, snapshot=None, owner='self'):
         params = {
