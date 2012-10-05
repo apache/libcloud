@@ -413,7 +413,9 @@ class EC2NodeDriver(NodeDriver):
                 'clienttoken': findattr(element=element, xpath="clientToken",
                                         namespace=NAMESPACE),
                 'groups': groups,
-                'tags': tags
+                'tags': tags,
+                'architecture': findattr(element=element, xpath="architecture",
+                                         namespace=NAMESPACE),
             }
         )
         return n
@@ -610,10 +612,12 @@ class EC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
-    def ex_register_image(self, snapshot, name, arch='i386', description=None, kernelid=None, ramdiskid=None):
+    def ex_register_image(self, snapshot, name, arch='i386', description=None, kernelid=None, ramdiskid=None,
+                          blocks_maps=None):
         """
         Register image from snapshot
         """
+
         params = {
             'Action': 'RegisterImage',
             'Name': name,
@@ -622,6 +626,8 @@ class EC2NodeDriver(NodeDriver):
             'BlockDeviceMapping.1.DeviceName': '/dev/sda1',
             'BlockDeviceMapping.1.Ebs.SnapshotId': snapshot.id,
         }
+        if blocks_maps:
+            params.update(blocks_maps)
         if description:
             params.update({'Description': description})
         if kernelid:
@@ -629,7 +635,7 @@ class EC2NodeDriver(NodeDriver):
         if ramdiskid:
             params.update({'RamdiskId': ramdiskid})
         response = self.connection.request(self.path, params=params)
-        imageId = findtext(element=response, xpath='imageId',
+        imageId = findtext(element=response.object, xpath='imageId',
                                           namespace=NAMESPACE)
         return imageId
 

@@ -614,14 +614,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._async_request('deletePortForwardingRule', id=rule.id)
         return True
 
-    def ex_create_template(self, node, snapshot, ostypeid, name, description, bits='32', passwordenabled=True):
+    def ex_create_template(self, node, snapshot, ostypeid, name, description, passwordenabled=True):
         params = {
             'virtualmachineid': node.id,
             'snapshotid': snapshot.id,
             'ostypeid': ostypeid,
             'name': name,
             'displaytext': description,
-            'bits': bits,
             'passwordenabled': 'true' if passwordenabled else 'false'
         }
         resp = self._async_request('createTemplate', **params)
