@@ -16,7 +16,7 @@
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
-    NodeSize, StorageVolume
+    NodeSize, StorageVolume, StorageSnapshot
 from libcloud.compute.types import NodeState, LibcloudError
 
 
@@ -212,7 +212,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 public_ips=public_ips.get(vm['id'], {}).keys(),
                 private_ips=private_ips,
                 driver=self,
-                extra={'zoneid': vm['zoneid'], 'port_forwarding_rules': []}
+                extra={'zoneid': vm['zoneid'], 'port_forwarding_rules': [], 'ostypeid': vm['guestosid']}
             )
 
             addrs = public_ips.get(vm['id'], {}).items()
@@ -613,6 +613,51 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node.extra['port_forwarding_rules'].remove(rule)
         self._async_request('deletePortForwardingRule', id=rule.id)
         return True
+
+    def ex_create_template(self, node, snapshot, ostypeid, name, description, bits='32', passwordenabled=True):
+        params = {
+            'virtualmachineid': node.id,
+            'snapshotid': snapshot.id,
+            'ostypeid': ostypeid,
+            'name': name,
+            'displaytext': description,
+            'bits': bits,
+            'passwordenabled': 'true' if passwordenabled else 'false'
+        }
+        resp = self._async_request('createTemplate', **params)
+        return resp['template']['id']
+
+    def ex_list_snapshots(self, snapshot=None):
+        if snapshot:
+            snapshots = self._sync_request('listSnapshots', id=snapshot.id)
+        else:
+            snapshots = self._sync_request('listSnapshots')
+        all_snapshots = []
+        for snap in snapshots.get('snapshot', []):
+            all_snapshots.append(StorageSnapshot(
+                id=snap['id'],
+                size=None,
+                description=snap['name'],
+                driver=self,
+                extra={'state':snap['state'],
+                       'type':snap['volumetype']}
+            ))
+        return all_snapshots
+
+    def ex_create_snapshot(self, volume):
+        result = self._async_request('createSnapshot', id=volume.id).get('snapshot')
+        return StorageSnapshot(
+            id=result['id'],
+            size=None,
+            description=result['name'],
+            driver=self,
+            extra={'state':result['state'],
+                   'type':result['volumetype']}
+        )
+
+    def ex_delete_snapshot(self, snapshot):
+        res = self._async_request('deleteSnapshot', id=snapshot.id)
+        return res['success'] == 'true'
 
     def ex_create_keypair(self, name):
         keypair = self._sync_request('createSSHKeyPair', name=name)

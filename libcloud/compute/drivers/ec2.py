@@ -610,6 +610,29 @@ class EC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
+    def ex_register_image(self, snapshot, name, arch='i386', description=None, kernelid=None, ramdiskid=None):
+        """
+        Register image from snapshot
+        """
+        params = {
+            'Action': 'RegisterImage',
+            'Name': name,
+            'Architecture': arch,
+            'RootDeviceName': '/dev/sda1',
+            'BlockDeviceMapping.1.DeviceName': '/dev/sda1',
+            'BlockDeviceMapping.1.Ebs.SnapshotId': snapshot.id,
+        }
+        if description:
+            params.update({'Description': description})
+        if kernelid:
+            params.update({'KernelId': kernelid})
+        if ramdiskid:
+            params.update({'RamdiskId': ramdiskid})
+        response = self.connection.request(self.path, params=params)
+        imageId = findtext(element=response, xpath='imageId',
+                                          namespace=NAMESPACE)
+        return imageId
+
     def ex_list_volumes(self, node=None):
         params = {
             'Action': 'DescribeVolumes',
@@ -631,6 +654,16 @@ class EC2NodeDriver(NodeDriver):
         request = self.connection.request(self.path, params=params)
         snapshot = self._to_snapshot(request.object, name='')
         return snapshot
+
+    def ex_delete_snapshot(self, snapshot):
+        params = {
+            'Action': 'DeleteSnapshot',
+            'SnapsotId': snapshot.id
+        }
+        result = self.connection.request(self.path, params=params)
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def ex_list_snapshots(self, snapshot=None, owner='self'):
         params = {
