@@ -142,8 +142,10 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
 
         if datacenter in ['dfw', 'ord']:
             self.connectionCls.auth_url = AUTH_URL_US
+            self.api_name = 'rackspacenovaus'
         elif datacenter == 'lon':
             self.connectionCls.auth_url = AUTH_URL_UK
+            self.api_name = 'rackspacenovalon'
 
         self.connectionCls._auth_version = '2.0'
         self.connectionCls.get_endpoint_args = \

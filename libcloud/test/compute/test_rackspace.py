@@ -146,6 +146,13 @@ class RackspaceNovaOrdTests(OpenStack_1_1_Tests):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
+    def test_list_sizes_pricing(self):
+        sizes = self.driver.list_sizes()
+
+        for size in sizes:
+            if size.ram > 256:
+                self.assertTrue(size.price > 0)
+
     def test_service_catalog(self):
         self.assertEqual('https://ord.servers.api.rackspacecloud.com/v2/1337',
                          self.driver.connection.get_endpoint())
@@ -172,6 +179,13 @@ class RackspaceNovaLonTests(OpenStack_1_1_Tests):
         self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
+
+    def test_list_sizes_pricing(self):
+        sizes = self.driver.list_sizes()
+
+        for size in sizes:
+            if size.ram > 256:
+                self.assertTrue(size.price > 0)
 
     def test_service_catalog(self):
         self.assertEqual('https://lon.servers.api.rackspacecloud.com/v2/1337',
