@@ -15,6 +15,16 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-245
       [Tomaz Muraus]
 
+    - Refactor Rackspace driver classes and make them easier to use. Now there
+      are two rackspace constants - Provider.RACKSPACE which represents new
+      next-gen OpenStack servers and Provider.RACKSPACE_FIRST_GEN which
+      represents old cloud servers.
+
+      Note: This change is backward incompatible. For more information on those
+      changes and how to upgrade your code to make it work with it, please visit
+      TODO.
+      [Tomaz Muraus]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly
