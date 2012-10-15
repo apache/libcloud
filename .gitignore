@@ -11,4 +11,5 @@ MANIFEST
 /.coverage
 coverage_html_report/
 .idea
+libcloud/test/secrets.py
 dist/*apache-libcloud*

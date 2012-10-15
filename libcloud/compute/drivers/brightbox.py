@@ -300,3 +300,100 @@ class BrightboxNodeDriver(NodeDriver):
                                   cloud_ip_id),
             method='DELETE')
         return response.status == httplib.OK
+
+    ######
+    # !server group
+    def ex_list_server_groups(self):
+        """
+        List Server Groups
+
+        @note: This is an API extension for use on Brightbox
+
+        @return: Returns a list of server group dicts
+        @rtype: C{list} of C{dict}
+        """
+        return self.connection.request('/%s/server_groups' % self.api_version).object
+
+    def ex_get_server_group(self, server_group_id):
+        """
+        Gets a single server group
+
+        @note: This is an API extension for use on Brightbox
+
+        @param    server_group_id: The group id
+        @type       server_group_id: C{str}
+
+        @return: Returns the newly created server group as dict
+        @rtype: C{dict}
+        """
+        return self.connection.request('/%s/server_groups/%s' % (self.api_version,
+                    server_group_id)).object
+
+    def ex_create_server_group(self, name):
+        """
+        Requests a new server group for the account
+
+        @note: This is an API extension for use on Brightbox
+
+        @param    name: The group name
+        @type       name: C{str}
+
+        @return: Returns the newly created server group as dict
+        @rtype: C{dict}
+        """
+        params = {}
+
+        if name:
+            params['name'] = name
+
+        return self._post('/%s/server_groups' % self.api_version, params).object
+
+    def ex_update_server_group(self, server_group_id, name=None, description=None):
+        """
+        Update one of more fields of a server group
+
+        @note: This is an API extension for use on Brightbox
+
+        @param  server_group_id: The id of the server group
+        @type   server_group_id: C{str}
+
+        @param  name: The name of the server group (optional)
+        @type   name: C{str}
+
+        @param  description: The description of the server group (optional)
+        @type   description: C{str}
+
+        @return: True if the the update was successful.
+        @rtype: C{bool}
+        """
+        params = {}
+        if name:
+            params['name'] = name
+        if description:
+            params['description'] = description
+        response = self._put('/%s/server_groups/%s' % (self.api_version,
+                                                   server_group_id), params)
+        return response.status == httplib.ACCEPTED
+
+    def ex_destroy_server_group(self, server_group_id):
+        """
+        Delete the server group
+
+        @note: This is an API extension for use on Brightbox
+
+        @param  server_group_id: The id of the server group
+        @type   server_group_id: C{str}
+
+        @return: True if the the deleting was successful.
+        @rtype: C{bool}
+        """
+        response = self.connection.request(
+            '/%s/server_groups/%s' % (self.api_version, server_group_id),
+            method='DELETE')
+        return response.status == httplib.ACCEPTED
+
+
+
+
+
+
