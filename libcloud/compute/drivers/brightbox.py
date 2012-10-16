@@ -138,18 +138,14 @@ class BrightboxNodeDriver(NodeDriver):
                                        method='PUT')
 
     def create_node(self, **kwargs):
-        """Create a new Brightbox node
-
+        """
+        Create a new Brightbox node
         Reference: https://api.gb1.brightbox.com/1.0/#server_create_server
 
-        @inherits: L{NodeDriver.create_node}
-
-        @keyword    ex_userdata: User data
-        @type       ex_userdata: C{str}
-
-        @keyword    ex_servergroup: Name or list of server group ids to
+        :param ex_userdata: User data
+        :param ex_servergroup: Name or list of server group ids to
                                     add server to
-        @type       ex_servergroup: C{str} or C{list} of C{str}
+        :returns: Node instance
         """
         data = {
             'name': kwargs['name'],
@@ -182,6 +178,13 @@ class BrightboxNodeDriver(NodeDriver):
         data = self.connection.request('/%s/servers' % self.api_version).object
         return list(map(self._to_node, data))
 
+    def get_node(self,server_id, raw=False):
+        data = self.connection.request('/%s/servers/%s' % (self.api_version, server_id)).object
+        if raw == False:
+            return list(map(self._to_node, data))
+        else:
+            return data
+
     def list_images(self):
         data = self.connection.request('/%s/images' % self.api_version).object
         return list(map(self._to_image, data))
@@ -199,9 +202,7 @@ class BrightboxNodeDriver(NodeDriver):
         """
         List Cloud IPs
 
-        @note: This is an API extension for use on Brightbox
-
-        @rtype: C{list} of C{dict}
+        :returns: List of cloud IP dicts
         """
         return self.connection.request('/%s/cloud_ips' % self.api_version) \
                               .object
@@ -210,12 +211,8 @@ class BrightboxNodeDriver(NodeDriver):
         """
         Requests a new cloud IP address for the account
 
-        @note: This is an API extension for use on Brightbox
-
-        @param      reverse_dns: Reverse DNS hostname
-        @type       reverse_dns: C{str}
-
-        @rtype: C{dict}
+        :param reverse_dns: Reverse DNS hostname
+        :returns: cloud-ip as dict
         """
         params = {}
 
@@ -228,15 +225,9 @@ class BrightboxNodeDriver(NodeDriver):
         """
         Update some details of the cloud IP address
 
-        @note: This is an API extension for use on Brightbox
-
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
-
-        @param      reverse_dns: Reverse DNS hostname
-        @type       reverse_dns: C{str}
-
-        @rtype: C{dict}
+        :param cloud_ip_id: The id of the cloud ip.
+        :param reverse_dns: Reverse DNS hostname
+        :returns: cloud-ip as dict
         """
         response = self._put('/%s/cloud_ips/%s' % (self.api_version,
                                                    cloud_ip_id),
@@ -248,17 +239,10 @@ class BrightboxNodeDriver(NodeDriver):
         Maps (or points) a cloud IP address at a server's interface
         or a load balancer to allow them to respond to public requests
 
-        @note: This is an API extension for use on Brightbox
-
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
-
-        @param  interface_id: The Interface ID or LoadBalancer ID to
+        :param cloud_ip_id: The id of the cloud ip.
+        :param interface_id: The Interface ID or LoadBalancer ID to
                               which this Cloud IP should be mapped to
-        @type   interface_id: C{str}
-
-        @return: True if the mapping was successful.
-        @rtype: C{bool}
+        :returns: True if the mapping was successful.
         """
         response = self._post('/%s/cloud_ips/%s/map' % (self.api_version,
                                                         cloud_ip_id),
@@ -271,13 +255,8 @@ class BrightboxNodeDriver(NodeDriver):
         it available to remap. This remains in the account's pool
         of addresses
 
-        @note: This is an API extension for use on Brightbox
-
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
-
-        @return: True if the unmap was successful.
-        @rtype: C{bool}
+        :param cloud_ip_id: The id of the cloud ip.
+        :returns: True if the unmap was successful.
         """
         response = self._post('/%s/cloud_ips/%s/unmap' % (self.api_version,
                                                           cloud_ip_id))
@@ -287,13 +266,8 @@ class BrightboxNodeDriver(NodeDriver):
         """
         Release the cloud IP address from the account's ownership
 
-        @note: This is an API extension for use on Brightbox
-
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
-
-        @return: True if the unmap was successful.
-        @rtype: C{bool}
+        :param cloud_ip_id: The id of the cloud ip.
+        :returns: True if the unmap was successful.
         """
         response = self.connection.request(
             '/%s/cloud_ips/%s' % (self.api_version,
@@ -305,12 +279,9 @@ class BrightboxNodeDriver(NodeDriver):
     # !server group
     def ex_list_server_groups(self):
         """
-        List Server Groups
+        List server groups
 
-        @note: This is an API extension for use on Brightbox
-
-        @return: Returns a list of server group dicts
-        @rtype: C{list} of C{dict}
+        :returns: Returns a list of server group dicts
         """
         return self.connection.request('/%s/server_groups' % self.api_version).object
 
@@ -318,13 +289,8 @@ class BrightboxNodeDriver(NodeDriver):
         """
         Gets a single server group
 
-        @note: This is an API extension for use on Brightbox
-
-        @param    server_group_id: The group id
-        @type       server_group_id: C{str}
-
-        @return: Returns the newly created server group as dict
-        @rtype: C{dict}
+        :param server_group_id: The group id
+        :returns: the newly created server group as dict
         """
         return self.connection.request('/%s/server_groups/%s' % (self.api_version,
                     server_group_id)).object
@@ -333,13 +299,8 @@ class BrightboxNodeDriver(NodeDriver):
         """
         Requests a new server group for the account
 
-        @note: This is an API extension for use on Brightbox
-
-        @param    name: The group name
-        @type       name: C{str}
-
-        @return: Returns the newly created server group as dict
-        @rtype: C{dict}
+        :param name: group name
+        :returns: the newly created server group as dict
         """
         params = {}
 
@@ -352,19 +313,10 @@ class BrightboxNodeDriver(NodeDriver):
         """
         Update one of more fields of a server group
 
-        @note: This is an API extension for use on Brightbox
-
-        @param  server_group_id: The id of the server group
-        @type   server_group_id: C{str}
-
-        @param  name: The name of the server group (optional)
-        @type   name: C{str}
-
-        @param  description: The description of the server group (optional)
-        @type   description: C{str}
-
-        @return: True if the the update was successful.
-        @rtype: C{bool}
+        :param server_group_id: The id of the server group
+        :param name: The name of the server group or None
+        :param description: The description of the server group or None
+        :returns: Boolean about the success of the operation
         """
         params = {}
         if name:
@@ -375,21 +327,46 @@ class BrightboxNodeDriver(NodeDriver):
                                                    server_group_id), params)
         return response.status == httplib.ACCEPTED
 
+    def ex_add_to_server_group(self, server_group_id, server_id):
+        """
+        Add a server to a server group
+
+        :param server_group_id: The id of the server group
+        :param server_id: a server-id
+        :returns: Boolean about the success of the operation
+        """
+        params = {}
+        if server_id and "srv-" in server_id:
+            params['servers'] = [{"server": server_id}]
+        url = "/%s/server_groups/%s/add_servers" %  (self.api_version, server_group_id)
+        response = self._post(url, params)
+        return response.status == httplib.ACCEPTED
+
+    def ex_remove_from_server_group(self, server_group_id, server_id):
+        """
+        Removes a server from a server group
+
+        :param server_group_id: The id of the server group
+        :param server_id: a server-id
+        :returns: Boolean about the success of the operation
+        """
+        params = {}
+        if server_id and "srv-" in server_id:
+            params['servers'] = [{"server": server_id}]
+        url = "/%s/server_groups/%s/remove_servers" %  (self.api_version, server_group_id)
+        response = self._post(url, params)
+        return response.status == httplib.ACCEPTED
+
     def ex_destroy_server_group(self, server_group_id):
         """
         Delete the server group
 
-        @note: This is an API extension for use on Brightbox
-
-        @param  server_group_id: The id of the server group
-        @type   server_group_id: C{str}
-
-        @return: True if the the deleting was successful.
-        @rtype: C{bool}
+        :param server_group_id: The id of the server group
+        :returns: Boolean about the success of the operation
         """
         response = self.connection.request(
-            '/%s/server_groups/%s' % (self.api_version, server_group_id),
-            method='DELETE')
+            '/%s/server_groups/%s' % (self.api_version,
+                                            server_group_id), method='DELETE')
         return response.status == httplib.ACCEPTED
 
 
