@@ -139,14 +139,17 @@ class BaseGoGridDriver(object):
                     private IPs. Set to None or not specify
                     at all not to filter by type
         @type       public: C{bool}
+
         @keyword    assigned: set to True to list only addresses
                     assigned to servers, False to list unassigned
                     addresses and set to None or don't set at all
                     not no filter by state
         @type       assigned: C{bool}
+
         @keyword    location: filter IP addresses by location
         @type       location: L{NodeLocation}
-        @return:    C{list} of L{GoGridIpAddress}es
+
+        @rtype: C{list} of L{GoGridIpAddress}
         """
 
         params = {}

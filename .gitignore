@@ -9,3 +9,4 @@ MANIFEST
 /.ropeproject/config.py
 /.coverage
 coverage_html_report/
+.idea

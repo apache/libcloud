@@ -17,7 +17,8 @@ Provider related utilities
 """
 
 from libcloud.utils.misc import get_driver as _get_provider_driver
-from libcloud.compute.types import Provider
+from libcloud.compute.types import Provider, DEPRECATED_RACKSPACE_PROVIDERS
+from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 
 __all__ = [
     "Provider",
@@ -65,8 +66,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.gogrid', 'GoGridNodeDriver'),
     Provider.RACKSPACE:
         ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
-    Provider.RACKSPACE_UK:
-        ('libcloud.compute.drivers.rackspace', 'RackspaceUKNodeDriver'),
+    Provider.RACKSPACE_FIRST_GEN:
+        ('libcloud.compute.drivers.rackspace', 'RackspaceFirstGenNodeDriver'),
     Provider.SLICEHOST:
         ('libcloud.compute.drivers.slicehost', 'SlicehostNodeDriver'),
     Provider.VPSNET:
@@ -107,12 +108,6 @@ DRIVERS = {
         ('libcloud.compute.drivers.vcloud', 'TerremarkDriver'),
     Provider.CLOUDSTACK:
         ('libcloud.compute.drivers.cloudstack', 'CloudStackNodeDriver'),
-    Provider.RACKSPACE_NOVA_BETA:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaBetaNodeDriver'),
-    Provider.RACKSPACE_NOVA_DFW:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaDfwNodeDriver'),
-    Provider.RACKSPACE_NOVA_LON:
-        ('libcloud.compute.drivers.rackspacenova', 'RackspaceNovaLonNodeDriver'),
     Provider.LIBVIRT:
         ('libcloud.compute.drivers.libvirt_driver', 'LibvirtNodeDriver'),
     Provider.JOYENT:
@@ -124,9 +119,22 @@ DRIVERS = {
     Provider.HPCLOUD_AZ2:
         ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ2NodeDriver'),
     Provider.SAVVIS:
-        ('libcloud.compute.drivers.vcloud', 'SavvisNodeDriver')
+        ('libcloud.compute.drivers.vcloud', 'SavvisNodeDriver'),libcloud/compute/drivers/vcloud.py
+    Provider.KTUCLOUD:
+        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver')
 }
 
 
 def get_driver(provider):
+    if provider in DEPRECATED_RACKSPACE_PROVIDERS:
+        id_to_name_map = dict([(v, k) for k, v in Provider.__dict__.items()])
+        old_name = id_to_name_map[provider]
+        new_name = id_to_name_map[OLD_CONSTANT_TO_NEW_MAPPING[provider]]
+
+        msg = 'Provider constant %s has been removed. New constant ' \
+              'is now called %s.\n' \
+              'For more information on this change and how to modify your ' \
+              'code to work with it, please visit: TODO' % (old_name, new_name)
+        raise Exception(msg)
+
     return _get_provider_driver(DRIVERS, provider)

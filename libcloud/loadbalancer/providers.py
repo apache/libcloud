@@ -17,10 +17,10 @@ from libcloud.utils.misc import get_driver as get_provider_driver
 from libcloud.loadbalancer.types import Provider
 
 __all__ = [
-        "Provider",
-        "DRIVERS",
-        "get_driver",
-        ]
+    "Provider",
+    "DRIVERS",
+    "get_driver",
+]
 
 DRIVERS = {
         Provider.RACKSPACE_US:

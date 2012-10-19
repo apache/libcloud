@@ -47,6 +47,11 @@ Making a release (for release managers)
   python setup.py apidocs
   cp -r apidocs ../site/content/apidocs/<version>
 
+  Note: For generating API docs you need the following libraries installed:
+
+  - pydoctor - http://codespeak.net/~mwh/pydoctor/
+  - epydoc
+
 7. Update latest API doc version in ../site/content/apidocs/index.html and
   ../site/content./apidocs/.htaccess
 

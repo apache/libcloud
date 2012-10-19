@@ -154,11 +154,10 @@ class ElasticStackBaseConnection(ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
-        headers['Authorization'] = ('Basic %s'
-                                    % (base64.b64encode(b('%s:%s'
-                                                        % (self.user_id,
-                                                           self.key))))
-                                                        .decode('utf-8'))
+        headers['Authorization'] = \
+            ('Basic %s' % (base64.b64encode(b('%s:%s' % (self.user_id,
+                                                         self.key))))
+                .decode('utf-8'))
         return headers
 
 
@@ -227,10 +226,10 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Creates a ElasticStack instance
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: L{NodeDriver.create_node}
 
         @keyword    name: String with a name for this new node (required)
-        @type       name: C{string}
+        @type       name: C{str}
 
         @keyword    smp: Number of virtual processors or None to calculate
                          based on the cpu speed
@@ -238,13 +237,13 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         @keyword    nic_model: e1000, rtl8139 or virtio
                                (if not specified, e1000 is used)
-        @type       nic_model: C{string}
+        @type       nic_model: C{str}
 
         @keyword    vnc_password: If set, the same password is also used for
                                   SSH access with user toor,
                                   otherwise VNC access is disabled and
                                   no SSH login is possible.
-        @type       vnc_password: C{string}
+        @type       vnc_password: C{str}
         """
         size = kwargs['size']
         image = kwargs['image']
@@ -294,8 +293,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             ).object
 
             elapsed_time = time.time() - imaging_start
-            if ('imaging' in response
-                and elapsed_time >= IMAGING_TIMEOUT):
+            if ('imaging' in response and elapsed_time >= IMAGING_TIMEOUT):
                 raise ElasticStackException('Drive imaging timed out')
 
             time.sleep(1)
@@ -326,7 +324,17 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
     # Extension methods
     def ex_set_node_configuration(self, node, **kwargs):
-        # Changes the configuration of the running server
+        """
+        Changes the configuration of the running server
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @param      kwargs: keyword arguments
+        @type       kwargs: C{dict}
+
+        @rtype: C{bool}
+        """
         valid_keys = ('^name$', '^parent$', '^cpu$', '^smp$', '^mem$',
                       '^boot$', '^nic:0:model$', '^nic:0:dhcp',
                       '^nic:1:model$', '^nic:1:vlan$', '^nic:1:mac$',
@@ -362,13 +370,12 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         """
         Create a new node, and start deployment.
 
+        @inherits: L{NodeDriver.deploy_node}
+
         @keyword    enable_root: If true, root password will be set to
                                  vnc_password (this will enable SSH access)
                                  and default 'toor' account will be deleted.
         @type       enable_root: C{bool}
-
-        For detailed description and keywords args, see
-        L{NodeDriver.deploy_node}.
         """
         image = kwargs['image']
         vnc_password = kwargs.get('vnc_password', None)
@@ -378,8 +385,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             raise ValueError('You need to provide vnc_password argument '
                              'if you want to use deployment')
 
-        if (image in self._standard_drives
-            and not self._standard_drives[image]['supports_deployment']):
+        if (image in self._standard_drives and
+                not self._standard_drives[image]['supports_deployment']):
             raise ValueError('Image %s does not support deployment'
                              % (image.id))
 
@@ -392,8 +399,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                                                   delete=True)
             deploy = kwargs.get('deploy', None)
             if deploy:
-                if (isinstance(deploy, ScriptDeployment)
-                    or isinstance(deploy, SSHKeyDeployment)):
+                if (isinstance(deploy, ScriptDeployment) or
+                        isinstance(deploy, SSHKeyDeployment)):
                     deployment = MultiStepDeployment([deploy,
                                                       root_enable_script])
                 elif isinstance(deploy, MultiStepDeployment):
@@ -410,7 +417,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         return super(ElasticStackBaseNodeDriver, self).deploy_node(**kwargs)
 
     def ex_shutdown_node(self, node):
-        # Sends the ACPI power-down event
+        """
+        Sends the ACPI power-down event
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
+        """
         response = self.connection.request(
             action='/servers/%s/shutdown' % (node.id),
             method='POST'
@@ -418,7 +432,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         return response.status == 204
 
     def ex_destroy_drive(self, drive_uuid):
-        # Deletes a drive
+        """
+        Deletes a drive
+
+        @param      drive_uuid: Drive uuid which should be used
+        @type       drive_uuid: C{str}
+
+        @rtype: C{bool}
+        """
         response = self.connection.request(
             action='/drives/%s/destroy' % (drive_uuid),
             method='POST'

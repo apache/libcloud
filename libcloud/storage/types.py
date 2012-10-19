@@ -25,6 +25,7 @@ __all__ = ['Provider',
            'ObjectHashMismatchError',
            'InvalidContainerNameError']
 
+
 class Provider(object):
     """
     Defines for each of the supported providers
@@ -39,7 +40,7 @@ class Provider(object):
     @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     @cvar NINEFOLD: Ninefold
     @cvar GOOGLE_STORAGE Google Storage
-    @cvar: S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    @cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     @cvar NIMBUS: Nimbus.io driver
     """
     DUMMY = 0
@@ -56,6 +57,7 @@ class Provider(object):
     CLOUDFILES_SWIFT = 11
     NIMBUS = 12
 
+
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
 
@@ -68,6 +70,7 @@ class ContainerError(LibcloudError):
                 (self.error_type, repr(self.driver),
                  self.container_name, self.value))
 
+
 class ObjectError(LibcloudError):
     error_type = 'ContainerError'
 
@@ -79,23 +82,31 @@ class ObjectError(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return '<%s in %s, value=%s, object = %s>' % (self.error_type, repr(self.driver),
-                                                      self.value, self.object_name)
+        return '<%s in %s, value=%s, object = %s>' % (self.error_type,
+                                                      repr(self.driver),
+                                                      self.value,
+                                                      self.object_name)
+
 
 class ContainerAlreadyExistsError(ContainerError):
     error_type = 'ContainerAlreadyExistsError'
 
+
 class ContainerDoesNotExistError(ContainerError):
     error_type = 'ContainerDoesNotExistError'
+
 
 class ContainerIsNotEmptyError(ContainerError):
     error_type = 'ContainerIsNotEmptyError'
 
+
 class ObjectDoesNotExistError(ObjectError):
     error_type = 'ObjectDoesNotExistError'
 
+
 class ObjectHashMismatchError(ObjectError):
     error_type = 'ObjectHashMismatchError'
+
 
 class InvalidContainerNameError(ContainerError):
     error_type = 'InvalidContainerNameError'

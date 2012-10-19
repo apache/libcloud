@@ -56,9 +56,6 @@ class BrightboxNodeDriver(NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=API_VERSION, **kwargs):
-        """
-        @requires: key, secret
-        """
         super(BrightboxNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure,
                                                   host=host, port=port,
@@ -67,10 +64,10 @@ class BrightboxNodeDriver(NodeDriver):
 
     def _to_node(self, data):
         extra_data = _extract(data, ['fqdn', 'user_data', 'status',
-                                    'interfaces', 'snapshots',
-                                    'server_groups', 'hostname',
-                                    'started_at', 'created_at',
-                                    'deleted_at'])
+                                     'interfaces', 'snapshots',
+                                     'server_groups', 'hostname',
+                                     'started_at', 'created_at',
+                                     'deleted_at'])
         extra_data['zone'] = self._to_location(data['zone'])
         return Node(
             id=data['id'],
@@ -95,11 +92,11 @@ class BrightboxNodeDriver(NodeDriver):
 
     def _to_image(self, data):
         extra_data = _extract(data, ['arch', 'compatibility_mode',
-                                   'created_at', 'description',
-                                   'disk_size', 'min_ram', 'official',
-                                   'owner', 'public', 'source',
-                                   'source_type', 'status', 'username',
-                                   'virtual_size', 'licence_name'])
+                                     'created_at', 'description',
+                                     'disk_size', 'min_ram', 'official',
+                                     'owner', 'public', 'source',
+                                     'source_type', 'status', 'username',
+                                     'virtual_size', 'licence_name'])
 
         if data.get('ancestor', None):
             extra_data['ancestor'] = self._to_image(data['ancestor'])
@@ -143,15 +140,16 @@ class BrightboxNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new Brightbox node
 
-        See L{NodeDriver.create_node} for more keyword args.
         Reference: https://api.gb1.brightbox.com/1.0/#server_create_server
+
+        @inherits: L{NodeDriver.create_node}
 
         @keyword    ex_userdata: User data
         @type       ex_userdata: C{str}
 
         @keyword    ex_servergroup: Name or list of server group ids to
                                     add server to
-        @type       ex_servergroup: C{str} or C{list} of C{str}s
+        @type       ex_servergroup: C{str} or C{list} of C{str}
         """
         data = {
             'name': kwargs['name'],
@@ -175,11 +173,9 @@ class BrightboxNodeDriver(NodeDriver):
         return self._to_node(data)
 
     def destroy_node(self, node):
-        """
-        Destroy node by passing in the node object
-        """
-        response = self.connection.request('/%s/servers/%s' % \
-                   (self.api_version, node.id), method='DELETE')
+        response = self.connection.request(
+            '/%s/servers/%s' % (self.api_version, node.id),
+            method='DELETE')
         return response.status == httplib.ACCEPTED
 
     def list_nodes(self):
@@ -205,7 +201,7 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @return: C{list} of C{dict}
+        @rtype: C{list} of C{dict}
         """
         return self.connection.request('/%s/cloud_ips' % self.api_version) \
                               .object
@@ -219,7 +215,7 @@ class BrightboxNodeDriver(NodeDriver):
         @param      reverse_dns: Reverse DNS hostname
         @type       reverse_dns: C{str}
 
-        @return: C{dict}
+        @rtype: C{dict}
         """
         params = {}
 
@@ -240,10 +236,11 @@ class BrightboxNodeDriver(NodeDriver):
         @param      reverse_dns: Reverse DNS hostname
         @type       reverse_dns: C{str}
 
-        @return: C{dict}
+        @rtype: C{dict}
         """
         response = self._put('/%s/cloud_ips/%s' % (self.api_version,
-            cloud_ip_id), {'reverse_dns': reverse_dns})
+                                                   cloud_ip_id),
+                             {'reverse_dns': reverse_dns})
         return response.status == httplib.OK
 
     def ex_map_cloud_ip(self, cloud_ip_id, interface_id):
@@ -260,10 +257,12 @@ class BrightboxNodeDriver(NodeDriver):
                               which this Cloud IP should be mapped to
         @type   interface_id: C{str}
 
-        @return: C{bool} True if the mapping was successful.
+        @return: True if the mapping was successful.
+        @rtype: C{bool}
         """
         response = self._post('/%s/cloud_ips/%s/map' % (self.api_version,
-            cloud_ip_id), {'destination': interface_id})
+                                                        cloud_ip_id),
+                              {'destination': interface_id})
         return response.status == httplib.ACCEPTED
 
     def ex_unmap_cloud_ip(self, cloud_ip_id):
@@ -277,7 +276,8 @@ class BrightboxNodeDriver(NodeDriver):
         @param  cloud_ip_id: The id of the cloud ip.
         @type   cloud_ip_id: C{str}
 
-        @return: C{bool} True if the unmap was successful.
+        @return: True if the unmap was successful.
+        @rtype: C{bool}
         """
         response = self._post('/%s/cloud_ips/%s/unmap' % (self.api_version,
                                                           cloud_ip_id))
@@ -292,8 +292,11 @@ class BrightboxNodeDriver(NodeDriver):
         @param  cloud_ip_id: The id of the cloud ip.
         @type   cloud_ip_id: C{str}
 
-        @return: C{bool} True if the unmap was successful.
+        @return: True if the unmap was successful.
+        @rtype: C{bool}
         """
-        response = self.connection.request('/%s/cloud_ips/%s' %
-                           (self.api_version, cloud_ip_id), method='DELETE')
+        response = self.connection.request(
+            '/%s/cloud_ips/%s' % (self.api_version,
+                                  cloud_ip_id),
+            method='DELETE')
         return response.status == httplib.OK

@@ -80,7 +80,7 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response.object['jobId']
         kwargs = {'action': '/status/%s' % (job_id),
-                'params': {'showDetails': True}}
+                  'params': {'showDetails': True}}
         return kwargs
 
     def has_completed(self, response):
@@ -104,13 +104,13 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
             return self._construct_dns_endpoint_from_servers_endpoint(ep)
         elif "2.0" in self._auth_version:
             ep = self.service_catalog.get_endpoint(name="cloudServers",
-                service_type="compute",
-                region=None)
+                                                   service_type="compute",
+                                                   region=None)
 
             return self._construct_dns_endpoint_from_servers_endpoint(ep)
         else:
-            raise LibcloudError("Auth version %s not supported" % \
-                self._auth_version)
+            raise LibcloudError("Auth version %s not supported" %
+                                (self._auth_version))
 
     def _construct_dns_endpoint_from_servers_endpoint(self, ep):
         if 'publicURL' in ep:
@@ -131,9 +131,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
     website = 'http://www.rackspace.com/'
 
     def __init__(self, *args, **kwargs):
-        """
-        @requires: key, secret
-        """
         OpenStackDriverMixin.__init__(self, *args, **kwargs)
         super(RackspaceDNSDriver, self).__init__(*args, **kwargs)
 
@@ -272,7 +269,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         if 'comment' in extra:
             payload['comment'] = extra['comment']
 
-        type = type if type else record.type
+        type = type if type is not None else record.type
         data = data if data else record.data
 
         self.connection.set_context({'resource': 'record', 'id': record.id})
@@ -363,7 +360,11 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         @param name: Record name.
         @type name: C{str}
         """
-        name = '%s.%s' % (name, domain)
+        if name:
+            name = '%s.%s' % (name, domain)
+        else:
+            name = domain
+
         return name
 
     def _to_partial_record_name(self, domain, name):

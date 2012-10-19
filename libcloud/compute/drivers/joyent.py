@@ -56,7 +56,7 @@ class JoyentResponse(JsonResponse):
     """
 
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                             httplib.NO_CONTENT]
+                            httplib.NO_CONTENT]
 
     def parse_error(self):
         if self.status == 401:
@@ -98,13 +98,16 @@ class JoyentNodeDriver(NodeDriver):
 
     def __init__(self, *args, **kwargs):
         """
-        @requires: key, secret
+        @inherits: L{NodeDriver.__init__}
+
+        @keyword    location: Location which should be used
+        @type       location: C{str}
         """
         if 'location' in kwargs:
             if kwargs['location'] not in LOCATIONS:
                 msg = 'Invalid location: "%s". Valid locations: %s'
                 raise LibcloudError(msg % (kwargs['location'],
-                                ', '.join(LOCATIONS)), driver=self)
+                                    ', '.join(LOCATIONS)), driver=self)
         else:
             kwargs['location'] = DEFAULT_LOCATION
 
@@ -119,7 +122,7 @@ class JoyentNodeDriver(NodeDriver):
             extra = {'type': value['type'], 'urn': value['urn'],
                      'os': value['os'], 'default': value['default']}
             image = NodeImage(id=value['id'], name=value['name'],
-                    driver=self.connection.driver, extra=extra)
+                              driver=self.connection.driver, extra=extra)
             images.append(image)
 
         return images
@@ -170,6 +173,14 @@ class JoyentNodeDriver(NodeDriver):
         return self._to_node(result.object)
 
     def ex_stop_node(self, node):
+        """
+        Stop node
+
+        @param  node: The node to be stopped
+        @type   node: L{Node}
+
+        @rtype: C{bool}
+        """
         data = json.dumps({'action': 'stop'})
         result = self.connection.request('/my/machines/%s' % (node.id),
                                          data=data, method='POST')

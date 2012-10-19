@@ -23,14 +23,22 @@ from glob import glob
 from subprocess import call
 from os.path import splitext, basename, join as pjoin
 
+try:
+    import epydoc
+    has_epydoc = True
+except ImportError:
+    has_epydoc = False
+
 import libcloud.utils.misc
+from libcloud.utils.dist import get_packages, get_data_files
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
-TEST_PATHS = ['test', 'test/common', 'test/compute', 'test/storage',
-              'test/loadbalancer', 'test/dns']
+TEST_PATHS = ['libcloud/test', 'libcloud/test/common', 'libcloud/test/compute',
+              'libcloud/test/storage', 'libcloud/test/loadbalancer',
+              'libcloud/test/dns']
 DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                      'libcloud.storage.drivers.dummy',
                      'libcloud.dns.drivers.dummy']
@@ -81,13 +89,13 @@ class TestCommand(Command):
         sys.exit(status)
 
     def _run_tests(self):
-        secrets_current = pjoin(self._dir, 'test', 'secrets.py')
-        secrets_dist = pjoin(self._dir, 'test', 'secrets.py-dist')
+        secrets_current = pjoin(self._dir, 'libcloud/test', 'secrets.py')
+        secrets_dist = pjoin(self._dir, 'libcloud/test', 'secrets.py-dist')
 
         if not os.path.isfile(secrets_current):
             print("Missing " + secrets_current)
             print("Maybe you forgot to copy it from -dist:")
-            print("cp test/secrets.py-dist test/secrets.py")
+            print("cp libcloud/test/secrets.py-dist libcloud/test/secrets.py")
             sys.exit(1)
 
         mtime_current = os.path.getmtime(secrets_current)
@@ -155,8 +163,8 @@ class Pep8Command(Command):
             sys.exit(1)
 
         cwd = os.getcwd()
-        retcode = call(('pep8 %s/libcloud/ %s/test/' %
-                (cwd, cwd)).split(' '))
+        retcode = call(('pep8 %s/libcloud/' %
+                (cwd)).split(' '))
         sys.exit(retcode)
 
 
@@ -171,6 +179,9 @@ class ApiDocsCommand(Command):
         pass
 
     def run(self):
+        if not has_epydoc:
+            raise RuntimeError('Missing "epydoc" package!')
+
         os.system(
             'pydoctor'
             ' --add-package=libcloud'
@@ -216,24 +227,11 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     requires=([], ['ssl', 'simplejson'],)[pre_python26],
-    packages=[
-        'libcloud',
-        'libcloud.utils',
-        'libcloud.common',
-        'libcloud.compute',
-        'libcloud.compute.drivers',
-        'libcloud.storage',
-        'libcloud.storage.drivers',
-        'libcloud.loadbalancer',
-        'libcloud.loadbalancer.drivers',
-        'libcloud.dns',
-        'libcloud.dns.drivers'],
+    packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
     },
-    package_data={
-        'libcloud': ['data/*.json']
-    },
+    package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
     cmdclass={

@@ -147,6 +147,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             self.urls['cloudFiles'] = \
                 [{'publicURL': headers.get('x-storage-url', None)}]
             self.auth_token = headers.get('x-auth-token', None)
+            self.auth_user_info = None
 
             if not self.auth_token:
                 raise MalformedResponseError('Missing X-Auth-Token in \
@@ -177,6 +178,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.auth_token = body['auth']['token']['id']
                 self.auth_token_expires = body['auth']['token']['expires']
                 self.urls = body['auth']['serviceCatalog']
+                self.auth_user_info = None
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
@@ -275,6 +277,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 self.auth_token = access['token']['id']
                 self.auth_token_expires = access['token']['expires']
                 self.urls = access['serviceCatalog']
+                self.auth_user_info = access.get('user', {})
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
@@ -426,10 +429,12 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     auth_url = None
     auth_token = None
     auth_token_expires = None
+    auth_user_info = None
     service_catalog = None
     service_type = None
     service_name = None
     service_region = None
+    _auth_version = None
 
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, timeout=None,
@@ -444,11 +449,12 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
-        self._auth_version = ex_force_auth_version
+        self._auth_version = self._auth_version or ex_force_auth_version
         self._ex_tenant_name = ex_tenant_name
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
+
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
 
@@ -526,6 +532,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
             self.auth_token = osa.auth_token
             self.auth_token_expires = osa.auth_token_expires
+            self.auth_user_info = osa.auth_user_info
 
             # pull out and parse the service catalog
             self.service_catalog = OpenStackServiceCatalog(osa.urls,
@@ -559,6 +566,10 @@ class OpenStackDriverMixin(object):
                                                    None)
 
     def openstack_connection_kwargs(self):
+        """
+
+        @rtype: C{dict}
+        """
         rv = {}
         if self._ex_force_base_url:
             rv['ex_force_base_url'] = self._ex_force_base_url

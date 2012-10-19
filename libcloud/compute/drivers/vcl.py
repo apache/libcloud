@@ -105,8 +105,8 @@ class VCLNodeDriver(NodeDriver):
     """
     VCL node driver
 
-    @keyword:   host: The VCL host to which you make requests(required)
-    @type:      host: C{string}
+    @keyword   host: The VCL host to which you make requests(required)
+    @type      host: C{str}
     """
 
     NODE_STATE_MAP = {
@@ -130,7 +130,22 @@ class VCLNodeDriver(NodeDriver):
     def __init__(self, key, secret, secure=True, host=None, port=None, *args,
                  **kwargs):
         """
-        @requires: key, secret, host
+        @param    key:    API key or username to used (required)
+        @type     key:    C{str}
+
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP.
+        @type     secure: C{bool}
+
+        @param    host: Override hostname used for connections. (required)
+        @type     host: C{str}
+
+        @param    port: Override port used for connections.
+        @type     port: C{int}
+
+        @rtype: C{None}
         """
         if not host:
             raise Exception('When instantiating VCL driver directly ' +
@@ -153,14 +168,18 @@ class VCLNodeDriver(NodeDriver):
 
     def create_node(self, **kwargs):
         """Create a new VCL reservation
+        size and name ignored, image is the id from list_image
 
-        See L{NodeDriver.create_node} for more keyword args.
-        size and name ignored, image is the id from list_images
+        @inherits: L{NodeDriver.create_node}
+
+        @keyword    image: image is the id from list_image
+        @type       image: C{str}
+
         @keyword    start: start time as unix timestamp
-        @type       start: C{string}
+        @type       start: C{str}
 
         @keyword    length: length of time in minutes
-        @type       length: C{string}
+        @type       length: C{str}
         """
 
         image = kwargs["image"]
@@ -188,6 +207,11 @@ class VCLNodeDriver(NodeDriver):
         """
         End VCL reservation for the node passed in.
         Throws error if request fails.
+
+        @param  node: The node to be destroyed
+        @type   node: L{Node}
+
+        @rtype: C{bool}
         """
         try:
             self._vcl_request(
@@ -208,6 +232,8 @@ class VCLNodeDriver(NodeDriver):
     def list_images(self, location=None):
         """
         List images available to the user provided credentials
+
+        @inherits: L{NodeDriver.list_images}
         """
         res = self.connection.request(
             "XMLRPCgetImages"
@@ -218,6 +244,8 @@ class VCLNodeDriver(NodeDriver):
         """
         VCL does not choosing sizes for node creation.
         Size of images are statically set by administrators.
+
+        @inherits: L{NodeDriver.list_sizes}
         """
         return [NodeSize(
             't1.micro',
@@ -268,6 +296,14 @@ class VCLNodeDriver(NodeDriver):
         ) for h in res]
 
     def list_nodes(self, ipaddr):
+        """
+        List nodes
+
+        @param  ipaddr: IP address which should be used
+        @type   ipaddr: C{str}
+
+        @rtype: C{list} of L{Node}
+        """
         res = self._vcl_request(
             "XMLRPCgetRequestIds"
         )
@@ -277,13 +313,14 @@ class VCLNodeDriver(NodeDriver):
         """
         Update the remote ip accessing the node.
 
-        @param: node: the reservation node to update
-        @type:  node: Node object
+        @param node: the reservation node to update
+        @type  node: L{Node}
 
-        @param: ipaddr: the ipaddr used to access the node
-        @type:  ipaddr: C{string}
+        @param ipaddr: the ipaddr used to access the node
+        @type  ipaddr: C{str}
 
         @return: node with updated information
+        @rtype: L{Node}
         """
         return self._to_status(node.id, node.image, ipaddr)
 
@@ -291,13 +328,14 @@ class VCLNodeDriver(NodeDriver):
         """
         Time in minutes to extend the requested node's reservation time
 
-        @param: node: the reservation node to update
-        @type:  node: Node object
+        @param node: the reservation node to update
+        @type  node: L{Node}
 
-        @param: minutes: the number of mintes to update
-        @type:  minutes: C{string}
+        @param minutes: the number of mintes to update
+        @type  minutes: C{str}
 
         @return: true on success, throws error on failure
+        @rtype: C{bool}
         """
         return self._vcl_request(
             "XMLRPCextendRequest",
@@ -309,10 +347,11 @@ class VCLNodeDriver(NodeDriver):
         """
         Get the ending time of the node reservation.
 
-        @param: node: the reservation node to update
-        @type:  node: Node object
+        @param node: the reservation node to update
+        @type  node: L{Node}
 
         @return: unix timestamp
+        @rtype: C{int}
         """
         res = self._vcl_request(
             "XMLRPCgetRequestIds"

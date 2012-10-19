@@ -109,7 +109,6 @@ class OpsourceResponse(XmlResponse):
             code = findtext(body, 'resultCode', GENERAL_NS)
             message = findtext(body, 'resultDetail', GENERAL_NS)
             raise OpsourceAPIException(code, message, driver=OpsourceNodeDriver)
-
         return self.body
 
 
@@ -139,8 +138,8 @@ class OpsourceConnection(ConnectionUserAndKey):
     responseCls = OpsourceResponse
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
-                                                (self.user_id,
+        headers['Authorization'] = \
+            ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
                                                  self.key))).decode('utf-8'))
         return headers
 
@@ -169,7 +168,7 @@ class OpsourceConnection(ConnectionUserAndKey):
         networks, and customer snapshots.
         """
         return ("%s/%s/%s" % (self.api_path, self.api_version,
-            self._get_orgId()))
+                              self._get_orgId()))
 
     def _get_orgId(self):
         """
@@ -177,7 +176,7 @@ class OpsourceConnection(ConnectionUserAndKey):
         'orgId' from the XML response object. We need the orgId to use most
         of the other API functions
         """
-        if self._orgId == None:
+        if self._orgId is None:
             body = self.request('myaccount').object
             self._orgId = findtext(body, 'orgId', DIRECTORY_NS)
         return self._orgId
@@ -190,9 +189,9 @@ class OpsourceStatus(object):
         step.name, step.number, step.percentComplete, failureReason,
     """
     def __init__(self, action=None, requestTime=None, userName=None,
-                numberOfSteps=None, updateTime=None, step_name=None,
-                step_number=None, step_percentComplete=None,
-                failureReason=None):
+                 numberOfSteps=None, updateTime=None, step_name=None,
+                 step_number=None, step_percentComplete=None,
+                 failureReason=None):
         self.action = action
         self.requestTime = requestTime
         self.userName = userName
@@ -204,14 +203,14 @@ class OpsourceStatus(object):
         self.failureReason = failureReason
 
     def __repr__(self):
-        return (('<OpsourceStatus: action=%s, requestTime=%s, userName=%s, ' \
-                    'numberOfSteps=%s, updateTime=%s, step_name=%s, ' \
-                    'step_number=%s, step_percentComplete=%s, ' \
-                    'failureReason=%s')
-                  % (self.action, self.requestTime, self.userName,
-                    self.numberOfSteps, self.updateTime, self.step_name,
-                    self.step_number, self.step_percentComplete,
-                    self.failureReason))
+        return (('<OpsourceStatus: action=%s, requestTime=%s, userName=%s, '
+                 'numberOfSteps=%s, updateTime=%s, step_name=%s, '
+                 'step_number=%s, step_percentComplete=%s, '
+                 'failureReason=%s')
+                % (self.action, self.requestTime, self.userName,
+                   self.numberOfSteps, self.updateTime, self.step_name,
+                   self.step_number, self.step_percentComplete,
+                   self.failureReason))
 
 
 class OpsourceNetwork(object):
@@ -220,7 +219,7 @@ class OpsourceNetwork(object):
     """
 
     def __init__(self, id, name, description, location, privateNet,
-                multicast, status):
+                 multicast, status):
         self.id = str(id)
         self.name = name
         self.description = description
@@ -230,7 +229,7 @@ class OpsourceNetwork(object):
         self.status = status
 
     def __repr__(self):
-        return (('<OpsourceNetwork: id=%s, name=%s, description=%s, ' \
+        return (('<OpsourceNetwork: id=%s, name=%s, description=%s, '
                  'location=%s, privateNet=%s, multicast=%s>')
                 % (self.id, self.name, self.description, self.location,
                    self.privateNet, self.multicast))
@@ -255,7 +254,7 @@ class OpsourceACLRule(object):
     Opsource network ACL Rule
     """
 
-    def __init__(self, id, name, status, position, action, protocol, 
+    def __init__(self, id, name, status, position, action, protocol,
                         _type, port1, port2=None):
         self.id = str(id)
         self.name = name
@@ -270,7 +269,7 @@ class OpsourceACLRule(object):
     def __repr__(self):
         return (('<OpsourceACLRule: id=%s, name=%s, status=%s, position=%s, '
                         'action=%s, protocol=%s, type=%s, port1=%s, port2=%s>')
-                % (self.id, self.name, self.status, self.position, self.action, 
+                % (self.id, self.name, self.status, self.position, self.action,
                         self.protocol, self.type, self.port1, self.port2))
 
 class OpsourceNodeDriver(NodeDriver):
@@ -288,9 +287,8 @@ class OpsourceNodeDriver(NodeDriver):
         """
         Create a new opsource node
 
-        Standard keyword arguments from L{NodeDriver.create_node}:
         @keyword    name:   String with a name for this new node (required)
-        @type       name:   str
+        @type       name:   C{str}
 
         @keyword    image:  OS Image to boot on node. (required)
         @type       image:  L{NodeImage}
@@ -299,7 +297,6 @@ class OpsourceNodeDriver(NodeDriver):
                             node (required)
         @type       auth:   L{NodeAuthPassword}
 
-        Non-standard keyword arguments:
         @keyword    ex_description:  description for this node (required)
         @type       ex_description:  C{str}
 
@@ -315,6 +312,7 @@ class OpsourceNodeDriver(NodeDriver):
                  so the returned L{Node} is not guaranteed to be the same one
                  that was created.  This is only the case when multiple nodes
                  with the same name exist.
+        @rtype: L{Node}
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -344,7 +342,7 @@ class OpsourceNodeDriver(NodeDriver):
             imageResourcePath = image.extra['resourcePath']
         else:
             imageResourcePath = "%s/%s" % (self.connection.get_resource_path(),
-                image.id)
+                                           image.id)
 
         server_elm = ET.Element('Server', {'xmlns': SERVER_NS})
         ET.SubElement(server_elm, "name").text = name
@@ -355,8 +353,8 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(server_elm, "isStarted").text = str(ex_isStarted)
 
         self.connection.request_with_orgId('server',
-                                          method='POST',
-                                          data=ET.tostring(server_elm)).object
+                                           method='POST',
+                                           data=ET.tostring(server_elm)).object
 
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
@@ -387,10 +385,10 @@ class OpsourceNodeDriver(NodeDriver):
         return result == 'SUCCESS'
 
     def list_nodes(self):
-        nodes = self._to_nodes(self.connection
-            .request_with_orgId('server/deployed').object)
-        nodes.extend(self._to_nodes(self.connection
-            .request_with_orgId('server/pendingDeploy').object))
+        nodes = self._to_nodes(
+            self.connection.request_with_orgId('server/deployed').object)
+        nodes.extend(self._to_nodes(
+            self.connection.request_with_orgId('server/pendingDeploy').object))
         return nodes
 
     def list_images(self, location=None):
@@ -398,6 +396,8 @@ class OpsourceNodeDriver(NodeDriver):
         return a list of available images
             Currently only returns the default 'base OS images' provided by
             opsource. Customer images (snapshots) are not yet supported.
+
+        @inherits: L{NodeDriver.list_images}
         """
         return self._to_base_images(self.connection.request('base/image')
                    .object)
@@ -405,31 +405,38 @@ class OpsourceNodeDriver(NodeDriver):
     def list_sizes(self, location=None):
         return [
             NodeSize(id=1,
-                name="default",
-                ram=0,
-                disk=0,
-                bandwidth=0,
-                price=0,
-                driver=self.connection.driver),
+                     name="default",
+                     ram=0,
+                     disk=0,
+                     bandwidth=0,
+                     price=0,
+                     driver=self.connection.driver),
         ]
 
     def list_locations(self):
         """
         list locations (datacenters) available for instantiating servers and
         networks.
+
+        @inherits: L{NodeDriver.list_locations}
         """
-        return self._to_locations(self.connection
-            .request_with_orgId('datacenter').object)
+        return self._to_locations(
+            self.connection.request_with_orgId('datacenter').object)
 
     def list_networks(self, location=None):
         """
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
 
-        Returns a list of OpsourceNetwork objects
+
+        @keyword location: The location
+        @type    location: L{NodeLocation}
+
+        @return: a list of OpsourceNetwork objects
+        @rtype: C{list} of L{OpsourceNetwork}
         """
-        return self._to_networks(self.connection
-            .request_with_orgId('networkWithLocation').object)
+        return self._to_networks(
+            self.connection.request_with_orgId('networkWithLocation').object)
 
     def _to_base_images(self, object):
         images = []
@@ -450,28 +457,33 @@ class OpsourceNodeDriver(NodeDriver):
             'description': findtext(element, 'description', SERVER_NS),
             'OS_type': findtext(element, 'operatingSystem/type', SERVER_NS),
             'OS_displayName': findtext(element, 'operatingSystem/displayName',
-                SERVER_NS),
+                                       SERVER_NS),
             'cpuCount': findtext(element, 'cpuCount', SERVER_NS),
             'resourcePath': findtext(element, 'resourcePath', SERVER_NS),
             'memory': findtext(element, 'memory', SERVER_NS),
             'osStorage': findtext(element, 'osStorage', SERVER_NS),
             'additionalStorage': findtext(element, 'additionalStorage',
-                SERVER_NS),
+                                          SERVER_NS),
             'created': findtext(element, 'created', SERVER_NS),
             'location': location,
         }
 
         return NodeImage(id=str(findtext(element, 'id', SERVER_NS)),
-                     name=str(findtext(element, 'name', SERVER_NS)),
-                     extra=extra,
-                     driver=self.connection.driver)
+                         name=str(findtext(element, 'name', SERVER_NS)),
+                         extra=extra,
+                         driver=self.connection.driver)
 
     def ex_start_node(self, node):
         """
         Powers on an existing deployed server
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
         """
-        body = self.connection.request_with_orgId('server/%s?start' %
-            node.id).object
+        body = self.connection.request_with_orgId(
+            'server/%s?start' % node.id).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
@@ -481,8 +493,8 @@ class OpsourceNodeDriver(NodeDriver):
         on this function means the system has successfully passed the
         request into the operating system.
         """
-        body = self.connection.request_with_orgId('server/%s?shutdown' %
-                                                  (node.id)).object
+        body = self.connection.request_with_orgId(
+            'server/%s?shutdown' % (node.id)).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
@@ -492,9 +504,14 @@ class OpsourceNodeDriver(NodeDriver):
         ex_shutdown_graceful, success ensures the node will stop but some OS
         and application configurations may be adversely affected by the
         equivalent of pulling the power plug out of the machine.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
         """
-        body = self.connection.request_with_orgId('server/%s?poweroff' %
-            node.id).object
+        body = self.connection.request_with_orgId(
+            'server/%s?poweroff' % node.id).object
         result = findtext(body, 'result', GENERAL_NS)
         return result == 'SUCCESS'
 
@@ -534,7 +551,8 @@ class OpsourceNodeDriver(NodeDriver):
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
 
-        Returns a list of OpsourceNetwork objects
+        @return: a list of OpsourceNetwork objects
+        @rtype: C{list} of L{OpsourceNetwork}
         """
         response = self.connection.request_with_orgId('networkWithLocation') \
                                   .object
@@ -564,13 +582,13 @@ class OpsourceNodeDriver(NodeDriver):
         ET.SubElement(nat_elm, "name").text = private_ip
         ET.SubElement(nat_elm, "sourceIp").text = private_ip
 
-        self.connection.request_with_orgId('network/%s/natrule' %(network.id), 
+        self.connection.request_with_orgId('network/%s/natrule' %(network.id),
                                            method='POST',
                                            data=ET.tostring(nat_elm)
                                            ).object
 
         return filter(lambda x: x.name == private_ip, self.ex_list_nat_rules(network.id))[0]
- 
+
     def ex_create_acl_rule(self, name, position, network, action, protocol, _type, start_port, end_port=None):
         """Create a ACL rule in a particular network
         @keyword    name:   Name for the ACL Rule (required)
@@ -611,17 +629,26 @@ class OpsourceNodeDriver(NodeDriver):
         if end_port:
             ET.SubElement(port_elm, "port2").text = end_port
 
-        self.connection.request_with_orgId('network/%s/aclrule' %network.id, 
+        self.connection.request_with_orgId('network/%s/aclrule' %network.id,
                                            method='POST',
                                            data=ET.tostring(acl_elm)
                                            ).object
- 
+
         return filter(lambda x: x.name == name, self.ex_list_acl_rules(network))[0]
 
     def ex_get_location_by_id(self, id):
+        """
+        Get location by ID.
+
+        @param  id: ID of the node location which should be used
+        @type   id: C{str}
+
+        @rtype: L{NodeLocation}
+        """
         location = None
         if id is not None:
-            location = list(filter(lambda x: x.id == id, self.list_locations()))[0]
+            location = list(
+                filter(lambda x: x.id == id, self.list_locations()))[0]
         return location
 
     def _to_networks(self, object):
@@ -644,10 +671,10 @@ class OpsourceNodeDriver(NodeDriver):
         return OpsourceNetwork(id=findtext(element, 'id', NETWORK_NS),
                                name=findtext(element, 'name', NETWORK_NS),
                                description=findtext(element, 'description',
-                                   NETWORK_NS),
+                                                    NETWORK_NS),
                                location=location,
                                privateNet=findtext(element, 'privateNet',
-                                   NETWORK_NS),
+                                                   NETWORK_NS),
                                multicast=multicast,
                                status=status)
 
@@ -661,7 +688,7 @@ class OpsourceNodeDriver(NodeDriver):
                                name = findtext(element, 'name', NETWORK_NS),
                                private_ip = findtext(element, 'sourceIp', NETWORK_NS),
                                public_ip = findtext(element, 'natIp', NETWORK_NS))
-                     
+
 
 
     def _to_aclrules(self, object):
@@ -675,11 +702,11 @@ class OpsourceNodeDriver(NodeDriver):
                                position = findtext(element, 'position', NETWORK_NS),
                                action = findtext(element, 'action', NETWORK_NS),
                                protocol = findtext(element, 'protocol', NETWORK_NS),
-                               _type = findtext(element, 'portRange/type', NETWORK_NS), 
-                               port1 = findtext(element, 'portRange/port1', NETWORK_NS),   
-                               port2 = findtext(element, 'portRange/port2', NETWORK_NS))   
-          
- 
+                               _type = findtext(element, 'portRange/type', NETWORK_NS),
+                               port1 = findtext(element, 'portRange/port1', NETWORK_NS),
+                               port2 = findtext(element, 'portRange/port2', NETWORK_NS))
+
+
     def ex_remove_acl_rule(self, acl_rule, network):
         """Remove the ACL rule"""
         body = self.connection.request_with_orgId('network/%s/aclrule/%s?delete' % (network.id, acl_rule.id)).object
@@ -708,8 +735,8 @@ class OpsourceNodeDriver(NodeDriver):
 
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('DeployedServer', SERVER_NS))
-        node_elements.extend(object.findall(fixxpath('PendingDeployServer',
-            SERVER_NS)))
+        node_elements.extend(object.findall(
+            fixxpath('PendingDeployServer', SERVER_NS)))
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
@@ -727,17 +754,21 @@ class OpsourceNodeDriver(NodeDriver):
             'machineName': findtext(element, 'machineName', SERVER_NS),
             'deployedTime': findtext(element, 'deployedTime', SERVER_NS),
             'cpuCount': findtext(element, 'machineSpecification/cpuCount',
-                SERVER_NS),
+                                 SERVER_NS),
             'memoryMb': findtext(element, 'machineSpecification/memoryMb',
-                SERVER_NS),
+                                 SERVER_NS),
             'osStorageGb': findtext(element,
-                'machineSpecification/osStorageGb', SERVER_NS),
-            'additionalLocalStorageGb': findtext(element,
-                'machineSpecification/additionalLocalStorageGb', SERVER_NS),
+                                    'machineSpecification/osStorageGb',
+                                    SERVER_NS),
+            'additionalLocalStorageGb': findtext(
+                element, 'machineSpecification/additionalLocalStorageGb',
+                SERVER_NS),
             'OS_type': findtext(element,
-                'machineSpecification/operatingSystem/type', SERVER_NS),
-            'OS_displayName': findtext(element,
-                'machineSpecification/operatingSystem/displayName', SERVER_NS),
+                                'machineSpecification/operatingSystem/type',
+                                SERVER_NS),
+            'OS_displayName': findtext(
+                element, 'machineSpecification/operatingSystem/displayName',
+                SERVER_NS),
             'status': status,
         }
 
@@ -751,21 +782,21 @@ class OpsourceNodeDriver(NodeDriver):
         return n
 
     def _to_status(self, element):
-        if element == None:
+        if element is None:
             return OpsourceStatus()
         s = OpsourceStatus(action=findtext(element, 'action', SERVER_NS),
-                          requestTime=findtext(element, 'requestTime',
-                              SERVER_NS),
-                          userName=findtext(element, 'userName',
-                              SERVER_NS),
-                          numberOfSteps=findtext(element, 'numberOfSteps',
-                              SERVER_NS),
-                          step_name=findtext(element, 'step/name',
-                              SERVER_NS),
-                          step_number=findtext(element, 'step_number',
-                              SERVER_NS),
-                          step_percentComplete=findtext(element,
-                              'step/percentComplete', SERVER_NS),
-                          failureReason=findtext(element, 'failureReason',
-                              SERVER_NS))
+                           requestTime=findtext(element, 'requestTime',
+                                                SERVER_NS),
+                           userName=findtext(element, 'userName',
+                                             SERVER_NS),
+                           numberOfSteps=findtext(element, 'numberOfSteps',
+                                                  SERVER_NS),
+                           step_name=findtext(element, 'step/name',
+                                              SERVER_NS),
+                           step_number=findtext(element, 'step_number',
+                                                SERVER_NS),
+                           step_percentComplete=findtext(
+                               element, 'step/percentComplete', SERVER_NS),
+                           failureReason=findtext(element, 'failureReason',
+                                                  SERVER_NS))
         return s

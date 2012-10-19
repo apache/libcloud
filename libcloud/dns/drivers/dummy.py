@@ -35,7 +35,13 @@ class DummyDNSDriver(DNSDriver):
 
     def __init__(self, api_key, api_secret):
         """
-        @requires: api_key, api_secret
+        @param    api_key:    API key or username to used (required)
+        @type     api_key:    C{str}
+
+        @param    api_secret: Secret password to be used (required)
+        @type     api_secret: C{str}
+
+        @rtype: C{None}
         """
         self._zones = {}
 
@@ -44,6 +50,8 @@ class DummyDNSDriver(DNSDriver):
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> driver.list_record_types()
         [0]
+
+        @inherits: L{DNSDriver.list_record_types}
         """
         return [RecordType.A]
 
@@ -52,6 +60,8 @@ class DummyDNSDriver(DNSDriver):
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> driver.list_zones()
         []
+
+        @inherits: L{DNSDriver.list_zones}
         """
 
         return [zone['zone'] for zone in list(self._zones.values())]
@@ -66,6 +76,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneDoesNotExistError:
+
+        @inherits: L{DNSDriver.get_zone}
         """
 
         if zone_id not in self._zones:
@@ -81,6 +93,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneDoesNotExistError:
+
+        @inherits: L{DNSDriver.get_record}
         """
 
         self.get_zone(zone_id=zone_id)
@@ -104,6 +118,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneAlreadyExistsError:
+
+        @inherits: L{DNSDriver.create_zone}
         """
 
         id = 'id-%s' % (domain)
@@ -114,7 +130,7 @@ class DummyDNSDriver(DNSDriver):
         zone = Zone(id=id, domain=domain, type=type, ttl=ttl, extra={},
                     driver=self)
         self._zones[id] = {'zone': zone,
-                            'records': {}}
+                           'records': {}}
         return zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -131,6 +147,8 @@ class DummyDNSDriver(DNSDriver):
         ... #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         RecordAlreadyExistsError:
+
+        @inherits: L{DNSDriver.create_record}
         """
         id = 'id-%s' % (name)
 
@@ -155,6 +173,8 @@ class DummyDNSDriver(DNSDriver):
         >>> driver.delete_zone(zone) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ZoneDoesNotExistError:
+
+        @inherits: L{DNSDriver.delete_zone}
         """
         self.get_zone(zone_id=zone.id)
 
@@ -173,6 +193,8 @@ class DummyDNSDriver(DNSDriver):
         >>> driver.delete_record(record) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         RecordDoesNotExistError:
+
+        @inherits: L{DNSDriver.delete_record}
         """
         self.get_record(zone_id=record.zone.id, record_id=record.id)
 

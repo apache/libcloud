@@ -45,7 +45,6 @@ API_PORT = (80, 443)
 
 
 class ECPResponse(Response):
-
     def success(self):
         if self.status == httplib.OK or self.status == httplib.CREATED:
             try:
@@ -89,7 +88,7 @@ class ECPConnection(ConnectionUserAndKey):
         username = self.user_id
         password = self.key
         base64string = base64.encodestring(
-                b('%s:%s' % (username, password)))[:-1]
+            b('%s:%s' % (username, password)))[:-1]
         authheader = "Basic %s" % base64string
         headers['Authorization'] = authheader
 
@@ -131,6 +130,8 @@ class ECPNodeDriver(NodeDriver):
     def list_nodes(self):
         """
         Returns a list of all running Nodes
+
+        @rtype: C{list} of L{Node}
         """
 
         #Make the call
@@ -140,7 +141,7 @@ class ECPNodeDriver(NodeDriver):
         nodes = []
         for vm in res['vms']:
             node = self._to_node(vm)
-            if not node == None:
+            if not node is None:
                 nodes.append(node)
 
         #And return it
@@ -157,7 +158,8 @@ class ECPNodeDriver(NodeDriver):
             return None
 
         #IPs
-        iplist = [interface['ip'] for interface in vm['interfaces']  if interface['ip'] != '127.0.0.1']
+        iplist = [interface['ip'] for interface in vm['interfaces'] if
+                  interface['ip'] != '127.0.0.1']
 
         public_ips = []
         private_ips = []
@@ -174,12 +176,12 @@ class ECPNodeDriver(NodeDriver):
 
         #Create the node object
         n = Node(
-          id=vm['uuid'],
-          name=vm['name'],
-          state=NodeState.RUNNING,
-          public_ips=public_ips,
-          private_ips=private_ips,
-          driver=self,
+            id=vm['uuid'],
+            name=vm['name'],
+            state=NodeState.RUNNING,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self,
         )
 
         return n
@@ -187,16 +189,18 @@ class ECPNodeDriver(NodeDriver):
     def reboot_node(self, node):
         """
         Shuts down a VM and then starts it again.
+
+        @inherits: L{NodeDriver.reboot_node}
         """
 
         #Turn the VM off
         #Black magic to make the POST requests work
         d = self.connection._encode_multipart_formdata({'action': 'stop'})
         self.connection.request(
-                   '/rest/hosting/vm/%s' % node.id,
-                   method='POST',
-                   headers=d[0],
-                   data=d[1]
+            '/rest/hosting/vm/%s' % node.id,
+            method='POST',
+            headers=d[0],
+            data=d[1]
         ).parse_body()
 
         node.state = NodeState.REBOOTING
@@ -204,8 +208,8 @@ class ECPNodeDriver(NodeDriver):
         while node.state == NodeState.REBOOTING:
             #Check if it's off.
             response = self.connection.request(
-                     '/rest/hosting/vm/%s' % node.id
-                     ).parse_body()
+                '/rest/hosting/vm/%s' % node.id
+            ).parse_body()
             if response['vm']['state'] == 'off':
                 node.state = NodeState.TERMINATED
             else:
@@ -227,6 +231,8 @@ class ECPNodeDriver(NodeDriver):
     def destroy_node(self, node):
         """
         Shuts down and deletes a VM.
+
+        @inherits: L{NodeDriver.destroy_node}
         """
 
         #Shut down first
@@ -245,8 +251,8 @@ class ECPNodeDriver(NodeDriver):
         while node.state == NodeState.PENDING:
             #Check if it's off.
             response = self.connection.request(
-                       '/rest/hosting/vm/%s' % node.id
-                       ).parse_body()
+                '/rest/hosting/vm/%s' % node.id
+            ).parse_body()
             if response['vm']['state'] == 'off':
                 node.state = NodeState.TERMINATED
             else:
@@ -267,6 +273,8 @@ class ECPNodeDriver(NodeDriver):
     def list_images(self, location=None):
         """
         Returns a list of all package templates aka appiances aka images.
+
+        @inherits: L{NodeDriver.list_images}
         """
 
         #Make the call
@@ -279,14 +287,16 @@ class ECPNodeDriver(NodeDriver):
             images.append(NodeImage(
                 id=ptemplate['uuid'],
                 name='%s: %s' % (ptemplate['name'], ptemplate['description']),
-                driver=self,
-                ))
+                driver=self,)
+            )
 
         return images
 
     def list_sizes(self, location=None):
         """
         Returns a list of all hardware templates
+
+        @inherits: L{NodeDriver.list_sizes}
         """
 
         #Make the call
@@ -303,31 +313,43 @@ class ECPNodeDriver(NodeDriver):
                 disk=0,  # Disk is independent of hardware template.
                 bandwidth=0,  # There is no way to keep track of bandwidth.
                 price=0,  # The billing system is external.
-                driver=self,
-                ))
+                driver=self,)
+            )
 
         return sizes
 
     def list_locations(self):
         """
         This feature does not exist in ECP. Returns hard coded dummy location.
+
+        @rtype: C{list} of L{NodeLocation}
         """
-        return [
-          NodeLocation(id=1,
-                       name="Cloud",
-                       country='',
-                       driver=self),
-        ]
+        return [NodeLocation(id=1,
+                             name="Cloud",
+                             country='',
+                             driver=self),
+                ]
 
     def create_node(self, **kwargs):
         """
         Creates a virtual machine.
 
-        Parameters: name (string), image (NodeImage), size (NodeSize)
+        @keyword    name:   String with a name for this new node (required)
+        @type       name:   C{str}
+
+        @keyword    size:   The size of resources allocated to this node .
+                            (required)
+        @type       size:   L{NodeSize}
+
+        @keyword    image:  OS Image to boot on node. (required)
+        @type       image:  L{NodeImage}
+
+        @rtype: L{Node}
         """
 
         #Find out what network to put the VM on.
-        res = self.connection.request('/rest/hosting/network/list').parse_body()
+        res = self.connection.request(
+            '/rest/hosting/network/list').parse_body()
 
         #Use the first / default network because there is no way to specific
         #which one
@@ -335,11 +357,11 @@ class ECPNodeDriver(NodeDriver):
 
         #Prepare to make the VM
         data = {
-            'name' : str(kwargs['name']),
-            'package' : str(kwargs['image'].id),
-            'hardware' : str(kwargs['size'].id),
-            'network_uuid' : str(network),
-            'disk' : ''
+            'name': str(kwargs['name']),
+            'package': str(kwargs['image'].id),
+            'hardware': str(kwargs['size'].id),
+            'network_uuid': str(network),
+            'disk': ''
         }
 
         #Black magic to make the POST requests work
