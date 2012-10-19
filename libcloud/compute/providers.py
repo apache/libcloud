@@ -114,6 +114,12 @@ DRIVERS = {
         ('libcloud.compute.drivers.joyent', 'JoyentNodeDriver'),
     Provider.VCL:
         ('libcloud.compute.drivers.vcl', 'VCLNodeDriver'),
+    Provider.HPCLOUD_AZ1:
+        ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ1NodeDriver'),
+    Provider.HPCLOUD_AZ2:
+        ('libcloud.compute.drivers.hpcloud', 'HPCloudAZ2NodeDriver'),
+    Provider.SAVVIS:
+        ('libcloud.compute.drivers.vcloud', 'SavvisNodeDriver'),libcloud/compute/drivers/vcloud.py
     Provider.KTUCLOUD:
         ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver')
 }

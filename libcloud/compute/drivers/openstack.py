@@ -1029,6 +1029,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'ex_keyname' in kwargs:
             server_params['key_name'] = kwargs['ex_keyname']
 
+        if 'ex_securitygroups' in kwargs:
+            server_params["security_groups"] = kwargs['ex_securitygroups']
+
         if 'ex_userdata' in kwargs:
             server_params['user_data'] = base64.b64encode(
                 b(kwargs['ex_userdata'])).decode('ascii')

@@ -552,6 +552,52 @@ class IBMNodeDriver(NodeDriver):
         raise LibcloudError(value='Timed out after %d seconds' % (timeout),
                             driver=self)
 
+    def ex_create_keypair(self, name):
+        """Creates a new keypair
+
+        @note: This is a non-standard extension API, and
+               only works for IBM SmartCloud.
+
+        @type name: C{str}
+        @param name: The name of the keypair to Create. This must be
+                     unique.
+        """
+        params = {
+            'name': name
+            }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        response = self.connection.request(action = REST_BASE + '/keys' , data=params, method = 'POST', headers = headers).object
+        private_key = response.findall('PrivateKey')[0]
+        key_material = private_key.findtext('KeyMaterial')
+        
+        return {
+            'keyMaterial': key_material,
+            }
+
+    def ex_delete_keypair(self, name):
+        """Delete an existing keypair
+
+        @note: This is a non-standard extension API, and
+               only works for IBM SmartCloud.
+
+        @type name: C{str}
+        @param name: The name of the keypair to delete.
+        """
+        url = REST_BASE + '/keys/%s' %name
+        status = int(self.connection.request(action = url, method='DELETE').status)
+        return status == 200
+    def ex_list_keypairs(self):
+        """List Key pairs"""
+        return self._to_keypairs(self.connection.request(action = REST_BASE + '/keys' , method = 'GET').object)
+
+    def _to_keypairs(self, object):
+        return [ self._to_keypair(keypair) for keypair in object.findall('PublicKey')]
+
+    def _to_keypair(self, object):
+         return NodeAuthSSHKey(object.findtext('KeyName'))
+
     def _to_nodes(self, object):
         return [self._to_node(instance) for instance in
                 object.findall('Instance')]
