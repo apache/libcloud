@@ -91,7 +91,7 @@ class FileDeployment(Deployment):
         @keyword source: Local path of file to be installed
 
         @type target: C{str}
-        @keyword target: Path to install file on node 
+        @keyword target: Path to install file on node
         """
         self.source = source
         self.target = target

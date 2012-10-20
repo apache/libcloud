@@ -142,6 +142,7 @@ class Address(object):
         return ('<Address: id=%s, ip=%s, state=%s, options=%s>' %
                 (self.id, self.ip, self.state, self.options))
 
+
 class IBMNodeDriver(NodeDriver):
     """
     Node driver for IBM SmartCloud Enterprise
