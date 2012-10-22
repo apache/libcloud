@@ -953,7 +953,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @type       ex_metadata: C{dict}
 
         @keyword    ex_files:   File Path => File contents to create on
-                                the node
+                                the no  de
         @type       ex_files:   C{dict}
 
         @keyword    ex_keyname:  Name of existing public key to inject into
@@ -966,7 +966,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @type       ex_userdata: C{str}
 
         @keyword    networks: The server is launched into a set of Networks.
-        @type       networks: C{OpenStackNetwork}
+        @type       networks: L{OpenStackNetwork}
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -1249,6 +1249,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a new Network
 
+        @param name: Name of network which should be used
+        @type name: C{str}
+
+        @param cidr: cidr of network which should be used
+        @type cidr: C{str}
+
         @rtype: L{OpenStackNetwork}
         """
         return self._to_network(self.connection.request(
@@ -1260,7 +1266,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a list of NodeNetorks that are available.
 
-        @rtype: L{bool}
+        @param network: Network which should be used
+        @type network: L{OpenStackNetwork}
+
+        @rtype: C{bool}
         """
         resp = self.connection.request('/os-networksv2/%s' % (network.id),
                                        method='DELETE')

@@ -650,7 +650,7 @@ class EC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list}
+        @rtype: C{list} of C{str}
         """
 
         params = {
@@ -743,8 +743,8 @@ class EC2NodeDriver(NodeDriver):
         @param      from_port: The beginning of the port range to open
         @type       from_port: C{str}
 
-        @param      end_port: The end of the port range to open
-        @type       end_port: C{str}
+        @param      to_port: The end of the port range to open
+        @type       to_port: C{str}
 
         @param      cidr_ip: The ip to allow traffic for.
         @type       cidr_ip: C{str}
@@ -752,7 +752,7 @@ class EC2NodeDriver(NodeDriver):
         @param      protocol: tcp/udp/icmp
         @type       protocol: C{str}
 
-        @rtype: C{boolean}
+        @rtype: C{bool}
         """
 
         params = {'Action': 'AuthorizeSecurityGroupIngress',
@@ -762,7 +762,8 @@ class EC2NodeDriver(NodeDriver):
                   'ToPort': str(to_port),
                   'CidrIp': cidr_ip}
         try:
-            resp = self.connection.request(self.path, params=params.copy()).object
+            resp = self.connection.request(
+                self.path, params=params.copy()).object
             return bool(findtext(element=resp, xpath='return',
                                  namespace=NAMESPACE))
         except Exception:
