@@ -1,8 +1,9 @@
 *.py[co]
 *.sw[po]
-test/secrets.py
+libcloud/test/secrets.py
 demos/secrets.py
 *~
+.tox
 _trial_temp
 build
 MANIFEST
