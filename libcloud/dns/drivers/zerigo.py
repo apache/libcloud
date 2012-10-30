@@ -345,7 +345,7 @@ class ZerigoDNSDriver(DNSDriver):
             name_elem = ET.SubElement(record_elem, 'hostname')
             name_elem.text = name
 
-        if type:
+        if type is not None:
             type_elem = ET.SubElement(record_elem, 'host-type')
             type_elem.text = self.RECORD_TYPE_MAP[type]
 

@@ -388,6 +388,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     service_type = None
     service_name = None
     service_region = None
+    _auth_version = None
 
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, timeout=None,
@@ -402,11 +403,12 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
-        self._auth_version = ex_force_auth_version
+        self._auth_version = self._auth_version or ex_force_auth_version
         self._ex_tenant_name = ex_tenant_name
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
+
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
 

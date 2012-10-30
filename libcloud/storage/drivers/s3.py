@@ -460,11 +460,22 @@ class S3StorageDriver(StorageDriver):
         return container
 
     def _headers_to_object(self, object_name, container, headers):
-        meta_data = {'content_type': headers['content-type']}
         hash = headers['etag'].replace('"', '')
+        extra = {'content_type': headers['content-type'], 'etag': headers['etag']}
+        meta_data = {}
+
+        if 'last-modified' in headers:
+            extra['last_modified'] = headers['last-modified']
+
+        for key, value in headers.items():
+            if not key.lower().startswith('x-amz-meta-'):
+                continue
+
+            key = key.replace('x-amz-meta-', '')
+            meta_data[key] = value
 
         obj = Object(name=object_name, size=headers['content-length'],
-                     hash=hash, extra=None,
+                     hash=hash, extra=extra,
                      meta_data=meta_data,
                      container=container,
                      driver=self)

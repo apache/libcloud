@@ -164,7 +164,6 @@ class ZerigoTests(unittest.TestCase):
                                                extra={'notes':
                                                       'bar foo'})
 
-        self.assertEqual(zone.extra['hostmaster'], '')
         self.assertEqual(zone.extra['notes'], 'test foo bar')
 
         self.assertEqual(updated_zone.id, zone.id)

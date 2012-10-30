@@ -28,7 +28,7 @@ from libcloud.compute.deployment import FileDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
-from libcloud.compute.drivers.rackspace import RackspaceNodeDriver as Rackspace
+from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
 from libcloud.test import MockHttp, XML_HEADERS
 from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures

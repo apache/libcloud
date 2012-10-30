@@ -197,7 +197,7 @@ class LinodeDNSDriver(DNSDriver):
         if data:
             params['Target'] = data
 
-        if type:
+        if type is not None:
             params['Type'] = self.RECORD_TYPE_MAP[type]
 
         merged = merge_valid_keys(params=params,

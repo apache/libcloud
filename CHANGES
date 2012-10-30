@@ -4,6 +4,57 @@ Changes with Apache Libcloud in development:
 
   *) Compute
 
+    - Fix string interpolation bug in __repr__ methods in the IBM SCE driver. ;
+      LIBCLOUD-242
+      [Tomaz Muraus]
+
+    - Fix test failures which happened in Python 3.3 due to:
+      - hash randomization
+      - changes in xml.etree module
+      - changes in xmlrpc module
+      ; LIBCLOUD-245
+      [Tomaz Muraus]
+
+    - Refactor Rackspace driver classes and make them easier to use. Now there
+      are two rackspace constants - Provider.RACKSPACE which represents new
+      next-gen OpenStack servers and Provider.RACKSPACE_FIRST_GEN which
+      represents old cloud servers.
+
+      Note: This change is backward incompatible. For more information on those
+      changes and how to upgrade your code to make it work with it, please visit
+      TODO.
+      [Tomaz Muraus]
+
+  *) DNS
+
+    - Update 'if type' checks in the update_record methods to behave correctly
+      if users passes in RecordType.A with a value of 0 - if type is not None.
+      ; LIBCLOUD-247
+      [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.11.3:
+
+  *) Storage
+
+    - Include 'last_modified' and 'content_type' attribute in the Object
+      'extra' dictionary when retrieving object using get_object in the S3
+      driver. Also modify 'meta_data' dictionary to include all the headers
+      prefixed with 'x-amz-meta-'.
+      [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.11.2:
+
+  *) General
+
+    Fix a bug with the Libcloud SSL verification code. Code was too strict and
+    didn't allow "-" character in the sub-domain when using a wildcard
+    certificate.
+
+    Note: This is NOT a security vulnerability. ; LIBCLOUD-244
+    [Tomaz Muraus]
+
+  *) Compute
+
     - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
       [Brian McDaniel]
 

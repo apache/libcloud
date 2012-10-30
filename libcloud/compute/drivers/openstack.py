@@ -904,6 +904,23 @@ class OpenStack_1_1_Response(OpenStackResponse):
         super(OpenStack_1_1_Response, self).__init__(*args, **kwargs)
 
 
+class OpenStackNetwork(object):
+    """
+    A Virtual Network.
+    """
+
+    def __init__(self, id, name, cidr, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.cidr = cidr
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStackNetwork id="%s" name="%s" cidr="%s">' % (self.id,
+               self.name, self.cidr,)
+
+
 class OpenStack_1_1_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_1_Response
     accept_format = 'application/json'
@@ -947,6 +964,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  see
                                  https://help.ubuntu.com/community/CloudInit
         @type       ex_userdata: C{str}
+
+        @keyword    networks: The server is launched into a set of Networks.
+        @type       networks: L{OpenStackNetwork}
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -1012,6 +1032,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'ex_userdata' in kwargs:
             server_params['user_data'] = base64.b64encode(
                 b(kwargs['ex_userdata'])).decode('ascii')
+
+        if 'networks' in kwargs:
+            networks = kwargs['networks']
+            networks = [{'uuid': network.id} for network in networks]
+            server_params['networks'] = networks
 
         if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
@@ -1200,6 +1225,55 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         potential_data = self._create_args_to_params(node, **node_updates)
         updates = {'name': potential_data['name']}
         return self._update_node(node, **updates)
+
+    def _to_networks(self, obj):
+        networks = obj['networks']
+        return [self._to_network(network) for network in networks]
+
+    def _to_network(self, obj):
+        return OpenStackNetwork(id=obj['id'],
+                                name=obj['label'],
+                                cidr=obj.get('cidr', None),
+                                driver=self)
+
+    def ex_list_networks(self):
+        """
+        Get a list of Networks that are available.
+
+        @rtype: C{list} of L{OpenStackNetwork}
+        """
+        return self._to_networks(
+            self.connection.request('/os-networksv2').object)
+
+    def ex_create_network(self, name, cidr):
+        """
+        Create a new Network
+
+        @param name: Name of network which should be used
+        @type name: C{str}
+
+        @param cidr: cidr of network which should be used
+        @type cidr: C{str}
+
+        @rtype: L{OpenStackNetwork}
+        """
+        return self._to_network(self.connection.request(
+            '/os-networksv2', method='POST',
+            data={'network': {'cidr': cidr, 'label': name}}
+        ).object['network'])
+
+    def ex_delete_network(self, network):
+        """
+        Get a list of NodeNetorks that are available.
+
+        @param network: Network which should be used
+        @type network: L{OpenStackNetwork}
+
+        @rtype: C{bool}
+        """
+        resp = self.connection.request('/os-networksv2/%s' % (network.id),
+                                       method='DELETE')
+        return resp.status == httplib.ACCEPTED
 
     def ex_get_size(self, size_id):
         """

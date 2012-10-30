@@ -84,8 +84,8 @@ class IBMNodeLocation(NodeLocation):
 
     def __repr__(self):
         return ('<IBMNodeLocation: id=%s, name=%s, country=%s, '
-                'driver=%s, extra=%s>' % self.id, self.name, self.country,
-                self.driver.name, self.extra)
+                'driver=%s, extra=%s>' % (self.id, self.name, self.country,
+                self.driver.name, self.extra))
 
 
 class VolumeState(object):
@@ -123,13 +123,14 @@ class VolumeOffering(object):
 
     def __repr__(self):
         return ('<VolumeOffering: id=%s, location=%s, name=%s, extra=%s>' %
-                 self.id, self.location, self.name, self.extra)
+                (self.id, self.location, self.name, self.extra))
 
 
 class Address(object):
     """
     A reserved IP address that can be attached to an instance.
-    Properties: id, ip, state, options(location, type, created_time, state, hostname, instance_ids, vlan, owner,
+    Properties: id, ip, state, options(location, type, created_time, state,
+     hostname, instance_ids, vlan, owner,
     mode, offering_id)
     """
     def __init__(self, id, ip, state, options):
@@ -140,7 +141,8 @@ class Address(object):
 
     def __repr__(self):
         return ('<Address: id=%s, ip=%s, state=%s, options=%s>' %
-                 self.id, self.ip, self.state, self.options)
+                (self.id, self.ip, self.state, self.options))
+
 
 class IBMNodeDriver(NodeDriver):
     """
@@ -263,6 +265,7 @@ class IBMNodeDriver(NodeDriver):
         @type       kwargs.target_location_id:  C{str}
 
         @return: The newly created L{StorageVolume}.
+        @rtype: L{StorageVolume}
         """
         data = {}
         data.update({'name': name})
@@ -272,14 +275,16 @@ class IBMNodeDriver(NodeDriver):
             data.update({'format': kwargs['format']})
         if (('offering_id' in kwargs) and (kwargs['offering_id'] is not None)):
             data.update({'offeringID': kwargs['offering_id']})
-        if (('storage_area_id' in kwargs) and (kwargs['storage_area_id'] is not None)):
+        if (('storage_area_id' in kwargs) and
+                (kwargs['storage_area_id'] is not None)):
             data.update({'storageAreaID': kwargs['storage_area_id']})
         if 'source_disk_id' in kwargs:
             data.update({'sourceDiskID': kwargs['source_disk_id']})
             data.update({'type': 'clone'})
         if 'target_location_id' in kwargs:
             data.update({'targetLocationID': kwargs['target_location_id']})
-        resp = self.connection.request(action=REST_BASE + '/storage',
+        resp = self.connection.request(
+            action=REST_BASE + '/storage',
             headers={'Content-Type': 'application/x-www-form-urlencoded'},
             method='POST',
             data=data).object
@@ -292,16 +297,18 @@ class IBMNodeDriver(NodeDriver):
         @param      name: Name of the image to be created (required)
         @type       name: C{str}
 
-        @param      description: Description of the image to be created (optional)
-        @type       description: L{str}
+        @param      description: Description of the image to be created
+        @type       description: C{str}
 
-        @keyword    kwarge.image_id:  The ID of the source image if cloning the image
-        @type       kwargs.image_id:  C{str}
+        @keyword    image_id:  The ID of the source image if cloning the image
+        @type       image_id:  C{str}
 
-        @keyword    kwargs.volume_id:  The ID of the storage volume if importing the image
-        @type       kwargs.volume_id:  C{str}
+        @keyword    volume_id:  The ID of the storage volume if
+                                importing the image
+        @type       volume_id:  C{str}
 
         @return: The newly created L{NodeImage}.
+        @rtype: L{NodeImage}
         """
         data = {}
         data.update({'name': name})
@@ -311,7 +318,8 @@ class IBMNodeDriver(NodeDriver):
             data.update({'imageId': kwargs['image_id']})
         if (('volume_id' in kwargs) and (kwargs['volume_id'] is not None)):
             data.update({'volumeId': kwargs['volume_id']})
-        resp = self.connection.request(action=REST_BASE + '/offerings/image',
+        resp = self.connection.request(
+            action=REST_BASE + '/offerings/image',
             headers={'Content-Type': 'application/x-www-form-urlencoded'},
             method='POST',
             data=data).object
@@ -330,7 +338,7 @@ class IBMNodeDriver(NodeDriver):
         @param      volume: Volume to be destroyed
         @type       volume: L{StorageVolume}
 
-        @return: C{bool}
+        @rtype: C{bool}
         """
         url = REST_BASE + '/storage/%s' % (volume.id)
         status = int(self.connection.request(action=url,
@@ -347,7 +355,7 @@ class IBMNodeDriver(NodeDriver):
         @param      volume: Volume to attach
         @type       volume: L{StorageVolume}
 
-        @return: C{bool}
+        @rtype: C{bool}
         """
         url = REST_BASE + '/instances/%s' % (node.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -362,10 +370,13 @@ class IBMNodeDriver(NodeDriver):
         """
         Detaches a volume from a node.
 
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
         @param      volume: Volume to be detached
         @type       volume: L{StorageVolume}
 
-        @returns C{bool}
+        @rtype: C{bool}
         """
         url = REST_BASE + '/instances/%s' % (node.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -399,17 +410,17 @@ class IBMNodeDriver(NodeDriver):
         """
         List storage volumes.
 
-        @return: C{list} of L{StorageVolume} objects
+        @rtype: C{list} of L{StorageVolume}
         """
         return self._to_volumes(
             self.connection.request(REST_BASE + '/storage').object)
 
     def list_sizes(self, location=None):
         """
-        Returns a generic list of sizes.  See list_images() for a list of supported
-        sizes for specific images.  In particular, you need to have a size that
-        matches the architecture (32-bit vs 64-bit) of the virtual machine image
-        operating system.
+        Returns a generic list of sizes.  See list_images() for a list of
+        supported sizes for specific images.  In particular, you need to have
+        a size that matches the architecture (32-bit vs 64-bit) of the virtual
+        machine image operating system.
 
         @inherits: L{NodeDriver.list_sizes}
         """
@@ -434,15 +445,14 @@ class IBMNodeDriver(NodeDriver):
                      None, None, None, None, self.connection.driver)]
 
     def list_locations(self):
-        """
-        List the data center locations
-        """
         return self._to_locations(
             self.connection.request(REST_BASE + '/locations').object)
 
     def ex_list_storage_offerings(self):
         """
         List the storage center offerings
+
+        @rtype: C{list} of L{VolumeOffering}
         """
         return self._to_volume_offerings(
             self.connection.request(REST_BASE + '/offerings/storage').object)
@@ -452,12 +462,16 @@ class IBMNodeDriver(NodeDriver):
         Allocate a new reserved IP address
 
         @param      location_id: Target data center
-        @type       location_id: L{str}
+        @type       location_id: C{str}
+
         @param      offering_id: Offering ID for address to create
-        @type       offering_id: L{str}
+        @type       offering_id: C{str}
+
         @param      vlan_id: ID of target VLAN
-        @type       vlan_id: L{str}
-        @return:    L{Address} object
+        @type       vlan_id: C{str}
+
+        @return: L{Address} object
+        @rtype: L{Address}
         """
         url = REST_BASE + '/addresses'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -474,8 +488,11 @@ class IBMNodeDriver(NodeDriver):
         """
         List the reserved IP addresses
 
-        @param      resource_id: If this is supplied only a single address will be returned (optional)
-        @type       resource_id: L{str}
+        @param      resource_id: If this is supplied only a single address will
+         be returned (optional)
+        @type       resource_id: C{str}
+
+        @rtype: C{list} of L{Address}
         """
         url = REST_BASE + '/addresses'
         if resource_id:
@@ -493,6 +510,7 @@ class IBMNodeDriver(NodeDriver):
         @type       volume: L{StorageVolume}
 
         @return: C{bool} The success of the operation
+        @rtype: C{bool}
         """
         url = REST_BASE + '/storage/%s' % (volume.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -508,7 +526,9 @@ class IBMNodeDriver(NodeDriver):
         Delete a reserved IP address
 
         @param      resource_id: The address to delete (required)
-        @type       resource_id: L{str}
+        @type       resource_id: C{str}
+
+        @rtype: C{bool}
         """
         url = REST_BASE + '/addresses/' + resource_id
         status = int(self.connection.request(action=url,
@@ -521,7 +541,7 @@ class IBMNodeDriver(NodeDriver):
         Block until storage volume state changes to the given value
 
         @param      volume: Storage volume.
-        @type       node: C{StorageVolume}
+        @type       volume: L{StorageVolume}
 
         @param      state: The target state to wait for
         @type       state: C{int}
@@ -534,7 +554,7 @@ class IBMNodeDriver(NodeDriver):
                              (default is 1200)
         @type       timeout: C{int}
 
-        @return: C{StorageVolume}
+        @rtype: L{StorageVolume}
         """
         start = time.time()
         end = start + timeout
@@ -564,16 +584,17 @@ class IBMNodeDriver(NodeDriver):
             public_ips.append(ip)
 
         return Node(
-                    id=instance.findtext('ID'),
-                    name=instance.findtext('Name'),
-                    state=self.NODE_STATE_MAP[int(instance.findtext('Status'))],
-                    public_ips=public_ips,
-                    private_ips=[],
-                    driver=self.connection.driver
+            id=instance.findtext('ID'),
+            name=instance.findtext('Name'),
+            state=self.NODE_STATE_MAP[int(instance.findtext('Status'))],
+            public_ips=public_ips,
+            private_ips=[],
+            driver=self.connection.driver
         )
 
     def _to_images(self, object):
-        # Converts data retrieved from SCE /offerings/image REST call to a NodeImage
+        # Converts data retrieved from SCE /offerings/image REST call to
+        # a NodeImage
         return [self._to_image(image) for image in object.findall('Image')]
 
     def _to_image(self, image):
@@ -662,12 +683,12 @@ class IBMNodeDriver(NodeDriver):
     def _to_volume(self, object):
         # Converts an SCE Volume to a Libcloud StorageVolume
         extra = {'state': object.findtext('State'),
-                'location': object.findtext('Location'),
-                'instanceID': object.findtext('instanceID'),
-                'owner': object.findtext('Owner'),
-                'format': object.findtext('Format'),
-                'createdTime': object.findtext('CreatedTime'),
-                'storageAreaID': object.findtext('StorageArea/ID')}
+                 'location': object.findtext('Location'),
+                 'instanceID': object.findtext('instanceID'),
+                 'owner': object.findtext('Owner'),
+                 'format': object.findtext('Format'),
+                 'createdTime': object.findtext('CreatedTime'),
+                 'storageAreaID': object.findtext('StorageArea/ID')}
         return StorageVolume(object.findtext('ID'),
                              object.findtext('Name'),
                              object.findtext('Size'),
@@ -682,9 +703,9 @@ class IBMNodeDriver(NodeDriver):
         # Converts an SCE DescribeVolumeOfferingsResponse/Offerings XML object
         # to an SCE VolumeOffering
         extra = {'label': object.findtext('Label'),
-                'supported_sizes': object.findtext('SupportedSizes'),
-                'formats': object.findall('SupportedFormats/Format/ID'),
-                'price': object.findall('Price')}
+                 'supported_sizes': object.findtext('SupportedSizes'),
+                 'formats': object.findall('SupportedFormats/Format/ID'),
+                 'price': object.findall('Price')}
         return VolumeOffering(object.findtext('ID'),
                               object.findtext('Name'),
                               object.findtext('Location'),
@@ -700,14 +721,14 @@ class IBMNodeDriver(NodeDriver):
         # Converts an SCE DescribeAddressesResponse/Address XML object to
         # an Address object
         extra = {'location': object.findtext('Location'),
-                'type': object.findtext('Label'),
-                'created_time': object.findtext('SupportedSizes'),
-                'hostname': object.findtext('Hostname'),
-                'instance_ids': object.findtext('InstanceID'),
-                'vlan': object.findtext('VLAN'),
-                'owner': object.findtext('owner'),
-                'mode': object.findtext('Mode'),
-                'offering_id': object.findtext('OfferingID')}
+                 'type': object.findtext('Label'),
+                 'created_time': object.findtext('SupportedSizes'),
+                 'hostname': object.findtext('Hostname'),
+                 'instance_ids': object.findtext('InstanceID'),
+                 'vlan': object.findtext('VLAN'),
+                 'owner': object.findtext('owner'),
+                 'mode': object.findtext('Mode'),
+                 'offering_id': object.findtext('OfferingID')}
         return Address(object.findtext('ID'),
                        object.findtext('IP'),
                        object.findtext('State'),

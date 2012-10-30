@@ -74,7 +74,8 @@ def get_url_path(url):
 class Vdc:
     """Virtual datacenter (vDC) representation"""
 
-    def __init__(self, id, name, driver, allocation_model=None, cpu=None, memory=None, storage=None):
+    def __init__(self, id, name, driver, allocation_model=None, cpu=None,
+                 memory=None, storage=None):
         self.id = id
         self.name = name
         self.driver = driver
@@ -348,7 +349,7 @@ class VCloudNodeDriver(NodeDriver):
         vCloud virtual data centers (vDCs).
 
         @return: list of vDC objects
-        @rtype: C{list} of L{VCloudVDC}
+        @rtype: C{list} of L{Vdc}
         """
         if not self._vdcs:
             self.connection.check_org()  # make sure the org is set.  # pylint: disable-msg=E1101
@@ -514,7 +515,7 @@ class VCloudNodeDriver(NodeDriver):
                      will be queried.
         @type vdcs: L{Vdc}
 
-        @rtype: C{list} of L{Node} objects
+        @rtype: C{list} of L{Node}
         """
         if not vdcs:
             vdcs = self.vdcs
@@ -544,8 +545,7 @@ class VCloudNodeDriver(NodeDriver):
                 except Exception:
                     # The vApp was probably removed since the previous vDC query, ignore
                     e = sys.exc_info()[1]
-                    if not (isinstance(e.args[0], _ElementInterface) and
-                            e.args[0].tag.endswith('Error') and
+                    if not (e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') == 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
                         raise e
 
@@ -894,7 +894,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         @type node_name: C{str}
 
         @param vdcs: None, vDC or a list of vDCs to search in. If None all vDCs will be searched.
-        @type node_name: L{VCloudVDC}
+        @type vdcs: L{Vdc}
 
         @return: node instance or None if not found
         @rtype: L{Node} or C{None}
