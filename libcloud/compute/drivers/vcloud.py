@@ -20,7 +20,9 @@ import sys
 import re
 import base64
 import os
+import urllib
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
@@ -71,8 +73,10 @@ def get_url_path(url):
     return urlparse(url.strip()).path
 
 
-class Vdc:
-    """Virtual datacenter (vDC) representation"""
+class Vdc(object):
+    """
+    Virtual datacenter (vDC) representation
+    """
 
     def __init__(self, id, name, driver, allocation_model=None, cpu=None,
                  memory=None, storage=None):
@@ -85,20 +89,59 @@ class Vdc:
         self.storage = storage
 
     def __repr__(self):
-        return (('<Vdc: id=%s, name=%s, driver=%s  ...>')
+        return ('<Vdc: id=%s, name=%s, driver=%s  ...>'
                 % (self.id, self.name, self.driver.name))
 
 
-class Capacity:
-    """Represents CPU, Memory or Storage capacity of vDC."""
+class Capacity(object):
+    """
+    Represents CPU, Memory or Storage capacity of vDC.
+    """
     def __init__(self, limit, used, units):
         self.limit = limit
         self.used = used
         self.units = units
 
     def __repr__(self):
-        return (('<Capacity: limit=%s, used=%s, units=%s>')
+        return ('<Capacity: limit=%s, used=%s, units=%s>'
                 % (self.limit, self.used, self.units))
+
+
+class ControlAccess(object):
+    """
+    Represents control access settings of a node
+    """
+
+    class AccessLevel(object):
+        READ_ONLY = 'ReadOnly'
+        CHANGE = 'Change'
+        FULL_CONTROL = 'FullControl'
+
+    def __init__(self, node, everyone_access_level, subjects=None):
+        self.node = node
+        self.everyone_access_level = everyone_access_level
+        if not subjects:
+            subjects = []
+        self.subjects = subjects
+
+    def __repr__(self):
+        return ('<ControlAccess: node=%s, everyone_access_level=%s, subjects=%s>'
+                % (self.node, self.everyone_access_level, self.subjects))
+
+
+class Subject(object):
+    """
+    User or group subject
+    """
+    def __init__(self, type, name, access_level, id=None):
+        self.type = type
+        self.name = name
+        self.access_level = access_level
+        self.id = id
+
+    def __repr__(self):
+        return ('<Subject: type=%s, name=%s, access_level=%s>'
+                % (self.type, self.name, self.access_level))
 
 
 class InstantiateVAppXML(object):
@@ -122,14 +165,14 @@ class InstantiateVAppXML(object):
         self.root = self._make_instantiation_root()
 
         self._add_vapp_template(self.root)
-        instantionation_params = ET.SubElement(self.root,
+        instantiation_params = ET.SubElement(self.root,
                                                "InstantiationParams")
 
         # product and virtual hardware
-        self._make_product_section(instantionation_params)
-        self._make_virtual_hardware(instantionation_params)
+        self._make_product_section(instantiation_params)
+        self._make_virtual_hardware(instantiation_params)
 
-        network_config_section = ET.SubElement(instantionation_params,
+        network_config_section = ET.SubElement(instantiation_params,
                                                "NetworkConfigSection")
 
         network_config = ET.SubElement(network_config_section,
@@ -818,34 +861,37 @@ class Instantiate_1_5_VAppXML(object):
     def _build_xmltree(self):
         self.root = self._make_instantiation_root()
 
-        if self.network:
-            instantionation_params = ET.SubElement(self.root, "InstantiationParams")
-            network_config_section = ET.SubElement(instantionation_params, "NetworkConfigSection")
+        if self.network is not None:
+            instantionation_params = ET.SubElement(self.root,
+                                                   'InstantiationParams')
+            network_config_section = ET.SubElement(instantionation_params,
+                                                   'NetworkConfigSection')
             ET.SubElement(
                 network_config_section,
-                "Info",
-                {'xmlns': "http://schemas.dmtf.org/ovf/envelope/1"}
+                'Info',
+                {'xmlns': 'http://schemas.dmtf.org/ovf/envelope/1'}
             )
-            network_config = ET.SubElement(network_config_section, "NetworkConfig")
+            network_config = ET.SubElement(network_config_section,
+                                           'NetworkConfig')
             self._add_network_association(network_config)
 
         self._add_vapp_template(self.root)
 
     def _make_instantiation_root(self):
         return ET.Element(
-            "InstantiateVAppTemplateParams",
+            'InstantiateVAppTemplateParams',
             {'name': self.name,
              'deploy': 'false',
              'powerOn': 'false',
              'xml:lang': 'en',
-             'xmlns': "http://www.vmware.com/vcloud/v1.5",
-             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+             'xmlns': 'http://www.vmware.com/vcloud/v1.5',
+             'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'}
         )
 
     def _add_vapp_template(self, parent):
         return ET.SubElement(
             parent,
-            "Source",
+            'Source',
             {'href': self.template}
         )
 
@@ -857,9 +903,12 @@ class Instantiate_1_5_VAppXML(object):
             # Set a custom vApp VM network name
             parent.set('networkName', self.vm_network)
         configuration = ET.SubElement(parent, 'Configuration')
-        ET.SubElement(configuration, 'ParentNetwork', {'href': self.network.get('href')})
+        ET.SubElement(configuration, 'ParentNetwork',
+                      {'href': self.network.get('href')})
+
         if self.vm_fence is None:
-            fencemode = self.network.find(fixxpath(self.network, 'Configuration/FenceMode')).text
+            fencemode = self.network.find(fixxpath(self.network,
+                                          'Configuration/FenceMode')).text
         else:
             fencemode = self.vm_fence
         ET.SubElement(configuration, 'FenceMode').text = fencemode
@@ -1046,6 +1095,145 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._wait_for_task_completion(res.object.get('href'))
         res = self.connection.request(get_url_path(node.id))
         return self._to_node(res.object)
+
+    def ex_get_control_access(self, node):
+        """
+        Returns the control access settings for specified node.
+
+        @param  node: node to get the control access for
+        @type   node: L{Node}
+
+        @rtype: L{ControlAccess}
+        """
+        res = self.connection.request(
+            '%s/controlAccess' % get_url_path(node.id))
+        everyone_access_level = None
+        is_shared_elem = res.object.find(
+            fixxpath(res.object, "IsSharedToEveryone"))
+        if  is_shared_elem is not None and is_shared_elem.text == 'true':
+            everyone_access_level = res.object.find(
+                fixxpath(res.object, "EveryoneAccessLevel")).text
+
+        # Parse all subjects
+        subjects = []
+        for elem in res.object.findall(
+            fixxpath(res.object, "AccessSettings/AccessSetting")):
+            access_level = elem.find(fixxpath(res.object, "AccessLevel")).text
+            subject_elem = elem.find(fixxpath(res.object, "Subject"))
+            if subject_elem.get('type') == 'application/vnd.vmware.admin.group+xml':
+                subj_type = 'group'
+            else:
+                subj_type = 'user'
+            res = self.connection.request(get_url_path(subject_elem.get('href')))
+            name = res.object.get('name')
+            subject = Subject(type=subj_type,
+                              name=name,
+                              access_level=access_level,
+                              id=subject_elem.get('href'))
+            subjects.append(subject)
+
+        return ControlAccess(node, everyone_access_level, subjects)
+
+    def ex_set_control_access(self, node, control_access):
+        """
+        Sets control access for the specified node.
+
+        @param  node: node
+        @type   node: L{Node}
+
+        @param  control_access: control access settings
+        @type   control_access: L{ControlAccess}
+
+        @rtype: C{None}
+        """
+        xml = ET.Element('ControlAccessParams',
+                {'xmlns': 'http://www.vmware.com/vcloud/v1.5'})
+        shared_to_everyone = ET.SubElement(xml, 'IsSharedToEveryone')
+        if control_access.everyone_access_level:
+            shared_to_everyone.text = 'true'
+            everyone_access_level = ET.SubElement(xml, 'EveryoneAccessLevel')
+            everyone_access_level.text = control_access.everyone_access_level
+        else:
+            shared_to_everyone.text = 'false'
+
+        # Set subjects
+        if control_access.subjects:
+            access_settings_elem = ET.SubElement(xml, 'AccessSettings')
+        for subject in control_access.subjects:
+            setting = ET.SubElement(access_settings_elem, 'AccessSetting')
+            if subject.id:
+                href = subject.id
+            else:
+                res = self.ex_query(type=subject.type, filter='name==' + subject.name)
+                if not res:
+                    raise LibcloudError('Specified subject "%s %s" not found '
+                                        % (subject.type, subject.name))
+                href = res[0]['href']
+            ET.SubElement(setting, 'Subject', {'href': href})
+            ET.SubElement(setting, 'AccessLevel').text = subject.access_level
+
+        self.connection.request(
+            '%s/action/controlAccess' % get_url_path(node.id),
+            data=ET.tostring(xml),
+            headers={
+                'Content-Type': 'application/vnd.vmware.vcloud.controlAccess+xml'
+            },
+            method='POST')
+
+    def ex_query(self, type, filter=None, page=1, page_size=100, sort_asc=None,
+                 sort_desc=None):
+        """
+        Queries vCloud for specified type. See http://www.vmware.com/pdf/vcd_15_api_guide.pdf
+        for details. Each element of the returned list is a dictionary with all
+        attributes from the record.
+
+        @param type: type to query (r.g. user, group, vApp etc.)
+        @type  type: C{str}
+
+        @param filter: filter expression (see documentation for syntax)
+        @type  filter: C{str}
+
+        @param page: page number
+        @type  page: C{int}
+
+        @param page_size: page size
+        @type  page_size: C{int}
+
+        @param sort_asc: sort in ascending order by specified field
+        @type  sort_asc: C{str}
+
+        @param sort_desc: sort in descending order by specified field
+        @type  sort_desc: C{str}
+
+        @rtype: C{list} of dict
+        """
+        # This is a workaround for filter parameter encoding
+        # the urllib encodes (name==Developers%20Only) into
+        # %28name%3D%3DDevelopers%20Only%29) which is not accepted by vCloud
+        params = {
+            'type': type,
+            'pageSize': page_size,
+            'page': page,
+        }
+        if sort_asc:
+            params['sortAsc'] = sort_asc
+        if sort_desc:
+            params['sortDesc'] = sort_desc
+
+        url = '/api/query?' + urlencode(params)
+        if filter:
+            if not filter.startswith('('):
+                filter = '(' + filter + ')'
+            url += '&filter=' + filter.replace(' ', '+')
+
+        results = []
+        res = self.connection.request(url)
+        for elem in res.object:
+            if not elem.tag.endswith('Link'):
+                result = elem.attrib
+                result['type'] = elem.tag.split('}')[1]
+                results.append(result)
+        return results
 
     def create_node(self, **kwargs):
         """Creates and returns node. If the source image is:
@@ -1612,7 +1800,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 'name': vm_elem.get('name'),
                 'state': self.NODE_STATE_MAP[vm_elem.get('status')],
                 'public_ips': public_ips,
-                'private_ips': private_ips
+                'private_ips': private_ips,
+                'os_type': vm_elem
+                    .find('{http://schemas.dmtf.org/ovf/envelope/1}OperatingSystemSection')
+                    .get('{http://www.vmware.com/schema/ovf}osType')
             }
             vms.append(vm)
 

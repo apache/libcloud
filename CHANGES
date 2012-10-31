@@ -25,6 +25,13 @@ Changes with Apache Libcloud in development:
       TODO.
       [Tomaz Muraus]
 
+    - Improvements and additions in vCloud driver:
+
+      - Expose generic query method (ex_query)
+      - Provide functionality to get and set control access for vApps. This way
+        created vApps can be shared between users/groups or everyone.
+     [Michal Galet]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly
