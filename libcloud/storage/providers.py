@@ -43,7 +43,9 @@ DRIVERS = {
         ('libcloud.storage.drivers.cloudfiles',
          'CloudFilesSwiftStorageDriver'),
     Provider.NIMBUS:
-        ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver')
+        ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver'),
+    Provider.LOCAL:
+        ('libcloud.storage.drivers.local', 'LocalStorageDriver')
 }
 
 
