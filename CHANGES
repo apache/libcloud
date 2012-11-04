@@ -34,8 +34,11 @@ Changes with Apache Libcloud in development:
 
    - Update EC2 pricing data to reflect new, lower prices -
      http://aws.typepad.com/aws/2012/10/new-ec2-second-generation-standard-instances-and-price-reductions-1.html
+     [Tomaz Muraus]
 
-   [Tomaz Muraus]
+   - Update EC2 instance size to reflect new m3 instance types. Also refactor
+     the code to make it easier to maintain.
+     [Tomaz Muraus]
 
   *) DNS
 
