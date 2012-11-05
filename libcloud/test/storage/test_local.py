@@ -52,7 +52,7 @@ class LocalTests(unittest.TestCase):
     def make_tmp_file(self):
         tmppath = tempfile.mktemp()
         tmpfile = open(tmppath, 'w')
-        tmpfile.write( 'blah' * 1024 )
+        tmpfile.write('blah' * 1024)
         tmpfile.close()
         return tmppath
 
@@ -74,7 +74,6 @@ class LocalTests(unittest.TestCase):
         self.assertTrue('creation_time' in container.extra)
         self.assertTrue('modify_time' in container.extra)
         self.assertTrue('access_time' in container.extra)
-        self.assertTrue('owner' in container.extra)
 
         objects = self.driver.list_container_objects(container=container)
         self.assertEqual(len(objects), 0)
@@ -103,7 +102,6 @@ class LocalTests(unittest.TestCase):
             self.assertEqual(obj.hash, None)
             self.assertEqual(obj.size, 4096)
             self.assertEqual(obj.container.name, 'test3')
-            self.assertTrue('owner' in obj.meta_data)
             self.assertTrue('creation_time' in obj.extra)
             self.assertTrue('modify_time' in obj.extra)
             self.assertTrue('access_time' in obj.extra)
@@ -160,7 +158,6 @@ class LocalTests(unittest.TestCase):
         self.assertEqual(obj.container.name, 'test5')
         self.assertEqual(obj.size, 4096)
         self.assertEqual(obj.hash, None)
-        self.assertTrue('owner' in obj.meta_data)
         self.assertTrue('creation_time' in obj.extra)
         self.assertTrue('modify_time' in obj.extra)
         self.assertTrue('access_time' in obj.extra)
@@ -178,7 +175,8 @@ class LocalTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_create_container_already_exists(self):
-        container = self.driver.create_container(container_name='new-container')
+        container = self.driver.create_container(
+                            container_name='new-container')
         try:
             self.driver.create_container(container_name='new-container')
         except ContainerAlreadyExistsError:

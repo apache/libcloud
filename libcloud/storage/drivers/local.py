@@ -17,12 +17,13 @@
 Provides storage driver for working with local filesystem
 """
 
+import errno
 import os
 import shutil
+import sys
 
 from lockfile import mkdirlockfile
-from pwd import getpwuid
-from libcloud.utils.py3 import next
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.common.types import LibcloudError, LazyList
@@ -33,10 +34,10 @@ from libcloud.storage.types import ObjectError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import InvalidContainerNameError
 
-CHUNK_SIZE = 16384
 IGNORE_FOLDERS = ['.lock', '.hash']
 
-class LockLocalStorage:
+
+class LockLocalStorage(object):
     """
     A class to help in locking a local path before being updated
     """
@@ -56,6 +57,7 @@ class LockLocalStorage:
 
         if value is not None:
             raise value
+
 
 class LocalStorageDriver(StorageDriver):
     """
@@ -87,9 +89,22 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             os.makedirs(path)
-        except OSError, exp:
-            if exp.errno == 17 and not ignore_existing:
+        except OSError:
+            exp = sys.exc_info()[1]
+            if exp.errno == errno.EEXIST and not ignore_existing:
                 raise exp
+
+    def _check_container_name(self, container_name):
+        """
+        Check if the container name is valid
+
+        @param container_name: Container name
+        @type container_name: C{str}
+        """
+
+        if '/' in container_name or '\\' in container_name:
+            raise InvalidContainerNameError(value=None, driver=self,
+                                            container_name=container_name)
 
     def _make_container(self, container_name):
         """
@@ -102,17 +117,15 @@ class LocalStorageDriver(StorageDriver):
         @rtype: L{Container}
         """
 
-        if '/' in container_name:
-            raise InvalidContainerNameError(value=None, driver=self,
-                                            container_name=container_name)
+        self._check_container_name(container_name)
 
         full_path = os.path.join(self.base_path, container_name)
 
         try:
             stat = os.stat(full_path)
             if not os.path.isdir(full_path):
-                raise ValueError
-        except Exception:
+                raise OSError('Target path is not a directory')
+        except OSError:
             raise ContainerDoesNotExistError(value=None, driver=self,
                                              container_name=container_name)
 
@@ -120,7 +133,6 @@ class LocalStorageDriver(StorageDriver):
         extra['creation_time'] = stat.st_ctime
         extra['access_time'] = stat.st_atime
         extra['modify_time'] = stat.st_mtime
-        extra['owner'] = getpwuid(stat.st_uid).pw_name
 
         return Container(name=container_name, extra=extra, driver=self)
 
@@ -154,12 +166,9 @@ class LocalStorageDriver(StorageDriver):
         extra['access_time'] = stat.st_atime
         extra['modify_time'] = stat.st_mtime
 
-        meta_data = {}
-        meta_data['owner'] = getpwuid(stat.st_uid).pw_name
-
         return Object(name=object_name, size=stat.st_size, extra=extra,
                       driver=self, container=container, hash=None,
-                      meta_data=meta_data)
+                      meta_data=None)
 
     def list_containers(self):
         """
@@ -238,6 +247,9 @@ class LocalStorageDriver(StorageDriver):
 
         @param container: Container instance
         @type  container: L{Container}
+
+        @param check: Indicates if the path's existance must be checked
+        @type check: C{bool}
 
         @return: A CDN URL for this container.
         @rtype: C{str}
@@ -364,7 +376,7 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             shutil.copy(obj_path, file_path)
-        except Exception:
+        except IOError:
             if delete_on_failure:
                 try:
                     os.unlink(file_path)
@@ -388,18 +400,10 @@ class LocalStorageDriver(StorageDriver):
         """
 
         path = self.get_object_cdn_url(obj)
-        obj_file = open(path)
 
-        if chunk_size is None:
-            chunk_size = CHUNK_SIZE
-
-        data = obj_file.read(chunk_size)
-
-        while data:
-            yield data
-            data = obj_file.read(chunk_size)
-
-        obj_file.close()
+        with open(path) as obj_file:
+            for data in read_in_chunks(obj_file, chunk_size=chunk_size):
+                yield data
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True):
@@ -507,7 +511,7 @@ class LocalStorageDriver(StorageDriver):
         with LockLocalStorage(path) as lock:
             try:
                 os.unlink(path)
-            except Exception, exp:
+            except Exception:
                 return False
 
         # Check and delete the folder if required
@@ -516,7 +520,7 @@ class LocalStorageDriver(StorageDriver):
         try:
             if path != obj.container.get_cdn_url():
                 os.rmdir(path)
-        except Exception, exp:
+        except Exception:
             pass
 
         return True
@@ -532,16 +536,15 @@ class LocalStorageDriver(StorageDriver):
         @rtype: L{Container}
         """
 
-        if '/' in container_name:
-            raise InvalidContainerNameError(value=None, driver=self,
-                                            container_name=container_name)
+        self._check_container_name(container_name)
 
         path = os.path.join(self.base_path, container_name)
 
         try:
             self._make_path(path, ignore_existing=False)
-        except OSError, exp:
-            if exp.errno == 17:
+        except OSError:
+            exp = sys.exc_info()[1]
+            if exp.errno == errno.EEXIST:
                 raise ContainerAlreadyExistsError(
                     value='Container with this name already exists. The name '
                           'must be unique among all the containers in the '
@@ -549,8 +552,9 @@ class LocalStorageDriver(StorageDriver):
                     container_name=container_name, driver=self)
             else:
                 raise LibcloudError(
-                    'Error creating container %s' % container_name, driver=self)
-        except Exception, exp:
+                    'Error creating container %s' % container_name,
+                    driver=self)
+        except Exception:
             raise LibcloudError(
                 'Error creating container %s' % container_name, driver=self)
 
@@ -577,7 +581,7 @@ class LocalStorageDriver(StorageDriver):
         with LockLocalStorage(path) as lock:
             try:
                 shutil.rmtree(path)
-            except Exception, exp:
+            except Exception:
                 return False
 
         return True
