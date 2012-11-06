@@ -271,6 +271,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if 'network_id' in kwargs:
             extra_args['networkids'] = kwargs['network_id']
 
+        if 'ex_keyname' in kwargs:
+            extra_args['keypair'] = kwargs['ex_keyname']
+
         result = self._async_request(
             'deployVirtualMachine', name=name, displayname=name,
             serviceofferingid=size.id, templateid=image.id,

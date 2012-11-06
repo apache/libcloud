@@ -744,6 +744,20 @@ class EC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
+    def ex_delete_keypair(self, name):
+        """
+        Delete keypair
+        @param name: The name of the keypair to Delete
+        """
+        params = {
+            'Action': 'DeleteKeyPair',
+            'Keyname': name
+        }
+        response = self.connection.request(self.path, params=params).object
+        result = findtext(element=response, xpath='return',
+                            namespace=NAMESPACE)
+        return True if result == 'true' else False
+
     def ex_describe_all_keypairs(self):
         """
         Describes all keypairs.
