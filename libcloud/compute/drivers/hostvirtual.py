@@ -220,16 +220,16 @@ class HostVirtualNodeDriver(NodeDriver):
             API_ROOT + '/cloud/server/reboot',
             data=json.dumps(params),
             method='POST').object
-        if result:
-            return True
+
+        return bool(result)
 
     def destroy_node(self, node):
         params = {'mbpkgid': node.id}
         result = self.connection.request(
             API_ROOT + '/cloud/cancel', data=json.dumps(params),
             method='POST').object
-        if result:
-            return True
+
+        return bool(result)
 
     def ex_stop_node(self, node):
         params = {'force': 0, 'mbpkgid': node.id}
@@ -237,8 +237,8 @@ class HostVirtualNodeDriver(NodeDriver):
             API_ROOT + '/cloud/server/stop',
             data=json.dumps(params),
             method='POST').object
-        if result:
-            return True
+
+        return bool(result)
 
     def ex_start_node(self, node):
         params = {'mbpkgid': node.id}
@@ -246,5 +246,5 @@ class HostVirtualNodeDriver(NodeDriver):
             API_ROOT + '/cloud/server/start',
             data=json.dumps(params),
             method='POST').object
-        if result:
-            return True
+
+        return bool(result)
