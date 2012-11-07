@@ -40,6 +40,9 @@ Changes with Apache Libcloud in development:
      the code to make it easier to maintain.
      [Tomaz Muraus]
 
+   - Add a new driver for HostVirtual (http://www.vr.org) provider.
+     [Dinesh Bhoopathy]
+
   *) Storage
 
     - Add a new local storage driver.

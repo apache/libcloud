@@ -115,7 +115,9 @@ DRIVERS = {
     Provider.VCL:
         ('libcloud.compute.drivers.vcl', 'VCLNodeDriver'),
     Provider.KTUCLOUD:
-        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver')
+        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver'),
+    Provider.HOSTVIRTUAL:
+	('libcloud.compute.drivers.hostvirtual', 'HostVirtualNodeDriver')
 }
 
 
