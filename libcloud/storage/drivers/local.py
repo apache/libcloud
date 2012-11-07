@@ -17,6 +17,8 @@
 Provides storage driver for working with local filesystem
 """
 
+from __future__ import with_statement
+
 import errno
 import os
 import shutil
