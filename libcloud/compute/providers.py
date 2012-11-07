@@ -17,6 +17,7 @@ Provider related utilities
 """
 
 from libcloud.utils.misc import get_driver as _get_provider_driver
+from libcloud.utils.misc import set_driver as _set_provider_driver
 from libcloud.compute.types import Provider, DEPRECATED_RACKSPACE_PROVIDERS
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 
@@ -132,3 +133,6 @@ def get_driver(provider):
         raise Exception(msg)
 
     return _get_provider_driver(DRIVERS, provider)
+
+def set_driver(provider, module, klass):
+    return _set_provider_driver(DRIVERS, provider, module, klass)
