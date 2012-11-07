@@ -333,7 +333,7 @@ class StorageDriver(BaseDriver):
         @param object_name: Object name.
         @type object_name: C{str}
 
-        @param verify_hash: Verify hast
+        @param verify_hash: Verify hash
         @type verify_hash: C{bool}
 
         @param extra: (optional) Extra attributes (driver specific).
