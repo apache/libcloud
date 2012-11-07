@@ -33,7 +33,7 @@ except ImportError:
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
-from libcloud.common.types import LibcloudError, LazyList
+from libcloud.common.types import LibcloudError
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerIsNotEmptyError
@@ -213,28 +213,18 @@ class LocalStorageDriver(StorageDriver):
                 object_name = os.path.relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
-    def _get_more(self, last_key, value_dict):
+    def iterate_container_objects(self, container):
         """
-        A handler for using with LazyList
-        """
-        container = value_dict['container']
-        objects = [obj for obj in self._get_objects(container)]
-
-        return (objects, None, True)
-
-    def list_container_objects(self, container):
-        """
-        Return a list of objects for the given container.
+        Returns a generator of objects for the given container.
 
         @param container: Container instance
         @type container: L{Container}
 
-        @return: A list of Object instances.
-        @rtype: C{list} of L{Object}
+        @return: A generator of Object instances.
+        @rtype: C{generator} of L{Object}
         """
 
-        value_dict = {'container': container}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
+        return self._get_objects(container)
 
     def get_container(self, container_name):
         """
