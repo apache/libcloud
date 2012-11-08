@@ -213,6 +213,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                     'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
         self.assertEqual(image.id, 'ami-be3adfd7')
 
+    def test_list_images_with_image_ids(self):
+        image = self.driver.list_images(ex_image_ids=['ami-be3adfd7'])
+        self.assertEqual(len(image), 1)
+        self.assertEqual(image.name,
+                    'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
+
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
         availability_zone = availability_zones[0]
