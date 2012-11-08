@@ -2,6 +2,18 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General
+
+    - Deprecate LazyList method of iteration over large paginated collections
+      and use a new, more efficient generator based approach which doesn't
+      require the iterator to be pre-exhausted and buffering all of the values
+      in memory.
+
+      Existing list_* methods which previously used LazyList class are
+      preserving the old behavior and new iterate_* methods which use a new
+      generator based approach have been added.
+      [Mahendra M]
+
   *) Compute
 
     - Fix string interpolation bug in __repr__ methods in the IBM SCE driver. ;

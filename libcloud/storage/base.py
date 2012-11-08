@@ -118,6 +118,9 @@ class Container(object):
         self.extra = extra or {}
         self.driver = driver
 
+    def iterate_objects(self):
+        return self.driver.iterate_container_objects(container=self)
+
     def list_objects(self):
         return self.driver.list_container_objects(container=self)
 
@@ -185,6 +188,19 @@ class StorageDriver(BaseDriver):
         raise NotImplementedError(
             'list_containers not implemented for this driver')
 
+    def iterate_container_objects(self, container):
+        """
+        Return a generator of objects for the given container.
+
+        @param container: Container instance
+        @type container: L{Container}
+
+        @return: A generator of Object instances.
+        @rtype: C{generator} of L{Object}
+        """
+        raise NotImplementedError(
+            'iterate_container_objects not implemented for this driver')
+
     def list_container_objects(self, container):
         """
         Return a list of objects for the given container.
@@ -195,8 +211,7 @@ class StorageDriver(BaseDriver):
         @return: A list of Object instances.
         @rtype: C{list} of L{Object}
         """
-        raise NotImplementedError(
-            'list_objects not implemented for this driver')
+        return list(self.iterate_container_objects(container))
 
     def get_container(self, container_name):
         """

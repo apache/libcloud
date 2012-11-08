@@ -45,7 +45,6 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
-from libcloud.common.types import LazyList
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 
@@ -228,10 +227,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             return self._to_container_list(json.loads(response.body))
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def list_container_objects(self, container):
-        value_dict = {'container': container}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
 
     def get_container(self, container_name):
         response = self.connection.request('/%s' % (container_name),
@@ -618,30 +613,30 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return obj
 
-    def _get_more(self, last_key, value_dict):
-        container = value_dict['container']
+    def iterate_container_objects(self, container):
         params = {}
 
-        if last_key:
-            params['marker'] = last_key
+        while True:
+            response = self.connection.request('/%s' % (container.name),
+                                               params=params)
 
-        response = self.connection.request('/%s' % (container.name),
-                                           params=params)
+            if response.status == httplib.NO_CONTENT:
+                # Empty or non-existent container
+                break
+            elif response.status == httplib.OK:
+                objects = self._to_object_list(json.loads(response.body),
+                                               container)
 
-        if response.status == httplib.NO_CONTENT:
-            # Empty or inexistent container
-            return [], None, True
-        elif response.status == httplib.OK:
-            objects = self._to_object_list(json.loads(response.body),
-                                           container)
+                if len(objects) == 0:
+                    break
 
-            # TODO: Is this really needed?
-            if len(objects) == 0:
-                return [], None, True
+                for obj in objects:
+                    yield obj
+                params['marker'] = obj.name
 
-            return objects, objects[-1].name, False
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+            else:
+                raise LibcloudError('Unexpected status code: %s' %
+                                    (response.status))
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
