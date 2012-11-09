@@ -14,6 +14,12 @@ Changes with Apache Libcloud in development:
       generator based approach have been added.
       [Mahendra M]
 
+    - Replace old ENUM style provider constants and replace them with a string
+      version.
+      This change allows users to dynamically register new drivers using a new
+      set_driver method. ; LIBCLOUD-255
+      [Mahendra M]
+
   *) Compute
 
     - Fix string interpolation bug in __repr__ methods in the IBM SCE driver. ;

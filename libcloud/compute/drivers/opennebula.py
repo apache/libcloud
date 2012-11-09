@@ -248,7 +248,7 @@ class OpenNebulaNetwork(object):
         @rtype:  C{string}
         @return: Unique identifier for this instance.
         """
-        return hashlib.sha1(b("%s:%d" % (self.id,
+        return hashlib.sha1(b("%s:%s" % (self.id,
                                          self.driver.type))).hexdigest()
 
     def __repr__(self):
