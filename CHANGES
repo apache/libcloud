@@ -55,6 +55,10 @@ Changes with Apache Libcloud in development:
    - Add a new driver for HostVirtual (http://www.vr.org) provider.
      [Dinesh Bhoopathy]
 
+   - Fix a bug where a numeric instead of a string value was used for the
+     content-length header in VCloud driver. ; LIBCLOUD-256
+     [Brian DeGeeter, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
