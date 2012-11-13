@@ -70,6 +70,11 @@ Changes with Apache Libcloud in development:
     - Add a new local storage driver.
       [Mahendra M]
 
+    - Fix a bug which caused the connection to not be closed when using Python
+      2.6 and calling get_object on an object which doesn't exist in the S3
+      driver. ; LIBCLOUD-257
+      [John Carr]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly
