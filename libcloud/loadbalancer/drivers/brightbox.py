@@ -56,13 +56,34 @@ class BrightboxLBDriver(Driver):
         return list(map(self._to_balancer, data))
 
     def create_balancer(self, name, port, protocol, algorithm, members):
+        ports = [{'in': port_in, 'out': port_out, 'protocol': protocol}
+                 for port_in, port_out, protocol in [(port, port, protocol)]]
+        return self.ex_create_balancer(name, ports, algorithm, members)
+
+    def ex_create_balancer(self, name, ports, algorithm, members):
+        """
+        Create load_balancer with given number of ports
+
+        :param name:
+        :param ports: list of tupples with (in_port,out_port,proto)
+        :param algorithm: routing algorithm, ex. roundrobin
+        :param members: members list of nodes, those are actually objects
+        """
+
+        listeners = [{'in': port_in, 'out': port_out, 'protocol': protocol}
+                     for port_in, port_out, protocol in ports]
+
+        healthcheck = [{'type': protocol, 'port': port_in}
+                       for port_in, port_out, protocol in ports]
+        ## brightbox supports only 1 HC, so we choose the first one
+        healthcheck = healthcheck[0]
         response = self._post(
             '/%s/load_balancers' % API_VERSION,
             {'name': name,
              'nodes': list(map(self._member_to_node, members)),
              'policy': self._algorithm_to_value(algorithm),
-             'listeners': [{'in': port, 'out': port, 'protocol': protocol}],
-             'healthcheck': {'type': protocol, 'port': port}}
+             'listeners': listeners,
+             'healthcheck': healthcheck}
         )
 
         return self._to_balancer(response.object)
