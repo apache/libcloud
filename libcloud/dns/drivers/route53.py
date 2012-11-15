@@ -153,6 +153,66 @@ class Route53DNSDriver(DNSDriver):
         record = self._to_records(data=data, zone=zone)
         return record
 
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
+        zone = ET.Element("CreateHostedZoneRequest")
+        ET.SubElement(zone, "Name").text = domain
+        ET.SubElement(zone, "CallerReference").text = "UNIQUEID"
+        if extra and "comment" in extra:
+            ET.SubElement(ET.SubElement(zone, "HostedZoneConfig"), "Comment").text = extra['comment']
+
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone', method="POST").object)
+
+    def update_zone(self, domain, type='master', ttl=None, extra=None):
+        raise LibCloudError("AFAICT, update_zone doesn't make sense on AWS")
+
+    def create_record(self, name, zone, type, data, extra=None):
+        changeset = ET.Element("ChangeResourceRecordSetsRequest")
+        batch = ET.SubElement(batch, "ChangeBatch")
+        changes = ET.SubElement("Changes")
+
+        change = ET.SubElement("Change")
+        ET.SubElement(change, "Action").text = "CREATE"
+
+        rrs = ET.SubElement(change, "ResourceRecordSet")
+        ET.SubElement(rrs, "Name").text = name
+        ET.SubElement(rrs, "Type").text = type
+        ET.SubElement(rrs, "TTL").text = ttl
+        ET.SubElement(ET.SubElement(ET.SubEelement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text  = data
+
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset" % zone.id, method="POST", data=ET.tostring(changeset)))
+
+    def update_record(self, record, name, type, data, extra):
+        changeset = ET.Element("ChangeResourceRecordSetsRequest")
+        batch = ET.SubElement(batch, "ChangeBatch")
+        changes = ET.SubElement("Changes")
+
+        change = ET.SubElement("Change")
+        ET.SubElement(change, "Action").text = "DELETE"
+        
+        rrs = ET.SubElement(change, "ResourceRecordSet")
+        ET.SubElement(rrs, "Name").text = record.name
+        ET.SubElement(rrs, "Type").text = record.type
+        ET.SubElement(rrs, "TTL").text = record.ttl
+        ET.SubElement(ET.SubElement(ET.SubEelement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = record.data
+
+        change = ET.SubElement("Change")
+        ET.SubElement(change, "Action").text = "CREATE"
+
+        rrs = ET.SubElement(change, "ResourceRecordSet")
+        ET.SubElement(rrs, "Name").text = name
+        ET.SubElement(rrs, "Type").text = type
+        ET.SubElement(rrs, "TTL").text = ttl
+        ET.SubElement(ET.SubElement(ET.SubEelement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text  = data
+
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset" % zone.id, method="POST", data=ET.tostring(changeset)))
+
+    def delete_zone(self, zone):
+        # FIXME: Need to empty zone before it can be deleted.
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id), method="DELETE".object)
+
+    def delete_record(self, record):
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object)
+
     def _to_zones(self, data):
         zones = []
         for element in data.findall(fixxpath(xpath='HostedZones/HostedZone',
