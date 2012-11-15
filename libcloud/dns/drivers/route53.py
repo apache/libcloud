@@ -211,7 +211,20 @@ class Route53DNSDriver(DNSDriver):
         response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id), method="DELETE".object)
 
     def delete_record(self, record):
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object)
+        changeset = ET.Element("ChangeResourceRecordSetsRequest")
+        batch = ET.SubElement(batch, "ChangeBatch")
+        changes = ET.SubElement("Changes")
+
+        change = ET.SubElement("Change")
+        ET.SubElement(change, "Action").text = "DELETE"
+
+        rrs = ET.SubElement(change, "ResourceRecordSet")
+        ET.SubElement(rrs, "Name").text = record.name
+        ET.SubElement(rrs, "Type").text = record.type
+        ET.SubElement(rrs, "TTL").text = record.ttl
+        ET.SubElement(ET.SubElement(ET.SubEelement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = record.data
+
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset" % zone.id, method="POST", data=ET.tostring(changeset)))
 
     def _to_zones(self, data):
         zones = []
