@@ -80,7 +80,7 @@ class LocalStorageDriver(StorageDriver):
                  **kwargs):
 
         # Use the key as the path to the storage
-        self.base_path = key[0]
+        self.base_path = key
 
         if not os.path.isdir(self.base_path):
             raise LibcloudError('The base path is not a directory')

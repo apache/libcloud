@@ -807,7 +807,7 @@ class BaseDriver(object):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, **kwargs):
         """
-        @param    key:    API key or username to used (required)
+        @param    key:    API key or username to be used (required)
         @type     key:    C{str}
 
         @param    secret: Secret password to be used (required)

@@ -40,7 +40,7 @@ class LocalTests(unittest.TestCase):
     @classmethod
     def create_driver(self):
         self.key = tempfile.mkdtemp()
-        return self.driver_type((self.key, None))
+        return self.driver_type(self.key, None)
 
     def setUp(self):
         self.driver = self.create_driver()
