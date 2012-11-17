@@ -169,66 +169,52 @@ class Route53DNSDriver(DNSDriver):
         # raise LibCloudError("AFAICT, update_zone doesn't make sense on AWS")
         return
 
-    def create_record(self, name, zone, type, data, extra=None):
-        changeset = ET.Element("ChangeResourceRecordSetsRequest", {'xmlns': NAMESPACE})
-        batch = ET.SubElement(changeset, "ChangeBatch")
-        changes = ET.SubElement(batch, "Changes")
-
-        change = ET.SubElement(changes, "Change")
-        ET.SubElement(change, "Action").text = "CREATE"
-
-        rrs = ET.SubElement(change, "ResourceRecordSet")
-        ET.SubElement(rrs, "Name").text = name.rstrip(".") + "." + zone.domain
-        ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type]
-        ET.SubElement(rrs, "TTL").text = extra.get('ttl', '0')
-        ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = data
-
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object)
-
-    def update_record(self, record, name, type, data, extra):
-        changeset = ET.Element("ChangeResourceRecordSetsRequest", {'xmlns': NAMESPACE})
-        batch = ET.SubElement(changeset, "ChangeBatch")
-        changes = ET.SubElement(batch, "Changes")
-
-        change = ET.SubElement(changes, "Change")
-        ET.SubElement(change, "Action").text = "DELETE"
-        
-        rrs = ET.SubElement(change, "ResourceRecordSet")
-        ET.SubElement(rrs, "Name").text = record.name
-        ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[record.type]
-        ET.SubElement(rrs, "TTL").text = record.ttl
-        ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = record.data
-
-        change = ET.SubElement(changes, "Change")
-        ET.SubElement(change, "Action").text = "CREATE"
-
-        rrs = ET.SubElement(change, "ResourceRecordSet")
-        ET.SubElement(rrs, "Name").text = name.rstrip(".") + "." + zone.domain
-        ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type]
-        ET.SubElement(rrs, "TTL").text = ttl
-        ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text  = data
-
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object)
-
     def delete_zone(self, zone):
-        # FIXME: Need to empty zone before it can be deleted.
+        # We have to delete all records from a zone (apart from NS and SOA)
+        # before we can delete the zone
+        deletions = []
+        for r in zone.list_records():
+            if r.type in (RecordType.NS, ):
+                continue
+            deletions.append(("DELETE", r.name, self.RECORD_TYPE_MAP[r.type], r.data, r.extra))
+        self._post_changeset(zone.id, deletions)
+
+        # Now delete the zone itself
         response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id), method="DELETE".object)
 
+    def create_record(self, name, zone, type, data, extra=None):
+        self._post_changeset(zone.id, [
+            ("CREATE", name, self.RECORD_TYPE_MAP[type], data, extra),
+            ])
+
+    def update_record(self, record, name, type, data, extra):
+        self._post_changeset(record.zone.id, [
+            ("DELETE", record.name, self.RECORD_TYPE_MAP[record.type], data, extra),
+            ("CREATE", name, self.RECORD_TYPE_MAP[type], data, extra),
+            ])
+
     def delete_record(self, record):
+        self._post_changeset(record.zone.id, [
+            ("DELETE", record.name, self.RECORD_TYPE_MAP[record.type], record.data, record.extra),
+            ])
+
+    def _post_changeset(self, zone_id, changes_list):
         changeset = ET.Element("ChangeResourceRecordSetsRequest", {'xmlns': NAMESPACE})
         batch = ET.SubElement(changeset, "ChangeBatch")
         changes = ET.SubElement(batch, "Changes")
 
-        change = ET.SubElement(changes, "Change")
-        ET.SubElement(change, "Action").text = "DELETE"
+        for action, name, type_, data, extra in changes_list:
+            change = ET.SubElement(changes, "Change")
+            ET.SubElement(change, "Action").text = action
 
-        rrs = ET.SubElement(change, "ResourceRecordSet")
-        ET.SubElement(rrs, "Name").text = record.name
-        ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[record.type]
-        ET.SubElement(rrs, "TTL").text = record.ttl
-        ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = record.data
+            rrs = ET.SubElement(change, "ResourceRecordSet")
+            ET.SubElement(rrs, "Name").text = name
+            ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type_]
+            ET.SubElement(rrs, "TTL").text = extra.get("ttl", 0)
+            ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = data
 
         response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object)
+        #FIXME: Some error checking would be nice
 
     def _to_zones(self, data):
         zones = []
