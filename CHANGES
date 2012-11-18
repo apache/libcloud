@@ -2,9 +2,17 @@
 
 Changes with Apache Libcloud in development:
 
-   - Fix a bug where a numeric instead of a string value was used for the
-     content-length header in VCloud driver. ; LIBCLOUD-256
-     [Brian DeGeeter, Tomaz Muraus]
+  *) General
+
+    - Fix some of tests failures which happened in Python 3.3 due to randomized
+      dictionary ordering. ; LIBCLOUD-245
+      [Tomaz Muraus]
+
+  *) Compute
+
+    - Fix a bug where a numeric instead of a string value was used for the
+      content-length header in VCloud driver. ; LIBCLOUD-256
+      [Brian DeGeeter, Tomaz Muraus]
 
   *) Storage
 

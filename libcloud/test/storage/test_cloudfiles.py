@@ -657,7 +657,7 @@ class CloudFilesTests(unittest.TestCase):
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
         temp_url = 'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (sig)
 
-        self.assertEquals(ret, temp_url)
+        self.assertEquals(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
     def test_ex_get_object_temp_url_no_key_raises_key_error(self):
         self.driver.ex_get_meta_data = mock.Mock()

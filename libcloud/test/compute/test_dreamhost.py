@@ -191,11 +191,12 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 5)
 
-        self.assertEqual(sizes[0].id, 'default')
-        self.assertEqual(sizes[0].bandwidth, None)
-        self.assertEqual(sizes[0].disk, None)
-        self.assertEqual(sizes[0].ram, 2300)
-        self.assertEqual(sizes[0].price, 115)
+        size = [s for s in sizes if s.id == 'default'][0]
+        self.assertEqual(size.id, 'default')
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.ram, 2300)
+        self.assertEqual(size.price, 115)
 
     def test_list_locations(self):
         try:
