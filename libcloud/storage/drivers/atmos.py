@@ -37,9 +37,8 @@ from libcloud.common.types import LazyList, LibcloudError
 
 from libcloud.storage.base import Object, Container, StorageDriver, CHUNK_SIZE
 from libcloud.storage.types import ContainerAlreadyExistsError, \
-                                   ContainerDoesNotExistError, \
-                                   ContainerIsNotEmptyError, \
-                                   ObjectDoesNotExistError
+    ContainerDoesNotExistError, ContainerIsNotEmptyError, \
+    ObjectDoesNotExistError
 
 
 def collapse(s):
@@ -125,6 +124,8 @@ class AtmosDriver(StorageDriver):
     path = None
     api_name = 'atmos'
     supports_chunked_encoding = True
+    website = 'http://atmosonline.com/'
+    name = 'atmos'
 
     DEFAULT_CDN_TTL = 60 * 60 * 24 * 7  # 1 week
 
@@ -218,7 +219,8 @@ class AtmosDriver(StorageDriver):
 
         extra = extra or {}
         object_name_cleaned = self._clean_object_name(object_name)
-        request_path = self._namespace_path(container.name) + '/' + object_name_cleaned
+        request_path = self._namespace_path(container.name) + '/' +\
+            object_name_cleaned
         content_type = extra.get('content_type', None)
 
         try:
@@ -229,13 +231,14 @@ class AtmosDriver(StorageDriver):
                 raise
             method = 'POST'
 
-        result_dict = self._upload_object(object_name=object_name,
-                                          content_type=content_type,
-                                          upload_func=upload_func,
-                                          upload_func_kwargs=upload_func_kwargs,
-                                          request_path=request_path,
-                                          request_method=method,
-                                          headers={}, file_path=file_path)
+        result_dict = self._upload_object(
+            object_name=object_name,
+            content_type=content_type,
+            upload_func=upload_func,
+            upload_func_kwargs=upload_func_kwargs,
+            request_path=request_path,
+            request_method=method,
+            headers={}, file_path=file_path)
 
         bytes_transferred = result_dict['bytes_transferred']
 
@@ -342,7 +345,7 @@ class AtmosDriver(StorageDriver):
                       meta_data, container, self)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
-                      delete_on_failure=True):
+                        delete_on_failure=True):
         path = self._namespace_path(obj.container.name + '/' + obj.name)
         response = self.connection.request(path, method='GET', raw=True)
 
@@ -370,7 +373,8 @@ class AtmosDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def delete_object(self, obj):
-        path = self._namespace_path(obj.container.name) + '/' + self._clean_object_name(obj.name)
+        path = self._namespace_path(obj.container.name) + '/' +\
+            self._clean_object_name(obj.name)
         try:
             self.connection.request(path, method='DELETE')
         except AtmosError:
@@ -388,6 +392,20 @@ class AtmosDriver(StorageDriver):
         return True
 
     def get_object_cdn_url(self, obj, expiry=None, use_object=False):
+        """
+        Return a object CDN URL.
+
+        @param obj: Object instance
+        @type  obj: L{Object}
+
+        @param expiry: Expiry
+        @type expiry: C{str}
+
+        @param use_object: Use object
+        @type use_object: C{bool}
+
+        @rtype: C{str}
+        """
         if use_object:
             path = '/rest/objects' + obj.meta_data['object_id']
         else:
@@ -459,6 +477,6 @@ class AtmosDriver(StorageDriver):
         objects = []
         for entry in entries:
             metadata = {'object_id': entry['id']}
-            objects.append(Object(entry['name'], 0, '', {}, metadata, container,
-                                  self))
+            objects.append(Object(entry['name'], 0, '', {}, metadata,
+                                  container, self))
         return objects, None, True

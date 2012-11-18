@@ -25,7 +25,6 @@ class RackspaceNovaConnection(OpenStack_1_1_Connection):
     get_endpoint_args = {}
 
     def get_endpoint(self):
-
         if not self.get_endpoint_args:
             raise LibcloudError(
                 'RackspaceNovaConnection must have get_endpoint_args set')
@@ -71,7 +70,22 @@ class RackspaceNovaDfwNodeDriver(OpenStack_1_1_NodeDriver):
     website = 'http://www.rackspace.com/'
     connectionCls = RackspaceNovaDfwConnection
     type = Provider.RACKSPACE_NOVA_DFW
-    api_name = 'rackspacenovadfw'
+    api_name = 'rackspacenovaus'
+
+
+class RackspaceNovaOrdConnection(RackspaceNovaConnection):
+
+    get_endpoint_args = {'service_type': 'compute',
+                         'name': 'cloudServersOpenStack',
+                         'region': 'ORD'}
+
+
+class RackspaceNovaOrdNodeDriver(OpenStack_1_1_NodeDriver):
+    name = 'RackspaceNovaord'
+    website = 'http://www.rackspace.com/'
+    connectionCls = RackspaceNovaOrdConnection
+    type = Provider.RACKSPACE_NOVA_ORD
+    api_name = 'rackspacenovaus'
 
 
 class RackspaceNovaLonNodeDriver(OpenStack_1_1_NodeDriver):
@@ -79,7 +93,7 @@ class RackspaceNovaLonNodeDriver(OpenStack_1_1_NodeDriver):
     website = 'http://www.rackspace.com/'
     connectionCls = RackspaceNovaLonConnection
     type = Provider.RACKSPACE_NOVA_LON
-    api_name = 'rackspacenovalon'
+    api_name = 'rackspacenovauk'
 
 
 class RackspaceNovaBetaNodeDriver(OpenStack_1_1_NodeDriver):

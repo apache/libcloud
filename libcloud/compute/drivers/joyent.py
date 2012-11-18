@@ -98,7 +98,10 @@ class JoyentNodeDriver(NodeDriver):
 
     def __init__(self, *args, **kwargs):
         """
-        @requires: key, secret
+        @inherits: L{NodeDriver.__init__}
+
+        @keyword    location: Location which should be used
+        @type       location: C{str}
         """
         if 'location' in kwargs:
             if kwargs['location'] not in LOCATIONS:

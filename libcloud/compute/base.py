@@ -446,9 +446,6 @@ class NodeDriver(BaseDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, **kwargs):
-        """
-        @requires: key, secret
-        """
         super(NodeDriver, self).__init__(key=key, secret=secret, secure=secure,
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
@@ -610,6 +607,10 @@ class NodeDriver(BaseDriver):
                              to attempt to authenticate. (optional)
         @type       ssh_key: C{str} or C{list} of C{str}
 
+        @keyword    timeout: How many seconds to wait before timing out.
+                             (default is 600)
+        @type       timeout: C{int}
+
         @keyword    max_tries: How many times to retry if a deployment fails
                                before giving up (default is 3)
         @type       max_tries: C{int}
@@ -661,6 +662,7 @@ class NodeDriver(BaseDriver):
             ssh_port = kwargs.get('ssh_port', 22)
             ssh_timeout = kwargs.get('ssh_timeout', 10)
             ssh_key_file = kwargs.get('ssh_key', None)
+            timeout = kwargs.get('timeout', SSH_CONNECT_TIMEOUT)
 
             ssh_client = SSHClient(hostname=ip_addresses[0],
                                    port=ssh_port, username=ssh_username,
@@ -670,7 +672,7 @@ class NodeDriver(BaseDriver):
 
             # Connect to the SSH server running on the node
             ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                                  timeout=SSH_CONNECT_TIMEOUT)
+                                                  timeout=timeout)
 
             # Execute the deployment task
             self._run_deployment_script(task=kwargs['deploy'],

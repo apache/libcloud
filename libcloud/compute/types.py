@@ -63,6 +63,7 @@ class Provider(object):
     @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
     @cvar RACKSPACE_NOVA_BETA: Rackspace Nova Private Beta (ORD)
     @cvar RACKSPACE_NOVA_DFW: Rackspace Nova Private DFW (DFW)
+    @cvar RACKSPACE_NOVA_ORD: Rackspace Nova Private ORD (ORD)
     @cvar RACKSPACE_NOVA_LON: Rackspace Nova Private LON (LON)
     @cvar LIBVIRT: Libvirt driver
     @cvar JOYENT: Joyent driver
@@ -122,6 +123,7 @@ class Provider(object):
     KTUCLOUD = 47
     RACKSPACE_NOVA_LON = 48
     GRIDSPOT = 49
+    RACKSPACE_NOVA_ORD = 50
 
 
 class NodeState(object):

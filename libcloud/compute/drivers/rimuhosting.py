@@ -120,7 +120,22 @@ class RimuHostingNodeDriver(NodeDriver):
     def __init__(self, key, host=API_HOST, port=443,
                  api_context=API_CONTEXT, secure=True):
         """
-        @requires: key, secret
+        @param    key: API key (required)
+        @type     key: C{str}
+
+        @param    host: hostname for connection
+        @type     host: C{str}
+
+        @param    port: Override port used for connections.
+        @type     port: C{int}
+
+        @param    api_context: Optional API context.
+        @type     api_context: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP.
+        @type     secure: C{bool}
+
+        @rtype: C{None}
         """
         # Pass in some extra vars so that
         self.key = key

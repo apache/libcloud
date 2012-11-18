@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from hashlib import sha1
+import hmac
 import os
 import os.path                          # pylint: disable-msg=W0404
 import math
@@ -493,6 +495,7 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('object_count' in meta_data)
         self.assertTrue('container_count' in meta_data)
         self.assertTrue('bytes_used' in meta_data)
+        self.assertTrue('temp_url_key' in meta_data)
 
     @mock.patch('os.path.getsize')
     def test_ex_multipart_upload_object_for_small_files(self, getsize_mock):
@@ -615,6 +618,42 @@ class CloudFilesTests(unittest.TestCase):
                                               file_name='error.html')
         self.assertTrue(result)
 
+    def test_ex_set_account_metadata_temp_url_key(self):
+        result = self.driver.ex_set_account_metadata_temp_url_key("a key")
+        self.assertTrue(result)
+
+    @mock.patch("libcloud.storage.drivers.cloudfiles.time")
+    def test_ex_get_object_temp_url(self, time):
+        time.return_value = 0
+        self.driver.ex_get_meta_data = mock.Mock()
+        self.driver.ex_get_meta_data.return_value = {'container_count': 1,
+                                                     'object_count': 1,
+                                                     'bytes_used': 1,
+                                                     'temp_url_key': 'foo'}
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
+        hmac_body = "%s\n%s\n%s" % ('GET', 60,
+                                    "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
+        sig = hmac.new(b('foo'), b(hmac_body), sha1).hexdigest()
+        ret = self.driver.ex_get_object_temp_url(obj, 'GET')
+        temp_url = 'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (sig)
+
+        self.assertEquals(ret, temp_url)
+
+    def test_ex_get_object_temp_url_no_key_raises_key_error(self):
+        self.driver.ex_get_meta_data = mock.Mock()
+        self.driver.ex_get_meta_data.return_value = {'container_count': 1,
+                                                     'object_count': 1,
+                                                     'bytes_used': 1,
+                                                     'temp_url_key': None}
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
+        self.assertRaises(KeyError, self.driver.ex_get_object_temp_url, obj, 'GET')
+
     def _remove_test_file(self):
         file_path = os.path.abspath(__file__) + '.temp'
 
@@ -674,6 +713,9 @@ class CloudFilesMockHttp(StorageMockHttp):
                              'x-account-object-count': 400,
                              'x-account-bytes-used': 1234567
                            })
+        elif method == 'POST':
+            body = ''
+            status_code = httplib.NO_CONTENT
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_not_found(self, method, url, body, headers):

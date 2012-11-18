@@ -52,7 +52,7 @@ class Route53Error(LibcloudError):
 
     def __repr__(self):
         return('<Route53 response code=%s>' %
-                (self.code, len(self.errors)))
+               (self.code, len(self.errors)))
 
 
 class Route53DNSResponse(AWSBaseResponse):
@@ -79,7 +79,7 @@ class Route53DNSResponse(AWSBaseResponse):
                     messages.append(message['Message'])
 
                 raise Route53Error('InvalidChangeBatch message(s): %s ',
-                        messages)
+                                   messages)
 
 
 class Route53Connection(ConnectionUserAndKey):
@@ -164,7 +164,7 @@ class Route53DNSDriver(DNSDriver):
     def _to_zone(self, elem):
         name = findtext(element=elem, xpath='Name', namespace=NAMESPACE)
         id = findtext(element=elem, xpath='Id',
-                namespace=NAMESPACE).replace('/hostedzone/', '')
+                      namespace=NAMESPACE).replace('/hostedzone/', '')
         comment = findtext(element=elem, xpath='Config/Comment',
                            namespace=NAMESPACE)
         resource_record_count = int(findtext(element=elem,
@@ -172,7 +172,7 @@ class Route53DNSDriver(DNSDriver):
                                              namespace=NAMESPACE))
 
         extra = {'Comment': comment, 'ResourceRecordSetCount':
-                resource_record_count}
+                 resource_record_count}
 
         zone = Zone(id=id, domain=name, type='master', ttl=0, driver=self,
                     extra=extra)
@@ -180,24 +180,24 @@ class Route53DNSDriver(DNSDriver):
 
     def _to_records(self, data, zone):
         records = []
-        for elem in \
-        data.findall(fixxpath(xpath='ResourceRecordSets/ResourceRecordSet',
-            namespace=NAMESPACE)):
+        for elem in data.findall(
+            fixxpath(xpath='ResourceRecordSets/ResourceRecordSet',
+                     namespace=NAMESPACE)):
             records.append(self._to_record(elem, zone))
 
         return records
 
     def _to_record(self, elem, zone):
         name = findtext(element=elem, xpath='Name',
-                namespace=NAMESPACE)
+                        namespace=NAMESPACE)
         type = self._string_to_record_type(findtext(element=elem, xpath='Type',
-                namespace=NAMESPACE))
+                                                    namespace=NAMESPACE))
         ttl = findtext(element=elem, xpath='TTL', namespace=NAMESPACE)
 
         # TODO: Support records with multiple values
         value_elem = elem.findall(
-                fixxpath(xpath='ResourceRecords/ResourceRecord',
-                         namespace=NAMESPACE))[0]
+            fixxpath(xpath='ResourceRecords/ResourceRecord',
+                     namespace=NAMESPACE))[0]
         data = findtext(element=(value_elem), xpath='Value',
                         namespace=NAMESPACE)
 
