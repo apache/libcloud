@@ -112,6 +112,8 @@ class CloudFilesConnection(OpenStackBaseConnection):
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
+        if self._ex_force_service_region:
+            self.service_region = self._ex_force_service_region
 
     def get_endpoint(self):
         # First, we parse out both files and cdn endpoints
@@ -130,6 +132,13 @@ class CloudFilesConnection(OpenStackBaseConnection):
         # if this is a CDN request, return the cdn url instead
         if self.cdn_request:
             eps = cdn_eps
+
+        if self.service_region:
+            _eps = []
+            for ep in eps:
+                if ep['region'].lower() == self.service_region.lower():
+                    _eps.append(ep)
+            eps = _eps
 
         if len(eps) == 0:
             raise LibcloudError('Could not find specified endpoint')
