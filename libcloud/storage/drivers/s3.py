@@ -199,9 +199,6 @@ class S3StorageDriver(StorageDriver):
         return container
 
     def get_object(self, container_name, object_name):
-        # TODO: Figure out what is going on when the object or container
-        # does not exist- it seems that Amazon just keeps the connection open
-        # and doesn't return a response.
         container = self.get_container(container_name=container_name)
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),

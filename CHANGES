@@ -8,6 +8,18 @@ Changes with Apache Libcloud in development:
       ; LIBCLOUD-260
       [Dan Di Spaltro]
 
+    - Fix a bug which caused the connection to not be closed when using Python
+      2.6 and calling get_object on an object which doesn't exist in the S3
+      driver. ; LIBCLOUD-257
+      [John Carr]
+
+  *) DNS
+
+    - Update 'if type' checks in the update_record methods to behave correctly
+      if users passes in RecordType.A with a value of 0 - if type is not None.
+      ; LIBCLOUD-247
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.11.3:
 
   *) Storage

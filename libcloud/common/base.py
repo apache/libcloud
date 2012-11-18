@@ -44,6 +44,23 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 LibcloudHTTPConnection = httplib.HTTPConnection
 
 
+class HTTPResponse(httplib.HTTPResponse):
+    # On python 2.6 some calls can hang because HEAD isn't quite properly
+    # supported.
+    # In particular this happens on S3 when calls are made to get_object to
+    # objects that don't exist.
+    # This applies the behaviour from 2.7, fixing the hangs.
+    def read(self, amt=None):
+        if self.fp is None:
+            return ''
+
+        if self._method == 'HEAD':
+            self.close()
+            return ''
+
+        return httplib.HTTPResponse.read(self, amt)
+
+
 class Response(object):
     """
     A Base Response class to derive from.
@@ -267,9 +284,14 @@ class LoggingConnection():
             ht += "\r\n0\r\n"
         else:
             ht += u(body)
-        rr = httplib.HTTPResponse(sock=fakesock(ht),
-                                  method=r._method,
-                                  debuglevel=r.debuglevel)
+
+        if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+            cls = HTTPResponse
+        else:
+            cls = httplib.HTTPResponse
+
+        rr = cls(sock=fakesock(ht), method=r._method,
+                 debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
