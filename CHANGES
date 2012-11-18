@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+  *) Storage
+
+    - Don't ignire ex_force_service_region argument in the CloudFiles driver.
+      ; LIBCLOUD-260
+      [Dan Di Spaltro]
+
 Changes with Apache Libcloud 0.11.3:
 
   *) Storage
