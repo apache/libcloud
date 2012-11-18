@@ -177,23 +177,19 @@ class LocalStorageDriver(StorageDriver):
                       driver=self, container=container, hash=None,
                       meta_data=None)
 
-    def list_containers(self):
+    def iterate_containers(self):
         """
-        Return a list of containers.
+        Return a generator of containers.
 
-        @return: A list of Container instances.
-        @rtype: C{list} of L{Container}
+        @return: A generator of Container instances.
+        @rtype: C{generator} of L{Container}
         """
-
-        containers = []
 
         for container_name in os.listdir(self.base_path):
             full_path = os.path.join(self.base_path, container_name)
             if not os.path.isdir(full_path):
                 continue
-            containers.append(self._make_container(container_name))
-
-        return containers
+            yield self._make_container(container_name)
 
     def _get_objects(self, container):
         """

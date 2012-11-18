@@ -218,7 +218,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         OpenStackDriverMixin.__init__(self, *args, **kwargs)
         super(CloudFilesStorageDriver, self).__init__(*args, **kwargs)
 
-    def list_containers(self):
+    def iterate_containers(self):
         response = self.connection.request('')
 
         if response.status == httplib.NO_CONTENT:
@@ -713,15 +713,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _to_container_list(self, response):
         # @TODO: Handle more then 10k containers - use "lazy list"?
-        containers = []
-
         for container in response:
             extra = {'object_count': int(container['count']),
                      'size': int(container['bytes'])}
-            containers.append(Container(name=container['name'], extra=extra,
-                                        driver=self))
-
-        return containers
+            yield Container(name=container['name'], extra=extra, driver=self)
 
     def _to_object_list(self, response, container):
         objects = []
