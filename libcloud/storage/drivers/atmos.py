@@ -133,16 +133,14 @@ class AtmosDriver(StorageDriver):
         host = host or self.host
         super(AtmosDriver, self).__init__(key, secret, secure, host, port)
 
-    def list_containers(self):
+    def iterate_containers(self):
         result = self.connection.request(self._namespace_path(''))
         entries = self._list_objects(result.object, object_type='directory')
-        containers = []
         for entry in entries:
             extra = {
                 'object_id': entry['id']
             }
-            containers.append(Container(entry['name'], extra, self))
-        return containers
+            yield Container(entry['name'], extra, self)
 
     def get_container(self, container_name):
         path = self._namespace_path(container_name) + '/?metadata/system'

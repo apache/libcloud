@@ -171,7 +171,7 @@ class S3StorageDriver(StorageDriver):
     ex_location_name = ''
     namespace = NAMESPACE
 
-    def list_containers(self):
+    def iterate_containers(self):
         response = self.connection.request('/')
         if response.status == httplib.OK:
             containers = self._to_containers(obj=response.object,
@@ -430,9 +430,9 @@ class S3StorageDriver(StorageDriver):
                 driver=self)
 
     def _to_containers(self, obj, xpath):
-        return [self._to_container(element) for element in
-                obj.findall(fixxpath(
-                    xpath=xpath, namespace=self.namespace))]
+        for element in obj.findall(fixxpath(xpath=xpath,
+                                        namespace=self.namespace)):
+            yield self._to_container(element)
 
     def _to_objs(self, obj, xpath, container):
         return [self._to_obj(element, container) for element in

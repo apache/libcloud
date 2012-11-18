@@ -178,6 +178,16 @@ class StorageDriver(BaseDriver):
                                             secure=secure, host=host,
                                             port=port, **kwargs)
 
+    def iterate_containers(self):
+        """
+        Return a generator of containers for the given account
+
+        @return: A generator of Container instances.
+        @rtype: C{generator} of L{Container}
+        """
+        raise NotImplementedError(
+            'iterate_containers not implemented for this driver')
+
     def list_containers(self):
         """
         Return a list of containers.
@@ -185,8 +195,7 @@ class StorageDriver(BaseDriver):
         @return: A list of Container instances.
         @rtype: C{list} of L{Container}
         """
-        raise NotImplementedError(
-            'list_containers not implemented for this driver')
+        return list(self.iterate_containers())
 
     def iterate_container_objects(self, container):
         """
