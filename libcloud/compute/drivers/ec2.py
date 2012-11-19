@@ -24,6 +24,7 @@ import hmac
 import os
 import time
 import copy
+from datetime import datetime
 
 from hashlib import sha256
 from xml.etree import ElementTree as ET
@@ -475,13 +476,16 @@ class EC2NodeDriver(NodeDriver):
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
         device = findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE)
+        created = findtext(element=element, xpath='createTime', namespace=NAMESPACE)
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
                              driver=self,
                              extra={'state': state,
-                                    'device': device})
+                                    'device': device,
+                                    'created': datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
+                             })
 
     def _to_snapshots(self, object, xpath):
         return [self._to_snapshot(el, '')
@@ -495,11 +499,13 @@ class EC2NodeDriver(NodeDriver):
                           namespace=NAMESPACE)
         size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
         description = findtext(element=element, xpath='description', namespace=NAMESPACE)
+        created = findtext(element=element, xpath='startTime', namespace=NAMESPACE)
         return StorageSnapshot(id=snapId,
                                size=int(size),
                                description=description,
                                driver=self,
-                               extra={'state': status})
+                               extra={'state': status,
+                                      'created': datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -556,8 +562,12 @@ class EC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, owners=None):
         params = {'Action': 'DescribeImages'}
+        if isinstance(owners, list):
+            params.update(dict([('Owner.%s' % id, owner) for id, owner in enumerate(owners)]))
+        elif isinstance(owners, str):
+            params.update({'Owner.0': owners})
         images = self._to_images(
             self.connection.request(self.path, params=params).object
         )
@@ -639,6 +649,17 @@ class EC2NodeDriver(NodeDriver):
                                           namespace=NAMESPACE)
         return imageId
 
+    def ex_delete_image(self, image):
+        params  = {
+            'Action': 'DeregisterImage',
+            'ImageId': image.id
+        }
+        request = self.connection.request(self.path, params=params)
+        element = findtext(element=request.object, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
+
     def ex_list_volumes(self, node=None):
         params = {
             'Action': 'DescribeVolumes',
@@ -664,10 +685,10 @@ class EC2NodeDriver(NodeDriver):
     def ex_delete_snapshot(self, snapshot):
         params = {
             'Action': 'DeleteSnapshot',
-            'SnapsotId': snapshot.id
+            'SnapshotId': snapshot.id
         }
-        result = self.connection.request(self.path, params=params)
-        element = findtext(element=result, xpath='return',
+        request = self.connection.request(self.path, params=params)
+        element = findtext(element=request.object, xpath='return',
                            namespace=NAMESPACE)
         return element == 'true'
 
