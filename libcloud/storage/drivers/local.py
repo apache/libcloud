@@ -75,6 +75,7 @@ class LocalStorageDriver(StorageDriver):
 
     connectionCls = Connection
     name = 'Local Storage'
+    website = 'http://example.com'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):

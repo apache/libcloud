@@ -75,6 +75,10 @@ Changes with Apache Libcloud in development:
       driver. ; LIBCLOUD-257
       [John Carr]
 
+    - Add a new generator based method for listing / iterating over the
+      containers (iterate_containers). ; LIBCLOUD-261
+      [Mahendra M]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly

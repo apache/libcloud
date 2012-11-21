@@ -80,7 +80,7 @@ class NimbusConnection(ConnectionUserAndKey):
 
 class NimbusStorageDriver(StorageDriver):
     name = 'Nimbus'
-    website = 'http://www.nimbusproject.org/'
+    website = 'https://nimbus.io/'
     connectionCls = NimbusConnection
 
     def __init__(self, *args, **kwargs):
@@ -101,7 +101,8 @@ class NimbusStorageDriver(StorageDriver):
         return self._to_container(response.object)
 
     def _to_containers(self, data):
-        yield self._to_container(item) for item in data
+        for item in data:
+            yield self._to_container(item)
 
     def _to_container(self, data):
         name = data[0]
