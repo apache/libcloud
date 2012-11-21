@@ -104,17 +104,24 @@ class BrightboxLBDriver(Driver):
         return self.balancer_attach_member(balancer, node)
 
     def balancer_attach_member(self, balancer, member):
-        path = '/%s/load_balancers/%s/add_nodes' % (API_VERSION, balancer.id)
-
-        self._post(path, {'nodes': [self._member_to_node(member)]})
-
+        self.ex_balancer_attach_members(balancer, [member])
         return member
 
+    def ex_balancer_attach_members(self, balancer, members):
+        path = '/%s/load_balancers/%s/add_nodes' % (API_VERSION, balancer.id)
+        response = self._post(path, {'nodes': map(self._member_to_node,
+                                                  members)})
+        return response.status == httplib.ACCEPTED
+
     def balancer_detach_member(self, balancer, member):
+        return self.ex_balancer_detach_members(balancer, [member])
+
+    def ex_balancer_detach_members(self, balancer, members):
         path = '/%s/load_balancers/%s/remove_nodes' % (API_VERSION,
                                                        balancer.id)
 
-        response = self._post(path, {'nodes': [self._member_to_node(member)]})
+        response = self._post(path, {'nodes': map(self._member_to_node,
+                                                  members)})
 
         return response.status == httplib.ACCEPTED
 
