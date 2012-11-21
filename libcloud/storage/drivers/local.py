@@ -507,14 +507,21 @@ class LocalStorageDriver(StorageDriver):
             except Exception:
                 return False
 
-        # Check and delete the folder if required
+        # Check and delete all the empty parent folders
         path = os.path.dirname(path)
+        container_url = obj.container.get_cdn_url()
 
-        try:
-            if path != obj.container.get_cdn_url():
+        # Delete the empty parent folders till the container's level
+        while path != container_url:
+            try:
                 os.rmdir(path)
-        except Exception:
-            pass
+            except OSError:
+                exp = sys.exc_info()[1]
+                if exp.errno == errno.ENOTEMPTY:
+                    break
+                raise exp
+
+            path = os.path.dirname(path)
 
         return True
 
