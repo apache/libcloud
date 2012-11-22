@@ -68,7 +68,11 @@ class BrightboxNodeDriver(NodeDriver):
                                      'server_groups', 'hostname',
                                      'started_at', 'created_at',
                                      'deleted_at'])
-        extra_data['zone'] = self._to_location(data['zone'])
+        # deleting servers will have an empty zone for brightbox
+        extra_data['zone'] = None
+        if data['zone']:
+            extra_data['zone'] = self._to_location(data['zone'])
+
         return Node(
             id=data['id'],
             name=data['name'],
