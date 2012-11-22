@@ -65,6 +65,9 @@ Changes with Apache Libcloud in development:
      content-length header in VCloud driver. ; LIBCLOUD-256
      [Brian DeGeeter, Tomaz Muraus]
 
+   - Add a new driver for new Asia Pacific (Sydney) EC2 region.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.

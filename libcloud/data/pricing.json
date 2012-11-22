@@ -143,6 +143,19 @@
             "m2.4xlarge": 2.72
         },
 
+       "ec2_ap_southeast_2": {
+            "t1.micro": 0.020,
+            "m1.small": 0.085,
+            "m1.medium": 0.170,
+            "m1.large": 0.340,
+            "m1.xlarge": 0.680,
+            "c1.medium": 0.186,
+            "c1.xlarge": 0.744,
+            "m2.xlarge": 0.506,
+            "m2.2xlarge": 1.012,
+            "m2.4xlarge": 2.024
+        },
+
         "nimbus" : {
             "m1.small": 0.0,
             "m1.large": 0.0,

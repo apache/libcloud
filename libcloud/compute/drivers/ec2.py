@@ -279,9 +279,24 @@ REGION_DETAILS = {
 
         ]
     },
+    'ap-southeast-2': {
+        'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
     'nimbus': {
-        # Nimbus clouds have 3 EC2-style instance types but their particular RAM
-        # allocations are configured by the admin
+        # Nimbus clouds have 3 EC2-style instance types but their particular
+        # RAM allocations are configured by the admin
         'instance_types': [
             'm1.small',
             'm1.large',
@@ -1434,7 +1449,7 @@ class EC2USWestOregonNodeDriver(EC2NodeDriver):
 
 class EC2APSEConnection(EC2Connection):
     """
-    Connection class for EC2 in the Southeast Asia Pacific Region
+    Connection class for EC2 in the Southeast Asia Pacific Region.
     """
 
     host = REGION_DETAILS['ap-southeast-1']['endpoint']
@@ -1442,7 +1457,7 @@ class EC2APSEConnection(EC2Connection):
 
 class EC2APNEConnection(EC2Connection):
     """
-    Connection class for EC2 in the Northeast Asia Pacific Region
+    Connection class for EC2 in the Northeast Asia Pacific Region.
     """
 
     host = REGION_DETAILS['ap-northeast-1']['endpoint']
@@ -1450,7 +1465,7 @@ class EC2APNEConnection(EC2Connection):
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Southeast Asia Pacific Region
+    Driver class for EC2 in the Southeast Asia Pacific Region.
     """
 
     api_name = 'ec2_ap_southeast'
@@ -1463,7 +1478,7 @@ class EC2APSENodeDriver(EC2NodeDriver):
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region
+    Driver class for EC2 in the Northeast Asia Pacific Region.
     """
 
     api_name = 'ec2_ap_northeast'
@@ -1476,7 +1491,7 @@ class EC2APNENodeDriver(EC2NodeDriver):
 
 class EC2SAEastConnection(EC2Connection):
     """
-    Connection class for EC2 in the South America (Sao Paulo) Region
+    Connection class for EC2 in the South America (Sao Paulo) Region.
     """
 
     host = REGION_DETAILS['sa-east-1']['endpoint']
@@ -1484,7 +1499,7 @@ class EC2SAEastConnection(EC2Connection):
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the South America (Sao Paulo) Region
+    Driver class for EC2 in the South America (Sao Paulo) Region.
     """
 
     api_name = 'ec2_sa_east'
@@ -1493,6 +1508,27 @@ class EC2SAEastNodeDriver(EC2NodeDriver):
     country = 'BR'
     region_name = 'sa-east-1'
     connectionCls = EC2SAEastConnection
+
+
+class EC2APSESydneyConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Southeast Asia Pacific (Sydney) Region.
+    """
+
+    host = REGION_DETAILS['ap-southeast-2']['endpoint']
+
+
+class EC2APSESydneyNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
+    """
+
+    api_name = 'ec2_ap_southeast_2'
+    name = 'Amazon EC2 (ap-southeast-2)'
+    friendly_name = 'Amazon Asia-Pacific Sydney'
+    country = 'AU'
+    region_name = 'ap-southeast-2'
+    connectionCls = EC2APSESydneyConnection
 
 
 class EucConnection(EC2Connection):

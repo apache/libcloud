@@ -120,6 +120,7 @@ class Provider(object):
     GRIDSPOT = 'gridspot'
     RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     HOSTVIRTUAL = 'hostvirtual'
+    EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
 
     # Deprecated constants
     RACKSPACE_UK = 'rackspace_uk'
