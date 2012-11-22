@@ -41,16 +41,7 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
 
-EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
-EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
-EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
-EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
-EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
-EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
-EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
-
 API_VERSION = '2010-08-31'
-
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 """
