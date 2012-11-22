@@ -87,7 +87,8 @@
             "c1.xlarge": 0.68,
             "m2.xlarge": 0.50,
             "m2.2xlarge": 1.0,
-            "m2.4xlarge": 2.0
+            "m2.4xlarge": 2.0,
+            "cc2.8xlarge": 2.400
         },
 
        "ec2_eu_west": {

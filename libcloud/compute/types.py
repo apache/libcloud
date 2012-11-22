@@ -71,10 +71,7 @@ class Provider(object):
     @cvar GRIDSPOT: Gridspot driver
     """
     DUMMY = 'dummy'
-    EC2 = 'ec2'  # deprecated name
-    EC2_US_EAST = 'ec2_us_east'
-    EC2_EU = 'ec2_eu'  # deprecated name
-    EC2_EU_WEST = 'ec2_eu_west'
+    EC2 = 'ec2'
     RACKSPACE = 'rackspace'
     SLICEHOST = 'slicehost'
     GOGRID = 'gogrid'
@@ -82,7 +79,6 @@ class Provider(object):
     LINODE = 'linode'
     VCLOUD = 'vcloud'
     RIMUHOSTING = 'rimuhosting'
-    EC2_US_WEST = 'ec2_us_west'
     VOXEL = 'voxel'
     SOFTLAYER = 'softlayer'
     EUCALYPTUS = 'eucalyptus'
@@ -94,10 +90,8 @@ class Provider(object):
     ELASTICHOSTS_UK1 = 'elastichosts_uk1'
     ELASTICHOSTS_UK2 = 'elastichosts_uk2'
     ELASTICHOSTS_US1 = 'elastichosts_us1'
-    EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
     BRIGHTBOX = 'brightbox'
     CLOUDSIGMA = 'cloudsigma'
-    EC2_AP_NORTHEAST = 'ec2_ap_northeast'
     NIMBUS = 'nimbus'
     BLUEBOX = 'bluebox'
     GANDI = 'gandi'
@@ -107,10 +101,8 @@ class Provider(object):
     SERVERLOVE = 'serverlove'
     NINEFOLD = 'ninefold'
     TERREMARK = 'terremark'
-    EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
     CLOUDSTACK = 'cloudstack'
     CLOUDSIGMA_US = 'cloudsigma_us'
-    EC2_SA_EAST = 'ec2_sa_east'
     LIBVIRT = 'libvirt'
     ELASTICHOSTS_US2 = 'elastichosts_us2'
     ELASTICHOSTS_CA1 = 'elastichosts_ca1'
@@ -120,9 +112,19 @@ class Provider(object):
     GRIDSPOT = 'gridspot'
     RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     HOSTVIRTUAL = 'hostvirtual'
+
+    # Deprecated constants which are still supported
+    EC2_US_EAST = 'ec2_us_east'
+    EC2_EU = 'ec2_eu'  # deprecated name
+    EC2_EU_WEST = 'ec2_eu_west'
+    EC2_US_WEST = 'ec2_us_west'
+    EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
+    EC2_AP_NORTHEAST = 'ec2_ap_northeast'
+    EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
+    EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
 
-    # Deprecated constants
+    # Deprecated constants which aren't supported anymore
     RACKSPACE_UK = 'rackspace_uk'
     RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
     RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
