@@ -18,9 +18,16 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
-from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
+from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
+from libcloud.compute.drivers.ec2 import EC2USWestOregonNodeDriver
+from libcloud.compute.drivers.ec2 import EC2EUNodeDriver
+from libcloud.compute.drivers.ec2 import EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2APNENodeDriver
+from libcloud.compute.drivers.ec2 import EC2APSESydneyNodeDriver
+from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
+from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
+from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume
 
@@ -31,15 +38,35 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import EC2_PARAMS
 
 
+class BaseEC2Tests(LibcloudTestCase):
+    def test_instantiate_driver_valid_datacenters(self):
+        datacenters = REGION_DETAILS.keys()
+        datacenters.remove('nimbus')
+
+        for datacenter in datacenters:
+            EC2NodeDriver(*EC2_PARAMS, datacenter=datacenter)
+
+    def test_instantiate_driver_invalid_datacenters(self):
+        for datacenter in ['invalid', 'nimbus']:
+            try:
+                EC2NodeDriver(*EC2_PARAMS, datacenter=datacenter)
+            except ValueError:
+                pass
+            else:
+                self.fail('Invalid region, but exception was not thrown')
+
+
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
     image_name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
+    datacenter = 'us-east-1'
 
     def setUp(self):
         EC2MockHttp.test = self
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-        self.driver = EC2NodeDriver(*EC2_PARAMS)
+
+        self.driver = EC2NodeDriver(*EC2_PARAMS, datacenter=self.datacenter)
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
@@ -175,7 +202,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                   ('ec2_us_west', 'us-west-1'),
                   ('ec2_eu_west', 'eu-west-1'),
                   ('ec2_ap_southeast', 'ap-southeast-1'),
-                  ('ec2_ap_northeast', 'ap-northeast-1')
+                  ('ec2_ap_northeast', 'ap-northeast-1'),
+                  ('ec2_ap_southeast_2', 'ap-southeast-2')
                 ]
         for api_name, region_name in names:
             self.driver.api_name = api_name
@@ -194,7 +222,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 13)
+                self.assertEqual(len(sizes), 15)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
@@ -343,8 +371,76 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(retValue)
 
 
-class EC2MockHttp(MockHttp):
+class EC2USWest1Tests(EC2Tests):
+    datacenter = 'us-west-1'
 
+
+class EC2USWest2Tests(EC2Tests):
+    datacenter = 'us-west-2'
+
+
+class EC2EUWestTests(EC2Tests):
+    datacenter = 'eu-west-1'
+
+
+class EC2APSE1Tests(EC2Tests):
+    datacenter = 'ap-southeast-1'
+
+
+class EC2APNETests(EC2Tests):
+    datacenter = 'ap-northeast-1'
+
+
+class EC2APSE2Tests(EC2Tests):
+    datacenter = 'ap-southeast-2'
+
+
+class EC2SAEastTests(EC2Tests):
+    datacenter = 'sa-east-1'
+
+
+# Tests for the old, deprecated way of instantiating a driver.
+class EC2OldStyleModelTests(EC2Tests):
+    driver_klass = EC2USWestNodeDriver
+
+    def setUp(self):
+        EC2MockHttp.test = self
+        EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
+        EC2MockHttp.use_param = 'Action'
+        EC2MockHttp.type = None
+
+        self.driver = self.driver_klass(*EC2_PARAMS)
+
+
+class EC2USWest1OldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2USWestNodeDriver
+
+
+class EC2USWest2OldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2USWestOregonNodeDriver
+
+
+class EC2EUWestOldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2EUNodeDriver
+
+
+class EC2APSE1OldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2APSENodeDriver
+
+
+class EC2APNEOldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2APNENodeDriver
+
+
+class EC2APSE2OldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2APSESydneyNodeDriver
+
+
+class EC2SAEastOldStyleModelTests(EC2OldStyleModelTests):
+    driver_klass = EC2SAEastNodeDriver
+
+
+class EC2MockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ec2')
 
     def _DescribeInstances(self, method, url, body, headers):
@@ -486,22 +582,6 @@ class EucMockHttp(EC2MockHttp):
     def _services_Eucalyptus_CreateTags(self, method, url, body,
                                         headers):
         return self._CreateTags(method, url, body, headers)
-
-
-class EC2APSETests(EC2Tests):
-    def setUp(self):
-        EC2APSENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
-        EC2MockHttp.use_param = 'Action'
-        EC2MockHttp.type = None
-        self.driver = EC2APSENodeDriver(*EC2_PARAMS)
-
-
-class EC2APNETests(EC2Tests):
-    def setUp(self):
-        EC2APNENodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
-        EC2MockHttp.use_param = 'Action'
-        EC2MockHttp.type = None
-        self.driver = EC2APNENodeDriver(*EC2_PARAMS)
 
 
 class NimbusTests(EC2Tests):

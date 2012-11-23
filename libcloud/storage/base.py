@@ -118,6 +118,9 @@ class Container(object):
         self.extra = extra or {}
         self.driver = driver
 
+    def iterate_objects(self):
+        return self.driver.iterate_container_objects(container=self)
+
     def list_objects(self):
         return self.driver.list_container_objects(container=self)
 
@@ -175,6 +178,16 @@ class StorageDriver(BaseDriver):
                                             secure=secure, host=host,
                                             port=port, **kwargs)
 
+    def iterate_containers(self):
+        """
+        Return a generator of containers for the given account
+
+        @return: A generator of Container instances.
+        @rtype: C{generator} of L{Container}
+        """
+        raise NotImplementedError(
+            'iterate_containers not implemented for this driver')
+
     def list_containers(self):
         """
         Return a list of containers.
@@ -182,8 +195,20 @@ class StorageDriver(BaseDriver):
         @return: A list of Container instances.
         @rtype: C{list} of L{Container}
         """
+        return list(self.iterate_containers())
+
+    def iterate_container_objects(self, container):
+        """
+        Return a generator of objects for the given container.
+
+        @param container: Container instance
+        @type container: L{Container}
+
+        @return: A generator of Object instances.
+        @rtype: C{generator} of L{Object}
+        """
         raise NotImplementedError(
-            'list_containers not implemented for this driver')
+            'iterate_container_objects not implemented for this driver')
 
     def list_container_objects(self, container):
         """
@@ -195,8 +220,7 @@ class StorageDriver(BaseDriver):
         @return: A list of Object instances.
         @rtype: C{list} of L{Object}
         """
-        raise NotImplementedError(
-            'list_objects not implemented for this driver')
+        return list(self.iterate_container_objects(container))
 
     def get_container(self, container_name):
         """
@@ -333,7 +357,7 @@ class StorageDriver(BaseDriver):
         @param object_name: Object name.
         @type object_name: C{str}
 
-        @param verify_hash: Verify hast
+        @param verify_hash: Verify hash
         @type verify_hash: C{bool}
 
         @param extra: (optional) Extra attributes (driver specific).

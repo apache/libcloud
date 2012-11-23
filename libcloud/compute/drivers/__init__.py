@@ -27,6 +27,7 @@ __all__ = [
     'elastichosts',
     'cloudsigma',
     'gogrid',
+    'hostvirtual',
     'ibm_sce',
     'linode',
     'opennebula',

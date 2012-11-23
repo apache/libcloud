@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from libcloud.utils.misc import get_driver as get_provider_driver
+from libcloud.utils.misc import set_driver as set_provider_driver
 from libcloud.dns.types import Provider
 
 DRIVERS = {
@@ -32,3 +33,6 @@ DRIVERS = {
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)
+
+def set_driver(provider, module, klass):
+    return set_provider_driver(DRIVERS, provider, module, klass)

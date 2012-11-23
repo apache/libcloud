@@ -42,20 +42,22 @@ class Provider(object):
     @cvar GOOGLE_STORAGE Google Storage
     @cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     @cvar NIMBUS: Nimbus.io driver
+    @cvar LOCAL: Local storage driver
     """
-    DUMMY = 0
-    CLOUDFILES_US = 1
-    CLOUDFILES_UK = 2
-    S3 = 3
-    S3_US_WEST = 4
-    S3_EU_WEST = 5
-    S3_AP_SOUTHEAST = 6
-    S3_AP_NORTHEAST = 7
-    NINEFOLD = 8
-    GOOGLE_STORAGE = 9
-    S3_US_WEST_OREGON = 10
-    CLOUDFILES_SWIFT = 11
-    NIMBUS = 12
+    DUMMY = 'dummy'
+    CLOUDFILES_US = 'cloudfiles_us'
+    CLOUDFILES_UK = 'cloudfiles_uk'
+    S3 = 's3'
+    S3_US_WEST = 's3_us_west'
+    S3_EU_WEST = 's3_eu_west'
+    S3_AP_SOUTHEAST = 's3_ap_southeast'
+    S3_AP_NORTHEAST = 's3_ap_northeast'
+    NINEFOLD = 'ninefold'
+    GOOGLE_STORAGE = 'google_storage'
+    S3_US_WEST_OREGON = 's3_us_west_oregon'
+    CLOUDFILES_SWIFT = 'cloudfiles_swift'
+    NIMBUS = 'nimbus'
+    LOCAL = 'local'
 
 
 class ContainerError(LibcloudError):

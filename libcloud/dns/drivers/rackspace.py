@@ -269,7 +269,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         if 'comment' in extra:
             payload['comment'] = extra['comment']
 
-        type = type if type else record.type
+        type = type if type is not None else record.type
         data = data if data else record.data
 
         self.connection.set_context({'resource': 'record', 'id': record.id})

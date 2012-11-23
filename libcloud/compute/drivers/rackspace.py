@@ -17,9 +17,9 @@ Rackspace driver
 """
 from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.base import NodeLocation
-from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection, \
+from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
-from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection, \
+from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
     OpenStack_1_1_NodeDriver
 
 from libcloud.common.rackspace import (
@@ -27,15 +27,15 @@ from libcloud.common.rackspace import (
 
 
 ENDPOINT_ARGS_MAP = {
-    'dfw':  {'service_type': 'compute',
-              'name': 'cloudServersOpenStack',
-              'region': 'DFW'},
-    'ord':  {'service_type': 'compute',
-              'name': 'cloudServersOpenStack',
-              'region': 'ORD'},
-    'lon':  {'service_type': 'compute',
-             'name': 'cloudServersOpenStack',
-             'region': 'LON'}
+    'dfw': {'service_type': 'compute',
+            'name': 'cloudServersOpenStack',
+            'region': 'DFW'},
+    'ord': {'service_type': 'compute',
+            'name': 'cloudServersOpenStack',
+            'region': 'ORD'},
+    'lon': {'service_type': 'compute',
+            'name': 'cloudServersOpenStack',
+            'region': 'LON'}
 }
 
 
@@ -70,6 +70,12 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='us', **kwargs):
+        """
+        @inherits:  L{NodeDriver.__init__}
+
+        @param region: Region ID which should be used
+        @type region: C{str}
+        """
         if region not in ['us', 'uk']:
             raise ValueError('Invalid region: %s' % (region))
 
@@ -81,8 +87,10 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         self.region = region
 
         super(RackspaceFirstGenNodeDriver, self).__init__(key=key,
-                      secret=secret, secure=secure, host=host,
-                      port=port, **kwargs)
+                                                          secret=secret,
+                                                          secure=secure,
+                                                          host=host,
+                                                          port=port, **kwargs)
 
     def list_locations(self):
         """
@@ -136,20 +144,29 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  datacenter='dfw', **kwargs):
+        """
+        @inherits:  L{NodeDriver.__init__}
+
+        @param datacenter: Datacenter ID which should be used
+        @type datacenter: C{str}
+        """
 
         if datacenter not in ['dfw', 'ord', 'lon']:
             raise ValueError('Invalid datacenter: %s' % (datacenter))
 
         if datacenter in ['dfw', 'ord']:
             self.connectionCls.auth_url = AUTH_URL_US
+            self.api_name = 'rackspacenovaus'
         elif datacenter == 'lon':
             self.connectionCls.auth_url = AUTH_URL_UK
+            self.api_name = 'rackspacenovalon'
 
         self.connectionCls._auth_version = '2.0'
         self.connectionCls.get_endpoint_args = \
-                ENDPOINT_ARGS_MAP[datacenter]
+            ENDPOINT_ARGS_MAP[datacenter]
 
         self.datacenter = datacenter
 
         super(RackspaceNodeDriver, self).__init__(key=key, secret=secret,
-                       secure=secure, host=host, port=port, **kwargs)
+                                                  secure=secure, host=host,
+                                                  port=port, **kwargs)

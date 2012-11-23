@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """
-Amazon EC2 driver
+Amazon EC2, Eucalyptus and Nimbus drivers.
 """
+
 from __future__ import with_statement
 
 import sys
@@ -42,23 +43,14 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, StorageSnapshot
 
-EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
-EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
-EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
-EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
-EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
-EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
-EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
-
 API_VERSION = '2010-08-31'
-
-NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
+NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
 """
-EC2_INSTANCE_TYPES = {
+INSTANCE_TYPES = {
     't1.micro': {
         'id': 't1.micro',
         'name': 'Micro Instance',
@@ -129,6 +121,20 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'm3.xlarge': {
+        'id': 'm3.xlarge',
+        'name': 'Extra Large Instance',
+        'ram': 15360,
+        'disk': None,
+        'bandwidth': None
+    },
+    'm3.2xlarge': {
+        'id': 'm3.2xlarge',
+        'name': 'Double Extra Large Instance',
+        'ram': 30720,
+        'disk': None,
+        'bandwidth': None
+    },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
@@ -152,15 +158,165 @@ EC2_INSTANCE_TYPES = {
     }
 }
 
-CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge', 'cc2.8xlarge']
+REGION_DETAILS = {
+    'us-east-1': {
+        'endpoint': 'ec2.us-east-1.amazonaws.com',
+        'api_name': 'ec2_us_east',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'cg1.4xlarge'
+        ]
+    },
+    'us-west-1': {
+        'endpoint': 'ec2.us-west-1.amazonaws.com',
+        'api_name': 'ec2_us_west',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'us-west-2': {
+        'endpoint': 'ec2.us-west-2.amazonaws.com',
+        'api_name': 'ec2_us_west_oregon',
+        'country': 'US',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge'
+        ]
+    },
+    'eu-west-1': {
+        'endpoint': 'ec2.eu-west-1.amazonaws.com',
+        'api_name': 'ec2_eu_west',
+        'country': 'Ireland',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge'
+        ]
+    },
+    'ap-southeast-1': {
+        'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
+        'api_name': 'ec2_ap_southeast',
+        'country': 'Singapore',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'ap-northeast-1': {
+        'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
+        'api_name': 'ec2_ap_northeast',
+        'country': 'Japan',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'sa-east-1': {
+        'endpoint': 'ec2.sa-east-1.amazonaws.com',
+        'api_name': 'ec2_sa_east',
+        'country': 'Brazil',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
 
-EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_US_WEST_OREGON_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_SA_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+        ]
+    },
+    'ap-southeast-2': {
+        'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
+        'api_name': 'ec2_ap_southeast_2',
+        'country': 'Australia',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'nimbus': {
+        # Nimbus clouds have 3 EC2-style instance types but their particular
+        # RAM allocations are configured by the admin
+        'country': 'custom',
+        'instance_types': [
+            'm1.small',
+            'm1.large',
+            'm1.xlarge'
+        ]
+    }
+}
+
+VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
+VALID_EC2_DATACENTERS.remove('nimbus')
 
 
 class EC2NodeLocation(NodeLocation):
@@ -212,10 +368,10 @@ class EC2Response(AWSBaseResponse):
 
 class EC2Connection(ConnectionUserAndKey):
     """
-    Represents a single connection to the EC2 Endpoint
+    Represents a single connection to the EC2 Endpoint.
     """
 
-    host = EC2_US_EAST_HOST
+    host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
 
     def add_default_params(self, params):
@@ -280,22 +436,15 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
-class EC2NodeDriver(NodeDriver):
+class BaseEC2NodeDriver(NodeDriver):
     """
-    Amazon EC2 node driver
+    Base Amazon EC2 node driver.
+
+    Used for main EC2 and other derivate driver classes to inherit from it.
     """
 
     connectionCls = EC2Connection
-    type = Provider.EC2
-    api_name = 'ec2_us_east'
-    name = 'Amazon EC2 (us-east-1)'
-    website = 'http://aws.amazon.com/ec2/'
-    friendly_name = 'Amazon US N. Virginia'
-    country = 'US'
-    region_name = 'us-east-1'
     path = '/'
-
-    _instance_types = EC2_US_EAST_INSTANCE_TYPES
     features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
@@ -540,25 +689,14 @@ class EC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        # Cluster instances are not available in all the regions
-        if self.region_name == 'us-east-1':
-            ignored_size_ids = None
-        elif self.region_name == 'eu-west-1':
-            ignored_size_ids = CLUSTER_INSTANCES_IDS[:-1]
-        else:
-            ignored_size_ids = CLUSTER_INSTANCES_IDS
-
-        sizes = self._get_sizes(ignored_size_ids=ignored_size_ids)
-        return sizes
-
-    def _get_sizes(self, ignored_size_ids=None):
-        ignored_size_ids = ignored_size_ids or []
+        available_types = REGION_DETAILS[self.region_name]['instance_types']
         sizes = []
-        for key, values in self._instance_types.items():
-            if key in ignored_size_ids:
-                continue
-            attributes = copy.deepcopy(values)
-            attributes.update({'price': self._get_size_price(size_id=key)})
+
+        for instance_type in available_types:
+            attributes = INSTANCE_TYPES[instance_type]
+            attributes = copy.deepcopy(attributes)
+            price = self._get_size_price(size_id=instance_type)
+            attributes.update({'price': price})
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
@@ -575,10 +713,10 @@ class EC2NodeDriver(NodeDriver):
 
     def list_locations(self):
         locations = []
-        for index, availability_zone in\
+        for index, availability_zone in \
                 enumerate(self.ex_list_availability_zones()):
                     locations.append(EC2NodeLocation(
-                        index, self.friendly_name, self.country, self,
+                        index, availability_zone, self.country, self,
                         availability_zone)
                     )
         return locations
@@ -785,7 +923,7 @@ class EC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list}
+        @rtype: C{list} of C{str}
         """
 
         params = {
@@ -878,8 +1016,8 @@ class EC2NodeDriver(NodeDriver):
         @param      from_port: The beginning of the port range to open
         @type       from_port: C{str}
 
-        @param      end_port: The end of the port range to open
-        @type       end_port: C{str}
+        @param      to_port: The end of the port range to open
+        @type       to_port: C{str}
 
         @param      cidr_ip: The ip to allow traffic for.
         @type       cidr_ip: C{str}
@@ -887,7 +1025,7 @@ class EC2NodeDriver(NodeDriver):
         @param      protocol: tcp/udp/icmp
         @type       protocol: C{str}
 
-        @rtype: C{boolean}
+        @rtype: C{bool}
         """
 
         params = {'Action': 'AuthorizeSecurityGroupIngress',
@@ -897,7 +1035,8 @@ class EC2NodeDriver(NodeDriver):
                   'ToPort': str(to_port),
                   'CidrIp': cidr_ip}
         try:
-            resp = self.connection.request(self.path, params=params.copy()).object
+            resp = self.connection.request(
+                self.path, params=params.copy()).object
             return bool(findtext(element=resp, xpath='return',
                                  namespace=NAMESPACE))
         except Exception:
@@ -1404,6 +1543,47 @@ class EC2NodeDriver(NodeDriver):
         return self._get_terminate_boolean(res)
 
 
+class EC2NodeDriver(BaseEC2NodeDriver):
+    """
+    Amazon EC2 node driver.
+    """
+
+    connectionCls = EC2Connection
+    type = Provider.EC2
+    name = 'Amazon EC2'
+    website = 'http://aws.amazon.com/ec2/'
+    path = '/'
+
+    features = {'create_node': ['ssh_key']}
+
+    NODE_STATE_MAP = {
+        'pending': NodeState.PENDING,
+        'running': NodeState.RUNNING,
+        'shutting-down': NodeState.TERMINATED,
+        'terminated': NodeState.TERMINATED
+    }
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 datacenter='us-east-1', **kwargs):
+
+        if hasattr(self, '_datacenter'):
+            datacenter = self._datacenter
+
+        if datacenter not in VALID_EC2_DATACENTERS:
+            raise ValueError('Invalid datacenter: %s' % (datacenter))
+
+        details = REGION_DETAILS[datacenter]
+        self.region_name = datacenter
+        self.api_name = details['api_name']
+        self.country = details['country']
+
+        self.connectionCls.host = details['endpoint']
+
+        super(EC2NodeDriver, self).__init__(key=key, secret=secret,
+                                            secure=secure, host=host,
+                                            port=port, **kwargs)
+
+
 class IdempotentParamError(LibcloudError):
     """
     Request used the same client token as a previous,
@@ -1414,135 +1594,53 @@ class IdempotentParamError(LibcloudError):
         return repr(self.value)
 
 
-class EC2EUConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western Europe Region
-    """
-    host = EC2_EU_WEST_HOST
-
-
 class EC2EUNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Western Europe Region
+    Driver class for EC2 in the Western Europe Region.
     """
-
-    api_name = 'ec2_eu_west'
-    name = 'Amazon EC2 (eu-west-1)'
-    friendly_name = 'Amazon Europe Ireland'
-    country = 'IE'
-    region_name = 'eu-west-1'
-    connectionCls = EC2EUConnection
-    _instance_types = EC2_EU_WEST_INSTANCE_TYPES
-
-
-class EC2USWestConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western US Region
-    """
-
-    host = EC2_US_WEST_HOST
+    _datacenter = 'eu-west-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
-
-    api_name = 'ec2_us_west'
-    name = 'Amazon EC2 (us-west-1)'
-    friendly_name = 'Amazon US N. California'
-    country = 'US'
-    region_name = 'us-west-1'
-    connectionCls = EC2USWestConnection
-    _instance_types = EC2_US_WEST_INSTANCE_TYPES
-
-
-class EC2USWestOregonConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western US Region (Oregon).
-    """
-
-    host = EC2_US_WEST_OREGON_HOST
+    _datacenter = 'us-west-1'
 
 
 class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
-
-    api_name = 'ec2_us_west_oregon'
-    name = 'Amazon EC2 (us-west-2)'
-    friendly_name = 'Amazon US West - Oregon'
-    country = 'US'
-    region_name = 'us-west-2'
-    connectionCls = EC2USWestOregonConnection
-    _instance_types = EC2_US_WEST_OREGON_INSTANCE_TYPES
-
-
-class EC2APSEConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Southeast Asia Pacific Region
-    """
-
-    host = EC2_AP_SOUTHEAST_HOST
-
-
-class EC2APNEConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Northeast Asia Pacific Region
-    """
-
-    host = EC2_AP_NORTHEAST_HOST
+    _datacenter = 'us-west-2'
 
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Southeast Asia Pacific Region
+    Driver class for EC2 in the Southeast Asia Pacific Region.
     """
-
-    api_name = 'ec2_ap_southeast'
-    name = 'Amazon EC2 (ap-southeast-1)'
-    friendly_name = 'Amazon Asia-Pacific Singapore'
-    country = 'SG'
-    region_name = 'ap-southeast-1'
-    connectionCls = EC2APSEConnection
-    _instance_types = EC2_AP_SOUTHEAST_INSTANCE_TYPES
+    _datacenter = 'ap-southeast-1'
 
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region
+    Driver class for EC2 in the Northeast Asia Pacific Region.
     """
-
-    api_name = 'ec2_ap_northeast'
-    name = 'Amazon EC2 (ap-northeast-1)'
-    friendly_name = 'Amazon Asia-Pacific Tokyo'
-    country = 'JP'
-    region_name = 'ap-northeast-1'
-    connectionCls = EC2APNEConnection
-    _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
-
-
-class EC2SAEastConnection(EC2Connection):
-    """
-    Connection class for EC2 in the South America (Sao Paulo) Region
-    """
-
-    host = EC2_SA_EAST_HOST
+    _datacenter = 'ap-northeast-1'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the South America (Sao Paulo) Region
+    Driver class for EC2 in the South America (Sao Paulo) Region.
     """
+    _datacenter = 'sa-east-1'
 
-    api_name = 'ec2_sa_east'
-    name = 'Amazon EC2 (sa-east-1)'
-    friendly_name = 'Amazon South America Sao Paulo'
-    country = 'BR'
-    region_name = 'sa-east-1'
-    connectionCls = EC2SAEastConnection
-    _instance_types = EC2_SA_EAST_INSTANCE_TYPES
+
+class EC2APSESydneyNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
+    """
+    _datacenter = 'ap-southeast-2'
 
 
 class EucConnection(EC2Connection):
@@ -1553,14 +1651,15 @@ class EucConnection(EC2Connection):
     host = None
 
 
-class EucNodeDriver(EC2NodeDriver):
+class EucNodeDriver(BaseEC2NodeDriver):
     """
     Driver class for Eucalyptus
     """
 
     name = 'Eucalyptus'
+    api_name = 'ec2_us_east'
+    region_name = 'us-east-1'
     connectionCls = EucConnection
-    _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
@@ -1586,32 +1685,6 @@ class EucNodeDriver(EC2NodeDriver):
         """
         pass
 
-# Nimbus clouds have 3 EC2-style instance types but their particular RAM
-# allocations are configured by the admin
-NIMBUS_INSTANCE_TYPES = {
-    'm1.small': {
-        'id': 'm1.small',
-        'name': 'Small Instance',
-        'ram': None,
-        'disk': None,
-        'bandwidth': None,
-    },
-    'm1.large': {
-        'id': 'm1.large',
-        'name': 'Large Instance',
-        'ram': None,
-        'disk': None,
-        'bandwidth': None,
-    },
-    'm1.xlarge': {
-        'id': 'm1.xlarge',
-        'name': 'Extra Large Instance',
-        'ram': None,
-        'disk': None,
-        'bandwidth': None,
-    },
-}
-
 
 class NimbusConnection(EC2Connection):
     """
@@ -1621,22 +1694,22 @@ class NimbusConnection(EC2Connection):
     host = None
 
 
-class NimbusNodeDriver(EC2NodeDriver):
+class NimbusNodeDriver(BaseEC2NodeDriver):
     """
     Driver class for Nimbus
     """
 
     type = Provider.NIMBUS
     name = 'Nimbus'
+    country = 'Private'
     api_name = 'nimbus'
     region_name = 'nimbus'
     friendly_name = 'Nimbus Private Cloud'
     connectionCls = NimbusConnection
-    _instance_types = NIMBUS_INSTANCE_TYPES
 
     def ex_describe_addresses(self, nodes):
         """
-        Nimbus doesn't support elastic IPs, so this is a passthrough
+        Nimbus doesn't support elastic IPs, so this is a passthrough.
 
         @inherits: L{EC2NodeDriver.ex_describe_addresses}
         """
@@ -1648,7 +1721,7 @@ class NimbusNodeDriver(EC2NodeDriver):
 
     def ex_create_tags(self, resource, tags):
         """
-        Nimbus doesn't support creating tags, so this is a passthrough
+        Nimbus doesn't support creating tags, so this is a passthrough.
 
         @inherits: L{EC2NodeDriver.ex_create_tags}
         """

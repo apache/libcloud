@@ -38,7 +38,6 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.common.types import LazyList
 
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60
@@ -172,7 +171,7 @@ class S3StorageDriver(StorageDriver):
     ex_location_name = ''
     namespace = NAMESPACE
 
-    def list_containers(self):
+    def iterate_containers(self):
         response = self.connection.request('/')
         if response.status == httplib.OK:
             containers = self._to_containers(obj=response.object,
@@ -182,9 +181,32 @@ class S3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def list_container_objects(self, container):
-        value_dict = {'container': container}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
+    def iterate_container_objects(self, container):
+        params = {}
+        last_key = None
+        exhausted = False
+
+        while not exhausted:
+            if last_key:
+                params['marker'] = last_key
+
+            response = self.connection.request('/%s' % (container.name),
+                                               params=params)
+
+            if response.status != httplib.OK:
+                raise LibcloudError('Unexpected status code: %s' %
+                                    (response.status), driver=self)
+
+            objects = self._to_objs(obj=response.object,
+                                    xpath='Contents', container=container)
+            is_truncated = response.object.findtext(fixxpath(
+                    xpath='IsTruncated', namespace=self.namespace)).lower()
+            exhausted = (is_truncated == 'false')
+
+            last_key = None
+            for obj in objects:
+                last_key = obj.name
+                yield obj
 
     def get_container(self, container_name):
         # This is very inefficient, but afaik it's the only way to do it
@@ -199,9 +221,6 @@ class S3StorageDriver(StorageDriver):
         return container
 
     def get_object(self, container_name, object_name):
-        # TODO: Figure out what is going on when the object or container
-        # does not exist- it seems that Amazon just keeps the connection open
-        # and doesn't return a response.
         container = self.get_container(container_name=container_name)
         response = self.connection.request('/%s/%s' % (container_name,
                                                        object_name),
@@ -355,32 +374,6 @@ class S3StorageDriver(StorageDriver):
         name = urlquote(name)
         return name
 
-    def _get_more(self, last_key, value_dict):
-        container = value_dict['container']
-        params = {}
-
-        if last_key:
-            params['marker'] = last_key
-
-        response = self.connection.request('/%s' % (container.name),
-                                           params=params)
-
-        if response.status == httplib.OK:
-            objects = self._to_objs(obj=response.object,
-                                    xpath='Contents', container=container)
-            is_truncated = response.object.findtext(fixxpath(
-                xpath='IsTruncated', namespace=self.namespace)).lower()
-            exhausted = (is_truncated == 'false')
-
-            if (len(objects) > 0):
-                last_key = objects[-1].name
-            else:
-                last_key = None
-            return objects, last_key, exhausted
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status),
-                            driver=self)
-
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
                     iterator=None, verify_hash=True, storage_class=None):
@@ -437,9 +430,9 @@ class S3StorageDriver(StorageDriver):
                 driver=self)
 
     def _to_containers(self, obj, xpath):
-        return [self._to_container(element) for element in
-                obj.findall(fixxpath(
-                    xpath=xpath, namespace=self.namespace))]
+        for element in obj.findall(fixxpath(xpath=xpath,
+                                        namespace=self.namespace)):
+            yield self._to_container(element)
 
     def _to_objs(self, obj, xpath, container):
         return [self._to_obj(element, container) for element in

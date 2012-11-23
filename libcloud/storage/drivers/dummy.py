@@ -141,10 +141,10 @@ class DummyStorageDriver(StorageDriver):
                 'object_count': int(object_count),
                 'bytes_used': int(bytes_used)}
 
-    def list_containers(self):
+    def iterate_containers(self):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
-        >>> driver.list_containers()
+        >>> list(driver.iterate_containers())
         []
         >>> container = driver.create_container(container_name='test container 1')
         >>> container
@@ -158,15 +158,15 @@ class DummyStorageDriver(StorageDriver):
         ...  container_name='test container 2') #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ContainerAlreadyExistsError:
-        >>> container_list=driver.list_containers()
+        >>> container_list=list(driver.iterate_containers())
         >>> sorted([container.name for container in container_list])
         ['test container 1', 'test container 2']
 
-        @inherits: L{StorageDriver.list_containers}
+        @inherits: L{StorageDriver.iterate_containers}
         """
 
-        return [container['container'] for container in
-                list(self._containers.values())]
+        for container in list(self._containers.values()):
+            yield container['container']
 
     def list_container_objects(self, container):
         container = self.get_container(container.name)
