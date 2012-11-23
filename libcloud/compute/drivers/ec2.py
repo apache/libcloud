@@ -772,7 +772,7 @@ class EC2NodeDriver(NodeDriver):
         """
         params = {
             'Action': 'DeleteKeyPair',
-            'Keyname': name
+            'KeyName': name
         }
         response = self.connection.request(self.path, params=params).object
         result = findtext(element=response, xpath='return',
