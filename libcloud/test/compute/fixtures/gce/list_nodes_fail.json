@@ -1,0 +1,13 @@
+{
+    "error": {
+        "errors": [{
+            "domain": "global",
+            "reason": "notFound",
+            "message": "The resource 'google.com:ziyadm-devconsol' was not found"
+        }, {
+            "domain": "global",
+            "reason": "invalid",
+            "message": "Invalid value for field 'resource.zone': 'https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/zones/hello'.  Must be the URL to a Compute resource of the correct type"
+        }]
+    }
+}

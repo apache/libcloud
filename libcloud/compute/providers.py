@@ -122,7 +122,9 @@ DRIVERS = {
     Provider.VCL:
         ('libcloud.compute.drivers.vcl', 'VCLNodeDriver'),
     Provider.KTUCLOUD:
-        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver')
+        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver'),
+    Provider.GCE:
+        ('libcloud.compute.drivers.gce', 'GoogleComputeEngineNodeDriver')
 }
 
 

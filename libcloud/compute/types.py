@@ -70,6 +70,7 @@ class Provider(object):
     @cvar VCL: VCL driver
     @cvar KTUCLOUD: kt ucloud driver
     @cvar GRIDSPOT: Gridspot driver
+    @cvar GCE: Google Compute Engine driver
     """
     DUMMY = 0
     EC2 = 1  # deprecated name
@@ -124,6 +125,7 @@ class Provider(object):
     RACKSPACE_NOVA_LON = 48
     GRIDSPOT = 49
     RACKSPACE_NOVA_ORD = 50
+    GCE = 51
 
 
 class NodeState(object):
