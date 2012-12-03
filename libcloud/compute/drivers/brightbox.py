@@ -211,7 +211,7 @@ class BrightboxNodeDriver(NodeDriver):
         return self.connection.request('/%s/cloud_ips' % self.api_version) \
                               .object
 
-    def ex_create_cloud_ip(self, reverse_dns=None):
+    def ex_create_cloud_ip(self, name=None, reverse_dns=None):
         """
         Requests a new cloud IP address for the account
 
@@ -222,7 +222,8 @@ class BrightboxNodeDriver(NodeDriver):
 
         if reverse_dns:
             params['reverse_dns'] = reverse_dns
-
+        if name:
+            params['name'] = name
         return self._post('/%s/cloud_ips' % self.api_version, params).object
 
     def ex_update_cloud_ip(self, cloud_ip_id, reverse_dns):
