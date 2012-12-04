@@ -44,6 +44,7 @@ from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
+from libcloud.test import MockHttpTestCase # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures, OpenStackFixtures # pylint: disable-msg=E0611
 
 current_hash = None
@@ -497,6 +498,19 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('bytes_used' in meta_data)
         self.assertTrue('temp_url_key' in meta_data)
 
+    def test_ex_purge_from_cdn(self):
+        CloudFilesMockHttp.type = 'PURGE_SUCCESS'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        self.assertTrue(self.driver.ex_purge_from_cdn(container=container))
+
+    def test_ex_purge_from_cdn_with_email(self):
+        CloudFilesMockHttp.type = 'PURGE_SUCCESS_EMAIL'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        self.assertTrue(self.driver.ex_purge_from_cdn(container=container,
+                                                      email='test@test.com'))
+
     @mock.patch('os.path.getsize')
     def test_ex_multipart_upload_object_for_small_files(self, getsize_mock):
         getsize_mock.return_value = 0
@@ -663,7 +677,7 @@ class CloudFilesTests(unittest.TestCase):
             pass
 
 
-class CloudFilesMockHttp(StorageMockHttp):
+class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
 
     fixtures = StorageFileFixtures('cloudfiles')
     auth_fixtures = OpenStackFixtures()
@@ -829,6 +843,25 @@ class CloudFilesMockHttp(StorageMockHttp):
         elif method == 'POST':
             # test_ex_enable_static_website
             body = ''
+            headers = self.base_headers
+            status_code = httplib.ACCEPTED
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_PURGE_SUCCESS(
+        self, method, url, body, headers):
+
+        if method == 'DELETE':
+            # test_ex_purge_from_cdn
+            headers = self.base_headers
+            status_code = httplib.ACCEPTED
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_PURGE_SUCCESS_EMAIL(
+        self, method, url, body, headers):
+
+        if method == 'DELETE':
+            # test_ex_purge_from_cdn_with_email
+            self.assertEqual(headers['X-Purge-Email'], 'test@test.com')
             headers = self.base_headers
             status_code = httplib.ACCEPTED
         return (status_code, body, headers, httplib.responses[httplib.OK])

@@ -404,6 +404,24 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
+    def ex_purge_from_cdn(self, container, email=None):
+        """
+        Purge edge cache for all the objects inside the specified container.
+
+        @param email: Email where a notification will be sent when the job
+        completes. (optional)
+        @type email: C{str}
+        """
+        headers = {'X-Purge-Email': email} if email else {}
+
+        response = self.connection.request('/%s' % (container.name),
+                                           method='DELETE',
+                                           headers=headers,
+                                           cdn_request=True)
+
+        return response.status in [httplib.CREATED, httplib.ACCEPTED,
+                                   httplib.NO_CONTENT]
+
     def ex_get_meta_data(self):
         """
         Get meta data
