@@ -27,7 +27,7 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
     name = 'KTUCloud'
     website = 'https://ucloudbiz.olleh.com/'
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, owners=None):
         args = {
             'templatefilter': 'executable'
         }
