@@ -82,7 +82,8 @@ Changes with Apache Libcloud in development:
       containers (iterate_containers). ; LIBCLOUD-261
       [Mahendra M]
 
-    - Add ex_purge_from_cdn method to the CloudFiles driver. ; LIBCLOUD-267
+    - Add ex_purge_object_from_cdn method to the CloudFiles driver. 
+      ; LIBCLOUD-267
       [Tomaz Muraus]
 
   *) DNS

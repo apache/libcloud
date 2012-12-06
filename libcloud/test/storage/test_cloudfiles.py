@@ -498,18 +498,25 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('bytes_used' in meta_data)
         self.assertTrue('temp_url_key' in meta_data)
 
-    def test_ex_purge_from_cdn(self):
+    def test_ex_purge_object_from_cdn(self):
         CloudFilesMockHttp.type = 'PURGE_SUCCESS'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
-        self.assertTrue(self.driver.ex_purge_from_cdn(container=container))
+        obj = Object(name='object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
 
-    def test_ex_purge_from_cdn_with_email(self):
+        self.assertTrue(self.driver.ex_purge_object_from_cdn(obj=obj))
+
+    def test_ex_purge_object_from_cdn_with_email(self):
         CloudFilesMockHttp.type = 'PURGE_SUCCESS_EMAIL'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
-        self.assertTrue(self.driver.ex_purge_from_cdn(container=container,
-                                                      email='test@test.com'))
+        obj = Object(name='object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
+        self.assertTrue(self.driver.ex_purge_object_from_cdn(obj=obj,
+                                                       email='test@test.com'))
 
     @mock.patch('os.path.getsize')
     def test_ex_multipart_upload_object_for_small_files(self, getsize_mock):
@@ -847,23 +854,23 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             status_code = httplib.ACCEPTED
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
-    def _v1_MossoCloudFS_foo_bar_container_PURGE_SUCCESS(
+    def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS(
         self, method, url, body, headers):
 
         if method == 'DELETE':
             # test_ex_purge_from_cdn
             headers = self.base_headers
-            status_code = httplib.ACCEPTED
+            status_code = httplib.NO_CONTENT
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
-    def _v1_MossoCloudFS_foo_bar_container_PURGE_SUCCESS_EMAIL(
+    def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS_EMAIL(
         self, method, url, body, headers):
 
         if method == 'DELETE':
             # test_ex_purge_from_cdn_with_email
             self.assertEqual(headers['X-Purge-Email'], 'test@test.com')
             headers = self.base_headers
-            status_code = httplib.ACCEPTED
+            status_code = httplib.NO_CONTENT
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_foo_bar_container_NOT_FOUND(
