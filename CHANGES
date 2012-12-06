@@ -17,20 +17,20 @@ Changes with Apache Libcloud in development:
     - Replace old ENUM style provider constants and replace them with a string
       version.
       This change allows users to dynamically register new drivers using a new
-      set_driver method. ; LIBCLOUD-255
+      set_driver method. (LIBCLOUD-255)
       [Mahendra M]
 
   *) Compute
 
-    - Fix string interpolation bug in __repr__ methods in the IBM SCE driver. ;
-      LIBCLOUD-242
+    - Fix string interpolation bug in __repr__ methods in the IBM SCE driver.
+      (LIBCLOUD-242)
       [Tomaz Muraus]
 
     - Fix test failures which happened in Python 3.3 due to:
       - hash randomization
       - changes in xml.etree module
       - changes in xmlrpc module
-      ; LIBCLOUD-245
+      (LIBCLOUD-245)
       [Tomaz Muraus]
 
     - Refactor Rackspace driver classes and make them easier to use. Now there
@@ -44,7 +44,6 @@ Changes with Apache Libcloud in development:
       [Tomaz Muraus]
 
     - Improvements and additions in vCloud driver:
-
       - Expose generic query method (ex_query)
       - Provide functionality to get and set control access for vApps. This way
         created vApps can be shared between users/groups or everyone.
@@ -62,7 +61,7 @@ Changes with Apache Libcloud in development:
      [Dinesh Bhoopathy]
 
    - Fix a bug where a numeric instead of a string value was used for the
-     content-length header in VCloud driver. ; LIBCLOUD-256
+     content-length header in VCloud driver. (LIBCLOUD-256)
      [Brian DeGeeter, Tomaz Muraus]
 
    - Add a new driver for new Asia Pacific (Sydney) EC2 region.
@@ -75,22 +74,22 @@ Changes with Apache Libcloud in development:
 
     - Fix a bug which caused the connection to not be closed when using Python
       2.6 and calling get_object on an object which doesn't exist in the S3
-      driver. ; LIBCLOUD-257
+      driver. (LIBCLOUD-257)
       [John Carr]
 
     - Add a new generator based method for listing / iterating over the
-      containers (iterate_containers). ; LIBCLOUD-261
+      containers (iterate_containers). (LIBCLOUD-261)
       [Mahendra M]
 
-    - Add ex_purge_object_from_cdn method to the CloudFiles driver. 
-      ; LIBCLOUD-267
+    - Add ex_purge_object_from_cdn method to the CloudFiles driver.
+      (LIBCLOUD-267)
       [Tomaz Muraus]
 
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly
       if users passes in RecordType.A with a value of 0 - if type is not None.
-      ; LIBCLOUD-247
+      (LIBCLOUD-247)
       [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.11.3:
@@ -111,34 +110,34 @@ Changes with Apache Libcloud 0.11.2:
     didn't allow "-" character in the sub-domain when using a wildcard
     certificate.
 
-    Note: This is NOT a security vulnerability. ; LIBCLOUD-244
+    Note: This is NOT a security vulnerability. (LIBCLOUD-244)
     [Tomaz Muraus]
 
   *) Compute
 
-    - Add new Rackspace Nova driver for Chicago (ORD) location ; LIBCLOUD-234
+    - Add new Rackspace Nova driver for Chicago (ORD) location (LIBCLOUD-234)
       [Brian McDaniel]
 
-    - Add capacity information to Vdc objects and implement power operations. ;
-      LIBCLOUD-239
+    - Add capacity information to Vdc objects and implement power operations.
+      (LIBCLOUD-239)
       [Michal Galet]
 
     - Allow user to pass 'timeout' argument to the 'deploy_node' method.
       [Tomaz Muraus]
 
     - Add ex_list_security_groups, ex_authorize_security_group and
-      ex_describe_all_keypairs methods to the EC2 driver. ; LIBCLOUD-241,
-      LIBCLOUD-243
+      ex_describe_all_keypairs methods to the EC2 driver. (LIBCLOUD-241,
+      LIBCLOUD-243)
       [Nick Bailey]
 
     - Add new methods for managing storage volumes and other extenstion methods
-      to the IBM SCE driver. ; LIBCLOUD-242
+      to the IBM SCE driver. (LIBCLOUD-242)
       [Sengor Kusturica]
 
   *) Storage
 
     - Add the following new methods to the CloudFiles driver:
-      ex_set_account_metadata_temp_url_key, ex_get_object_temp_url. ; GITHUB-72
+      ex_set_account_metadata_temp_url_key, ex_get_object_temp_url. (GITHUB-72)
       [Shawn Smith]
 
   *) Load-balancer
@@ -161,14 +160,14 @@ Changes with Apache Libcloud 0.11.0:
   *) Compute
 
     - Add a timeout of 10 seconds to OpenStackAuthConnection class.
-      ; LIBCLOUD-199
+      (LIBCLOUD-199)
       [Chris Gilmer]
 
     - Add time.sleep(wait_period) to _ssh_client_connect to prevent busy loops
-      when we immediately can't connect to a server. ; LIBCLOUD-197
+      when we immediately can't connect to a server. (LIBCLOUD-197)
       [Jay Doane]
 
-    - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
+    - Fix a bug with Python 3 support in the following drivers
       - IBM SCE,
       - CloudStack
       - CloudSigma
@@ -180,22 +179,23 @@ Changes with Apache Libcloud 0.11.0:
       - OpSource
       - Slicehost
       - Joyent
+      (LIBCLOUD-204)
       [Sengor Kusturica, Hutson Betts, Tomaz Muraus]
 
     - Make CloudStack driver more robust and make it work if list_images() call
-      returns no images. ; LIBCLOUD-202
+      returns no images. (LIBCLOUD-202)
       [Gabriel Reid]
 
     - Add force_ipv4 argument to _wait_until_running and default it to True.
       This will make Libcloud ignore IPv6 addresses when using deploy_node.
       [Jay Doane, Tomaz muraus]
 
-    - Include error text if a CloudStack async job returns an error code. ;
-      LIBCLOUD-207
+    - Include error text if a CloudStack async job returns an error code.
+      (LIBCLOUD-207)
       [Gabriel Reid]
 
     - Add extenstion methods for block storage volume management to the
-      CloudStack driver. ; LIBCLOUD-208
+      CloudStack driver. (LIBCLOUD-208)
       [Gabriel Reid]
 
     - New driver for KT UCloud (http://home.ucloud.olleh.com/main.kt) based on
@@ -204,14 +204,14 @@ Changes with Apache Libcloud 0.11.0:
 
     - Add a standard API and methods for managing storage volumes to the
       EC2 and CloudStack drivers. Base API consistent of the following methods:
-      create_volume, destroy_volume, attach_volume, detach_volume. ;
-      LIBCLOUD-213
+      create_volume, destroy_volume, attach_volume, detach_volume.
+      (LIBCLOUD-213)
       [Gabriel Reid]
 
     - Change ex_describe_tags, ex_create_tags and ex_delete_tags methods
       signature in the EC2 driver. Argument is now called resource (previously
       it was called node). This methods work with both Node and StorageVolume
-      objects. ; LIBCLOUD-213
+      objects. (LIBCLOUD-213)
       [Gabriel Reid, Tomaz Muraus]
 
     - Add Rackspace Nova London driver.
@@ -219,7 +219,7 @@ Changes with Apache Libcloud 0.11.0:
 
     - Fix a bug - If user doesn't pass in 'network_id' argument to the
       create_node method in the CloudStack driver, don't explicitly define it.
-      ; LIBCLOUD-219
+      (LIBCLOUD-219)
       [Bruno Mahé, Tomaz Muraus]
 
     - Modify EC2 driver to also return cc2.8xlarge cluster compute instance in
@@ -230,47 +230,48 @@ Changes with Apache Libcloud 0.11.0:
       [Mark Everett]
 
     - Fix a bug with repeated URLs in some requests the vCloud driver.
-      ; LIBCLOUD-222
+      (LIBCLOUD-222)
       [Michal Galet]
 
-    - New Gridspot driver with basic list and destroy functionality. ;
-      LIBCLOUD-223
+    - New Gridspot driver with basic list and destroy functionality.
+      (LIBCLOUD-223)
       [Amir Elaguizy]
 
-    - Add methods for managing storage volumes to the Gandi driver. ;
-      LIBCLOUD-225
+    - Add methods for managing storage volumes to the Gandi driver.
+      (LIBCLOUD-225)
       [Aymeric Barantal]
 
   *) DNS
 
-    - Add support for GEO RecordType to Zerigo driver. ; LIBCLOUD-203
+    - Add support for GEO RecordType to Zerigo driver. (LIBCLOUD-203)
       [Gary Wilson]
 
-    - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
+    - Fix a bug with Python 3 support in the following drivers (LIBCLOUD-204)
       - Zerigo
       [Tomaz Muraus]
 
-    - Add support for URL RecordType to Zerigo driver. ; LIBCLOUD-209
+    - Add support for URL RecordType to Zerigo driver. (LIBCLOUD-209)
       [Bojan Mihelac]
 
     - Properly handle record creation when user doesn't provider a record name
       and wants to create a record for the actual domain.
-      Reported by Matt Perry ; LIBCLOUD-224
+      Reported by Matt Perry (LIBCLOUD-224)
       [Tomaz Muraus]
 
   *) Storage
 
-    - Fix a bug with Python 3 support in the following drivers ; LIBCLOUD-204
+    - Fix a bug with Python 3 support in the following drivers
       - Atmos
       - Google Storage
       - Amazon S3
+      (LIBCLOUD-204)
       [Tomaz Muraus]
 
     - Fix a bug in the CloudFiles driver which prevented it to work with
-      accounts which use a non ORD endpoint. ; LIBCLOUD-205
+      accounts which use a non ORD endpoint. (LIBCLOUD-205)
       [Geoff Greer]
 
-    - Fix a bug in the enable_container_cdn method. ; LIBCLOUD-206
+    - Fix a bug in the enable_container_cdn method. (LIBCLOUD-206)
       [Geoff Greer]
 
     - Allow user to specify container CDN TTL when calling container.enable_cd()
@@ -282,13 +283,13 @@ Changes with Apache Libcloud 0.11.0:
       [Tomaz Muraus]
 
     - Propagate kwargs passed to container.download_object() to
-      driver.download_object(). ; LIBCLOUD-227
+      driver.download_object(). (LIBCLOUD-227)
       [Benno Rice]
 
     - Fix a bug with not escaping container and object name in the Atmos driver.
       [Russell Keith-Magee, Benno Rice]
 
-    - Fix upload_object_via_stream method in the Atmos driver. ; LIBCLOUD-228
+    - Fix upload_object_via_stream method in the Atmos driver. (LIBCLOUD-228)
       [Benno Rice]
 
     - Fix a bug with uploading zero-sized files in the OpenStack Swift /
@@ -301,7 +302,7 @@ Changes with Apache Libcloud 0.11.0:
 
   *) Other:
 
-    - Unify docstrings formatting in the compute drivers. ; LIBCLOUD-229
+    - Unify docstrings formatting in the compute drivers. (LIBCLOUD-229)
       [Ilgiz Islamgulov]
 
 Changes with Apache Libcloud 0.10.1:
@@ -315,10 +316,10 @@ Changes with Apache Libcloud 0.10.1:
   *) Compute:
 
     - Update IBM SBC driver so it works with IBM Smart Cloud Enterprise.
-      ; LIBCLOUD-195
+      (LIBCLOUD-195)
       [Sengor Kusturica]
 
-    - Add ex_register_iso method to the CloudStack driver. ; LIBCLOUD-196
+    - Add ex_register_iso method to the CloudStack driver. (LIBCLOUD-196)
       [Daemian Mack]
 
     - Allow user to specify which IP to use when calling deploy_node.
@@ -331,32 +332,32 @@ Changes with Apache Libcloud 0.10.1:
       [Jerry Chen]
 
     - Add 'ex_keyname' argument to the create_node method in the OpenStack
-      driver. ; LIBCLOUD-177
+      driver. (LIBCLOUD-177)
       [Jay Doane]
 
     - Fix a problem in deploy_node - make it work with providers which
       don't  instantly return created node in the list_node response.
       Also add __str__ and __repr__ method to DeploymentError so the
-      error message is more useful. ; LIBCLOUD-176
+      error message is more useful. (LIBCLOUD-176)
       [Jouke Waleson, Tomaz Muraus]
 
     - Add 'ssh_key' feature to Brigthbox driver. This way it works with
-      deploy_node. ; LIBCLOUD-179
+      deploy_node. (LIBCLOUD-179)
       [Neil Wilson]
 
     - Add Joyent compute driver.
       [Tomaz Muraus]
 
     - Store auth token expire times on the connection class in the attribute
-      called 'auth_token_expires'. ; LIBCLOUD-178
+      called 'auth_token_expires'. (LIBCLOUD-178)
       [Chris Gilmer, Brad Morgan]
 
     - Add new driver for VCL cloud
       (http://www.educause.edu/blog/hes8/CloudComputingandtheVirtualCom/167931)
-      ; LIBCLOUD-180
+      (LIBCLOUD-180)
       [Jason Gionta, Tomaz Muraus]
 
-    - Improve and add new features to Brightbox driver ; LIBCLOUD-184
+    - Improve and add new features to Brightbox driver
         - Update fixtures to represent actual api output
         - Update compute tests to 100% coverage
         - Add userdata and server group extensions to create_node
@@ -366,30 +367,31 @@ Changes with Apache Libcloud 0.10.1:
           'extra' attributes
         - Allow variable API versions (api_version argument)
         - Allow reverse dns updates for cloud ip extensions
+      (LIBCLOUD-184)
       [Neil Wilson, Tomaz Muraus]
 
-    - Add ex_userdata argument to the OpenStack 1.1 driver. ; LIBCLOUD-185
+    - Add ex_userdata argument to the OpenStack 1.1 driver. (LIBCLOUD-185)
       [Jay Doane]
 
     - Modify Vmware vCloud driver and implement new features
-      for the vCloud version 1.5. LIBCLOUD-183
+      for the vCloud version 1.5. (LIBCLOUD-183)
       [Michal Galet, Sengor Kusturica]
 
     - Allow user to pass mode argument to SSHClient.put method and default it to
-      'w'. ; LIBCLOUD-188
+      'w'. (LIBCLOUD-188)
       [Jay Doane]
 
     - Modify SSHKeyDeployment step to use append mode so it doesn't overwrite
-      existing entries in .ssh/authorized_keys. ; LIBCLOUD-187
+      existing entries in .ssh/authorized_keys. (LIBCLOUD-187)
       [Jay Doane]
 
     - Modify ParamikoSSHClient to connect to the SSH agent and automatically
       look for private keys in ~/.ssh if the 'auth' and 'ssh_key' argument
-      is not specified when calling deploy_node. ; LIBCLOUD-182
+      is not specified when calling deploy_node. (LIBCLOUD-182)
       [Tomaz Muraus]
 
-    - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver. ;
-      LIBCLOUD-193
+    - Add ex_rescue and ex_unrescue method to OpenStack 1.1 driver.
+      (LIBCLOUD-193)
       [Shawn Smith]
 
     - Include 'password' in the node extra dictionary when calling deploy_node
@@ -398,7 +400,7 @@ Changes with Apache Libcloud 0.10.1:
 
     - Add FileDeployment class to libcloud.compute.deployment module. This can
       be used as a replacement for ex_files argument if the provider supports
-      deployment functionality. ; LIBCLOUD-190
+      deployment functionality. (LIBCLOUD-190)
       [Jay Doane]
 
   *) Storage
@@ -410,12 +412,12 @@ Changes with Apache Libcloud 0.10.1:
   *) Load-balancer
 
     - Don't include 'body_regex' attribute in the Rackspace driver body if
-      body_regex is None or empty string. ; LIBCLOUD-186
+      body_regex is None or empty string. (LIBCLOUD-186)
       [Bill Woodward]
 
     - Don't split Load balancer IP addresses into public and private list.
       Include all the addresses in the 'virtualIps' variable in the extra
-      dictionary (Rackspace driver). ; LIBCLOUD-191
+      dictionary (Rackspace driver). (LIBCLOUD-191)
       [Adam Pickeral]
 
 Changes with Apache Libcloud 0.9.1:
@@ -431,40 +433,40 @@ Changes with Apache Libcloud 0.9.1:
 
       Note: The openstack.py base driver no longer works by default with
       Rackspace nova. The default endpoint parsed from the service catalog
-      is the default compute endpoint for devstack. ; LIBCLOUD-151
+      is the default compute endpoint for devstack. (LIBCLOUD-151)
       [Brad Morgan]
 
     - Allow user to pass ex_tenant_name keyword argument to the OpenStack node
       driver class. This scopes all the endpoints returned by the Auth API
-      endpoint to the provided tenant. ; LIBCLOUD-172
+      endpoint to the provided tenant. (LIBCLOUD-172)
       [James E. Blair]
 
     - Allow user to specify OpenStack service catalog parameters (service type,
       name and region). This way base OpenStack driver can be used with
-      different providers without needing to subclass. ; LIBCLOUD-173
+      different providers without needing to subclass. (LIBCLOUD-173)
       [James E. Blair]
 
-    - Fix a bug with handling compressed responses in the Linode driver. ;
-      LIBCLOUD-158
+    - Fix a bug with handling compressed responses in the Linode driver.
+      (LIBCLOUD-158)
       [Ben Agricola]
 
   *) Compute:
 
     - Add new RackspaceNovaBeta and RackspaveNovaDfw driver based on the
-      OpenStack. ; LIBCLOUD-151
+      OpenStack. (LIBCLOUD-151)
       [Brad Morgan]
 
     - Include 'created' and 'updated' attribute in the OpenStack 1.1 driver.
-      ; LIBCLOUD-155
+      (LIBCLOUD-155)
       [Chris Gilmer]
 
     - Include 'minRam' and 'minDisk' attribute in the OpenStack 1.1 driver
-      Node extra dictionary. ; LIBCLOUD-163
+      Node extra dictionary. (LIBCLOUD-163)
       [Chris Gilmer]
 
     - Alow users to use a list of tuples for the query string parameters inside
       the OpenStack connection classes. This way same key can be specified
-      multiple times ; LIBCLOUD-153
+      multiple times (LIBCLOUD-153)
       [Dave King]
 
     - Allow user to pass 'max_tries' keyword argument to deploy_node method.
@@ -475,7 +477,7 @@ Changes with Apache Libcloud 0.9.1:
       [Tomaz Muraus]
 
     - Add support for ElasticHosts new United States (Los Angeles) and Canada
-      (Toronto) locations. ; GITHUB-53
+      (Toronto) locations. (GITHUB-53)
       [Jaime Irurzun]
 
     - Add serverId attribute to the NodeImage object extra dictionary in the
@@ -486,7 +488,7 @@ Changes with Apache Libcloud 0.9.1:
       [Tomaz Muraus]
 
     - Allow user to re-use auth tokens and pass 'ex_force_auth_token' keyword
-      argument to the OpenStack driver constructor. ; LIBCLOUD-164
+      argument to the OpenStack driver constructor. (LIBCLOUD-164)
       [Dave King]
 
     - Add new experimental libvirt driver.
@@ -497,13 +499,13 @@ Changes with Apache Libcloud 0.9.1:
       [Tomaz Muraus]
 
     - Update create_node in Linode driver and make it return a Node object
-      instead of a list. Reported by Jouke Waleson. ; LIBCLOUD-175
+      instead of a list. Reported by Jouke Waleson. (LIBCLOUD-175)
       [Tomaz Muraus]
 
   *) Storage:
 
-    - Don't lowercase special header names in the Amazon S3 storage driver. ;
-      LIBCLOUD-149
+    - Don't lowercase special header names in the Amazon S3 storage driver.
+      (LIBCLOUD-149)
       [Tomaz Muraus]
 
   *) Load-balancer:
@@ -514,24 +516,24 @@ Changes with Apache Libcloud 0.9.1:
 
     - Add an extension method (ex_balancer_attach_members) for attaching
       multiple members to a load balancer in the Rackspace driver.
-      LIBCLOUD-152
+      (LIBCLOUD-152)
       [Adam Pickeral]
 
     - Add ex_creaate_balancer method to the Rackspace driver and allow user to
-      pass 'vip' argument to it. ; LIBCLOUD-166
+      pass 'vip' argument to it. (LIBCLOUD-166)
       [Adam Pickeral]
 
-    - Update Rackspace driver to support Auth 2.0. ; LIBCLOUD-165
+    - Update Rackspace driver to support Auth 2.0. (LIBCLOUD-165)
       [Dave King]
 
     - Add new ex_create_balancer_access_rule and
-      ex_create_balancer_access_rule_no_poll method to the Rackspace driver. ;
-      LIBCLOUD-170
+      ex_create_balancer_access_rule_no_poll method to the Rackspace driver.
+      (LIBCLOUD-170)
       [Dave King]
 
   *) DNS:
 
-    - Update Rackspace driver to support Auth 2.0. ; LIBCLOUD-165
+    - Update Rackspace driver to support Auth 2.0. (LIBCLOUD-165)
       [Dave King]
 
 Changes with Apache Libcloud 0.8.0:
@@ -576,7 +578,7 @@ Changes with Apache Libcloud 0.8.0:
        [Shawn Smith]
 
      - Return NodeImage instance in OpenStack 1.1 driver ex_save_image method
-       ; LIBCLOUD-138
+       (LIBCLOUD-138)
        [Shawn Smith]
 
      - Enable reboot_node method in the OpenNebula 3.2 driver.
@@ -585,7 +587,7 @@ Changes with Apache Libcloud 0.8.0:
      - Fix a public_ips Node variable assignment in the Gandi.net driver.
        [Aymeric Barantal]
 
-     - Updated the list of node states for OpenNebula drivers. ; LIBCLOUD-148
+     - Updated the list of node states for OpenNebula drivers. (LIBCLOUD-148)
        [Hutson Betts]
 
   *) Storage:
@@ -678,11 +680,11 @@ Changes with Apache Libcloud 0.7.0:
 
      - Update OpenStack 1.1 driver to comply with the API specs. Need to make
        another call to retrieve node name and ip addresses when creating a node,
-       because the first call only returns an id an the password. ; GITHUB-40
+       because the first call only returns an id an the password. (GITHUB-40)
        [Dave King]
 
-     - Add ex_node_ids argument to the EC2 driver list_nodes method. ;
-       GITHUB-39
+     - Add ex_node_ids argument to the EC2 driver list_nodes method.
+       (GITHUB-39)
        [Suvish Vt]
 
      - If OpenStack Auth 2.0 API is used, also parse out tenant id and
@@ -715,7 +717,7 @@ Changes with Apache Libcloud 0.7.0:
        [Tomaz Muraus]
 
      - Updated support for OpenNebula.org v1.4, v2.x, and v3.x APIs and included
-       additional compute tests validating functionality; LIBCLOUD-121
+       additional compute tests validating functionality. (LIBCLOUD-121)
        [Hutson Betts]
 
   *) Load-balancer:
@@ -772,11 +774,11 @@ Changes with Apache Libcloud 0.6.1:
   *) General:
 
      - Modify ParamikoSSHClient.connect so it supports authentication using a
-       key file ; LIBCLOUD-116
+       key file, (LIBCLOUD-116)
        [Jay Doane]
 
      - User must now explicitly specify a path when using LIBCLOUD_DEBUG
-       environment variable ; LIBCLOUD-95.
+       environment variable. (LIBCLOUD-95)
        [daveb, Tomaz Muraus]
 
      - Add new XmlResponse and JsonResponse base class and modify all the
@@ -797,11 +799,11 @@ Changes with Apache Libcloud 0.6.1:
      - Fix API endpoint URL in the Softlayer driver
        [Tomaz Muraus]
 
-     - Add support for OpenNebula 3.0 API ; LIBCLOUD-120
+     - Add support for OpenNebula 3.0 API (LIBCLOUD-120)
        [Hutson Betts]
 
-     - Add more attributes to the extra dictionary in the EC2 driver ;
-       GITHUB-31
+     - Add more attributes to the extra dictionary in the EC2 driver.
+       (GITHUB-31)
        [Juan Carlos Moreno]
 
      - Fix IP address assignment in the EC2 driver. Don't include "None" in the
@@ -870,11 +872,11 @@ Changes with Apache Libcloud 0.6.0-beta1
     - All the driver classes now inherit from the BaseDriver class
       [Tomaz Muraus]
 
-    - Prefer simplejson (if available) over json module; LIBCLOUD-112
+    - Prefer simplejson (if available) over json module. (LIBCLOUD-112)
       [Geoff Greer]
 
     - Update compute demo and change the syntax of test credentials stored in
-      test/secrets.py-dist ; LIBCLOUD-111
+      test/secrets.py-dist. (LIBCLOUD-111)
       [Mike Nerone]
 
     - Enable SSL certificate verification by default and throw an exception
@@ -888,21 +890,21 @@ Changes with Apache Libcloud 0.6.0-beta1
        LIBCLOUD-83
        [Mike Nerone, Paul Querna, Brad Morgan, Tomaz Muraus]
 
-     - Add some extra methods to the Gandi.net driver ; LIBCLOUD-115
+     - Add some extra methods to the Gandi.net driver (LIBCLOUD-115)
        [Aymeric Barantal]
 
-     - Add ex_delete_image method to the Rackspace driver ; GITHUB-27
+     - Add ex_delete_image method to the Rackspace driver. (GITHUB-27)
        [David Busby]
 
      - Linode driver now supports new 'Japan' location
        [Jed Smith]
 
      - Rackspace driver now inherits from the OpenStack one instead of doing
-       it vice versa.; LIBCLOUD-110
+       it vice versa. (LIBCLOUD-110)
        [Mike Nerone]
 
      - Properly populate NodeImage "details" dictionary in the Rackspace
-       compute driver.; LIBCLOUD-107
+       compute driver. (LIBCLOUD-107)
        [Lucy Mendel]
 
      - Fix a bug in Eucalyptus driver ex_describe_addresses method.
@@ -924,7 +926,7 @@ Changes with Apache Libcloud 0.6.0-beta1
        method; GITHUB-17
        [John Carr]
 
-     - New driver for Ninefold.com; LIBCLOUD-98
+     - New driver for Ninefold.com. (LIBCLOUD-98)
        [Benno Rice]
 
   *) Storage:
@@ -932,7 +934,7 @@ Changes with Apache Libcloud 0.6.0-beta1
      - New driver for Google Storage based on the v1.0 / legacy API
        [Tomaz Muraus]
 
-     - New driver for Ninefold.com; GITHUB-19
+     - New driver for Ninefold.com. (GITHUB-19)
        [Benno Rice]
 
      - Fix a bug in uploading an object with some versions of Python 2.7
@@ -948,7 +950,7 @@ Changes with Apache Libcloud 0.6.0-beta1
      - New driver for Rackspace UK location
        [Tomaz Muraus]
 
-     - New driver for Ninefold.com; LIBCLOUD-98
+     - New driver for Ninefold.com. (LIBCLOUD-98)
        [Benno Rice]
 
   *) DNS:
@@ -993,10 +995,10 @@ Changes with Apache Libcloud 0.5.2
 
     *) Storage:
 
-       - Fix handling of the containers with a lot of objects. Now a LazyList
-         object is returned when user calls list_container_objects() method
-         and this object transparently handles pagination.
-       [Danny Clark, Wiktor Kolodziej]
+     - Fix handling of the containers with a lot of objects. Now a LazyList
+       object is returned when user calls list_container_objects() method
+       and this object transparently handles pagination.
+     [Danny Clark, Wiktor Kolodziej]
 
 Changes with Apache Libcloud 0.5.0
 
@@ -1093,10 +1095,10 @@ Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
        to Rackspace driver
        [Andrew Klochkov]
 
-    *) New driver for CloudSigma
+    *) New driver for CloudSigma.
        [Tomaž Muraus]
 
-    *) New driver for Brightbox Cloud. LIBCLOUD-63
+    *) New driver for Brightbox Cloud. (LIBCLOUD-63)
        [Tim Fletcher]
 
     *) Deployment capability to ElasticHosts
@@ -1121,7 +1123,7 @@ Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
        and populate isSandbox flag in node's extra information.
        [Roman Bogorodskiy]
 
-    *) Add ImportKeyPair and DescribeKeyPair to EC2. LIBCLOUD-62
+    *) Add ImportKeyPair and DescribeKeyPair to EC2. (LIBCLOUD-62)
        [Philip Schwartz]
 
     *) Update EC2 driver and test fixtures for new API.
@@ -1129,13 +1131,13 @@ Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
 
 Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
 
-    *) Add create keypair functionality to EC2 Drivers. LIBCLOUD-57
+    *) Add create keypair functionality to EC2 Drivers. (LIBCLOUD-57)
        [Grig Gheorghiu]
 
     *) Improve handling of GoGrid accounts with limited access
        API keys. [Paul Querna]
 
-    *) New Driver for ElasticHosts. LIBCLOUD-45
+    *) New Driver for ElasticHosts. (LIBCLOUD-45)
        [Tomaz Muraus]
 
     *) Use more consistent name for GoGrid driver and use http
@@ -1165,13 +1167,13 @@ Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
     *) Fix regression and error in GoGrid driver for parsing node objects.
        [Roman Bogorodskiy]
 
-    *) Added more test cases for GoGrid driver. LIBCLOUD-34
+    *) Added more test cases for GoGrid driver. (LIBCLOUD-34)
        [Roman Bogorodskiy, Jerry Chen]
 
     *) Fix parsing of Slicehost nodes with multiple Public IP addresses.
        [Paul Querna]
 
-    *) Add exit_status to ScriptDeployment. LIBCLOUD-36
+    *) Add exit_status to ScriptDeployment. (LIBCLOUD-36)
        [Paul Querna]
 
     *) Update prices for several drivers.
@@ -1180,7 +1182,7 @@ Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
     *) Update Linode driver to reflect new plan sizes.
        [Jed Smith]
 
-    *) Change default of 'location' in Linode create_node. LIBCLOUD-41
+    *) Change default of 'location' in Linode create_node. (LIBCLOUD-41)
        [Jed Smith, Steve Steiner]
 
     *) Document the Linode driver.
