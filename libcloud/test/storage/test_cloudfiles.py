@@ -41,31 +41,54 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
+from libcloud.storage.drivers.cloudfiles import CloudFilesUSStorageDriver
+from libcloud.storage.drivers.cloudfiles import CloudFilesUKStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
 from libcloud.test import MockHttpTestCase # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures, OpenStackFixtures # pylint: disable-msg=E0611
 
-current_hash = None
-
 
 class CloudFilesTests(unittest.TestCase):
+    driver_klass = CloudFilesStorageDriver
+    driver_args = ('dummy', 'dummy')
+    driver_kwargs = {}
+    datacenter = 'ord'
 
     def setUp(self):
-        CloudFilesStorageDriver.connectionCls.conn_classes = (
+        self.driver_klass.connectionCls.conn_classes = (
             None, CloudFilesMockHttp)
-        CloudFilesStorageDriver.connectionCls.rawResponseCls = \
+        self.driver_klass.connectionCls.rawResponseCls = \
                                               CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None
         CloudFilesMockRawResponse.type = None
-        self.driver = CloudFilesStorageDriver('dummy', 'dummy')
+        self.driver = self.driver_klass(*self.driver_args,
+                                        **self.driver_kwargs)
+
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
         self._remove_test_file()
 
     def tearDown(self):
         self._remove_test_file()
+
+    def test_invalid_ex_force_service_region(self):
+        driver = CloudFilesStorageDriver('driver', 'dummy',
+                ex_force_service_region='invalid')
+
+        try:
+            driver.list_containers()
+        except:
+            e = sys.exc_info()[1]
+            self.assertEquals(e.value, 'Could not find specified endpoint')
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_force_service_region(self):
+        driver = CloudFilesStorageDriver('driver', 'dummy',
+                ex_force_service_region='ORD')
+        driver.list_containers()
 
     def test_force_auth_token_kwargs(self):
         base_url = 'https://cdn2.clouddrive.com/v1/MossoCloudFS'
@@ -105,8 +128,10 @@ class CloudFilesTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_service_catalog(self):
+        url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS' % \
+              (self.datacenter)
         self.assertEqual(
-             'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS',
+             url,
              self.driver.connection.get_endpoint())
 
         self.driver.connection.cdn_request = True
@@ -659,7 +684,7 @@ class CloudFilesTests(unittest.TestCase):
                                     "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
         sig = hmac.new(b('foo'), b(hmac_body), sha1).hexdigest()
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
-        temp_url = 'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (sig)
+        temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.datacenter, sig)
 
         self.assertEquals(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
@@ -682,6 +707,16 @@ class CloudFilesTests(unittest.TestCase):
             os.unlink(file_path)
         except OSError:
             pass
+
+
+class CloudFilesDeprecatedUSTests(CloudFilesTests):
+    driver_klass = CloudFilesUSStorageDriver
+    datacenter = 'ord'
+
+
+class CloudFilesDeprecatedUKTests(CloudFilesTests):
+    driver_klass = CloudFilesUKStorageDriver
+    datacenter = 'lon'
 
 
 class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):

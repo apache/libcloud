@@ -101,13 +101,14 @@ class CloudFilesConnection(OpenStackBaseConnection):
     Base connection class for the Cloudfiles driver.
     """
 
-    auth_url = AUTH_URL_US
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
 
-    def __init__(self, user_id, key, secure=True, **kwargs):
+    def __init__(self, user_id, key, secure=True, auth_url=AUTH_URL_US,
+                 **kwargs):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
                                                    **kwargs)
+        self.auth_url = auth_url
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
@@ -130,10 +131,15 @@ class CloudFilesConnection(OpenStackBaseConnection):
         if self.cdn_request:
             eps = cdn_eps
 
+        if self._ex_force_service_region:
+            eps = [ep for ep in eps if ep['region'].lower() == self._ex_force_service_region.lower()]
+
         if len(eps) == 0:
+            # TODO: Better error message
             raise LibcloudError('Could not find specified endpoint')
 
         ep = eps[0]
+
         if 'publicURL' in ep:
             return ep['publicURL']
         else:
@@ -157,22 +163,6 @@ class CloudFilesConnection(OpenStackBaseConnection):
             params=params, data=data,
             method=method, headers=headers,
             raw=raw)
-
-
-class CloudFilesUSConnection(CloudFilesConnection):
-    """
-    Connection class for the Cloudfiles US endpoint.
-    """
-
-    auth_url = AUTH_URL_US
-
-
-class CloudFilesUKConnection(CloudFilesConnection):
-    """
-    Connection class for the Cloudfiles UK endpoint.
-    """
-
-    auth_url = AUTH_URL_UK
 
 
 class CloudFilesSwiftConnection(CloudFilesConnection):
@@ -202,10 +192,7 @@ class CloudFilesSwiftConnection(CloudFilesConnection):
 
 class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     """
-    Base CloudFiles driver.
-
-    You should never create an instance of this class directly but use US/US
-    class.
+    CloudFiles driver.
     """
     name = 'CloudFiles'
     website = 'http://www.rackspace.com/'
@@ -214,9 +201,27 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     hash_type = 'md5'
     supports_chunked_encoding = True
 
-    def __init__(self, *args, **kwargs):
-        OpenStackDriverMixin.__init__(self, *args, **kwargs)
-        super(CloudFilesStorageDriver, self).__init__(*args, **kwargs)
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 datacenter='ord', **kwargs):
+        """
+        @inherits:  L{StorageDriver.__init__}
+
+        @param datacenter: Datacenter ID which should be used.
+        @type datacenter: C{str}
+        """
+        if hasattr(self, '_datacenter'):
+            datacenter = self._datacenter
+
+        # This is here for backard compatibility
+        if 'ex_force_service_region' in kwargs:
+            datacenter = kwargs['ex_force_service_region']
+
+        self.datacenter = datacenter
+
+        OpenStackDriverMixin.__init__(self, (), **kwargs)
+        super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
+                                            secure=secure, host=host,
+                                            port=port, **kwargs)
 
     def iterate_containers(self):
         response = self.connection.request('')
@@ -781,7 +786,15 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return obj
 
     def _ex_connection_class_kwargs(self):
-        return self.openstack_connection_kwargs()
+        kwargs = {'ex_force_service_region': self.datacenter}
+
+        if self.datacenter in ['dfw', 'ord']:
+            kwargs['auth_url'] = AUTH_URL_US
+        elif self.datacenter == 'lon':
+            kwargs['auth_url'] = AUTH_URL_UK
+
+        kwargs.update(self.openstack_connection_kwargs())
+        return kwargs
 
 
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
@@ -791,7 +804,7 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_US
     name = 'CloudFiles (US)'
-    connectionCls = CloudFilesUSConnection
+    _datacenter = 'ord'
 
 
 class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
@@ -820,7 +833,7 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_UK
     name = 'CloudFiles (UK)'
-    connectionCls = CloudFilesUKConnection
+    _datacenter = 'lon'
 
 
 class FileChunkReader(object):
@@ -872,7 +885,7 @@ class ChunkStreamReader(object):
             raise StopIteration
 
         block_size = self.chunk_size
-        if self.bytes_read + block_size >\
+        if self.bytes_read + block_size > \
                 self.end_block - self.start_block:
             block_size = self.end_block - self.start_block - self.bytes_read
             self.stop_iteration = True
