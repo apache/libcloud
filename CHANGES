@@ -57,7 +57,8 @@ Changes with Apache Libcloud in development:
      the code to make it easier to maintain.
      [Tomaz Muraus]
 
-   - Add a new driver for HostVirtual (http://www.vr.org) provider.
+   - Add a new driver for HostVirtual (http://www.vr.org) provider. 
+     (LIBCLOUD-249)
      [Dinesh Bhoopathy]
 
    - Fix a bug where a numeric instead of a string value was used for the
@@ -101,7 +102,7 @@ Changes with Apache Libcloud in development:
       (LIBCLOUD-247)
       [Tomaz Muraus]
 
-    - New driver for HostVirtual provider (www.vr.org).
+    - New driver for HostVirtual provider (www.vr.org). (LIBCLOUD-249)
       [Dinesh Bhoopathy]
 
 Changes with Apache Libcloud 0.11.3:
