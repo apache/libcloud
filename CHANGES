@@ -101,6 +101,9 @@ Changes with Apache Libcloud in development:
       (LIBCLOUD-247)
       [Tomaz Muraus]
 
+    - New driver for HostVirtual provider (www.vr.org).
+      [Dinesh Bhoopathy]
+
 Changes with Apache Libcloud 0.11.3:
 
   *) Storage

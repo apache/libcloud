@@ -15,11 +15,6 @@
 import sys
 import unittest
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.hostvirtual import HostVirtualNodeDriver
@@ -79,7 +74,7 @@ class HostVirtualTest(unittest.TestCase):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.ex_stop_node(node))
 
-    def test_start_node_response(self):
+    def test_start_node(self):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.ex_start_node(node))
 

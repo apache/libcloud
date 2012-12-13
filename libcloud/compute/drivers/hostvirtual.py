@@ -3,9 +3,8 @@
 # this work for additional information regarding copyright ownership.
 # The ASF licenses this file to You under the Apache License, Version 2.0
 # (the "License"); you may not use this file except in compliance with
-# the License.	You may obtain a copy of the License at
-#
-#	  http://www.apache.org/licenses/LICENSE-2.0
+# the License.  You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,15 +25,15 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.common.types import LibcloudError
+from libcloud.common.hostvirtual import HostVirtualResponse
+from libcloud.common.hostvirtual import HostVirtualConnection
+from libcloud.common.hostvirtual import HostVirtualException
 from libcloud.compute.providers import Provider
-from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 
-API_HOST = 'www.vr.org'
 API_ROOT = '/vapi'
 
 #API_VERSION = '0.1'
@@ -49,64 +48,19 @@ NODE_STATE_MAP = {
 }
 
 
-class HostVirtualException(LibcloudError):
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
-        self.args = (code, message)
-
-    def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
-        return "<HostVirtualException in %d : %s>" % (self.code, self.message)
+class HostVirtualComputeResponse(HostVirtualResponse):
+    pass
 
 
-class HostVirtualResponse(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
-
-    def parse_body(self):
-        if not self.body:
-            return None
-
-        data = json.loads(self.body)
-        return data
-
-    def parse_error(self):
-        if self.status == 401:
-            data = self.parse_body()
-            raise InvalidCredsError(
-                data['error']['code'] + ': ' + data['error']['message'])
-        elif self.status == 412:
-            data = self.parse_body()
-            raise HostVirtualException(
-                data['error']['code'], data['error']['message'])
-        elif self.status == 404:
-            data = self.parse_body()
-            raise HostVirtualException(
-                data['error']['code'], data['error']['message'])
-        else:
-            return self.body
-
-    def success(self):
-        return self.status in self.valid_response_codes
-
-
-class HostVirtualConnection(ConnectionKey):
-    host = API_HOST
-    responseCls = HostVirtualResponse
-
-    def add_default_params(self, params):
-        params["key"] = self.key
-        return params
+class HostVirtualComputeConnection(HostVirtualConnection):
+    responseCls = HostVirtualComputeResponse
 
 
 class HostVirtualNodeDriver(NodeDriver):
     type = Provider.HOSTVIRTUAL
     name = 'HostVirtual'
     website = 'http://www.vr.org'
-    connectionCls = HostVirtualConnection
+    connectionCls = HostVirtualComputeConnection
 
     def __init__(self, key):
         self.location = None
