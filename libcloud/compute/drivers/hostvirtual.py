@@ -186,6 +186,14 @@ class HostVirtualNodeDriver(NodeDriver):
         return bool(result)
 
     def ex_stop_node(self, node):
+        """
+        Stop a node.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
+        """
         params = {'force': 0, 'mbpkgid': node.id}
         result = self.connection.request(
             API_ROOT + '/cloud/server/stop',
@@ -195,6 +203,14 @@ class HostVirtualNodeDriver(NodeDriver):
         return bool(result)
 
     def ex_start_node(self, node):
+        """
+        Start a node.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
+        """
         params = {'mbpkgid': node.id}
         result = self.connection.request(
             API_ROOT + '/cloud/server/start',
