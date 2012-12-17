@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from libcloud.common.openstack import OpenStackDriverMixin
 
 __all__ = [
     'RackspaceUSDNSDriver',
@@ -240,6 +239,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])
+            
+        if 'priority' in extra:
+            data['priority'] = int(extra['priority']) 
 
         payload = {'records': [data]}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
@@ -268,7 +270,10 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         if 'comment' in extra:
             payload['comment'] = extra['comment']
-
+        
+        if 'priority' in extra:
+            payload['priority'] = extra['priority']
+            
         type = type if type is not None else record.type
         data = data if data else record.data
 
@@ -345,7 +350,8 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         if 'comment' in data:
             extra['comment'] = data['comment']
-
+        if 'priority' in data:
+            extra['priority'] = data['priority']
         record = Record(id=str(id), name=name, type=type, data=record_data,
                         zone=zone, driver=self, extra=extra)
         return record
