@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from libcloud.utils.misc import get_driver as get_provider_driver
+from libcloud.utils.misc import set_driver as set_provider_driver
 from libcloud.storage.types import Provider
 
 DRIVERS = {
@@ -38,8 +39,19 @@ DRIVERS = {
     Provider.NINEFOLD:
         ('libcloud.storage.drivers.ninefold', 'NinefoldStorageDriver'),
     Provider.GOOGLE_STORAGE:
-        ('libcloud.storage.drivers.google_storage', 'GoogleStorageDriver')
+        ('libcloud.storage.drivers.google_storage', 'GoogleStorageDriver'),
+    Provider.CLOUDFILES_SWIFT:
+        ('libcloud.storage.drivers.cloudfiles',
+         'CloudFilesSwiftStorageDriver'),
+    Provider.NIMBUS:
+        ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver'),
+    Provider.LOCAL:
+        ('libcloud.storage.drivers.local', 'LocalStorageDriver')
 }
+
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)
+
+def set_driver(provider, module, klass):
+    return set_provider_driver(DRIVERS, provider, module, klass)

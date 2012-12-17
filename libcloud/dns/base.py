@@ -19,7 +19,6 @@ __all__ = [
     'DNSDriver'
 ]
 
-
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
 
@@ -131,45 +130,88 @@ class DNSDriver(BaseDriver):
     """
     connectionCls = ConnectionUserAndKey
     name = None
+    website = None
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 **kwargs):
+        """
+        @param    key: API key or username to used (required)
+        @type     key: C{str}
+
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+                only support HTTPS, and it is on by default.
+        @type     secure: C{bool}
+
+        @param    host: Override hostname used for connections.
+        @type     host: C{str}
+
+        @param    port: Override port used for connections.
+        @type     port: C{int}
+
+        @rtype: C{None}
+        """
         super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                        host=host, port=port)
+                                        host=host, port=port, **kwargs)
 
     def list_record_types(self):
         """
         Return a list of RecordType objects supported by the provider.
 
-        @return: A list of C{RecordType} instances.
+        @rtype: C{list} of L{RecordType}
         """
         return list(self.RECORD_TYPE_MAP.keys())
+
+    def iterate_zones(self):
+        """
+        Return a generator to iterate over available zones.
+
+        @rtype: C{generator} of L{Zone}
+        """
+        raise NotImplementedError(
+            'iterate_zones not implemented for this driver')
 
     def list_zones(self):
         """
         Return a list of zones.
 
-        @return: A list of C{Zone} instances.
+        @rtype: C{list} of L{Zone}
+        """
+        return list(self.iterate_zones())
+
+    def iterate_records(self, zone):
+        """
+        Return a generator to iterate over records for the provided zone.
+
+        @param zone: Zone to list records for.
+        @type zone: L{Zone}
+
+        @rtype: C{generator} of L{Record}
         """
         raise NotImplementedError(
-            'list_zones not implemented for this driver')
+            'iterate_records not implemented for this driver')
 
     def list_records(self, zone):
         """
         Return a list of records for the provided zone.
 
-        @type zone: C{Zone}
         @param zone: Zone to list records for.
+        @type zone: L{Zone}
 
-        @return: A list of C{Record} instances.
+        @rtype: C{list} of L{Record}
         """
-        raise NotImplementedError(
-            'list_records not implemented for this driver')
+        return list(self.iterate_records(zone))
 
     def get_zone(self, zone_id):
         """
         Return a Zone instance.
 
-        @return: C{Zone} instance.
+        @param zone_id: ID of the required zone
+        @type  zone_id: C{str}
+
+        @rtype: L{Zone}
         """
         raise NotImplementedError(
             'get_zone not implemented for this driver')
@@ -178,7 +220,13 @@ class DNSDriver(BaseDriver):
         """
         Return a Record instance.
 
-        @return: C{Record} instance.
+        @param zone_id: ID of the required zone
+        @type  zone_id: C{str}
+
+        @param record_id: ID of the required record
+        @type  record_id: C{str}
+
+        @rtype: L{Record}
         """
         raise NotImplementedError(
             'get_record not implemented for this driver')
@@ -187,17 +235,19 @@ class DNSDriver(BaseDriver):
         """
         Create a new zone.
 
-        @type domain: C{string}
         @param domain: Zone domain name.
+        @type domain: C{str}
 
-        @type type: C{string}
         @param type: Zone type (master / slave).
+        @type  type: C{str}
 
-        @param ttl: C{int}
         @param ttl: (optional) TTL for new records.
+        @type  ttl: C{int}
 
-        @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+        @type extra: C{dict}
+
+        @rtype: L{Zone}
         """
         raise NotImplementedError(
             'create_zone not implemented for this driver')
@@ -206,20 +256,22 @@ class DNSDriver(BaseDriver):
         """
         Update en existing zone.
 
-        @type zone: C{Zone}
         @param zone: Zone to update.
+        @type  zone: L{Zone}
 
-        @type domain: C{string}
         @param domain: Zone domain name.
+        @type  domain: C{str}
 
-        @type type: C{string}
         @param type: Zone type (master / slave).
+        @type  type: C{str}
 
-        @param ttl: C{int}
         @param ttl: (optional) TTL for new records.
+        @type  ttl: C{int}
 
-        @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+        @type  extra: C{dict}
+
+        @rtype: L{Zone}
         """
         raise NotImplementedError(
             'update_zone not implemented for this driver')
@@ -228,20 +280,22 @@ class DNSDriver(BaseDriver):
         """
         Create a new record.
 
-        @param name: C{string}
-        @type name: Hostname or FQDN.
+        @param name: Hostname or FQDN.
+        @type  name: C{str}
 
-        @type zone: C{Zone}
         @param zone: Zone where the requested record is created.
+        @type  zone: L{Zone}
 
-        @type type: C{RecordType}
         @param type: DNS record type (A, AAAA, ...).
+        @type  type: L{RecordType}
 
-        @type data: C{str}
         @param data: Data for the record (depends on the record type).
+        @type  data: C{str}
 
-        @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+        @type extra: C{dict}
+
+        @rtype: L{Record}
         """
         raise NotImplementedError(
             'create_record not implemented for this driver')
@@ -250,20 +304,22 @@ class DNSDriver(BaseDriver):
         """
         Update an existing record.
 
-        @param record: C{Record}
-        @type record: Record to update.
+        @param record: Record to update.
+        @type  record: L{Record}
 
-        @param name: C{string}
-        @type name: Hostname or FQDN.
+        @param name: Hostname or FQDN.
+        @type  name: C{str}
 
-        @type type: C{RecordType}
         @param type: DNS record type (A, AAAA, ...).
+        @type  type: L{RecordType}
 
-        @type data: C{str}
         @param data: Data for the record (depends on the record type).
+        @type  data: C{str}
 
-        @type extra: C{dict}
         @param extra: (optional) Extra attributes (driver specific).
+        @type  extra: C{dict}
+
+        @rtype: L{Record}
         """
         raise NotImplementedError(
             'update_record not implemented for this driver')
@@ -274,8 +330,10 @@ class DNSDriver(BaseDriver):
 
         Note: This will delete all the records belonging to this zone.
 
-        @param zone: C{Zone}
-        @type zone: Zone to delete.
+        @param zone: Zone to delete.
+        @type  zone: L{Zone}
+
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'delete_zone not implemented for this driver')
@@ -284,8 +342,10 @@ class DNSDriver(BaseDriver):
         """
         Delete a record.
 
-        @param record: C{Record}
-        @type record: Record to delete.
+        @param record: Record to delete.
+        @type  record: L{Record}
+
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'delete_record not implemented for this driver')

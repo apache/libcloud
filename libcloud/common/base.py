@@ -27,20 +27,39 @@ except:
 
 import libcloud
 
-
-from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import PY3, PY25
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import u
 from libcloud.utils.py3 import b
 
 from libcloud.utils.misc import lowercase_keys
+from libcloud.utils.compression import decompress_data
 from libcloud.common.types import LibcloudError, MalformedResponseError
 
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
 LibcloudHTTPConnection = httplib.HTTPConnection
+
+
+class HTTPResponse(httplib.HTTPResponse):
+    # On python 2.6 some calls can hang because HEAD isn't quite properly
+    # supported.
+    # In particular this happens on S3 when calls are made to get_object to
+    # objects that don't exist.
+    # This applies the behaviour from 2.7, fixing the hangs.
+    def read(self, amt=None):
+        if self.fp is None:
+            return ''
+
+        if self._method == 'HEAD':
+            self.close()
+            return ''
+
+        return httplib.HTTPResponse.read(self, amt)
+
 
 class Response(object):
     """
@@ -57,7 +76,7 @@ class Response(object):
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
-        self.body = response.read().strip()
+        self.body = self._decompress_response(response=response)
 
         if PY3:
             self.body = b(self.body).decode('utf-8')
@@ -106,11 +125,37 @@ class Response(object):
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
 
+    def _decompress_response(self, response):
+        """
+        Decompress a response body if it is using deflate or gzip encoding.
+
+        @return: Decompressed response
+        """
+        headers = lowercase_keys(dict(response.getheaders()))
+        encoding = headers.get('content-encoding', None)
+
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data is not None:
+            return original_data
+
+        body = response.read()
+
+        if encoding in ['zlib', 'deflate']:
+            body = decompress_data('zlib', body)
+        elif encoding in ['gzip', 'x-gzip']:
+            body = decompress_data('gzip', body)
+        else:
+            body = body.strip()
+
+        return body
+
 
 class JsonResponse(Response):
     """
     A Base JSON Response class to derive from.
     """
+
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -131,6 +176,7 @@ class XmlResponse(Response):
     """
     A Base XML Response class to derive from.
     """
+
     def parse_body(self):
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
@@ -213,22 +259,45 @@ class LoggingConnection():
             def __init__(self, s):
                 self.s = s
 
-            def makefile(self, mode, foo):
-                return StringIO(self.s)
+            def makefile(self, *args, **kwargs):
+                if PY3:
+                    from io import BytesIO
+                    cls = BytesIO
+                else:
+                    cls = StringIO
+
+                return cls(b(self.s))
         rr = r
+        original_data = body
+        headers = lowercase_keys(dict(r.getheaders()))
+
+        encoding = headers.get('content-encoding', None)
+
+        if encoding in ['zlib', 'deflate']:
+            body = decompress_data('zlib', body)
+        elif encoding in ['gzip', 'x-gzip']:
+            body = decompress_data('gzip', body)
+
         if r.chunked:
             ht += "%x\r\n" % (len(body))
-            ht += body
+            ht += u(body)
             ht += "\r\n0\r\n"
         else:
-            ht += body
-        rr = httplib.HTTPResponse(fakesock(ht),
-                                  method=r._method,
-                                  debuglevel=r.debuglevel)
+            ht += u(body)
+
+        if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+            cls = HTTPResponse
+        else:
+            cls = httplib.HTTPResponse
+
+        rr = cls(sock=fakesock(ht), method=r._method,
+                 debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
                % (id(self), id(r)))
+
+        rr._original_data = body
         return (rr, rv)
 
     def _log_curl(self, method, url, body, headers):
@@ -243,13 +312,18 @@ class LoggingConnection():
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
 
-        cmd.extend([pquote("https://%s:%d%s" % (self.host, self.port, url))])
+        cmd.extend(["--compress"])
+        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
+                                             self.port, url))])
         return " ".join(cmd)
+
 
 class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
     """
     Utility Class for logging HTTPS connections
     """
+
+    protocol = 'https'
 
     def getresponse(self):
         r = LibcloudHTTPSConnection.getresponse(self)
@@ -269,10 +343,13 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
         return LibcloudHTTPSConnection.request(self, method, url, body,
                                                headers)
 
+
 class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     """
     Utility Class for logging HTTP connections
     """
+
+    protocol = 'http'
 
     def getresponse(self):
         r = LibcloudHTTPConnection.getresponse(self)
@@ -305,11 +382,13 @@ class Connection(object):
     connection = None
     host = '127.0.0.1'
     port = 443
+    timeout = None
     secure = 1
     driver = None
     action = None
 
-    def __init__(self, secure=True, host=None, port=None, url=None):
+    def __init__(self, secure=True, host=None, port=None, url=None,
+                 timeout=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
@@ -330,6 +409,9 @@ class Connection(object):
         if url:
             (self.host, self.port, self.secure,
              self.request_path) = self._tuple_from_url(url)
+
+        if timeout:
+            self.timeout = timeout
 
     def set_context(self, context):
         self.context = context
@@ -377,14 +459,21 @@ class Connection(object):
         secure = self.secure
 
         if getattr(self, 'base_url', None) and base_url == None:
-            (host, port, secure, request_path) = self._tuple_from_url(self.base_url)
+            (host, port,
+             secure, request_path) = self._tuple_from_url(self.base_url)
         elif base_url != None:
-            (host, port, secure, request_path) = self._tuple_from_url(base_url)
+            (host, port,
+             secure, request_path) = self._tuple_from_url(base_url)
         else:
             host = host or self.host
             port = port or self.port
 
         kwargs = {'host': host, 'port': int(port)}
+
+        # Timeout is only supported in Python 2.6 and later
+        # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
+        if self.timeout and not PY25:
+            kwargs.update({'timeout': self.timeout})
 
         connection = self.conn_classes[secure](**kwargs)
         # You can uncoment this line, if you setup a reverse proxy server
@@ -405,8 +494,8 @@ class Connection(object):
         """
         Append a token to a user agent string.
 
-        Users of the library should call this to uniquely identify thier requests
-        to a provider.
+        Users of the library should call this to uniquely identify thier
+        requests to a provider.
 
         @type token: C{str}
         @param token: Token to add to the user agent.
@@ -464,6 +553,9 @@ class Connection(object):
         headers = self.add_default_headers(headers)
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
+
+        # Indicate that support gzip and deflate compression
+        headers.update({'Accept-Encoding': 'gzip,deflate'})
 
         p = int(self.port)
 
@@ -557,6 +649,7 @@ class Connection(object):
         """
         return data
 
+
 class PollingConnection(Connection):
     """
     Connection class which can also work with the async APIs.
@@ -584,8 +677,8 @@ class PollingConnection(Connection):
 
         - Returned 'job_id' is then used to construct a URL which is used for
           retrieving job status. Constructed URL is then periodically polled
-          until the response indicates that the job has completed or the timeout
-          of 'self.timeout' seconds has been reached.
+          until the response indicates that the job has completed or the
+          timeout of 'self.timeout' seconds has been reached.
 
         @type action: C{str}
         @param action: A path
@@ -677,24 +770,30 @@ class ConnectionKey(Connection):
     """
     A Base Connection class to derive from, which includes a
     """
-    def __init__(self, key, secure=True, host=None, port=None, url=None):
+    def __init__(self, key, secure=True, host=None, port=None, url=None,
+                 timeout=None):
         """
         Initialize `user_id` and `key`; set `secure` to an C{int} based on
         passed value.
         """
-        super(ConnectionKey, self).__init__(secure=secure, host=host, port=port, url=url)
+        super(ConnectionKey, self).__init__(secure=secure, host=host,
+                                            port=port, url=url,
+                                            timeout=timeout)
         self.key = key
+
 
 class ConnectionUserAndKey(ConnectionKey):
     """
-    Base connection which accepts a user_id and key
+    Base connection which accepts a user_id and key.
     """
 
     user_id = None
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None, url=None):
+    def __init__(self, user_id, key, secure=True,
+                 host=None, port=None, url=None, timeout=None):
         super(ConnectionUserAndKey, self).__init__(key, secure=secure,
-                                                   host=host, port=port, url=url)
+                                                   host=host, port=port,
+                                                   url=url, timeout=timeout)
         self.user_id = user_id
 
 
@@ -706,29 +805,31 @@ class BaseDriver(object):
     connectionCls = ConnectionKey
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None):
+                 api_version=None, **kwargs):
         """
-        @keyword    key:    API key or username to used
-        @type       key:    str
+        @param    key:    API key or username to be used (required)
+        @type     key:    C{str}
 
-        @keyword    secret: Secret password to be used
-        @type       secret: str
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
 
-        @keyword    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        @param    secure: Weither to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
-        @type       secure: bool
+        @type     secure: C{bool}
 
-        @keyword    host: Override hostname used for connections.
-        @type       host: str
+        @param    host: Override hostname used for connections.
+        @type     host: C{str}
 
-        @keyword    port: Override port used for connections.
-        @type       port: int
+        @param    port: Override port used for connections.
+        @type     port: C{int}
 
-        @keyword    api_version: Optional API version. Only used by drivers
+        @param    api_version: Optional API version. Only used by drivers
                                  which support multiple API versions.
-        @type       api_version: str
+        @type     api_version: C{str}
 
+        @rtype: C{None}
         """
+
         self.key = key
         self.secret = secret
         self.secure = secure
@@ -745,7 +846,10 @@ class BaseDriver(object):
         if port is not None:
             args.append(port)
 
-        self.connection = self.connectionCls(*args, **self._ex_connection_class_kwargs())
+        self.api_version = api_version
+
+        self.connection = self.connectionCls(*args,
+            **self._ex_connection_class_kwargs())
 
         self.connection.driver = self
         self.connection.connect()

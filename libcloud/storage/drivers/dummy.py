@@ -53,6 +53,7 @@ class DummyFileObject(file):
     def __len__(self):
         return self._yield_count * self._chunk_len
 
+
 class DummyIterator(object):
     def __init__(self, data=None):
         self.hash = hashlib.md5()
@@ -91,26 +92,44 @@ class DummyStorageDriver(StorageDriver):
     """
 
     name = 'Dummy Storage Provider'
+    website = 'http://example.com'
 
     def __init__(self, api_key, api_secret):
+        """
+        @param    api_key:    API key or username to used (required)
+        @type     api_key:    C{str}
+        @param    api_secret: Secret password to be used (required)
+        @type     api_secret: C{str}
+        @rtype: C{None}
+        """
         self._containers = {}
 
     def get_meta_data(self):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
-        >>> driver.get_meta_data()
-        {'object_count': 0, 'container_count': 0, 'bytes_used': 0}
+        >>> driver.get_meta_data()['object_count']
+        0
+        >>> driver.get_meta_data()['container_count']
+        0
+        >>> driver.get_meta_data()['bytes_used']
+        0
         >>> container = driver.create_container(container_name='test container 1')
         >>> container = driver.create_container(container_name='test container 2')
         >>> obj = container.upload_object_via_stream(
         ...  object_name='test object', iterator=DummyFileObject(5, 10), extra={})
-        >>> driver.get_meta_data()
-        {'object_count': 1, 'container_count': 2, 'bytes_used': 50}
+        >>> driver.get_meta_data()['object_count']
+        1
+        >>> driver.get_meta_data()['container_count']
+        2
+        >>> driver.get_meta_data()['bytes_used']
+        50
+
+        @rtype: C{dict}
         """
 
         container_count = len(self._containers)
-        object_count = sum([ len(self._containers[container]['objects']) for
-                        container in self._containers ])
+        object_count = sum([len(self._containers[container]['objects']) for
+                            container in self._containers])
 
         bytes_used = 0
         for container in self._containers:
@@ -118,14 +137,14 @@ class DummyStorageDriver(StorageDriver):
             for _, obj in objects.items():
                 bytes_used += obj.size
 
-        return { 'container_count': int(container_count),
-                  'object_count': int(object_count),
-                  'bytes_used': int(bytes_used) }
+        return {'container_count': int(container_count),
+                'object_count': int(object_count),
+                'bytes_used': int(bytes_used)}
 
-    def list_containers(self):
+    def iterate_containers(self):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
-        >>> driver.list_containers()
+        >>> list(driver.iterate_containers())
         []
         >>> container = driver.create_container(container_name='test container 1')
         >>> container
@@ -139,13 +158,15 @@ class DummyStorageDriver(StorageDriver):
         ...  container_name='test container 2') #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ContainerAlreadyExistsError:
-        >>> container_list=driver.list_containers()
+        >>> container_list=list(driver.iterate_containers())
         >>> sorted([container.name for container in container_list])
         ['test container 1', 'test container 2']
+
+        @inherits: L{StorageDriver.iterate_containers}
         """
 
-        return [container['container'] for container in
-                list(self._containers.values())]
+        for container in list(self._containers.values()):
+            yield container['container']
 
     def list_container_objects(self, container):
         container = self.get_container(container.name)
@@ -165,6 +186,8 @@ class DummyStorageDriver(StorageDriver):
         'test container 1'
         >>> driver.get_container('test container 1')
         <Container: name=test container 1, provider=Dummy Storage Provider>
+
+        @inherits: L{StorageDriver.get_container}
         """
 
         if container_name not in self._containers:
@@ -186,6 +209,8 @@ class DummyStorageDriver(StorageDriver):
         'test container 1'
         >>> container.get_cdn_url()
         'http://www.test.com/container/test_container_1'
+
+        @inherits: L{StorageDriver.get_container_cdn_url}
         """
 
         if container.name not in self._containers:
@@ -195,54 +220,57 @@ class DummyStorageDriver(StorageDriver):
         return self._containers[container.name]['cdn_url']
 
     def get_object(self, container_name, object_name):
-       """
-       >>> driver = DummyStorageDriver('key', 'secret')
-       >>> driver.get_object('unknown', 'unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
-       Traceback (most recent call last):
-       ContainerDoesNotExistError:
-       >>> container = driver.create_container(container_name='test container 1')
-       >>> container
-       <Container: name=test container 1, provider=Dummy Storage Provider>
-       >>> driver.get_object(
-       ...  'test container 1', 'unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
-       Traceback (most recent call last):
-       ObjectDoesNotExistError:
-       >>> obj = container.upload_object_via_stream(object_name='test object',
-       ...      iterator=DummyFileObject(5, 10), extra={})
-       >>> obj
-       <Object: name=test object, size=50, hash=None, provider=Dummy Storage Provider ...>
-       """
+        """
+        >>> driver = DummyStorageDriver('key', 'secret')
+        >>> driver.get_object('unknown', 'unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ContainerDoesNotExistError:
+        >>> container = driver.create_container(container_name='test container 1')
+        >>> container
+        <Container: name=test container 1, provider=Dummy Storage Provider>
+        >>> driver.get_object(
+        ...  'test container 1', 'unknown') #doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ObjectDoesNotExistError:
+        >>> obj = container.upload_object_via_stream(object_name='test object',
+        ...      iterator=DummyFileObject(5, 10), extra={})
+        >>> obj
+        <Object: name=test object, size=50, hash=None, provider=Dummy Storage Provider ...>
 
-       self.get_container(container_name)
-       container_objects = self._containers[container_name]['objects']
-       if object_name not in container_objects:
+        @inherits: L{StorageDriver.get_object}
+        """
+
+        self.get_container(container_name)
+        container_objects = self._containers[container_name]['objects']
+        if object_name not in container_objects:
             raise ObjectDoesNotExistError(object_name=object_name, value=None,
                                           driver=self)
 
-       return container_objects[object_name]
+        return container_objects[object_name]
 
     def get_object_cdn_url(self, obj):
-       """
-       >>> driver = DummyStorageDriver('key', 'secret')
-       >>> container = driver.create_container(container_name='test container 1')
-       >>> container
-       <Container: name=test container 1, provider=Dummy Storage Provider>
-       >>> obj = container.upload_object_via_stream(object_name='test object 5',
-       ...      iterator=DummyFileObject(5, 10), extra={})
-       >>> obj
-       <Object: name=test object 5, size=50, hash=None, provider=Dummy Storage Provider ...>
-       >>> obj.get_cdn_url()
-       'http://www.test.com/object/test_object_5'
-       """
+        """
+        >>> driver = DummyStorageDriver('key', 'secret')
+        >>> container = driver.create_container(container_name='test container 1')
+        >>> container
+        <Container: name=test container 1, provider=Dummy Storage Provider>
+        >>> obj = container.upload_object_via_stream(object_name='test object 5',
+        ...      iterator=DummyFileObject(5, 10), extra={})
+        >>> obj
+        <Object: name=test object 5, size=50, hash=None, provider=Dummy Storage Provider ...>
+        >>> obj.get_cdn_url()
+        'http://www.test.com/object/test_object_5'
 
-       container_name = obj.container.name
-       container_objects = self._containers[container_name]['objects']
-       if obj.name not in container_objects:
-           raise ObjectDoesNotExistError(object_name=obj.name, value=None,
-                                         driver=self)
+        @inherits: L{StorageDriver.get_object_cdn_url}
+        """
 
-       return container_objects[obj.name].meta_data['cdn_url']
+        container_name = obj.container.name
+        container_objects = self._containers[container_name]['objects']
+        if obj.name not in container_objects:
+            raise ObjectDoesNotExistError(object_name=obj.name, value=None,
+                                          driver=self)
 
+        return container_objects[obj.name].meta_data['cdn_url']
 
     def create_container(self, container_name):
         """
@@ -254,21 +282,23 @@ class DummyStorageDriver(StorageDriver):
         ...    container_name='test container 1') #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ContainerAlreadyExistsError:
+
+        @inherits: L{StorageDriver.create_container}
         """
 
         if container_name in self._containers:
             raise ContainerAlreadyExistsError(container_name=container_name,
                                               value=None, driver=self)
 
-        extra = { 'object_count': 0 }
+        extra = {'object_count': 0}
         container = Container(name=container_name, extra=extra, driver=self)
 
-        self._containers[container_name] = { 'container': container,
-                                             'objects': {},
-                                             'cdn_url':
-                                             'http://www.test.com/container/%s' %
-                                             (container_name.replace(' ', '_'))
-                                           }
+        self._containers[container_name] = {'container': container,
+                                            'objects': {},
+                                            'cdn_url':
+                                            'http://www.test.com/container/%s' %
+                                            (container_name.replace(' ', '_'))
+                                            }
         return container
 
     def delete_container(self, container):
@@ -294,6 +324,8 @@ class DummyStorageDriver(StorageDriver):
         >>> driver.delete_container(container=container)#doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ContainerIsNotEmptyError:
+
+        @inherits: L{StorageDriver.delete_container}
         """
 
         container_name = container.name
@@ -310,12 +342,12 @@ class DummyStorageDriver(StorageDriver):
         return True
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
-                       delete_on_failure=True):
-        kwargs_dict =  {'obj': obj,
-                        'response': DummyFileObject(),
-                        'destination_path': destination_path,
-                        'overwrite_existing': overwrite_existing,
-                        'delete_on_failure': delete_on_failure}
+                        delete_on_failure=True):
+        kwargs_dict = {'obj': obj,
+                       'response': DummyFileObject(),
+                       'destination_path': destination_path,
+                       'overwrite_existing': overwrite_existing,
+                       'delete_on_failure': delete_on_failure}
 
         return self._save_object(**kwargs_dict)
 
@@ -329,6 +361,8 @@ class DummyStorageDriver(StorageDriver):
         >>> stream = container.download_object_as_stream(obj)
         >>> stream #doctest: +ELLIPSIS
         <...closed...>
+
+        @inherits: L{StorageDriver.download_object_as_stream}
         """
 
         return DummyFileObject()
@@ -349,6 +383,10 @@ class DummyStorageDriver(StorageDriver):
         <Object: name=test, size=...>
         >>> obj.size == file_size
         True
+
+        @inherits: L{StorageDriver.upload_object}
+        @param file_hash: File hash
+        @type file_hash: C{str}
         """
 
         if not os.path.exists(file_path):
@@ -369,6 +407,8 @@ class DummyStorageDriver(StorageDriver):
         ...   object_name='test object', iterator=DummyFileObject(5, 10), extra={})
         >>> obj #doctest: +ELLIPSIS
         <Object: name=test object, size=50, ...>
+
+        @inherits: L{StorageDriver.upload_object_via_stream}
         """
 
         size = len(iterator)
@@ -392,6 +432,8 @@ class DummyStorageDriver(StorageDriver):
         >>> container.delete_object(obj=obj) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ObjectDoesNotExistError:
+
+        @inherits: L{StorageDriver.delete_object}
         """
 
         container_name = obj.container.name

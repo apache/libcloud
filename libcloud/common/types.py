@@ -30,6 +30,9 @@ class LibcloudError(Exception):
         self.driver = driver
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return ("<LibcloudError in "
                 + repr(self.driver)
                 + " "
@@ -47,6 +50,9 @@ class MalformedResponseError(LibcloudError):
         self.body = body
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return ("<MalformedResponseException in "
                 + repr(self.driver)
                 + " "
@@ -64,6 +70,9 @@ class InvalidCredsError(LibcloudError):
         self.driver = driver
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return repr(self.value)
 
 

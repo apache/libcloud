@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """
-Amazon EC2 driver
+Amazon EC2, Eucalyptus and Nimbus drivers.
 """
+
 from __future__ import with_statement
 
 import sys
@@ -39,25 +40,16 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage
-
-EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
-EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
-EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
-EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
-EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
-EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
-EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
+from libcloud.compute.base import NodeImage, StorageVolume
 
 API_VERSION = '2010-08-31'
-
-NAMESPACE = "http://ec2.amazonaws.com/doc/%s/" % (API_VERSION)
+NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 """
 Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
 From http://aws.amazon.com/ec2/instance-types/
 """
-EC2_INSTANCE_TYPES = {
+INSTANCE_TYPES = {
     't1.micro': {
         'id': 't1.micro',
         'name': 'Micro Instance',
@@ -70,6 +62,13 @@ EC2_INSTANCE_TYPES = {
         'name': 'Small Instance',
         'ram': 1740,
         'disk': 160,
+        'bandwidth': None
+    },
+    'm1.medium': {
+        'id': 'm1.medium',
+        'name': 'Medium Instance',
+        'ram': 3700,
+        'disk': 410,
         'bandwidth': None
     },
     'm1.large': {
@@ -121,6 +120,20 @@ EC2_INSTANCE_TYPES = {
         'disk': 1690,
         'bandwidth': None
     },
+    'm3.xlarge': {
+        'id': 'm3.xlarge',
+        'name': 'Extra Large Instance',
+        'ram': 15360,
+        'disk': None,
+        'bandwidth': None
+    },
+    'm3.2xlarge': {
+        'id': 'm3.2xlarge',
+        'name': 'Double Extra Large Instance',
+        'ram': 30720,
+        'disk': None,
+        'bandwidth': None
+    },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
@@ -144,15 +157,165 @@ EC2_INSTANCE_TYPES = {
     }
 }
 
-CLUSTER_INSTANCES_IDS = ['cg1.4xlarge', 'cc1.4xlarge', 'cc2.8xlarge']
+REGION_DETAILS = {
+    'us-east-1': {
+        'endpoint': 'ec2.us-east-1.amazonaws.com',
+        'api_name': 'ec2_us_east',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'cg1.4xlarge'
+        ]
+    },
+    'us-west-1': {
+        'endpoint': 'ec2.us-west-1.amazonaws.com',
+        'api_name': 'ec2_us_west',
+        'country': 'USA',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'us-west-2': {
+        'endpoint': 'ec2.us-west-2.amazonaws.com',
+        'api_name': 'ec2_us_west_oregon',
+        'country': 'US',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge'
+        ]
+    },
+    'eu-west-1': {
+        'endpoint': 'ec2.eu-west-1.amazonaws.com',
+        'api_name': 'ec2_eu_west',
+        'country': 'Ireland',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge'
+        ]
+    },
+    'ap-southeast-1': {
+        'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
+        'api_name': 'ec2_ap_southeast',
+        'country': 'Singapore',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'ap-northeast-1': {
+        'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
+        'api_name': 'ec2_ap_northeast',
+        'country': 'Japan',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'sa-east-1': {
+        'endpoint': 'ec2.sa-east-1.amazonaws.com',
+        'api_name': 'ec2_sa_east',
+        'country': 'Brazil',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
 
-EC2_US_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_US_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_EU_WEST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_AP_SOUTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_AP_NORTHEAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_US_WEST_OREGON_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
-EC2_SA_EAST_INSTANCE_TYPES = dict(EC2_INSTANCE_TYPES)
+        ]
+    },
+    'ap-southeast-2': {
+        'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
+        'api_name': 'ec2_ap_southeast_2',
+        'country': 'Australia',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
+    'nimbus': {
+        # Nimbus clouds have 3 EC2-style instance types but their particular
+        # RAM allocations are configured by the admin
+        'country': 'custom',
+        'instance_types': [
+            'm1.small',
+            'm1.large',
+            'm1.xlarge'
+        ]
+    }
+}
+
+VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
+VALID_EC2_DATACENTERS.remove('nimbus')
 
 
 class EC2NodeLocation(NodeLocation):
@@ -204,10 +367,10 @@ class EC2Response(AWSBaseResponse):
 
 class EC2Connection(ConnectionUserAndKey):
     """
-    Represents a single connection to the EC2 Endpoint
+    Represents a single connection to the EC2 Endpoint.
     """
 
-    host = EC2_US_EAST_HOST
+    host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
 
     def add_default_params(self, params):
@@ -248,9 +411,10 @@ class EC2Connection(ConnectionUserAndKey):
         string_to_sign = '\n'.join(('GET', hostname, path, qs))
 
         b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign), digestmod=sha256).digest()
+            hmac.new(b(secret_key), b(string_to_sign),
+                     digestmod=sha256).digest()
         )
-        return b64_hmac
+        return b64_hmac.decode('utf-8')
 
 
 class ExEC2AvailabilityZone(object):
@@ -271,21 +435,15 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
-class EC2NodeDriver(NodeDriver):
+class BaseEC2NodeDriver(NodeDriver):
     """
-    Amazon EC2 node driver
+    Base Amazon EC2 node driver.
+
+    Used for main EC2 and other derivate driver classes to inherit from it.
     """
 
     connectionCls = EC2Connection
-    type = Provider.EC2
-    api_name = 'ec2_us_east'
-    name = 'Amazon EC2 (us-east-1)'
-    friendly_name = 'Amazon US N. Virginia'
-    country = 'US'
-    region_name = 'us-east-1'
     path = '/'
-
-    _instance_types = EC2_US_EAST_INSTANCE_TYPES
     features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
@@ -333,10 +491,10 @@ class EC2NodeDriver(NodeDriver):
 
     def _to_node(self, element, groups=None):
         try:
-            state = self.NODE_STATE_MAP[
-                    findattr(element=element, xpath="instanceState/name",
-                             namespace=NAMESPACE)
-            ]
+            state = self.NODE_STATE_MAP[findattr(element=element,
+                                                 xpath="instanceState/name",
+                                                 namespace=NAMESPACE)
+                                        ]
         except KeyError:
             state = NodeState.UNKNOWN
 
@@ -345,16 +503,18 @@ class EC2NodeDriver(NodeDriver):
         tags = dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
                      findtext(element=item, xpath='value',
                               namespace=NAMESPACE))
-        for item in findall(element=element, xpath='tagSet/item',
-                            namespace=NAMESPACE))
+                    for item in findall(element=element,
+                                        xpath='tagSet/item',
+                                        namespace=NAMESPACE)
+                    )
 
         name = tags.get('Name', instance_id)
 
         public_ip = findtext(element=element, xpath='ipAddress',
-                              namespace=NAMESPACE)
+                             namespace=NAMESPACE)
         public_ips = [public_ip] if public_ip else []
         private_ip = findtext(element=element, xpath='privateIpAddress',
-                                 namespace=NAMESPACE)
+                              namespace=NAMESPACE)
         private_ips = [private_ip] if private_ip else []
 
         n = Node(
@@ -382,10 +542,11 @@ class EC2NodeDriver(NodeDriver):
                 'launchindex': findattr(element=element,
                                         xpath="amiLaunchIndex",
                                         namespace=NAMESPACE),
-                'productcode':
-                    [p.text for p in findall(element=element,
-                                    xpath="productCodesSet/item/productCode",
-                                    namespace=NAMESPACE
+                'productcode': [
+                    p.text for p in findall(
+                        element=element,
+                        xpath="productCodesSet/item/productCode",
+                        namespace=NAMESPACE
                     )],
                 'instancetype': findattr(element=element, xpath="instanceType",
                                          namespace=NAMESPACE),
@@ -407,59 +568,71 @@ class EC2NodeDriver(NodeDriver):
         return n
 
     def _to_images(self, object):
-        return [self._to_image(el)
-                for el in object.findall(
-            fixxpath(xpath='imagesSet/item', namespace=NAMESPACE)
-        )]
+        return [self._to_image(el) for el in object.findall(
+            fixxpath(xpath='imagesSet/item', namespace=NAMESPACE))
+        ]
 
     def _to_image(self, element):
-        n = NodeImage(id=findtext(element=element, xpath='imageId',
+        n = NodeImage(
+            id=findtext(element=element, xpath='imageId', namespace=NAMESPACE),
+            name=findtext(element=element, xpath='imageLocation',
+                          namespace=NAMESPACE),
+            driver=self.connection.driver,
+            extra={
+                'state': findattr(element=element, xpath="imageState",
                                   namespace=NAMESPACE),
-                      name=findtext(element=element, xpath='imageLocation',
+                'ownerid': findattr(element=element, xpath="imageOwnerId",
                                     namespace=NAMESPACE),
-                      driver=self.connection.driver,
-                      extra={
-                          'state': findattr(element=element,
-                                            xpath="imageState",
-                                            namespace=NAMESPACE),
-                          'ownerid': findattr(element=element,
-                                        xpath="imageOwnerId",
-                                        namespace=NAMESPACE),
-                          'owneralias': findattr(element=element,
-                                        xpath="imageOwnerAlias",
-                                        namespace=NAMESPACE),
-                          'ispublic': findattr(element=element,
-                                        xpath="isPublic",
-                                        namespace=NAMESPACE),
-                          'architecture': findattr(element=element,
-                                        xpath="architecture",
-                                        namespace=NAMESPACE),
-                          'imagetype': findattr(element=element,
-                                        xpath="imageType",
-                                        namespace=NAMESPACE),
-                          'platform': findattr(element=element,
-                                        xpath="platform",
-                                        namespace=NAMESPACE),
-                          'rootdevicetype': findattr(element=element,
-                                        xpath="rootDeviceType",
-                                        namespace=NAMESPACE),
-                          'virtualizationtype': findattr(element=element,
-                                        xpath="virtualizationType",
-                                        namespace=NAMESPACE),
-                          'hypervisor': findattr(element=element,
-                                        xpath="hypervisor",
-                                        namespace=NAMESPACE)
-                      }
+                'owneralias': findattr(element=element,
+                                       xpath="imageOwnerAlias",
+                                       namespace=NAMESPACE),
+                'ispublic': findattr(element=element,
+                                     xpath="isPublic",
+                                     namespace=NAMESPACE),
+                'architecture': findattr(element=element,
+                                         xpath="architecture",
+                                         namespace=NAMESPACE),
+                'imagetype': findattr(element=element,
+                                      xpath="imageType",
+                                      namespace=NAMESPACE),
+                'platform': findattr(element=element,
+                                     xpath="platform",
+                                     namespace=NAMESPACE),
+                'rootdevicetype': findattr(element=element,
+                                           xpath="rootDeviceType",
+                                           namespace=NAMESPACE),
+                'virtualizationtype': findattr(
+                    element=element, xpath="virtualizationType",
+                    namespace=NAMESPACE),
+                'hypervisor': findattr(element=element,
+                                       xpath="hypervisor",
+                                       namespace=NAMESPACE)
+            }
         )
         return n
 
+    def _to_volume(self, element, name):
+        volId = findtext(element=element, xpath='volumeId',
+                         namespace=NAMESPACE)
+        size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+
+        return StorageVolume(id=volId,
+                             name=name,
+                             size=int(size),
+                             driver=self)
+
     def list_nodes(self, ex_node_ids=None):
         """
-        @type node.id: C{list}
-        @param ex_node_ids: List of C{node.id}
-        This parameter is used to filter the list of
+        List all nodes
+
+        Ex_node_ids parameter is used to filter the list of
         nodes that should be returned. Only the nodes
         with the corresponding node ids will be returned.
+
+        @param      ex_node_ids: List of C{node.id}
+        @type       ex_node_ids: C{list} of C{str}
+
+        @rtype: C{list} of L{Node}
         """
         params = {'Action': 'DescribeInstances'}
         if ex_node_ids:
@@ -481,20 +654,14 @@ class EC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
-        # Cluster instances are currently only available
-        # in the US - N. Virginia Region
-        include_ci = self.region_name == 'us-east-1'
-        sizes = self._get_sizes(include_cluser_instances=include_ci)
-        return sizes
-
-    def _get_sizes(self, include_cluser_instances=False):
+        available_types = REGION_DETAILS[self.region_name]['instance_types']
         sizes = []
-        for key, values in self._instance_types.items():
-            if not include_cluser_instances and\
-               key in CLUSTER_INSTANCES_IDS:
-                continue
-            attributes = copy.deepcopy(values)
-            attributes.update({'price': self._get_size_price(size_id=key)})
+
+        for instance_type in available_types:
+            attributes = INSTANCE_TYPES[instance_type]
+            attributes = copy.deepcopy(attributes)
+            price = self._get_size_price(size_id=instance_type)
+            attributes.update({'price': price})
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
@@ -508,29 +675,67 @@ class EC2NodeDriver(NodeDriver):
     def list_locations(self):
         locations = []
         for index, availability_zone in \
-            enumerate(self.ex_list_availability_zones()):
-            locations.append(EC2NodeLocation(index,
-                                             self.friendly_name,
-                                             self.country,
-                                             self,
-                                             availability_zone))
+                enumerate(self.ex_list_availability_zones()):
+                    locations.append(EC2NodeLocation(
+                        index, availability_zone, self.country, self,
+                        availability_zone)
+                    )
         return locations
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        params = {
+            'Action': 'CreateVolume',
+            'Size': str(size)}
+
+        if location is not None:
+            params['AvailabilityZone'] = location.availability_zone.name
+
+        volume = self._to_volume(
+            self.connection.request(self.path, params=params).object,
+            name=name)
+        self.ex_create_tags(volume, {'Name': name})
+        return volume
+
+    def destroy_volume(self, volume):
+        params = {
+            'Action': 'DeleteVolume',
+            'VolumeId': volume.id}
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def attach_volume(self, node, volume, device):
+        params = {
+            'Action': 'AttachVolume',
+            'VolumeId': volume.id,
+            'InstanceId': node.id,
+            'Device': device}
+
+        self.connection.request(self.path, params=params)
+        return True
+
+    def detach_volume(self, volume):
+        params = {
+            'Action': 'DetachVolume',
+            'VolumeId': volume.id}
+
+        self.connection.request(self.path, params=params)
+        return True
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
 
-        @note: This is a non-standard extension API, and
-               only works for EC2.
+        @note: This is a non-standard extension API, and only works for EC2.
 
-        @type name: C{str}
-        @param name: The name of the keypair to Create. This must be
-                     unique, otherwise an InvalidKeyPair.Duplicate
-                     exception is raised.
+        @param      name: The name of the keypair to Create. This must be
+            unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        @type       name: C{str}
+
+        @rtype: C{dict}
         """
         params = {
             'Action': 'CreateKeyPair',
             'KeyName': name,
-            }
+        }
         response = self.connection.request(self.path, params=params).object
         key_material = findtext(element=response, xpath='keyMaterial',
                                 namespace=NAMESPACE)
@@ -539,29 +744,32 @@ class EC2NodeDriver(NodeDriver):
         return {
             'keyMaterial': key_material,
             'keyFingerprint': key_fingerprint,
-            }
+        }
 
     def ex_import_keypair(self, name, keyfile):
-        """imports a new public key
+        """
+        imports a new public key
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @type name: C{str}
-        @param name: The name of the public key to import. This must be unique,
-                     otherwise an InvalidKeyPair.Duplicate exception is raised.
+        @param      name: The name of the public key to import. This must be
+         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        @type       name: C{str}
 
-        @type keyfile: C{str}
-        @param keyfile: The filename with path of the public key to import.
+        @param     keyfile: The filename with path of the public key to import.
+        @type      keyfile: C{str}
 
+        @rtype: C{dict}
         """
         with open(os.path.expanduser(keyfile)) as fh:
             content = fh.read()
 
         base64key = base64.b64encode(content)
 
-        params = {'Action': 'ImportKeyPair',
-                  'KeyName': name,
-                  'PublicKeyMaterial': base64key
+        params = {
+            'Action': 'ImportKeyPair',
+            'KeyName': name,
+            'PublicKeyMaterial': base64key
         }
 
         response = self.connection.request(self.path, params=params).object
@@ -572,20 +780,44 @@ class EC2NodeDriver(NodeDriver):
         return {
             'keyName': key_name,
             'keyFingerprint': key_fingerprint,
-            }
+        }
+
+    def ex_describe_all_keypairs(self):
+        """
+        Describes all keypairs.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @rtype: C{list} of C{str}
+        """
+
+        params = {
+            'Action': 'DescribeKeyPairs'
+        }
+
+        response = self.connection.request(self.path, params=params).object
+        names = []
+        for elem in findall(element=response, xpath='keySet/item',
+                            namespace=NAMESPACE):
+            name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
+            names.append(name)
+
+        return names
 
     def ex_describe_keypairs(self, name):
         """Describes a keypair by name
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @type name: C{str}
-        @param name: The name of the keypair to describe.
+        @param      name: The name of the keypair to describe.
+        @type       name: C{str}
 
+        @rtype: C{dict}
         """
 
-        params = {'Action': 'DescribeKeyPairs',
-                  'KeyName.1': name
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'KeyName.1': name
         }
 
         response = self.connection.request(self.path, params=params).object
@@ -595,30 +827,98 @@ class EC2NodeDriver(NodeDriver):
             'keyName': key_name
         }
 
-    def ex_create_security_group(self, name, description):
-        """Creates a new Security Group
+    def ex_list_security_groups(self):
+        """
+        List existing Security Groups.
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @type name: C{str}
-        @param name: The name of the security group to Create.
-                     This must be unique.
+        @rtype: C{list} of C{str}
+        """
+        params = {'Action': 'DescribeSecurityGroups'}
+        response = self.connection.request(self.path, params=params).object
 
-        @type description: C{str}
-        @param description: Human readable description of a Security Group.
+        groups = []
+        for group in findall(element=response, xpath='securityGroupInfo/item',
+                             namespace=NAMESPACE):
+            name = findtext(element=group, xpath='groupName',
+                            namespace=NAMESPACE)
+            groups.append(name)
+
+        return groups
+
+    def ex_create_security_group(self, name, description):
+        """
+        Creates a new Security Group
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @param      name: The name of the security group to Create.
+                          This must be unique.
+        @type       name: C{str}
+
+        @param      description: Human readable description of a Security
+        Group.
+        @type       description: C{str}
+
+        @rtype: C{str}
         """
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
                   'GroupDescription': description}
         return self.connection.request(self.path, params=params).object
 
-    def ex_authorize_security_group_permissive(self, name):
-        """Edit a Security Group to allow all traffic.
+    def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
+                                    protocol='tcp'):
+        """
+        Edit a Security Group to allow specific traffic.
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @type name: C{str}
-        @param name: The name of the security group to edit
+        @param      name: The name of the security group to edit
+        @type       name: C{str}
+
+        @param      from_port: The beginning of the port range to open
+        @type       from_port: C{str}
+
+        @param      to_port: The end of the port range to open
+        @type       to_port: C{str}
+
+        @param      cidr_ip: The ip to allow traffic for.
+        @type       cidr_ip: C{str}
+
+        @param      protocol: tcp/udp/icmp
+        @type       protocol: C{str}
+
+        @rtype: C{bool}
+        """
+
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupName': name,
+                  'IpProtocol': protocol,
+                  'FromPort': str(from_port),
+                  'ToPort': str(to_port),
+                  'CidrIp': cidr_ip}
+        try:
+            resp = self.connection.request(
+                self.path, params=params.copy()).object
+            return bool(findtext(element=resp, xpath='return',
+                                 namespace=NAMESPACE))
+        except Exception:
+            e = sys.exc_info()[1]
+            if e.args[0].find('InvalidPermission.Duplicate') == -1:
+                raise e
+
+    def ex_authorize_security_group_permissive(self, name):
+        """
+        Edit a Security Group to allow all traffic.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @param      name: The name of the security group to edit
+        @type       name: C{str}
+
+        @rtype: C{list} of C{str}
         """
 
         results = []
@@ -670,7 +970,9 @@ class EC2NodeDriver(NodeDriver):
 
         @keyword  only_available: If true, return only availability zones
                                   with state 'available'
-        @type     only_available: C{string}
+        @type     only_available: C{str}
+
+        @rtype: C{list} of L{ExEC2AvailabilityZone}
         """
         params = {'Action': 'DescribeAvailabilityZones'}
 
@@ -704,18 +1006,19 @@ class EC2NodeDriver(NodeDriver):
 
         return availability_zones
 
-    def ex_describe_tags(self, node):
+    def ex_describe_tags(self, resource):
         """
-        Return a dictionary of tags for this instance.
+        Return a dictionary of tags for a resource (Node or StorageVolume).
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param  resource: resource which should be used
+        @type   resource: L{Node} or L{StorageVolume}
 
-        @return dict Node tags
+        @return: dict Node tags
+        @rtype: C{dict}
         """
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
-                  'Filter.0.Value.0': node.id,
+                  'Filter.0.Value.0': resource.id,
                   'Filter.1.Name': 'resource-type',
                   'Filter.1.Value.0': 'instance',
                   }
@@ -733,47 +1036,61 @@ class EC2NodeDriver(NodeDriver):
             tags[key] = value
         return tags
 
-    def ex_create_tags(self, node, tags):
+    def ex_create_tags(self, resource, tags):
         """
-        Create tags for an instance.
+        Create tags for a resource (Node or StorageVolume).
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param resource: Resource to be tagged
+        @type resource: L{Node} or L{StorageVolume}
+
         @param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
+        @type tags: C{dict}
+
+        @rtype: C{bool}
         """
         if not tags:
             return
 
         params = {'Action': 'CreateTags',
-                  'ResourceId.0': node.id}
+                  'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
 
-        self.connection.request(self.path,
-                                params=params.copy()).object
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
-    def ex_delete_tags(self, node, tags):
+    def ex_delete_tags(self, resource, tags):
         """
-        Delete tags from an instance.
+        Delete tags from a resource.
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param resource: Resource to be tagged
+        @type resource: L{Node} or L{StorageVolume}
+
         @param tags: A dictionary or other mapping of strings to strings,
                      specifying the tag names and tag values to be deleted.
+        @type tags: C{dict}
+
+        @rtype: C{bool}
         """
         if not tags:
             return
 
         params = {'Action': 'DeleteTags',
-                  'ResourceId.0': node.id}
+                  'ResourceId.0': resource.id}
         for i, key in enumerate(tags):
             params['Tag.%d.Key' % i] = key
             params['Tag.%d.Value' % i] = tags[key]
 
-        self.connection.request(self.path,
-                                params=params.copy()).object
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def _add_instance_filter(self, params, node):
         """
@@ -789,11 +1106,12 @@ class EC2NodeDriver(NodeDriver):
         Return all the Elastic IP addresses for this account
         optionally, return only the allocated addresses
 
-        @keyword  only_allocated: If true, return only those addresses
+        @param    only_allocated: If true, return only those addresses
                                   that are associated with an instance
-        @type     only_allocated: C{string}
+        @type     only_allocated: C{str}
 
-        @return   list list of elastic ips for this particular account.
+        @return:   list list of elastic ips for this particular account.
+        @rtype: C{list} of C{str}
         """
         params = {'Action': 'DescribeAddresses'}
 
@@ -822,9 +1140,13 @@ class EC2NodeDriver(NodeDriver):
         """
         Associate an IP address with a particular node.
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param      node: Node instance
+        @type       node: L{Node}
 
+        @param      elastic_ip_address: IP address which should be used
+        @type       elastic_ip_address: C{str}
+
+        @rtype: C{bool}
         """
         params = {'Action': 'AssociateAddress'}
 
@@ -837,12 +1159,12 @@ class EC2NodeDriver(NodeDriver):
         """
         Return Elastic IP addresses for all the nodes in the provided list.
 
-        @type nodes: C{list}
-        @param nodes: List of C{Node} instances
+        @param      nodes: List of C{Node} instances
+        @type       nodes: C{list} of L{Node}
 
-        @return dict Dictionary where a key is a node ID and the value is a
-                     list with the Elastic IP addresses associated with
-                     this node.
+        @return: Dictionary where a key is a node ID and the value is a
+            list with the Elastic IP addresses associated with this node.
+        @rtype: C{dict}
         """
         if not nodes:
             return {}
@@ -877,10 +1199,11 @@ class EC2NodeDriver(NodeDriver):
         """
         Return a list of Elastic IP addresses associated with this node.
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param      node: Node instance
+        @type       node: L{Node}
 
-        @return list Elastic IP addresses attached to this node.
+        @return: list Elastic IP addresses attached to this node.
+        @rtype: C{list} of C{str}
         """
         node_elastic_ips = self.ex_describe_addresses([node])
         return node_elastic_ips[node.id]
@@ -890,13 +1213,14 @@ class EC2NodeDriver(NodeDriver):
         Modify node attributes.
         A list of valid attributes can be found at http://goo.gl/gxcj8
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param      node: Node instance
+        @type       node: L{Node}
 
-        @type attributes: C{dict}
-        @param attributes: Dictionary with node attributes
+        @param      attributes: Dictionary with node attributes
+        @type       attributes: C{dict}
 
-        @return bool True on success, False otherwise.
+        @return: True on success, False otherwise.
+        @rtype: C{bool}
         """
         attributes = attributes or {}
         attributes.update({'InstanceId': node.id})
@@ -915,13 +1239,14 @@ class EC2NodeDriver(NodeDriver):
         Change the node size.
         Note: Node must be turned of before changing the size.
 
-        @type node: C{Node}
-        @param node: Node instance
+        @param      node: Node instance
+        @type       node: L{Node}
 
-        @type new_size: C{NodeSize}
-        @param new_size: NodeSize intance
+        @param      new_size: NodeSize intance
+        @type       new_size: L{NodeSize}
 
-        @return bool True on success, False otherwise.
+        @return: True on success, False otherwise.
+        @rtype: C{bool}
         """
         if 'instancetype' in node.extra:
             current_instance_type = node.extra['instancetype']
@@ -936,8 +1261,9 @@ class EC2NodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new EC2 node
 
-        See L{NodeDriver.create_node} for more keyword args.
         Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
+
+        @inherits: L{NodeDriver.create_node}
 
         @keyword    ex_mincount: Minimum number of instances to launch
         @type       ex_mincount: C{int}
@@ -971,8 +1297,8 @@ class EC2NodeDriver(NodeDriver):
             if not isinstance(kwargs['ex_securitygroup'], list):
                 kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
             for sig in range(len(kwargs['ex_securitygroup'])):
-                params['SecurityGroup.%d' % (sig + 1,)] = \
-                            kwargs['ex_securitygroup'][sig]
+                params['SecurityGroup.%d' % (sig + 1,)] =\
+                    kwargs['ex_securitygroup'][sig]
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
@@ -980,14 +1306,15 @@ class EC2NodeDriver(NodeDriver):
             if availability_zone:
                 if availability_zone.region_name != self.region_name:
                     raise AttributeError('Invalid availability zone: %s'
-                    % (availability_zone.name))
+                                         % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
 
         if 'ex_userdata' in kwargs:
-            params['UserData'] = base64.b64encode(kwargs['ex_userdata'])
+            params['UserData'] = base64.b64encode(b(kwargs['ex_userdata']))\
+                .decode('utf-8')
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
@@ -999,7 +1326,7 @@ class EC2NodeDriver(NodeDriver):
             tags = {'Name': kwargs['name']}
 
             try:
-                self.ex_create_tags(node=node, tags=tags)
+                self.ex_create_tags(resource=node, tags=tags)
             except Exception:
                 continue
 
@@ -1012,9 +1339,6 @@ class EC2NodeDriver(NodeDriver):
             return nodes
 
     def reboot_node(self, node):
-        """
-        Reboot the node by passing in the node object
-        """
         params = {'Action': 'RebootInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
@@ -1024,6 +1348,11 @@ class EC2NodeDriver(NodeDriver):
         """
         Start the node by passing in the node object, does not work with
         instance store backed instances
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
         """
         params = {'Action': 'StartInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1034,6 +1363,11 @@ class EC2NodeDriver(NodeDriver):
         """
         Stop the node by passing in the node object, does not work with
         instance store backed instances
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
         """
         params = {'Action': 'StopInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1041,13 +1375,51 @@ class EC2NodeDriver(NodeDriver):
         return self._get_state_boolean(res)
 
     def destroy_node(self, node):
-        """
-        Destroy node by passing in the node object
-        """
         params = {'Action': 'TerminateInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
+
+
+class EC2NodeDriver(BaseEC2NodeDriver):
+    """
+    Amazon EC2 node driver.
+    """
+
+    connectionCls = EC2Connection
+    type = Provider.EC2
+    name = 'Amazon EC2'
+    website = 'http://aws.amazon.com/ec2/'
+    path = '/'
+
+    features = {'create_node': ['ssh_key']}
+
+    NODE_STATE_MAP = {
+        'pending': NodeState.PENDING,
+        'running': NodeState.RUNNING,
+        'shutting-down': NodeState.TERMINATED,
+        'terminated': NodeState.TERMINATED
+    }
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 datacenter='us-east-1', **kwargs):
+
+        if hasattr(self, '_datacenter'):
+            datacenter = self._datacenter
+
+        if datacenter not in VALID_EC2_DATACENTERS:
+            raise ValueError('Invalid datacenter: %s' % (datacenter))
+
+        details = REGION_DETAILS[datacenter]
+        self.region_name = datacenter
+        self.api_name = details['api_name']
+        self.country = details['country']
+
+        self.connectionCls.host = details['endpoint']
+
+        super(EC2NodeDriver, self).__init__(key=key, secret=secret,
+                                            secure=secure, host=host,
+                                            port=port, **kwargs)
 
 
 class IdempotentParamError(LibcloudError):
@@ -1060,135 +1432,53 @@ class IdempotentParamError(LibcloudError):
         return repr(self.value)
 
 
-class EC2EUConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western Europe Region
-    """
-    host = EC2_EU_WEST_HOST
-
-
 class EC2EUNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Western Europe Region
+    Driver class for EC2 in the Western Europe Region.
     """
-
-    api_name = 'ec2_eu_west'
-    name = 'Amazon EC2 (eu-west-1)'
-    friendly_name = 'Amazon Europe Ireland'
-    country = 'IE'
-    region_name = 'eu-west-1'
-    connectionCls = EC2EUConnection
-    _instance_types = EC2_EU_WEST_INSTANCE_TYPES
-
-
-class EC2USWestConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western US Region
-    """
-
-    host = EC2_US_WEST_HOST
+    _datacenter = 'eu-west-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
-
-    api_name = 'ec2_us_west'
-    name = 'Amazon EC2 (us-west-1)'
-    friendly_name = 'Amazon US N. California'
-    country = 'US'
-    region_name = 'us-west-1'
-    connectionCls = EC2USWestConnection
-    _instance_types = EC2_US_WEST_INSTANCE_TYPES
-
-
-class EC2USWestOregonConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western US Region (Oregon).
-    """
-
-    host = EC2_US_WEST_OREGON_HOST
+    _datacenter = 'us-west-1'
 
 
 class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
-
-    api_name = 'ec2_us_west_oregon'
-    name = 'Amazon EC2 (us-west-2)'
-    friendly_name = 'Amazon US West - Oregon'
-    country = 'US'
-    region_name = 'us-west-2'
-    connectionCls = EC2USWestOregonConnection
-    _instance_types = EC2_US_WEST_OREGON_INSTANCE_TYPES
-
-
-class EC2APSEConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Southeast Asia Pacific Region
-    """
-
-    host = EC2_AP_SOUTHEAST_HOST
-
-
-class EC2APNEConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Northeast Asia Pacific Region
-    """
-
-    host = EC2_AP_NORTHEAST_HOST
+    _datacenter = 'us-west-2'
 
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Southeast Asia Pacific Region
+    Driver class for EC2 in the Southeast Asia Pacific Region.
     """
-
-    api_name = 'ec2_ap_southeast'
-    name = 'Amazon EC2 (ap-southeast-1)'
-    friendly_name = 'Amazon Asia-Pacific Singapore'
-    country = 'SG'
-    region_name = 'ap-southeast-1'
-    connectionCls = EC2APSEConnection
-    _instance_types = EC2_AP_SOUTHEAST_INSTANCE_TYPES
+    _datacenter = 'ap-southeast-1'
 
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region
+    Driver class for EC2 in the Northeast Asia Pacific Region.
     """
-
-    api_name = 'ec2_ap_northeast'
-    name = 'Amazon EC2 (ap-northeast-1)'
-    friendly_name = 'Amazon Asia-Pacific Tokyo'
-    country = 'JP'
-    region_name = 'ap-northeast-1'
-    connectionCls = EC2APNEConnection
-    _instance_types = EC2_AP_NORTHEAST_INSTANCE_TYPES
-
-
-class EC2SAEastConnection(EC2Connection):
-    """
-    Connection class for EC2 in the South America (Sao Paulo) Region
-    """
-
-    host = EC2_SA_EAST_HOST
+    _datacenter = 'ap-northeast-1'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the South America (Sao Paulo) Region
+    Driver class for EC2 in the South America (Sao Paulo) Region.
     """
+    _datacenter = 'sa-east-1'
 
-    api_name = 'ec2_sa_east'
-    name = 'Amazon EC2 (sa-east-1)'
-    friendly_name = 'Amazon South America Sao Paulo'
-    country = 'BR'
-    region_name = 'sa-east-1'
-    connectionCls = EC2SAEastConnection
-    _instance_types = EC2_SA_EAST_INSTANCE_TYPES
+
+class EC2APSESydneyNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
+    """
+    _datacenter = 'ap-southeast-2'
 
 
 class EucConnection(EC2Connection):
@@ -1199,17 +1489,24 @@ class EucConnection(EC2Connection):
     host = None
 
 
-class EucNodeDriver(EC2NodeDriver):
+class EucNodeDriver(BaseEC2NodeDriver):
     """
     Driver class for Eucalyptus
     """
 
     name = 'Eucalyptus'
+    api_name = 'ec2_us_east'
+    region_name = 'us-east-1'
     connectionCls = EucConnection
-    _instance_types = EC2_US_WEST_INSTANCE_TYPES
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
+        """
+        @inherits: L{EC2NodeDriver.__init__}
+
+        @param    path: The host where the API can be reached.
+        @type     path: C{str}
+        """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
             path = "/services/Eucalyptus"
@@ -1217,7 +1514,7 @@ class EucNodeDriver(EC2NodeDriver):
 
     def list_locations(self):
         raise NotImplementedError(
-                'list_locations not implemented for this driver')
+            'list_locations not implemented for this driver')
 
     def _add_instance_filter(self, params, node):
         """
@@ -1225,32 +1522,6 @@ class EucNodeDriver(EC2NodeDriver):
         no-op.
         """
         pass
-
-# Nimbus clouds have 3 EC2-style instance types but their particular RAM
-# allocations are configured by the admin
-NIMBUS_INSTANCE_TYPES = {
-    'm1.small': {
-        'id': 'm1.small',
-        'name': 'Small Instance',
-        'ram': None,
-        'disk': None,
-        'bandwidth': None,
-        },
-    'm1.large': {
-        'id': 'm1.large',
-        'name': 'Large Instance',
-        'ram': None,
-        'disk': None,
-        'bandwidth': None,
-        },
-    'm1.xlarge': {
-        'id': 'm1.xlarge',
-        'name': 'Extra Large Instance',
-        'ram': None,
-        'disk': None,
-        'bandwidth': None,
-        },
-    }
 
 
 class NimbusConnection(EC2Connection):
@@ -1261,22 +1532,24 @@ class NimbusConnection(EC2Connection):
     host = None
 
 
-class NimbusNodeDriver(EC2NodeDriver):
+class NimbusNodeDriver(BaseEC2NodeDriver):
     """
     Driver class for Nimbus
     """
 
     type = Provider.NIMBUS
     name = 'Nimbus'
+    country = 'Private'
     api_name = 'nimbus'
     region_name = 'nimbus'
     friendly_name = 'Nimbus Private Cloud'
     connectionCls = NimbusConnection
-    _instance_types = NIMBUS_INSTANCE_TYPES
 
     def ex_describe_addresses(self, nodes):
         """
-        Nimbus doesn't support elastic IPs, so this is a passthrough
+        Nimbus doesn't support elastic IPs, so this is a passthrough.
+
+        @inherits: L{EC2NodeDriver.ex_describe_addresses}
         """
         nodes_elastic_ip_mappings = {}
         for node in nodes:
@@ -1284,8 +1557,10 @@ class NimbusNodeDriver(EC2NodeDriver):
             nodes_elastic_ip_mappings[node.id] = []
         return nodes_elastic_ip_mappings
 
-    def ex_create_tags(self, node, tags):
+    def ex_create_tags(self, resource, tags):
         """
-        Nimbus doesn't support creating tags, so this is a passthrough
+        Nimbus doesn't support creating tags, so this is a passthrough.
+
+        @inherits: L{EC2NodeDriver.ex_create_tags}
         """
         pass

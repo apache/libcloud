@@ -47,6 +47,7 @@ def get_pricing_file_path(file_path=None):
 
     return pricing_file_path
 
+
 def get_pricing(driver_type, driver_name, pricing_file_path=None):
     """
     Return pricing for the provided driver.
@@ -83,6 +84,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
 
     return size_pricing
 
+
 def set_pricing(driver_type, driver_name, pricing):
     """
     Populate the driver pricing dictionary.
@@ -98,6 +100,7 @@ def set_pricing(driver_type, driver_name, pricing):
     """
 
     PRICING_DATA[driver_type][driver_name] = pricing
+
 
 def get_size_price(driver_type, driver_name, size_id):
     """
@@ -120,12 +123,14 @@ def get_size_price(driver_type, driver_name, size_id):
     price = float(pricing[size_id])
     return price
 
+
 def invalidate_pricing_cache():
     """
     Invalidate the cache for all the drivers.
     """
     PRICING_DATA['compute'] = {}
     PRICING_DATA['storage'] = {}
+
 
 def invalidate_module_pricing_cache(driver_type, driver_name):
     """

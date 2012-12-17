@@ -15,5 +15,6 @@
 
 from libcloud.common.base import XmlResponse
 
+
 class AWSBaseResponse(XmlResponse):
     pass

@@ -167,8 +167,9 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         @return: Dictionary containing updated headers.
         """
         pass_sha1 = hashlib.sha1(b(self.key)).hexdigest()
-        headers['Authorization'] = ('Basic %s' % b64encode(b('%s:%s' %
-                                                (self.user_id, pass_sha1))))
+        headers['Authorization'] =\
+            ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
+                                                 pass_sha1))).decode('utf-8'))
         return headers
 
 
@@ -247,7 +248,7 @@ class OpenNebulaNetwork(object):
         @rtype:  C{string}
         @return: Unique identifier for this instance.
         """
-        return hashlib.sha1(b("%s:%d" % (self.id,
+        return hashlib.sha1(b("%s:%s" % (self.id,
                                          self.driver.type))).hexdigest()
 
     def __repr__(self):
@@ -264,20 +265,18 @@ class OpenNebulaNodeDriver(NodeDriver):
 
     connectionCls = OpenNebulaConnection
     name = 'OpenNebula'
+    website = 'http://opennebula.org/'
     type = Provider.OPENNEBULA
 
     NODE_STATE_MAP = {
+        'INIT': NodeState.PENDING,
         'PENDING': NodeState.PENDING,
         'HOLD': NodeState.PENDING,
-        'PROLOG': NodeState.PENDING,
-        'RUNNING': NodeState.RUNNING,
-        'MIGRATE': NodeState.PENDING,
-        'EPILOG': NodeState.TERMINATED,
+        'ACTIVE': NodeState.RUNNING,
         'STOPPED': NodeState.TERMINATED,
         'SUSPENDED': NodeState.PENDING,
-        'FAILED': NodeState.TERMINATED,
-        'UNKNOWN': NodeState.UNKNOWN,
-        'DONE': NodeState.TERMINATED}
+        'DONE': NodeState.TERMINATED,
+        'FAILED': NodeState.TERMINATED}
 
     def __new__(cls, key, secret=None, api_version=DEFAULT_API_VERSION,
                 **kwargs):
@@ -300,14 +299,12 @@ class OpenNebulaNodeDriver(NodeDriver):
         """
         Create a new OpenNebula node.
 
-        See L{NodeDriver.create_node} for more keyword args.
-        @type    networks: L{OpenNebulaNetwork} or C{list}
-                           of L{OpenNebulaNetwork}s
+        @inherits: L{NodeDriver.create_node}
+
         @keyword networks: List of virtual networks to which this node should
                            connect. (optional)
-
-        @rtype:  L{Node}
-        @return: Instance of a newly created node.
+        @type    networks: L{OpenNebulaNetwork} or
+            C{list} of L{OpenNebulaNetwork}
         """
         compute = ET.Element('COMPUTE')
 
@@ -318,8 +315,9 @@ class OpenNebulaNodeDriver(NodeDriver):
         instance_type.text = kwargs['size'].name
 
         storage = ET.SubElement(compute, 'STORAGE')
-        ET.SubElement(storage, 'DISK', {'image': '%s' %
-                                                  (str(kwargs['image'].id))})
+        ET.SubElement(storage,
+                      'DISK',
+                      {'image': '%s' % (str(kwargs['image'].id))})
 
         if 'networks' in kwargs:
             if not isinstance(kwargs['networks'], list):
@@ -329,11 +327,11 @@ class OpenNebulaNodeDriver(NodeDriver):
             for network in kwargs['networks']:
                 if network.address:
                     ET.SubElement(networkGroup, 'NIC',
-                        {'network': '%s' % (str(network.id)),
-                        'ip': network.address})
+                                  {'network': '%s' % (str(network.id)),
+                                  'ip': network.address})
                 else:
                     ET.SubElement(networkGroup, 'NIC',
-                        {'network': '%s' % (str(network.id))})
+                                  {'network': '%s' % (str(network.id))})
 
         xml = ET.tostring(compute)
         node = self.connection.request('/compute', method='POST',
@@ -357,33 +355,33 @@ class OpenNebulaNodeDriver(NodeDriver):
         """
         Return list of sizes on a provider.
 
-        See L{NodeDriver.list_sizes} for more args.
+        @inherits: L{NodeDriver.list_sizes}
 
-        @rtype:  C{list} of L{OpenNebulaNodeSize}
         @return: List of compute node sizes supported by the cloud provider.
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
         """
         return [
             NodeSize(id=1,
-                name='small',
-                ram=None,
-                disk=None,
-                bandwidth=None,
-                price=None,
-                driver=self),
+                     name='small',
+                     ram=None,
+                     disk=None,
+                     bandwidth=None,
+                     price=None,
+                     driver=self),
             NodeSize(id=2,
-                name='medium',
-                ram=None,
-                disk=None,
-                bandwidth=None,
-                price=None,
-                driver=self),
+                     name='medium',
+                     ram=None,
+                     disk=None,
+                     bandwidth=None,
+                     price=None,
+                     driver=self),
             NodeSize(id=3,
-                name='large',
-                ram=None,
-                disk=None,
-                bandwidth=None,
-                price=None,
-                driver=self),
+                     name='large',
+                     ram=None,
+                     disk=None,
+                     bandwidth=None,
+                     price=None,
+                     driver=self),
         ]
 
     def list_locations(self):
@@ -397,9 +395,9 @@ class OpenNebulaNodeDriver(NodeDriver):
         @param location: Location from which to request a list of virtual
                          networks. (optional)
 
-        @rtype:  C{list} of L{OpenNebulaNetwork}
         @return: List of virtual networks available to be connected to a
                  compute node.
+        @rtype:  C{list} of L{OpenNebulaNetwork}
         """
         return self._to_networks(self.connection.request('/network').object)
 
@@ -411,14 +409,15 @@ class OpenNebulaNodeDriver(NodeDriver):
         action which should be carried out on that compute node. Then
         instruct the node to carry out that action.
 
-        @type  node: L{Node}
         @param node: Compute node instance.
-        @type  action: C{str}
-        @param action: Action to be carried out on the compute node.
+        @type  node: L{Node}
 
-        @rtype:  C{bool}
+        @param action: Action to be carried out on the compute node.
+        @type  action: C{str}
+
         @return: False if an HTTP Bad Request is received, else, True is
                  returned.
+        @rtype:  C{bool}
         """
         compute_node_id = str(node.id)
 
@@ -434,7 +433,7 @@ class OpenNebulaNodeDriver(NodeDriver):
 
         url = '/compute/%s' % compute_node_id
         resp = self.connection.request(url, method='PUT',
-                                        data=xml)
+                                       data=xml)
 
         if resp.status == httplib.BAD_REQUEST:
             return False
@@ -456,8 +455,8 @@ class OpenNebulaNodeDriver(NodeDriver):
         images = []
         for element in object.findall('DISK'):
             image_id = element.attrib['href'].partition('/storage/')[2]
-            image = self.connection.request(('/storage/%s' % (
-                                             image_id))).object
+            image = self.connection.request(
+                ('/storage/%s' % (image_id))).object
             images.append(self._to_image(image))
 
         return images
@@ -494,8 +493,8 @@ class OpenNebulaNodeDriver(NodeDriver):
         networks = []
         for element in object.findall('NETWORK'):
             network_id = element.attrib['href'].partition('/network/')[2]
-            network_element = self.connection.request(('/network/%s' % (
-                                             network_id))).object
+            network_element = self.connection.request(
+                ('/network/%s' % (network_id))).object
             networks.append(self._to_network(network_element))
 
         return networks
@@ -512,10 +511,10 @@ class OpenNebulaNodeDriver(NodeDriver):
         @return: The newly extracted L{OpenNebulaNetwork}.
         """
         return OpenNebulaNetwork(id=element.findtext('ID'),
-                      name=element.findtext('NAME'),
-                      address=element.findtext('ADDRESS'),
-                      size=element.findtext('SIZE'),
-                      driver=self.connection.driver)
+                                 name=element.findtext('NAME'),
+                                 address=element.findtext('ADDRESS'),
+                                 size=element.findtext('SIZE'),
+                                 driver=self.connection.driver)
 
     def _to_nodes(self, object):
         """
@@ -532,8 +531,8 @@ class OpenNebulaNodeDriver(NodeDriver):
         computes = []
         for element in object.findall('COMPUTE'):
             compute_id = element.attrib['href'].partition('/compute/')[2]
-            compute = self.connection.request(('/compute/%s' % (
-                                               compute_id))).object
+            compute = self.connection.request(
+                ('/compute/%s' % (compute_id))).object
             computes.append(self._to_node(compute))
 
         return computes
@@ -584,10 +583,10 @@ class OpenNebulaNodeDriver(NodeDriver):
         for element in network_list.findall('NIC'):
             networks.append(
                 OpenNebulaNetwork(id=element.attrib.get('network', None),
-                    name=None,
-                    address=element.attrib.get('ip', None),
-                    size=1,
-                    driver=self.connection.driver))
+                                  name=None,
+                                  address=element.attrib.get('ip', None),
+                                  size=1,
+                                  driver=self.connection.driver))
 
         return networks
 
@@ -611,9 +610,9 @@ class OpenNebulaNodeDriver(NodeDriver):
             for element in disk_list.findall('DISK'):
                 disks.append(
                     NodeImage(id=element.attrib.get('image', None),
-                        name=None,
-                        driver=self.connection.driver,
-                        extra={'dev': element.attrib.get('dev', None)}))
+                              name=None,
+                              driver=self.connection.driver,
+                              extra={'dev': element.attrib.get('dev', None)}))
 
         # @TODO: Return all disks when the Node type accepts multiple
         # attached disks per node.
@@ -641,17 +640,19 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         """
         Create a new OpenNebula node.
 
-        See L{NodeDriver.create_node} for more keyword args.
-        @type    networks: L{OpenNebulaNetwork} or C{list}
-                           of L{OpenNebulaNetwork}s
+        @inherits: L{NodeDriver.create_node}
+
         @keyword networks: List of virtual networks to which this node should
                            connect. (optional)
-        @type    context: C{dict}
+        @type    networks: L{OpenNebulaNetwork} or C{list}
+                           of L{OpenNebulaNetwork}
+
         @keyword context: Custom (key, value) pairs to be injected into
                           compute node XML description. (optional)
+        @type    context: C{dict}
 
-        @rtype:  L{Node}
         @return: Instance of a newly created node.
+        @rtype:  L{Node}
         """
         compute = ET.Element('COMPUTE')
 
@@ -662,8 +663,9 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         instance_type.text = kwargs['size'].name
 
         disk = ET.SubElement(compute, 'DISK')
-        ET.SubElement(disk, 'STORAGE', {'href': '/storage/%s' %
-                                                  (str(kwargs['image'].id))})
+        ET.SubElement(disk,
+                      'STORAGE',
+                      {'href': '/storage/%s' % (str(kwargs['image'].id))})
 
         if 'networks' in kwargs:
             if not isinstance(kwargs['networks'], list):
@@ -672,7 +674,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
             for network in kwargs['networks']:
                 nic = ET.SubElement(compute, 'NIC')
                 ET.SubElement(nic, 'NETWORK',
-                            {'href': '/network/%s' % (str(network.id))})
+                              {'href': '/network/%s' % (str(network.id))})
                 if network.address:
                     ip_line = ET.SubElement(nic, 'IP')
                     ip_line.text = network.address
@@ -700,44 +702,44 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         """
         Return list of sizes on a provider.
 
-        See L{NodeDriver.list_sizes} for more args.
+        @inherits: L{NodeDriver.list_sizes}
 
-        @rtype:  C{list} of L{OpenNebulaNodeSize}
         @return: List of compute node sizes supported by the cloud provider.
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
         """
         return [
-          OpenNebulaNodeSize(id=1,
-                   name='small',
-                   ram=1024,
-                   cpu=1,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
-          OpenNebulaNodeSize(id=2,
-                   name='medium',
-                   ram=4096,
-                   cpu=4,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
-          OpenNebulaNodeSize(id=3,
-                   name='large',
-                   ram=8192,
-                   cpu=8,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
-          OpenNebulaNodeSize(id=4,
-                   name='custom',
-                   ram=0,
-                   cpu=0,
-                   disk=None,
-                   bandwidth=None,
-                   price=None,
-                   driver=self),
+            OpenNebulaNodeSize(id=1,
+                               name='small',
+                               ram=1024,
+                               cpu=1,
+                               disk=None,
+                               bandwidth=None,
+                               price=None,
+                               driver=self),
+            OpenNebulaNodeSize(id=2,
+                               name='medium',
+                               ram=4096,
+                               cpu=4,
+                               disk=None,
+                               bandwidth=None,
+                               price=None,
+                               driver=self),
+            OpenNebulaNodeSize(id=3,
+                               name='large',
+                               ram=8192,
+                               cpu=8,
+                               disk=None,
+                               bandwidth=None,
+                               price=None,
+                               driver=self),
+            OpenNebulaNodeSize(id=4,
+                               name='custom',
+                               ram=0,
+                               cpu=0,
+                               disk=None,
+                               bandwidth=None,
+                               price=None,
+                               driver=self),
         ]
 
     def _to_images(self, object):
@@ -755,8 +757,8 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         images = []
         for element in object.findall('STORAGE'):
             image_id = element.attrib["href"].partition("/storage/")[2]
-            image = self.connection.request(("/storage/%s" %
-                                             (image_id))).object
+            image = self.connection.request(
+                ("/storage/%s" % (image_id))).object
             images.append(self._to_image(image))
 
         return images
@@ -830,11 +832,11 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
             networks.append(
                 OpenNebulaNetwork(id=network_id,
-                         name=network.attrib.get('name', None),
-                         address=element.findtext('IP'),
-                         size=1,
-                         driver=self.connection.driver,
-                         extra={'mac': element.findtext('MAC')}))
+                                  name=network.attrib.get('name', None),
+                                  address=element.findtext('IP'),
+                                  size=1,
+                                  driver=self.connection.driver,
+                                  extra={'mac': element.findtext('MAC')}))
 
         return networks
 
@@ -859,10 +861,10 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
             disks.append(
                 NodeImage(id=disk_id,
-                    name=disk.attrib.get('name', None),
-                    driver=self.connection.driver,
-                    extra={'type': element.findtext('TYPE'),
-                           'target': element.findtext('TARGET')}))
+                          name=disk.attrib.get('name', None),
+                          driver=self.connection.driver,
+                          extra={'type': element.findtext('TYPE'),
+                                 'target': element.findtext('TARGET')}))
 
         # @TODO: Return all disks when the Node type accepts multiple
         # attached disks per node.
@@ -888,7 +890,7 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
 
         try:
             return next((node_size for node_size in self.list_sizes()
-                    if node_size.name == instance_type.text))
+                        if node_size.name == instance_type.text))
         except StopIteration:
             return None
 
@@ -929,15 +931,16 @@ class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
         which will be saved, and the name under which the image will be saved
         upon shutting down the compute node.
 
-        @type  node: L{Node}
         @param node: Compute node instance.
-        @type  name: C{str}
+        @type  node: L{Node}
+
         @param name: Name under which the image should be saved after shutting
                      down the compute node.
+        @type  name: C{str}
 
-        @rtype:  C{bool}
         @return: False if an HTTP Bad Request is received, else, True is
                  returned.
+        @rtype:  C{bool}
         """
         compute_node_id = str(node.id)
 
@@ -948,9 +951,9 @@ class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
 
         disk = ET.SubElement(compute, 'DISK', {'id': str(node.image.id)})
 
-        ET.SubElement(disk, 'STORAGE', {'href': '/storage/%s' %
-                                        (str(node.image.id)),
-                                        'name': node.image.name})
+        ET.SubElement(disk, 'STORAGE',
+                      {'href': '/storage/%s' % (str(node.image.id)),
+                       'name': node.image.name})
 
         ET.SubElement(disk, 'SAVE_AS', {'name': str(name)})
 
@@ -958,7 +961,7 @@ class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
 
         url = '/compute/%s' % compute_node_id
         resp = self.connection.request(url, method='PUT',
-                                        data=xml)
+                                       data=xml)
 
         if resp.status == httplib.BAD_REQUEST:
             return False
@@ -973,15 +976,15 @@ class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
         Take XML representation containing a network description and
         convert to OpenNebulaNetwork object.
 
-        @rtype:  L{OpenNebulaNetwork}
         @return: The newly extracted L{OpenNebulaNetwork}.
+        @rtype:  L{OpenNebulaNetwork}
         """
         return OpenNebulaNetwork(id=element.findtext('ID'),
-                      name=element.findtext('NAME'),
-                      address=element.findtext('ADDRESS'),
-                      size=element.findtext('SIZE'),
-                      driver=self.connection.driver,
-                      extra={'public': element.findtext('PUBLIC')})
+                                 name=element.findtext('NAME'),
+                                 address=element.findtext('ADDRESS'),
+                                 size=element.findtext('SIZE'),
+                                 driver=self.connection.driver,
+                                 extra={'public': element.findtext('PUBLIC')})
 
 
 class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
@@ -996,10 +999,10 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
         """
         Return list of sizes on a provider.
 
-        See L{NodeDriver.list_sizes} for more args.
+        @inherits: L{NodeDriver.list_sizes}
 
-        @rtype:  C{list} of L{OpenNebulaNodeSize}
         @return: List of compute node sizes supported by the cloud provider.
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
         """
         return self._to_sizes(self.connection.request('/instance_type').object)
 
@@ -1012,8 +1015,8 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
         and issue a request to convert each XML object representation of an
         instance type to an OpenNebulaNodeSize object.
 
-        @rtype:  C{list} of L{OpenNebulaNodeSize}
         @return: List of instance types.
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
         """
         sizes = []
         ids = 1

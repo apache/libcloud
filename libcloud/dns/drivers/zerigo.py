@@ -30,7 +30,7 @@ from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.utils.xml import findtext, findall
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.common.types import MalformedResponseError, LazyList
+from libcloud.common.types import MalformedResponseError
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
@@ -55,9 +55,8 @@ class ZerigoError(LibcloudError):
         return 'Errors: %s' % (', '.join(self.errors))
 
     def __repr__(self):
-        return ('<ZerigoError response code=%s, errors count=%s>' %
-                                                          (self.code,
-                                                           len(self.errors)))
+        return ('<ZerigoError response code=%s, errors count=%s>' % (
+            self.code, len(self.errors)))
 
 
 class ZerigoDNSResponse(XmlResponse):
@@ -103,7 +102,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
 
     def add_default_headers(self, headers):
         auth_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-        headers['Authorization'] = 'Basic %s' % (auth_b64)
+        headers['Authorization'] = 'Basic %s' % (auth_b64.decode('utf-8'))
         return headers
 
     def request(self, action, params=None, data='', headers=None,
@@ -125,6 +124,7 @@ class ZerigoDNSConnection(ConnectionUserAndKey):
 class ZerigoDNSDriver(DNSDriver):
     type = Provider.ZERIGO
     name = 'Zerigo DNS'
+    website = 'http://www.zerigo.com/'
     connectionCls = ZerigoDNSConnection
 
     RECORD_TYPE_MAP = {
@@ -139,15 +139,15 @@ class ZerigoDNSDriver(DNSDriver):
         RecordType.NS: 'NS',
         RecordType.PTR: 'PTR',
         RecordType.SPF: 'SPF',
+        RecordType.GEO: 'GEO',
+        RecordType.URL: 'URL',
     }
 
-    def list_zones(self):
-        value_dict = {'type': 'zones'}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
+    def iterate_zones(self):
+        return self._get_more('zones')
 
-    def list_records(self, zone):
-        value_dict = {'type': 'records', 'zone': zone}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
+    def iterate_records(self, zone):
+        return self._get_more('records', zone=zone)
 
     def get_zone(self, zone_id):
         path = API_ROOT + 'zones/%s.xml' % (zone_id)
@@ -170,6 +170,8 @@ class ZerigoDNSDriver(DNSDriver):
 
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/zones/create
+
+        @inherits: L{DNSDriver.create_zone}
         """
         path = API_ROOT + 'zones.xml'
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
@@ -186,6 +188,8 @@ class ZerigoDNSDriver(DNSDriver):
 
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/zones/update
+
+        @inherits: L{DNSDriver.update_zone}
         """
         if domain:
             raise LibcloudError('Domain cannot be changed', driver=self)
@@ -194,8 +198,8 @@ class ZerigoDNSDriver(DNSDriver):
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
                                        extra=extra)
         response = self.connection.request(action=path,
-                                       data=ET.tostring(zone_elem),
-                                       method='PUT')
+                                           data=ET.tostring(zone_elem),
+                                           method='PUT')
         assert response.status == httplib.OK
 
         merged = merge_valid_keys(params=copy.deepcopy(zone.extra),
@@ -213,6 +217,8 @@ class ZerigoDNSDriver(DNSDriver):
 
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/hosts/create
+
+        @inherits: L{DNSDriver.create_record}
         """
         path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
         record_elem = self._to_record_elem(name=name, type=type, data=data,
@@ -258,6 +264,11 @@ class ZerigoDNSDriver(DNSDriver):
     def ex_get_zone_by_domain(self, domain):
         """
         Retrieve a zone object by the domain name.
+
+        @param domain: The domain which should be used
+        @type  domain: C{str}
+
+        @rtype: L{Zone}
         """
         path = API_ROOT + 'zones/%s.xml' % (domain)
         self.connection.set_context({'resource': 'zone', 'id': domain})
@@ -268,6 +279,11 @@ class ZerigoDNSDriver(DNSDriver):
     def ex_force_slave_axfr(self, zone):
         """
         Force a zone transfer.
+
+        @param zone: Zone which should be used.
+        @type  zone: L{Zone}
+
+        @rtype: L{Zone}
         """
         path = API_ROOT + 'zones/%s/force_slave_axfr.xml' % (zone.id)
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
@@ -305,7 +321,7 @@ class ZerigoDNSDriver(DNSDriver):
 
                 ns_type_elem.text = 'pri'
                 slave_nameservers_elem = ET.SubElement(zone_elem,
-                                                      'slave-nameservers')
+                                                       'slave-nameservers')
                 slave_nameservers_elem.text = extra['slave-nameservers']
 
         if ttl:
@@ -327,7 +343,7 @@ class ZerigoDNSDriver(DNSDriver):
             name_elem = ET.SubElement(record_elem, 'hostname')
             name_elem.text = name
 
-        if type:
+        if type is not None:
             type_elem = ET.SubElement(record_elem, 'host-type')
             type_elem.text = self.RECORD_TYPE_MAP[type]
 
@@ -380,9 +396,9 @@ class ZerigoDNSDriver(DNSDriver):
         tags = tags.split(' ') if tags else []
 
         extra = {'hostmaster': hostmaster, 'custom-ns': custom_ns,
-                'custom-nameservers': custom_nameservers, 'notes': notes,
-                'nx-ttl': nx_ttl, 'slave-nameservers': slave_nameservers,
-                'tags': tags}
+                 'custom-nameservers': custom_nameservers, 'notes': notes,
+                 'nx-ttl': nx_ttl, 'slave-nameservers': slave_nameservers,
+                 'tags': tags}
         zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl),
                     driver=self, extra=extra)
         return zone
@@ -415,36 +431,44 @@ class ZerigoDNSDriver(DNSDriver):
                         zone=zone, driver=self, extra=extra)
         return record
 
-    def _get_more(self, last_key, value_dict):
+    def _get_more(self, rtype, **kwargs):
+        exhausted = False
+        last_key = None
+
+        while not exhausted:
+            items, last_key, exhausted = self._get_data(
+                                            rtype, last_key, **kwargs)
+
+            for item in items:
+                yield item
+
+    def _get_data(self, rtype, last_key, **kwargs):
         # Note: last_key in this case really is a "last_page".
         # TODO: Update base driver and change last_key to something more
         # generic - e.g. marker
         params = {}
         params['per_page'] = ITEMS_PER_PAGE
         params['page'] = last_key + 1 if last_key else 1
-        transform_func_kwargs = {}
 
-        if value_dict['type'] == 'zones':
+        if rtype == 'zones':
             path = API_ROOT + 'zones.xml'
             response = self.connection.request(path)
             transform_func = self._to_zones
-        elif value_dict['type'] == 'records':
-            zone = value_dict['zone']
+        elif rtype == 'records':
+            zone = kwargs['zone']
             path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
             self.connection.set_context({'resource': 'zone', 'id': zone.id})
             response = self.connection.request(path, params=params)
             transform_func = self._to_records
-            transform_func_kwargs['zone'] = value_dict['zone']
 
         exhausted = False
         result_count = int(response.headers.get('x-query-count', 0))
-        transform_func_kwargs['elem'] = response.object
 
         if (params['page'] * ITEMS_PER_PAGE) >= result_count:
             exhausted = True
 
         if response.status == httplib.OK:
-            items = transform_func(**transform_func_kwargs)
+            items = transform_func(elem=response.object, **kwargs)
             return items, params['page'], exhausted
         else:
             return [], None, True

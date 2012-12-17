@@ -36,6 +36,7 @@ if sys.version_info >= (3, 0):
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
     from urllib.parse import quote as urlquote
+    from urllib.parse import unquote as urlunquote
     from urllib.parse import urlencode as urlencode
 
     basestring = str
@@ -67,6 +68,7 @@ else:
     import urlparse
     import xmlrpclib
     from urllib import quote as urlquote
+    from urllib import unquote as urlunquote
     from urllib import urlencode as urlencode
 
     basestring = unicode = str

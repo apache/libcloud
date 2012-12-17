@@ -1,0 +1,82 @@
+[
+  {
+    "plan": "VR256",
+    "ram": "256MB",
+    "disk": "10GB",
+    "transfer": "200GB",
+    "price": "10.00",
+    "available": "1421"
+  },
+  {
+    "plan": "VR384",
+    "ram": "384MB",
+    "disk": "15GB",
+    "transfer": "300GB",
+    "price": "15.00",
+    "available": "939"
+  },
+  {
+    "plan": "VR512",
+    "ram": "512MB",
+    "disk": "20GB",
+    "transfer": "400GB",
+    "price": "20.00",
+    "available": "713"
+  },
+  {
+    "plan": "VR768",
+    "ram": "768MB",
+    "disk": "30GB",
+    "transfer": "600GB",
+    "price": "30.00",
+    "available": "476"
+  },
+  {
+    "plan": "VR1024",
+    "ram": "1024MB",
+    "disk": "40GB",
+    "transfer": "800GB",
+    "price": "40.00",
+    "available": "350"
+  },
+  {
+    "plan": "VR1280",
+    "ram": "1280MB",
+    "disk": "50GB",
+    "transfer": "1000GB",
+    "price": "50.00",
+    "available": "276"
+  },
+  {
+    "plan": "VR1536",
+    "ram": "1536MB",
+    "disk": "60GB",
+    "transfer": "1200GB",
+    "price": "60.00",
+    "available": "226"
+  },
+  {
+    "plan": "VR2048",
+    "ram": "2048MB",
+    "disk": "80GB",
+    "transfer": "1600GB",
+    "price": "80.00",
+    "available": "160"
+  },
+  {
+    "plan": "VR4048",
+    "ram": "4048MB",
+    "disk": "160GB",
+    "transfer": "3200GB",
+    "price": "160.00",
+    "available": "69"
+  },
+  {
+    "plan": "VR8096",
+    "ram": "8096MB",
+    "disk": "320GB",
+    "transfer": "6400GB",
+    "price": "320.00",
+    "available": "9"
+  }
+]

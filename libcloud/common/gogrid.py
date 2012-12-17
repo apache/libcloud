@@ -33,6 +33,7 @@ __all__ = ["GoGridResponse",
         "BaseGoGridDriver",
 ]
 
+
 class GoGridResponse(JsonResponse):
 
     def __init__(self, *args, **kwargs):
@@ -43,7 +44,8 @@ class GoGridResponse(JsonResponse):
         if self.status == 403:
             raise InvalidCredsError('Invalid credentials', self.driver)
         if self.status == 401:
-            raise InvalidCredsError('API Key has insufficient rights', self.driver)
+            raise InvalidCredsError('API Key has insufficient rights',
+                self.driver)
         if not self.body:
             return None
         try:
@@ -57,6 +59,7 @@ class GoGridResponse(JsonResponse):
             return self.parse_body()["list"][0]["message"]
         except (ValueError, KeyError):
             return None
+
 
 class GoGridConnection(ConnectionUserAndKey):
     """
@@ -79,6 +82,7 @@ class GoGridConnection(ConnectionUserAndKey):
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
+
 class GoGridIpAddress(object):
     """
     IP Address
@@ -90,6 +94,7 @@ class GoGridIpAddress(object):
         self.public = public
         self.state = state
         self.subnet = subnet
+
 
 class BaseGoGridDriver(object):
     """GoGrid has common object model for services they
@@ -134,14 +139,17 @@ class BaseGoGridDriver(object):
                     private IPs. Set to None or not specify
                     at all not to filter by type
         @type       public: C{bool}
+
         @keyword    assigned: set to True to list only addresses
                     assigned to servers, False to list unassigned
                     addresses and set to None or don't set at all
                     not no filter by state
         @type       assigned: C{bool}
+
         @keyword    location: filter IP addresses by location
         @type       location: L{NodeLocation}
-        @return:    C{list} of L{GoGridIpAddress}es
+
+        @rtype: C{list} of L{GoGridIpAddress}
         """
 
         params = {}

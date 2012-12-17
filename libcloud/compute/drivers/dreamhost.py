@@ -30,45 +30,44 @@ from libcloud.compute.types import Provider, NodeState
 
 DH_PS_SIZES = {
     'minimum': {
-        'id' : 'minimum',
-        'name' : 'Minimum DH PS size',
-        'ram' : 300,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'minimum',
+        'name': 'Minimum DH PS size',
+        'ram': 300,
+        'disk': None,
+        'bandwidth': None
     },
     'maximum': {
-        'id' : 'maximum',
-        'name' : 'Maximum DH PS size',
-        'ram' : 4000,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'maximum',
+        'name': 'Maximum DH PS size',
+        'ram': 4000,
+        'disk': None,
+        'bandwidth': None
     },
     'default': {
-        'id' : 'default',
-        'name' : 'Default DH PS size',
-        'ram' : 2300,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'default',
+        'name': 'Default DH PS size',
+        'ram': 2300,
+        'disk': None,
+        'bandwidth': None
     },
     'low': {
-        'id' : 'low',
-        'name' : 'DH PS with 1GB RAM',
-        'ram' : 1000,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'low',
+        'name': 'DH PS with 1GB RAM',
+        'ram': 1000,
+        'disk': None,
+        'bandwidth': None
     },
     'high': {
-        'id' : 'high',
-        'name' : 'DH PS with 3GB RAM',
-        'ram' : 3000,
-        'disk' : None,
-        'bandwidth' : None
+        'id': 'high',
+        'name': 'DH PS with 3GB RAM',
+        'ram': 3000,
+        'disk': None,
+        'bandwidth': None
     },
 }
 
 
 class DreamhostAPIException(Exception):
-
     def __str__(self):
         return self.args[0]
 
@@ -100,6 +99,7 @@ class DreamhostResponse(JsonResponse):
         else:
             raise DreamhostAPIException("Unknown problem: %s" % (self.body))
 
+
 class DreamhostConnection(ConnectionKey):
     """
     Connection class to connect to DreamHost's API servers
@@ -127,6 +127,7 @@ class DreamhostNodeDriver(NodeDriver):
     type = Provider.DREAMHOST
     api_name = 'dreamhost'
     name = "Dreamhost"
+    website = 'http://dreamhost.com/'
     connectionCls = DreamhostConnection
 
     _sizes = DH_PS_SIZES
@@ -134,35 +135,35 @@ class DreamhostNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new Dreamhost node
 
-        See L{NodeDriver.create_node} for more keyword args.
+        @inherits: L{NodeDriver.create_node}
 
         @keyword    ex_movedata: Copy all your existing users to this new PS
         @type       ex_movedata: C{str}
         """
         size = kwargs['size'].ram
         params = {
-            'cmd' : 'dreamhost_ps-add_ps',
-            'movedata' : kwargs.get('movedata', 'no'),
-            'type' : kwargs['image'].name,
-            'size' : size
+            'cmd': 'dreamhost_ps-add_ps',
+            'movedata': kwargs.get('movedata', 'no'),
+            'type': kwargs['image'].name,
+            'size': size
         }
         data = self.connection.request('/', params).object
         return Node(
-            id = data['added_web'],
-            name = data['added_web'],
-            state = NodeState.PENDING,
-            public_ips = [],
-            private_ips = [],
-            driver = self.connection.driver,
-            extra = {
-                'type' : kwargs['image'].name
+            id=data['added_web'],
+            name=data['added_web'],
+            state=NodeState.PENDING,
+            public_ips=[],
+            private_ips=[],
+            driver=self.connection.driver,
+            extra={
+                'type': kwargs['image'].name
             }
         )
 
     def destroy_node(self, node):
         params = {
-            'cmd' : 'dreamhost_ps-remove_ps',
-            'ps' : node.id
+            'cmd': 'dreamhost_ps-remove_ps',
+            'ps': node.id
         }
         try:
             return self.connection.request('/', params).success()
@@ -171,8 +172,8 @@ class DreamhostNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         params = {
-            'cmd' : 'dreamhost_ps-reboot',
-            'ps' : node.id
+            'cmd': 'dreamhost_ps-reboot',
+            'ps': node.id
         }
         try:
             return self.connection.request('/', params).success()
@@ -190,9 +191,9 @@ class DreamhostNodeDriver(NodeDriver):
         images = []
         for img in data:
             images.append(NodeImage(
-                id = img['image'],
-                name = img['image'],
-                driver = self.connection.driver
+                id=img['image'],
+                name=img['image'],
+                driver=self.connection.driver
             ))
         return images
 
@@ -200,7 +201,7 @@ class DreamhostNodeDriver(NodeDriver):
         sizes = []
         for key, values in self._sizes.items():
             attributes = copy.deepcopy(values)
-            attributes.update({ 'price': self._get_size_price(size_id=key) })
+            attributes.update({'price': self._get_size_price(size_id=key)})
             sizes.append(NodeSize(driver=self.connection.driver, **attributes))
 
         return sizes
@@ -210,17 +211,14 @@ class DreamhostNodeDriver(NodeDriver):
             'You cannot select a location for '
             'DreamHost Private Servers at this time.')
 
-    ############################################
-    # Private Methods (helpers and extensions) #
-    ############################################
     def _resize_node(self, node, size):
         if (size < 300 or size > 4000):
             return False
 
         params = {
-            'cmd' : 'dreamhost_ps-set_size',
-            'ps' : node.id,
-            'size' : size
+            'cmd': 'dreamhost_ps-set_size',
+            'ps': node.id,
+            'size': size
         }
         try:
             return self.connection.request('/', params).success()
@@ -232,13 +230,13 @@ class DreamhostNodeDriver(NodeDriver):
         Convert the data from a DreamhostResponse object into a Node
         """
         return Node(
-            id = data['ps'],
-            name = data['ps'],
-            state = NodeState.UNKNOWN,
-            public_ips = [data['ip']],
-            private_ips = [],
-            driver = self.connection.driver,
-            extra = {
+            id=data['ps'],
+            name=data['ps'],
+            state=NodeState.UNKNOWN,
+            public_ips=[data['ip']],
+            private_ips=[],
+            driver=self.connection.driver,
+            extra={
                 'current_size': data['memory_mb'],
                 'account_id': data['account_id'],
                 'type': data['type']})

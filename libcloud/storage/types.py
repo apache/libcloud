@@ -25,6 +25,7 @@ __all__ = ['Provider',
            'ObjectHashMismatchError',
            'InvalidContainerNameError']
 
+
 class Provider(object):
     """
     Defines for each of the supported providers
@@ -39,19 +40,25 @@ class Provider(object):
     @cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     @cvar NINEFOLD: Ninefold
     @cvar GOOGLE_STORAGE Google Storage
-    @cvar: S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    @cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    @cvar NIMBUS: Nimbus.io driver
+    @cvar LOCAL: Local storage driver
     """
-    DUMMY = 0
-    CLOUDFILES_US = 1
-    CLOUDFILES_UK = 2
-    S3 = 3
-    S3_US_WEST = 4
-    S3_EU_WEST = 5
-    S3_AP_SOUTHEAST = 6
-    S3_AP_NORTHEAST = 7
-    NINEFOLD = 8
-    GOOGLE_STORAGE = 9
-    S3_US_WEST_OREGON = 10
+    DUMMY = 'dummy'
+    CLOUDFILES_US = 'cloudfiles_us'
+    CLOUDFILES_UK = 'cloudfiles_uk'
+    S3 = 's3'
+    S3_US_WEST = 's3_us_west'
+    S3_EU_WEST = 's3_eu_west'
+    S3_AP_SOUTHEAST = 's3_ap_southeast'
+    S3_AP_NORTHEAST = 's3_ap_northeast'
+    NINEFOLD = 'ninefold'
+    GOOGLE_STORAGE = 'google_storage'
+    S3_US_WEST_OREGON = 's3_us_west_oregon'
+    CLOUDFILES_SWIFT = 'cloudfiles_swift'
+    NIMBUS = 'nimbus'
+    LOCAL = 'local'
+
 
 class ContainerError(LibcloudError):
     error_type = 'ContainerError'
@@ -65,6 +72,7 @@ class ContainerError(LibcloudError):
                 (self.error_type, repr(self.driver),
                  self.container_name, self.value))
 
+
 class ObjectError(LibcloudError):
     error_type = 'ContainerError'
 
@@ -73,23 +81,34 @@ class ObjectError(LibcloudError):
         super(ObjectError, self).__init__(value=value, driver=driver)
 
     def __str__(self):
-        return '<%s in %s, value=%s, object = %s>' % (self.error_type, repr(self.driver),
-                                                      self.value, self.object_name)
+        return self.__repr__()
+
+    def __repr__(self):
+        return '<%s in %s, value=%s, object = %s>' % (self.error_type,
+                                                      repr(self.driver),
+                                                      self.value,
+                                                      self.object_name)
+
 
 class ContainerAlreadyExistsError(ContainerError):
     error_type = 'ContainerAlreadyExistsError'
 
+
 class ContainerDoesNotExistError(ContainerError):
     error_type = 'ContainerDoesNotExistError'
+
 
 class ContainerIsNotEmptyError(ContainerError):
     error_type = 'ContainerIsNotEmptyError'
 
+
 class ObjectDoesNotExistError(ObjectError):
     error_type = 'ObjectDoesNotExistError'
 
+
 class ObjectHashMismatchError(ObjectError):
     error_type = 'ObjectHashMismatchError'
+
 
 class InvalidContainerNameError(ContainerError):
     error_type = 'InvalidContainerNameError'

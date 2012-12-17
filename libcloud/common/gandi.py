@@ -18,6 +18,7 @@ Gandi driver base classes
 
 import time
 import hashlib
+import sys
 
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b
@@ -25,8 +26,8 @@ from libcloud.utils.py3 import b
 from libcloud.common.base import ConnectionKey
 
 # Global constants
-API_VERSION = '2.0'
-API_PREFIX = "https://rpc.gandi.net/xmlrpc/%s/" % API_VERSION
+
+API_URL = "https://rpc.gandi.net/xmlrpc/"
 
 DEFAULT_TIMEOUT = 600   # operation pooling max seconds
 DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
@@ -56,13 +57,13 @@ class GandiProxy(xmlrpclib.ServerProxy):
 
     def __init__(self, user_agent, verbose=0):
         cls = self.transportCls[0]
-        if API_PREFIX.startswith("https://"):
+        if API_URL.startswith("https://"):
             cls = self.transportCls[1]
         t = cls(use_datetime=0)
         t.user_agent = user_agent
         xmlrpclib.ServerProxy.__init__(
             self,
-            uri="%s" % (API_PREFIX),
+            uri=API_URL,
             transport=t,
             verbose=verbose,
             allow_none=True
@@ -104,6 +105,16 @@ class BaseGandiDriver(object):
     name = 'Gandi'
 
     def __init__(self, key, secret=None, secure=False):
+        """
+        @param    key:    API key or username to used (required)
+        @type     key:    C{str}
+
+        @param    secret: Secret password to be used (required)
+        @type     secret: C{str}
+
+        @param    secure: Weither to use HTTPS or HTTP.
+        @type     secure: C{bool}
+        """
         self.key = key
         self.secret = secret
         self.connection = self.connectionCls(key, secret)
@@ -161,7 +172,7 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1(b("%s:%s:%d" % \
+        return hashlib.sha1(b("%s:%s:%s" % \
             (self.uuid_prefix, self.id, self.driver.type))).hexdigest()
 
 

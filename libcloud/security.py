@@ -19,7 +19,7 @@ Usage:
     import libcloud.security
     libcloud.security.VERIFY_SSL_CERT = True
 
-    # optional
+    # Optional.
     libcloud.security.CA_CERTS_PATH.append("/path/to/cacert.txt")
 """
 
@@ -27,7 +27,7 @@ VERIFY_SSL_CERT = True
 VERIFY_SSL_CERT_STRICT = True
 
 # File containing one or more PEM-encoded CA certificates
-# concatenated together
+# concatenated together.
 CA_CERTS_PATH = [
     # centos/fedora: openssl
     '/etc/pki/tls/certs/ca-bundle.crt',
@@ -48,7 +48,9 @@ CA_CERTS_UNAVAILABLE_WARNING_MSG = (
 )
 
 CA_CERTS_UNAVAILABLE_ERROR_MSG = (
-    'No CA Certificates were found in CA_CERTS_PATH. '
+    'No CA Certificates were found in CA_CERTS_PATH. For information on' + \
+    ' how to get required certificate files, please visit ' + \
+    ' http://libcloud.apache.org/docs/ssl-certificate-validation.html'
 )
 
 VERIFY_SSL_DISABLED_MSG = (

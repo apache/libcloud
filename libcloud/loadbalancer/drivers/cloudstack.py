@@ -19,10 +19,13 @@ from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.loadbalancer.types import State
 from libcloud.utils.misc import reverse_dict
 
+
 class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     """Driver for CloudStack load balancers."""
 
     api_name = 'cloudstack_lb'
+    name = 'CloudStack'
+    website = 'http://cloudstack.org/'
 
     _VALUE_TO_ALGORITHM_MAP = {
         'roundrobin': Algorithm.ROUND_ROBIN,
@@ -34,9 +37,19 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         'Active': State.RUNNING,
     }
 
+    def __init__(self, *args, **kwargs):
+        """
+        @inherits: L{Driver.__init__}
+        """
+        super(CloudStackLBDriver, self).__init__(*args, **kwargs)
+
     def list_protocols(self):
-        """We don't actually have any protocol awareness beyond TCP."""
-        return [ 'tcp' ]
+        """
+        We don't actually have any protocol awareness beyond TCP.
+
+        @rtype: C{list} of C{str}
+        """
+        return ['tcp']
 
     def list_balancers(self):
         balancers = self._sync_request('listLoadBalancerRules')
@@ -53,6 +66,15 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     def create_balancer(self, name, members, protocol='http', port=80,
                         algorithm=DEFAULT_ALGORITHM, location=None,
                         private_port=None):
+        """
+        @inherits: L{Driver.create_balancer}
+
+        @param location: Location
+        @type  location: L{NodeLocation}
+
+        @param private_port: Private port
+        @type  private_port: C{int}
+        """
         if location is None:
             locations = self._sync_request('listZones')
             location = locations['zone'][0]['id']
@@ -64,7 +86,8 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         result = self._async_request('associateIpAddress', zoneid=location)
         public_ip = result['ipaddress']
 
-        result = self._sync_request('createLoadBalancerRule',
+        result = self._sync_request(
+            'createLoadBalancerRule',
             algorithm=self._ALGORITHM_TO_VALUE_MAP[algorithm],
             name=name,
             privateport=private_port,
@@ -99,7 +122,8 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         members = self._sync_request('listLoadBalancerRuleInstances',
                                      id=balancer.id)
         members = members['loadbalancerruleinstance']
-        return [self._to_member(m, balancer.ex_private_port) for m in members]
+        return [self._to_member(m, balancer.ex_private_port, balancer) \
+                for m in members]
 
     def _to_balancer(self, obj):
         balancer = LoadBalancer(
@@ -114,9 +138,10 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         balancer.ex_public_ip_id = obj['publicipid']
         return balancer
 
-    def _to_member(self, obj, port):
+    def _to_member(self, obj, port, balancer):
         return Member(
             id=obj['id'],
             ip=obj['nic'][0]['ipaddress'],
-            port=port
+            port=port,
+            balancer=balancer
         )

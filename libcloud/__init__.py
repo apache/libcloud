@@ -19,8 +19,8 @@ libcloud provides a unified interface to the cloud computing resources.
 @var __version__: Current version of libcloud
 """
 
-__all__ = ["__version__", "enable_debug"]
-__version__ = '0.7.1'
+__all__ = ['__version__', 'enable_debug']
+__version__ = '0.12.0-dev'
 
 try:
     import paramiko

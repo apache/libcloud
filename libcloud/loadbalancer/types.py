@@ -14,11 +14,11 @@
 # limitations under the License.
 
 __all__ = [
-        "Provider",
-        "State",
-        "LibcloudLBError",
-        "LibcloudLBImmutableError",
-        ]
+    "Provider",
+    "State",
+    "LibcloudLBError",
+    "LibcloudLBImmutableError",
+]
 
 from libcloud.common.types import LibcloudError
 
@@ -32,11 +32,11 @@ class LibcloudLBImmutableError(LibcloudLBError):
 
 
 class Provider(object):
-    RACKSPACE_US = 0
-    GOGRID = 1
-    NINEFOLD = 2
-    RACKSPACE_UK = 3
-    BRIGHTBOX = 4
+    RACKSPACE_US = 'rackspace_us'
+    GOGRID = 'gogrid'
+    NINEFOLD = 'ninefold'
+    RACKSPACE_UK = 'rackspace_uk'
+    BRIGHTBOX = 'brightbox'
 
 
 class State(object):
@@ -53,9 +53,10 @@ class State(object):
     ERROR = 3
     DELETED = 4
 
+
 class MemberCondition(object):
     """
-    Each member of a load balancer can have an associated condition 
+    Each member of a load balancer can have an associated condition
     which determines its role within the load balancer.
     """
     ENABLED = 0
