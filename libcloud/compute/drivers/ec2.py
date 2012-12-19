@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """
-Amazon EC2 driver
+Amazon EC2, Eucalyptus and Nimbus drivers.
 """
+
 from __future__ import with_statement
 
 import sys
@@ -41,16 +42,7 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume
 
-EC2_US_EAST_HOST = 'ec2.us-east-1.amazonaws.com'
-EC2_US_WEST_HOST = 'ec2.us-west-1.amazonaws.com'
-EC2_US_WEST_OREGON_HOST = 'ec2.us-west-2.amazonaws.com'
-EC2_EU_WEST_HOST = 'ec2.eu-west-1.amazonaws.com'
-EC2_AP_SOUTHEAST_HOST = 'ec2.ap-southeast-1.amazonaws.com'
-EC2_AP_NORTHEAST_HOST = 'ec2.ap-northeast-1.amazonaws.com'
-EC2_SA_EAST_HOST = 'ec2.sa-east-1.amazonaws.com'
-
 API_VERSION = '2010-08-31'
-
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 """
@@ -168,6 +160,8 @@ INSTANCE_TYPES = {
 REGION_DETAILS = {
     'us-east-1': {
         'endpoint': 'ec2.us-east-1.amazonaws.com',
+        'api_name': 'ec2_us_east',
+        'country': 'USA',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -188,6 +182,8 @@ REGION_DETAILS = {
     },
     'us-west-1': {
         'endpoint': 'ec2.us-west-1.amazonaws.com',
+        'api_name': 'ec2_us_west',
+        'country': 'USA',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -203,6 +199,8 @@ REGION_DETAILS = {
     },
     'us-west-2': {
         'endpoint': 'ec2.us-west-2.amazonaws.com',
+        'api_name': 'ec2_us_west_oregon',
+        'country': 'US',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -219,6 +217,8 @@ REGION_DETAILS = {
     },
     'eu-west-1': {
         'endpoint': 'ec2.eu-west-1.amazonaws.com',
+        'api_name': 'ec2_eu_west',
+        'country': 'Ireland',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -235,6 +235,8 @@ REGION_DETAILS = {
     },
     'ap-southeast-1': {
         'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
+        'api_name': 'ec2_ap_southeast',
+        'country': 'Singapore',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -250,6 +252,8 @@ REGION_DETAILS = {
     },
     'ap-northeast-1': {
         'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
+        'api_name': 'ec2_ap_northeast',
+        'country': 'Japan',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -265,6 +269,8 @@ REGION_DETAILS = {
     },
     'sa-east-1': {
         'endpoint': 'ec2.sa-east-1.amazonaws.com',
+        'api_name': 'ec2_sa_east',
+        'country': 'Brazil',
         'instance_types': [
             't1.micro',
             'm1.small',
@@ -279,9 +285,27 @@ REGION_DETAILS = {
 
         ]
     },
+    'ap-southeast-2': {
+        'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
+        'api_name': 'ec2_ap_southeast_2',
+        'country': 'Australia',
+        'instance_types': [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'c1.medium',
+            'c1.xlarge'
+        ]
+    },
     'nimbus': {
-        # Nimbus clouds have 3 EC2-style instance types but their particular RAM
-        # allocations are configured by the admin
+        # Nimbus clouds have 3 EC2-style instance types but their particular
+        # RAM allocations are configured by the admin
+        'country': 'custom',
         'instance_types': [
             'm1.small',
             'm1.large',
@@ -289,6 +313,9 @@ REGION_DETAILS = {
         ]
     }
 }
+
+VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
+VALID_EC2_DATACENTERS.remove('nimbus')
 
 
 class EC2NodeLocation(NodeLocation):
@@ -340,7 +367,7 @@ class EC2Response(AWSBaseResponse):
 
 class EC2Connection(ConnectionUserAndKey):
     """
-    Represents a single connection to the EC2 Endpoint
+    Represents a single connection to the EC2 Endpoint.
     """
 
     host = REGION_DETAILS['us-east-1']['endpoint']
@@ -408,21 +435,15 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
-class EC2NodeDriver(NodeDriver):
+class BaseEC2NodeDriver(NodeDriver):
     """
-    Amazon EC2 node driver
+    Base Amazon EC2 node driver.
+
+    Used for main EC2 and other derivate driver classes to inherit from it.
     """
 
     connectionCls = EC2Connection
-    type = Provider.EC2
-    api_name = 'ec2_us_east'
-    name = 'Amazon EC2 (us-east-1)'
-    website = 'http://aws.amazon.com/ec2/'
-    friendly_name = 'Amazon US N. Virginia'
-    country = 'US'
-    region_name = 'us-east-1'
     path = '/'
-
     features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
@@ -653,10 +674,10 @@ class EC2NodeDriver(NodeDriver):
 
     def list_locations(self):
         locations = []
-        for index, availability_zone in\
+        for index, availability_zone in \
                 enumerate(self.ex_list_availability_zones()):
                     locations.append(EC2NodeLocation(
-                        index, self.friendly_name, self.country, self,
+                        index, availability_zone, self.country, self,
                         availability_zone)
                     )
         return locations
@@ -1360,6 +1381,46 @@ class EC2NodeDriver(NodeDriver):
         return self._get_terminate_boolean(res)
 
 
+class EC2NodeDriver(BaseEC2NodeDriver):
+    """
+    Amazon EC2 node driver.
+    """
+
+    connectionCls = EC2Connection
+    type = Provider.EC2
+    name = 'Amazon EC2'
+    website = 'http://aws.amazon.com/ec2/'
+    path = '/'
+
+    features = {'create_node': ['ssh_key']}
+
+    NODE_STATE_MAP = {
+        'pending': NodeState.PENDING,
+        'running': NodeState.RUNNING,
+        'shutting-down': NodeState.TERMINATED,
+        'terminated': NodeState.TERMINATED
+    }
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 datacenter='us-east-1', **kwargs):
+        if hasattr(self, '_datacenter'):
+            datacenter = self._datacenter
+
+        if datacenter not in VALID_EC2_DATACENTERS:
+            raise ValueError('Invalid datacenter: %s' % (datacenter))
+
+        details = REGION_DETAILS[datacenter]
+        self.region_name = datacenter
+        self.api_name = details['api_name']
+        self.country = details['country']
+
+        self.connectionCls.host = details['endpoint']
+
+        super(EC2NodeDriver, self).__init__(key=key, secret=secret,
+                                            secure=secure, host=host,
+                                            port=port, **kwargs)
+
+
 class IdempotentParamError(LibcloudError):
     """
     Request used the same client token as a previous,
@@ -1370,129 +1431,53 @@ class IdempotentParamError(LibcloudError):
         return repr(self.value)
 
 
-class EC2EUConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western Europe Region
-    """
-    host = REGION_DETAILS['eu-west-1']['endpoint']
-
-
 class EC2EUNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Western Europe Region
+    Driver class for EC2 in the Western Europe Region.
     """
-
-    api_name = 'ec2_eu_west'
-    name = 'Amazon EC2 (eu-west-1)'
-    friendly_name = 'Amazon Europe Ireland'
-    country = 'IE'
-    region_name = 'eu-west-1'
-    connectionCls = EC2EUConnection
-
-
-class EC2USWestConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western US Region
-    """
-
-    host = REGION_DETAILS['us-west-1']['endpoint']
+    _datacenter = 'eu-west-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
-
-    api_name = 'ec2_us_west'
-    name = 'Amazon EC2 (us-west-1)'
-    friendly_name = 'Amazon US N. California'
-    country = 'US'
-    region_name = 'us-west-1'
-    connectionCls = EC2USWestConnection
-
-
-class EC2USWestOregonConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Western US Region (Oregon).
-    """
-
-    host = REGION_DETAILS['us-west-2']['endpoint']
+    _datacenter = 'us-west-1'
 
 
 class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
-
-    api_name = 'ec2_us_west_oregon'
-    name = 'Amazon EC2 (us-west-2)'
-    friendly_name = 'Amazon US West - Oregon'
-    country = 'US'
-    region_name = 'us-west-2'
-    connectionCls = EC2USWestOregonConnection
-
-
-class EC2APSEConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Southeast Asia Pacific Region
-    """
-
-    host = REGION_DETAILS['ap-southeast-1']['endpoint']
-
-
-class EC2APNEConnection(EC2Connection):
-    """
-    Connection class for EC2 in the Northeast Asia Pacific Region
-    """
-
-    host = REGION_DETAILS['ap-northeast-1']['endpoint']
+    _datacenter = 'us-west-2'
 
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Southeast Asia Pacific Region
+    Driver class for EC2 in the Southeast Asia Pacific Region.
     """
-
-    api_name = 'ec2_ap_southeast'
-    name = 'Amazon EC2 (ap-southeast-1)'
-    friendly_name = 'Amazon Asia-Pacific Singapore'
-    country = 'SG'
-    region_name = 'ap-southeast-1'
-    connectionCls = EC2APSEConnection
+    _datacenter = 'ap-southeast-1'
 
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the Northeast Asia Pacific Region
+    Driver class for EC2 in the Northeast Asia Pacific Region.
     """
-
-    api_name = 'ec2_ap_northeast'
-    name = 'Amazon EC2 (ap-northeast-1)'
-    friendly_name = 'Amazon Asia-Pacific Tokyo'
-    country = 'JP'
-    region_name = 'ap-northeast-1'
-    connectionCls = EC2APNEConnection
-
-
-class EC2SAEastConnection(EC2Connection):
-    """
-    Connection class for EC2 in the South America (Sao Paulo) Region
-    """
-
-    host = REGION_DETAILS['sa-east-1']['endpoint']
+    _datacenter = 'ap-northeast-1'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
-    Driver class for EC2 in the South America (Sao Paulo) Region
+    Driver class for EC2 in the South America (Sao Paulo) Region.
     """
+    _datacenter = 'sa-east-1'
 
-    api_name = 'ec2_sa_east'
-    name = 'Amazon EC2 (sa-east-1)'
-    friendly_name = 'Amazon South America Sao Paulo'
-    country = 'BR'
-    region_name = 'sa-east-1'
-    connectionCls = EC2SAEastConnection
+
+class EC2APSESydneyNodeDriver(EC2NodeDriver):
+    """
+    Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
+    """
+    _datacenter = 'ap-southeast-2'
 
 
 class EucConnection(EC2Connection):
@@ -1503,14 +1488,15 @@ class EucConnection(EC2Connection):
     host = None
 
 
-class EucNodeDriver(EC2NodeDriver):
+class EucNodeDriver(BaseEC2NodeDriver):
     """
     Driver class for Eucalyptus
     """
 
     name = 'Eucalyptus'
-    connectionCls = EucConnection
+    api_name = 'ec2_us_east'
     region_name = 'us-east-1'
+    connectionCls = EucConnection
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
@@ -1545,13 +1531,14 @@ class NimbusConnection(EC2Connection):
     host = None
 
 
-class NimbusNodeDriver(EC2NodeDriver):
+class NimbusNodeDriver(BaseEC2NodeDriver):
     """
     Driver class for Nimbus
     """
 
     type = Provider.NIMBUS
     name = 'Nimbus'
+    country = 'Private'
     api_name = 'nimbus'
     region_name = 'nimbus'
     friendly_name = 'Nimbus Private Cloud'
@@ -1559,7 +1546,7 @@ class NimbusNodeDriver(EC2NodeDriver):
 
     def ex_describe_addresses(self, nodes):
         """
-        Nimbus doesn't support elastic IPs, so this is a passthrough
+        Nimbus doesn't support elastic IPs, so this is a passthrough.
 
         @inherits: L{EC2NodeDriver.ex_describe_addresses}
         """
@@ -1571,7 +1558,7 @@ class NimbusNodeDriver(EC2NodeDriver):
 
     def ex_create_tags(self, resource, tags):
         """
-        Nimbus doesn't support creating tags, so this is a passthrough
+        Nimbus doesn't support creating tags, so this is a passthrough.
 
         @inherits: L{EC2NodeDriver.ex_create_tags}
         """
