@@ -739,14 +739,12 @@ class AtmosMockRawResponse(MockRawResponse):
 
     def _rest_namespace_foo_bar_container_foo_bar_object(self, method, url,
                                                          body, headers):
-        body = 'test'
-        self._data = self._generate_random_data(1000)
+        body = self._generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_foo_20_26_20bar_container_foo_20_26_20bar_object(self, method, url,
                                                                          body, headers):
-        body = 'test'
-        self._data = self._generate_random_data(1000)
+        body = self._generate_random_data(1000)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _rest_namespace_foo_bar_container_foo_bar_object_NOT_FOUND(self, method,

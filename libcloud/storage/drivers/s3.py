@@ -24,6 +24,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext
@@ -39,6 +40,7 @@ from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 
+
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60
 
@@ -51,6 +53,9 @@ S3_AP_NORTHEAST_HOST = 's3-ap-northeast-1.amazonaws.com'
 
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
+
+# AWS multi-part chunks must be minimum 5MB
+CHUNK_SIZE = 5 * 1024 * 1024
 
 
 class S3Response(AWSBaseResponse):
@@ -168,6 +173,7 @@ class S3StorageDriver(StorageDriver):
     connectionCls = S3Connection
     hash_type = 'md5'
     supports_chunked_encoding = False
+    supports_s3_multipart_upload = True
     ex_location_name = ''
     namespace = NAMESPACE
 
@@ -185,12 +191,13 @@ class S3StorageDriver(StorageDriver):
         params = {}
         last_key = None
         exhausted = False
+        container_path = self.get_container_cdn_url(container)
 
         while not exhausted:
             if last_key:
                 params['marker'] = last_key
 
-            response = self.connection.request('/%s' % (container.name),
+            response = self.connection.request(container_path,
                                                params=params)
 
             if response.status != httplib.OK:
@@ -222,9 +229,9 @@ class S3StorageDriver(StorageDriver):
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                           method='HEAD')
+        object_path = self._get_object_cdn_url(container, object_name)
+        response = self.connection.request(object_path, method='HEAD')
+
         if response.status == httplib.OK:
             obj = self._headers_to_object(object_name=object_name,
                                           container=container,
@@ -233,6 +240,42 @@ class S3StorageDriver(StorageDriver):
 
         raise ObjectDoesNotExistError(value=None, driver=self,
                                       object_name=object_name)
+
+    def get_container_cdn_url(self, container, check=False):
+        """
+        Return a container CDN URL.
+
+        @param container: Container instance
+        @type  container: L{Container}
+
+        @param check: Indicates if the path's existance must be checked
+        @type check: C{bool}
+
+        @return: A CDN URL for this container.
+        @rtype: C{str}
+        """
+        if check:
+            self.get_container(container.name)
+
+        return '/%s' % (container.name)
+
+    def _get_object_cdn_url(self, container, object_name):
+        container_url = self.get_container_cdn_url(container)
+        object_name_cleaned = self._clean_object_name(object_name)
+        object_path = '%s/%s' % (container_url, object_name_cleaned)
+        return object_path
+
+    def get_object_cdn_url(self, obj):
+        """
+        Return a object CDN URL.
+
+        @param obj: Object instance
+        @type  obj: L{Object}
+
+        @return: A CDN URL for this object.
+        @rtype: C{str}
+        """
+        return self._get_object_cdn_url(obj.container, obj.name)
 
     def create_container(self, container_name):
         if self.ex_location_name:
@@ -288,13 +331,9 @@ class S3StorageDriver(StorageDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        container_name = self._clean_object_name(obj.container.name)
-        object_name = self._clean_object_name(obj.name)
+        obj_path = self.get_object_cdn_url(obj)
 
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                           method='GET',
-                                           raw=True)
+        response = self.connection.request(obj_path, method='GET', raw=True)
 
         return self._get_object(obj=obj, callback=self._save_object,
                                 response=response,
@@ -307,11 +346,8 @@ class S3StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def download_object_as_stream(self, obj, chunk_size=None):
-        container_name = self._clean_object_name(obj.container.name)
-        object_name = self._clean_object_name(obj.name)
-        response = self.connection.request('/%s/%s' % (container_name,
-                                                       object_name),
-                                           method='GET', raw=True)
+        obj_path = self.get_object_cdn_url(obj)
+        response = self.connection.request(obj_path, method='GET', raw=True)
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
@@ -337,6 +373,133 @@ class S3StorageDriver(StorageDriver):
                                 verify_hash=verify_hash,
                                 storage_class=ex_storage_class)
 
+    def _upload_multipart(self, response, data, iterator, container,
+                          object_name, calculate_hash=True):
+        """Callback invoked for uploading data to S3 using Amazon's
+        multipart upload mechanism"""
+
+        object_path = self._get_object_cdn_url(container, object_name)
+
+        # Get the upload id from the response xml
+        response.body = response.response.read()
+        body = response.parse_body()
+        upload_id = body.find(fixxpath(xpath='UploadId',
+                                       namespace=self.namespace)).text
+
+        try:
+            # Upload the data through the iterator
+            result = self._upload_from_iterator(iterator, object_path,
+                                                upload_id, calculate_hash)
+            (chunks, data_hash, bytes_transferred) = result
+
+            # Commit the chunk info and complete the upload
+            etag = self._commit_multipart(object_path, upload_id, chunks)
+        except Exception:
+            # Amazon provides a mechanism for aborting an upload
+            self._abort_multipart(object_path, upload_id)
+
+            raise LibcloudError('Upload error. Operation aborted',
+                                driver=self)
+
+        # Modify the response header of the first request. This is used
+        # by other functions once the callback is done
+        response.headers['etag'] = etag
+
+        return (True, data_hash, bytes_transferred)
+
+    def _upload_from_iterator(self, iterator, object_path, upload_id,
+                              calculate_hash=True):
+        """Uploads data from an interator in fixed sized chunks to S3"""
+
+        data_hash = None
+        if calculate_hash:
+            data_hash = self._get_hash_function()
+
+        bytes_transferred = 0
+        count = 1
+        chunks = []
+        params = {'uploadId': upload_id}
+
+        # Read the input data in chunk sizes suitable for AWS
+        for data in read_in_chunks(iterator, chunk_size=CHUNK_SIZE):
+            bytes_transferred += len(data)
+
+            if calculate_hash:
+                data_hash.update(data)
+
+            chunk_hash = self._get_hash_function()
+            chunk_hash.update(data)
+            chunk_hash = base64.b64encode(chunk_hash.digest())
+
+            # This provides an extra level of data check and is recommended
+            # by amazon
+            headers = {'Content-MD5': chunk_hash}
+            params['partNumber'] = count
+
+            request_path = '?'.join((object_path, urlencode(params)))
+
+            resp = self.connection.request(request_path, method='PUT',
+                                           data=data, headers=headers)
+
+            if resp.status != httplib.OK:
+                raise LibcloudError('Error uploading chunk', driver=self)
+
+            server_hash = resp.headers['etag']
+
+            # Keep this data for a later commit
+            chunks.append((count, server_hash))
+            count += 1
+
+        if calculate_hash:
+            data_hash = data_hash.hexdigest()
+
+        return (chunks, data_hash, bytes_transferred)
+
+    def _commit_multipart(self, object_path, upload_id, chunks):
+        """Makes a final commit of the data"""
+
+        root = Element('CompleteMultipartUpload')
+
+        for (count, etag) in chunks:
+            part = SubElement(root, 'Part')
+            part_no = SubElement(part, 'PartNumber')
+            part_no.text = str(count)
+
+            etag_id = SubElement(part, 'ETag')
+            etag_id.text = str(etag)
+
+        if PY3:
+            encoding = 'unicode'
+        else:
+            encoding = None
+
+        data = tostring(root, encoding=encoding)
+
+        params = {'uploadId': upload_id}
+        request_path = '?'.join((object_path, urlencode(params)))
+        response = self.connection.request(request_path, data=data,
+                                           method='POST')
+
+        if response.status != httplib.OK:
+            raise LibcloudError('Error in multipart commit', driver=self)
+
+        # Get the server's etag to be passed back to the caller
+        body = response.parse_body()
+        server_hash = body.find(fixxpath(xpath='ETag',
+                                         namespace=self.namespace)).text
+        return server_hash
+
+    def _abort_multipart(self, object_path, upload_id):
+        """Aborts an already initiated multipart upload"""
+
+        params = {'uploadId': upload_id}
+        request_path = '?'.join((object_path, urlencode(params)))
+        resp = self.connection.request(request_path, method='DELETE')
+
+        if resp.status != httplib.NO_CONTENT:
+            raise LibcloudError('Error in multipart abort. status_code=%d' %
+                                (resp.status), driver=self)
+
     def upload_object_via_stream(self, iterator, container, object_name,
                                  extra=None, ex_storage_class=None):
         """
@@ -345,23 +508,42 @@ class S3StorageDriver(StorageDriver):
         @param ex_storage_class: Storage class
         @type ex_storage_class: C{str}
         """
-        #Amazon S3 does not support chunked transfer encoding so the whole data
-        #is read into memory before uploading the object.
-        upload_func = self._upload_data
-        upload_func_kwargs = {}
+
+        method = 'PUT'
+        params = None
+
+        # This driver is used by other S3 API compatible drivers also.
+        # Amazon provides a different (complex?) mechanism to do multipart
+        # uploads
+        if self.supports_s3_multipart_upload:
+            # Initiate the multipart request and get an upload id
+            upload_func = self._upload_multipart
+            upload_func_kwargs = {'iterator': iterator,
+                                  'container': container,
+                                  'object_name': object_name}
+            method = 'POST'
+            iterator = iter('')
+            params = 'uploads'
+
+        elif self.supports_chunked_encoding:
+            upload_func = self._stream_data
+            upload_func_kwargs = {'iterator': iterator}
+        else:
+            # In this case, we have to download the entire object to
+            # memory and send it as normal data
+            upload_func = self._upload_data
+            upload_func_kwargs = {}
 
         return self._put_object(container=container, object_name=object_name,
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, iterator=iterator,
-                                verify_hash=False,
+                                extra=extra, method=method, query_args=params,
+                                iterator=iterator, verify_hash=False,
                                 storage_class=ex_storage_class)
 
     def delete_object(self, obj):
-        object_name = self._clean_object_name(name=obj.name)
-        response = self.connection.request('/%s/%s' % (obj.container.name,
-                                                       object_name),
-                                           method='DELETE')
+        object_path = self.get_object_cdn_url(obj)
+        response = self.connection.request(object_path, method='DELETE')
         if response.status == httplib.NO_CONTENT:
             return True
         elif response.status == httplib.NOT_FOUND:
@@ -375,8 +557,9 @@ class S3StorageDriver(StorageDriver):
         return name
 
     def _put_object(self, container, object_name, upload_func,
-                    upload_func_kwargs, extra=None, file_path=None,
-                    iterator=None, verify_hash=True, storage_class=None):
+                    upload_func_kwargs, method='PUT', query_args=None,
+                    extra=None, file_path=None, iterator=None,
+                    verify_hash=True, storage_class=None):
         headers = {}
         extra = extra or {}
         storage_class = storage_class or 'standard'
@@ -386,8 +569,6 @@ class S3StorageDriver(StorageDriver):
 
         headers['x-amz-storage-class'] = storage_class.upper()
 
-        container_name_cleaned = container.name
-        object_name_cleaned = self._clean_object_name(object_name)
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
 
@@ -396,7 +577,11 @@ class S3StorageDriver(StorageDriver):
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
 
-        request_path = '/%s/%s' % (container_name_cleaned, object_name_cleaned)
+        request_path = self._get_object_cdn_url(container, object_name)
+
+        if query_args:
+            request_path = '?'.join((request_path, query_args))
+
         # TODO: Let the underlying exceptions bubble up and capture the SIGPIPE
         # here.
         #SIGPIPE is thrown if the provided container does not exist or the user
@@ -404,7 +589,7 @@ class S3StorageDriver(StorageDriver):
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
             upload_func=upload_func, upload_func_kwargs=upload_func_kwargs,
-            request_path=request_path, request_method='PUT',
+            request_path=request_path, request_method=method,
             headers=headers, file_path=file_path, iterator=iterator)
 
         response = result_dict['response']
@@ -454,7 +639,8 @@ class S3StorageDriver(StorageDriver):
 
     def _headers_to_object(self, object_name, container, headers):
         hash = headers['etag'].replace('"', '')
-        extra = {'content_type': headers['content-type'], 'etag': headers['etag']}
+        extra = {'content_type': headers['content-type'],
+                 'etag': headers['etag']}
         meta_data = {}
 
         if 'last-modified' in headers:

@@ -574,7 +574,10 @@ class Connection(object):
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urlencode(params)))
+            if '?' in action:
+                url = '&'.join((action, urlencode(params)))
+            else:
+                url = '?'.join((action, urlencode(params)))
         else:
             url = action
 
