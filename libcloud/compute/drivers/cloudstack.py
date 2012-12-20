@@ -120,6 +120,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     website = 'http://cloudstack.org/'
     type = Provider.CLOUDSTACK
 
+    features = {'create_node': ['ssh_key']}
+
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
@@ -292,7 +294,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             extra={
                 'zoneid': location.id,
                 'ip_addresses': [],
-                'forwarding_rules': [],
+                'ip_forwarding_rules': [],
+                'port_forwarding_rules': [],
                 }
         )
 
@@ -665,7 +668,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         keypair = self._sync_request('createSSHKeyPair', name=name)
         return keypair['keypair']
 
-    def ex_list_keypair(self, name=None):
+    def ex_describe_keypairs(self, name=None):
         if name is None:
             keypair_list = self._sync_request('listSSHKeyPairs')
         else:
