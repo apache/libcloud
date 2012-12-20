@@ -40,8 +40,8 @@ TEST_PATHS = ['libcloud/test', 'libcloud/test/common', 'libcloud/test/compute',
               'libcloud/test/storage', 'libcloud/test/loadbalancer',
               'libcloud/test/dns']
 DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
-                     'libcloud.storage.drivers.dummy',
-                     'libcloud.dns.drivers.dummy']
+                    'libcloud.storage.drivers.dummy',
+                    'libcloud.dns.drivers.dummy']
 
 SUPPORTED_VERSIONS = ['2.5', '2.6', '2.7', 'PyPy', '3.x']
 
@@ -81,8 +81,8 @@ class TestCommand(Command):
             mock
         except ImportError:
             print('Missing "mock" library. mock is library is needed '
-                 'to run the tests. You can install it using pip: '
-                 'pip install mock')
+                  'to run the tests. You can install it using pip: '
+                  'pip install mock')
             sys.exit(1)
 
         status = self._run_tests()
@@ -131,8 +131,8 @@ class TestCommand(Command):
         for test_path in TEST_PATHS:
             for t in glob(pjoin(self._dir, test_path, 'test_*.py')):
                 if (sys.version_info >= (3, 2) and sys.version_info < (3, 3) or
-                   sys.version_info >= (2, 5) and sys.version_info < (2, 6)) \
-                   and t.find('test_local'):
+                    sys.version_info >= (2, 5) and sys.version_info < (2, 6)) \
+                        and t.find('test_local'):
                     # Lockfile doesn't work with 2.5 and 3.2. Temporary disable
                     # local_storage test until fixes have been submitted
                     # upstream
@@ -166,12 +166,12 @@ class Pep8Command(Command):
             pep8
         except ImportError:
             print ('Missing "pep8" library. You can install it using pip: '
-                  'pip install pep8')
+                   'pip install pep8')
             sys.exit(1)
 
         cwd = os.getcwd()
         retcode = call(('pep8 %s/libcloud/' %
-                (cwd)).split(' '))
+                       (cwd)).split(' '))
         sys.exit(retcode)
 
 

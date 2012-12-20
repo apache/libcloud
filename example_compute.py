@@ -21,8 +21,8 @@ Slicehost = get_driver(Provider.SLICEHOST)
 Rackspace = get_driver(Provider.RACKSPACE)
 
 drivers = [EC2('access key id', 'secret key'),
-            Slicehost('api key'),
-            Rackspace('username', 'api key')]
+           Slicehost('api key'),
+           Rackspace('username', 'api key')]
 
 nodes = [driver.list_nodes() for driver in drivers]
 
