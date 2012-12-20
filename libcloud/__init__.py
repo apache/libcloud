@@ -37,12 +37,12 @@ def enable_debug(fo):
     @type fo: File like object, only write operations are used.
     """
     from libcloud.common.base import (Connection,
-                               LoggingHTTPConnection,
-                               LoggingHTTPSConnection)
+                                      LoggingHTTPConnection,
+                                      LoggingHTTPSConnection)
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
     Connection.conn_classes = (LoggingHTTPConnection,
-                                  LoggingHTTPSConnection)
+                               LoggingHTTPSConnection)
 
 
 def _init_once():
