@@ -1565,7 +1565,6 @@ class EC2NodeDriver(BaseEC2NodeDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  datacenter='us-east-1', **kwargs):
-
         if hasattr(self, '_datacenter'):
             datacenter = self._datacenter
 

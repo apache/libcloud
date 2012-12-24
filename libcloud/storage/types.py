@@ -45,8 +45,6 @@ class Provider(object):
     @cvar LOCAL: Local storage driver
     """
     DUMMY = 'dummy'
-    CLOUDFILES_US = 'cloudfiles_us'
-    CLOUDFILES_UK = 'cloudfiles_uk'
     S3 = 's3'
     S3_US_WEST = 's3_us_west'
     S3_EU_WEST = 's3_eu_west'
@@ -58,6 +56,11 @@ class Provider(object):
     CLOUDFILES_SWIFT = 'cloudfiles_swift'
     NIMBUS = 'nimbus'
     LOCAL = 'local'
+    CLOUDFILES = 'cloudfiles'
+
+    # Deperecated
+    CLOUDFILES_US = 'cloudfiles_us'
+    CLOUDFILES_UK = 'cloudfiles_uk'
 
 
 class ContainerError(LibcloudError):

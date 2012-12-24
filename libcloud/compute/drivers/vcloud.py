@@ -806,6 +806,15 @@ class TerremarkDriver(VCloudNodeDriver):
 
 
 class VCloud_1_5_Connection(VCloudConnection):
+    def _get_auth_headers(self):
+        """Compatibility for using v1.5 API under vCloud Director 5.1"""
+        return {
+            'Authorization': "Basic %s" % base64.b64encode(
+                b('%s:%s' % (self.user_id, self.key))).decode('utf-8'),
+            'Content-Length': '0',
+            'Accept': 'application/*+xml;version=1.5'
+        }
+
     def _get_auth_token(self):
         if not self.token:
             # Log In
