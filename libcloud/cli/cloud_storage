@@ -1,0 +1,345 @@
+#!/usr/bin/env python
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+import os
+
+from libcloud.storage.providers import DRIVERS
+from libcloud.storage.providers import get_driver
+from libcloud.storage.types import ContainerAlreadyExistsError
+from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ContainerIsNotEmptyError
+from libcloud.storage.types import InvalidContainerNameError
+from libcloud.storage.types import ObjectDoesNotExistError
+from libcloud.common.types import InvalidCredsError
+
+try:
+    from cement.core import foundation, controller, handler, exc
+except ImportError:
+    print 'cement module is mandatory for running commands'
+    sys.exit(1)
+
+
+class CommandError(Exception):
+    pass
+
+
+class StorageAppController(controller.CementBaseController):
+    """The base controller for the storage app. Container and Object
+    specific commands are registered under this"""
+    class Meta:
+        label = 'base'
+        description = 'Utilities for handling containers and objects'
+
+    @controller.expose(hide=True, help='do nothing')
+    def default(self):
+        """The default handler invoked if no commands are entered"""
+        raise CommandError('No actions mentioned. Use --help for usage info')
+
+    @controller.expose(help='List available storage providers')
+    def providers(self):
+        """List the storage providers that are available"""
+        for tag, info in DRIVERS.items():
+            print ' %s' % (tag)
+
+
+class StorageBaseController(controller.CementBaseController):
+    """A base class to be used by other storage command controllers"""
+
+    class Meta:
+        # All storage commands will be of the structure
+        # <command> <container> [<object>] [<args>]
+        arguments = [
+            (['-p', '--provider'], dict(action='store', dest='storage_provider',
+                                        help='The cloud storage provider')),
+            (['-u', '--username'], dict(action='store', dest='username',
+                                        help='Username for cloud account')),
+            (['-k', '--access-key'], dict(action='store', dest='access_key',
+                                          help='Access key for the account')),
+            (['-f', '--force'], dict(action='store_true', dest='force',
+                                     default=False,
+                                     help='Perform action without '
+                                          'user confirmation')),
+            (['-v', '--verbose'], dict(action='store_true', dest='verbose',
+                                       default=False,
+                                       help='Print verbose information')),
+            (['container'], dict(action='store', metavar='container',
+                                 type=str, nargs='?',
+                                 help='Name of the container')),
+        ]
+
+    def _get_driver(self):
+        """Parse the arguments and get the storage driver"""
+        username = self.config.get('base', 'username')
+        api_key = self.config.get('base', 'access_key')
+        provider = self.config.get('base', 'storage_provider')
+
+        return get_driver(provider)(username, api_key)
+
+    def _confirm(self, message):
+        """Confirm an operation by asking for input from the user
+
+        @param message: A message used as a prompt to the user
+        @type message: C{str}
+
+        @return: A boolean indicating the user's choice
+        @rtype: C{bool}
+        """
+        if self.pargs.force:
+            return True
+
+        confirm = raw_input(message)
+        return confirm == 'y'
+
+    @controller.expose(hide=True, help='do nothing')
+    def default(self):
+        """Default method"""
+        raise CommandError('No actions mentioned. Use --help for usage info')
+
+
+class ContainerController(StorageBaseController):
+    """Controller class implementing commands to handle containers"""
+
+    class Meta:
+        label = 'container'
+        description = 'Commands for managing containers'
+        arguments = StorageBaseController.Meta.arguments + [
+            (['-r', '--recursive'], dict(action='store_true', dest='recursive',
+                                         default=False,
+                                         help='Recursively delete container')),
+        ]
+
+    @controller.expose(help='Create a container')
+    def create(self):
+        """Create a container"""
+        if self.pargs.container is None:
+            raise CommandError('Container name not provided')
+
+        driver = self._get_driver()
+        container = driver.create_container(self.pargs.container)
+
+    @controller.expose(aliases=['ls'],
+                       help='List all available containers')
+    def list(self):
+        """List all available containers"""
+        if self.pargs.container is not None:
+            raise CommandError('Container name provided')
+
+        driver = self._get_driver()
+        for container in driver.iterate_containers():
+            print ' %s' % (container.name)
+
+    @controller.expose(aliases=['rm', 'remove', 'del'],
+                       help='Delete a container and it\'s objects')
+    def delete(self):
+        """Delete the specified container"""
+
+        if self.pargs.container is None:
+            raise CommandError('Container name not provided')
+
+        driver = self._get_driver()
+        container = driver.get_container(self.pargs.container)
+        verbose = self.pargs.force and self.pargs.verbose
+
+        if self.pargs.recursive:
+            for obj in container.iterate_objects():
+                message = 'Delete object: %s ? (y/N) ' % (obj.name)
+                if self._confirm(message):
+                    obj.delete()
+                    if verbose:
+                        print 'Deleted object: %s' % (obj.name)
+
+        message = 'Delete container %s ? (y/N) ' % (container.name)
+        if self._confirm(message):
+            container.delete()
+
+            if verbose:
+                print 'Deleted container: %s' % (container.name)
+
+
+class ObjectController(StorageBaseController):
+    """Controller class implementing commands to handle objects"""
+
+    class Meta:
+        label = 'object'
+        description = 'Commands for managing objects in a container'
+
+        arguments = StorageBaseController.Meta.arguments + [
+            (['object_name'], dict(action='store', metavar='object_name',
+                                   type=str, nargs='?',
+                                   help='Full name of the object')),
+            (['local_path'], dict(action='store', metavar='path',
+                                  type=str, nargs='?', default=None,
+                                  help='The local file path. Empty or \'-\' '
+                                       'implies stdin/out')),
+        ]
+
+    @controller.expose(aliases=['ls'],
+                       help='List objects in a container')
+    def list(self):
+        """List the objects stored in the container"""
+        if not self.pargs.container:
+            raise CommandError('Container name not provided')
+
+        if self.pargs.object_name or self.pargs.local_path:
+            raise CommandError('Object name and/or local_path not needed')
+
+        driver = self._get_driver()
+        container = driver.get_container(self.pargs.container)
+
+        for obj in container.iterate_objects():
+            if self.pargs.verbose:
+                print ' %-45s\t%10d' % (obj.name, obj.size)
+            else:
+                print ' %s' % (obj.name)
+
+    @controller.expose(aliases=['rm', 'remove', 'del'],
+                       help='Delete an object from a container')
+    def delete(self):
+        """Delete the named object"""
+        if not self.pargs.container:
+            raise CommandError('Container name not provided')
+
+        if not self.pargs.object_name:
+            raise CommandError('Object name not provided')
+
+        if self.pargs.local_path:
+            raise CommandError('Local path should not be provided')
+
+        driver = self._get_driver()
+        container = driver.get_container(self.pargs.container)
+        obj = container.get_object(self.pargs.object_name)
+        verbose = self.pargs.force and self.pargs.verbose
+
+        message = 'Delete object %s ? (y/N) ' % (self.pargs.source)
+
+        if self._confirm(message):
+            obj.delete()
+
+            if verbose:
+                print 'Deleted object: %s' % (obj.name)
+
+    @controller.expose(aliases=['upload', 'store', 'create'],
+                       help='Upload/create a new object')
+    def put(self):
+        """Upload an object from the local path or stdin"""
+        if not self.pargs.container:
+            raise CommandError('Container name not provided')
+
+        if not self.pargs.object_name:
+            raise CommandError('Object name not provided')
+
+        driver = self._get_driver()
+        container = driver.get_container(self.pargs.container)
+
+        if self.pargs.local_path in ['-', None]:
+            obj = container.upload_object_via_stream(sys.stdin,
+                                                     self.pargs.object_name)
+        else:
+            obj = container.upload_object(self.pargs.local_path,
+                                          self.pargs.object_name)
+
+    @controller.expose(aliases=['download', 'stream'],
+                       help='Download an object')
+    def get(self):
+        """Download an object to the local path"""
+        if not self.pargs.container:
+            raise CommandError('Container name not provided')
+
+        if not self.pargs.object_name:
+            raise CommandError('Object name not provided')
+
+        driver = self._get_driver()
+        container = driver.get_container(self.pargs.container)
+        obj = container.get_object(self.pargs.object_name)
+        local_path = self.pargs.local_path
+
+        if local_path in ['-', None]:
+            for data in container.download_object_as_stream(obj):
+                sys.stdout.write(data)
+        else:
+            if os.path.exists(local_path) and not self.pargs.force:
+                message = 'Over-write file: %s ? (y/N) ' % (local_path)
+                if not self._confirm(message):
+                    return
+
+            container.download_object(obj, local_path,
+                                      overwrite_existing=True)
+
+
+class StorageApp(foundation.CementApp):
+    class Meta:
+        label = 'libcloud'
+        base_controller = StorageAppController
+        arguments_override_config = True
+
+        # Logging conf. Can be over-written by config file's [log] section
+        config_defaults = dict(
+            base=dict(
+                storage_provider=None,
+                username=None,
+                access_key=None,
+            ),
+            log=dict(
+                level='ERROR',
+                to_console='False',
+                file='/dev/null',
+                rotate=False,
+                max_bytes=512000,
+                max_file=5,
+            )
+        )
+
+
+if __name__ == '__main__':
+    # Initialize the app and register the handlers
+    app = StorageApp()
+    handler.register(ContainerController)
+    handler.register(ObjectController)
+
+    ret = 1
+    try:
+        app.setup()
+        app.run()
+        ret = 0
+    except ContainerDoesNotExistError:
+        sys.stderr.write('ERROR: Container does not exist\n')
+    except InvalidContainerNameError:
+        sys.stderr.write('ERROR: Invalid container name\n')
+    except ContainerAlreadyExistsError:
+        sys.stderr.write('ERROR: Container already exists\n')
+    except ContainerIsNotEmptyError:
+        sys.stderr.write('ERROR: Container is not empty\n')
+    except ObjectDoesNotExistError:
+        sys.stderr.write('ERROR: Object not found\n')
+    except InvalidCredsError:
+        sys.stderr.write('ERROR: Invalid credentials provided\n')
+    except (OSError, CommandError):
+        exp = sys.exc_info()[1]
+        sys.stderr.write('ERROR: %s\n' % (str(exp)))
+    except exc.CaughtSignal:
+        sys.stderr.write('\nAborting on user interrupt\n')
+    except Exception:
+        sys.stderr.write('ERROR: Error in operation. Check logs\n')
+    finally:
+        exp = sys.exc_info()[1]
+        if exp:
+            app.log.error('ERROR in operation', exc_info=exp)
+
+        app.close()
+
+    sys.exit(ret)
