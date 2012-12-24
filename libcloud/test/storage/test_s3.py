@@ -759,7 +759,7 @@ class S3Tests(unittest.TestCase):
                                                        object_name=object_name,
                                                        iterator=iterator,
                                                        extra=extra)
-        except LibcloudError:
+        except Exception:
             pass
 
         return

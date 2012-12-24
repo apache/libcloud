@@ -17,6 +17,7 @@ import time
 import copy
 import base64
 import hmac
+import sys
 
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -191,7 +192,7 @@ class S3StorageDriver(StorageDriver):
         params = {}
         last_key = None
         exhausted = False
-        container_path = self.get_container_cdn_url(container)
+        container_path = self._get_container_path(container)
 
         while not exhausted:
             if last_key:
@@ -229,7 +230,7 @@ class S3StorageDriver(StorageDriver):
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
-        object_path = self._get_object_cdn_url(container, object_name)
+        object_path = self._get_object_path(container, object_name)
         response = self.connection.request(object_path, method='HEAD')
 
         if response.status == httplib.OK:
@@ -241,41 +242,35 @@ class S3StorageDriver(StorageDriver):
         raise ObjectDoesNotExistError(value=None, driver=self,
                                       object_name=object_name)
 
-    def get_container_cdn_url(self, container, check=False):
+    def _get_container_path(self, container):
         """
-        Return a container CDN URL.
+        Return a container path
 
         @param container: Container instance
         @type  container: L{Container}
 
-        @param check: Indicates if the path's existance must be checked
-        @type check: C{bool}
-
-        @return: A CDN URL for this container.
+        @return: A CDN path for this container.
         @rtype: C{str}
         """
-        if check:
-            self.get_container(container.name)
-
         return '/%s' % (container.name)
 
-    def _get_object_cdn_url(self, container, object_name):
-        container_url = self.get_container_cdn_url(container)
+    def _get_object_path(self, container, object_name):
+        """
+        Return an object's CDN path.
+
+        @param container: Container instance
+        @type  container: L{Container}
+
+        @param object_name: Object name
+        @type  object_name: L{str}
+
+        @return: A CDN path for this object.
+        @rtype: C{str}
+        """
+        container_url = self._get_container_path(container)
         object_name_cleaned = self._clean_object_name(object_name)
         object_path = '%s/%s' % (container_url, object_name_cleaned)
         return object_path
-
-    def get_object_cdn_url(self, obj):
-        """
-        Return a object CDN URL.
-
-        @param obj: Object instance
-        @type  obj: L{Object}
-
-        @return: A CDN URL for this object.
-        @rtype: C{str}
-        """
-        return self._get_object_cdn_url(obj.container, obj.name)
 
     def create_container(self, container_name):
         if self.ex_location_name:
@@ -331,7 +326,7 @@ class S3StorageDriver(StorageDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        obj_path = self.get_object_cdn_url(obj)
+        obj_path = self._get_object_path(obj.container, obj.name)
 
         response = self.connection.request(obj_path, method='GET', raw=True)
 
@@ -346,7 +341,7 @@ class S3StorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def download_object_as_stream(self, obj, chunk_size=None):
-        obj_path = self.get_object_cdn_url(obj)
+        obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, method='GET', raw=True)
 
         return self._get_object(obj=obj, callback=read_in_chunks,
@@ -376,9 +371,32 @@ class S3StorageDriver(StorageDriver):
     def _upload_multipart(self, response, data, iterator, container,
                           object_name, calculate_hash=True):
         """Callback invoked for uploading data to S3 using Amazon's
-        multipart upload mechanism"""
+        multipart upload mechanism
 
-        object_path = self._get_object_cdn_url(container, object_name)
+        @param response: Response object from the initial POST request
+        @type response: L{S3RawResponse}
+
+        @param data: Any data from the initial POST request
+        @type data: C{str}
+
+        @param iterator: The generator for fetching the upload data
+        @type iterator: C{generator}
+
+        @param container: The container owning the object to which data is
+            being uploaded
+        @type container: L{Container}
+
+        @param object_name: The name of the object to which we are uploading
+        @type object_name: C{str}
+
+        @keyword calculate_hash: Indicates if we must calculate the data hash
+        @type calculate_hash: C{bool}
+
+        @return: A tuple of (status, checksum, bytes transferred)
+        @rtype: C{tuple}
+        """
+
+        object_path = self._get_object_path(container, object_name)
 
         # Get the upload id from the response xml
         response.body = response.response.read()
@@ -395,11 +413,10 @@ class S3StorageDriver(StorageDriver):
             # Commit the chunk info and complete the upload
             etag = self._commit_multipart(object_path, upload_id, chunks)
         except Exception:
-            # Amazon provides a mechanism for aborting an upload
+            exc = sys.exc_info()[1]
+            # Amazon provides a mechanism for aborting an upload.
             self._abort_multipart(object_path, upload_id)
-
-            raise LibcloudError('Upload error. Operation aborted',
-                                driver=self)
+            raise exc
 
         # Modify the response header of the first request. This is used
         # by other functions once the callback is done
@@ -409,7 +426,23 @@ class S3StorageDriver(StorageDriver):
 
     def _upload_from_iterator(self, iterator, object_path, upload_id,
                               calculate_hash=True):
-        """Uploads data from an interator in fixed sized chunks to S3"""
+        """Uploads data from an interator in fixed sized chunks to S3
+
+        @param iterator: The generator for fetching the upload data
+        @type iterator: C{generator}
+
+        @param object_path: The path of the object to which we are uploading
+        @type object_name: C{str}
+
+        @param upload_id: The upload id allocated for this multipart upload
+        @type upload_id: C{str}
+
+        @keyword calculate_hash: Indicates if we must calculate the data hash
+        @type calculate_hash: C{bool}
+
+        @return: A tuple of (chunk info, checksum, bytes transferred)
+        @rtype: C{tuple}
+        """
 
         data_hash = None
         if calculate_hash:
@@ -542,7 +575,7 @@ class S3StorageDriver(StorageDriver):
                                 storage_class=ex_storage_class)
 
     def delete_object(self, obj):
-        object_path = self.get_object_cdn_url(obj)
+        object_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(object_path, method='DELETE')
         if response.status == httplib.NO_CONTENT:
             return True
@@ -577,7 +610,7 @@ class S3StorageDriver(StorageDriver):
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
 
-        request_path = self._get_object_cdn_url(container, object_name)
+        request_path = self._get_object_path(container, object_name)
 
         if query_args:
             request_path = '?'.join((request_path, query_args))
