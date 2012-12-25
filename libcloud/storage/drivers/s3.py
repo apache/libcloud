@@ -247,7 +247,7 @@ class S3StorageDriver(StorageDriver):
             objects = self._to_objs(obj=response.object,
                                     xpath='Contents', container=container)
             is_truncated = response.object.findtext(fixxpath(
-                    xpath='IsTruncated', namespace=self.namespace)).lower()
+                xpath='IsTruncated', namespace=self.namespace)).lower()
             exhausted = (is_truncated == 'false')
 
             last_key = None
@@ -794,7 +794,7 @@ class S3StorageDriver(StorageDriver):
 
     def _to_containers(self, obj, xpath):
         for element in obj.findall(fixxpath(xpath=xpath,
-                                        namespace=self.namespace)):
+                                   namespace=self.namespace)):
             yield self._to_container(element)
 
     def _to_objs(self, obj, xpath, container):
