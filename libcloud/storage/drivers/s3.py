@@ -59,7 +59,8 @@ NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
 # AWS multi-part chunks must be minimum 5MB
 CHUNK_SIZE = 5 * 1024 * 1024
 
-# Desired number of responses in each request
+# Desired number of items in each response inside a paginated request in
+# ex_iterate_multipart_uploads.
 RESPONSES_PER_REQUEST = 100
 
 
