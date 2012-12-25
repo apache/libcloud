@@ -133,3 +133,4 @@ class GoogleStorageDriver(S3StorageDriver):
     hash_type = 'md5'
     namespace = NAMESPACE
     supports_chunked_encoding = False
+    supports_s3_multipart_upload = False

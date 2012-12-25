@@ -85,6 +85,12 @@ class MockResponse(object):
     def read(self, *args, **kwargs):
         return self.body.read(*args, **kwargs)
 
+    def next(self):
+        return next(self.body)
+
+    def __next__(self):
+        return self.next()
+
     def getheader(self, name, *args, **kwargs):
         return self.headers.get(name, *args, **kwargs)
 
@@ -96,6 +102,7 @@ class MockResponse(object):
 
 class BaseMockHttpObject(object):
     def _get_method_name(self, type, use_param, qs, path):
+        path = path.split('?')[0]
         meth_name = path.replace('/', '_').replace('.', '_').replace('-', '_')
         if type:
             meth_name = '%s_%s' % (meth_name, self.type)
@@ -247,12 +254,12 @@ class MockRawResponse(BaseMockHttpObject):
         return self.next()
 
     def _generate_random_data(self, size):
-        data = []
+        data = ''
         current_size = 0
         while current_size < size:
             value = str(random.randint(0, 9))
             value_size = len(value)
-            data.append(value)
+            data += value
             current_size += value_size
 
         return data
@@ -286,7 +293,6 @@ class MockRawResponse(BaseMockHttpObject):
             self._status, self._body, self._headers, self._reason = result
             self._response = self.responseCls(self._status, self._body,
                                               self._headers, self._reason)
-            return self
         return self._response
 
 if __name__ == "__main__":
