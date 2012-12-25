@@ -95,6 +95,16 @@ Changes with Apache Libcloud in development:
       future.
       [Tomaz Muraus]
 
+    - Support for multipart uploads and other improvemetns in the S3 driver
+      so it can more easily be re-used with other implementations (e.g. Google
+      Storage, etc.).
+
+      Also default to a multipart upload when using upload_object_via_stream.
+      This methods is more efficient compared to old approach because it only
+      requires buffering a single multipart chunk (5 MB) in memory.
+      (LIBCLOUD-269)
+      [Mahendra M]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly

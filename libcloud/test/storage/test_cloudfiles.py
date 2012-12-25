@@ -992,8 +992,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
         self, method, url, body, headers):
 
         # test_download_object_success
-        body = 'test'
-        self._data = self._generate_random_data(1000)
+        body = self._generate_random_data(1000)
         return (httplib.OK,
                 body,
                 self.base_headers,
@@ -1002,8 +1001,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(
         self, method, url, body, headers):
         # test_download_object_invalid_file_size
-        body = 'test'
-        self._data = self._generate_random_data(100)
+        body = self._generate_random_data(100)
         return (httplib.OK, body,
                 self.base_headers,
                 httplib.responses[httplib.OK])
