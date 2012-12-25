@@ -639,7 +639,10 @@ class S3StorageDriver(StorageDriver):
     def ex_iterate_multipart_uploads(self, container, prefix=None,
                                      delimiter=None):
         """
-        Extension method for listing all S3 multipart uploads.
+        Extension method for listing all in-progress S3 multipart uploads.
+
+        Each multipart upload which has not been committed or aborted is
+        considered in-progress.
 
         @param container: The container holding the uploads
         @type container: L{Container}
@@ -715,7 +718,8 @@ class S3StorageDriver(StorageDriver):
 
     def ex_cleanup_all_multipart_uploads(self, container, prefix=None):
         """
-        Extension method for removing S3 multipart uploads.
+        Extension method for removing all partially completed S3 multipart
+        uploads.
 
         @param container: The container holding the uploads
         @type container: L{Container}
