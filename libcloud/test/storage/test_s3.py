@@ -255,6 +255,36 @@ class S3MockHttp(StorageMockHttp):
                     headers,
                     httplib.responses[httplib.OK])
 
+    def _foo_bar_container_LIST_MULTIPART(self, method, url, body, headers):
+        query_string = urlparse.urlsplit(url).query
+        query = urlparse.parse_qs(query_string)
+
+        if 'key-marker' not in query:
+            body = self.fixtures.load('list_multipart_1.xml')
+        else:
+            body = self.fixtures.load('list_multipart_2.xml')
+
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _foo_bar_container_my_divisor_LIST_MULTIPART(self, method, url,
+                                                     body, headers):
+        body = ''
+        return (httplib.NO_CONTENT,
+                body,
+                headers,
+                httplib.responses[httplib.NO_CONTENT])
+
+    def _foo_bar_container_my_movie_m2ts_LIST_MULTIPART(self, method, url,
+                                                        body, headers):
+        body = ''
+        return (httplib.NO_CONTENT,
+                body,
+                headers,
+                httplib.responses[httplib.NO_CONTENT])
+
 
 class S3MockRawResponse(MockRawResponse):
 
@@ -763,6 +793,35 @@ class S3Tests(unittest.TestCase):
             pass
 
         return
+
+    def test_s3_list_multipart_uploads(self):
+        if not self.driver.supports_s3_multipart_upload:
+            return
+
+        self.mock_response_klass.type = 'LIST_MULTIPART'
+        S3StorageDriver.RESPONSES_PER_REQUEST = 2
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        for upload in self.driver.ex_iterate_multipart_uploads(container):
+            self.assertNotEqual(upload.key, None)
+            self.assertNotEqual(upload.id, None)
+            self.assertNotEqual(upload.created_at, None)
+            self.assertNotEqual(upload.owner, None)
+            self.assertNotEqual(upload.initiator, None)
+
+    def test_s3_abort_multipart_uploads(self):
+        if not self.driver.supports_s3_multipart_upload:
+            return
+
+        self.mock_response_klass.type = 'LIST_MULTIPART'
+        S3StorageDriver.RESPONSES_PER_REQUEST = 2
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        self.driver.ex_cleanup_all_multipart_uploads(container)
 
     def test_delete_object_not_found(self):
         self.mock_response_klass.type = 'NOT_FOUND'

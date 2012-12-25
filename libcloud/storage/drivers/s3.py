@@ -667,7 +667,7 @@ class S3StorageDriver(StorageDriver):
                 upload_id = finder(node, 'UploadId')
                 created_at = finder(node, 'Initiated')
                 initiator = finder(initiator, 'DisplayName')
-                owner = finder(owner, 'Owner')
+                owner = finder(owner, 'DisplayName')
 
                 yield S3MultipartUpload(key, upload_id, created_at,
                                         initiator, owner)
