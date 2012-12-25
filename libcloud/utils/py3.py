@@ -22,6 +22,7 @@ from __future__ import absolute_import
 
 import sys
 import types
+from xml.etree import ElementTree as ET
 
 PY3 = False
 PY2 = False
@@ -59,6 +60,9 @@ if sys.version_info >= (3, 0):
     next = __builtins__['next']
     def dictvalues(d):
         return list(d.values())
+
+    def tostring(node):
+        return ET.tostring(node, encoding='unicode')
 else:
     PY2 = True
     import httplib
@@ -83,6 +87,8 @@ else:
         return i.next()
     def dictvalues(d):
         return d.values()
+
+    tostring = ET.tostring
 
 if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
     PY25 = True

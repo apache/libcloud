@@ -20,13 +20,14 @@ import hmac
 import sys
 
 from hashlib import sha1
-from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.etree.ElementTree import Element, SubElement
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import tostring
 
 from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
@@ -57,6 +58,9 @@ NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
 
 # AWS multi-part chunks must be minimum 5MB
 CHUNK_SIZE = 5 * 1024 * 1024
+
+# Desired number of responses in each request
+RESPONSES_PER_REQUEST = 100
 
 
 class S3Response(AWSBaseResponse):
@@ -166,6 +170,38 @@ class S3Connection(ConnectionUserAndKey):
             hmac.new(b(secret_key), b(string_to_sign), digestmod=sha1).digest()
         )
         return b64_hmac.decode('utf-8')
+
+
+class S3MultipartUpload(object):
+    """Class representing an amazon s3 multipart upload"""
+
+    def __init__(self, key, id, created_at, initiator, owner):
+        """Class representing an amazon s3 multipart upload
+
+        @param key: The object/key that was being uploaded
+        @type key: C{str}
+
+        @param id: The upload id assigned by amazon
+        @type id: C{str}
+
+        @param created_at: The date/time at which the upload was started
+        @type created_at: C{str}
+
+        @param initiator: The AWS owner/IAM user who initiated this
+        @type initiator: C{str}
+
+        @param owner: The AWS owner/IAM who will own this object
+        @type owner: C{str}
+        """
+
+        self.key = key
+        self.id = id
+        self.created_at = created_at
+        self.initiator = initiator
+        self.owner = owner
+
+    def __repr__(self):
+        return ('<S3MultipartUpload: key=%s>' % (self.key))
 
 
 class S3StorageDriver(StorageDriver):
@@ -278,11 +314,7 @@ class S3StorageDriver(StorageDriver):
             child = SubElement(root, 'LocationConstraint')
             child.text = self.ex_location_name
 
-            if PY3:
-                encoding = 'unicode'
-            else:
-                encoding = None
-            data = tostring(root, encoding=encoding)
+            data = tostring(root)
         else:
             data = ''
 
@@ -501,12 +533,7 @@ class S3StorageDriver(StorageDriver):
             etag_id = SubElement(part, 'ETag')
             etag_id.text = str(etag)
 
-        if PY3:
-            encoding = 'unicode'
-        else:
-            encoding = None
-
-        data = tostring(root, encoding=encoding)
+        data = tostring(root)
 
         params = {'uploadId': upload_id}
         request_path = '?'.join((object_path, urlencode(params)))
@@ -584,6 +611,98 @@ class S3StorageDriver(StorageDriver):
                                           object_name=obj.name)
 
         return False
+
+    def ex_iterate_multipart_uploads(self, container, prefix=None,
+                                     delimiter=None):
+        """Extension method for listing all S3 multipart uploads
+
+        @param container: The container holding the uploads
+        @type container: L{Container}
+
+        @keyword prefix: Print only uploads of objects with this prefix
+        @type prefix: C{str}
+
+        @keyword delimiter: The object/key names are grouped based on
+            being split by this delimiter
+        @type delimiter: C{str}
+
+        @return: A generator of S3MultipartUpload instances.
+        @rtype: C{generator} of L{S3MultipartUpload}
+        """
+
+        if not self.supports_s3_multipart_upload:
+            raise LibcloudError('Feature not supported', driver=self)
+
+        # Get the data for a specific container
+        request_path = '%s/?uploads' % (self._get_container_path(container))
+        params = {'max-uploads': RESPONSES_PER_REQUEST}
+
+        if prefix:
+            params['prefix'] = prefix
+
+        if delimiter:
+            params['delimiter'] = delimiter
+
+        finder = lambda node, text: node.findtext(fixxpath(xpath=text,
+                                                  namespace=self.namespace))
+
+        while True:
+            response = self.connection.request(request_path, params=params)
+
+            if response.status != httplib.OK:
+                raise LibcloudError('Error fetching multipart uploads. '
+                                    'Got code: %s' % (response.status),
+                                    driver=self)
+
+            body = response.parse_body()
+            for node in body.findall(fixxpath(xpath='Upload',
+                                              namespace=self.namespace)):
+
+                initiator = node.find(fixxpath(xpath='Initiator',
+                                               namespace=self.namespace))
+                owner = node.find(fixxpath(xpath='Owner',
+                                           namespace=self.namespace))
+
+                key = finder(node, 'Key')
+                upload_id = finder(node, 'UploadId')
+                created_at = finder(node, 'Initiated')
+                initiator = finder(initiator, 'DisplayName')
+                owner = finder(owner, 'Owner')
+
+                yield S3MultipartUpload(key, upload_id, created_at,
+                                        initiator, owner)
+
+            # Check if this is the last entry in the listing
+            is_truncated = body.findtext(fixxpath(xpath='IsTruncated',
+                                                  namespace=self.namespace))
+
+            if is_truncated.lower() == 'false':
+                break
+
+            # Provide params for the next request
+            upload_marker = body.findtext(fixxpath(xpath='NextUploadIdMarker',
+                                                   namespace=self.namespace))
+            key_marker = body.findtext(fixxpath(xpath='NextKeyMarker',
+                                                namespace=self.namespace))
+
+            params['key-marker'] = key_marker
+            params['upload-id-marker'] = upload_marker
+
+    def ex_cleanup_all_multipart_uploads(self, container, prefix=None):
+        """Extension method for removing S3 multipart uploads
+
+        @param container: The container holding the uploads
+        @type container: L{Container}
+
+        @keyword prefix: Delete only uploads of objects with this prefix
+        @type prefix: C{str}
+        """
+
+        # Iterate through the container and delete the upload ids
+        for upload in self.ex_iterate_multipart_uploads(container, prefix,
+                                                        delimiter=None):
+            object_path = '/%s/%s' % (container.name, upload.key)
+            self._abort_multipart(object_path, upload.id)
 
     def _clean_object_name(self, name):
         name = urlquote(name)
