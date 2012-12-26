@@ -315,7 +315,7 @@ REGION_DETAILS = {
 }
 
 VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
-VALID_EC2_DATACENTERS.remove('nimbus')
+VALID_EC2_DATACENTERS = [d for d in VALID_EC2_DATACENTERS if d != 'nimbus']
 
 
 class EC2NodeLocation(NodeLocation):

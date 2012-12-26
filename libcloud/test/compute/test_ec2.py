@@ -41,7 +41,7 @@ from libcloud.test.secrets import EC2_PARAMS
 class BaseEC2Tests(LibcloudTestCase):
     def test_instantiate_driver_valid_datacenters(self):
         datacenters = REGION_DETAILS.keys()
-        datacenters.remove('nimbus')
+        datacenters = [d for d in datacenters if d != 'nimbus']
 
         for datacenter in datacenters:
             EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})

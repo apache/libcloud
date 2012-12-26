@@ -41,6 +41,13 @@ from libcloud.test.file_fixtures import StorageFileFixtures # pylint: disable-ms
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
 
+try:
+    parse_qs = urlparse.parse_qs
+except AttributeError:
+    import cgi
+    parse_qs = cgi.parse_qs
+
+
 class S3MockHttp(StorageMockHttp, MockHttpTestCase):
 
     fixtures = StorageFileFixtures('s3')
@@ -200,7 +207,7 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
         TEST_ID = 'VXBsb2FkIElEIGZvciA2aWWpbmcncyBteS1tb3ZpZS5tMnRzIHVwbG9hZA'
 
         query_string = urlparse.urlsplit(url).query
-        query = urlparse.parse_qs(query_string)
+        query = parse_qs(query_string)
 
         if not query.get('uploadId', False):
             self.fail('Request doesnt contain uploadId query parameter')
@@ -252,7 +259,7 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
 
     def _foo_bar_container_LIST_MULTIPART(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
-        query = urlparse.parse_qs(query_string)
+        query = parse_qs(query_string)
 
         if 'key-marker' not in query:
             body = self.fixtures.load('list_multipart_1.xml')
