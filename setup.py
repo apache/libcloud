@@ -132,7 +132,7 @@ class TestCommand(Command):
             for t in glob(pjoin(self._dir, test_path, 'test_*.py')):
                 if (sys.version_info >= (3, 2) and sys.version_info < (3, 3) or
                     sys.version_info >= (2, 5) and sys.version_info < (2, 6)) \
-                        and t.find('test_local') == 0:
+                        and t.find('test_local.py') >= 0:
                     # Lockfile doesn't work with 2.5 and 3.2. Temporary disable
                     # local_storage test until fixes have been submitted
                     # upstream
