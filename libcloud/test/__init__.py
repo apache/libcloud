@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import random
 import unittest
 
@@ -86,7 +87,10 @@ class MockResponse(object):
         return self.body.read(*args, **kwargs)
 
     def next(self):
-        return next(self.body)
+        if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
+            return self.body.next()
+        else:
+            return next(self.body)
 
     def __next__(self):
         return self.next()
