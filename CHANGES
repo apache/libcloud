@@ -57,7 +57,7 @@ Changes with Apache Libcloud in development:
      the code to make it easier to maintain.
      [Tomaz Muraus]
 
-   - Add a new driver for HostVirtual (http://www.vr.org) provider. 
+   - Add a new driver for HostVirtual (http://www.vr.org) provider.
      (LIBCLOUD-249)
      [Dinesh Bhoopathy]
 
@@ -67,6 +67,14 @@ Changes with Apache Libcloud in development:
 
    - Add a new driver for new Asia Pacific (Sydney) EC2 region.
      [Tomaz Muraus]
+
+   - Add support for managing security groups to the OpenStack driver. This
+     patch adds the following extension methods:
+     - ex_list_security_groups, ex_get_node_security_groups methods
+     - ex_create_security_group, ex_delete_security_group
+     - ex_create_security_group_rule, ex_delete_security_group_rule
+     (LIBCLOUD-253)
+     [L. Schaub]
 
   *) Storage
 
