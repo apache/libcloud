@@ -44,12 +44,12 @@ class BaseEC2Tests(LibcloudTestCase):
         datacenters.remove('nimbus')
 
         for datacenter in datacenters:
-            EC2NodeDriver(*EC2_PARAMS, datacenter=datacenter)
+            EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
 
     def test_instantiate_driver_invalid_datacenters(self):
         for datacenter in ['invalid', 'nimbus']:
             try:
-                EC2NodeDriver(*EC2_PARAMS, datacenter=datacenter)
+                EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
             except ValueError:
                 pass
             else:
@@ -66,7 +66,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
 
-        self.driver = EC2NodeDriver(*EC2_PARAMS, datacenter=self.datacenter)
+        self.driver = EC2NodeDriver(*EC2_PARAMS,
+                                    **{'datacenter': self.datacenter})
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
