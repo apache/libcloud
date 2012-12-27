@@ -123,7 +123,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
         # replace . with literal .
         # http://www.dns.net/dnsrd/trick.html#legal-hostnames
         valid_patterns = [
-            re.compile('^' + pattern.replace(r".", r"\.") \
+            re.compile('^' + pattern.replace(r".", r"\.")
                                     .replace(r"*", r"[0-9A-Za-z\-]+") + '$')
             for pattern in (set(common_name) | set(alt_names))]
 

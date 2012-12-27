@@ -17,6 +17,7 @@ Provider related utilities
 """
 
 from libcloud.utils.misc import get_driver as _get_provider_driver
+from libcloud.utils.misc import set_driver as _set_provider_driver
 from libcloud.compute.types import Provider, DEPRECATED_RACKSPACE_PROVIDERS
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 
@@ -42,6 +43,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.ec2', 'EC2APNENodeDriver'),
     Provider.EC2_SA_EAST:
         ('libcloud.compute.drivers.ec2', 'EC2SAEastNodeDriver'),
+    Provider.EC2_AP_SOUTHEAST2:
+        ('libcloud.compute.drivers.ec2', 'EC2APSESydneyNodeDriver'),
     Provider.ECP:
         ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
     Provider.ELASTICHOSTS_UK1:
@@ -115,7 +118,9 @@ DRIVERS = {
     Provider.VCL:
         ('libcloud.compute.drivers.vcl', 'VCLNodeDriver'),
     Provider.KTUCLOUD:
-        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver')
+        ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver'),
+    Provider.HOSTVIRTUAL:
+        ('libcloud.compute.drivers.hostvirtual', 'HostVirtualNodeDriver')
 }
 
 
@@ -132,3 +137,6 @@ def get_driver(provider):
         raise Exception(msg)
 
     return _get_provider_driver(DRIVERS, provider)
+
+def set_driver(provider, module, klass):
+    return _set_provider_driver(DRIVERS, provider, module, klass)

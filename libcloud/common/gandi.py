@@ -172,7 +172,7 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1(b("%s:%s:%d" % \
+        return hashlib.sha1(b("%s:%s:%s" % \
             (self.uuid_prefix, self.id, self.driver.type))).hexdigest()
 
 

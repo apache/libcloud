@@ -14,15 +14,14 @@
 # limitations under the License.
 
 from libcloud.utils.misc import get_driver as get_provider_driver
+from libcloud.utils.misc import set_driver as set_provider_driver
 from libcloud.storage.types import Provider
 
 DRIVERS = {
     Provider.DUMMY:
         ('libcloud.storage.drivers.dummy', 'DummyStorageDriver'),
-    Provider.CLOUDFILES_US:
-        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
-    Provider.CLOUDFILES_UK:
-        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver'),
+    Provider.CLOUDFILES:
+        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesStorageDriver'),
     Provider.S3:
         ('libcloud.storage.drivers.s3', 'S3StorageDriver'),
     Provider.S3_US_WEST:
@@ -43,9 +42,20 @@ DRIVERS = {
         ('libcloud.storage.drivers.cloudfiles',
          'CloudFilesSwiftStorageDriver'),
     Provider.NIMBUS:
-        ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver')
+        ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver'),
+    Provider.LOCAL:
+        ('libcloud.storage.drivers.local', 'LocalStorageDriver'),
+
+    # Deprecated
+    Provider.CLOUDFILES_US:
+        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
+    Provider.CLOUDFILES_UK:
+        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver')
 }
 
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)
+
+def set_driver(provider, module, klass):
+    return set_provider_driver(DRIVERS, provider, module, klass)

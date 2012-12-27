@@ -28,12 +28,13 @@ __all__ = [
 
 
 class Provider(object):
-    DUMMY = 0
-    LINODE = 1
-    ZERIGO = 2
-    RACKSPACE_US = 3
-    RACKSPACE_UK = 4
-    ROUTE53 = 5
+    DUMMY = 'dummy'
+    LINODE = 'linode'
+    ZERIGO = 'zerigo'
+    RACKSPACE_US = 'rackspace_us'
+    RACKSPACE_UK = 'rackspace_uk'
+    ROUTE53 = 'route53'
+    HOSTVIRTUAL = 'hostvirtual'
 
 
 class RecordType(object):

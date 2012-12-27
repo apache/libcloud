@@ -308,7 +308,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
 
         if vnc_password:
-            node_data.update({'vnc:ip': 'auto', 'vnc:password': vnc_password})
+            node_data.update({'vnc:password': vnc_password})
 
         response = self.connection.request(
             action='/servers/create', data=json.dumps(node_data),
@@ -463,9 +463,11 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                  'mem': data['mem'],
                  'started': data['started']}
 
-        if 'vnc:ip' in data and 'vnc:password' in data:
-            extra.update({'vnc_ip': data['vnc:ip'],
-                          'vnc_password': data['vnc:password']})
+        if 'vnc:ip' in data:
+            extra['vnc:ip'] = data['vnc:ip']
+
+        if 'vnc:password' in data:
+            extra['vnc:password'] = data['vnc:password']
 
         if ssh_password:
             extra.update({'password': ssh_password})

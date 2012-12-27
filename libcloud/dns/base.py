@@ -164,14 +164,34 @@ class DNSDriver(BaseDriver):
         """
         return list(self.RECORD_TYPE_MAP.keys())
 
+    def iterate_zones(self):
+        """
+        Return a generator to iterate over available zones.
+
+        @rtype: C{generator} of L{Zone}
+        """
+        raise NotImplementedError(
+            'iterate_zones not implemented for this driver')
+
     def list_zones(self):
         """
         Return a list of zones.
 
         @rtype: C{list} of L{Zone}
         """
+        return list(self.iterate_zones())
+
+    def iterate_records(self, zone):
+        """
+        Return a generator to iterate over records for the provided zone.
+
+        @param zone: Zone to list records for.
+        @type zone: L{Zone}
+
+        @rtype: C{generator} of L{Record}
+        """
         raise NotImplementedError(
-            'list_zones not implemented for this driver')
+            'iterate_records not implemented for this driver')
 
     def list_records(self, zone):
         """
@@ -182,8 +202,7 @@ class DNSDriver(BaseDriver):
 
         @rtype: C{list} of L{Record}
         """
-        raise NotImplementedError(
-            'list_records not implemented for this driver')
+        return list(self.iterate_records(zone))
 
     def get_zone(self, zone_id):
         """

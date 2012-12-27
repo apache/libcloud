@@ -45,7 +45,6 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
-from libcloud.common.types import LazyList
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 
@@ -102,13 +101,14 @@ class CloudFilesConnection(OpenStackBaseConnection):
     Base connection class for the Cloudfiles driver.
     """
 
-    auth_url = AUTH_URL_US
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
 
-    def __init__(self, user_id, key, secure=True, **kwargs):
+    def __init__(self, user_id, key, secure=True, auth_url=AUTH_URL_US,
+                 **kwargs):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
                                                    **kwargs)
+        self.auth_url = auth_url
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
@@ -131,10 +131,15 @@ class CloudFilesConnection(OpenStackBaseConnection):
         if self.cdn_request:
             eps = cdn_eps
 
+        if self._ex_force_service_region:
+            eps = [ep for ep in eps if ep['region'].lower() == self._ex_force_service_region.lower()]
+
         if len(eps) == 0:
+            # TODO: Better error message
             raise LibcloudError('Could not find specified endpoint')
 
         ep = eps[0]
+
         if 'publicURL' in ep:
             return ep['publicURL']
         else:
@@ -158,22 +163,6 @@ class CloudFilesConnection(OpenStackBaseConnection):
             params=params, data=data,
             method=method, headers=headers,
             raw=raw)
-
-
-class CloudFilesUSConnection(CloudFilesConnection):
-    """
-    Connection class for the Cloudfiles US endpoint.
-    """
-
-    auth_url = AUTH_URL_US
-
-
-class CloudFilesUKConnection(CloudFilesConnection):
-    """
-    Connection class for the Cloudfiles UK endpoint.
-    """
-
-    auth_url = AUTH_URL_UK
 
 
 class CloudFilesSwiftConnection(CloudFilesConnection):
@@ -203,10 +192,7 @@ class CloudFilesSwiftConnection(CloudFilesConnection):
 
 class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     """
-    Base CloudFiles driver.
-
-    You should never create an instance of this class directly but use US/US
-    class.
+    CloudFiles driver.
     """
     name = 'CloudFiles'
     website = 'http://www.rackspace.com/'
@@ -215,11 +201,29 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     hash_type = 'md5'
     supports_chunked_encoding = True
 
-    def __init__(self, *args, **kwargs):
-        OpenStackDriverMixin.__init__(self, *args, **kwargs)
-        super(CloudFilesStorageDriver, self).__init__(*args, **kwargs)
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 datacenter='ord', **kwargs):
+        """
+        @inherits:  L{StorageDriver.__init__}
 
-    def list_containers(self):
+        @param datacenter: Datacenter ID which should be used.
+        @type datacenter: C{str}
+        """
+        if hasattr(self, '_datacenter'):
+            datacenter = self._datacenter
+
+        # This is here for backard compatibility
+        if 'ex_force_service_region' in kwargs:
+            datacenter = kwargs['ex_force_service_region']
+
+        self.datacenter = datacenter
+
+        OpenStackDriverMixin.__init__(self, (), **kwargs)
+        super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
+                                            secure=secure, host=host,
+                                            port=port, **kwargs)
+
+    def iterate_containers(self):
         response = self.connection.request('')
 
         if response.status == httplib.NO_CONTENT:
@@ -228,10 +232,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             return self._to_container_list(json.loads(response.body))
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
-
-    def list_container_objects(self, container):
-        value_dict = {'container': container}
-        return LazyList(get_more=self._get_more, value_dict=value_dict)
 
     def get_container(self, container_name):
         response = self.connection.request('/%s' % (container_name),
@@ -408,6 +408,26 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                           driver=self)
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
+
+    def ex_purge_object_from_cdn(self, obj, email=None):
+        """
+        Purge edge cache for the specified object.
+
+        @param email: Email where a notification will be sent when the job
+        completes. (optional)
+        @type email: C{str}
+        """
+        container_name = self._clean_container_name(obj.container.name)
+        object_name = self._clean_object_name(obj.name)
+        headers = {'X-Purge-Email': email} if email else {}
+
+        response = self.connection.request('/%s/%s' % (container_name,
+                                                       object_name),
+                                           method='DELETE',
+                                           headers=headers,
+                                           cdn_request=True)
+
+        return response.status == httplib.NO_CONTENT
 
     def ex_get_meta_data(self):
         """
@@ -618,30 +638,30 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return obj
 
-    def _get_more(self, last_key, value_dict):
-        container = value_dict['container']
+    def iterate_container_objects(self, container):
         params = {}
 
-        if last_key:
-            params['marker'] = last_key
+        while True:
+            response = self.connection.request('/%s' % (container.name),
+                                               params=params)
 
-        response = self.connection.request('/%s' % (container.name),
-                                           params=params)
+            if response.status == httplib.NO_CONTENT:
+                # Empty or non-existent container
+                break
+            elif response.status == httplib.OK:
+                objects = self._to_object_list(json.loads(response.body),
+                                               container)
 
-        if response.status == httplib.NO_CONTENT:
-            # Empty or inexistent container
-            return [], None, True
-        elif response.status == httplib.OK:
-            objects = self._to_object_list(json.loads(response.body),
-                                           container)
+                if len(objects) == 0:
+                    break
 
-            # TODO: Is this really needed?
-            if len(objects) == 0:
-                return [], None, True
+                for obj in objects:
+                    yield obj
+                params['marker'] = obj.name
 
-            return objects, objects[-1].name, False
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+            else:
+                raise LibcloudError('Unexpected status code: %s' %
+                                    (response.status))
 
     def _put_object(self, container, object_name, upload_func,
                     upload_func_kwargs, extra=None, file_path=None,
@@ -718,15 +738,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _to_container_list(self, response):
         # @TODO: Handle more then 10k containers - use "lazy list"?
-        containers = []
-
         for container in response:
             extra = {'object_count': int(container['count']),
                      'size': int(container['bytes'])}
-            containers.append(Container(name=container['name'], extra=extra,
-                                        driver=self))
-
-        return containers
+            yield Container(name=container['name'], extra=extra, driver=self)
 
     def _to_object_list(self, response, container):
         objects = []
@@ -771,7 +786,15 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return obj
 
     def _ex_connection_class_kwargs(self):
-        return self.openstack_connection_kwargs()
+        kwargs = {'ex_force_service_region': self.datacenter}
+
+        if self.datacenter in ['dfw', 'ord']:
+            kwargs['auth_url'] = AUTH_URL_US
+        elif self.datacenter == 'lon':
+            kwargs['auth_url'] = AUTH_URL_UK
+
+        kwargs.update(self.openstack_connection_kwargs())
+        return kwargs
 
 
 class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
@@ -781,7 +804,7 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_US
     name = 'CloudFiles (US)'
-    connectionCls = CloudFilesUSConnection
+    _datacenter = 'ord'
 
 
 class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
@@ -810,7 +833,7 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_UK
     name = 'CloudFiles (UK)'
-    connectionCls = CloudFilesUKConnection
+    _datacenter = 'lon'
 
 
 class FileChunkReader(object):
@@ -862,7 +885,7 @@ class ChunkStreamReader(object):
             raise StopIteration
 
         block_size = self.chunk_size
-        if self.bytes_read + block_size >\
+        if self.bytes_read + block_size > \
                 self.end_block - self.start_block:
             block_size = self.end_block - self.start_block - self.bytes_read
             self.stop_iteration = True

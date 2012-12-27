@@ -41,30 +41,54 @@ from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
+from libcloud.storage.drivers.cloudfiles import CloudFilesUSStorageDriver
+from libcloud.storage.drivers.cloudfiles import CloudFilesUKStorageDriver
 from libcloud.storage.drivers.dummy import DummyIterator
 
 from libcloud.test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
+from libcloud.test import MockHttpTestCase # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures, OpenStackFixtures # pylint: disable-msg=E0611
-
-current_hash = None
 
 
 class CloudFilesTests(unittest.TestCase):
+    driver_klass = CloudFilesStorageDriver
+    driver_args = ('dummy', 'dummy')
+    driver_kwargs = {}
+    datacenter = 'ord'
 
     def setUp(self):
-        CloudFilesStorageDriver.connectionCls.conn_classes = (
+        self.driver_klass.connectionCls.conn_classes = (
             None, CloudFilesMockHttp)
-        CloudFilesStorageDriver.connectionCls.rawResponseCls = \
+        self.driver_klass.connectionCls.rawResponseCls = \
                                               CloudFilesMockRawResponse
         CloudFilesMockHttp.type = None
         CloudFilesMockRawResponse.type = None
-        self.driver = CloudFilesStorageDriver('dummy', 'dummy')
+        self.driver = self.driver_klass(*self.driver_args,
+                                        **self.driver_kwargs)
+
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
         self._remove_test_file()
 
     def tearDown(self):
         self._remove_test_file()
+
+    def test_invalid_ex_force_service_region(self):
+        driver = CloudFilesStorageDriver('driver', 'dummy',
+                ex_force_service_region='invalid')
+
+        try:
+            driver.list_containers()
+        except:
+            e = sys.exc_info()[1]
+            self.assertEquals(e.value, 'Could not find specified endpoint')
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_force_service_region(self):
+        driver = CloudFilesStorageDriver('driver', 'dummy',
+                ex_force_service_region='ORD')
+        driver.list_containers()
 
     def test_force_auth_token_kwargs(self):
         base_url = 'https://cdn2.clouddrive.com/v1/MossoCloudFS'
@@ -104,8 +128,10 @@ class CloudFilesTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_service_catalog(self):
+        url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS' % \
+              (self.datacenter)
         self.assertEqual(
-             'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS',
+             url,
              self.driver.connection.get_endpoint())
 
         self.driver.connection.cdn_request = True
@@ -497,6 +523,26 @@ class CloudFilesTests(unittest.TestCase):
         self.assertTrue('bytes_used' in meta_data)
         self.assertTrue('temp_url_key' in meta_data)
 
+    def test_ex_purge_object_from_cdn(self):
+        CloudFilesMockHttp.type = 'PURGE_SUCCESS'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
+
+        self.assertTrue(self.driver.ex_purge_object_from_cdn(obj=obj))
+
+    def test_ex_purge_object_from_cdn_with_email(self):
+        CloudFilesMockHttp.type = 'PURGE_SUCCESS_EMAIL'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='object', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self)
+        self.assertTrue(self.driver.ex_purge_object_from_cdn(obj=obj,
+                                                       email='test@test.com'))
+
     @mock.patch('os.path.getsize')
     def test_ex_multipart_upload_object_for_small_files(self, getsize_mock):
         getsize_mock.return_value = 0
@@ -638,7 +684,7 @@ class CloudFilesTests(unittest.TestCase):
                                     "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
         sig = hmac.new(b('foo'), b(hmac_body), sha1).hexdigest()
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
-        temp_url = 'https://storage101.ord1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (sig)
+        temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.datacenter, sig)
 
         self.assertEquals(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
@@ -663,7 +709,17 @@ class CloudFilesTests(unittest.TestCase):
             pass
 
 
-class CloudFilesMockHttp(StorageMockHttp):
+class CloudFilesDeprecatedUSTests(CloudFilesTests):
+    driver_klass = CloudFilesUSStorageDriver
+    datacenter = 'ord'
+
+
+class CloudFilesDeprecatedUKTests(CloudFilesTests):
+    driver_klass = CloudFilesUKStorageDriver
+    datacenter = 'lon'
+
+
+class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
 
     fixtures = StorageFileFixtures('cloudfiles')
     auth_fixtures = OpenStackFixtures()
@@ -833,6 +889,25 @@ class CloudFilesMockHttp(StorageMockHttp):
             status_code = httplib.ACCEPTED
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
+    def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS(
+        self, method, url, body, headers):
+
+        if method == 'DELETE':
+            # test_ex_purge_from_cdn
+            headers = self.base_headers
+            status_code = httplib.NO_CONTENT
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_object_PURGE_SUCCESS_EMAIL(
+        self, method, url, body, headers):
+
+        if method == 'DELETE':
+            # test_ex_purge_from_cdn_with_email
+            self.assertEqual(headers['X-Purge-Email'], 'test@test.com')
+            headers = self.base_headers
+            status_code = httplib.NO_CONTENT
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
     def _v1_MossoCloudFS_foo_bar_container_NOT_FOUND(
         self, method, url, body, headers):
 
@@ -917,8 +992,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
         self, method, url, body, headers):
 
         # test_download_object_success
-        body = 'test'
-        self._data = self._generate_random_data(1000)
+        body = self._generate_random_data(1000)
         return (httplib.OK,
                 body,
                 self.base_headers,
@@ -927,8 +1001,7 @@ class CloudFilesMockRawResponse(MockRawResponse):
     def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_INVALID_SIZE(
         self, method, url, body, headers):
         # test_download_object_invalid_file_size
-        body = 'test'
-        self._data = self._generate_random_data(100)
+        body = self._generate_random_data(100)
         return (httplib.OK, body,
                 self.base_headers,
                 httplib.responses[httplib.OK])

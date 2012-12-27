@@ -19,8 +19,8 @@ from xml.etree import ElementTree as ET
 
 from libcloud.utils.py3 import httplib, b
 
-from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver
-from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, Vdc
+from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject
+from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess
 from libcloud.compute.base import Node, NodeImage
 from libcloud.compute.types import NodeState
 
@@ -139,6 +139,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             'state': NodeState.RUNNING,
             'public_ips': ['65.41.67.2'],
             'private_ips': ['65.41.67.2'],
+            'os_type': 'rhel5_64Guest'
         }]})
         node = ret[1]
         self.assertEqual(node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b')
@@ -153,6 +154,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             'state': NodeState.RUNNING,
             'public_ips': ['192.168.0.103'],
             'private_ips': ['192.168.0.100'],
+            'os_type': 'rhel5_64Guest'
             }]})
 
     def test_reboot_node(self):
@@ -243,6 +245,30 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_power_off_node(node)
 
+    def test_ex_query(self):
+        results = self.driver.ex_query('user', filter='name==jrambo', page=2, page_size=30, sort_desc='startDate')
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['type'], 'UserRecord')
+        self.assertEqual(results[0]['name'], 'jrambo')
+        self.assertEqual(results[0]['isLdapUser'], 'true')
+
+    def test_ex_get_control_access(self):
+        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        control_access = self.driver.ex_get_control_access(node)
+        self.assertEqual(control_access.everyone_access_level, ControlAccess.AccessLevel.READ_ONLY)
+        self.assertEqual(len(control_access.subjects), 1)
+        self.assertEqual(control_access.subjects[0].type, 'group')
+        self.assertEqual(control_access.subjects[0].name, 'MyGroup')
+        self.assertEqual(control_access.subjects[0].id, 'https://vm-vcloud/api/admin/group/b8202c48-7151-4e61-9a6c-155474c7d413')
+        self.assertEqual(control_access.subjects[0].access_level, ControlAccess.AccessLevel.FULL_CONTROL)
+
+    def test_ex_set_control_access(self):
+        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        control_access = ControlAccess(node, None, [Subject(
+            name =  'MyGroup',
+            type = 'group',
+            access_level = ControlAccess.AccessLevel.FULL_CONTROL)])
+        self.driver.ex_set_control_access(node, control_access)
 
 
 class TerremarkMockHttp(MockHttp):
@@ -306,13 +332,14 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
 
-class VCloud_1_5_MockHttp(MockHttp):
+class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
     def request(self, method, url, body=None, headers=None, raw=False):
-        assert url.startswith('/api/'), '"{0}" is invalid. Needs to start with "/api". ' \
-        'The passed URL should be just the path, not full URL.'.format(url)
+        self.assertTrue(url.startswith('/api/'), ('"%s" is invalid. Needs to ' \
+                        'start with "/api". The passed URL should be just ' \
+                        'the path, not full URL.', url))
         super(VCloud_1_5_MockHttp, self).request(method, url, body, headers,
                                                  raw)
 
@@ -463,6 +490,37 @@ class VCloud_1_5_MockHttp(MockHttp):
         assert method == 'POST'
         body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_all.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
+
+    def _api_query(self, method, url, body, headers):
+        assert method == 'GET'
+        if 'type=user' in url:
+            self.assertTrue('page=2' in url)
+            self.assertTrue('filter=(name==jrambo)' in url)
+            self.assertTrue('sortDesc=startDate')
+            body = self.fixtures.load('api_query_user.xml')
+        elif 'type=group' in url:
+            body = self.fixtures.load('api_query_group.xml')
+        else:
+            raise AssertionError('Unexpected query type')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_controlAccess(self, method, url, body, headers):
+        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_action_controlAccess(self, method, url, body, headers):
+        body = str(body)
+        self.assertTrue(method == 'POST')
+        self.assertTrue('<IsSharedToEveryone>false</IsSharedToEveryone>' in body)
+        self.assertTrue('<Subject href="https://vm-vcloud/api/admin/group/b8202c48-7151-4e61-9a6c-155474c7d413" />' in body)
+        self.assertTrue('<AccessLevel>FullControl</AccessLevel>' in body)
+        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(self, method, url, body, headers):
+        body = self.fixtures.load('api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

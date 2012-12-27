@@ -98,7 +98,7 @@ class UuidMixin(object):
         same UUID!
         """
         if not self._uuid:
-            self._uuid = hashlib.sha1(b('%s:%d' %
+            self._uuid = hashlib.sha1(b('%s:%s' %
                                       (self.id, self.driver.type))).hexdigest()
 
         return self._uuid

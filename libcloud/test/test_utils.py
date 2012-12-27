@@ -24,7 +24,7 @@ warnings.simplefilter('default')
 
 import libcloud.utils.files
 
-from libcloud.utils.misc import get_driver
+from libcloud.utils.misc import get_driver, set_driver
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
@@ -71,6 +71,46 @@ class TestUtils(unittest.TestCase):
             pass
         else:
             self.fail('Invalid provider, but an exception was not thrown')
+
+    def test_set_driver(self):
+        # Set an existing driver
+        try:
+            driver = set_driver(DRIVERS, Provider.DUMMY,
+                                'libcloud.storage.drivers.dummy',
+                                'DummyStorageDriver')
+        except AttributeError:
+            pass
+
+        # Register a new driver
+        driver = set_driver(DRIVERS, 'testingset',
+                            'libcloud.storage.drivers.dummy',
+                            'DummyStorageDriver')
+
+        self.assertTrue(driver is not None)
+
+        # Register it again
+        try:
+            set_driver(DRIVERS, 'testingset',
+                       'libcloud.storage.drivers.dummy',
+                       'DummyStorageDriver')
+        except AttributeError:
+            pass
+
+        # Register an invalid module
+        try:
+            set_driver(DRIVERS, 'testingnew',
+                       'libcloud.storage.drivers.dummy1',
+                       'DummyStorageDriver')
+        except ImportError:
+            pass
+
+        # Register an invalid class
+        try:
+            set_driver(DRIVERS, 'testingnew',
+                       'libcloud.storage.drivers.dummy',
+                       'DummyStorageDriver1')
+        except AttributeError:
+            pass
 
     def test_deprecated_warning(self):
         warnings.showwarning = show_warning

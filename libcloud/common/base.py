@@ -44,6 +44,23 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 LibcloudHTTPConnection = httplib.HTTPConnection
 
 
+class HTTPResponse(httplib.HTTPResponse):
+    # On python 2.6 some calls can hang because HEAD isn't quite properly
+    # supported.
+    # In particular this happens on S3 when calls are made to get_object to
+    # objects that don't exist.
+    # This applies the behaviour from 2.7, fixing the hangs.
+    def read(self, amt=None):
+        if self.fp is None:
+            return ''
+
+        if self._method == 'HEAD':
+            self.close()
+            return ''
+
+        return httplib.HTTPResponse.read(self, amt)
+
+
 class Response(object):
     """
     A Base Response class to derive from.
@@ -267,9 +284,14 @@ class LoggingConnection():
             ht += "\r\n0\r\n"
         else:
             ht += u(body)
-        rr = httplib.HTTPResponse(sock=fakesock(ht),
-                                  method=r._method,
-                                  debuglevel=r.debuglevel)
+
+        if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
+            cls = HTTPResponse
+        else:
+            cls = httplib.HTTPResponse
+
+        rr = cls(sock=fakesock(ht), method=r._method,
+                 debuglevel=r.debuglevel)
         rr.begin()
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
@@ -494,7 +516,8 @@ class Connection(object):
         object's `request` that does some helpful pre-processing.
 
         @type action: C{str}
-        @param action: A path
+        @param action: A path. This can include arguments. If included,
+            any extra parameters are appended to the existing ones.
 
         @type params: C{dict}
         @param params: Optional mapping of additional parameters to send. If
@@ -552,7 +575,10 @@ class Connection(object):
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urlencode(params)))
+            if '?' in action:
+                url = '&'.join((action, urlencode(params)))
+            else:
+                url = '?'.join((action, urlencode(params)))
         else:
             url = action
 
@@ -785,7 +811,7 @@ class BaseDriver(object):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, **kwargs):
         """
-        @param    key:    API key or username to used (required)
+        @param    key:    API key or username to be used (required)
         @type     key:    C{str}
 
         @param    secret: Secret password to be used (required)
