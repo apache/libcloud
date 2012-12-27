@@ -499,7 +499,7 @@ class S3StorageDriver(StorageDriver):
 
             chunk_hash = self._get_hash_function()
             chunk_hash.update(data)
-            chunk_hash = base64.b64encode(chunk_hash.digest())
+            chunk_hash = base64.b64encode(chunk_hash.digest()).decode('utf-8')
 
             # This provides an extra level of data check and is recommended
             # by amazon
