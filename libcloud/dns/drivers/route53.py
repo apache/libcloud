@@ -176,29 +176,29 @@ class Route53DNSDriver(DNSDriver):
         for r in zone.list_records():
             if r.type in (RecordType.NS, ):
                 continue
-            deletions.append(("DELETE", r.name, self.RECORD_TYPE_MAP[r.type], r.data, r.extra))
-        self._post_changeset(zone.id, deletions)
+            deletions.append(("DELETE", r.name, r.type, r.data, r.extra))
+        self._post_changeset(zone, deletions)
 
         # Now delete the zone itself
         response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id), method="DELETE".object)
 
     def create_record(self, name, zone, type, data, extra=None):
-        self._post_changeset(zone.id, [
-            ("CREATE", name, self.RECORD_TYPE_MAP[type], data, extra),
+        self._post_changeset(zone, [
+            ("CREATE", name, type, data, extra),
             ])
 
     def update_record(self, record, name, type, data, extra):
-        self._post_changeset(record.zone.id, [
-            ("DELETE", record.name, self.RECORD_TYPE_MAP[record.type], data, extra),
-            ("CREATE", name, self.RECORD_TYPE_MAP[type], data, extra),
+        self._post_changeset(record.zone, [
+            ("DELETE", record.name, record.type, record.data, record.extra),
+            ("CREATE", name, type, data, extra),
             ])
 
     def delete_record(self, record):
-        self._post_changeset(record.zone.id, [
-            ("DELETE", record.name, self.RECORD_TYPE_MAP[record.type], record.data, record.extra),
+        self._post_changeset(record.zone, [
+            ("DELETE", record.name, record.type, record.data, record.extra),
             ])
 
-    def _post_changeset(self, zone_id, changes_list):
+    def _post_changeset(self, zone, changes_list):
         changeset = ET.Element("ChangeResourceRecordSetsRequest", {'xmlns': NAMESPACE})
         batch = ET.SubElement(changeset, "ChangeBatch")
         changes = ET.SubElement(batch, "Changes")
@@ -208,9 +208,9 @@ class Route53DNSDriver(DNSDriver):
             ET.SubElement(change, "Action").text = action
 
             rrs = ET.SubElement(change, "ResourceRecordSet")
-            ET.SubElement(rrs, "Name").text = name
+            ET.SubElement(rrs, "Name").text = name + "." + zone.domain
             ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type_]
-            ET.SubElement(rrs, "TTL").text = extra.get("ttl", 0)
+            ET.SubElement(rrs, "TTL").text = extra.get("ttl", "0")
             ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = data
 
         response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object)
@@ -253,6 +253,9 @@ class Route53DNSDriver(DNSDriver):
     def _to_record(self, elem, zone):
         name = findtext(element=elem, xpath='Name',
                         namespace=NAMESPACE)
+        assert name.endswith(zone.domain)
+        name = name[:-len(zone.domain)-1]
+
         type = self._string_to_record_type(findtext(element=elem, xpath='Type',
                                                     namespace=NAMESPACE))
         ttl = findtext(element=elem, xpath='TTL', namespace=NAMESPACE)
