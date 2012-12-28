@@ -180,7 +180,7 @@ class Route53DNSDriver(DNSDriver):
         self._post_changeset(zone, deletions)
 
         # Now delete the zone itself
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id), method="DELETE".object)
+        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object)
 
     def create_record(self, name, zone, type, data, extra=None):
         self._post_changeset(zone, [
