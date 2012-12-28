@@ -39,10 +39,12 @@ def enable_debug(fo):
     from libcloud.common.base import (Connection,
                                       LoggingHTTPConnection,
                                       LoggingHTTPSConnection)
+    from libcloud.common.process import execute
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
     Connection.conn_classes = (LoggingHTTPConnection,
                                LoggingHTTPSConnection)
+    execute.log = fo
 
 
 def _init_once():
