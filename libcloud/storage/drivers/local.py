@@ -76,6 +76,7 @@ class LocalStorageDriver(StorageDriver):
     connectionCls = Connection
     name = 'Local Storage'
     website = 'http://example.com'
+    hash_type = 'md5'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
@@ -169,13 +170,20 @@ class LocalStorageDriver(StorageDriver):
             raise ObjectDoesNotExistError(value=None, driver=self,
                                           object_name=object_name)
 
+        # Make a hash for the file based on the metadata. We can safely
+        # use only the mtime attribute here. If the file contents change,
+        # the underlying file-system will change mtime
+        data_hash = self._get_hash_function()
+        data_hash.update(str(stat.st_mtime))
+        data_hash = data_hash.hexdigest()
+
         extra = {}
         extra['creation_time'] = stat.st_ctime
         extra['access_time'] = stat.st_atime
         extra['modify_time'] = stat.st_mtime
 
         return Object(name=object_name, size=stat.st_size, extra=extra,
-                      driver=self, container=container, hash=None,
+                      driver=self, container=container, hash=data_hash,
                       meta_data=None)
 
     def iterate_containers(self):

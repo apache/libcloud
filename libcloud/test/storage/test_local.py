@@ -99,7 +99,7 @@ class LocalTests(unittest.TestCase):
         self.assertEqual(len(objects), 5)
 
         for obj in objects:
-            self.assertEqual(obj.hash, None)
+            self.assertNotEqual(obj.hash, None)
             self.assertEqual(obj.size, 4096)
             self.assertEqual(obj.container.name, 'test3')
             self.assertTrue('creation_time' in obj.extra)
@@ -157,7 +157,7 @@ class LocalTests(unittest.TestCase):
         self.assertEqual(obj.name, 'test')
         self.assertEqual(obj.container.name, 'test5')
         self.assertEqual(obj.size, 4096)
-        self.assertEqual(obj.hash, None)
+        self.assertNotEqual(obj.hash, None)
         self.assertTrue('creation_time' in obj.extra)
         self.assertTrue('modify_time' in obj.extra)
         self.assertTrue('access_time' in obj.extra)
