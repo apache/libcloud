@@ -83,7 +83,8 @@ Changes with Apache Libcloud in development:
 
   *) Storage
 
-    - Add a new local storage driver.
+    - Add a new local storage driver. 
+      (LIBCLOUD-252, LIBCLOUD-258, LIBCLOUD-265, LIBCLOUD-273)
       [Mahendra M]
 
     - Fix a bug which caused the connection to not be closed when using Python
