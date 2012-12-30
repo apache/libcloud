@@ -83,7 +83,7 @@ Changes with Apache Libcloud in development:
 
   *) Storage
 
-    - Add a new local storage driver. 
+    - Add a new local storage driver.
       (LIBCLOUD-252, LIBCLOUD-258, LIBCLOUD-265, LIBCLOUD-273)
       [Mahendra M]
 
@@ -128,6 +128,38 @@ Changes with Apache Libcloud in development:
 
     - New driver for HostVirtual provider (www.vr.org). (LIBCLOUD-249)
       [Dinesh Bhoopathy]
+
+Changes with Apache Libcloud 0.11.4:
+
+  *) General
+
+    - Fix some of tests failures which happened in Python 3.3 due to randomized
+      dictionary ordering. (LIBCLOUD-245)
+      [Tomaz Muraus]
+
+  *) Compute
+
+    - Fix a bug where a numeric instead of a string value was used for the
+      content-length header in VCloud driver. (LIBCLOUD-256)
+      [Brian DeGeeter, Tomaz Muraus]
+
+  *) Storage
+
+    - Don't ignore ex_force_service_region argument in the CloudFiles driver.
+      (LIBCLOUD-260)
+      [Dan Di Spaltro]
+
+    - Fix a bug which caused the connection to not be closed when using Python
+      2.6 and calling get_object on an object which doesn't exist in the S3
+      driver. (LIBCLOUD-257)
+      [John Carr]
+
+  *) DNS
+
+    - Update 'if type' checks in the update_record methods to behave correctly
+      if users passes in RecordType.A with a value of 0 - if type is not None.
+      (LIBCLOUD-247)
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.11.3:
 
