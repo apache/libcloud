@@ -30,7 +30,13 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.local import LocalStorageDriver
+
+try:
+    from libcloud.storage.drivers.local import LocalStorageDriver
+except ImportError:
+    print('lockfile library is not available, skipping tests...')
+    LocalStorageDriver = None
+
 from libcloud.storage.drivers.dummy import DummyIterator
 
 
@@ -308,6 +314,11 @@ class LocalTests(unittest.TestCase):
         obj.delete()
         container.delete()
         self.remove_tmp_file(tmppath)
+
+
+if not LocalStorageDriver:
+    class LocalTests(unittest.TestCase):
+        pass
 
 
 if __name__ == '__main__':
