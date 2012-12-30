@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 import sys
 import shutil
@@ -34,7 +36,7 @@ from libcloud.storage.types import ObjectHashMismatchError
 try:
     from libcloud.storage.drivers.local import LocalStorageDriver
 except ImportError:
-    print('lockfile library is not available, skipping tests...')
+    print('lockfile library is not available, skipping local_storage tests...')
     LocalStorageDriver = None
 
 from libcloud.storage.drivers.dummy import DummyIterator
@@ -56,10 +58,11 @@ class LocalTests(unittest.TestCase):
         self.key = None
 
     def make_tmp_file(self):
-        tmppath = tempfile.mktemp()
-        tmpfile = open(tmppath, 'w')
-        tmpfile.write('blah' * 1024)
-        tmpfile.close()
+        _, tmppath = tempfile.mkstemp()
+
+        with open(tmppath, 'w') as fp:
+            fp.write('blah' * 1024)
+
         return tmppath
 
     def remove_tmp_file(self, tmppath):
