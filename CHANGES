@@ -81,6 +81,10 @@ Changes with Apache Libcloud in development:
      anymore.
      [Rick Copeland, Tomaz Muraus]
 
+    - Add new EC2 instance type - High Storage Eight Extra Large Instance
+      (hs1.8xlarge).
+      [Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.

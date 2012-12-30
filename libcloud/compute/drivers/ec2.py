@@ -154,6 +154,13 @@ INSTANCE_TYPES = {
         'ram': 63488,
         'disk': 3370,
         'bandwidth': None
+    },
+    'hs1.8xlarge': {
+        'id': 'hs1.8xlarge',
+        'name': 'High Storage Eight Extra Large Instance',
+        'ram': 119808,
+        'disk': 48000,
+        'bandwidth': None
     }
 }
 
@@ -177,7 +184,8 @@ REGION_DETAILS = {
             'c1.xlarge',
             'cc1.4xlarge',
             'cc2.8xlarge',
-            'cg1.4xlarge'
+            'cg1.4xlarge',
+            'hs1.8xlarge'
         ]
     },
     'us-west-1': {

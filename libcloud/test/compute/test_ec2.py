@@ -223,7 +223,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 15)
+                self.assertEqual(len(sizes), 16)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)

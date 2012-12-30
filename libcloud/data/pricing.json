@@ -61,7 +61,8 @@
             "m3.2xlarge": 1.16,
             "cg1.4xlarge": 2.1,
             "cc1.4xlarge": 1.3,
-            "cc2.8xlarge": 2.4
+            "cc2.8xlarge": 2.4,
+            "hs1.8xlarge": 4.6
         },
 
         "ec2_us_west": {
