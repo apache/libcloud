@@ -21,6 +21,7 @@ import base64
 import hmac
 import datetime
 import uuid
+from libcloud.utils.py3 import httplib
 
 from hashlib import sha1
 from xml.etree import ElementTree as ET
@@ -43,17 +44,8 @@ API_ROOT = '/%s/' % (API_VERSION)
 NAMESPACE = 'https://%s/doc%s' % (API_HOST, API_ROOT)
 
 
-class Route53Error(LibcloudError):
-    def __init__(self, code, errors):
-        self.code = code
-        self.errors = errors or []
-
-    def __str__(self):
-        return 'Errors: %s' % (', '.join(self.errors))
-
-    def __repr__(self):
-        return('<Route53 response code=%s>' %
-               (self.code, len(self.errors)))
+class InvalidChangeBatch(LibcloudError):
+    pass
 
 
 class Route53DNSResponse(AWSBaseResponse):
@@ -63,7 +55,8 @@ class Route53DNSResponse(AWSBaseResponse):
     def success(self):
         return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
-    def error(self):
+    def parse_error(self):
+        context = self.connection.context
         status = int(self.status)
 
         if status == 403:
@@ -72,19 +65,28 @@ class Route53DNSResponse(AWSBaseResponse):
             else:
                 raise InvalidCredsError(self.body)
 
-        elif status == 400:
-            context = self.connection.context
-            messages = []
-            if context['InvalidChangeBatch']['Messages']:
-                for message in context['InvalidChangeBatch']['Messages']:
-                    messages.append(message['Message'])
+        try:
+            body = ET.XML(self.body)
+        except:
+            raise MalformedResponseError("Failed to parse XML",
+                                         body=self.body, driver=EC2NodeDriver)
 
-                raise Route53Error('InvalidChangeBatch message(s): %s ',
-                                   messages)
+        errs = findall(element=body, xpath='Error', namespace=NAMESPACE)
+        if errs:
+            t, code, message = errs[0].getchildren()
+            print t.text, code.text, message.text
+            if code.text == "NoSuchHostedZone":
+                raise ZoneDoesNotExistError(value=message.text, driver=self, zone_id=context.get('zone_id',''))
+            elif code.text == "InvalidChangeBatch":
+                raise InvalidChangeBatch(value=message.text)
+            return message.text
+
+        return self.body
 
 
 class Route53Connection(ConnectionUserAndKey):
     host = API_HOST
+    responseCls = Route53DNSResponse
 
     def pre_connect_hook(self, params, headers):
         time_string = datetime.datetime.utcnow() \
@@ -124,34 +126,48 @@ class Route53DNSDriver(DNSDriver):
         RecordType.AAAA: 'AAAA',
         RecordType.CNAME: 'CNAME',
         RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV'
+        RecordType.SRV: 'SRV',
+        RecordType.PTR: 'PTR',
+        RecordType.SOA: 'SOA',
+        RecordType.SPF: 'SPF',
+        RecordType.TXT: 'TXT',
     }
 
     def list_zones(self):
-        data = ET.XML(self.connection.request(API_ROOT + 'hostedzone').object)
+        data = self.connection.request(API_ROOT + 'hostedzone').object
         zones = self._to_zones(data=data)
         return zones
 
     def list_records(self, zone):
-        data = ET.XML(self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone.id + '/rrset').object)
+        self.connection.set_context({'zone_id': zone.id})
+        data = self.connection.request(API_ROOT + 'hostedzone/'
+                      + zone.id + '/rrset').object
         records = self._to_records(data=data, zone=zone)
         return records
 
     def get_zone(self, zone_id):
-        data = ET.XML(self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone_id).object)
+        self.connection.set_context({'zone_id': zone_id})
+        data = self.connection.request(API_ROOT + 'hostedzone/'
+                      + zone_id).object
         zone = self._to_zone(elem=findall(element=data, xpath='HostedZone',
                                           namespace=NAMESPACE)[0])
         return zone
 
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
-        data = ET.XML(self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone_id + '/rrset?maxitems=1&name=' + record_id)
-                      .object)
+        record_type, name = record_id.split(":",1)
+        self.connection.set_context({'zone_id': zone_id})
+        data = self.connection.request(API_ROOT + 'hostedzone/'
+                      + zone_id + '/rrset?maxitems=1&name=' + name + '&type=' + record_type).object
 
         record = self._to_records(data=data, zone=zone)[0]
+
+        # A cute aspect of the /rrset filters is that they are more pagination hints than filters!!
+        # So will return a result even if its not what you asked for.
+        record_type_num = self._string_to_record_type(record_type)
+        if record.name != name or record.type != record_type_num:
+            raise RecordDoesNotExistError(value='', driver=self, record_id=record_id)
+
         return record
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
@@ -161,7 +177,7 @@ class Route53DNSDriver(DNSDriver):
         if extra and "Comment" in extra:
             ET.SubElement(ET.SubElement(zone, "HostedZoneConfig"), "Comment").text = extra['Comment']
 
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone', method="POST", data=ET.tostring(zone)).object)
+        response = self.connection.request(API_ROOT+'hostedzone', method="POST", data=ET.tostring(zone)).object
 
         return self._to_zone(elem=findall(element=response, xpath='HostedZone', namespace=NAMESPACE)[0])
 
@@ -174,32 +190,38 @@ class Route53DNSDriver(DNSDriver):
         # before we can delete the zone
         deletions = []
         for r in zone.list_records():
-            if r.type in (RecordType.NS, ):
+            if r.type in (RecordType.NS, RecordType.SOA):
                 continue
             deletions.append(("DELETE", r.name, r.type, r.data, r.extra))
-        self._post_changeset(zone, deletions)
+        if deletions:
+            self._post_changeset(zone, deletions)
 
         # Now delete the zone itself
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object)
+        response = self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object
         return True
 
     def create_record(self, name, zone, type, data, extra=None):
         self._post_changeset(zone, [
             ("CREATE", name, type, data, extra),
             ])
-        return Record(id=name, name=name, type=type, data=data, zone=zone, driver=self, extra=extra)
+        id = ":".join((self.RECORD_TYPE_MAP[type], name))
+        return Record(id=id, name=name, type=type, data=data, zone=zone, driver=self, extra=extra)
 
     def update_record(self, record, name, type, data, extra):
         self._post_changeset(record.zone, [
             ("DELETE", record.name, record.type, record.data, record.extra),
             ("CREATE", name, type, data, extra),
             ])
-        return Record(id=name, name=name, type=type, data=data, zone=record.zone, driver=self, extra=extra)
+        id = ":".join((self.RECORD_TYPE_MAP[type], name))
+        return Record(id=id, name=name, type=type, data=data, zone=record.zone, driver=self, extra=extra)
 
     def delete_record(self, record):
-        self._post_changeset(record.zone, [
-            ("DELETE", record.name, record.type, record.data, record.extra),
-            ])
+        try:
+            self._post_changeset(record.zone, [
+                ("DELETE", record.name, record.type, record.data, record.extra),
+                ])
+        except InvalidChangeBatch:
+            raise RecordDoesNotExistError(value='', driver=self, record_id=record.id)
         return True
 
     def _post_changeset(self, zone, changes_list):
@@ -217,8 +239,8 @@ class Route53DNSDriver(DNSDriver):
             ET.SubElement(rrs, "TTL").text = extra.get("ttl", "0")
             ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = data
 
-        response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object)
-        #FIXME: Some error checking would be nice
+        self.connection.set_context({'zone_id': zone.id})
+        response = self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object
 
     def _to_zones(self, data):
         zones = []
@@ -272,6 +294,8 @@ class Route53DNSDriver(DNSDriver):
                         namespace=NAMESPACE)
 
         extra = {'ttl': ttl}
-        record = Record(id=name, name=name, type=type, data=data, zone=zone,
+
+        id = ":".join((self.RECORD_TYPE_MAP[type], name))
+        record = Record(id=id, name=name, type=type, data=data, zone=zone,
                         driver=self, extra=extra)
         return record

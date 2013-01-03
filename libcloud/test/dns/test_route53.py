@@ -35,7 +35,7 @@ class Route53Tests(unittest.TestCase):
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
-        self.assertEqual(len(record_types), 7)
+        self.assertEqual(len(record_types), 10)
         self.assertTrue(RecordType.A in record_types)
 
     def test_list_zones(self):
@@ -54,7 +54,7 @@ class Route53Tests(unittest.TestCase):
 
         record = records[1]
         self.assertEqual(record.name, 'www')
-        self.assertEqual(record.id, 'www')
+        self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
 
@@ -65,7 +65,7 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(zone.domain, 't.com')
 
     def test_get_record(self):
-        record = self.driver.get_record(zone_id='47234', record_id='wibble')
+        record = self.driver.get_record(zone_id='47234', record_id='CNAME:wibble')
         self.assertEqual(record.name, 'wibble')
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, 't.com')
@@ -87,10 +87,10 @@ class Route53Tests(unittest.TestCase):
         Route53MockHttp.type = 'ZONE_DOES_NOT_EXIST'
 
         try:
-            self.driver.get_zone(zone_id='4444')
+            self.driver.get_zone(zone_id='47234')
         except ZoneDoesNotExistError:
             e = sys.exc_info()[1]
-            self.assertEqual(e.zone_id, '4444')
+            self.assertEqual(e.zone_id, '47234')
         else:
             self.fail('Exception was not thrown')
 
@@ -108,7 +108,7 @@ class Route53Tests(unittest.TestCase):
         Route53MockHttp.type = 'RECORD_DOES_NOT_EXIST'
 
         try:
-            self.driver.get_record(zone_id='47234', record_id='4444')
+            self.driver.get_record(zone_id='47234', record_id='CNAME:doesnotexist.t.com')
         except RecordDoesNotExistError:
             pass
         else:
@@ -128,7 +128,7 @@ class Route53Tests(unittest.TestCase):
             extra={'ttl': 0}
         )
 
-        self.assertEqual(record.id, 'www')
+        self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
@@ -142,7 +142,7 @@ class Route53Tests(unittest.TestCase):
                                                    data='::1', extra={"ttl":0})
         self.assertEqual(record.data, '208.111.35.173')
 
-        self.assertEqual(updated_record.id, record.id)
+        self.assertEqual(updated_record.id, 'AAAA:www')
         self.assertEqual(updated_record.name, 'www')
         self.assertEqual(updated_record.zone, record.zone)
         self.assertEqual(updated_record.type, RecordType.AAAA)
@@ -193,10 +193,11 @@ class Route53MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_02_29_hostedzone(self, method, url, body, headers):
+        #print method, url, body, headers
         if method == "POST":
             body = self.fixtures.load("create_zone.xml")
-        else:
-            body = self.fixtures.load('list_zones.xml')
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+        body = self.fixtures.load('list_zones.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_02_29_hostedzone_47234_rrset(self, method, url, body, headers):
@@ -215,6 +216,12 @@ class Route53MockHttp(MockHttp):
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
+    def _2012_02_29_hostedzone_47234_ZONE_DOES_NOT_EXIST(self, method,
+                                              url, body, headers):
+        body = self.fixtures.load('zone_does_not_exist.xml')
+        return (httplib.NOT_FOUND, body,
+                {}, httplib.responses[httplib.NOT_FOUND])
+
     def _2012_02_29_hostedzone_47234_rrset_ZONE_DOES_NOT_EXIST(self, method,
                                               url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.xml')
@@ -223,15 +230,16 @@ class Route53MockHttp(MockHttp):
 
     def _2012_02_29_hostedzone_47234_rrset_RECORD_DOES_NOT_EXIST(self, method,
                                               url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('invalid_change_batch.xml')
+            return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
         body = self.fixtures.load('record_does_not_exist.xml')
-        return (httplib.NOT_FOUND, body,
-                {}, httplib.responses[httplib.NOT_FOUND])
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         
     def _2012_02_29_hostedzone_47234_RECORD_DOES_NOT_EXIST(self, method,
                                               url, body, headers):
-        body = self.fixtures.load('record_does_not_exist.xml')
-        return (httplib.NOT_FOUND, body,
-                {}, httplib.responses[httplib.NOT_FOUND])
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':

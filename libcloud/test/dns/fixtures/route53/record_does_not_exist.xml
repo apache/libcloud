@@ -1,9 +1,17 @@
-<?xml version="1.0"?>
-<ErrorResponse xmlns="https://route53.amazonaws.com/doc/2011-05-05/">
-  <Error>
-    <Type>Sender</Type>
-    <Code>MalformedInput</Code>
-    <Message>Unexpected list element termination</Message>
-  </Error>
-  <RequestId>376c64a6-6194-11e1-847f-ddaa49e4c811</RequestId>
-</ErrorResponse>
+<?xml version="1.0" encoding="UTF-8"?>
+<ListResourceRecordSetsResponse xmlns="https://route53.amazonaws.com/doc/2012-02-29/">
+   <ResourceRecordSets>
+
+      <ResourceRecordSet>
+         <Name>definitely.not.what.you.askedfor.t.com</Name>
+         <Type>CNAME</Type>
+         <TTL>86400</TTL>
+         <ResourceRecords>
+            <ResourceRecord>
+               <Value>t.com</Value>
+            </ResourceRecord>
+         </ResourceRecords>
+      </ResourceRecordSet>
+
+  </ResourceRecordSets>
+</ListResourceRecordSetsResponse>

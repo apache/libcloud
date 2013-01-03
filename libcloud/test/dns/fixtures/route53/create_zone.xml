@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CreateHostedZoneResponse xmlns="https://route53.amazonaws.com/doc/
-2012-02-29/">
+<CreateHostedZoneResponse xmlns="https://route53.amazonaws.com/doc/2012-02-29/">
    <HostedZone>
       <Id>/hostedzone/47234</Id>
       <Name>t.com</Name>
