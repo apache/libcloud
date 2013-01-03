@@ -151,7 +151,7 @@ class Route53DNSDriver(DNSDriver):
                       + zone_id + '/rrset?maxitems=1&name=' + record_id)
                       .object)
 
-        record = self._to_records(data=data, zone=zone)
+        record = self._to_records(data=data, zone=zone)[0]
         return record
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
@@ -181,22 +181,26 @@ class Route53DNSDriver(DNSDriver):
 
         # Now delete the zone itself
         response = ET.XML(self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object)
+        return True
 
     def create_record(self, name, zone, type, data, extra=None):
         self._post_changeset(zone, [
             ("CREATE", name, type, data, extra),
             ])
+        return Record(id=name, name=name, type=type, data=data, zone=zone, driver=self, extra=extra)
 
     def update_record(self, record, name, type, data, extra):
         self._post_changeset(record.zone, [
             ("DELETE", record.name, record.type, record.data, record.extra),
             ("CREATE", name, type, data, extra),
             ])
+        return Record(id=name, name=name, type=type, data=data, zone=record.zone, driver=self, extra=extra)
 
     def delete_record(self, record):
         self._post_changeset(record.zone, [
             ("DELETE", record.name, record.type, record.data, record.extra),
             ])
+        return True
 
     def _post_changeset(self, zone, changes_list):
         changeset = ET.Element("ChangeResourceRecordSetsRequest", {'xmlns': NAMESPACE})
