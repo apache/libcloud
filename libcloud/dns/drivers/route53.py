@@ -26,7 +26,7 @@ from libcloud.utils.py3 import httplib
 from hashlib import sha1
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, urlencode
 
 from libcloud.utils.xml import findtext, findall, fixxpath
 from libcloud.dns.types import Provider, RecordType
@@ -67,16 +67,15 @@ class Route53DNSResponse(AWSBaseResponse):
 
         try:
             body = ET.XML(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError("Failed to parse XML",
-                                         body=self.body, driver=EC2NodeDriver)
+                                         body=self.body, driver=self.driver)
 
         errs = findall(element=body, xpath='Error', namespace=NAMESPACE)
         if errs:
             t, code, message = errs[0].getchildren()
-            print t.text, code.text, message.text
             if code.text == "NoSuchHostedZone":
-                raise ZoneDoesNotExistError(value=message.text, driver=self, zone_id=context.get('zone_id',''))
+                raise ZoneDoesNotExistError(value=message.text, driver=self, zone_id=context.get('zone_id',None))
             elif code.text == "InvalidChangeBatch":
                 raise InvalidChangeBatch(value=message.text)
             return message.text
@@ -157,8 +156,9 @@ class Route53DNSDriver(DNSDriver):
         zone = self.get_zone(zone_id=zone_id)
         record_type, name = record_id.split(":",1)
         self.connection.set_context({'zone_id': zone_id})
+        params = urlencode({'name': name, 'type': record_type})
         data = self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone_id + '/rrset?maxitems=1&name=' + name + '&type=' + record_type).object
+                      + zone_id + '/rrset?' + params).object
 
         record = self._to_records(data=data, zone=zone)[0]
 
