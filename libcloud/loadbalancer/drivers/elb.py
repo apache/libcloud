@@ -26,9 +26,7 @@ import time
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import urlquote
-from libcloud.utils.py3 import b
-
+from libcloud.utils.py3 import httplib, urlquote, b
 from libcloud.utils.xml import findtext, findall, fixxpath
 from libcloud.loadbalancer.types import State
 from libcloud.loadbalancer.base import Driver, LoadBalancer, Algorithm, Member
@@ -43,27 +41,14 @@ API_ROOT = '/%s/' % (API_VERSION)
 API_NAMESPACE = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (API_VERSION, )
 
 
-class ELBError(LibcloudError):
-    def __init__(self, code, errors):
-        self.code = code
-        self.errors = errors or []
-
-    def __str__(self):
-        return 'Errors: %s' % (', '.join(self.errors))
-
-    def __repr__(self):
-        return('<ELB response code=%s>' %
-               (self.code, len(self.errors)))
-
-
-class ELBDNSResponse(AWSBaseResponse):
+class ELBResponse(AWSBaseResponse):
     """
     Amazon ELB response class.
     """
     def success(self):
         return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
-    def error(self):
+    def parse_error(self):
         status = int(self.status)
 
         if status == 403:
@@ -72,19 +57,10 @@ class ELBDNSResponse(AWSBaseResponse):
             else:
                 raise InvalidCredsError(self.body)
 
-        elif status == 400:
-            context = self.connection.context
-            messages = []
-            if context['InvalidChangeBatch']['Messages']:
-                for message in context['InvalidChangeBatch']['Messages']:
-                    messages.append(message['Message'])
-
-                raise ELBError('InvalidChangeBatch message(s): %s ',
-                                   messages)
-
 
 class ELBConnection(ConnectionUserAndKey):
     host = API_HOST
+    responseCls = ELBResponse
 
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
@@ -130,7 +106,7 @@ class ELBConnection(ConnectionUserAndKey):
         return b64_hmac.decode('utf-8')
 
 
-class ElasticLoadBalancerDriver(Driver):
+class ElasticLBDriver(Driver):
 
     name = 'ELB'
     website = 'http://aws.amazon.com/elasticloadbalancing/'
@@ -143,8 +119,7 @@ class ElasticLoadBalancerDriver(Driver):
         params = {
             "Action": "DescribeLoadBalancers",
             }
-        results = self.connection.request(API_ROOT, params=params).object
-        data = ET.XML(results)
+        data = self.connection.request(API_ROOT, params=params).object
         return self._to_balancers(data)
 
     def create_balancer(self, name, port, protocol, algorithm, members):
@@ -157,13 +132,12 @@ class ElasticLoadBalancerDriver(Driver):
             "Listeners.member.1.Protocol": protocol.upper(),
             "AvailabilityZones.member.1": "eu-west-1a",
             }
-        results = self.connection.request(API_ROOT, params=params).object
-        data = ET.XML(results)
+        data = self.connection.request(API_ROOT, params=params).object
 
         lb = LoadBalancer(
             id=name,
             name=name,
-            state=State.UNKNOWN,
+            state=State.PENDING,
             ip=findtext(element=data, xpath="DNSName", namespace=API_NAMESPACE),
             port=port,
             driver=self.connection.driver
@@ -177,16 +151,15 @@ class ElasticLoadBalancerDriver(Driver):
             "Action": "DeleteLoadBalancer",
             "LoadBalancerName": balancer.id,
             }
-        results = self.connection.request(API_ROOT, params=params).object
-        data = ET.XML(results)
+        data = self.connection.request(API_ROOT, params=params).object
+        return True
 
     def get_balancer(self, balancer_id):
         params = {
             "Action": "DescribeLoadBalancers",
             "LoadBalancerNames.member.1": balancer_id,
             }
-        results = self.connection.request(API_ROOT, params=params).object
-        data = ET.XML(results)
+        data = self.connection.request(API_ROOT, params=params).object
         return self._to_balancers(data)[0]
 
     def balancer_attach_compute_node(self, balancer, node):
@@ -195,8 +168,7 @@ class ElasticLoadBalancerDriver(Driver):
             "LoadBalancerName": balancer.id,
             "Instances.member.1.InstanceId": node.id,
             }
-        results = self.connection.request(API_ROOT, params=params).object
-        data = ET.XML(results)
+        data = self.connection.request(API_ROOT, params=params).object
         balancer._members.append(Member(node.id, None, None, balancer=self))
 
     def balancer_attach_member(self, balancer, member):
@@ -208,9 +180,9 @@ class ElasticLoadBalancerDriver(Driver):
             "LoadBalancerName": balancer.id,
             "Instances.member.1.InstanceId": member.id,
             }
-        results = self.connection.request(API_ROOT, params=params).object
-        data = ET.XML(results)
+        data = self.connection.request(API_ROOT, params=params).object
         balancer._members = [m for m in balancer._members if m.id != member.id]
+        return True
 
     def balancer_list_members(self, balancer):
         return balancer._members
@@ -235,7 +207,7 @@ class ElasticLoadBalancerDriver(Driver):
             )
 
         members = findall(element=element, xpath="Instances/member/InstanceId", namespace=API_NAMESPACE)
-        lb._members = [Member(m.text, None, None, balancer=self) for m in members]
+        lb._members = [Member(m.text, None, None, balancer=lb) for m in members]
 
         return lb
 
