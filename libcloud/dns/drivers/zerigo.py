@@ -276,6 +276,21 @@ class ZerigoDNSDriver(DNSDriver):
         zone = self._to_zone(elem=data)
         return zone
 
+    def ex_get_records_by_domain(self, zone_id, domain):
+        """
+        Retrieves a host entry by domain name for given zone_id
+
+        @param zone_id: the zone_id
+        @param domain: fqdn
+        @type  domain: C{str}
+        """
+        zone = self.get_zone(zone_id=zone_id)
+        self.connection.set_context({'resource': 'record', 'id': domain})
+        path = API_ROOT + 'hosts.xml'
+        data = self.connection.request(path, params={'fqdn': domain}).object
+        records = [self._to_record(elem=x, zone=zone) for x in data]
+        return records
+
     def ex_force_slave_axfr(self, zone):
         """
         Force a zone transfer.
