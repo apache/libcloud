@@ -122,7 +122,7 @@ class VMWareDriver(NodeDriver):
         # exposed on a NodeSize
         if size:
             if size.ram:
-               self._action("writeVariable", target, "runtimeConfig", "ram", str(size.ram))
+               self._action("writeVariable", target, "runtimeConfig", "memsize", str(size.ram))
 
         self._action("writeVariable", target, "runtimeConfig", "displayName", name)
         self._action("start", target, "nogui")
