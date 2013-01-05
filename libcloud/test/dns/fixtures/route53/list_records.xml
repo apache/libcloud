@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListResourceRecordSetsResponse xmlns="https://route53.amazonaws.com/doc/2012-02-29/">
+   <ResourceRecordSets>
+
+      <ResourceRecordSet>
+         <Name>wibble.t.com</Name>
+         <Type>CNAME</Type>
+         <TTL>86400</TTL>
+         <ResourceRecords>
+            <ResourceRecord>
+               <Value>t.com</Value>
+            </ResourceRecord>
+         </ResourceRecords>
+      </ResourceRecordSet>
+
+      <ResourceRecordSet>
+         <Name>www.t.com</Name>
+         <Type>A</Type>
+         <TTL>86400</TTL>
+         <ResourceRecords>
+            <ResourceRecord>
+               <Value>208.111.35.173</Value>
+            </ResourceRecord>
+         </ResourceRecords>
+      </ResourceRecordSet>
+
+      <ResourceRecordSet>
+         <Name>blahblah.t.com</Name>
+         <Type>A</Type>
+         <TTL>86400</TTL>
+         <ResourceRecords>
+            <ResourceRecord>
+               <Value>208.111.35.173</Value>
+            </ResourceRecord>
+         </ResourceRecords>
+      </ResourceRecordSet>
+
+  </ResourceRecordSets>
+</ListResourceRecordSetsResponse>
+
