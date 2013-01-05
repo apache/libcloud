@@ -36,7 +36,7 @@ from libcloud.common.base import ConnectionUserAndKey
 
 
 API_VERSION = '2012-06-01'
-API_HOST = 'elasticloadbalancing.eu-west-1.amazonaws.com'
+API_HOST = 'elasticloadbalancing.%s.amazonaws.com'
 API_ROOT = '/%s/' % (API_VERSION)
 API_NAMESPACE = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (API_VERSION, )
 
@@ -112,6 +112,11 @@ class ElasticLBDriver(Driver):
     website = 'http://aws.amazon.com/elasticloadbalancing/'
     connectionCls = ELBConnection
 
+    def __init__(self, access_id, secret, region):
+        super(ElasticLBDriver, self).__init__(access_id, secret)
+        self.region = region
+        self.connection.host = API_HOST % region
+
     def list_protocols(self):
         return ["tcp", "ssl", "http", "https"]
 
@@ -122,7 +127,9 @@ class ElasticLBDriver(Driver):
         data = self.connection.request(API_ROOT, params=params).object
         return self._to_balancers(data)
 
-    def create_balancer(self, name, port, protocol, algorithm, members):
+    def create_balancer(self, name, port, protocol, algorithm, members, ex_members_availability_zones=None):
+        if not ex_members_availability_zones:
+            ex_members_availability_zones = ['a']
         params = {
             "Action": "CreateLoadBalancer",
             "LoadBalancerName": name,
@@ -130,8 +137,10 @@ class ElasticLBDriver(Driver):
             "Listeners.member.1.InstanceProtocol": protocol.upper(),
             "Listeners.member.1.LoadBalancerPort": str(port),
             "Listeners.member.1.Protocol": protocol.upper(),
-            "AvailabilityZones.member.1": "eu-west-1a",
             }
+        for i, z in enumerate(ex_members_availability_zones, 1):
+            params["AvailabilityZones.member.%d" % i] = "-".join(self.region, z)
+
         data = self.connection.request(API_ROOT, params=params).object
 
         lb = LoadBalancer(
@@ -170,9 +179,6 @@ class ElasticLBDriver(Driver):
             }
         data = self.connection.request(API_ROOT, params=params).object
         balancer._members.append(Member(node.id, None, None, balancer=self))
-
-    def balancer_attach_member(self, balancer, member):
-        raise LibcloudError("Can only attach compute nodes to elastic load balancers")
 
     def balancer_detach_member(self, balancer, member):
         params = {
