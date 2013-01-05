@@ -133,6 +133,9 @@ Changes with Apache Libcloud in development:
     - New driver for HostVirtual provider (www.vr.org). (LIBCLOUD-249)
       [Dinesh Bhoopathy]
 
+    - Finish Amazon Route53 driver. (LIBCLOUD-132)
+      [John Carr]
+
 Changes with Apache Libcloud 0.11.4:
 
   *) General
