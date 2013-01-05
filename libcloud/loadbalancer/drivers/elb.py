@@ -139,7 +139,7 @@ class ElasticLBDriver(Driver):
             'Listeners.member.1.Protocol': protocol.upper(),
             }
         for i, z in enumerate(ex_members_availability_zones, 1):
-            params['AvailabilityZones.member.%d' % i] = '-'.join(self.region, z)
+            params['AvailabilityZones.member.%d' % i] = '-'.join((self.region, z))
 
         data = self.connection.request(API_ROOT, params=params).object
 
