@@ -75,7 +75,9 @@ class Route53DNSResponse(AWSBaseResponse):
         if errs:
             t, code, message = errs[0].getchildren()
             if code.text == "NoSuchHostedZone":
-                raise ZoneDoesNotExistError(value=message.text, driver=self, zone_id=context.get('zone_id',None))
+                zone_id = context.get('zone_id', None)
+                raise ZoneDoesNotExistError(value=message.text, driver=self,
+                                            zone_id=zone_id)
             elif code.text == "InvalidChangeBatch":
                 raise InvalidChangeBatch(value=message.text)
             return message.text
@@ -139,34 +141,35 @@ class Route53DNSDriver(DNSDriver):
 
     def list_records(self, zone):
         self.connection.set_context({'zone_id': zone.id})
-        data = self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone.id + '/rrset').object
+        uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
+        data = self.connection.request(uri).object
         records = self._to_records(data=data, zone=zone)
         return records
 
     def get_zone(self, zone_id):
         self.connection.set_context({'zone_id': zone_id})
-        data = self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone_id).object
-        zone = self._to_zone(elem=findall(element=data, xpath='HostedZone',
-                                          namespace=NAMESPACE)[0])
-        return zone
+        uri = API_ROOT + 'hostedzone/' + zone.id
+        data = self.connection.request(uri).object
+        elem = findall(element=data, xpath='HostedZone', namespace=NAMESPACE)
+        return self._to_zone(elem)
 
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
-        record_type, name = record_id.split(":",1)
+        record_type, name = record_id.split(":", 1)
         self.connection.set_context({'zone_id': zone_id})
         params = urlencode({'name': name, 'type': record_type})
-        data = self.connection.request(API_ROOT + 'hostedzone/'
-                      + zone_id + '/rrset?' + params).object
+        uri = API_ROOT + 'hostedzone/' + zone_id + '/rrset?' + params
+        data = self.connection.request(uri).object
 
         record = self._to_records(data=data, zone=zone)[0]
 
-        # A cute aspect of the /rrset filters is that they are more pagination hints than filters!!
+        # A cute aspect of the /rrset filters is that they are more pagination
+        # hints than filters!!
         # So will return a result even if its not what you asked for.
         record_type_num = self._string_to_record_type(record_type)
         if record.name != name or record.type != record_type_num:
-            raise RecordDoesNotExistError(value='', driver=self, record_id=record_id)
+            raise RecordDoesNotExistError(value='', driver=self,
+                                          record_id=record_id)
 
         return record
 
@@ -175,19 +178,24 @@ class Route53DNSDriver(DNSDriver):
         ET.SubElement(zone, "Name").text = domain
         ET.SubElement(zone, "CallerReference").text = str(uuid.uuid4())
         if extra and "Comment" in extra:
-            ET.SubElement(ET.SubElement(zone, "HostedZoneConfig"), "Comment").text = extra['Comment']
+            hzg = ET.SubElement(zone, "HostedZoneConfig")
+            ET.SubElement(hzg, "Comment").text = extra['Comment']
 
-        response = self.connection.request(API_ROOT+'hostedzone', method="POST", data=ET.tostring(zone)).object
+        uri = API_ROOT+'hostedzone'
+        data = ET.tostring(zone)
+        rsp = self.connection.request(uri, method="POST", data=data).object
 
-        return self._to_zone(elem=findall(element=response, xpath='HostedZone', namespace=NAMESPACE)[0])
+        elem = findall(element=rsp, xpath='HostedZone', namespace=NAMESPACE)[0]
+        return self._to_zone(elem=elem)
 
-    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
-        # raise LibCloudError("AFAICT, update_zone doesn't make sense on AWS")
-        return
+    def delete_zone(self, zone, ex_delete_records=False):
+        if ex_delete_records:
+            self.ex_clear_zone()
+        uri = API_ROOT+'hostedzone/%s' % zone.id
+        response = self.connection.request(uri, method="DELETE").object
+        return True
 
-    def delete_zone(self, zone):
-        # We have to delete all records from a zone (apart from NS and SOA)
-        # before we can delete the zone
+    def ex_clear_zone(self, zone):
         deletions = []
         for r in zone.list_records():
             if r.type in (RecordType.NS, RecordType.SOA):
@@ -196,36 +204,35 @@ class Route53DNSDriver(DNSDriver):
         if deletions:
             self._post_changeset(zone, deletions)
 
-        # Now delete the zone itself
-        response = self.connection.request(API_ROOT+'hostedzone/%s' % zone.id, method="DELETE").object
-        return True
-
     def create_record(self, name, zone, type, data, extra=None):
-        self._post_changeset(zone, [
-            ("CREATE", name, type, data, extra),
-            ])
+        batch = [("CREATE", name, type, data, extra)]
+        self._post_changeset(zone, batch)
         id = ":".join((self.RECORD_TYPE_MAP[type], name))
-        return Record(id=id, name=name, type=type, data=data, zone=zone, driver=self, extra=extra)
+        return Record(id=id, name=name, type=type, data=data, zone=zone,
+                      driver=self, extra=extra)
 
     def update_record(self, record, name, type, data, extra):
-        self._post_changeset(record.zone, [
+        batch = [
             ("DELETE", record.name, record.type, record.data, record.extra),
-            ("CREATE", name, type, data, extra),
-            ])
+            ("CREATE", name, type, data, extra)]
+        self._post_changeset(record.zone, batch)
         id = ":".join((self.RECORD_TYPE_MAP[type], name))
-        return Record(id=id, name=name, type=type, data=data, zone=record.zone, driver=self, extra=extra)
+        return Record(id=id, name=name, type=type, data=data, zone=record.zone,
+                      driver=self, extra=extra)
 
     def delete_record(self, record):
         try:
-            self._post_changeset(record.zone, [
-                ("DELETE", record.name, record.type, record.data, record.extra),
-                ])
+            r = record
+            batch = [("DELETE", r.name, r.type, r.data, r.extra)]
+            self._post_changeset(record.zone, batch)
         except InvalidChangeBatch:
-            raise RecordDoesNotExistError(value='', driver=self, record_id=record.id)
+            raise RecordDoesNotExistError(value='', driver=self,
+                                          record_id=r.id)
         return True
 
     def _post_changeset(self, zone, changes_list):
-        changeset = ET.Element("ChangeResourceRecordSetsRequest", {'xmlns': NAMESPACE})
+        attrs = {'xmlns': NAMESPACE}
+        changeset = ET.Element("ChangeResourceRecordSetsRequest", attrs)
         batch = ET.SubElement(changeset, "ChangeBatch")
         changes = ET.SubElement(batch, "Changes")
 
@@ -237,10 +244,15 @@ class Route53DNSDriver(DNSDriver):
             ET.SubElement(rrs, "Name").text = name + "." + zone.domain
             ET.SubElement(rrs, "Type").text = self.RECORD_TYPE_MAP[type_]
             ET.SubElement(rrs, "TTL").text = extra.get("ttl", "0")
-            ET.SubElement(ET.SubElement(ET.SubElement(rrs, "ResourceRecords"), "ResourceRecord"), "Value").text = data
 
+            rrecs = ET.SubElement(rrs, "ResourceRecords")
+            rrec = ET.SubElement(rrecs, "ResourceRecord")
+            ET.SubElement(rrec, "Value").text = data
+
+        uri = API_ROOT+'hostedzone/'+zone.id+'/rrset'
+        data = ET.tostring(changeset)
         self.connection.set_context({'zone_id': zone.id})
-        response = self.connection.request(API_ROOT+'hostedzone/%s/rrset' % zone.id, method="POST", data=ET.tostring(changeset)).object
+        rsp = self.connection.request(uri, method="POST", data=data).object
 
     def _to_zones(self, data):
         zones = []

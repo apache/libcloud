@@ -65,7 +65,8 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(zone.domain, 't.com')
 
     def test_get_record(self):
-        record = self.driver.get_record(zone_id='47234', record_id='CNAME:wibble')
+        r = self.driver.get_record(zone_id='47234',
+                                   record_id='CNAME:wibble')
         self.assertEqual(record.name, 'wibble')
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, 't.com')
@@ -107,8 +108,10 @@ class Route53Tests(unittest.TestCase):
     def test_get_record_record_does_not_exist(self):
         Route53MockHttp.type = 'RECORD_DOES_NOT_EXIST'
 
+        rid = 'CNAME:doesnotexist.t.com'
         try:
-            self.driver.get_record(zone_id='47234', record_id='CNAME:doesnotexist.t.com')
+            self.driver.get_record(zone_id='47234',
+                                   record_id=rid)
         except RecordDoesNotExistError:
             pass
         else:
@@ -137,9 +140,15 @@ class Route53Tests(unittest.TestCase):
     def test_update_record(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[1]
-        updated_record = self.driver.update_record(record=record, name='www',
-                                                   type=RecordType.AAAA,
-                                                   data='::1', extra={"ttl":0})
+
+        parms = {
+            'record': record,
+            'name': 'www',
+            'type': RecordType.A,
+            'data': '::1',
+            'extra': {'ttle': 0}}
+        updated_record = self.driver.update_record(**params)
+
         self.assertEqual(record.data, '208.111.35.173')
 
         self.assertEqual(updated_record.id, 'AAAA:www')
@@ -235,7 +244,7 @@ class Route53MockHttp(MockHttp):
             return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
         body = self.fixtures.load('record_does_not_exist.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _2012_02_29_hostedzone_47234_RECORD_DOES_NOT_EXIST(self, method,
                                               url, body, headers):
         body = self.fixtures.load('get_zone.xml')
