@@ -30,7 +30,7 @@ class ElasticLBTests(unittest.TestCase):
     def setUp(self):
         ElasticLBMockHttp.test = self
         ElasticLBDriver.connectionCls.conn_classes = (None,
-                                                        ElasticLBMockHttp)
+                                                      ElasticLBMockHttp)
         ElasticLBMockHttp.type = None
         ElasticLBMockHttp.use_param = 'Action'
 
@@ -66,7 +66,8 @@ class ElasticLBTests(unittest.TestCase):
         members = [Member('srv-lv426', None, None)]
 
         balancer = self.driver.create_balancer(name='lb2', port=80,
-            protocol='http', algorithm=Algorithm.ROUND_ROBIN, members=members)
+            protocol='http', algorithm=Algorithm.ROUND_ROBIN,
+            members=members)
 
         self.assertEquals(balancer.name, 'lb2')
         self.assertEquals(balancer.port, 80)

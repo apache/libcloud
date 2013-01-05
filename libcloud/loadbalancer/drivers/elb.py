@@ -35,10 +35,10 @@ from libcloud.common.aws import AWSBaseResponse
 from libcloud.common.base import ConnectionUserAndKey
 
 
-API_VERSION = '2012-06-01'
-API_HOST = 'elasticloadbalancing.%s.amazonaws.com'
-API_ROOT = '/%s/' % (API_VERSION)
-API_NAMESPACE = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (API_VERSION, )
+VERSION = '2012-06-01'
+HOST = 'elasticloadbalancing.%s.amazonaws.com'
+ROOT = '/%s/' % (VERSION)
+NS = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (VERSION, )
 
 
 class ELBResponse(AWSBaseResponse):
@@ -59,14 +59,14 @@ class ELBResponse(AWSBaseResponse):
 
 
 class ELBConnection(ConnectionUserAndKey):
-    host = API_HOST
+    host = HOST
     responseCls = ELBResponse
 
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
         params['AWSAccessKeyId'] = self.user_id
-        params['Version'] = API_VERSION
+        params['Version'] = VERSION
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                             time.gmtime())
         params['Signature'] = self._get_aws_auth_param(params, self.key,
@@ -115,7 +115,7 @@ class ElasticLBDriver(Driver):
     def __init__(self, access_id, secret, region):
         super(ElasticLBDriver, self).__init__(access_id, secret)
         self.region = region
-        self.connection.host = API_HOST % region
+        self.connection.host = HOST % region
 
     def list_protocols(self):
         return ['tcp', 'ssl', 'http', 'https']
@@ -123,11 +123,12 @@ class ElasticLBDriver(Driver):
     def list_balancers(self):
         params = {
             'Action': 'DescribeLoadBalancers',
-            }
-        data = self.connection.request(API_ROOT, params=params).object
+        }
+        data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)
 
-    def create_balancer(self, name, port, protocol, algorithm, members, ex_members_availability_zones=None):
+    def create_balancer(self, name, port, protocol, algorithm, members,
+                        ex_members_availability_zones=None):
         if not ex_members_availability_zones:
             ex_members_availability_zones = ['a']
         params = {
@@ -137,20 +138,21 @@ class ElasticLBDriver(Driver):
             'Listeners.member.1.InstanceProtocol': protocol.upper(),
             'Listeners.member.1.LoadBalancerPort': str(port),
             'Listeners.member.1.Protocol': protocol.upper(),
-            }
+        }
         for i, z in enumerate(ex_members_availability_zones, 1):
-            params['AvailabilityZones.member.%d' % i] = '-'.join((self.region, z))
+            zone = '-'.join((self.region, z))
+            params['AvailabilityZones.member.%d' % i] = zone
 
-        data = self.connection.request(API_ROOT, params=params).object
+        data = self.connection.request(ROOT, params=params).object
 
         lb = LoadBalancer(
             id=name,
             name=name,
             state=State.PENDING,
-            ip=findtext(element=data, xpath='DNSName', namespace=API_NAMESPACE),
+            ip=findtext(element=data, xpath='DNSName', namespace=NS),
             port=port,
             driver=self.connection.driver
-            )
+        )
         lb._members = []
 
         return lb
@@ -159,16 +161,16 @@ class ElasticLBDriver(Driver):
         params = {
             'Action': 'DeleteLoadBalancer',
             'LoadBalancerName': balancer.id,
-            }
-        data = self.connection.request(API_ROOT, params=params).object
+        }
+        data = self.connection.request(ROOT, params=params).object
         return True
 
     def get_balancer(self, balancer_id):
         params = {
             'Action': 'DescribeLoadBalancers',
             'LoadBalancerNames.member.1': balancer_id,
-            }
-        data = self.connection.request(API_ROOT, params=params).object
+        }
+        data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)[0]
 
     def balancer_attach_compute_node(self, balancer, node):
@@ -176,8 +178,8 @@ class ElasticLBDriver(Driver):
             'Action': 'RegisterInstancesWithLoadBalancer',
             'LoadBalancerName': balancer.id,
             'Instances.member.1.InstanceId': node.id,
-            }
-        data = self.connection.request(API_ROOT, params=params).object
+        }
+        data = self.connection.request(ROOT, params=params).object
         balancer._members.append(Member(node.id, None, None, balancer=self))
 
     def balancer_detach_member(self, balancer, member):
@@ -185,8 +187,8 @@ class ElasticLBDriver(Driver):
             'Action': 'DeregisterInstancesFromLoadBalancer',
             'LoadBalancerName': balancer.id,
             'Instances.member.1.InstanceId': member.id,
-            }
-        data = self.connection.request(API_ROOT, params=params).object
+        }
+        data = self.connection.request(ROOT, params=params).object
         balancer._members = [m for m in balancer._members if m.id != member.id]
         return True
 
@@ -196,12 +198,12 @@ class ElasticLBDriver(Driver):
     def _to_balancers(self, object):
         xpath = 'DescribeLoadBalancersResult/LoadBalancerDescriptions/member'
         return [self._to_balancer(el)
-                for el in findall(element=object,xpath=xpath,namespace=API_NAMESPACE)]
+                for el in findall(element=object, xpath=xpath, namespace=NS)]
 
-    def _to_balancer(self, element):
-        name = findtext(element=element, xpath='LoadBalancerName', namespace=API_NAMESPACE)
-        dns_name = findtext(element, xpath='DNSName', namespace=API_NAMESPACE)
-        port = findtext(element, xpath='LoadBalancerPort', namespace=API_NAMESPACE)
+    def _to_balancer(self, el):
+        name = findtext(element=el, xpath='LoadBalancerName', namespace=NS)
+        dns_name = findtext(el, xpath='DNSName', namespace=NS)
+        port = findtext(el, xpath='LoadBalancerPort', namespace=NS)
 
         lb = LoadBalancer(
             id=name,
@@ -210,10 +212,12 @@ class ElasticLBDriver(Driver):
             ip=dns_name,
             port=port,
             driver=self.connection.driver
-            )
+        )
 
-        members = findall(element=element, xpath='Instances/member/InstanceId', namespace=API_NAMESPACE)
-        lb._members = [Member(m.text, None, None, balancer=lb) for m in members]
+        xpath = 'Instances/member/InstanceId'
+        members = findall(element=el, xpath=xpath, namespace=NS)
+        lb._members = []
+        for m in members:
+            lb._members.append(Member(m.text, None, None, balancer=lb))
 
         return lb
-
