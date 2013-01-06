@@ -203,16 +203,6 @@ class Route53DNSDriver(DNSDriver):
         response = self.connection.request(uri, method='DELETE')
         return response.status in [httplib.OK]
 
-    def ex_delete_all_records(self, zone):
-        deletions = []
-        for r in zone.list_records():
-            if r.type in (RecordType.NS, RecordType.SOA):
-                continue
-            deletions.append(('DELETE', r.name, r.type, r.data, r.extra))
-
-        if deletions:
-            self._post_changeset(zone, deletions)
-
     def create_record(self, name, zone, type, data, extra=None):
         batch = [('CREATE', name, type, data, extra)]
         self._post_changeset(zone, batch)
@@ -238,6 +228,22 @@ class Route53DNSDriver(DNSDriver):
             raise RecordDoesNotExistError(value='', driver=self,
                                           record_id=r.id)
         return True
+
+    def ex_delete_all_records(self, zone):
+        """
+        Remove all the records for the provided zone.
+
+        @param zone: Zone to delete records for.
+        @type  zone: L{Zone}
+        """
+        deletions = []
+        for r in zone.list_records():
+            if r.type in (RecordType.NS, RecordType.SOA):
+                continue
+            deletions.append(('DELETE', r.name, r.type, r.data, r.extra))
+
+        if deletions:
+            self._post_changeset(zone, deletions)
 
     def _post_changeset(self, zone, changes_list):
         attrs = {'xmlns': NAMESPACE}
