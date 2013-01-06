@@ -32,6 +32,7 @@ from libcloud.utils.xml import findtext, findall, fixxpath
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 from libcloud.common.aws import AWSBaseResponse
 from libcloud.common.base import ConnectionUserAndKey
