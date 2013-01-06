@@ -136,6 +136,11 @@ Changes with Apache Libcloud in development:
     - Finish Amazon Route53 driver. (LIBCLOUD-132)
       [John Carr]
 
+  *) Load-Balancer
+
+    - Add new driver for AWS Elastic Load Balancing service. (LIBCLOUD-169)
+      [John Carr]
+
 Changes with Apache Libcloud 0.11.4:
 
   *) General
