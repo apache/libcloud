@@ -18,12 +18,10 @@ __all__ = [
 ]
 
 
-from libcloud.utils.py3 import httplib
 from libcloud.utils.xml import findtext, findall
 from libcloud.loadbalancer.types import State
 from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
+from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
 VERSION = '2012-06-01'
@@ -32,21 +30,11 @@ ROOT = '/%s/' % (VERSION)
 NS = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (VERSION, )
 
 
-class ELBResponse(AWSBaseResponse):
+class ELBResponse(AWSGenericResponse):
     """
     Amazon ELB response class.
     """
-    def success(self):
-        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
-
-    def parse_error(self):
-        status = int(self.status)
-
-        if status == httplib.FORBIDDEN:
-            if not self.body:
-                raise InvalidCredsError(str(self.status) + ': ' + self.error)
-            else:
-                raise InvalidCredsError(self.body)
+    namespace = NS
 
 
 class ELBConnection(SignedAWSConnection):
