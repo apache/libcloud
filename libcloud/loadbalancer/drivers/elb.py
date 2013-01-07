@@ -17,19 +17,13 @@ __all__ = [
     'ElasticLBDriver'
 ]
 
-import base64
-import hmac
-import time
 
-from hashlib import sha256
-
-from libcloud.utils.py3 import httplib, urlquote, b
+from libcloud.utils.py3 import httplib
 from libcloud.utils.xml import findtext, findall
 from libcloud.loadbalancer.types import State
 from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.aws import AWSBaseResponse
-from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 
 
 VERSION = '2012-06-01'
@@ -55,52 +49,10 @@ class ELBResponse(AWSBaseResponse):
                 raise InvalidCredsError(self.body)
 
 
-class ELBConnection(ConnectionUserAndKey):
+class ELBConnection(SignedAWSConnection):
+    version = VERSION
     host = HOST
     responseCls = ELBResponse
-
-    def add_default_params(self, params):
-        params['SignatureVersion'] = '2'
-        params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
-        params['Version'] = VERSION
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                            time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
-        return params
-
-    def _get_aws_auth_param(self, params, secret_key, path='/'):
-        """
-        Creates the signature required for AWS, per
-        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +
-                       CanonicalizedQueryString <from the preceding step>
-        """
-        keys = list(params.keys())
-        keys.sort()
-        pairs = []
-        for key in keys:
-            pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(params[key], safe='-_~'))
-
-        qs = '&'.join(pairs)
-
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
-
-        string_to_sign = '\n'.join(('GET', hostname, path, qs))
-
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign),
-                     digestmod=sha256).digest()
-        )
-        return b64_hmac.decode('utf-8')
 
 
 class ElasticLBDriver(Driver):
