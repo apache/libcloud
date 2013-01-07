@@ -1405,7 +1405,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
-        'shutting-down': NodeState.TERMINATED,
+        'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
 
