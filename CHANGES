@@ -92,6 +92,10 @@ Changes with Apache Libcloud in development:
       your code if you rely on the old behavior.
       [Tomaz Muraus, Marcin Kuzminski]
 
+    - Change _wait_until_running method so it supports waiting on multiple nodes
+      and make it public (wait_until_running). (LIBCLOUD-274)
+      [Nick Bailey]
+
   *) Storage
 
     - Add a new local storage driver.
