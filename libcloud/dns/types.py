@@ -66,7 +66,8 @@ class RecordType(object):
 
 class ZoneError(LibcloudError):
     error_type = 'ZoneError'
-
+    kwargs = ('zone_id', )
+    
     def __init__(self, value, driver, zone_id):
         self.zone_id = zone_id
         super(ZoneError, self).__init__(value=value, driver=driver)

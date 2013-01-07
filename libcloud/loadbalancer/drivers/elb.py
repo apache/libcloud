@@ -17,19 +17,11 @@ __all__ = [
     'ElasticLBDriver'
 ]
 
-import base64
-import hmac
-import time
 
-from hashlib import sha256
-
-from libcloud.utils.py3 import httplib, urlquote, b
 from libcloud.utils.xml import findtext, findall
 from libcloud.loadbalancer.types import State
 from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.aws import AWSBaseResponse
-from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
 VERSION = '2012-06-01'
@@ -38,69 +30,17 @@ ROOT = '/%s/' % (VERSION)
 NS = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (VERSION, )
 
 
-class ELBResponse(AWSBaseResponse):
+class ELBResponse(AWSGenericResponse):
     """
     Amazon ELB response class.
     """
-    def success(self):
-        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
-
-    def parse_error(self):
-        status = int(self.status)
-
-        if status == httplib.FORBIDDEN:
-            if not self.body:
-                raise InvalidCredsError(str(self.status) + ': ' + self.error)
-            else:
-                raise InvalidCredsError(self.body)
+    namespace = NS
 
 
-class ELBConnection(ConnectionUserAndKey):
+class ELBConnection(SignedAWSConnection):
+    version = VERSION
     host = HOST
     responseCls = ELBResponse
-
-    def add_default_params(self, params):
-        params['SignatureVersion'] = '2'
-        params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
-        params['Version'] = VERSION
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                            time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
-        return params
-
-    def _get_aws_auth_param(self, params, secret_key, path='/'):
-        """
-        Creates the signature required for AWS, per
-        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +
-                       CanonicalizedQueryString <from the preceding step>
-        """
-        keys = list(params.keys())
-        keys.sort()
-        pairs = []
-        for key in keys:
-            pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(params[key], safe='-_~'))
-
-        qs = '&'.join(pairs)
-
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
-
-        string_to_sign = '\n'.join(('GET', hostname, path, qs))
-
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign),
-                     digestmod=sha256).digest()
-        )
-        return b64_hmac.decode('utf-8')
 
 
 class ElasticLBDriver(Driver):

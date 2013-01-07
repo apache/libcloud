@@ -34,7 +34,7 @@ from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
-from libcloud.common.aws import AWSBaseResponse
+from libcloud.common.aws import AWSGenericResponse
 from libcloud.common.base import ConnectionUserAndKey
 
 
@@ -49,44 +49,18 @@ class InvalidChangeBatch(LibcloudError):
     pass
 
 
-class Route53DNSResponse(AWSBaseResponse):
+class Route53DNSResponse(AWSGenericResponse):
     """
     Amazon Route53 response class.
     """
-    def success(self):
-        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
-    def parse_error(self):
-        context = self.connection.context
-        status = int(self.status)
+    namespace = NAMESPACE
+    xpath = "Error"
 
-        if status == httplib.FORBIDDEN:
-            if not self.body:
-                raise InvalidCredsError(str(self.status) + ': ' + self.error)
-            else:
-                raise InvalidCredsError(self.body)
-
-        try:
-            body = ET.XML(self.body)
-        except Exception:
-            raise MalformedResponseError('Failed to parse XML',
-                                         body=self.body, driver=self.driver)
-
-        errs = findall(element=body, xpath='Error', namespace=NAMESPACE)
-
-        if errs:
-            t, code, message = errs[0].getchildren()
-
-            if code.text == 'NoSuchHostedZone':
-                zone_id = context.get('zone_id', None)
-                raise ZoneDoesNotExistError(value=message.text, driver=self,
-                                            zone_id=zone_id)
-            elif code.text == 'InvalidChangeBatch':
-                raise InvalidChangeBatch(value=message.text)
-            else:
-                return message.text
-
-        return self.body
+    exceptions = {
+        'NoSuchHostedZone': ZoneDoesNotExistError,
+        'InvalidChangeBatch': InvalidChangeBatch,
+    }
 
 
 class Route53Connection(ConnectionUserAndKey):
