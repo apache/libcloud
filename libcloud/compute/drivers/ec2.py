@@ -1502,6 +1502,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
     """
 
     name = 'Eucalyptus'
+    website = 'http://www.eucalyptus.com/'
     api_name = 'ec2_us_east'
     region_name = 'us-east-1'
     connectionCls = EucConnection
@@ -1546,6 +1547,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
 
     type = Provider.NIMBUS
     name = 'Nimbus'
+    website = 'http://www.nimbusproject.org/'
     country = 'Private'
     api_name = 'nimbus'
     region_name = 'nimbus'
