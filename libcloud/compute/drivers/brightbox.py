@@ -280,6 +280,43 @@ class BrightboxNodeDriver(NodeDriver):
             method='DELETE')
         return response.status == httplib.OK
 
+    #####
+    # ! firewall policies
+    def ex_list_firewall_policies(self):
+        """
+        List firewall policies
+
+        :returns: Returns a list of firewall policies
+        """
+        return self.connection.request('/%s/firewall_policies'
+                                       % self.api_version).object
+
+    def ex_get_firewall_policy(self, fw_policy_id):
+        """
+        Gets a single firewall policy
+
+        :param fw_policy_id: The firewall policy id
+        :returns: the newly created firewall policy as dict
+        """
+        return self.connection.request('/%s/firewall_policies/%s'
+                                    % (self.api_version, fw_policy_id)).object
+
+    def ex_update_firewall_policy(self, fw_policy_id, name=None,
+                                  server_group=None):
+        raise NotImplementedError()
+
+    def ex_destroy_firewall_policy(self, fw_policy_id):
+        """
+        Delete the firewall policy
+
+        :param fw_policy_id: The id of the firewall policy
+        :returns: Boolean about the success of the operation
+        """
+        response = self.connection.request(
+            '/%s/firewall_policies/%s'
+                % (self.api_version, fw_policy_id), method='DELETE')
+        return response.status == httplib.ACCEPTED
+
     ######
     # !server group
     def ex_list_server_groups(self):
@@ -288,7 +325,8 @@ class BrightboxNodeDriver(NodeDriver):
 
         :returns: Returns a list of server group dicts
         """
-        return self.connection.request('/%s/server_groups' % self.api_version).object
+        return self.connection.request('/%s/server_groups'
+                                       % self.api_version).object
 
     def ex_get_server_group(self, server_group_id):
         """
@@ -297,8 +335,8 @@ class BrightboxNodeDriver(NodeDriver):
         :param server_group_id: The group id
         :returns: the newly created server group as dict
         """
-        return self.connection.request('/%s/server_groups/%s' % (self.api_version,
-                    server_group_id)).object
+        return self.connection.request('/%s/server_groups/%s'
+                                % (self.api_version, server_group_id)).object
 
     def ex_create_server_group(self, name):
         """
@@ -343,8 +381,8 @@ class BrightboxNodeDriver(NodeDriver):
         params = {}
         if server_id and "srv-" in server_id:
             params['servers'] = [{"server": server_id}]
-        url = "/%s/server_groups/%s/add_servers" %  (self.api_version, server_group_id)
-        response = self._post(url, params)
+        response = self._post("/%s/server_groups/%s/add_servers"
+                              % (self.api_version, server_group_id), params)
         return response.status == httplib.ACCEPTED
 
     def ex_remove_from_server_group(self, server_group_id, server_id):
