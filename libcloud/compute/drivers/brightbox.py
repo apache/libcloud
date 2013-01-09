@@ -301,9 +301,55 @@ class BrightboxNodeDriver(NodeDriver):
         return self.connection.request('/%s/firewall_policies/%s'
                                     % (self.api_version, fw_policy_id)).object
 
+    def ex_create_firewall_policy(self, name, server_group_id=None):
+        """
+        Creates new firewall policy
+
+        :param name:
+        :param server_group:
+        """
+
+        params = {
+            'server_group': server_group_id,
+            'name': name
+        }
+        return self._post('/%s/firewall_policies' % self.api_version, params).object
+
     def ex_update_firewall_policy(self, fw_policy_id, name=None,
-                                  server_group=None):
+                                  server_group_id=None):
         raise NotImplementedError()
+
+    def ex_apply_firewall_policy(self, fw_policy_id, server_group_id):
+        """
+        Applies firewall policy to given server group
+
+        :param fw_policy_id:
+        :param server_group_id: server group to add to policy
+        :returns: Boolean about the success of the operation
+        """
+        params = {
+            'server_group': server_group_id,
+        }
+        response = self._post('/%s/firewall_policies/%s/apply_to'
+                                    % (self.api_version, fw_policy_id),
+                                    params)
+        return response.status == httplib.ACCEPTED
+
+    def ex_remove_firewall_policy(self, fw_policy_id, server_group_id):
+        """
+        Removes firewall policy from given server group
+
+        :param fw_policy_id:
+        :param server_group_id: server group to remove from policy
+        :returns: Boolean about the success of the operation
+        """
+        params = {
+            'server_group': server_group_id,
+        }
+        response = self._post('/%s/firewall_policies/%s/remove'
+                                    % (self.api_version, fw_policy_id),
+                                    params)
+        return response.status == httplib.ACCEPTED
 
     def ex_destroy_firewall_policy(self, fw_policy_id):
         """
