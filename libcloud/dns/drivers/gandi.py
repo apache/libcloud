@@ -163,4 +163,4 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         if count == 1:
             return True
 
-        return False
+        raise RecordDoesNotExistError(value="No such record", driver=self, record_id=record.id)
