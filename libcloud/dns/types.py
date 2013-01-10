@@ -58,7 +58,9 @@ class RecordType(object):
     REDIRECT = 13
     GEO = 14
     URL = 15
-
+    WKS = 16
+    LOC = 17
+    
     @classmethod
     def __repr__(self, value):
         reverse = dict((v, k) for k, v in list(RecordType.__dict__.items()))
