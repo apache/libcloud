@@ -182,8 +182,9 @@ class BrightboxNodeDriver(NodeDriver):
         data = self.connection.request('/%s/servers' % self.api_version).object
         return list(map(self._to_node, data))
 
-    def get_node(self,server_id, raw=False):
-        data = self.connection.request('/%s/servers/%s' % (self.api_version, server_id)).object
+    def get_node(self, server_id, raw=False):
+        data = self.connection.request('/%s/servers/%s'
+                                       % (self.api_version, server_id)).object
         if raw == False:
             return list(map(self._to_node, data))
         else:
@@ -364,6 +365,84 @@ class BrightboxNodeDriver(NodeDriver):
         return response.status == httplib.ACCEPTED
 
     ######
+    # !firewall rules
+
+    def ex_list_firewall_rules(self, fw_policy_id):
+        """
+        list all rules for fw_policy
+
+        :param fw_policy_id:
+        """
+        raise NotImplementedError()
+
+    def ex_get_firewall_rule(self, fw_rule_id):
+        """
+        Get full details of the firewall rule.
+
+        :param fw_rule_id:
+        :returns: the newly created firewall rule as dict
+        """
+        return self.connection.request('/%s/firewall_rules/%s'
+                                    % (self.api_version, fw_rule_id)).object
+
+    def ex_create_firewall_rule(self, fw_policy_id, protocol=None, source=None,
+                                source_port=None, destination=None,
+                                destination_port=None, icmp_type=None,
+                                description=None):
+        """
+        Create a new firewall rule for a firewall policy.
+
+        :param fw_policy_id:
+        :param protocol:
+        :param source:
+        :param source_port:
+        :param destination:
+        :param destination_port:
+        :param icmp_type:
+        :param description:
+        """
+        params = {
+            'firewall_policy': fw_policy_id,
+            'protocol': protocol,
+            'source': source,
+            'source_port': source_port,
+            'destination': destination,
+            'destination_port': destination_port,
+            'icmp_type': icmp_type,
+            'description': description,
+        }
+        return self._post('/%s/firewall_policies'
+                          % self.api_version, params).object
+
+    def ex_update_firewall_rule(self, fw_rule_id, protocol, source,
+                                source_port, destination, destination_port,
+                                icmp_type, description):
+        """
+        update a new firewall rule for a firewall policy.
+
+        :param fw_policy_id:
+        :param protocol:
+        :param source:
+        :param source_port:
+        :param destination:
+        :param destination_port:
+        :param icmp_type:
+        :param description:
+        """
+        raise NotImplementedError()
+
+    def ex_destroy_firewall_rule(self, fw_rule_id):
+        """
+        Destroy the firewall rule.
+
+        :param fw_rule_id: The id of the fw rule to destroy
+        """
+        response = self.connection.request(
+            '/%s/firewall_rules/%s' % (self.api_version,
+                                       fw_rule_id), method='DELETE')
+        return response.status == httplib.ACCEPTED
+
+    ######
     # !server group
     def ex_list_server_groups(self):
         """
@@ -457,9 +536,3 @@ class BrightboxNodeDriver(NodeDriver):
             '/%s/server_groups/%s' % (self.api_version,
                                             server_group_id), method='DELETE')
         return response.status == httplib.ACCEPTED
-
-
-
-
-
-
