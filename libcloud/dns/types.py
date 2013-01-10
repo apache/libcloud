@@ -35,6 +35,7 @@ class Provider(object):
     RACKSPACE_UK = 'rackspace_uk'
     ROUTE53 = 'route53'
     HOSTVIRTUAL = 'hostvirtual'
+    GANDI = 'gandi'
 
 
 class RecordType(object):
