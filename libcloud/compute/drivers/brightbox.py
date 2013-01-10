@@ -411,7 +411,7 @@ class BrightboxNodeDriver(NodeDriver):
             'icmp_type': icmp_type,
             'description': description,
         }
-        return self._post('/%s/firewall_policies'
+        return self._post('/%s/firewall_rules'
                           % self.api_version, params).object
 
     def ex_update_firewall_rule(self, fw_rule_id, protocol, source,
