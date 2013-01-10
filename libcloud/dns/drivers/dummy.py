@@ -67,7 +67,18 @@ class DummyDNSDriver(DNSDriver):
         return [zone['zone'] for zone in list(self._zones.values())]
 
     def list_records(self, zone):
-        return self.get_zone(zone_id=zone.id).records
+        """
+        >>> driver = DummyDNSDriver('key', 'secret')
+        >>> zone = driver.create_zone(domain='apache.org', type='master',
+        ...                           ttl=100)
+        >>> list(zone.list_records())
+        []
+        >>> record = driver.create_record(name='libcloud', zone=zone,
+        ...                               type=RecordType.A, data='127.0.0.1')
+        >>> list(zone.list_records()) #doctest: +ELLIPSIS
+        [<Record: zone=id-apache.org, name=libcloud, type=A...>]
+        """
+        return self._zones[zone.id]['records'].values()
 
     def get_zone(self, zone_id):
         """
