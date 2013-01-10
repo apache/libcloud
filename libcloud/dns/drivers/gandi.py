@@ -45,7 +45,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
     def _to_zone(self, zone):
         return Zone(
             id=zone["id"],
-            name=zone["name"],
+            domain=zone["name"],
             type="master",
             ttl=0,
             driver=self,
@@ -63,7 +63,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         return self._to_zones(zones)
 
     def get_zone(self, zone_id):
-        zone = self.connection.request("domain.zone.info", zone.id)
+        zone = self.connection.request("domain.zone.info", zone_id)
         return self._to_zone(zone)
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
@@ -80,8 +80,25 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         pass
 
     def delete_zone(self, zone):
-        self.connection.request("domain.zone.delete", zone.id)
-        return True
+        res = self.connection.request("domain.zone.delete", zone.id)
+        return res
+
+    def _to_record(self, record, zone):
+        return Record(
+            id=record["id"],
+            name=record["name"],
+            type=self._string_to_record_type(record["type"]),
+            data=record["value"],
+            zone=zone,
+            driver=self,
+            extra={"ttl": record["ttl"]},
+            )
+
+    def _to_records(self, records, zone):
+        retval = []
+        for r in records:
+            retval.append(self._to_record(r, zone))
+        return retval
 
     def create_record(self, name, zone, type, data, extra=None):
         create = {
@@ -99,28 +116,12 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
                                       0,
                                       create)
 
-        return self._to_record(rec)
-
-    def _to_record(self, record):
-        return Record(
-            id=record["id"],
-            name=record["name"],
-            type=record["type"],  # FIXME: Convert this back to an enum
-            data=record["value"],
-            driver=self,
-            extra={"ttl": record["ttl"]},
-            )
-
-    def _to_records(self, records):
-        retval = []
-        for r in records:
-            retval.append(self._to_record(records))
-        return retval
+        return self._to_record(rec, zone)
 
     def list_records(self, zone):
         records = self.connection.request("domain.zone.record.list", zone.id,
                                             0, {})
-        return self._to_records(records)
+        return self._to_records(records, zone)
 
     def get_record(self, zone_id, record_id):
         filter_opts = {"id": record_id}
@@ -129,7 +130,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         if len(records) == 0:
             raise RecordDoesNotExistError()
 
-        return self._to_record(records[0])
+        return self._to_record(records[0], self.get_zone(zone_id))
 
     def update_record(self, record, name, type, data, extra):
         #FIXME: Assert that data is < 1024 characters
@@ -151,7 +152,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
                                       {"id": record.id},
                                       update)
 
-        return self._to_record(rec)
+        return self._to_record(rec, record.zone)
 
     def delete_record(self, record):
         count = self.connection.request("domain.zone.record.delete",

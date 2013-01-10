@@ -25,6 +25,7 @@ class BaseGandiTests(unittest.TestCase):
     def setUp(self):
         d = self.driverCls
         t = self.transportCls
+        t.mockCls.type = None
         d.connectionCls.proxyCls.transportCls = \
             [t, t]
         self.driver = d(*self.params)

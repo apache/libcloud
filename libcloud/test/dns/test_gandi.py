@@ -16,6 +16,7 @@
 import sys
 import unittest
 
+from libcloud.utils.py3 import httplib
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.gandi import GandiDNSDriver
@@ -26,6 +27,70 @@ from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
 
 class GandiMockHttp(MockHttp):
     fixtures = DNSFileFixtures('gandi')
+
+    def _xmlrpc__domain_zone_create(self, method, url, body, headers):
+        body = self.fixtures.load('create_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_list(self, method, url, body, headers):
+        body = self.fixtures.load('list_zones.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _xmlrpc__domain_zone_record_list(self, method, url, body, headers):
+        body = self.fixtures.load('list_records.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_add(self, method, url, body, headers):
+        body = self.fixtures.load('create_record.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_info(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_record.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_update(self, method, url, body, headers):
+        body = self.fixtures.load('create_record.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('list_records.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_info_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('list_zones.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('list_records.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_delete_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('delete_zone_fail.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('list_zones.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_info_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_delete_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('delete_record_doesnotexist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 class DummyTransport(MockGandiTransport):
@@ -59,7 +124,7 @@ class GandiTests(BaseGandiTests):
 
         record = records[1]
         self.assertEqual(record.name, 'www')
-        self.assertEqual(record.id, 'A:www')
+        self.assertEqual(record.id, '47234')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
 
@@ -136,7 +201,7 @@ class GandiTests(BaseGandiTests):
             extra={'ttl': 0}
         )
 
-        self.assertEqual(record.id, 'A:www')
+        self.assertEqual(record.id, '47234')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
@@ -150,17 +215,17 @@ class GandiTests(BaseGandiTests):
             'record': record,
             'name': 'www',
             'type': RecordType.A,
-            'data': '::1',
+            'data': '127.0.0.1',
             'extra': {'ttle': 0}}
         updated_record = self.driver.update_record(**params)
 
         self.assertEqual(record.data, '208.111.35.173')
 
-        self.assertEqual(updated_record.id, 'A:www')
+        self.assertEqual(updated_record.id, '47234')
         self.assertEqual(updated_record.name, 'www')
         self.assertEqual(updated_record.zone, record.zone)
         self.assertEqual(updated_record.type, RecordType.A)
-        self.assertEqual(updated_record.data, '::1')
+        self.assertEqual(updated_record.data, '127.0.0.1')
 
     def test_delete_zone(self):
         zone = self.driver.list_zones()[0]
