@@ -28,6 +28,7 @@ from libcloud.common.base import ConnectionKey
 # Global constants
 
 API_URL = "https://rpc.gandi.net/xmlrpc/"
+API_URL = "https://rpc.ote.gandi.net/xmlrpc/"
 
 DEFAULT_TIMEOUT = 600   # operation pooling max seconds
 DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
@@ -93,7 +94,10 @@ class GandiConnection(ConnectionKey):
             return getattr(self._proxy, method)(self.key, *args)
         except xmlrpclib.Fault:
             e = sys.exc_info()[1]
-            raise GandiException(1001, e)
+            self.parse_error(e.faultCode, e.faultString)
+    
+    def parse_error(self, code, message):
+        raise GandiException(1001, message)
 
 
 class BaseGandiDriver(object):

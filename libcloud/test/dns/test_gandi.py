@@ -15,6 +15,7 @@
 
 import sys
 import unittest
+from xmlrpclib import Fault
 
 from libcloud.utils.py3 import httplib
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
@@ -61,31 +62,23 @@ class GandiMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_record_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('list_records.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        raise Fault(581042, "Zone does not exist")
 
     def _xmlrpc__domain_zone_info_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        raise Fault(581042, "Zone does not exist")
 
     def _xmlrpc__domain_zone_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('list_zones.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('list_records.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        raise Fault(581042, "Zone does not exist")
 
     def _xmlrpc__domain_zone_delete_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('delete_zone_fail.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        raise Fault(581042, "Zone does not exist")
 
-    def _xmlrpc__domain_zone_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('list_zones.xml')
+    def _xmlrpc__domain_zone_record_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('list_records_empty.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_info_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone.xml')
+        body = self.fixtures.load('list_zones.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_record_delete_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
@@ -136,7 +129,7 @@ class GandiTests(BaseGandiTests):
 
     def test_get_record(self):
         record = self.driver.get_record(zone_id='47234',
-                                        record_id='CNAME:wibble')
+                                        record_id='1234')
         self.assertEqual(record.name, 'wibble')
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, 't.com')
@@ -178,10 +171,9 @@ class GandiTests(BaseGandiTests):
     def test_get_record_record_does_not_exist(self):
         GandiMockHttp.type = 'RECORD_DOES_NOT_EXIST'
 
-        rid = 'CNAME:doesnotexist.t.com'
         try:
             self.driver.get_record(zone_id='47234',
-                                   record_id=rid)
+                                   record_id='123')
         except RecordDoesNotExistError:
             pass
         else:
