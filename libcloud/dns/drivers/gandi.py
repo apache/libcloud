@@ -17,11 +17,11 @@ __all__ = [
     'GandiDNSDriver'
 ]
 
-from libcloud.common.gandi import BaseGandiDriver, GandiConnection, GandiException
+from libcloud.common.gandi import BaseGandiDriver, GandiConnection
+from libcloud.common.gandi import GandiException
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.common.types import LibcloudError
 
 
 class GandiDNSConnection(GandiConnection):
@@ -224,4 +224,5 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         if count == 1:
             return True
 
-        raise RecordDoesNotExistError(value="No such record", driver=self, record_id=record.id)
+        raise RecordDoesNotExistError(value="No such record", driver=self,
+                                      record_id=record.id)
