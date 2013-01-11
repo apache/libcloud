@@ -21,20 +21,15 @@ from __future__ import with_statement
 
 import sys
 import base64
-import hmac
 import os
-import time
 import copy
 
-from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.aws import AWSBaseResponse
+from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
@@ -373,56 +368,14 @@ class EC2Response(AWSBaseResponse):
         return "\n".join(err_list)
 
 
-class EC2Connection(ConnectionUserAndKey):
+class EC2Connection(SignedAWSConnection):
     """
     Represents a single connection to the EC2 Endpoint.
     """
 
+    version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
-
-    def add_default_params(self, params):
-        params['SignatureVersion'] = '2'
-        params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
-        params['Version'] = API_VERSION
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                            time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
-        return params
-
-    def _get_aws_auth_param(self, params, secret_key, path='/'):
-        """
-        Creates the signature required for AWS, per
-        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +
-                       CanonicalizedQueryString <from the preceding step>
-        """
-        keys = list(params.keys())
-        keys.sort()
-        pairs = []
-        for key in keys:
-            pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(params[key], safe='-_~'))
-
-        qs = '&'.join(pairs)
-
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
-
-        string_to_sign = '\n'.join(('GET', hostname, path, qs))
-
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign),
-                     digestmod=sha256).digest()
-        )
-        return b64_hmac.decode('utf-8')
 
 
 class ExEC2AvailabilityZone(object):
