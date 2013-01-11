@@ -168,8 +168,11 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         # "Currently limited to 1024 ASCII characters. In case of TXT, each
         # part between quotes is limited to 255 characters"
 
+        # FIXME: The record id actually changes when you commit a change!!!!!!
+
         filter = {
-            "id": int(record.id),
+            "name": record.name,
+            "type": self.RECORD_TYPE_MAP[type],
         }
 
         update = {
@@ -196,7 +199,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         self.connection.set_context({'zone_id': zid})
         self.connection.request("domain.zone.version.set", zid, vid)
 
-        return self._to_record(rec, record.zone)
+        #return self._to_record(rec, record.zone)
 
     def delete_record(self, record):
         zid = int(record.zone.id)
@@ -213,7 +216,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         count = self.connection.request("domain.zone.record.delete",
                                         zid,
                                         vid,
-                                        {"id": int(record.id)})
+                                        filter)
 
         self.connection.set_context({'zone_id': zid})
         self.connection.request("domain.zone.version.set", zid, vid)
