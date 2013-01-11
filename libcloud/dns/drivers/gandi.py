@@ -80,8 +80,10 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         return self._to_zone(zone)
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
-        zone_id = domain.replace(".", "-")
-        info = self.connection.request("domain.zone.create", zone_id)
+        params = {
+            "name": domain,
+        }
+        info = self.connection.request("domain.zone.create", params)
         return self._to_zone(info)
 
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
@@ -118,9 +120,13 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         return retval
 
     def create_record(self, name, zone, type, data, extra=None):
+        zid = int(zone.id)
+        self.connection.set_context({'zone_id': zid})
+        vid = self.connection.request("domain.zone.version.new", zid)
+
         create = {
             "name": name,
-            "type": type,  # FIXME: This needs turning to a string
+            "type": self.RECORD_TYPE_MAP[type],
             "value": data,
         }
 
@@ -129,9 +135,12 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             create["ttl"] = extra["ttl"]
 
         rec = self.connection.request("domain.zone.record.add",
-                                      zone.id,
-                                      0,
+                                      zid,
+                                      vid,
                                       create)
+
+        self.connection.set_context({'zone_id': zid})
+        self.connection.request("domain.zone.version.set", zid, vid)
 
         return self._to_record(rec, zone)
 
@@ -158,9 +167,14 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         #FIXME: Assert that data is < 1024 characters
         # "Currently limited to 1024 ASCII characters. In case of TXT, each
         # part between quotes is limited to 255 characters"
+
+        filter = {
+            "id": int(record.id),
+        }
+
         update = {
             "name": name,
-            "type": type,  # FIXME: This needs turning to a string
+            "type": self.RECORD_TYPE_MAP[type],
             "value": data,
         }
 
@@ -170,21 +184,39 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
         zid = int(record.zone.id)
         self.connection.set_context({'zone_id': zid})
+        vid = self.connection.request("domain.zone.version.new", zid)
+
+        self.connection.set_context({'zone_id': zid})
         rec = self.connection.request("domain.zone.record.update",
                                       zid,
-                                      0,
-                                      {"id": record.id},
+                                      vid,
+                                      filter,
                                       update)
+
+        self.connection.set_context({'zone_id': zid})
+        self.connection.request("domain.zone.version.set", zid, vid)
 
         return self._to_record(rec, record.zone)
 
     def delete_record(self, record):
         zid = int(record.zone.id)
+
+        filter = {
+            "name": record.name,
+            "type": self.RECORD_TYPE_MAP[record.type],
+        }
+
+        self.connection.set_context({'zone_id': zid})
+        vid = self.connection.request("domain.zone.version.new", zid)
+
         self.connection.set_context({'zone_id': zid})
         count = self.connection.request("domain.zone.record.delete",
                                         zid,
-                                        0,
-                                        {"id": record.id})
+                                        vid,
+                                        {"id": int(record.id)})
+
+        self.connection.set_context({'zone_id': zid})
+        self.connection.request("domain.zone.version.set", zid, vid)
 
         if count == 1:
             return True
