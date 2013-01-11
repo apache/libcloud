@@ -36,7 +36,7 @@ class GandiMockHttp(MockHttp):
     def _xmlrpc__domain_zone_list(self, method, url, body, headers):
         body = self.fixtures.load('list_zones.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _xmlrpc__domain_zone_record_list(self, method, url, body, headers):
         body = self.fixtures.load('list_records.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -61,6 +61,14 @@ class GandiMockHttp(MockHttp):
         body = self.fixtures.load('create_record.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _xmlrpc__domain_zone_version_new(self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_set(self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _xmlrpc__domain_zone_record_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         raise Fault(581042, "Zone does not exist")
 
@@ -83,6 +91,14 @@ class GandiMockHttp(MockHttp):
 
     def _xmlrpc__domain_zone_record_delete_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load('delete_record_doesnotexist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_new_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_set_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
