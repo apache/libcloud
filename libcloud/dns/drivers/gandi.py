@@ -156,7 +156,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         filter_opts = {
             "name": name,
             "type": record_type,
-            }
+        }
         self.connection.set_context({'zone_id': zid})
         records = self.connection.request("domain.zone.record.list",
                                           zid, 0, filter_opts)
@@ -183,8 +183,6 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         self._validate_record(None, name, type, data, extra)
 
         zid = int(zone.id)
-        self.connection.set_context({'zone_id': zid})
-        vid = self.connection.request("domain.zone.version.new", zid)
 
         create = {
             "name": name,
@@ -202,13 +200,12 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
         return self._to_record(rec, zone)
 
-
     def update_record(self, record, name, type, data, extra):
         self._validate_record(record.id, name, type, data, extra)
 
         filter = {
             "name": record.name,
-            "type": self.RECORD_TYPE_MAP[type],
+            "type": self.RECORD_TYPE_MAP[record.type],
         }
 
         update = {
@@ -224,10 +221,12 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         with NewZoneVersion(self, record.zone) as vid:
             c = self.connection
             c.set_context({'zone_id': zid})
-            rec = c.request("domain.zone.record.update",
-                            zid, vid, filter, update)
+            c.request("domain.zone.record.delete",
+                      zid, vid, filter)
+            res = c.request("domain.zone.record.add",
+                            zid, vid, update)
 
-        return self._to_record(update, record.zone)
+        return self._to_record(res, record.zone)
 
     def delete_record(self, record):
         zid = int(record.zone.id)
