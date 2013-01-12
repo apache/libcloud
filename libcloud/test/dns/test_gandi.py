@@ -33,6 +33,10 @@ class GandiMockHttp(MockHttp):
         body = self.fixtures.load('create_zone.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _xmlrpc__domain_zone_update(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _xmlrpc__domain_zone_list(self, method, url, body, headers):
         body = self.fixtures.load('list_zones.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -199,6 +203,13 @@ class GandiTests(BaseGandiTests):
         zone = self.driver.create_zone(domain='t.com', type='master',
                                        ttl=None, extra=None)
         self.assertEqual(zone.id, '47234')
+        self.assertEqual(zone.domain, 't.com')
+
+    def test_update_zone(self):
+        zone = self.driver.get_zone(zone_id='47234')
+        zone = self.driver.update_zone(zone, domain='t.com')
+        self.assertEqual(zone.id, '47234')
+        self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 't.com')
 
     def test_create_record(self):

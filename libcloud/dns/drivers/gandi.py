@@ -61,7 +61,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             ttl=0,
             driver=self,
             extra={},
-            )
+        )
 
     def _to_zones(self, zones):
         ret = []
@@ -87,14 +87,13 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         return self._to_zone(info)
 
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
-        #zid = int(zone.id)
-        #params = {
-        #    "name": domain,
-        #}
-        #self.connection.set_context({'zone_id': zid})
-        #zone = self.connect.request("domain.zone.update", zid, params)
-        #return self._to_zone(zone)
-        pass
+        zid = int(zone.id)
+        params = {
+            "name": domain,
+        }
+        self.connection.set_context({'zone_id': zid})
+        zone = self.connection.request("domain.zone.update", zid, params)
+        return self._to_zone(zone)
 
     def delete_zone(self, zone):
         zid = int(zone.id)
@@ -111,7 +110,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             zone=zone,
             driver=self,
             extra={"ttl": record["ttl"]},
-            )
+        )
 
     def _to_records(self, records, zone):
         retval = []
