@@ -217,7 +217,7 @@ class GandiTests(BaseGandiTests):
         record = self.driver.create_record(
             name='www', zone=zone,
             type=RecordType.A, data='127.0.0.1',
-            extra={'ttl': 0}
+            extra={'ttl': 30}
         )
 
         self.assertEqual(record.id, '47234')
@@ -235,7 +235,7 @@ class GandiTests(BaseGandiTests):
             'name': 'www',
             'type': RecordType.A,
             'data': '127.0.0.1',
-            'extra': {'ttle': 0}}
+            'extra': {'ttl': 30}}
         updated_record = self.driver.update_record(**params)
 
         self.assertEqual(record.data, '208.111.35.173')

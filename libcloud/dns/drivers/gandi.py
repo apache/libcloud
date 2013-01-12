@@ -20,8 +20,13 @@ __all__ = [
 from libcloud.common.gandi import BaseGandiDriver, GandiConnection
 from libcloud.common.gandi import GandiException
 from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.types import RecordError
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
+
+
+TTL_MIN = 30
+TTL_MAX = 2592000  # 30 days
 
 
 class NewZoneVersion(object):
@@ -139,29 +144,6 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             retval.append(self._to_record(r, zone))
         return retval
 
-    def create_record(self, name, zone, type, data, extra=None):
-        zid = int(zone.id)
-        self.connection.set_context({'zone_id': zid})
-        vid = self.connection.request("domain.zone.version.new", zid)
-
-        create = {
-            "name": name,
-            "type": self.RECORD_TYPE_MAP[type],
-            "value": data,
-        }
-
-        if "ttl" in extra:
-            #FIXME: Assert between 5 minutes and 30 days
-            create["ttl"] = extra["ttl"]
-
-        with NewZoneVersion(self, zone) as vid:
-            c = self.connection
-            c.set_context({'zone_id': zid})
-            rec = c.request("domain.zone.record.add",
-                            zid, vid, create)
-
-        return self._to_record(rec, zone)
-
     def list_records(self, zone):
         zid = int(zone.id)
         self.connection.set_context({'zone_id': zid})
@@ -181,10 +163,44 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
         return self._to_record(records[0], self.get_zone(zone_id))
 
+    def _validate_record(self, record_id, name, record_type, data, extra):
+        if len(data) > 1024:
+            raise RecordError("Record data must be <= 1024 characters",
+                              driver=self, record_id=record_id)
+        if extra and "ttl" in extra:
+            if extra["ttl"] < TTL_MIN:
+                raise RecordError("TTL must be at least 30 seconds",
+                                  driver=self, record_id=record_id)
+            if extra["ttl"] > TTL_MAX:
+                raise RecordError("TTL must not excdeed 30 days",
+                                  driver=self, record_id=record_id)
+
+    def create_record(self, name, zone, type, data, extra=None):
+        self._validate_record(None, name, type, data, extra)
+
+        zid = int(zone.id)
+        self.connection.set_context({'zone_id': zid})
+        vid = self.connection.request("domain.zone.version.new", zid)
+
+        create = {
+            "name": name,
+            "type": self.RECORD_TYPE_MAP[type],
+            "value": data,
+        }
+        if "ttl" in extra:
+            create["ttl"] = extra["ttl"]
+
+        with NewZoneVersion(self, zone) as vid:
+            c = self.connection
+            c.set_context({'zone_id': zid})
+            rec = c.request("domain.zone.record.add",
+                            zid, vid, create)
+
+        return self._to_record(rec, zone)
+
+
     def update_record(self, record, name, type, data, extra):
-        #FIXME: Assert that data is < 1024 characters
-        # "Currently limited to 1024 ASCII characters. In case of TXT, each
-        # part between quotes is limited to 255 characters"
+        self._validate_record(record.id, name, type, data, extra)
 
         filter = {
             "name": record.name,
@@ -196,9 +212,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             "type": self.RECORD_TYPE_MAP[type],
             "value": data,
         }
-
         if "ttl" in extra:
-            #FIXME: Assert between 5 minutes and 30 days
             update["ttl"] = extra["ttl"]
 
         zid = int(record.zone.id)
