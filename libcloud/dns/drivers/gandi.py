@@ -24,6 +24,27 @@ from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 
+class NewZoneVersion(object):
+    def __init__(self, driver, zone):
+        self.driver = driver
+        self.connection = driver.connection
+        self.zone = zone
+
+    def __enter__(self):
+        zid = int(self.zone.id)
+        self.connection.set_context({'zone_id': self.zone.id})
+        vid = self.connection.request("domain.zone.version.new", zid)
+        self.vid = vid
+        return vid
+
+    def __exit__(self, type, value, traceback):
+        if not traceback:
+            zid = int(self.zone.id)
+            c = self.connection
+            c.set_context({'zone_id': self.zone.id})
+            c.request("domain.zone.version.set", zid, self.vid)
+
+
 class GandiDNSConnection(GandiConnection):
 
     def parse_error(self, code, message):
@@ -133,13 +154,11 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             #FIXME: Assert between 5 minutes and 30 days
             create["ttl"] = extra["ttl"]
 
-        rec = self.connection.request("domain.zone.record.add",
-                                      zid,
-                                      vid,
-                                      create)
-
-        self.connection.set_context({'zone_id': zid})
-        self.connection.request("domain.zone.version.set", zid, vid)
+        with NewZoneVersion(self, zone) as vid:
+            c = self.connection
+            c.set_context({'zone_id': zid})
+            rec = c.request("domain.zone.record.add",
+                            zid, vid, create)
 
         return self._to_record(rec, zone)
 
@@ -167,8 +186,6 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         # "Currently limited to 1024 ASCII characters. In case of TXT, each
         # part between quotes is limited to 255 characters"
 
-        # FIXME: The record id actually changes when you commit a change!!!!!!
-
         filter = {
             "name": record.name,
             "type": self.RECORD_TYPE_MAP[type],
@@ -185,18 +202,12 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             update["ttl"] = extra["ttl"]
 
         zid = int(record.zone.id)
-        self.connection.set_context({'zone_id': zid})
-        vid = self.connection.request("domain.zone.version.new", zid)
 
-        self.connection.set_context({'zone_id': zid})
-        rec = self.connection.request("domain.zone.record.update",
-                                      zid,
-                                      vid,
-                                      filter,
-                                      update)
-
-        self.connection.set_context({'zone_id': zid})
-        self.connection.request("domain.zone.version.set", zid, vid)
+        with NewZoneVersion(self, record.zone) as vid:
+            c = self.connection
+            c.set_context({'zone_id': zid})
+            rec = c.request("domain.zone.record.update",
+                            zid, vid, filter, update)
 
         #return self._to_record(rec, record.zone)
 
@@ -208,17 +219,11 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             "type": self.RECORD_TYPE_MAP[record.type],
         }
 
-        self.connection.set_context({'zone_id': zid})
-        vid = self.connection.request("domain.zone.version.new", zid)
-
-        self.connection.set_context({'zone_id': zid})
-        count = self.connection.request("domain.zone.record.delete",
-                                        zid,
-                                        vid,
-                                        filter)
-
-        self.connection.set_context({'zone_id': zid})
-        self.connection.request("domain.zone.version.set", zid, vid)
+        with NewZoneVersion(self, record.zone) as vid:
+            c = self.connection
+            c.set_context({'zone_id': zid})
+            count = c.request("domain.zone.record.delete",
+                              zid, vid, filter)
 
         if count == 1:
             return True
