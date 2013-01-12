@@ -129,7 +129,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
     def _to_record(self, record, zone):
         return Record(
-            id=record["id"],
+            id="%s:%s" % (record["type"], record["name"]),
             name=record["name"],
             type=self._string_to_record_type(record["type"]),
             data=record["value"],
@@ -152,7 +152,11 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
     def get_record(self, zone_id, record_id):
         zid = int(zone_id)
-        filter_opts = {"id": int(record_id)}
+        record_type, name = record_id.split(":", 1)
+        filter_opts = {
+            "name": name,
+            "type": record_type,
+            }
         self.connection.set_context({'zone_id': zid})
         records = self.connection.request("domain.zone.record.list",
                                           zid, 0, filter_opts)
@@ -223,7 +227,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             rec = c.request("domain.zone.record.update",
                             zid, vid, filter, update)
 
-        #return self._to_record(rec, record.zone)
+        return self._to_record(update, record.zone)
 
     def delete_record(self, record):
         zid = int(record.zone.id)

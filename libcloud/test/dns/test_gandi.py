@@ -137,7 +137,7 @@ class GandiTests(BaseGandiTests):
 
         record = records[1]
         self.assertEqual(record.name, 'www')
-        self.assertEqual(record.id, '47234')
+        self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '208.111.35.173')
 
@@ -149,7 +149,7 @@ class GandiTests(BaseGandiTests):
 
     def test_get_record(self):
         record = self.driver.get_record(zone_id='47234',
-                                        record_id='1234')
+                                        record_id='CNAME:t.com')
         self.assertEqual(record.name, 'wibble')
         self.assertEqual(record.type, RecordType.CNAME)
         self.assertEqual(record.data, 't.com')
@@ -182,7 +182,7 @@ class GandiTests(BaseGandiTests):
         GandiMockHttp.type = 'ZONE_DOES_NOT_EXIST'
 
         try:
-            self.driver.get_record(zone_id='4444', record_id='28536')
+            self.driver.get_record(zone_id='4444', record_id='CNAME:t.com')
         except ZoneDoesNotExistError:
             pass
         else:
@@ -193,7 +193,7 @@ class GandiTests(BaseGandiTests):
 
         try:
             self.driver.get_record(zone_id='47234',
-                                   record_id='123')
+                                   record_id='CNAME:t.com')
         except RecordDoesNotExistError:
             pass
         else:
@@ -220,7 +220,7 @@ class GandiTests(BaseGandiTests):
             extra={'ttl': 30}
         )
 
-        self.assertEqual(record.id, '47234')
+        self.assertEqual(record.id, 'A:www')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
@@ -240,11 +240,11 @@ class GandiTests(BaseGandiTests):
 
         self.assertEqual(record.data, '208.111.35.173')
 
-        #self.assertEqual(updated_record.id, '47234')
-        #self.assertEqual(updated_record.name, 'www')
-        #self.assertEqual(updated_record.zone, record.zone)
-        #self.assertEqual(updated_record.type, RecordType.A)
-        #self.assertEqual(updated_record.data, '127.0.0.1')
+        self.assertEqual(updated_record.id, 'A:www')
+        self.assertEqual(updated_record.name, 'www')
+        self.assertEqual(updated_record.zone, record.zone)
+        self.assertEqual(updated_record.type, RecordType.A)
+        self.assertEqual(updated_record.data, '127.0.0.1')
 
     def test_delete_zone(self):
         zone = self.driver.list_zones()[0]
