@@ -117,16 +117,18 @@ class VMWareDriver(NodeDriver):
             shutil.copytree(src_path, target_dir)
             os.rename(os.path.join(target_dir, os.path.basename(source)), target)
 
+        node = Node(target, name, NodeState.PENDING, None, None, self)
+
         # If a NodeSize is provided then we can control the amount of RAM the
         # VM has. Number of CPU's would be easy to scale too, but this isn't
         # exposed on a NodeSize
         if size:
             if size.ram:
-               self._action("writeVariable", target, "runtimeConfig", "memsize", str(size.ram))
+                self.ex_set_runtime_variable(node, "displayName", name, str(size.ram))
 
-        self._action("writeVariable", target, "runtimeConfig", "displayName", name)
+        self.ex_set_runtime_variable(node, "displayName", name)
         self._action("start", target, "nogui")
-        return Node(target, name, NodeState.PENDING, None, None, self)
+        return node
 
     def reboot_node(self, node):
         self._action("reset", node.id, "hard")
@@ -137,4 +139,9 @@ class VMWareDriver(NodeDriver):
         self._action("deleteVM", node.id)
         shutil.rmtree(os.path.dirname(node.id))
 
+    def ex_get_runtime_variable(self, node, variable):
+        return self._action("readVariable", node.id, "runtimeConfig", variable)
+
+    def ex_set_runtime_variable(self, node, variable, value):
+        self._action("writeVariable", node.id, "runtimeConfig", variable, value)
 
