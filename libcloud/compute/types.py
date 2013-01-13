@@ -112,7 +112,8 @@ class Provider(object):
     GRIDSPOT = 'gridspot'
     RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     HOSTVIRTUAL = 'hostvirtual'
-
+    VMWARE = 'vmware'
+    
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu'  # deprecated name
