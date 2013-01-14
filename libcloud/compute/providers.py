@@ -120,7 +120,9 @@ DRIVERS = {
     Provider.KTUCLOUD:
         ('libcloud.compute.drivers.ktucloud', 'KTUCloudNodeDriver'),
     Provider.HOSTVIRTUAL:
-        ('libcloud.compute.drivers.hostvirtual', 'HostVirtualNodeDriver')
+        ('libcloud.compute.drivers.hostvirtual', 'HostVirtualNodeDriver'),
+    Provider.GCE:                                                                                                                                                                  
+        ('libcloud.compute.drivers.gce', 'GoogleComputeEngineNodeDriver')
 }
 
 

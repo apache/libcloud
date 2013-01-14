@@ -238,11 +238,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             rules = self._sync_request('listPortForwardingRules')
             adresses = self.ex_list_public_ip()
             port_rules = []
+            public_rules_ip = set()
             for rule in rules.get('portforwardingrule', []):
                 if str(rule['virtualmachineid']) == node.id:
-                        port_rules.append(CloudStackForwardingRule(node=node,
+                    address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0]
+                    public_rules_ip.add(address.address)
+                    port_rules.append(CloudStackForwardingRule(node=node,
                             id=rule['id'],
-                            address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0],
+                            address=address,
                             protocol=rule['protocol'],
                             public_port=rule['publicport'],
                             private_port=rule['privateport'],
@@ -250,6 +253,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             private_end_port=rule.get('privateendport', None),
                             state=rule['state']))
             node.extra['port_forwarding_rules'] = port_rules
+            if public_rules_ip:
+                node.public_ips = list(public_rules_ip)
+                node.public_ip = [list(public_rules_ip)[0],]
             nodes.append(node)
         return nodes
 
