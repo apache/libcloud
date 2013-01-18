@@ -1243,6 +1243,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_clienttoken: Unique identifier to ensure idempotency
         @type       ex_clienttoken: C{str}
+
+        @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
+                        mappings. Example:
+                        [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+        @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1279,6 +1284,14 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
+
+        if 'ex_blockdevicemappings' in kwargs:
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings'],
+                                          start=1):
+                params['BlockDeviceMapping.%d.DeviceName' % idx] = \
+                        mapping['DeviceName']
+                params['BlockDeviceMapping.%d.VirtualName' % idx] = \
+                        mapping['VirtualName']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
