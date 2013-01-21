@@ -17,7 +17,12 @@ import shutil
 import subprocess
 from pipes import quote
 
-def execute(self, command):
+from libcloud.common.types import LibcloudError
+
+
+def execute(command):
+    log = execute.log
+
     if not isinstance(command, list):
         command = shlex.split(command)
 

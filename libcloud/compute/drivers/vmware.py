@@ -41,15 +41,17 @@ class VMWareDriver(NodeDriver):
     name = "vmware"
     website = "http://www.vmware.com/products/fusion/"
 
-    def __init__(self, vm_library="~/.libcloud/vmware/library", vm_instances="~/.libcloud/vmware/instances", vmrun=None):
+    def __init__(self, vm_library="~/.libcloud/vmware/library", vm_instances="~/.libcloud/vmware/instances", vmrun=None, hosttype=None):
         super(VMWareDriver, self).__init__(None)
         self.vm_library = os.path.expanduser(vm_library)
         self.vm_instances = os.path.expanduser(vm_instances)
         self.vmrun = vmrun or self._find_vmrun()
+        self.hosttype = hosttype or self._find_hosttype()
 
     def _find_vmrun(self):
         known_locations = [
             "/Applications/VMWare Fusion.app/Contents/Library",
+            "/usr/bin",
             ]
         for dir in known_locations:
             path = os.path.join(dir, "vmrun")
@@ -57,8 +59,24 @@ class VMWareDriver(NodeDriver):
                 return path
         raise LibcloudError('VMWareDriver requires \'vmrun\' executable to be present on system')
 
+    def _find_hosttype(self):
+        default_hosttypes = [
+            'ws',
+            'fusion',
+            'player',
+            ]
+        for hosttype in default_hosttypes:
+            command = [self.vmrun, "-T", hosttype, "list"]
+            try:
+                returncode, stdout, stderr = execute(command)
+            except LibcloudError:
+                continue
+            if returncode == 0:
+                return hosttype
+        raise LibcloudError('VMWareDriver is unable to find a default host type. Please specify the hosttype argument')
+
     def _action(self, *params):
-        command = [self.vmrun] + list(params)
+        command = [self.vmrun, "-T", self.hosttype] + list(params)
         returncode, stdout, stderr = execute(command)
         return stdout
 
