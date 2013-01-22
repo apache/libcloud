@@ -45,6 +45,8 @@ DRIVERS = {
         ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver'),
     Provider.LOCAL:
         ('libcloud.storage.drivers.local', 'LocalStorageDriver'),
+    Provider.AZURE_BLOBS:
+        ('libcloud.storage.drivers.azure_blobs', 'AzureBlobsStorageDriver'),
 
     # Deprecated
     Provider.CLOUDFILES_US:

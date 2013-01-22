@@ -57,6 +57,7 @@ class Provider(object):
     NIMBUS = 'nimbus'
     LOCAL = 'local'
     CLOUDFILES = 'cloudfiles'
+    AZURE_BLOBS = 'azure_blobs'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
