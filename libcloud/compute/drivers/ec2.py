@@ -150,6 +150,13 @@ INSTANCE_TYPES = {
         'disk': 3370,
         'bandwidth': None
     },
+    'cr1.8xlarge': {
+        'id': 'cr1.8xlarge',
+        'name': 'High Memory Cluster Eight Extra Large',
+        'ram': 244000,
+        'disk': 240, # 2 x 120 GB SSD
+        'bandwidth': None
+    },
     'hs1.8xlarge': {
         'id': 'hs1.8xlarge',
         'name': 'High Storage Eight Extra Large Instance',
@@ -180,6 +187,7 @@ REGION_DETAILS = {
             'cc1.4xlarge',
             'cc2.8xlarge',
             'cg1.4xlarge',
+            'cr1.8xlarge',
             'hs1.8xlarge'
         ]
     },
