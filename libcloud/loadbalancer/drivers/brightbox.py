@@ -146,7 +146,8 @@ class BrightboxLBDriver(Driver):
             state=self.LB_STATE_MAP.get(data['status'], State.UNKNOWN),
             ip=self._public_ip(data),
             port=data['listeners'][0]['in'],
-            driver=self.connection.driver
+            driver=self.connection.driver,
+            extra={'dns_name': self._dns_name(data)}
         )
 
     def _member_to_node(self, member):
@@ -162,3 +163,13 @@ class BrightboxLBDriver(Driver):
             ip = None
 
         return ip
+
+    def _dns_name(self, data):
+        if len(data['cloud_ips']) > 0:
+            rev_dns = data['cloud_ips'][0]['reverse_dns']
+        else:
+            rev_dns = None
+
+        return rev_dns
+
+        
