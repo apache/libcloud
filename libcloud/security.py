@@ -22,13 +22,17 @@ Usage:
     # Optional.
     libcloud.security.CA_CERTS_PATH.append("/path/to/cacert.txt")
 """
-
+ import os
+ 
 VERIFY_SSL_CERT = True
 VERIFY_SSL_CERT_STRICT = True
 
 # File containing one or more PEM-encoded CA certificates
 # concatenated together.
 CA_CERTS_PATH = [
+    #Allow for the CA location to be overridden with an environment variable
+    os.getenv('SSL_CERT_FILE', ''),
+
     # centos/fedora: openssl
     '/etc/pki/tls/certs/ca-bundle.crt',
 
