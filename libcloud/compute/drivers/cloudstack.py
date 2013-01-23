@@ -514,7 +514,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         @rtype: C{bool}
         """
 
-        node.extra['ip_forwarding_rules'].remove(rule)
+        for r in node.extra['ip_forwarding_rules']:
+            if r.id == rule.id:
+                node.extra['ip_forwarding_rules'].remove(rule)
+                break
         self._async_request('deleteIpForwardingRule', id=rule.id)
         return True
 
@@ -666,8 +669,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                    'type':result['volumetype']}
         )
 
-    def ex_delete_snapshot(self, snapshot):
-        res = self._async_request('deleteSnapshot', id=snapshot.id)
+    def ex_destroy_snapshot(self, id):
+        res = self._async_request('deleteSnapshot', id=id)
         return res['success'] == 'true'
 
     def ex_create_keypair(self, name):
