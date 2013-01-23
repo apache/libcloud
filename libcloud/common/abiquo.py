@@ -21,7 +21,6 @@ from libcloud.common.base import ConnectionUserAndKey, PollingConnection
 from libcloud.common.base import XmlResponse
 from libcloud.common.types import InvalidCredsError, LibcloudError
 import base64
-import sys
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
@@ -113,9 +112,9 @@ class AbiquoResponse(XmlResponse):
         does not respond an XML but an HTML. So we need to
         handle these special cases"""
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError(driver='AbiquoNodeDriver')
+            raise InvalidCredsError(driver=self.connection.driver)
         elif self.status == httplib.FORBIDDEN:
-            raise ForbiddenError()
+            raise ForbiddenError(self.connection.driver)
         else:
             errors = self.parse_body().findall('error')
             # Most of the exceptions only have one error
@@ -128,9 +127,8 @@ class AbiquoResponse(XmlResponse):
 
         @rtype:  C{bool}
         @return: successful request or not"""
-        return (self.status == httplib.OK or self.status == httplib.CREATED or
-                self.status == httplib.NO_CONTENT or
-                self.status == httplib.ACCEPTED)
+        return self.status in [httplib.OK, httplib.CREATED, httplib.NO_CONTENT,
+                               httplib.ACCEPTED]
 
     def async_success(self):
         """ Determinate if async request was successful
@@ -170,10 +168,8 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         @rtype          C{dict}
         @return:        Default input headers with the 'Authorization'
                             header"""
-        encoded = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-
-        if sys.version_info >= (3, 0):
-            encoded = encoded.decode()
+        b64string = b('%s:%s' % (self.user_id, self.key))
+        encoded = base64.b64encode(b64string).decode('utf-8')
 
         authorization = 'Basic ' + encoded
 
@@ -217,14 +213,13 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         @return:         Whether the job has completed"""
         task = response.object
         task_state = task.findtext('state')
-        return (task_state == 'FINISHED_SUCCESSFULLY' or
-                task_state == 'FINISHED_UNSUCCESSFULLY' or
-                task_state == 'ABORTED')
+        return task_state in ['FINISHED_SUCCESSFULLY', 'ABORTED',
+                              'FINISHED_UNSUCCESSFULLY']
 
 
 class ForbiddenError(LibcloudError):
     """Exception used when credentials are ok but user has not permissions"""
 
-    def __init__(self):
+    def __init__(self, driver):
         message = 'User has not permission to perform this task.'
-        super(LibcloudError, self).__init__(message, 'AbiquoNodeDriver')
+        super(LibcloudError, self).__init__(message, driver)

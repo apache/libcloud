@@ -42,7 +42,6 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         Test, through the 'login' method, that a '401 Unauthorized'
         raises a 'InvalidCredsError' instead of the 'MalformedUrlException'
         """
-        AbiquoNodeDriver.connectionCls.conn_classes = (AbiquoMockHttp, None)
         self.assertRaises(InvalidCredsError, AbiquoNodeDriver, 'son',
                           'goten', 'http://dummy.host.com/api')
 

@@ -112,99 +112,22 @@ class AbiquoNodeDriver(NodeDriver):
         @return:               The newly created node.
         @rtype:                L{Node}
         """
+        # Define the location
+        # To be clear:
+        #     'xml_loc' is the xml element we navigate into (we need links)
+        #     'loc' is the L{NodeLocation} entity
+        xml_loc, loc = self._define_create_node_location(**kwargs)
 
-        #first, get image location
-        if not 'image' in kwargs:
-            error = "'image' parameter is mandatory"
-            raise LibcloudError(error, self)
+        # Define the Group
+        group = self._define_create_node_group(xml_loc, loc, **kwargs)
 
-        image = kwargs['image']
-
-        # Get the location argument
-        location = None
-        if 'location' in kwargs:
-            location = kwargs['location']
-            if not location in self.list_locations():
-                raise LibcloudError('Location does not exist')
-
-        # Check if the image is compatible with any of the locations or
-        # the input location
-        loc = None
-        target_loc = None
-        for candidate_loc in self._get_locations(location):
-            link_vdc = self.connection.context['locations'][candidate_loc]
-            e_vdc = self.connection.request(link_vdc).object
-            # url_location = get_href(e_vdc, 'datacenter')
-            for img in self.list_images(candidate_loc):
-                if img.id == image.id:
-                    # To be clear:
-                    # 'loc' is the xml element we navigate into
-                    # 'target_loc' is the L{NodeLocation} entity
-                    loc = e_vdc
-                    target_loc = candidate_loc
-                    break
-        if loc is None:
-            error = 'The image can not be used in any location'
-            raise LibcloudError(error, self)
-
-        # -------------------------------------------------------
-        #  Define the Group
-        # -------------------------------------------------------
-        if not 'group_name' in kwargs:
-            group_name = NodeGroup.DEFAULT_GROUP_NAME
-        else:
-            group_name = kwargs['group_name']
-
-        # find group into location
-        groups_link = get_href(loc, 'virtualappliances')
-        vapps_element = self.connection.request(groups_link).object
-        target_group = None
-        nodes_link = None
-        for vapp in vapps_element.findall('virtualAppliance'):
-            if vapp.findtext('name') == group_name:
-                target_group = vapp
-                nodes_link = get_href(target_group, 'virtualmachines')
-                break
-
-        # target group not found: create it
-        if target_group is None:
-            target_group = self.ex_create_group(group_name, target_loc)
-            nodes_link = target_group.uri + '/virtualmachines'
-
-        # -------------------------------------------------------
         # Register the Node
-        # -------------------------------------------------------
-        # prepare the element
-        vm = ET.Element('virtualmachinewithnode')
-        if 'name' in kwargs:
-            vmname = ET.SubElement(vm, 'nodeName')
-            vmname.text = kwargs['name']
-        attrib = {'type': 'application/vnd.abiquo/virtualmachinetemplate+xml',
-                  'rel': 'virtualmachinetemplate',
-                  'href': image.extra['url']}
-        ET.SubElement(vm, 'link', attrib=attrib)
-        headers = {'Content-type': self.NODE_MIME_TYPE}
-        if 'size' in kwargs:
-            # Override the 'NodeSize' data
-            ram = ET.SubElement(vm, 'ram')
-            ram.text = str(kwargs['size'].ram)
-            hd = ET.SubElement(vm, 'hdInBytes')
-            hd.text = str(int(kwargs['size'].disk) * self.GIGABYTE)
+        vm = self._define_create_node_node(group, **kwargs)
 
-        # Create the virtual machine
-        vm = self.connection.request(nodes_link, data=tostring(vm),
-                                     headers=headers, method='POST').object
-        edit_vm = get_href(vm, 'edit')
-        headers = {'Accept': self.NODE_MIME_TYPE}
-        vm = self.connection.request(edit_vm, headers=headers).object
-
-        # Execute the 'deploy' action
+        # Execute the 'create' in hypervisor action
         self._deploy_remote(vm)
 
-        # --------------------------------------------------------
-        #     Retrieve it again, to get some schedule-defined
-        #     values.
-        # --------------------------------------------------------
+        # Retrieve it again, to get some schedule-time defined values
         edit_vm = get_href(vm, 'edit')
         headers = {'Accept': self.NODE_MIME_TYPE}
         vm = self.connection.request(edit_vm, headers=headers).object
@@ -670,6 +593,99 @@ class AbiquoNodeDriver(NodeDriver):
     def _get_enterprise_id(self):
         """Returns the identifier of the logged user's enterprise"""
         return self.connection.context['enterprise'].findtext('id')
+
+    def _define_create_node_location(self, **kwargs):
+        """Search for a location where to create the node.
+
+        Based on 'create_node' **kwargs argument, decide in which
+        location will be created."""
+        #first, get image location
+        if not 'image' in kwargs:
+            error = "'image' parameter is mandatory"
+            raise LibcloudError(error, self)
+
+        image = kwargs['image']
+
+        # Get the location argument
+        location = None
+        if 'location' in kwargs:
+            location = kwargs['location']
+            if not location in self.list_locations():
+                raise LibcloudError('Location does not exist')
+
+        # Check if the image is compatible with any of the locations or
+        # the input location
+        loc = None
+        target_loc = None
+        for candidate_loc in self._get_locations(location):
+            link_vdc = self.connection.context['locations'][candidate_loc]
+            e_vdc = self.connection.request(link_vdc).object
+            # url_location = get_href(e_vdc, 'datacenter')
+            for img in self.list_images(candidate_loc):
+                if img.id == image.id:
+                    loc = e_vdc
+                    target_loc = candidate_loc
+                    break
+        if loc is None:
+            error = 'The image can not be used in any location'
+            raise LibcloudError(error, self)
+
+        return loc, target_loc
+
+    def _define_create_node_group(self, xml_loc, loc, **kwargs):
+        """Search for a group where to create the node.
+
+        If we can not find any group, create it into argument 'location'
+        """
+        if not 'group_name' in kwargs:
+            group_name = NodeGroup.DEFAULT_GROUP_NAME
+        else:
+            group_name = kwargs['group_name']
+
+        # We search if the group is already defined into the location
+        groups_link = get_href(xml_loc, 'virtualappliances')
+        vapps_element = self.connection.request(groups_link).object
+        target_group = None
+        for vapp in vapps_element.findall('virtualAppliance'):
+            if vapp.findtext('name') == group_name:
+                uri_vapp = get_href(vapp, 'edit')
+                return  NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
+
+        # target group not found: create it. Since it is an extension of
+        # the basic 'libcloud' functionality, we try to be as flexible as
+        # possible.
+        if target_group is None:
+            return self.ex_create_group(group_name, loc)
+
+    def _define_create_node_node(self, group, **kwargs):
+        """Defines the node before to create.
+
+        In Abiquo, you first need to 'register' or 'define' the node in
+        the API before to create it into the target hypervisor"""
+        vm = ET.Element('virtualmachinewithnode')
+        if 'name' in kwargs:
+            vmname = ET.SubElement(vm, 'nodeName')
+            vmname.text = kwargs['name']
+        attrib = {'type': 'application/vnd.abiquo/virtualmachinetemplate+xml',
+                  'rel': 'virtualmachinetemplate',
+                  'href': kwargs['image'].extra['url']}
+        ET.SubElement(vm, 'link', attrib=attrib)
+        headers = {'Content-type': self.NODE_MIME_TYPE}
+        if 'size' in kwargs:
+            # Override the 'NodeSize' data
+            ram = ET.SubElement(vm, 'ram')
+            ram.text = str(kwargs['size'].ram)
+            hd = ET.SubElement(vm, 'hdInBytes')
+            hd.text = str(int(kwargs['size'].disk) * self.GIGABYTE)
+
+        # Create the virtual machine
+        nodes_link = group.uri + '/virtualmachines'
+        vm = self.connection.request(nodes_link, data=tostring(vm),
+                                     headers=headers, method='POST').object
+        edit_vm = get_href(vm, 'edit')
+        headers = {'Accept': self.NODE_MIME_TYPE}
+
+        return self.connection.request(edit_vm, headers=headers).object
 
 
 class NodeGroup(object):
