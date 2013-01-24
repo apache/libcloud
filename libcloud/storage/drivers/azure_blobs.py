@@ -198,8 +198,10 @@ class AzureBlobsStorageDriver(StorageDriver):
         @type container_name: C{str}
         """
         if not re.match(AZURE_CONTAINER, container_name):
-            raise InvalidContainerNameError('Invalid container name: %s' %
-                                            (container_name), driver=self)
+            raise InvalidContainerNameError(value='Container name contains ' +
+                                            'invalid characters.',
+                                            container_name=container_name,
+                                            driver=self)
 
     def _xml_to_container(self, node):
         """
@@ -401,7 +403,12 @@ class AzureBlobsStorageDriver(StorageDriver):
             response = self.connection.request(container_path,
                                                params=params)
 
-            if response.status != httplib.OK:
+            if response.status == httplib.NOT_FOUND:
+                raise ContainerDoesNotExistError(value=None,
+                                                 driver=self,
+                                                 container_name=container.name)
+
+            elif response.status != httplib.OK:
                 raise LibcloudError('Unexpected status code: %s' %
                                     (response.status), driver=self)
 
@@ -789,13 +796,14 @@ class AzureBlobsStorageDriver(StorageDriver):
                                     upload_func=upload_func,
                                     upload_func_kwargs=upload_func_kwargs,
                                     file_path=file_path, extra=extra,
-                                    verify_hash=False,
+                                    verify_hash=verify_hash,
                                     blob_type=ex_blob_type,
                                     use_lease=ex_use_lease)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 extra=None, ex_use_lease=False,
-                                 ex_blob_type=None, ex_page_blob_size=None):
+                                 verify_hash=False, extra=None,
+                                 ex_use_lease=False, ex_blob_type=None,
+                                 ex_page_blob_size=None):
         """
         @inherits: L{StorageDriver.upload_object_via_stream}
 
@@ -828,7 +836,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                                 object_size=ex_page_blob_size,
                                 upload_func=upload_func,
                                 upload_func_kwargs=upload_func_kwargs,
-                                extra=extra, verify_hash=False,
+                                extra=extra, verify_hash=verify_hash,
                                 blob_type=ex_blob_type,
                                 use_lease=ex_use_lease)
 
@@ -931,6 +939,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
             response = result_dict['response']
             bytes_transferred = result_dict['bytes_transferred']
+            data_hash = result_dict['data_hash']
             headers = response.headers
             response = response.response
 
