@@ -103,6 +103,10 @@ Changes with Apache Libcloud in development:
    - Add new driver for Abiquo provider - http://www.abiquo.com (LIBCLOUD-250).
      [Jaume Devesa]
 
+   - Allow user to pass 'ex_blockdevicemappings' kwarg to the EC2 driver
+     'create_node' method. (LIBCLOUD-282)
+     [Joe Miller, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.

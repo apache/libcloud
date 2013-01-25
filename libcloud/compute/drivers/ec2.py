@@ -154,7 +154,7 @@ INSTANCE_TYPES = {
         'id': 'cr1.8xlarge',
         'name': 'High Memory Cluster Eight Extra Large',
         'ram': 244000,
-        'disk': 240, # 2 x 120 GB SSD
+        'disk': 240,
         'bandwidth': None
     },
     'hs1.8xlarge': {
@@ -1251,6 +1251,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_clienttoken: Unique identifier to ensure idempotency
         @type       ex_clienttoken: C{str}
+
+        @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
+                    mappings. Example:
+                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+        @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1287,6 +1292,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
+
+        if 'ex_blockdevicemappings' in kwargs:
+            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
+                    mapping['DeviceName']
+                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
+                    mapping['VirtualName']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
