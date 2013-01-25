@@ -81,20 +81,24 @@ Changes with Apache Libcloud in development:
      anymore.
      [Rick Copeland, Tomaz Muraus]
 
-    - Add new EC2 instance type - High Storage Eight Extra Large Instance
-      (hs1.8xlarge).
-      [Tomaz Muraus]
+   - Add new EC2 instance type - High Storage Eight Extra Large Instance
+     (hs1.8xlarge).
+     [Tomaz Muraus]
 
-    - Map 'shutting-down' node state in EC2 driver to UNKNOWN (previously
-      mapped to TERMINATED). (LIBCLOUD-280)
+   - Map 'shutting-down' node state in EC2 driver to UNKNOWN (previously
+     mapped to TERMINATED). (LIBCLOUD-280)
 
-      Note: This change is backward incompatible which means you need to update
-      your code if you rely on the old behavior.
-      [Tomaz Muraus, Marcin Kuzminski]
+     Note: This change is backward incompatible which means you need to update
+     your code if you rely on the old behavior.
+     [Tomaz Muraus, Marcin Kuzminski]
 
-    - Change _wait_until_running method so it supports waiting on multiple nodes
-      and make it public (wait_until_running). (LIBCLOUD-274)
-      [Nick Bailey]
+   - Change _wait_until_running method so it supports waiting on multiple nodes
+     and make it public (wait_until_running). (LIBCLOUD-274)
+     [Nick Bailey]
+
+   - Add new EC2 instance type - High Memory Cluster Eight Extra Large.
+     (cr1.8xlarge).
+     [Tomaz Muraus]
 
   *) Storage
 
