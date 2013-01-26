@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import shutil
+import os
 import shlex
 import subprocess
 from pipes import quote
@@ -55,26 +55,41 @@ class Connection(object):
     def connect(self):
         pass
 
-    def request(self, command):
+    def request(self, command, data='', capture_output=True):
         if not isinstance(command, list):
             command = shlex.split(command)
 
         if self.log:
             self.log.write(' '.join(quote(c) for c in command) + '\n')
 
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if self.log:
-            self.log.write("# PID is %d\n" % p.pid)
+        if not capture_output:
+            stdout, stderr = '', ''
+            returncode = self._silent_request(command, data)
+        else:
+            returncode, stdout, stderr = self._request(command, data)
 
-        stdout, stderr = p.communicate()
-
         if self.log:
-            self.log.write("# returncode is %d\n" % p.returncode)
+            self.log.write("# returncode is %d\n" % returncode)
             self.log.write("# -------- begin stdout ----------\n")
             self.log.write(stdout)
             self.log.write("# -------- begin stderr ----------\n")
             self.log.write(stderr)
             self.log.write("# -------- end ----------\n")
 
-        return self.responseCls(p.returncode, stdout, stderr)
+        return self.responseCls(returncode, stdout, stderr)
+
+    def _request(self, command, data):
+        stdin = subprocess.PIPE if data else None
+        p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate(data)
+        return p.returncode, stdout, stderr
+
+    def _silent_request(self, command, data):
+        stdin = subprocess.PIPE if data else None
+        with open(os.devnull, "w") as null:
+            p = subprocess.Popen(command, stdin=stdin, stdout=null, stderr=null)
+            if data:
+                p.stdin.write(data)
+                p.stdin.close()
+            return p.wait()
 

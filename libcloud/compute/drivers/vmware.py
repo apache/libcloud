@@ -76,9 +76,10 @@ class VMWareDriver(NodeDriver):
                 return hosttype
         raise LibcloudError('VMWareDriver is unable to find a default host type. Please specify the hosttype argument')
 
-    def _action(self, *params):
+    def _action(self, *params, **kwargs):
+        capture_output = kwargs.get('capture_output', True)
         command = [self.vmrun, "-T", self.hosttype] + list(params)
-        return self.connection.request(command).body
+        return self.connection.request(command, capture_output=capture_output).body
 
     def list_images(self, location=None):
         if not location:
@@ -148,7 +149,7 @@ class VMWareDriver(NodeDriver):
         #        self.ex_set_runtime_variable(node, "displayName", name, str(size.ram))
         #        self._action("writeVariable", target, "runtimeConfig", "memsize", str(size.ram))
 
-        self._action("start", target, "nogui")
+        self._action("start", target, "nogui", capture_output=False)
         self.ex_set_runtime_variable(node, "displayName", name)
         return Node(target, name, NodeState.PENDING, None, None, self)
 
