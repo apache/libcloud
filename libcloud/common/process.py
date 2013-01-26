@@ -14,40 +14,67 @@
 # limitations under the License.
 
 import shutil
+import shlex
 import subprocess
 from pipes import quote
 
 from libcloud.common.types import LibcloudError
 
 
-def execute(command):
-    log = execute.log
+class Response(object):
 
-    if not isinstance(command, list):
-        command = shlex.split(command)
+    def __init__(self, status, body, error):
+        self.status = status
+        self.body = body
+        self.error = error
 
-    if log:
-        log.write(quote(command))
+        if not self.success():
+            raise LibcloudError(self.parse_error())
 
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if log:
-        log.write("# PID is %d" % p.pid)
+        self.object = self.parse_body()
 
-    stdout, stderr = p.communicate()
+    def parse_body(self):
+        return self.body
 
-    if log:
-        log.write("# returncode is %d" % p.returncode)
-        log.write("# -------- begin stdout ----------\n" % pid)
-        log.write(stdout)
-        log.write("# -------- begin stderr ----------\n" % pid)
-        log.write(stderr)
+    def parse_error(self):
+        return self.error
 
-    if p.returncode != 0:
-        raise LibcloudError("Shell command failed with exit code %d" % p.returncode)
-
-    return p.returncode, stdout, stderr
-
-execute.log = None
+    def success(self):
+        return self.status == 0
 
 
+class Connection(object):
+
+    responseCls = Response
+    log = None
+
+    def  __init__(self, secure=True, host=None, port=None, url=None,
+                  timeout=None):
+        pass
+
+    def connect(self):
+        pass
+
+    def request(self, command):
+        if not isinstance(command, list):
+            command = shlex.split(command)
+
+        if self.log:
+            self.log.write(' '.join(quote(c) for c in command) + '\n')
+
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if self.log:
+            self.log.write("# PID is %d\n" % p.pid)
+
+        stdout, stderr = p.communicate()
+
+        if self.log:
+            self.log.write("# returncode is %d\n" % p.returncode)
+            self.log.write("# -------- begin stdout ----------\n")
+            self.log.write(stdout)
+            self.log.write("# -------- begin stderr ----------\n")
+            self.log.write(stderr)
+            self.log.write("# -------- end ----------\n")
+
+        return self.responseCls(p.returncode, stdout, stderr)
 

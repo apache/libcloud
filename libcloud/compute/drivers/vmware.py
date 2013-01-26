@@ -29,7 +29,7 @@ import shutil
 import uuid
 
 from libcloud.common.types import LibcloudError
-from libcloud.common.process import execute
+from libcloud.common.process import Connection
 from libcloud.compute.base import NodeDriver, Node, NodeSize, NodeImage
 from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
@@ -40,6 +40,7 @@ class VMWareDriver(NodeDriver):
     type = Provider.VMWARE
     name = "vmware"
     website = "http://www.vmware.com/products/fusion/"
+    connectionCls = Connection
 
     def __init__(self, vm_library="~/.libcloud/vmware/library", vm_instances="~/.libcloud/vmware/instances", vmrun=None, hosttype=None):
         super(VMWareDriver, self).__init__(None)
@@ -68,17 +69,16 @@ class VMWareDriver(NodeDriver):
         for hosttype in default_hosttypes:
             command = [self.vmrun, "-T", hosttype, "list"]
             try:
-                returncode, stdout, stderr = execute(command)
+                resp = self.connection.request(command)
             except LibcloudError:
                 continue
-            if returncode == 0:
+            else:
                 return hosttype
         raise LibcloudError('VMWareDriver is unable to find a default host type. Please specify the hosttype argument')
 
     def _action(self, *params):
         command = [self.vmrun, "-T", self.hosttype] + list(params)
-        returncode, stdout, stderr = execute(command)
-        return stdout
+        return self.connection.request(command).body
 
     def list_images(self, location=None):
         if not location:
@@ -122,7 +122,9 @@ class VMWareDriver(NodeDriver):
         target_dir = os.path.join(self.vm_instances, str(uuid.uuid4()))
         target = os.path.join(target_dir, "vm.vmx")
 
-        os.makedirs(target_dir)
+        target_parent = os.path.dirname(target_dir)
+        if not os.path.exists(target_parent):
+            os.makedirs(target_parent)
 
         # First try to clone the VM with the VMWare commands. We do this in
         # the hope that they know what the fastest and most efficient way to
@@ -140,13 +142,15 @@ class VMWareDriver(NodeDriver):
         # If a NodeSize is provided then we can control the amount of RAM the
         # VM has. Number of CPU's would be easy to scale too, but this isn't
         # exposed on a NodeSize
-        if size:
-            if size.ram:
-                self.ex_set_runtime_variable(node, "displayName", name, str(size.ram))
 
-        self.ex_set_runtime_variable(node, "displayName", name)
+        # if size:
+        #     if size.ram:
+        #        self.ex_set_runtime_variable(node, "displayName", name, str(size.ram))
+        #        self._action("writeVariable", target, "runtimeConfig", "memsize", str(size.ram))
+
         self._action("start", target, "nogui")
-        return node
+        self.ex_set_runtime_variable(node, "displayName", name)
+        return Node(target, name, NodeState.PENDING, None, None, self)
 
     def reboot_node(self, node):
         self._action("reset", node.id, "hard")
