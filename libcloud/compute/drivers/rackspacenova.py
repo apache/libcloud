@@ -19,9 +19,13 @@ from libcloud.compute.providers import Provider
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
     OpenStack_1_1_NodeDriver
 from libcloud.common.types import LibcloudError
+from libcloud.common.rackspace import (
+    AUTH_URL_US, AUTH_URL_UK)
 
 
 class RackspaceNovaConnection(OpenStack_1_1_Connection):
+    auth_url = AUTH_URL_US
+    _auth_version = '2.0'
     get_endpoint_args = {}
 
     def get_endpoint(self):
@@ -59,6 +63,7 @@ class RackspaceNovaDfwConnection(RackspaceNovaConnection):
 
 
 class RackspaceNovaLonConnection(RackspaceNovaConnection):
+    auth_url = AUTH_URL_UK
 
     get_endpoint_args = {'service_type': 'compute',
                          'name': 'cloudServersOpenStack',
