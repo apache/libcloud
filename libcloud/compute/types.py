@@ -72,7 +72,7 @@ class Provider(object):
     @cvar ABIQUO: Abiquo driver
     """
     DUMMY = 'dummy'
-    EC2 = 'ec2'
+    EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'
     SLICEHOST = 'slicehost'
     GOGRID = 'gogrid'
@@ -117,7 +117,7 @@ class Provider(object):
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
-    EC2_EU = 'ec2_eu'  # deprecated name
+    EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
     EC2_US_WEST = 'ec2_us_west'
     EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
