@@ -1412,53 +1412,149 @@ class IdempotentParamError(LibcloudError):
         return repr(self.value)
 
 
+class EC2EUConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Western Europe Region
+    """
+    host = REGION_DETAILS['eu-west-1']['endpoint']
+
+
 class EC2EUNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
-    _datacenter = 'eu-west-1'
+    api_name = 'ec2_eu_west'
+    name = 'Amazon EC2 (eu-west-1)'
+    friendly_name = 'Amazon Europe Ireland'
+    country = 'IE'
+    region_name = 'eu-west-1'
+    connectionCls = EC2EUConnection
+
+
+class EC2USWestConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Western US Region
+    """
+
+    host = REGION_DETAILS['us-west-1']['endpoint']
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
-    _datacenter = 'us-west-1'
+
+    api_name = 'ec2_us_west'
+    name = 'Amazon EC2 (us-west-1)'
+    friendly_name = 'Amazon US N. California'
+    country = 'US'
+    region_name = 'us-west-1'
+    connectionCls = EC2USWestConnection
+
+
+class EC2USWestOregonConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Western US Region (Oregon).
+    """
+
+    host = REGION_DETAILS['us-west-2']['endpoint']
 
 
 class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
-    _datacenter = 'us-west-2'
+
+    api_name = 'ec2_us_west_oregon'
+    name = 'Amazon EC2 (us-west-2)'
+    friendly_name = 'Amazon US West - Oregon'
+    country = 'US'
+    region_name = 'us-west-2'
+    connectionCls = EC2USWestOregonConnection
+
+
+class EC2APSEConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Southeast Asia Pacific Region.
+    """
+
+    host = REGION_DETAILS['ap-southeast-1']['endpoint']
+
+
+class EC2APNEConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Northeast Asia Pacific Region.
+    """
+
+    host = REGION_DETAILS['ap-northeast-1']['endpoint']
 
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific Region.
     """
-    _datacenter = 'ap-southeast-1'
+
+    api_name = 'ec2_ap_southeast'
+    name = 'Amazon EC2 (ap-southeast-1)'
+    friendly_name = 'Amazon Asia-Pacific Singapore'
+    country = 'SG'
+    region_name = 'ap-southeast-1'
+    connectionCls = EC2APSEConnection
 
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Northeast Asia Pacific Region.
     """
-    _datacenter = 'ap-northeast-1'
+
+    api_name = 'ec2_ap_northeast'
+    name = 'Amazon EC2 (ap-northeast-1)'
+    friendly_name = 'Amazon Asia-Pacific Tokyo'
+    country = 'JP'
+    region_name = 'ap-northeast-1'
+    connectionCls = EC2APNEConnection
+
+
+class EC2SAEastConnection(EC2Connection):
+    """
+    Connection class for EC2 in the South America (Sao Paulo) Region.
+    """
+
+    host = REGION_DETAILS['sa-east-1']['endpoint']
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the South America (Sao Paulo) Region.
     """
-    _datacenter = 'sa-east-1'
+
+    api_name = 'ec2_sa_east'
+    name = 'Amazon EC2 (sa-east-1)'
+    friendly_name = 'Amazon South America Sao Paulo'
+    country = 'BR'
+    region_name = 'sa-east-1'
+    connectionCls = EC2SAEastConnection
+
+
+class EC2APSESydneyConnection(EC2Connection):
+    """
+    Connection class for EC2 in the Southeast Asia Pacific (Sydney) Region.
+    """
+
+    host = REGION_DETAILS['ap-southeast-2']['endpoint']
 
 
 class EC2APSESydneyNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
     """
-    _datacenter = 'ap-southeast-2'
+
+    api_name = 'ec2_ap_southeast_2'
+    name = 'Amazon EC2 (ap-southeast-2)'
+    friendly_name = 'Amazon Asia-Pacific Sydney'
+    country = 'AU'
+    region_name = 'ap-southeast-2'
+    connectionCls = EC2APSESydneyConnection
 
 
 class EucConnection(EC2Connection):

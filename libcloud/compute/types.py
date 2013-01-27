@@ -30,8 +30,6 @@ __all__ = [
     "MalformedResponseError",
     "InvalidCredsError",
     "InvalidCredsException",
-    "DEPRECATED_RACKSPACE_PROVIDERS",
-    "OLD_CONSTANT_TO_NEW_MAPPING"
     ]
 
 
@@ -73,7 +71,6 @@ class Provider(object):
     """
     DUMMY = 'dummy'
     EC2 = 'ec2'
-    RACKSPACE = 'rackspace'
     SLICEHOST = 'slicehost'
     GOGRID = 'gogrid'
     VPSNET = 'vpsnet'
@@ -111,11 +108,9 @@ class Provider(object):
     VCL = 'vcl'
     KTUCLOUD = 'ktucloud'
     GRIDSPOT = 'gridspot'
-    RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     HOSTVIRTUAL = 'hostvirtual'
     ABIQUO = 'abiquo'
 
-    # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
@@ -126,28 +121,12 @@ class Provider(object):
     EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
 
-    # Deprecated constants which aren't supported anymore
+    RACKSPACE = 'rackspace'
     RACKSPACE_UK = 'rackspace_uk'
     RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
     RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
     RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
     RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
-
-
-DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
-                                  Provider.RACKSPACE_NOVA_BETA,
-                                  Provider.RACKSPACE_NOVA_DFW,
-                                  Provider.RACKSPACE_NOVA_LON,
-                                  Provider.RACKSPACE_NOVA_ORD]
-OLD_CONSTANT_TO_NEW_MAPPING = {
-    Provider.RACKSPACE: Provider.RACKSPACE_FIRST_GEN,
-    Provider.RACKSPACE_UK: Provider.RACKSPACE_FIRST_GEN,
-
-    Provider.RACKSPACE_NOVA_BETA: Provider.RACKSPACE,
-    Provider.RACKSPACE_NOVA_DFW: Provider.RACKSPACE,
-    Provider.RACKSPACE_NOVA_LON: Provider.RACKSPACE,
-    Provider.RACKSPACE_NOVA_ORD: Provider.RACKSPACE
-}
 
 
 class NodeState(object):

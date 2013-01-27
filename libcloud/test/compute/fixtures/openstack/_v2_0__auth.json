@@ -28,12 +28,6 @@
                         "tenantId": "MossoCloudFS_11111-111111111-1111111111-1111111",
                         "publicURL": "https://storage101.ord1.clouddrive.com/v1/MossoCloudFS_11111-111111111-1111111111-1111111",
                         "internalURL": "https://snet-storage101.ord1.clouddrive.com/v1/MossoCloudFS_11111-111111111-1111111111-1111111"
-                    },
-                    {
-                        "region": "LON",
-                        "tenantId": "MossoCloudFS_11111-111111111-1111111111-1111111",
-                        "publicURL": "https://storage101.lon1.clouddrive.com/v1/MossoCloudFS_11111-111111111-1111111111-1111111",
-                        "internalURL": "https://snet-storage101.lon1.clouddrive.com/v1/MossoCloudFS_11111-111111111-1111111111-1111111"
                     }
                 ],
                 "name": "cloudFiles",

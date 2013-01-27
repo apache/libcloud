@@ -20,8 +20,6 @@ from libcloud.storage.types import Provider
 DRIVERS = {
     Provider.DUMMY:
         ('libcloud.storage.drivers.dummy', 'DummyStorageDriver'),
-    Provider.CLOUDFILES:
-        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesStorageDriver'),
     Provider.S3:
         ('libcloud.storage.drivers.s3', 'S3StorageDriver'),
     Provider.S3_US_WEST:
@@ -38,19 +36,18 @@ DRIVERS = {
         ('libcloud.storage.drivers.ninefold', 'NinefoldStorageDriver'),
     Provider.GOOGLE_STORAGE:
         ('libcloud.storage.drivers.google_storage', 'GoogleStorageDriver'),
-    Provider.CLOUDFILES_SWIFT:
-        ('libcloud.storage.drivers.cloudfiles',
-         'CloudFilesSwiftStorageDriver'),
     Provider.NIMBUS:
         ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver'),
     Provider.LOCAL:
         ('libcloud.storage.drivers.local', 'LocalStorageDriver'),
 
-    # Deprecated
     Provider.CLOUDFILES_US:
         ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),
     Provider.CLOUDFILES_UK:
-        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver')
+        ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUKStorageDriver'),
+    Provider.CLOUDFILES_SWIFT:
+        ('libcloud.storage.drivers.cloudfiles',
+         'CloudFilesSwiftStorageDriver')
 }
 
 

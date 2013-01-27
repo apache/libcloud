@@ -45,36 +45,15 @@ except AttributeError:
     parse_qsl = cgi.parse_qsl
 
 
-class BaseEC2Tests(LibcloudTestCase):
-    def test_instantiate_driver_valid_datacenters(self):
-        datacenters = REGION_DETAILS.keys()
-        datacenters = [d for d in datacenters if d != 'nimbus']
-
-        for datacenter in datacenters:
-            EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
-
-    def test_instantiate_driver_invalid_datacenters(self):
-        for datacenter in ['invalid', 'nimbus']:
-            try:
-                EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
-            except ValueError:
-                pass
-            else:
-                self.fail('Invalid region, but exception was not thrown')
-
-
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
     image_name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
-    datacenter = 'us-east-1'
 
     def setUp(self):
         EC2MockHttp.test = self
         EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
-
-        self.driver = EC2NodeDriver(*EC2_PARAMS,
-                                    **{'datacenter': self.datacenter})
+        self.driver = EC2NodeDriver(*EC2_PARAMS)
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
@@ -394,75 +373,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         retValue = self.driver.detach_volume(vol)
         self.assertTrue(retValue)
-
-
-class EC2USWest1Tests(EC2Tests):
-    datacenter = 'us-west-1'
-
-
-class EC2USWest2Tests(EC2Tests):
-    datacenter = 'us-west-2'
-
-
-class EC2EUWestTests(EC2Tests):
-    datacenter = 'eu-west-1'
-
-
-class EC2APSE1Tests(EC2Tests):
-    datacenter = 'ap-southeast-1'
-
-
-class EC2APNETests(EC2Tests):
-    datacenter = 'ap-northeast-1'
-
-
-class EC2APSE2Tests(EC2Tests):
-    datacenter = 'ap-southeast-2'
-
-
-class EC2SAEastTests(EC2Tests):
-    datacenter = 'sa-east-1'
-
-
-# Tests for the old, deprecated way of instantiating a driver.
-class EC2OldStyleModelTests(EC2Tests):
-    driver_klass = EC2USWestNodeDriver
-
-    def setUp(self):
-        EC2MockHttp.test = self
-        EC2NodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
-        EC2MockHttp.use_param = 'Action'
-        EC2MockHttp.type = None
-
-        self.driver = self.driver_klass(*EC2_PARAMS)
-
-
-class EC2USWest1OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2USWestNodeDriver
-
-
-class EC2USWest2OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2USWestOregonNodeDriver
-
-
-class EC2EUWestOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2EUNodeDriver
-
-
-class EC2APSE1OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APSENodeDriver
-
-
-class EC2APNEOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APNENodeDriver
-
-
-class EC2APSE2OldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2APSESydneyNodeDriver
-
-
-class EC2SAEastOldStyleModelTests(EC2OldStyleModelTests):
-    driver_klass = EC2SAEastNodeDriver
 
 
 class EC2MockHttp(MockHttpTestCase):

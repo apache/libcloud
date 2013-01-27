@@ -10,11 +10,6 @@
                     "region": "ORD",
                     "publicURL": "https://cdn2.clouddrive.com/v1/MossoCloudFS",
                     "v1Default": true
-                },
-                {
-                    "region": "LON",
-                    "publicURL": "https://cdn2.clouddrive.com/v1/MossoCloudFS",
-                    "v1Default": false
                 }
             ],
             "cloudFiles": [
@@ -23,12 +18,6 @@
                     "publicURL": "https://storage101.ord1.clouddrive.com/v1/MossoCloudFS",
                     "v1Default": true,
                     "internalURL": "https://snet-storage101.ord1.clouddrive.com/v1/MossoCloudFS"
-                },
-                {
-                    "region": "LON",
-                    "publicURL": "https://storage101.lon1.clouddrive.com/v1/MossoCloudFS",
-                    "v1Default": false,
-                    "internalURL": "https://snet-storage101.lon1.clouddrive.com/v1/MossoCloudFS"
                 }
             ],
             "cloudServers": [

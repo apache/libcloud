@@ -33,16 +33,6 @@ Changes with Apache Libcloud 0.12.0:
       (LIBCLOUD-245)
       [Tomaz Muraus]
 
-    - Refactor Rackspace driver classes and make them easier to use. Now there
-      are two rackspace constants - Provider.RACKSPACE which represents new
-      next-gen OpenStack servers and Provider.RACKSPACE_FIRST_GEN which
-      represents old cloud servers.
-
-      Note: This change is backward incompatible. For more information on those
-      changes and how to upgrade your code to make it work with it, please visit
-      TODO.
-      [Tomaz Muraus]
-
     - Improvements and additions in vCloud driver:
       - Expose generic query method (ex_query)
       - Provide functionality to get and set control access for vApps. This way
@@ -125,15 +115,6 @@ Changes with Apache Libcloud 0.12.0:
 
     - Add ex_purge_object_from_cdn method to the CloudFiles driver.
       (LIBCLOUD-267)
-      [Tomaz Muraus]
-
-    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
-      add a new CLOUDFILES constant.
-      Driver referenced by this constant takes a "datacenter" keyword argument
-      and can be one of 'ord', 'dfw' or 'lon'.
-
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
       [Tomaz Muraus]
 
     - Support for multipart uploads and other improvemetns in the S3 driver
