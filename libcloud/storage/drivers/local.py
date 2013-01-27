@@ -31,7 +31,7 @@ except ImportError:
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
-from libcloud.utils.py import relpath
+from libcloud.utils.py3 import relpath
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.common.types import LibcloudError
