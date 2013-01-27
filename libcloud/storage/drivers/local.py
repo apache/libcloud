@@ -31,6 +31,7 @@ except ImportError:
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
+from libcloud.utils.py import relpath
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.common.types import LibcloudError
@@ -215,7 +216,7 @@ class LocalStorageDriver(StorageDriver):
 
             for name in files:
                 full_path = os.path.join(folder, name)
-                object_name = os.path.relpath(full_path, start=cpath)
+                object_name = relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
     def iterate_container_objects(self, container):
