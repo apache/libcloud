@@ -117,7 +117,7 @@ Changes with Apache Libcloud 0.12.0:
       (LIBCLOUD-267)
       [Tomaz Muraus]
 
-    - Support for multipart uploads and other improvemetns in the S3 driver
+    - Support for multipart uploads and other improvements in the S3 driver
       so it can more easily be re-used with other implementations (e.g. Google
       Storage, etc.).
 
