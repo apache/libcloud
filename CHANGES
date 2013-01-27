@@ -11,7 +11,7 @@ Changes with Apache Libcloud in development:
 
       Existing list_* methods which previously used LazyList class are
       preserving the old behavior and new iterate_* methods which use a new
-      generator based approach have been added.
+      generator based approach have been added. (LIBCLOUD-254)
       [Mahendra M]
 
     - Replace old ENUM style provider constants and replace them with a string
@@ -47,6 +47,7 @@ Changes with Apache Libcloud in development:
       - Expose generic query method (ex_query)
       - Provide functionality to get and set control access for vApps. This way
         created vApps can be shared between users/groups or everyone.
+     (LIBCLOUD-251)
      [Michal Galet]
 
    - Update EC2 pricing data to reflect new, lower prices -
@@ -85,8 +86,8 @@ Changes with Apache Libcloud in development:
      (hs1.8xlarge).
      [Tomaz Muraus]
 
-   - Map 'shutting-down' node state in EC2 driver to UNKNOWN (previously
-     mapped to TERMINATED). (LIBCLOUD-280)
+   - Map 'shutting-down' node state in EC2 driver to UNKNOWN. Previously
+     it was mapped to TERMINATED. (LIBCLOUD-280)
 
      Note: This change is backward incompatible which means you need to update
      your code if you rely on the old behavior.
