@@ -111,6 +111,10 @@ Changes with Apache Libcloud in development:
    - Improve error handling in the Brightbox driver.
      [Tomaz Muraus]
 
+   - Fix the ScriptDeployment step to work correctly if user provides a
+     relative path to the script. (LIBCLOUD-278)
+     [Jaume Devesa]
+
   *) Storage
 
     - Add a new local storage driver.
