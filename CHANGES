@@ -112,7 +112,7 @@ Changes with Apache Libcloud in development:
      [Tomaz Muraus]
 
    - Fix the ScriptDeployment step to work correctly if user provides a
-     relative path to the script. (LIBCLOUD-278)
+     relative path for the script argument. (LIBCLOUD-278)
      [Jaume Devesa]
 
   *) Storage
