@@ -134,8 +134,16 @@ class Route53DNSDriver(DNSDriver):
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
         record_type, name = record_id.split(':', 1)
+        if name:
+            full_name = ".".join((name, zone.domain))
+        else:
+            full_name = zone.domain
         self.connection.set_context({'zone_id': zone_id})
-        params = urlencode({'name': name, 'type': record_type})
+        params = urlencode({
+            'name': full_name,
+            'type': record_type,
+            'maxitems': '1'
+        })
         uri = API_ROOT + 'hostedzone/' + zone_id + '/rrset?' + params
         data = self.connection.request(uri).object
 
@@ -232,7 +240,7 @@ class Route53DNSDriver(DNSDriver):
             rrs = ET.SubElement(change, 'ResourceRecordSet')
             ET.SubElement(rrs, 'Name').text = name + "." + zone.domain
             ET.SubElement(rrs, 'Type').text = self.RECORD_TYPE_MAP[type_]
-            ET.SubElement(rrs, 'TTL').text = extra.get('ttl', '0')
+            ET.SubElement(rrs, 'TTL').text = str(extra.get('ttl', '0'))
 
             rrecs = ET.SubElement(rrs, 'ResourceRecords')
             rrec = ET.SubElement(rrecs, 'ResourceRecord')
