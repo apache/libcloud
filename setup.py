@@ -131,9 +131,6 @@ class TestCommand(Command):
         testfiles = []
         for test_path in TEST_PATHS:
             for t in glob(pjoin(self._dir, test_path, 'test_*.py')):
-                if pre_python26 and 'test_ssh_client' in t:
-                    # TODO: Need to update mock library on buildslave
-                    continue
                 testfiles.append('.'.join(
                     [test_path.replace('/', '.'), splitext(basename(t))[0]]))
 
