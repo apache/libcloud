@@ -127,6 +127,9 @@ Changes with Apache Libcloud 0.12.0:
       (LIBCLOUD-269)
       [Mahendra M]
 
+    - Improve error handling in the Brightbox driver.
+      [Tomaz Muraus]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly

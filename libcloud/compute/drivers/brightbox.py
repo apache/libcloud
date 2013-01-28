@@ -80,7 +80,7 @@ class BrightboxNodeDriver(NodeDriver):
 
             public_ips=[cloud_ip['public_ip']
                         for cloud_ip in data['cloud_ips']] +
-                       [interface['ipv6_address']
+                        [interface['ipv6_address']
                         for interface in data['interfaces']
                         if 'ipv6_address' in interface],
 
