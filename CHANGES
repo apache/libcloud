@@ -108,6 +108,9 @@ Changes with Apache Libcloud in development:
      'create_node' method. (LIBCLOUD-282)
      [Joe Miller, Tomaz Muraus]
 
+   - Improve error handling in the Brightbox driver.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
@@ -145,9 +148,6 @@ Changes with Apache Libcloud in development:
       requires buffering a single multipart chunk (5 MB) in memory.
       (LIBCLOUD-269)
       [Mahendra M]
-
-    - Improve error handling in the Brightbox driver.
-      [Tomaz Muraus]
 
   *) DNS
 
