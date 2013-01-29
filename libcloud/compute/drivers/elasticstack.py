@@ -308,7 +308,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
 
         if vnc_password:
-            node_data.update({'vnc:password': vnc_password})
+            node_data.update({'vnc': 'auto', 'vnc:password': vnc_password})
 
         response = self.connection.request(
             action='/servers/create', data=json.dumps(node_data),
