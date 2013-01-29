@@ -35,6 +35,8 @@ class ELBResponse(AWSGenericResponse):
     Amazon ELB response class.
     """
     namespace = NS
+    exceptions = {}
+    xpath = 'Error'
 
 
 class ELBConnection(SignedAWSConnection):
@@ -75,9 +77,9 @@ class ElasticLBDriver(Driver):
             'Listeners.member.1.Protocol': protocol.upper(),
         }
 
-        for i, z in enumerate(ex_members_availability_zones, 1):
-            zone = '-'.join((self.region, z))
-            params['AvailabilityZones.member.%d' % i] = zone
+        for i, z in enumerate(ex_members_availability_zones):
+            zone = ''.join((self.region, z))
+            params['AvailabilityZones.member.%d' % (i + 1)] = zone
 
         data = self.connection.request(ROOT, params=params).object
 

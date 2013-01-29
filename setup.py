@@ -51,6 +51,9 @@ if sys.version_info <= (2, 4):
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
+# pre-2.6 will need the ssl PyPI package
+pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
+
 
 def read_version_string():
     version = None
@@ -106,8 +109,6 @@ class TestCommand(Command):
             print("Please copy the new secret.py-dist file over otherwise" +
                   " tests might fail")
 
-        pre_python26 = (sys.version_info[0] == 2
-                        and sys.version_info[1] < 6)
         if pre_python26:
             missing = []
             # test for dependencies
@@ -215,8 +216,6 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 setup(
     name='apache-libcloud',
