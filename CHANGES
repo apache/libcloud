@@ -77,9 +77,9 @@ Changes with Apache Libcloud in development:
      (LIBCLOUD-253)
      [L. Schaub]
 
-   - Modify ElasticStack driver class to not pass 'vnc:ip auto' argument to the
-     API when creating a server. It looks like this argument is not supported
-     anymore.
+   - Modify ElasticStack driver class to pass 'vnc auto' instead of
+     'vnc:ip auto' argument to the API when creating a server.
+     It looks like 'vnc:ip' has been replaced with 'vnc'.
      [Rick Copeland, Tomaz Muraus]
 
    - Add new EC2 instance type - High Storage Eight Extra Large Instance
