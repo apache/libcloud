@@ -18,6 +18,7 @@ import base64
 import hmac
 import re
 import os
+import binascii
 
 from hashlib import sha256
 from xml.etree.ElementTree import Element, SubElement
@@ -309,6 +310,10 @@ class AzureBlobsStorageDriver(StorageDriver):
             'blob_type': props.findtext(fixxpath(xpath='BlobType'))
         }
 
+        if extra['md5_hash']:
+            extra['md5_hash'] = binascii.hexlify(
+                            base64.b64decode(extra['md5_hash']))
+
         meta_data = {}
         for meta in metadata.getchildren():
             meta_data[meta.tag] = meta.text
@@ -353,6 +358,10 @@ class AzureBlobsStorageDriver(StorageDriver):
             },
             'blob_type': headers['x-ms-blob-type']
         }
+
+        if extra['md5_hash']:
+            extra['md5_hash'] = binascii.hexlify(
+                            base64.b64decode(extra['md5_hash']))
 
         meta_data = {}
         for key, value in response.headers.items():
@@ -676,11 +685,11 @@ class AzureBlobsStorageDriver(StorageDriver):
             data_hash = data_hash.hexdigest()
 
         if blob_type == 'BlockBlob':
-            server_hash = self._commit_blocks(object_path, chunks, lease)
-        else:
-            server_hash = None
+            self._commit_blocks(object_path, chunks, lease)
 
-        response.headers['content-md5'] = server_hash
+        # The Azure service does not return a hash immediately for
+        # chunked uploads. It takes some time for the data to get synced
+        response.headers['content-md5'] = None
 
         return (True, data_hash, bytes_transferred)
 
@@ -714,10 +723,6 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         if response.status != httplib.CREATED:
             raise LibcloudError('Error in blocklist commit', driver=self)
-
-        # Get the server's etag to be passed back to the caller
-        server_hash = response.headers['content-md5']
-        return server_hash
 
     def _check_values(self, blob_type, object_size):
         """
@@ -950,7 +955,14 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         server_hash = headers['content-md5']
 
-        if (verify_hash and data_hash != server_hash):
+        if server_hash:
+            server_hash = binascii.hexlify(base64.b64decode(server_hash))
+        else:
+            # TODO: HACK - We could poll the object for a while and get
+            # the hash
+            pass
+
+        if (verify_hash and server_hash and data_hash != server_hash):
             raise ObjectHashMismatchError(
                 value='MD5 hash checksum does not match',
                 object_name=object_name, driver=self)
