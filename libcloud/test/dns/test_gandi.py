@@ -17,7 +17,6 @@ import sys
 import unittest
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.gandi import GandiDNSDriver
@@ -25,7 +24,6 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_GANDI
 from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
-Fault = xmlrpclib.Fault
 
 class GandiTests(unittest.TestCase):
 

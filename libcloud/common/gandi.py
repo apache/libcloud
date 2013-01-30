@@ -82,7 +82,10 @@ class GandiConnection(ConnectionKey):
         headers = {
             'Content-Type': 'text/xml',
         }
-        return super(GandiConnection, self).request('/xmlrpc/', data=data, headers=headers, method='POST')
+        return super(GandiConnection, self).request('/xmlrpc/',
+                                                    data=data,
+                                                    headers=headers,
+                                                    method='POST')
 
 
 class BaseGandiDriver(object):

@@ -19,7 +19,8 @@ __all__ = [
     'GandiDNSDriver'
 ]
 
-from libcloud.common.gandi import BaseGandiDriver, GandiConnection, GandiResponse
+from libcloud.common.gandi import BaseGandiDriver, GandiConnection
+from libcloud.common.gandi import GandiResponse
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
@@ -121,34 +122,34 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         return ret
 
     def list_zones(self):
-        zones = self.connection.request('domain.zone.list').object
-        return self._to_zones(zones)
+        zones = self.connection.request('domain.zone.list')
+        return self._to_zones(zones.object)
 
     def get_zone(self, zone_id):
         zid = int(zone_id)
         self.connection.set_context({'zone_id': zid})
-        zone = self.connection.request('domain.zone.info', zid).object
-        return self._to_zone(zone)
+        zone = self.connection.request('domain.zone.info', zid)
+        return self._to_zone(zone.object)
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
         params = {
             "name": domain,
         }
-        info = self.connection.request('domain.zone.create', params).object
-        return self._to_zone(info)
+        info = self.connection.request('domain.zone.create', params)
+        return self._to_zone(info.object)
 
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
         zid = int(zone.id)
         params = {'name': domain}
         self.connection.set_context({'zone_id': zid})
-        zone = self.connection.request('domain.zone.update', zid, params).object
-        return self._to_zone(zone)
+        zone = self.connection.request('domain.zone.update', zid, params)
+        return self._to_zone(zone.object)
 
     def delete_zone(self, zone):
         zid = int(zone.id)
         self.connection.set_context({'zone_id': zid})
-        res = self.connection.request('domain.zone.delete', zid).object
-        return res
+        res = self.connection.request('domain.zone.delete', zid)
+        return res.object
 
     def _to_record(self, record, zone):
         return Record(
@@ -170,8 +171,8 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
     def list_records(self, zone):
         zid = int(zone.id)
         self.connection.set_context({'zone_id': zid})
-        records = self.connection.request('domain.zone.record.list', zid, 0).object
-        return self._to_records(records, zone)
+        records = self.connection.request('domain.zone.record.list', zid, 0)
+        return self._to_records(records.object, zone)
 
     def get_record(self, zone_id, record_id):
         zid = int(zone_id)
