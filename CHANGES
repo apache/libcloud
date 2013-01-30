@@ -20,6 +20,13 @@ Changes with Apache Libcloud in development:
       set_driver method. (LIBCLOUD-255)
       [Mahendra M]
 
+    - Allow user to explicitly specify which CA file is used for verifying
+      the server certificate by setting 'SSL_CERT_FILE' environment variable.
+
+      Note: When this variable is specified, the specified path is the only
+      CA file which is used to verifying the server certificate. (LIBCLOUD-283)
+      [Tomaz Muraus, Erinn Looney-Triggs]
+
   *) Compute
 
     - Fix string interpolation bug in __repr__ methods in the IBM SCE driver.
