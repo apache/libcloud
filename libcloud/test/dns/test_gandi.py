@@ -21,14 +21,13 @@ from libcloud.utils.py3 import xmlrpclib
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.gandi import GandiDNSDriver
-from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_GANDI
-from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
+from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 Fault = xmlrpclib.Fault
 
-class GandiMockHttp(MockHttp):
+class GandiMockHttp(BaseGandiMockHttp):
     fixtures = DNSFileFixtures('gandi')
 
     def _xmlrpc__domain_zone_create(self, method, url, body, headers):
@@ -76,16 +75,20 @@ class GandiMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_record_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_info_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_delete_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__domain_zone_record_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load('list_records_empty.xml')
@@ -108,15 +111,13 @@ class GandiMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-class DummyTransport(MockGandiTransport):
-    mockCls = GandiMockHttp
+class GandiTests(unittest.TestCase):
 
-
-class GandiTests(BaseGandiTests):
-
-    driverCls = GandiDNSDriver
-    transportCls = DummyTransport
-    params = DNS_GANDI
+    def setUp(self):
+        GandiDNSDriver.connectionCls.conn_classes = (
+            GandiMockHttp, GandiMockHttp)
+        GandiMockHttp.type = None
+        self.driver = GandiDNSDriver(*DNS_GANDI)
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()

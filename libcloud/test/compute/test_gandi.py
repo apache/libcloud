@@ -30,10 +30,10 @@ from xml.etree import ElementTree as ET
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GANDI_PARAMS
-from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
+from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 
-class GandiMockHttp(MockHttp):
+class GandiMockHttp(BaseGandiMockHttp):
 
     fixtures = ComputeFileFixtures('gandi')
 
@@ -126,17 +126,15 @@ class GandiMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-class DummyTransport(MockGandiTransport):
-    mockCls = GandiMockHttp
-
-
-class GandiTests(BaseGandiTests):
-
-    driverCls = GandiNodeDriver
-    transportCls = DummyTransport
-    params = GANDI_PARAMS
+class GandiTests(unittest.TestCase):
 
     node_name = 'test2'
+
+    def setUp(self):
+        GandiNodeDriver.connectionCls.conn_classes = (
+            GandiMockHttp, GandiMockHttp)
+        GandiMockHttp.type = None
+        self.driver = GandiNodeDriver(*GANDI_PARAMS)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
