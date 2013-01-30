@@ -26,6 +26,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_GANDI
 from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
 
+
 class GandiMockHttp(MockHttp):
     fixtures = DNSFileFixtures('gandi')
 
