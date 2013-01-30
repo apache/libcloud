@@ -18,7 +18,6 @@ __all__ = [
 ]
 
 from libcloud.common.gandi import BaseGandiDriver, GandiConnection
-from libcloud.common.gandi import GandiException
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
@@ -30,6 +29,18 @@ TTL_MAX = 2592000  # 30 days
 
 
 class NewZoneVersion(object):
+    """
+    Changes to a zone in the Gandi DNS service need to be wrapped in a new
+    version object. The changes are made to the new version, then that
+    version is made active.
+
+    In effect, this is a transaction.
+
+    Any calls made inside this context manager will be applied to a new version
+    id. If your changes are succesful (and only if they are successful) they
+    are activated.
+    """
+
     def __init__(self, driver, zone):
         self.driver = driver
         self.connection = driver.connection
@@ -45,9 +56,9 @@ class NewZoneVersion(object):
     def __exit__(self, type, value, traceback):
         if not traceback:
             zid = int(self.zone.id)
-            c = self.connection
-            c.set_context({'zone_id': self.zone.id})
-            c.request("domain.zone.version.set", zid, self.vid)
+            con = self.connection
+            con.set_context({'zone_id': self.zone.id})
+            con.request("domain.zone.version.set", zid, self.vid)
 
 
 class GandiDNSConnection(GandiConnection):
@@ -60,9 +71,15 @@ class GandiDNSConnection(GandiConnection):
 
 
 class GandiDNSDriver(BaseGandiDriver, DNSDriver):
+    """
+    API reference can be found at:
+
+    http://doc.rpc.gandi.net/domain/reference.html
+    """
+
     type = Provider.GANDI
     name = 'Gandi DNS'
-    website = 'http://doc.rpc.gandi.net/domain/reference.html'
+    website = 'http://www.gandi.net/domain'
 
     connectionCls = GandiDNSConnection
 
@@ -193,10 +210,10 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
             create["ttl"] = extra["ttl"]
 
         with NewZoneVersion(self, zone) as vid:
-            c = self.connection
-            c.set_context({'zone_id': zid})
-            rec = c.request("domain.zone.record.add",
-                            zid, vid, create)
+            con = self.connection
+            con.set_context({'zone_id': zid})
+            rec = con.request("domain.zone.record.add",
+                              zid, vid, create)
 
         return self._to_record(rec, zone)
 
@@ -219,12 +236,12 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         zid = int(record.zone.id)
 
         with NewZoneVersion(self, record.zone) as vid:
-            c = self.connection
-            c.set_context({'zone_id': zid})
-            c.request("domain.zone.record.delete",
-                      zid, vid, filter)
-            res = c.request("domain.zone.record.add",
-                            zid, vid, update)
+            con = self.connection
+            con.set_context({'zone_id': zid})
+            con.request("domain.zone.record.delete",
+                        zid, vid, filter)
+            res = con.request("domain.zone.record.add",
+                              zid, vid, update)
 
         return self._to_record(res, record.zone)
 
@@ -237,10 +254,10 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
         }
 
         with NewZoneVersion(self, record.zone) as vid:
-            c = self.connection
-            c.set_context({'zone_id': zid})
-            count = c.request("domain.zone.record.delete",
-                              zid, vid, filter)
+            con = self.connection
+            con.set_context({'zone_id': zid})
+            count = con.request("domain.zone.record.delete",
+                                zid, vid, filter)
 
         if count == 1:
             return True

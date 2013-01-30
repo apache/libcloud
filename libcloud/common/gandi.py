@@ -94,9 +94,14 @@ class GandiConnection(ConnectionKey):
         except xmlrpclib.Fault:
             e = sys.exc_info()[1]
             self.parse_error(e.faultCode, e.faultString)
+            raise GandiException(1001, e.faultString)
 
     def parse_error(self, code, message):
-        raise GandiException(1001, message)
+        """
+        This hook allows you to inspect any xmlrpclib errors and
+        potentially raise a more useful and specific exception.
+        """
+        pass
 
 
 class BaseGandiDriver(object):
