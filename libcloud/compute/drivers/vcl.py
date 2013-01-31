@@ -16,89 +16,30 @@
 VCL driver
 """
 
-import sys
 import time
 
-from libcloud.utils.py3 import xmlrpclib
-
+from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage
 
 
-class VCLSafeTransport(xmlrpclib.SafeTransport):
-    def __init__(self, datetime, user, passwd, host):
-
-        self._pass = passwd
-        self._use_datetime = datetime
-        self._connection = (None, None)
-        self._extra_headers = []
-
-    def send_content(self, connection, request_body):
-        connection.putheader('Content-Type', 'text/xml')
-        connection.putheader('X-APIVERSION', '2')
-        connection.putheader('X-User', self._user)
-        connection.putheader('X-Pass', self._pass)
-        connection.putheader('Content-Length', str(len(request_body)))
-        connection.endheaders(request_body)
+class VCLResponse(XMLRPCResponse):
+    exceptions = {
+        'VCL_Account': InvalidCredsError,
+    }
 
 
-class VCLProxy(xmlrpclib.ServerProxy):
-    API_POSTFIX = '/index.php?mode=xmlrpccall'
-    transportCls = VCLSafeTransport
+class VCLConnection(XMLRPCConnection, ConnectionUserAndKey):
+    endpoint = '/index.php?mode=xmlrpccall'
 
-    def __init__(self, user, key, secure, host, port, driver, verbose=False):
-        url = ''
-        cls = self.transportCls
-
-        if secure:
-            url = 'https://'
-            port = port or 443
-        else:
-            url = 'http://'
-            port = port or 80
-
-        url += host + ':' + str(port)
-        url += VCLProxy.API_POSTFIX
-
-        self.API = url
-        t = cls(0, user, key, self.API)
-
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri=self.API,
-            transport=t,
-            verbose=verbose
-        )
-
-
-class VCLConnection(object):
-    """
-    Connection class for the VCL driver
-    """
-
-    proxyCls = VCLProxy
-    driver = None
-
-    def __init__(self, user, key, secure, host, port):
-        self.user = user
-        self.key = key
-        self.secure = secure
-        self.host = host
-        self.port = port
-
-    def request(self, method, *args, **kwargs):
-        sl = self.proxyCls(user=self.user, key=self.key, secure=self.secure,
-                           host=self.host, port=self.port, driver=self.driver)
-
-        try:
-            return getattr(sl, method)(*args)
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            if e.faultCode == 'VCL_Account':
-                raise InvalidCredsError(e.faultString)
-            raise LibcloudError(e, driver=self.driver)
+    def add_default_headers(self, headers):
+        headers['X-APIVERSION'] = '2'
+        headers['X-User'] = self.user_id
+        headers['X-Pass'] = self.key
+        return headers
 
 
 class VCLNodeDriver(NodeDriver):
@@ -151,17 +92,15 @@ class VCLNodeDriver(NodeDriver):
             raise Exception('When instantiating VCL driver directly ' +
                             'you also need to provide host')
 
-        self.key = key
-        self.host = host
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret, secure, host, port)
-        self.connection.driver = self
+        super(VCLNodeDriver, self).__init__(key, secret, secure=True,
+                                            host=None, port=None, *args,
+                                            **kwargs)
 
     def _vcl_request(self, method, *args):
         res = self.connection.request(
             method,
             *args
-        )
+        ).object
         if(res['status'] == 'error'):
             raise LibcloudError(res['errormsg'], driver=self)
         return res
@@ -237,7 +176,7 @@ class VCLNodeDriver(NodeDriver):
         """
         res = self.connection.request(
             "XMLRPCgetImages"
-        )
+        ).object
         return [self._to_image(i) for i in res]
 
     def list_sizes(self, location=None):

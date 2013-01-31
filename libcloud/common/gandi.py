@@ -55,7 +55,8 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
 
     responseCls = GandiResponse
     host = 'rpc.gandi.net'
-
+    endpoint = '/xmlrpc/'
+    
     def pre_marshall_hook(self, method_name, args):
         return (self.key, ) + args
 

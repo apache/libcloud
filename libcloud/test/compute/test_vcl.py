@@ -29,31 +29,13 @@ from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import VCL_PARAMS
 
-class MockVCLTransport(xmlrpclib.Transport):
-
-    def __init__(self, datetime, user, passwd, host):
-        self._use_datetime = datetime
-        self._connection = (None, None)
-        self._extra_headers = []
-        self._use_builtin_types = False
-
-    def request(self, host, handler, request_body, verbose=0):
-        self.verbose = 0
-        method = ET.XML(request_body).find('methodName').text
-        mock = VCLMockHttp(host, 80)
-        mock.request('POST', method)
-        resp = mock.getresponse()
-
-        if sys.version[0] == '2' and sys.version[2] == '7':
-            response = self.parse_response(resp)
-        else:
-            response = self.parse_response(resp.body)
-        return response
 
 class VCLTests(unittest.TestCase):
 
     def setUp(self):
-        VCL.connectionCls.proxyCls.transportCls = MockVCLTransport
+        VCL.connectionCls.conn_classes = (
+            VCLMockHttp, VCLMockHttp)
+        VCLMockHttp.type = None
         self.driver = VCL(*VCL_PARAMS)
 
     def test_list_nodes(self):
@@ -98,8 +80,18 @@ class VCLTests(unittest.TestCase):
             1334168100
         )
 
+
 class VCLMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('vcl')
+
+    def _get_method_name(self, type, use_param, qs, path):
+        return "_xmlrpc"
+
+    def _xmlrpc(self, method, url, body, headers):
+        params, meth_name = xmlrpclib.loads(body)
+        if self.type:
+            meth_name = "%s_%s" % (meth_name, self.type)
+        return getattr(self, meth_name)(method, url, body, headers)
 
     def XMLRPCgetImages(self, method, url, body, headers):
         body = self.fixtures.load('XMLRPCgetImages.xml')

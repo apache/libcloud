@@ -65,7 +65,6 @@ class NewZoneVersion(object):
 
 
 class GandiDNSResponse(GandiResponse):
-
     exceptions = {
         581042: ZoneDoesNotExistError,
         }

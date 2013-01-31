@@ -19,7 +19,7 @@ Base classes for working with xmlrpc APIs
 import sys
 
 from libcloud.utils.py3 import xmlrpclib
-from libcloud.common.base import Response, ConnectionKey
+from libcloud.common.base import Response, Connection
 
 
 class ProtocolError(Exception):
@@ -71,7 +71,7 @@ class XMLRPCResponse(ErrorCodeMixin, Response):
         raise ProtocolError(msg)
 
 
-class XMLRPCConnection(ConnectionKey):
+class XMLRPCConnection(Connection):
     """
     Connection class which can call XMLRPC based API's.
 
@@ -116,6 +116,6 @@ class XMLRPCConnection(ConnectionKey):
         """
         args = self.pre_marshall_hook(method_name, args)
         data = xmlrpclib.dumps(args, methodname=method_name, allow_none=True)
-        return super(XMLRPCConnection, self).request('/xmlrpc/',
+        return super(XMLRPCConnection, self).request(self.endpoint,
                                                      data=data,
                                                      method='POST')
