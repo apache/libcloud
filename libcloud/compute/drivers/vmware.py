@@ -35,6 +35,37 @@ from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 
 
+class VMXFile(object):
+
+    def __init__(self, path = path):
+        self.path = path
+        self.settings = {}
+        self.load()
+
+    def load(self):
+        self.settings = {}
+        with open(self.path, "r") as fp:
+            for line in fp.readlines():
+                if not line.strip():
+                    continue
+                if line.sartswith('#'):
+                    continue
+                k, v = line.split("=", 1)
+                self.settings[k.strip().lower()] = v.strip()
+
+    def save(self):
+        with open(self.path, "w") as fp:
+            for key in sorted(self.settings.keys()):
+                fp.write("%s = %s\n" % (key, self.settings[key]))
+
+    def __getitem__(self, key):
+        return self.settings[key]
+
+    def __setitem__(self, key, value):
+        self.settings[key] = value
+        self.save()
+
+
 class VMWareDriver(NodeDriver):
 
     type = Provider.VMWARE
