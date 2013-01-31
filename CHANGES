@@ -173,6 +173,9 @@ Changes with Apache Libcloud in development:
     - Finish Amazon Route53 driver. (LIBCLOUD-132)
       [John Carr]
 
+    - Add new driver for Gandi provider (https://www.gandi.net). (LIBCLOUD-281)
+      [John Carr]
+
   *) Load-Balancer
 
     - Add new driver for AWS Elastic Load Balancing service. (LIBCLOUD-169)

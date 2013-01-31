@@ -21,7 +21,7 @@ import string
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import xmlrpclib
 
-from libcloud.compute.drivers.gandi import GandiNodeDriver as Gandi
+from libcloud.compute.drivers.gandi import GandiNodeDriver
 from libcloud.compute.base import StorageVolume
 from libcloud.common.gandi import GandiException
 from libcloud.compute.types import NodeState
@@ -30,141 +30,7 @@ from xml.etree import ElementTree as ET
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GANDI_PARAMS
-
-
-class MockGandiTransport(xmlrpclib.Transport):
-
-    def request(self, host, handler, request_body, verbose=0):
-        self.verbose = 0
-        method = ET.XML(request_body).find('methodName').text
-        mock = GandiMockHttp(host, 80)
-        mock.request('POST', "%s/%s" % (handler, method))
-        resp = mock.getresponse()
-
-        if sys.version[0] == '2' and sys.version[2] == '7':
-            response = self.parse_response(resp)
-        else:
-            response = self.parse_response(resp.body)
-        return response
-
-
-class GandiTests(unittest.TestCase):
-
-    node_name = 'test2'
-
-    def setUp(self):
-        Gandi.connectionCls.proxyCls.transportCls = \
-            [MockGandiTransport, MockGandiTransport]
-        self.driver = Gandi(*GANDI_PARAMS)
-
-    def test_list_nodes(self):
-        nodes = self.driver.list_nodes()
-        self.assertTrue(len(nodes) > 0)
-        self.assertTrue(len(nodes[0].public_ips) > 1)
-
-    def test_list_locations(self):
-        loc = list(filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations()))[0]
-        self.assertEqual(loc.country, 'France')
-
-    def test_list_images(self):
-        loc = list(filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations()))[0]
-        images = self.driver.list_images(loc)
-        self.assertTrue(len(images) > 2)
-
-    def test_list_sizes(self):
-        sizes = self.driver.list_sizes()
-        self.assertTrue(len(sizes) >= 1)
-
-    def test_destroy_node_running(self):
-        nodes = self.driver.list_nodes()
-        test_node = list(filter(lambda x: x.state == NodeState.RUNNING, nodes))[0]
-        self.assertTrue(self.driver.destroy_node(test_node))
-
-    def test_destroy_node_halted(self):
-        nodes = self.driver.list_nodes()
-        test_node = list(filter(lambda x: x.state == NodeState.TERMINATED,
-                                nodes))[0]
-        self.assertTrue(self.driver.destroy_node(test_node))
-
-    def test_reboot_node(self):
-        nodes = self.driver.list_nodes()
-        test_node = list(filter(lambda x: x.state == NodeState.RUNNING, nodes))[0]
-        self.assertTrue(self.driver.reboot_node(test_node))
-
-    def test_create_node(self):
-        login = 'libcloud'
-        passwd = ''.join(random.choice(string.ascii_letters)
-            for i in range(10))
-        # Get france datacenter
-        loc = list(filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations()))[0]
-        # Get a debian image
-        images = self.driver.list_images(loc)
-        images = [x for x in images if x.name.lower().startswith('debian')]
-        img = list(filter(lambda x: '5' in x.name, images))[0]
-        # Get a configuration size
-        size = self.driver.list_sizes()[0]
-        node = self.driver.create_node(name=self.node_name, login=login,
-            password=passwd, image=img, location=loc, size=size)
-        self.assertEqual(node.name, self.node_name)
-
-    def test_create_volume(self):
-        loc = list(filter(lambda x: 'france' in x.country.lower(),
-            self.driver.list_locations()))[0]
-        volume = self.driver.create_volume(
-            size=1024, name='libcloud', location=loc)
-        self.assertEqual(volume.name, 'libcloud')
-        self.assertEqual(volume.size, 1024)
-
-    def test_list_volumes(self):
-        disks = self.driver.list_volumes()
-        self.assertTrue(len(disks) > 0)
-
-    def test_destroy_volume(self):
-        volumes = self.driver.list_volumes()
-        test_vol = list(filter(lambda x: x.name == 'test_disk',
-                                volumes))[0]
-        self.assertTrue(self.driver.destroy_volume(test_vol))
-
-    def test_attach_volume(self):
-        disks = self.driver.list_volumes()
-        nodes = self.driver.list_nodes()
-        res = self.driver.attach_volume(nodes[0], disks[0])
-        self.assertTrue(res)
-
-    def test_detach_volume(self):
-        disks = self.driver.list_volumes()
-        nodes = self.driver.list_nodes()
-        res = self.driver.detach_volume(nodes[0], disks[0])
-        self.assertTrue(res)
-
-    def test_ex_list_interfaces(self):
-        ifaces = self.driver.ex_list_interfaces()
-        self.assertTrue(len(ifaces) > 0)
-
-    def test_ex_attach_interface(self):
-        ifaces = self.driver.ex_list_interfaces()
-        nodes = self.driver.list_nodes()
-        res = self.driver.ex_node_attach_interface(nodes[0], ifaces[0])
-        self.assertTrue(res)
-
-    def test_ex_detach_interface(self):
-        ifaces = self.driver.ex_list_interfaces()
-        nodes = self.driver.list_nodes()
-        res = self.driver.ex_node_detach_interface(nodes[0], ifaces[0])
-        self.assertTrue(res)
-
-    def test_ex_snapshot_disk(self):
-        disks = self.driver.list_volumes()
-        self.assertTrue(self.driver.ex_snapshot_disk(disks[2]))
-        self.assertRaises(GandiException,
-            self.driver.ex_snapshot_disk, disks[0])
-
-    def test_ex_update_disk(self):
-        disks = self.driver.list_volumes()
-        self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
+from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
 
 
 class GandiMockHttp(MockHttp):
@@ -256,8 +122,137 @@ class GandiMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc__disk_delete(self, method, url, body, headers):
-            body = self.fixtures.load('disk_delete.xml')
-            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        body = self.fixtures.load('disk_delete.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+class DummyTransport(MockGandiTransport):
+    mockCls = GandiMockHttp
+
+
+class GandiTests(BaseGandiTests):
+
+    driverCls = GandiNodeDriver
+    transportCls = DummyTransport
+    params = GANDI_PARAMS
+
+    node_name = 'test2'
+
+    def test_list_nodes(self):
+        nodes = self.driver.list_nodes()
+        self.assertTrue(len(nodes) > 0)
+        self.assertTrue(len(nodes[0].public_ips) > 1)
+
+    def test_list_locations(self):
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+                          self.driver.list_locations()))[0]
+        self.assertEqual(loc.country, 'France')
+
+    def test_list_images(self):
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+                          self.driver.list_locations()))[0]
+        images = self.driver.list_images(loc)
+        self.assertTrue(len(images) > 2)
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertTrue(len(sizes) >= 1)
+
+    def test_destroy_node_running(self):
+        nodes = self.driver.list_nodes()
+        test_node = list(filter(lambda x: x.state == NodeState.RUNNING,
+                                nodes))[0]
+        self.assertTrue(self.driver.destroy_node(test_node))
+
+    def test_destroy_node_halted(self):
+        nodes = self.driver.list_nodes()
+        test_node = list(filter(lambda x: x.state == NodeState.TERMINATED,
+                                nodes))[0]
+        self.assertTrue(self.driver.destroy_node(test_node))
+
+    def test_reboot_node(self):
+        nodes = self.driver.list_nodes()
+        test_node = list(filter(lambda x: x.state == NodeState.RUNNING,
+                                nodes))[0]
+        self.assertTrue(self.driver.reboot_node(test_node))
+
+    def test_create_node(self):
+        login = 'libcloud'
+        passwd = ''.join(random.choice(string.ascii_letters)
+                         for i in range(10))
+
+        # Get france datacenter
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+                          self.driver.list_locations()))[0]
+
+        # Get a debian image
+        images = self.driver.list_images(loc)
+        images = [x for x in images if x.name.lower().startswith('debian')]
+        img = list(filter(lambda x: '5' in x.name, images))[0]
+
+        # Get a configuration size
+        size = self.driver.list_sizes()[0]
+        node = self.driver.create_node(name=self.node_name, login=login,
+                                       password=passwd, image=img,
+                                       location=loc, size=size)
+        self.assertEqual(node.name, self.node_name)
+
+    def test_create_volume(self):
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+                          self.driver.list_locations()))[0]
+        volume = self.driver.create_volume(
+            size=1024, name='libcloud', location=loc)
+        self.assertEqual(volume.name, 'libcloud')
+        self.assertEqual(volume.size, 1024)
+
+    def test_list_volumes(self):
+        disks = self.driver.list_volumes()
+        self.assertTrue(len(disks) > 0)
+
+    def test_destroy_volume(self):
+        volumes = self.driver.list_volumes()
+        test_vol = list(filter(lambda x: x.name == 'test_disk',
+                               volumes))[0]
+        self.assertTrue(self.driver.destroy_volume(test_vol))
+
+    def test_attach_volume(self):
+        disks = self.driver.list_volumes()
+        nodes = self.driver.list_nodes()
+        res = self.driver.attach_volume(nodes[0], disks[0])
+        self.assertTrue(res)
+
+    def test_detach_volume(self):
+        disks = self.driver.list_volumes()
+        nodes = self.driver.list_nodes()
+        res = self.driver.detach_volume(nodes[0], disks[0])
+        self.assertTrue(res)
+
+    def test_ex_list_interfaces(self):
+        ifaces = self.driver.ex_list_interfaces()
+        self.assertTrue(len(ifaces) > 0)
+
+    def test_ex_attach_interface(self):
+        ifaces = self.driver.ex_list_interfaces()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_node_attach_interface(nodes[0], ifaces[0])
+        self.assertTrue(res)
+
+    def test_ex_detach_interface(self):
+        ifaces = self.driver.ex_list_interfaces()
+        nodes = self.driver.list_nodes()
+        res = self.driver.ex_node_detach_interface(nodes[0], ifaces[0])
+        self.assertTrue(res)
+
+    def test_ex_snapshot_disk(self):
+        disks = self.driver.list_volumes()
+        self.assertTrue(self.driver.ex_snapshot_disk(disks[2]))
+        self.assertRaises(GandiException,
+                          self.driver.ex_snapshot_disk, disks[0])
+
+    def test_ex_update_disk(self):
+        disks = self.driver.list_volumes()
+        self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

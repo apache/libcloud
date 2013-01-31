@@ -93,7 +93,15 @@ class GandiConnection(ConnectionKey):
             return getattr(self._proxy, method)(self.key, *args)
         except xmlrpclib.Fault:
             e = sys.exc_info()[1]
-            raise GandiException(1001, e)
+            self.parse_error(e.faultCode, e.faultString)
+            raise GandiException(1001, e.faultString)
+
+    def parse_error(self, code, message):
+        """
+        This hook allows you to inspect any xmlrpclib errors and
+        potentially raise a more useful and specific exception.
+        """
+        pass
 
 
 class BaseGandiDriver(object):
@@ -121,8 +129,8 @@ class BaseGandiDriver(object):
         self.connection.driver = self
 
     # Specific methods for gandi
-    def _wait_operation(self, id, \
-        timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL):
+    def _wait_operation(self, id, timeout=DEFAULT_TIMEOUT,
+                        check_interval=DEFAULT_INTERVAL):
         """ Wait for an operation to succeed"""
 
         for i in range(0, timeout, check_interval):
@@ -131,7 +139,7 @@ class BaseGandiDriver(object):
 
                 if op['step'] == 'DONE':
                     return True
-                if op['step'] in  ['ERROR', 'CANCEL']:
+                if op['step'] in ['ERROR', 'CANCEL']:
                     return False
             except (KeyError, IndexError):
                 pass
@@ -172,8 +180,9 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        return hashlib.sha1(b("%s:%s:%s" % \
-            (self.uuid_prefix, self.id, self.driver.type))).hexdigest()
+        hashstring = "%s:%s:%s" % \
+            (self.uuid_prefix, self.id, self.driver.type)
+        return hashlib.sha1(b(hashstring)).hexdigest()
 
 
 class IPAddress(BaseObject):
@@ -202,7 +211,7 @@ class NetworkInterface(BaseObject):
     uuid_prefix = 'if:'
 
     def __init__(self, id, state, mac_address, driver,
-            ips=None, node_id=None, extra=None):
+                 ips=None, node_id=None, extra=None):
         super(NetworkInterface, self).__init__(id, state, driver)
         self.mac = mac_address
         self.ips = ips or {}
@@ -225,5 +234,6 @@ class Disk(BaseObject):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
+        return (
+            ('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
             % (self.id, self.name, self.state, self.size, self.driver.name))
