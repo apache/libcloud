@@ -37,10 +37,10 @@ class GandiException(Exception):
     Exception class for Gandi driver
     """
     def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
+        return '(%u) %s' % (self.args[0], self.args[1])
 
     def __repr__(self):
-        return "<GandiException code %u '%s'>" % (self.args[0], self.args[1])
+        return '<GandiException code %u "%s">' % (self.args[0], self.args[1])
 
 
 class GandiResponse(Response):
@@ -73,7 +73,7 @@ class GandiConnection(ConnectionKey):
     """
 
     responseCls = GandiResponse
-    host = "rpc.gandi.net"
+    host = 'rpc.gandi.net'
 
     def request(self, method, *args):
         """ Request xmlrpc method with given args"""
@@ -148,7 +148,7 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        hashstring = "%s:%s:%s" % \
+        hashstring = '%s:%s:%s' % \
             (self.uuid_prefix, self.id, self.driver.type)
         return hashlib.sha1(b(hashstring)).hexdigest()
 

@@ -133,7 +133,7 @@ class GandiDNSDriver(BaseGandiDriver, DNSDriver):
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
         params = {
-            "name": domain,
+            'name': domain,
         }
         info = self.connection.request('domain.zone.create', params)
         return self._to_zone(info.object)

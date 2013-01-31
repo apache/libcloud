@@ -306,7 +306,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_locations(self):
-        res = self.connection.request("datacenter.list")
+        res = self.connection.request('datacenter.list')
         return [self._to_loc(l) for l in res.object]
 
     def list_volumes(self):
@@ -521,10 +521,10 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         @rtype: C{bool}
         """
         if not disk.extra.get('can_snapshot'):
-            raise GandiException(1021, "Disk %s can't snapshot" % disk.id)
+            raise GandiException(1021, 'Disk %s can\'t snapshot' % disk.id)
         if not name:
-            suffix = datetime.today().strftime("%Y%m%d")
-            name = "snap_%s" % (suffix)
+            suffix = datetime.today().strftime('%Y%m%d')
+            name = 'snap_%s' % (suffix)
         op = self.connection.request(
             'disk.create_from',
             {'name': name, 'type': 'snapshot', },
