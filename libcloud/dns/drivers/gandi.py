@@ -66,13 +66,9 @@ class NewZoneVersion(object):
 
 class GandiDNSResponse(GandiResponse):
 
-    def parse_error(self, code, message):
-        context = self.connection.context
-        driver = self.connection.driver
-        if code == 581042:
-            zone_id = str(context.get('zone_id', None))
-            raise ZoneDoesNotExistError(value='', driver=driver,
-                                        zone_id=zone_id)
+    exceptions = {
+        581042: ZoneDoesNotExistError,
+        }
 
 
 class GandiDNSConnection(GandiConnection):
