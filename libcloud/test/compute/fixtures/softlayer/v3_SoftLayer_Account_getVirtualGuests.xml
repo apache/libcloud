@@ -116,9 +116,8 @@
        </value>
       </member>
       <member>
-       <name>softwareComponents</name>
+       <name>operatingSystem</name>
        <value>
-        <array>
          <data>
           <value>
            <struct>
@@ -198,7 +197,6 @@
            </struct>
           </value>
          </data>
-        </array>
        </value>
       </member>
       <member>
@@ -1064,3 +1062,4 @@
  </value>
 </param>
 </params>
+

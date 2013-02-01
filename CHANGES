@@ -122,6 +122,11 @@ Changes with Apache Libcloud in development:
      relative path for the script argument. (LIBCLOUD-278)
      [Jaume Devesa]
 
+   - Fix Softlayer driver and make sure all the code is up to date and works
+     with the latest version of the actual Softlayer deployment (v3).
+     (LIBCLOUD-287)
+     [Kevin McDonald]
+
   *) Storage
 
     - Add a new local storage driver.
