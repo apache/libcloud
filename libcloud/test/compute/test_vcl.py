@@ -97,43 +97,31 @@ class VCLMockHttp(MockHttp):
         body = self.fixtures.load('XMLRPCgetImages.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def XMLRPCextendRequest(
-        self, method, url, body, headers):
-
+    def XMLRPCextendRequest(self, method, url, body, headers):
         body = self.fixtures.load('XMLRPCextendRequest.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def XMLRPCgetRequestIds(
-        self, method, url, body, headers):
-
+    def XMLRPCgetRequestIds(self, method, url, body, headers):
         body = self.fixtures.load(
             'XMLRPCgetRequestIds.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def XMLRPCgetRequestStatus(
-        self, method, url, body, headers):
-
+    def XMLRPCgetRequestStatus(self, method, url, body, headers):
         body = self.fixtures.load(
             'XMLRPCgetRequestStatus.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def XMLRPCendRequest(
-        self, method, url, body, headers):
-
+    def XMLRPCendRequest(self, method, url, body, headers):
         body = self.fixtures.load(
             'XMLRPCendRequest.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def XMLRPCaddRequest(
-        self, method, url, body, headers):
-
+    def XMLRPCaddRequest(self, method, url, body, headers):
         body = self.fixtures.load(
             'XMLRPCaddRequest.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def XMLRPCgetRequestConnectData(
-        self, method, url, body, headers):
-
+    def XMLRPCgetRequestConnectData(self, method, url, body, headers):
         body = self.fixtures.load(
             'XMLRPCgetRequestConnectData.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

@@ -66,7 +66,8 @@ class XMLRPCResponse(ErrorCodeMixin, Response):
         except xmlrpclib.Fault:
             e = sys.exc_info()[1]
             self.raise_exception_for_error(e.faultCode, e.faultString)
-            raise self.defaultExceptionCls("%s: %s" % (e.faultCode, e.faultString))
+            error_string = '%s: %s' % (e.faultCode, e.faultString)
+            raise self.defaultExceptionCls(error_string)
 
     def parse_error(self):
         msg = 'Server returned an invalid xmlrpc response (%d)' % self.status

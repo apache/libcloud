@@ -56,7 +56,7 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
     responseCls = GandiResponse
     host = 'rpc.gandi.net'
     endpoint = '/xmlrpc/'
-    
+
     def request(self, method, *args):
         args = (self.key, ) + args
         return super(GandiConnection, self).request(method, *args)

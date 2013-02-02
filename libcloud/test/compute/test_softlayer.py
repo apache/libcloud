@@ -141,8 +141,6 @@ class SoftLayerMockHttp(MockHttp):
         params, meth_name = xmlrpclib.loads(body)
         url = url.replace("/", "_")
         meth_name = "%s_%s" % (url, meth_name)
-        if self.type:
-            meth_name = "%s_%s" % (meth_name, self.type)
         return getattr(self, meth_name)(method, url, body, headers)
 
     def _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions(
@@ -150,11 +148,6 @@ class SoftLayerMockHttp(MockHttp):
         body = self.fixtures.load(
             'v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions_INVALIDCREDSERROR = \
-        _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions
-    _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions_SOFTLAYEREXCEPTION = \
-        _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions
 
     def _xmlrpc_v3__SoftLayer_Account_getVirtualGuests(
             self, method, url, body, headers):
@@ -167,25 +160,14 @@ class SoftLayerMockHttp(MockHttp):
             'v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters_INVALIDCREDSERROR = \
-        _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters
-    _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters_SOFTLAYEREXCEPTION = \
-        _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters
-
     def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            'v3__SoftLayer_Virtual_Guest_createObject.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject_INVALIDCREDSERROR(
-        self, method, url, body, headers):
-        body = self.fixtures.load('SoftLayer_Account.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject_SOFTLAYEREXCEPTION(
-        self, method, url, body, headers):
-        body = self.fixtures.load('fail.xml')
+        fixture = {
+            None: 'v3__SoftLayer_Virtual_Guest_createObject.xml',
+            'INVALIDCREDSERROR': 'SoftLayer_Account.xml',
+            'SOFTLAYEREXCEPTION': 'fail.xml',
+        }[self.type]
+        body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3__SoftLayer_Virtual_Guest_getObject(
