@@ -100,12 +100,14 @@ class SoftLayerException(LibcloudError):
 
 
 class SoftLayerResponse(XMLRPCResponse):
+    defaultExceptionCls = SoftLayerException
     exceptions = {
         'SoftLayer_Account': InvalidCredsError,
     }
 
 
 class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
+    responseCls = SoftLayerResponse
     endpoint = '/xmlrpc/v3/'
 
     def request(self, service, method, *args, **kwargs):
