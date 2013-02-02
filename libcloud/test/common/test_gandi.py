@@ -1,33 +1,15 @@
-import sys
-import unittest
-
-from xml.etree import ElementTree as ET
-
 from libcloud.utils.py3 import xmlrpclib
+from libcloud.test import MockHttp
 
 
-class MockGandiTransport(xmlrpclib.Transport):
+class BaseGandiMockHttp(MockHttp):
 
-    def request(self, host, handler, request_body, verbose=0):
-        self.verbose = 0
-        method = ET.XML(request_body).find('methodName').text
-        mock = self.mockCls(host, 80)
-        mock.request('POST', '%s/%s' % (handler, method))
-        resp = mock.getresponse()
+    def _get_method_name(self, type, use_param, qs, path):
+        return "_xmlrpc"
 
-        if sys.version[0] == '2' and sys.version[2] == '7':
-            response = self.parse_response(resp)
-        else:
-            response = self.parse_response(resp.body)
-        return response
-
-
-class BaseGandiTests(unittest.TestCase):
-
-    def setUp(self):
-        d = self.driverCls
-        t = self.transportCls
-        t.mockCls.type = None
-        d.connectionCls.proxyCls.transportCls = \
-            [t, t]
-        self.driver = d(*self.params)
+    def _xmlrpc(self, method, url, body, headers):
+        params, methodName = xmlrpclib.loads(body)
+        meth_name = "_xmlrpc__" + methodName.replace(".", "_")
+        if self.type:
+            meth_name = "%s_%s" % (meth_name, self.type)
+        return getattr(self, meth_name)(method, url, body, headers)
