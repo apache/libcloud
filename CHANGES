@@ -127,6 +127,12 @@ Changes with Apache Libcloud in development:
      (LIBCLOUD-287)
      [Kevin McDonald]
 
+   - Update EC2 driver, m3 instance types are now available in all the regions
+     except Brazil.
+
+     Also update pricing to reflect new (decreased) prices.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
