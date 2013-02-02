@@ -23,6 +23,8 @@ import libcloud
 
 from libcloud.utils.py3 import xmlrpclib
 
+from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
@@ -97,78 +99,33 @@ class SoftLayerException(LibcloudError):
     pass
 
 
-class SoftLayerSafeTransport(xmlrpclib.SafeTransport):
-    pass
+class SoftLayerResponse(XMLRPCResponse):
+    exceptions = {
+        'SoftLayer_Account': InvalidCredsError,
+    }
 
 
-class SoftLayerTransport(xmlrpclib.Transport):
-    pass
-
-
-class SoftLayerProxy(xmlrpclib.ServerProxy):
-    transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
-    API_PREFIX = 'https://api.softlayer.com/xmlrpc/v3/'
-
-    def __init__(self, service, user_agent, verbose=False):
-        cls = self.transportCls[0]
-        if SoftLayerProxy.API_PREFIX[:8] == 'https://':
-            cls = self.transportCls[1]
-        t = cls(use_datetime=0)
-        t.user_agent = user_agent
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri='%s/%s' % (SoftLayerProxy.API_PREFIX, service),
-            transport=t,
-            verbose=verbose,
-        )
-
-
-class SoftLayerConnection(object):
-    """
-    Connection class for the SoftLayer driver
-    """
-
-    proxyCls = SoftLayerProxy
-    driver = None
-
-    def __init__(self, user, key):
-        self.user = user
-        self.key = key
-        self.ua = []
+class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
+    endpoint = '/xmlrpc/v3/'
 
     def request(self, service, method, *args, **kwargs):
-        sl = self.proxyCls(service, self._user_agent())
-
         headers = {}
         headers.update(self._get_auth_headers())
         headers.update(self._get_init_params(service, kwargs.get('id')))
         headers.update(
             self._get_object_mask(service, kwargs.get('object_mask')))
-
         headers.update(
             self._get_object_mask(service, kwargs.get('object_mask')))
-        params = [{'headers': headers}] + list(args)
 
-        try:
-            return getattr(sl, method)(*params)
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            if e.faultCode == 'SoftLayer_Account':
-                raise InvalidCredsError(e.faultString)
-            raise SoftLayerException(e)
+        args = ({'headers': headers}, ) + args
+        endpoint = '%s/%s' % (self.endpoint, service)
 
-    def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (libcloud.__version__,
-                                       self.driver.name,
-                                       ''.join([' (%s)' % x for x in self.ua]))
-
-    def user_agent_append(self, s):
-        self.ua.append(s)
+        return super(SoftLayerConnection, self).request(method, *args, endpoint=endpoint)
 
     def _get_auth_headers(self):
         return {
             'authenticate': {
-                'username': self.user,
+                'username': self.user_id,
                 'apiKey': self.key
             }
         }
@@ -207,24 +164,6 @@ class SoftLayerNodeDriver(NodeDriver):
     type = Provider.SOFTLAYER
 
     features = {'create_node': ['generates_password']}
-
-    def __init__(self, key, secret=None, secure=False):
-        """
-        @param    key:    API key or username to used (required)
-        @type     key:    C{str}
-
-        @param    secret: Secret password to be used (required)
-        @type     secret: C{str}
-
-        @param    secure: Weither to use HTTPS or HTTP.
-        @type     secure: C{bool}
-
-        @rtype: C{None}
-        """
-        self.key = key
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret)
-        self.connection.driver = self
 
     def _to_node(self, host):
         try:
@@ -283,7 +222,7 @@ class SoftLayerNodeDriver(NodeDriver):
                 'getObject',
                 id=node_id,
                 object_mask=mask
-            )
+            ).object
 
             if res.get('provisionDate', None):
                 return res
@@ -385,7 +324,7 @@ class SoftLayerNodeDriver(NodeDriver):
 
         res = self.connection.request(
             'SoftLayer_Virtual_Guest', 'createObject', newCCI
-        )
+        ).object
 
         node_id = res['id']
         raw_node = self._get_order_information(node_id)
@@ -402,7 +341,7 @@ class SoftLayerNodeDriver(NodeDriver):
     def list_images(self, location=None):
         result = self.connection.request(
             'SoftLayer_Virtual_Guest', 'getCreateObjectOptions'
-        )
+        ).object
         return [self._to_image(i) for i in result['operatingSystems']]
 
     def _to_size(self, id, size):
@@ -429,7 +368,7 @@ class SoftLayerNodeDriver(NodeDriver):
     def list_locations(self):
         res = self.connection.request(
             'SoftLayer_Location_Datacenter', 'getDatacenters'
-        )
+        ).object
         return [self._to_loc(l) for l in res]
 
     def list_nodes(self):
@@ -444,5 +383,5 @@ class SoftLayerNodeDriver(NodeDriver):
             "SoftLayer_Account",
             "getVirtualGuests",
             object_mask=mask
-        )
+        ).object
         return [self._to_node(h) for h in res]

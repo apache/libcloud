@@ -86,24 +86,7 @@ class XMLRPCConnection(Connection):
         headers['Content-Type'] = 'text/xml'
         return headers
 
-    def pre_marshall_hook(self, method_name, args):
-        """
-        A hook which is called before marshalling the rpc arguments into XML
-        and transmitting it to the server. This is useful as it is common for
-        API's to have you pass your authorization token as the first parameter
-        of all calls or similar.
-
-        @type method_name: C{str}
-        @param method_name: The name of the remote method that will be called.
-
-        @type args: C{tuple}
-        @param args: A tuple of arguments that will be sent to the remote.
-
-        Should return a tuple of arguments
-        """
-        return args
-
-    def request(self, method_name, *args):
+    def request(self, method_name, *args, **kwargs):
         """
         Call a given `method_name`.
 
@@ -114,8 +97,8 @@ class XMLRPCConnection(Connection):
         @type args: C{tuple}
         @param args: Arguments to invoke with method with.
         """
-        args = self.pre_marshall_hook(method_name, args)
+        endpoint = kwargs.get('endpoint', self.endpoint)
         data = xmlrpclib.dumps(args, methodname=method_name, allow_none=True)
-        return super(XMLRPCConnection, self).request(self.endpoint,
+        return super(XMLRPCConnection, self).request(endpoint,
                                                      data=data,
                                                      method='POST')

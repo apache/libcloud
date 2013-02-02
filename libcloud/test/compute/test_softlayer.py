@@ -34,33 +34,12 @@ from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-m
 from libcloud.test.secrets import SOFTLAYER_PARAMS
 
 
-class MockSoftLayerTransport(xmlrpclib.Transport):
-
-    def request(self, host, handler, request_body, verbose=0):
-        self.verbose = 0
-
-        if 'SOFTLAYEREXCEPTION' in u(request_body):
-            raise xmlrpclib.Fault('fail', 'Failed Call')
-        if 'INVALIDCREDSERROR' in u(request_body):
-            raise xmlrpclib.Fault('SoftLayer_Account', 'Failed Call')
-
-        method = ET.XML(request_body).find('methodName').text
-        mock = SoftLayerMockHttp(host, 80)
-        mock.request('POST', "%s/%s" % (handler, method))
-        resp = mock.getresponse()
-
-        if sys.version[0] == '2' and sys.version[2] == '7':
-            response = self.parse_response(resp)
-        else:
-            response = self.parse_response(resp.body)
-        return response
-
-
 class SoftLayerTests(unittest.TestCase):
 
     def setUp(self):
-        SoftLayer.connectionCls.proxyCls.transportCls = [
-            MockSoftLayerTransport, MockSoftLayerTransport]
+        SoftLayer.connectionCls.conn_classes = (
+            SoftLayerMockHttp, SoftLayerMockHttp)
+        SoftLayerMockHttp.type = None
         self.driver = SoftLayer(*SOFTLAYER_PARAMS)
 
     def test_list_nodes(self):
@@ -94,6 +73,7 @@ class SoftLayerTests(unittest.TestCase):
                                 image=self.driver.list_images()[0])
 
     def test_create_fail(self):
+        SoftLayerMockHttp.type = "SOFTLAYEREXCEPTION"
         self.assertRaises(
             SoftLayerException,
             self.driver.create_node,
@@ -103,6 +83,7 @@ class SoftLayerTests(unittest.TestCase):
             image=self.driver.list_images()[0])
 
     def test_create_creds_error(self):
+        SoftLayerMockHttp.type = "INVALIDCREDSERROR"
         self.assertRaises(
             InvalidCredsError,
             self.driver.create_node,
@@ -153,11 +134,27 @@ class SoftLayerTests(unittest.TestCase):
 class SoftLayerMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('softlayer')
 
+    def _get_method_name(self, type, use_param, qs, path):
+        return "_xmlrpc"
+
+    def _xmlrpc(self, method, url, body, headers):
+        params, meth_name = xmlrpclib.loads(body)
+        url = url.replace("/", "_")
+        meth_name = "%s_%s" % (url, meth_name)
+        if self.type:
+            meth_name = "%s_%s" % (meth_name, self.type)
+        return getattr(self, meth_name)(method, url, body, headers)
+
     def _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions_INVALIDCREDSERROR = \
+        _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions
+    _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions_SOFTLAYEREXCEPTION = \
+        _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions
 
     def _xmlrpc_v3__SoftLayer_Account_getVirtualGuests(
             self, method, url, body, headers):
@@ -170,10 +167,25 @@ class SoftLayerMockHttp(MockHttp):
             'v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters_INVALIDCREDSERROR = \
+        _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters
+    _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters_SOFTLAYEREXCEPTION = \
+        _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters
+
     def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'v3__SoftLayer_Virtual_Guest_createObject.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject_INVALIDCREDSERROR(
+        self, method, url, body, headers):
+        body = self.fixtures.load('SoftLayer_Account.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject_SOFTLAYEREXCEPTION(
+        self, method, url, body, headers):
+        body = self.fixtures.load('fail.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3__SoftLayer_Virtual_Guest_getObject(
@@ -191,6 +203,7 @@ class SoftLayerMockHttp(MockHttp):
             self, method, url, body, headers):
         body = self.fixtures.load('empty.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
