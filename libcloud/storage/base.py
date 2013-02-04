@@ -134,13 +134,14 @@ class Container(object):
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, **kwargs):
+    def upload_object(self, file_path, object_name, extra=None, **kwargs):
         return self.driver.upload_object(
-            file_path, self, object_name, **kwargs)
+            file_path, self, object_name, extra=extra, **kwargs)
 
-    def upload_object_via_stream(self, iterator, object_name, **kwargs):
+    def upload_object_via_stream(self, iterator, object_name, extra=None,
+                                 **kwargs):
         return self.driver.upload_object_via_stream(
-            iterator, self, object_name, **kwargs)
+            iterator, self, object_name, extra=extra, **kwargs)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):

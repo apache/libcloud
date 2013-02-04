@@ -27,6 +27,7 @@ from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
+from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
@@ -41,17 +42,11 @@ from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 
+if PY3:
+    from io import FileIO as file
+
 # Desired number of items in each response inside a paginated request
 RESPONSES_PER_REQUEST = 100
-
-# Pattern for validating the azure container name
-# Refer : http://msdn.microsoft.com/en-us/library/windowsazure/dd135715.aspx
-# * Must start with [a-z][0-9]
-# * 3-63 characters
-# * Only [a-z][0-9][-] - No upper case allowed
-# * No consecutive --
-# * '$root' is a valid container name
-AZURE_CONTAINER = '^(([a-z\\d]((-(?=[a-z\\d]))|([a-z\\d])){2,62})|(\\$root))$'
 
 # As per the Azure documentation, if the upload file size is less than
 # 64MB, we can upload it in a single request. However, in real life azure
@@ -184,25 +179,12 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         # B64decode() this key and keep it, so that we don't have to do
         # so for every request. Minor performance improvement
-        secret = base64.b64decode(secret)
+        secret = base64.b64decode(b(secret))
 
         super(AzureBlobsStorageDriver, self).__init__(
                                         key=key, secret=secret,
                                         secure=secure, host=host,
                                         port=port, **kwargs)
-
-    def _check_container_name(self, container_name):
-        """
-        Checks the container name's validity
-
-        @param container_name: Name of the container
-        @type container_name: C{str}
-        """
-        if not re.match(AZURE_CONTAINER, container_name):
-            raise InvalidContainerNameError(value='Container name contains ' +
-                                            'invalid characters.',
-                                            container_name=container_name,
-                                            driver=self)
 
     def _xml_to_container(self, node):
         """
@@ -312,7 +294,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         if extra['md5_hash']:
             extra['md5_hash'] = binascii.hexlify(
-                            base64.b64decode(extra['md5_hash']))
+                            base64.b64decode(b(extra['md5_hash'])))
 
         meta_data = {}
         for meta in metadata.getchildren():
@@ -361,7 +343,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         if extra['md5_hash']:
             extra['md5_hash'] = binascii.hexlify(
-                            base64.b64decode(extra['md5_hash']))
+                            base64.b64decode(b(extra['md5_hash'])))
 
         meta_data = {}
         for key, value in response.headers.items():
@@ -504,8 +486,6 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         @inherits: L{StorageDriver.create_container}
         """
-        self._check_container_name(container_name)
-
         params = {'restype': 'container'}
 
         container_path = '/%s' % (container_name)
@@ -639,6 +619,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         # Read the input data in chunk sizes suitable for AWS
         for data in read_in_chunks(iterator, AZURE_CHUNK_SIZE):
+            data = b(data)
             content_length = len(data)
             offset = bytes_transferred
             bytes_transferred += content_length
@@ -648,16 +629,17 @@ class AzureBlobsStorageDriver(StorageDriver):
 
             chunk_hash = self._get_hash_function()
             chunk_hash.update(data)
-            chunk_hash = base64.b64encode(chunk_hash.digest())
+            chunk_hash = base64.b64encode(b(chunk_hash.digest()))
 
-            headers['Content-MD5'] = chunk_hash
+            headers['Content-MD5'] = chunk_hash.decode('utf-8')
             headers['Content-Length'] = content_length
 
             if blob_type == 'BlockBlob':
                 # Block id can be any unique string that is base64 encoded
                 # A 10 digit number can hold the max value of 50000 blocks
                 # that are allowed for azure
-                block_id = base64.b64encode('%10d' % (count))
+                block_id = base64.b64encode(b('%10d' % (count)))
+                block_id = block_id.decode('utf-8')
                 params['blockid'] = block_id
 
                 # Keep this data for a later commit
@@ -772,7 +754,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         self._check_values(ex_blob_type, file_size)
 
-        with open(file_path, 'rb') as file_handle:
+        with file(file_path, 'rb') as file_handle:
             iterator = iter(file_handle)
 
             # If size is greater than 64MB or type is Page, upload in chunks
@@ -956,7 +938,8 @@ class AzureBlobsStorageDriver(StorageDriver):
         server_hash = headers['content-md5']
 
         if server_hash:
-            server_hash = binascii.hexlify(base64.b64decode(server_hash))
+            server_hash = binascii.hexlify(base64.b64decode(b(server_hash)))
+            server_hash = server_hash.decode('utf-8')
         else:
             # TODO: HACK - We could poll the object for a while and get
             # the hash

@@ -96,6 +96,12 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
                     self.base_headers,
                     httplib.responses[httplib.OK])
 
+    def _new__container_INVALID_NAME(self, method, url, body, headers):
+        return (httplib.BAD_REQUEST,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.BAD_REQUEST])
+
     def _test_container(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
         query = parse_qs(query_string)

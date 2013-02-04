@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import time
 import base64
 import hmac
@@ -89,6 +90,8 @@ class AzureConnection(ConnectionUserAndKey):
         return params
 
     def pre_connect_hook(self, params, headers):
+        headers = copy.deepcopy(headers)
+
         # We have to add a date header in GMT
         headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
         headers['x-ms-version'] = API_VERSION
