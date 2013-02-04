@@ -23,6 +23,8 @@ Usage:
     libcloud.security.CA_CERTS_PATH.append("/path/to/cacert.txt")
 """
 
+import os
+
 VERIFY_SSL_CERT = True
 VERIFY_SSL_CERT_STRICT = True
 
@@ -41,6 +43,22 @@ CA_CERTS_PATH = [
     # macports: curl-ca-bundle
     '/opt/local/share/curl/curl-ca-bundle.crt',
 ]
+
+# Allow user to explicitly specify which CA bundle to use, using an environment
+# variable
+environment_cert_file = os.getenv('SSL_CERT_FILE', None)
+if environment_cert_file is not None:
+    # Make sure the file exists
+    if not os.path.exists(environment_cert_file):
+        raise ValueError('Certificate file %s doesn\'t exist' %
+                         (environment_cert_file))
+
+    if not os.path.isfile(environment_cert_file):
+        raise ValueError('Certificate file can\'t be a directory')
+
+    # If a provided file exists we ignore other common paths because we
+    # don't want to fall-back to a potentially less restrictive bundle
+    CA_CERTS_PATH = [environment_cert_file]
 
 CA_CERTS_UNAVAILABLE_WARNING_MSG = (
     'Warning: No CA Certificates were found in CA_CERTS_PATH. '

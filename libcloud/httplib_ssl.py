@@ -68,7 +68,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
 
         ca_certs_available = [cert
                               for cert in libcloud.security.CA_CERTS_PATH
-                              if os.path.exists(cert)]
+                              if os.path.exists(cert) and os.path.isfile(cert)]
         if ca_certs_available:
             # use first available certificate
             self.ca_cert = ca_certs_available[0]

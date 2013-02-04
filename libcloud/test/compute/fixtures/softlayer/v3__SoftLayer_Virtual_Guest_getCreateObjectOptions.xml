@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<params>
+<param>
+ <value>
+  <struct>
+   <member>
+    <name>operatingSystems</name>
+    <value>
+     <array>
+      <data>
+       <value>
+        <struct>
+         <member>
+          <name>itemPrice</name>
+          <value>
+           <struct>
+            <member>
+             <name>hourlyRecurringFee</name>
+             <value>
+              <string>0</string>
+             </value>
+            </member>
+            <member>
+             <name>recurringFee</name>
+             <value>
+              <string>0</string>
+             </value>
+            </member>
+            <member>
+             <name>item</name>
+             <value>
+              <struct>
+               <member>
+                <name>description</name>
+                <value>
+                 <string>CentOS 6.0 - Minimal Install (64 bit)</string>
+                </value>
+               </member>
+              </struct>
+             </value>
+            </member>
+           </struct>
+          </value>
+         </member>
+         <member>
+          <name>template</name>
+          <value>
+           <struct>
+            <member>
+             <name>operatingSystemReferenceCode</name>
+             <value>
+              <string>CENTOS_6_64</string>
+             </value>
+            </member>
+           </struct>
+          </value>
+         </member>
+        </struct>
+       </value>
+      </data>
+     </array>
+    </value>
+   </member>
+  </struct>
+ </value>
+</param>
+</params>

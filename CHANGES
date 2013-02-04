@@ -20,6 +20,13 @@ Changes with Apache Libcloud in development:
       set_driver method. (LIBCLOUD-255)
       [Mahendra M]
 
+    - Allow user to explicitly specify which CA file is used for verifying
+      the server certificate by setting 'SSL_CERT_FILE' environment variable.
+
+      Note: When this variable is specified, the specified path is the only
+      CA file which is used to verifying the server certificate. (LIBCLOUD-283)
+      [Tomaz Muraus, Erinn Looney-Triggs]
+
   *) Compute
 
     - Fix string interpolation bug in __repr__ methods in the IBM SCE driver.
@@ -77,9 +84,9 @@ Changes with Apache Libcloud in development:
      (LIBCLOUD-253)
      [L. Schaub]
 
-   - Modify ElasticStack driver class to not pass 'vnc:ip auto' argument to the
-     API when creating a server. It looks like this argument is not supported
-     anymore.
+   - Modify ElasticStack driver class to pass 'vnc auto' instead of
+     'vnc:ip auto' argument to the API when creating a server.
+     It looks like 'vnc:ip' has been replaced with 'vnc'.
      [Rick Copeland, Tomaz Muraus]
 
    - Add new EC2 instance type - High Storage Eight Extra Large Instance
@@ -114,6 +121,26 @@ Changes with Apache Libcloud in development:
    - Fix the ScriptDeployment step to work correctly if user provides a
      relative path for the script argument. (LIBCLOUD-278)
      [Jaume Devesa]
+
+   - Fix Softlayer driver and make sure all the code is up to date and works
+     with the latest version of the actual Softlayer deployment (v3).
+     (LIBCLOUD-287)
+     [Kevin McDonald]
+
+   - Update EC2 driver, m3 instance types are now available in all the regions
+     except Brazil.
+
+     Also update pricing to reflect new (decreased) prices.
+     [Tomaz Muraus]
+
+   - Modify Gandi.net driver to use Libcloud http(s) layer when performing
+     http requests using xmlrpclib.
+
+     This change allows driver to support LIBCLOUD_DEBUG and SSL vertificate
+     validation functionality. Previously it used xmlrpclib directly which means
+     it bypassed Libcloud's http(s) layer and didn't support previously
+     mentioned features. (LIBCLOUD-288)
+     [John Carr]
 
   *) Storage
 
@@ -164,6 +191,9 @@ Changes with Apache Libcloud in development:
       [Dinesh Bhoopathy]
 
     - Finish Amazon Route53 driver. (LIBCLOUD-132)
+      [John Carr]
+
+    - Add new driver for Gandi provider (https://www.gandi.net). (LIBCLOUD-281)
       [John Carr]
 
   *) Load-Balancer
