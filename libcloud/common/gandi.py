@@ -20,13 +20,12 @@ import time
 import hashlib
 import sys
 
-from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b
 
-from libcloud.common.base import Response, ConnectionKey
+from libcloud.common.base import ConnectionKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 
 # Global constants
-
 
 DEFAULT_TIMEOUT = 600   # operation pooling max seconds
 DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
@@ -43,51 +42,24 @@ class GandiException(Exception):
         return '<GandiException code %u "%s">' % (self.args[0], self.args[1])
 
 
-class GandiResponse(Response):
+class GandiResponse(XMLRPCResponse):
     """
     A Base Gandi Response class to derive from.
     """
 
-    def parse_body(self):
-        try:
-            params, methodname = xmlrpclib.loads(self.body)
 
-            if len(params) == 1:
-                return params[0]
-
-            return params
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            self.parse_error(e.faultCode, e.faultString)
-            raise GandiException(1000, e)
-
-    def parse_error(self, code=None, message=None):
-        """
-        This hook allows you to inspect any xmlrpclib errors and
-        potentially raise a more useful and specific exception.
-        """
-        pass
-
-
-class GandiConnection(ConnectionKey):
+class GandiConnection(XMLRPCConnection, ConnectionKey):
     """
     Connection class for the Gandi driver
     """
 
     responseCls = GandiResponse
     host = 'rpc.gandi.net'
+    endpoint = '/xmlrpc/'
 
     def request(self, method, *args):
-        """ Request xmlrpc method with given args"""
         args = (self.key, ) + args
-        data = xmlrpclib.dumps(args, methodname=method, allow_none=True)
-        headers = {
-            'Content-Type': 'text/xml',
-        }
-        return super(GandiConnection, self).request('/xmlrpc/',
-                                                    data=data,
-                                                    headers=headers,
-                                                    method='POST')
+        return super(GandiConnection, self).request(method, *args)
 
 
 class BaseGandiDriver(object):

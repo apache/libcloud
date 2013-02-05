@@ -27,6 +27,17 @@ Changes with Apache Libcloud in development:
       CA file which is used to verifying the server certificate. (LIBCLOUD-283)
       [Tomaz Muraus, Erinn Looney-Triggs]
 
+    - Add a common module (libcloud.common.xmlrpc) for handling XML-RPC
+      requests using Libcloud http layer.
+
+      Also refactor existing drivers which use xmlrpclib directly (VCL, Gandi,
+      Softlayer) to use this module.
+
+      This change allows drivers to support LIBCLOUD_DEBUG and SSL certificate
+      validation functionality. Previously they have bypassed Libcloud http
+      layer so this functionality was not available. (LIBCLOUD-288)
+      [John Carr]
+
   *) Compute
 
     - Fix string interpolation bug in __repr__ methods in the IBM SCE driver.
@@ -132,15 +143,6 @@ Changes with Apache Libcloud in development:
 
      Also update pricing to reflect new (decreased) prices.
      [Tomaz Muraus]
-
-   - Modify Gandi.net driver to use Libcloud http(s) layer when performing
-     http requests using xmlrpclib.
-
-     This change allows driver to support LIBCLOUD_DEBUG and SSL vertificate
-     validation functionality. Previously it used xmlrpclib directly which means
-     it bypassed Libcloud's http(s) layer and didn't support previously
-     mentioned features. (LIBCLOUD-288)
-     [John Carr]
 
   *) Storage
 
