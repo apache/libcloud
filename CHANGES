@@ -144,6 +144,10 @@ Changes with Apache Libcloud in development:
      Also update pricing to reflect new (decreased) prices.
      [Tomaz Muraus]
 
+   - Minor improvements in the HostVirtual driver and add new ex_get_node and
+     ex_build_node extension method. (LIBCLOUD-249)
+     [Dinesh Bhoopathy]
+
   *) Storage
 
     - Add a new local storage driver.
