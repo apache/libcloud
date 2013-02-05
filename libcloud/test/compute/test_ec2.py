@@ -231,9 +231,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 11)
+                self.assertEqual(len(sizes), 13)
             else:
-                self.assertEqual(len(sizes), 10)
+                self.assertEqual(len(sizes), 12)
 
         self.driver.region_name = region_old
 

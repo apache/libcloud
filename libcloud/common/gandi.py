@@ -20,14 +20,12 @@ import time
 import hashlib
 import sys
 
-from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 
 # Global constants
-
-API_URL = "https://rpc.gandi.net/xmlrpc/"
 
 DEFAULT_TIMEOUT = 600   # operation pooling max seconds
 DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
@@ -38,70 +36,30 @@ class GandiException(Exception):
     Exception class for Gandi driver
     """
     def __str__(self):
-        return "(%u) %s" % (self.args[0], self.args[1])
+        return '(%u) %s' % (self.args[0], self.args[1])
 
     def __repr__(self):
-        return "<GandiException code %u '%s'>" % (self.args[0], self.args[1])
+        return '<GandiException code %u "%s">' % (self.args[0], self.args[1])
 
 
-class GandiSafeTransport(xmlrpclib.SafeTransport):
-    pass
+class GandiResponse(XMLRPCResponse):
+    """
+    A Base Gandi Response class to derive from.
+    """
 
 
-class GandiTransport(xmlrpclib.Transport):
-    pass
-
-
-class GandiProxy(xmlrpclib.ServerProxy):
-    transportCls = (GandiTransport, GandiSafeTransport)
-
-    def __init__(self, user_agent, verbose=0):
-        cls = self.transportCls[0]
-        if API_URL.startswith("https://"):
-            cls = self.transportCls[1]
-        t = cls(use_datetime=0)
-        t.user_agent = user_agent
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri=API_URL,
-            transport=t,
-            verbose=verbose,
-            allow_none=True
-        )
-
-
-class GandiConnection(ConnectionKey):
+class GandiConnection(XMLRPCConnection, ConnectionKey):
     """
     Connection class for the Gandi driver
     """
 
-    proxyCls = GandiProxy
-
-    def __init__(self, key, password=None):
-        super(GandiConnection, self).__init__(key)
-        self.driver = BaseGandiDriver
-
-        try:
-            self._proxy = self.proxyCls(self._user_agent())
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            raise GandiException(1000, e)
+    responseCls = GandiResponse
+    host = 'rpc.gandi.net'
+    endpoint = '/xmlrpc/'
 
     def request(self, method, *args):
-        """ Request xmlrpc method with given args"""
-        try:
-            return getattr(self._proxy, method)(self.key, *args)
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            self.parse_error(e.faultCode, e.faultString)
-            raise GandiException(1001, e.faultString)
-
-    def parse_error(self, code, message):
-        """
-        This hook allows you to inspect any xmlrpclib errors and
-        potentially raise a more useful and specific exception.
-        """
-        pass
+        args = (self.key, ) + args
+        return super(GandiConnection, self).request(method, *args)
 
 
 class BaseGandiDriver(object):
@@ -112,22 +70,6 @@ class BaseGandiDriver(object):
     connectionCls = GandiConnection
     name = 'Gandi'
 
-    def __init__(self, key, secret=None, secure=False):
-        """
-        @param    key:    API key or username to used (required)
-        @type     key:    C{str}
-
-        @param    secret: Secret password to be used (required)
-        @type     secret: C{str}
-
-        @param    secure: Weither to use HTTPS or HTTP.
-        @type     secure: C{bool}
-        """
-        self.key = key
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret)
-        self.connection.driver = self
-
     # Specific methods for gandi
     def _wait_operation(self, id, timeout=DEFAULT_TIMEOUT,
                         check_interval=DEFAULT_INTERVAL):
@@ -135,7 +77,7 @@ class BaseGandiDriver(object):
 
         for i in range(0, timeout, check_interval):
             try:
-                op = self.connection.request('operation.info', int(id))
+                op = self.connection.request('operation.info', int(id)).object
 
                 if op['step'] == 'DONE':
                     return True
@@ -180,7 +122,7 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        hashstring = "%s:%s:%s" % \
+        hashstring = '%s:%s:%s' % \
             (self.uuid_prefix, self.id, self.driver.type)
         return hashlib.sha1(b(hashstring)).hexdigest()
 

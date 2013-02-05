@@ -27,6 +27,17 @@ Changes with Apache Libcloud 0.12.0:
       CA file which is used to verifying the server certificate. (LIBCLOUD-283)
       [Tomaz Muraus, Erinn Looney-Triggs]
 
+    - Add a common module (libcloud.common.xmlrpc) for handling XML-RPC
+      requests using Libcloud http layer.
+
+      Also refactor existing drivers which use xmlrpclib directly (VCL, Gandi,
+      Softlayer) to use this module.
+
+      This change allows drivers to support LIBCLOUD_DEBUG and SSL certificate
+      validation functionality. Previously they have bypassed Libcloud http
+      layer so this functionality was not available. (LIBCLOUD-288)
+      [John Carr]
+
   *) Compute
 
     - Fix string interpolation bug in __repr__ methods in the IBM SCE driver.
@@ -111,6 +122,21 @@ Changes with Apache Libcloud 0.12.0:
    - Fix the ScriptDeployment step to work correctly if user provides a
      relative path for the script argument. (LIBCLOUD-278)
      [Jaume Devesa]
+
+   - Fix Softlayer driver and make sure all the code is up to date and works
+     with the latest version of the actual Softlayer deployment (v3).
+     (LIBCLOUD-287)
+     [Kevin McDonald]
+
+   - Update EC2 driver, m3 instance types are now available in all the regions
+     except Brazil.
+
+     Also update pricing to reflect new (decreased) prices.
+     [Tomaz Muraus]
+
+   - Minor improvements in the HostVirtual driver and add new ex_get_node and
+     ex_build_node extension method. (LIBCLOUD-249)
+     [Dinesh Bhoopathy]
 
   *) Storage
 

@@ -62,7 +62,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def _resource_info(self, type, id):
         try:
             obj = self.connection.request('%s.info' % type, int(id))
-            return obj
+            return obj.object
         except Exception:
             e = sys.exc_info()[1]
             raise GandiException(1003, e)
@@ -109,8 +109,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         return [self._to_volume(d) for d in disks]
 
     def list_nodes(self):
-        vms = self.connection.request('vm.list')
-        ips = self.connection.request('ip.list')
+        vms = self.connection.request('vm.list').object
+        ips = self.connection.request('ip.list').object
         for vm in vms:
             vm['ips'] = []
             for ip in ips:
@@ -124,7 +124,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
     def reboot_node(self, node):
         op = self.connection.request('vm.reboot', int(node.id))
-        self._wait_operation(op['id'])
+        self._wait_operation(op.object['id'])
         vm = self._node_info(int(node.id))
         if vm['state'] == 'running':
             return True
@@ -135,11 +135,11 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         if vm['state'] == 'running':
             # Send vm_stop and wait for accomplish
             op_stop = self.connection.request('vm.stop', int(node.id))
-            if not self._wait_operation(op_stop['id']):
+            if not self._wait_operation(op_stop.object['id']):
                 raise GandiException(1010, 'vm.stop failed')
             # Delete
         op = self.connection.request('vm.delete', int(node.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -221,7 +221,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         (op_disk, op_iface, op_vm) = self.connection.request(
             'vm.create_from',
             vm_spec, disk_spec, src_disk_id
-        )
+        ).object
 
         # We wait for vm_create to finish
         if self._wait_operation(op_vm['id']):
@@ -251,7 +251,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             else:
                 filtering = {}
             images = self.connection.request('image.list', filtering)
-            return [self._to_image(i) for i in images]
+            return [self._to_image(i) for i in images.object]
         except Exception:
             e = sys.exc_info()[1]
             raise GandiException(1011, e)
@@ -268,7 +268,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_sizes(self, location=None):
-        account = self.connection.request('account.info')
+        account = self.connection.request('account.info').object
         # Look for available shares, and return a list of share_definition
         available_res = account['resources']['available']
 
@@ -306,8 +306,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         )
 
     def list_locations(self):
-        res = self.connection.request("datacenter.list")
-        return [self._to_loc(l) for l in res]
+        res = self.connection.request('datacenter.list')
+        return [self._to_loc(l) for l in res.object]
 
     def list_volumes(self):
         """
@@ -315,7 +315,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         @rtype: C{list} of L{StorageVolume}
         """
         res = self.connection.request('disk.list', {})
-        return self._to_volumes(res)
+        return self._to_volumes(res.object)
 
     def create_volume(self, size, name, location=None, snapshot=None):
         disk_param = {
@@ -328,15 +328,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                                          disk_param, int(snapshot.id))
         else:
             op = self.connection.request('disk.create', disk_param)
-        if self._wait_operation(op['id']):
-            disk = self._volume_info(op['disk_id'])
+        if self._wait_operation(op.object['id']):
+            disk = self._volume_info(op.object['disk_id'])
             return self._to_volume(disk)
         return None
 
     def attach_volume(self, node, volume, device=None):
         op = self.connection.request('vm.disk_attach',
                                      int(node.id), int(volume.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -354,13 +354,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         op = self.connection.request('vm.disk_detach',
                                      int(node.id), int(volume.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
     def destroy_volume(self, volume):
         op = self.connection.request('disk.delete', int(volume.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -401,8 +401,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         @rtype: C{list} of L{GandiNetworkInterface}
         """
-        ifaces = self.connection.request('iface.list')
-        ips = self.connection.request('ip.list')
+        ifaces = self.connection.request('iface.list').object
+        ips = self.connection.request('ip.list').object
         for iface in ifaces:
             iface['ips'] = list(
                 filter(lambda i: i['iface_id'] == iface['id'], ips))
@@ -432,7 +432,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         @rtype: C{list} of L{GandiDisk}
         """
         res = self.connection.request('disk.list', {})
-        return self._to_disks(res)
+        return self._to_disks(res.object)
 
     def ex_node_attach_disk(self, node, disk):
         """
@@ -448,7 +448,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         op = self.connection.request('vm.disk_attach',
                                      int(node.id), int(disk.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -466,7 +466,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         op = self.connection.request('vm.disk_detach',
                                      int(node.id), int(disk.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -485,7 +485,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         op = self.connection.request('vm.iface_attach',
                                      int(node.id), int(iface.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -504,7 +504,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         op = self.connection.request('vm.iface_detach',
                                      int(node.id), int(iface.id))
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -521,16 +521,16 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         @rtype: C{bool}
         """
         if not disk.extra.get('can_snapshot'):
-            raise GandiException(1021, "Disk %s can't snapshot" % disk.id)
+            raise GandiException(1021, 'Disk %s can\'t snapshot' % disk.id)
         if not name:
-            suffix = datetime.today().strftime("%Y%m%d")
-            name = "snap_%s" % (suffix)
+            suffix = datetime.today().strftime('%Y%m%d')
+            name = 'snap_%s' % (suffix)
         op = self.connection.request(
             'disk.create_from',
             {'name': name, 'type': 'snapshot', },
             int(disk.id),
         )
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False
 
@@ -557,6 +557,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         op = self.connection.request('disk.update',
                                      int(disk.id),
                                      params)
-        if self._wait_operation(op['id']):
+        if self._wait_operation(op.object['id']):
             return True
         return False

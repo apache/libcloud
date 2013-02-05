@@ -17,106 +17,21 @@ import sys
 import unittest
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.drivers.gandi import GandiDNSDriver
-from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_GANDI
-from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
-
-Fault = xmlrpclib.Fault
-
-class GandiMockHttp(MockHttp):
-    fixtures = DNSFileFixtures('gandi')
-
-    def _xmlrpc__domain_zone_create(self, method, url, body, headers):
-        body = self.fixtures.load('create_zone.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_update(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_list(self, method, url, body, headers):
-        body = self.fixtures.load('list_zones.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_list(self, method, url, body, headers):
-        body = self.fixtures.load('list_records.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_add(self, method, url, body, headers):
-        body = self.fixtures.load('create_record.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_delete(self, method, url, body, headers):
-        body = self.fixtures.load('delete_zone.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_info(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_delete(self, method, url, body, headers):
-        body = self.fixtures.load('delete_record.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_update(self, method, url, body, headers):
-        body = self.fixtures.load('create_record.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_version_new(self, method, url, body, headers):
-        body = self.fixtures.load('new_version.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_version_set(self, method, url, body, headers):
-        body = self.fixtures.load('new_version.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
-
-    def _xmlrpc__domain_zone_info_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
-
-    def _xmlrpc__domain_zone_list_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
-
-    def _xmlrpc__domain_zone_delete_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        raise Fault(581042, "Zone does not exist")
-
-    def _xmlrpc__domain_zone_record_list_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('list_records_empty.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_info_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('list_zones.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_record_delete_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('delete_record_doesnotexist.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_version_new_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('new_version.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__domain_zone_version_set_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('new_version.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 
-class DummyTransport(MockGandiTransport):
-    mockCls = GandiMockHttp
+class GandiTests(unittest.TestCase):
 
-
-class GandiTests(BaseGandiTests):
-
-    driverCls = GandiDNSDriver
-    transportCls = DummyTransport
-    params = DNS_GANDI
+    def setUp(self):
+        GandiDNSDriver.connectionCls.conn_classes = (
+            GandiMockHttp, GandiMockHttp)
+        GandiMockHttp.type = None
+        self.driver = GandiDNSDriver(*DNS_GANDI)
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
@@ -284,6 +199,98 @@ class GandiTests(BaseGandiTests):
         else:
             self.fail('Exception was not thrown')
 
+
+class GandiMockHttp(BaseGandiMockHttp):
+    fixtures = DNSFileFixtures('gandi')
+
+    def _xmlrpc__domain_zone_create(self, method, url, body, headers):
+        body = self.fixtures.load('create_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_update(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_list(self, method, url, body, headers):
+        body = self.fixtures.load('list_zones.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_list(self, method, url, body, headers):
+        body = self.fixtures.load('list_records.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_add(self, method, url, body, headers):
+        body = self.fixtures.load('create_record.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_info(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_record.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_update(self, method, url, body, headers):
+        body = self.fixtures.load('create_record.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_new(self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_set(self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_list_ZONE_DOES_NOT_EXIST(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_info_ZONE_DOES_NOT_EXIST(self, method, url, body,
+                                                      headers):
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_list_ZONE_DOES_NOT_EXIST(self, method, url, body,
+                                                      headers):
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_delete_ZONE_DOES_NOT_EXIST(self, method, url,
+                                                        body, headers):
+        body = self.fixtures.load('zone_doesnt_exist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_list_RECORD_DOES_NOT_EXIST(
+            self, method, url, body, headers):
+        body = self.fixtures.load('list_records_empty.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_info_RECORD_DOES_NOT_EXIST(self, method, url,
+                                                        body, headers):
+        body = self.fixtures.load('list_zones.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_record_delete_RECORD_DOES_NOT_EXIST(
+            self, method, url, body, headers):
+        body = self.fixtures.load('delete_record_doesnotexist.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_new_RECORD_DOES_NOT_EXIST(
+            self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__domain_zone_version_set_RECORD_DOES_NOT_EXIST(
+            self, method, url, body, headers):
+        body = self.fixtures.load('new_version.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

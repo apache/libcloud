@@ -19,124 +19,25 @@ import random
 import string
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import xmlrpclib
 
 from libcloud.compute.drivers.gandi import GandiNodeDriver
-from libcloud.compute.base import StorageVolume
 from libcloud.common.gandi import GandiException
 from libcloud.compute.types import NodeState
 
-from xml.etree import ElementTree as ET
-from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GANDI_PARAMS
-from libcloud.test.common.test_gandi import MockGandiTransport, BaseGandiTests
+from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 
-class GandiMockHttp(MockHttp):
-
-    fixtures = ComputeFileFixtures('gandi')
-
-    def _xmlrpc__datacenter_list(self, method, url, body, headers):
-        body = self.fixtures.load('datacenter_list.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__image_list(self, method, url, body, headers):
-        body = self.fixtures.load('image_list_dc0.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_list(self, method, url, body, headers):
-        body = self.fixtures.load('vm_list.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__ip_list(self, method, url, body, headers):
-        body = self.fixtures.load('ip_list.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__account_info(self, method, url, body, headers):
-        body = self.fixtures.load('account_info.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_info(self, method, url, body, headers):
-        body = self.fixtures.load('vm_info.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_delete(self, method, url, body, headers):
-        body = self.fixtures.load('vm_delete.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__operation_info(self, method, url, body, headers):
-        body = self.fixtures.load('operation_info.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_create_from(self, method, url, body, headers):
-        body = self.fixtures.load('vm_create_from.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_reboot(self, method, url, body, headers):
-        body = self.fixtures.load('vm_reboot.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_stop(self, method, url, body, headers):
-        body = self.fixtures.load('vm_stop.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__iface_list(self, method, url, body, headers):
-        body = self.fixtures.load('iface_list.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__disk_list(self, method, url, body, headers):
-        body = self.fixtures.load('disk_list.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_iface_attach(self, method, url, body, headers):
-        body = self.fixtures.load('iface_attach.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_iface_detach(self, method, url, body, headers):
-        body = self.fixtures.load('iface_detach.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_disk_attach(self, method, url, body, headers):
-        body = self.fixtures.load('disk_attach.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__vm_disk_detach(self, method, url, body, headers):
-        body = self.fixtures.load('disk_detach.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__disk_create(self, method, url, body, headers):
-        body = self.fixtures.load('disk_create.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__disk_create_from(self, method, url, body, headers):
-        body = self.fixtures.load('disk_create_from.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__disk_info(self, method, url, body, headers):
-        body = self.fixtures.load('disk_info.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__disk_update(self, method, url, body, headers):
-        body = self.fixtures.load('disk_update.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _xmlrpc__disk_delete(self, method, url, body, headers):
-        body = self.fixtures.load('disk_delete.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-
-class DummyTransport(MockGandiTransport):
-    mockCls = GandiMockHttp
-
-
-class GandiTests(BaseGandiTests):
-
-    driverCls = GandiNodeDriver
-    transportCls = DummyTransport
-    params = GANDI_PARAMS
+class GandiTests(unittest.TestCase):
 
     node_name = 'test2'
+
+    def setUp(self):
+        GandiNodeDriver.connectionCls.conn_classes = (
+            GandiMockHttp, GandiMockHttp)
+        GandiMockHttp.type = None
+        self.driver = GandiNodeDriver(*GANDI_PARAMS)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -252,6 +153,99 @@ class GandiTests(BaseGandiTests):
     def test_ex_update_disk(self):
         disks = self.driver.list_volumes()
         self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
+
+
+class GandiMockHttp(BaseGandiMockHttp):
+
+    fixtures = ComputeFileFixtures('gandi')
+
+    def _xmlrpc__datacenter_list(self, method, url, body, headers):
+        body = self.fixtures.load('datacenter_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__image_list(self, method, url, body, headers):
+        body = self.fixtures.load('image_list_dc0.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_list(self, method, url, body, headers):
+        body = self.fixtures.load('vm_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__ip_list(self, method, url, body, headers):
+        body = self.fixtures.load('ip_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__account_info(self, method, url, body, headers):
+        body = self.fixtures.load('account_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_info(self, method, url, body, headers):
+        body = self.fixtures.load('vm_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_delete(self, method, url, body, headers):
+        body = self.fixtures.load('vm_delete.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__operation_info(self, method, url, body, headers):
+        body = self.fixtures.load('operation_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_create_from(self, method, url, body, headers):
+        body = self.fixtures.load('vm_create_from.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_reboot(self, method, url, body, headers):
+        body = self.fixtures.load('vm_reboot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_stop(self, method, url, body, headers):
+        body = self.fixtures.load('vm_stop.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__iface_list(self, method, url, body, headers):
+        body = self.fixtures.load('iface_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__disk_list(self, method, url, body, headers):
+        body = self.fixtures.load('disk_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_iface_attach(self, method, url, body, headers):
+        body = self.fixtures.load('iface_attach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_iface_detach(self, method, url, body, headers):
+        body = self.fixtures.load('iface_detach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_disk_attach(self, method, url, body, headers):
+        body = self.fixtures.load('disk_attach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__vm_disk_detach(self, method, url, body, headers):
+        body = self.fixtures.load('disk_detach.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__disk_create(self, method, url, body, headers):
+        body = self.fixtures.load('disk_create.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__disk_create_from(self, method, url, body, headers):
+        body = self.fixtures.load('disk_create_from.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__disk_info(self, method, url, body, headers):
+        body = self.fixtures.load('disk_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__disk_update(self, method, url, body, headers):
+        body = self.fixtures.load('disk_update.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__disk_delete(self, method, url, body, headers):
+        body = self.fixtures.load('disk_delete.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':

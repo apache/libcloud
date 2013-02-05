@@ -204,6 +204,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -239,6 +241,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge'
@@ -257,6 +261,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -274,6 +280,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -309,6 +317,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]

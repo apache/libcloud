@@ -21,8 +21,6 @@ from libcloud.utils.misc import merge_valid_keys, get_new_obj
 from libcloud.common.hostvirtual import HostVirtualResponse
 from libcloud.common.hostvirtual import HostVirtualConnection
 from libcloud.compute.drivers.hostvirtual import API_ROOT
-from libcloud.compute.drivers.hostvirtual import HostVirtualConnection
-from libcloud.compute.drivers.hostvirtual import HostVirtualResponse
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
