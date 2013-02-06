@@ -644,8 +644,22 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, ex_image_ids=None):
+        """
+        List all images
+
+        Ex_image_ids parameter is used to filter the list of
+        images that should be returned. Only the images
+        with the corresponding image ids will be returned.
+
+        @param      ex_image_ids: List of C{NodeImage.id}
+        @type       ex_image_ids: C{list} of C{str}
+
+        @rtype: C{list} of L{NodeImage}
+        """
         params = {'Action': 'DescribeImages'}
+        if ex_image_ids:
+            params.update(self._pathlist('ImageId', ex_image_ids))
         images = self._to_images(
             self.connection.request(self.path, params=params).object
         )
