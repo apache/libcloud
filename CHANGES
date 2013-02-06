@@ -148,6 +148,9 @@ Changes with Apache Libcloud in development:
      ex_build_node extension method. (LIBCLOUD-249)
      [Dinesh Bhoopathy]
 
+   - Add ex_destroy_image method to IBM SCE driver. (LIBCLOUD-291)
+     [Perry Zou]
+
   *) Storage
 
     - Add a new local storage driver.
