@@ -44,10 +44,25 @@ API_ENDPOINTS = {
         'country': 'United States',
         'host': 'api.lax-p.elastichosts.com'
     },
+    'us-3': {
+        'name': 'San Jose (Silicon Valley)',
+        'country': 'United States',
+        'host': 'api.sjc-c.elastichosts.com'
+    },
     'ca-1': {
         'name': 'Toronto Peer 1',
         'country': 'Canada',
         'host': 'api.tor-p.elastichosts.com'
+    },
+    'au-1': {
+        'name': 'Sydney',
+        'country': 'Australia',
+        'host': 'api.syd-v.elastichosts.com'
+    },
+    'cn-1': {
+        'name': 'Hong Kong',
+        'country': 'China',
+        'host': 'api.hkg-e.elastichosts.com'
     }
 }
 

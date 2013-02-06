@@ -151,6 +151,10 @@ Changes with Apache Libcloud in development:
    - Add ex_destroy_image method to IBM SCE driver. (LIBCLOUD-291)
      [Perry Zou]
 
+   - Add the following new regions to the ElasticHosts driver: sjc-c, syd-v,
+     hkg-e. (LIBCLOUD-293)
+     [Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
