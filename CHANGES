@@ -155,6 +155,10 @@ Changes with Apache Libcloud in development:
      hkg-e. (LIBCLOUD-293)
      [Tomaz Muraus]
 
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response.
+     [Gavin McCance, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.

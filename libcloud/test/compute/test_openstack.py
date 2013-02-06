@@ -203,6 +203,16 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
 
+    def test_create_node_without_adminPass(self):
+        OpenStackMockHttp.type = 'NO_ADMIN_PASS'
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size)
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra.get('password'), None)
+
     def test_create_node_ex_shared_ip_group(self):
         OpenStackMockHttp.type = 'EX_SHARED_IP_GROUP'
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
@@ -438,6 +448,10 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_0_slug_servers(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers.xml')
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_0_slug_servers_NO_ADMIN_PASS(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_no_admin_pass.xml')
         return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_servers_EX_SHARED_IP_GROUP(self, method, url, body, headers):
