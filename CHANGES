@@ -138,6 +138,17 @@ Changes with Apache Libcloud 0.12.0:
      ex_build_node extension method. (LIBCLOUD-249)
      [Dinesh Bhoopathy]
 
+   - Add ex_destroy_image method to IBM SCE driver. (LIBCLOUD-291)
+     [Perry Zou]
+
+   - Add the following new regions to the ElasticHosts driver: sjc-c, syd-v,
+     hkg-e. (LIBCLOUD-293)
+     [Tomaz Muraus]
+
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response.
+     [Gavin McCance, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.

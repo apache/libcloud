@@ -1090,7 +1090,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         server_resp = self.connection.request(
             '/servers/%s' % create_response['id'])
         server_object = server_resp.object['server']
-        server_object['adminPass'] = create_response['adminPass']
+
+        # adminPass is not always present
+        # http://docs.openstack.org/essex/openstack-compute/admin/content/configuring-compute-API.html#d6e1833
+        server_object['adminPass'] = create_response.get('adminPass', None)
 
         return self._to_node(server_object)
 
@@ -1614,7 +1617,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
                 metadata=api_node['metadata'],
-                password=api_node.get('adminPass'),
+                password=api_node.get('adminPass', None),
                 created=api_node['created'],
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
