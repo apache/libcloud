@@ -159,6 +159,10 @@ Changes with Apache Libcloud in development:
      attribute is not present in the response.
      [Gavin McCance, Tomaz Muraus]
 
+   - Allow users to filter images returned by the list_images method in the EC2
+     driver by providing ex_image_ids argument. (LIBCLOUD-294)
+     [Chris Psaltis, Joseph Hall]
+
   *) Storage
 
     - Add a new local storage driver.
