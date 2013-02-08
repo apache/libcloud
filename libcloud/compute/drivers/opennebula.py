@@ -148,35 +148,6 @@ class OpenNebulaResponse(XmlResponse):
 class OpenNebulaConnection(ConnectionUserAndKey):
     """
     Connection class for the OpenNebula.org driver.
-    """
-
-    host = API_HOST
-    port = API_PORT
-    secure = API_SECURE
-    responseCls = OpenNebulaResponse
-
-    def add_default_headers(self, headers):
-        """
-        Add headers required by the OpenNebula.org OCCI interface.
-
-        Includes adding Basic HTTP Authorization headers for authenticating
-        against the OpenNebula.org OCCI interface.
-
-        @type  headers: C{dict}
-        @param headers: Dictionary containing HTTP headers.
-
-        @rtype:  C{dict}
-        @return: Dictionary containing updated headers.
-        """
-        pass_sha1 = hashlib.sha1(b(self.key)).hexdigest()
-        headers['Authorization'] =\
-            ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
-                                                 pass_sha1))).decode('utf-8'))
-        return headers
-
-class OpenNebulaConnection_3_8(ConnectionUserAndKey):
-    """
-    Connection class for the OpenNebula.org 3.8 driver.
     with plain_auth support
     """
 
@@ -189,7 +160,7 @@ class OpenNebulaConnection_3_8(ConnectionUserAndKey):
     def __init__(self, *args, **kwargs):
         if 'plain_auth' in kwargs:
             self.plain_auth = kwargs.pop('plain_auth')
-        super(OpenNebulaConnection_3_8, self).__init__(*args, **kwargs)
+        super(OpenNebulaConnection, self).__init__(*args, **kwargs)
 
     def add_default_headers(self, headers):
         """
@@ -205,13 +176,14 @@ class OpenNebulaConnection_3_8(ConnectionUserAndKey):
         @return: Dictionary containing updated headers.
         """
         if self.plain_auth:
-            passwd=self.key
+            passwd = self.key
         else:
-            passwd=hashlib.sha1(b(self.key)).hexdigest()
+            passwd = hashlib.sha1(b(self.key)).hexdigest()
         headers['Authorization'] =\
             ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
                                                  passwd))).decode('utf-8'))
         return headers
+
 
 class OpenNebulaNodeSize(NodeSize):
     """
@@ -335,7 +307,6 @@ class OpenNebulaNodeDriver(NodeDriver):
                     kwargs['plain_auth'] = cls.plain_auth
                 else:
                     cls.plain_auth = kwargs['plain_auth']
-                cls.connectionCls = OpenNebulaConnection_3_8
             else:
                 raise NotImplementedError(
                     "No OpenNebulaNodeDriver found for API version %s" %
@@ -1086,6 +1057,7 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
 
         return sizes
 
+
 class OpenNebula_3_8_NodeDriver(OpenNebula_3_2_NodeDriver):
     """
     OpenNebula.org node driver for OpenNebula.org v3.8.
@@ -1107,8 +1079,9 @@ class OpenNebula_3_8_NodeDriver(OpenNebula_3_2_NodeDriver):
         """
         sizes = []
         ids = 1
-        for element in object.findall('INSTANCE_TYPE'):        
-            element=self.connection.request(('/instance_type/%s') % (element.attrib['name'])).object
+        for element in object.findall('INSTANCE_TYPE'):
+            element = self.connection.request(
+                ('/instance_type/%s') % (element.attrib['name'])).object
             sizes.append(OpenNebulaNodeSize(id=ids,
                          name=element.findtext('NAME'),
                          ram=int(element.findtext('MEMORY'))
