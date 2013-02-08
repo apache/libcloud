@@ -40,6 +40,8 @@ DRIVERS = {
         ('libcloud.storage.drivers.nimbus', 'NimbusStorageDriver'),
     Provider.LOCAL:
         ('libcloud.storage.drivers.local', 'LocalStorageDriver'),
+    Provider.AZURE_BLOBS:
+        ('libcloud.storage.drivers.azure_blobs', 'AzureBlobsStorageDriver'),
 
     Provider.CLOUDFILES_US:
         ('libcloud.storage.drivers.cloudfiles', 'CloudFilesUSStorageDriver'),

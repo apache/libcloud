@@ -55,6 +55,7 @@ class Provider(object):
     S3_US_WEST_OREGON = 's3_us_west_oregon'
     NIMBUS = 'nimbus'
     LOCAL = 'local'
+    AZURE_BLOBS = 'azure_blobs'
 
     CLOUDFILES_US = 'cloudfiles_us'
     CLOUDFILES_UK = 'cloudfiles_uk'
