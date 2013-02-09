@@ -1399,6 +1399,10 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     website = 'http://aws.amazon.com/ec2/'
     path = '/'
 
+    region_name = 'us-east-1'
+    country = 'USA'
+    api_name = 'ec2_us_east'
+
     features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
@@ -1407,25 +1411,6 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
-
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 datacenter='us-east-1', **kwargs):
-        if hasattr(self, '_datacenter'):
-            datacenter = self._datacenter
-
-        if datacenter not in VALID_EC2_DATACENTERS:
-            raise ValueError('Invalid datacenter: %s' % (datacenter))
-
-        details = REGION_DETAILS[datacenter]
-        self.region_name = datacenter
-        self.api_name = details['api_name']
-        self.country = details['country']
-
-        self.connectionCls.host = details['endpoint']
-
-        super(EC2NodeDriver, self).__init__(key=key, secret=secret,
-                                            secure=secure, host=host,
-                                            port=port, **kwargs)
 
 
 class IdempotentParamError(LibcloudError):
