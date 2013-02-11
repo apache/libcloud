@@ -46,11 +46,13 @@ __all__ = [
     'OpenNebula_1_4_NodeDriver',
     'OpenNebula_2_0_NodeDriver',
     'OpenNebula_3_0_NodeDriver',
-    'OpenNebula_3_2_NodeDriver']
+    'OpenNebula_3_2_NodeDriver',
+    'OpenNebula_3_8_NodeDriver']
 
 API_HOST = ''
 API_PORT = (4567, 443)
 API_SECURE = True
+API_PLAIN_AUTH = False
 DEFAULT_API_VERSION = '3.2'
 
 
@@ -146,12 +148,19 @@ class OpenNebulaResponse(XmlResponse):
 class OpenNebulaConnection(ConnectionUserAndKey):
     """
     Connection class for the OpenNebula.org driver.
+    with plain_auth support
     """
 
     host = API_HOST
     port = API_PORT
     secure = API_SECURE
+    plain_auth = API_PLAIN_AUTH
     responseCls = OpenNebulaResponse
+
+    def __init__(self, *args, **kwargs):
+        if 'plain_auth' in kwargs:
+            self.plain_auth = kwargs.pop('plain_auth')
+        super(OpenNebulaConnection, self).__init__(*args, **kwargs)
 
     def add_default_headers(self, headers):
         """
@@ -166,10 +175,13 @@ class OpenNebulaConnection(ConnectionUserAndKey):
         @rtype:  C{dict}
         @return: Dictionary containing updated headers.
         """
-        pass_sha1 = hashlib.sha1(b(self.key)).hexdigest()
+        if self.plain_auth:
+            passwd = self.key
+        else:
+            passwd = hashlib.sha1(b(self.key)).hexdigest()
         headers['Authorization'] =\
             ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
-                                                 pass_sha1))).decode('utf-8'))
+                                                 passwd))).decode('utf-8'))
         return headers
 
 
@@ -289,6 +301,12 @@ class OpenNebulaNodeDriver(NodeDriver):
                 cls = OpenNebula_3_0_NodeDriver
             elif api_version in ['3.2']:
                 cls = OpenNebula_3_2_NodeDriver
+            elif api_version in ['3.8']:
+                cls = OpenNebula_3_8_NodeDriver
+                if 'plain_auth' not in kwargs:
+                    kwargs['plain_auth'] = cls.plain_auth
+                else:
+                    cls.plain_auth = kwargs['plain_auth']
             else:
                 raise NotImplementedError(
                     "No OpenNebulaNodeDriver found for API version %s" %
@@ -1019,22 +1037,86 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
         @rtype:  C{list} of L{OpenNebulaNodeSize}
         """
         sizes = []
-        ids = 1
+        size_id = 1
+
+        attributes = [('name', str, None), ('ram', int, 'MEMORY'),
+                      ('cpu', float, None), ('vcpu', float, None),
+                      ('disk', str, None), ('bandwidth', float, None),
+                      ('price', float, None)]
+
         for element in object.findall('INSTANCE_TYPE'):
-            sizes.append(OpenNebulaNodeSize(id=ids,
-                         name=element.findtext('NAME'),
-                         ram=int(element.findtext('MEMORY'))
-                             if element.findtext('MEMORY', None) else None,
-                         cpu=float(element.findtext('CPU'))
-                             if element.findtext('CPU', None) else None,
-                         vcpu=int(element.findtext('VCPU'))
-                             if element.findtext('VCPU', None) else None,
-                         disk=element.findtext('DISK', None),
-                         bandwidth=float(element.findtext('BANDWIDTH'))
-                             if element.findtext('BANDWIDTH', None) else None,
-                         price=float(element.findtext('PRICE'))
-                             if element.findtext('PRICE', None) else None,
-                         driver=self))
-            ids += 1
+            size_kwargs = {'id': size_id, 'driver': self}
+            values = self._get_attributes_values(attributes=attributes,
+                                                 element=element)
+            size_kwargs.update(values)
+
+            size = OpenNebulaNodeSize(**size_kwargs)
+            sizes.append(size)
+            size_id += 1
 
         return sizes
+
+    def _get_attributes_values(self, attributes, element):
+        values = {}
+
+        for attribute_name, attribute_type, alias in attributes:
+                key = alias if alias else attribute_name.upper()
+                value = element.findtext(key)
+
+                if value is not None:
+                    value = attribute_type(value)
+
+                values[attribute_name] = value
+
+        return values
+
+
+class OpenNebula_3_8_NodeDriver(OpenNebula_3_2_NodeDriver):
+    """
+    OpenNebula.org node driver for OpenNebula.org v3.8.
+    """
+
+    plain_auth = API_PLAIN_AUTH
+
+    def _to_sizes(self, object):
+        """
+        Request a list of instance types and convert that list to a list of
+        OpenNebulaNodeSize objects.
+
+        Request a list of instance types from the OpenNebula web interface,
+        and issue a request to convert each XML object representation of an
+        instance type to an OpenNebulaNodeSize object.
+
+        @return: List of instance types.
+        @rtype:  C{list} of L{OpenNebulaNodeSize}
+        """
+        sizes = []
+        size_id = 1
+
+        attributes = [('name', str, None), ('ram', int, 'MEMORY'),
+                      ('cpu', float, None), ('vcpu', float, None),
+                      ('disk', str, None), ('bandwidth', float, None),
+                      ('price', float, None)]
+
+        for element in object.findall('INSTANCE_TYPE'):
+            element = self.connection.request(
+                ('/instance_type/%s') % (element.attrib['name'])).object
+
+            size_kwargs = {'id': size_id, 'driver': self}
+            values = self._get_attributes_values(attributes=attributes,
+                                                 element=element)
+            size_kwargs.update(values)
+
+            size = OpenNebulaNodeSize(**size_kwargs)
+            sizes.append(size)
+            size_id += 1
+        return sizes
+
+    def _ex_connection_class_kwargs(self):
+        """
+        Set plain_auth as an extra L{OpenNebulaConnection_3_8} argument
+
+        @return: C{dict} of L{OpenNebulaConnection_3_8} input arguments
+        """
+
+        return {'plain_auth': self.plain_auth}

@@ -153,6 +153,9 @@ Changes with Apache Libcloud 0.12.0:
      driver by providing ex_image_ids argument. (LIBCLOUD-294)
      [Chris Psaltis, Joseph Hall]
 
+   - Add support for OpenNebula 3.8. (LIBCLOUD-295)
+     [Guillaume ZITTA]
+
   *) Storage
 
     - Add a new local storage driver.
