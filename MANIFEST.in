@@ -9,7 +9,6 @@ include RELEASING
 include README
 include tox.ini
 include libcloud/data/pricing.json
-prune libcloud/test/secrets.py
 include demos/*
 include libcloud/test/*.py
 include libcloud/test/pricing_test.json
@@ -22,3 +21,4 @@ include libcloud/test/compute/fixtures/*/*
 include libcloud/test/storage/fixtures/*/*
 include libcloud/test/loadbalancer/fixtures/*/*
 include libcloud/test/dns/fixtures/*/*
+prune libcloud/test/secrets.py
