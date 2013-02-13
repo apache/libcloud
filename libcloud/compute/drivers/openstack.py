@@ -1605,7 +1605,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                         chain(api_node['addresses'].get('public', []),
                               api_node['addresses'].get('internet', []))],
             private_ips=[addr_desc['addr'] for addr_desc in
-                         api_node['addresses'].get('private', [])],
+                         chain(*[addrs for label, addrs in
+                                 api_node['addresses'].iteritems()
+                                 if label != 'public'
+                                 and label != 'internet'])],
             driver=self,
             extra=dict(
                 hostId=api_node['hostId'],
