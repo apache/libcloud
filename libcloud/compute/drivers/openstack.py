@@ -1596,16 +1596,25 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_node(obj['server'])
 
     def _to_node(self, api_node):
+        public_networks_labels = ['public', 'internet']
+
+        public_ips, private_ips = [], []
+
+        for label, values in api_node['addresses'].items():
+            ips = [v['addr'] for v in values]
+
+            if label in public_networks_labels:
+                public_ips.extend(ips)
+            else:
+                private_ips.extend(ips)
+
         return Node(
             id=api_node['id'],
             name=api_node['name'],
             state=self.NODE_STATE_MAP.get(api_node['status'],
                                           NodeState.UNKNOWN),
-            public_ips=[addr_desc['addr'] for addr_desc in
-                        chain(api_node['addresses'].get('public', []),
-                              api_node['addresses'].get('internet', []))],
-            private_ips=[addr_desc['addr'] for addr_desc in
-                         api_node['addresses'].get('private', [])],
+            public_ips=public_ips,
+            private_ips=private_ips,
             driver=self,
             extra=dict(
                 hostId=api_node['hostId'],
