@@ -166,6 +166,11 @@ Changes with Apache Libcloud in development:
    - Add support for OpenNebula 3.8. (LIBCLOUD-295)
      [Guillaume ZITTA]
 
+   -  Improve public and private IP address handling in OpenStack 1.1 driver.
+      Assume every IP address which doesn't have a label "public" or "internet"
+      is private. (LIBCLOUD-297)
+      [Grischa Meyer, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
