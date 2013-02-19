@@ -42,6 +42,8 @@ from libcloud.compute.types import NodeState
 GCE_SCOPE = 'https://www.googleapis.com/auth/compute'
 GCE_AUTH_VERSION = 'v1beta14'
 
+#TODO: Add Node class to GCE and use one iterface from libcloud
+
 class GoogleComputeEngineNodeDriver(NodeDriver):
     """
     Google Compute Engine Node Driver
@@ -115,7 +117,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         self.default_network_interfaces = 'default'
 
 
-    def list_nodes(self):
+    def list_nodes(self, project=None, zone=None):
         """
         List all Google Compute Engine nodes associated with the current
         project.
@@ -123,7 +125,11 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         @rtype: C{list} of L{Node}
         """
         list_nodes = []
-        req = self.request.instances().list(project=self.project, zone=self.default_zone).execute()
+        if project is None:
+            project = self.project
+        if zone is None:
+            zone = self.default_zone
+        req = self.request.instances().list(project=project, zone=zone).execute()
         items = req['items'] if 'items' in req else []
         for instance in items:
             node = self._to_node(instance)
@@ -157,7 +163,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         """
         list_sizes = []
         if project is None:
-            project = 'google'
+            project = self.project
         for machine_type in self.request.machineTypes().list(project=project).execute()['items']:
             size = self._to_node_size(machine_type)
             list_sizes.append(size)
@@ -172,12 +178,21 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         """
         list_locations = []
         if project is None:
-            project = 'google'
+            project = self.project
         for zone in self.request.zones().list(project=project).execute()['items']:
             location = self._to_node_location(zone)
             list_locations.append(location)
 
         return list_locations
+
+    def ex_get_network(self, project=None, network=None):
+        if project is None:
+            project = self.project
+        if network is None:
+            network = self.default_network_interfaces
+        network = self.request.networks().get(project=project, network=network).execute()
+        return network
+
 
     def create_node(self, name, size, image, location=None, project=None, metadata={}, **kwargs):
         """
@@ -203,21 +218,36 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
 
         @rtype: L{Node}
         """
+        #TODO: Add metadata, script, keys. In every method use image/location instance not string!
         if project is None:
             project = self.project
         if location is None:
             location = self.default_zone
-        #TODO: Add metadata usage
-        node = self.request.instances().insert(project=project, zone=location, body={
-            'machineType': size.extra['selfLink'],
+        response = self.request.instances().insert(project=project, zone=location.name, body={
             'name': name,
-            'network': self.default_network_interfaces,
+            'machineType': size.extra['url'],
+            'networkInterfaces': [
+                {'network': self.ex_get_network(project=project, network=self.default_network_interfaces)['selfLink'],
+                'accessConfigs': [
+                    {
+                        "kind": "compute#accessConfig",
+                        "name": "External NAT",
+                        "type": "ONE_TO_ONE_NAT",
+                    }
+                ]}],
+            'disks': [
+                {
+                    'type': 'EPHEMERAL',
+                }
+            ],
             'metadata': [],
+            'disks': [],
             'image': image.name,
-
         }).execute()
-
-        return self._get_node(name, project, location)
+        resp = self._blocking_request(response, project)
+        if 'error' in response:
+            raise Exception('OOps! %s' % response['error'])
+        return self._get_node(name, project, location.name)
 
     def reboot_node(self, node):
         """
@@ -273,6 +303,21 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         except Exception:
             return False
 
+    def _blocking_request(self, response, project=None):
+        if project is None:
+            project = self.project
+        status = response['status']
+        while status != 'DONE' and response:
+            operation_id = response['name']
+            if 'zone' in response:
+                request = self.request.zoneOperations().get(project=project, zone=response['zone'].rsplit('/', 1)[-1],
+                                                            operation=operation_id)
+            else:
+                request = self.request.globalOperations().get(project=project, operation=operation_id)
+            response = request.execute()
+            if response:
+                status = response['status']
+        return response
 
     def _get_node(self, name, project=None, location=None):
         """
@@ -288,9 +333,8 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
             project = self.project
         if location is None:
             location = self.default_zone
-        new_node = self.request.instances().get(project=project, zone=location, instance=name)
-        if 'items' in new_node:
-            return self._to_node(new_node['items'][0])
+        new_node = self.request.instances().get(project=project, zone=location, instance=name).execute()
+        return self._to_node(new_node)
 
     def _to_node(self, node):
         """
@@ -308,7 +352,6 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
 
         extra['status'] = node['status']
         extra['machine_type'] = node['machineType']
-        extra['description'] = node['description']
         extra['zone'] = node['zone']
         extra['image'] = node['image']
         extra['disks'] = node['disks']
@@ -318,10 +361,10 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         extra['name'] = node['name']
         extra['metadata'] = node['metadata']
 
-        for network_interface in node.networkInterfaces:
-            private_ips.append(network_interface.networkIP)
-            for access_config in network_interface.accessConfigs:
-                public_ips.append(access_config.natIP)
+        for network_interface in node['networkInterfaces']:
+            private_ips.append(network_interface['networkIP'])
+            for access_config in network_interface['accessConfigs']:
+                public_ips.append(access_config['natIP'])
 
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
@@ -356,8 +399,10 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
 
         @rtype: L{NodeLocation}
         """
-        return NodeLocation(id=location['id'], name=location['name'], country='US',
-                            driver=self)
+        extra = {'url': location['selfLink']}
+        loc = NodeLocation(id=location['id'], name=location['name'], country='US', driver=self)
+        loc.extra = extra
+        return loc
 
     def _to_node_size(self, machine_type):
         """

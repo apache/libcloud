@@ -122,7 +122,7 @@ DRIVERS = {
     Provider.HOSTVIRTUAL:
         ('libcloud.compute.drivers.hostvirtual', 'HostVirtualNodeDriver'),
     Provider.GCE:                                                                                                                                                                  
-        ('libcloud.compute.drivers.gce', 'GoogleComputeEngineNodeDriver')
+        ('libcloud.compute.drivers.gce', 'GoogleComputeEngineNodeDriver'),
     Provider.ABIQUO:
         ('libcloud.compute.drivers.abiquo', 'AbiquoNodeDriver')
 }
