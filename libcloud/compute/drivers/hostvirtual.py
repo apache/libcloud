@@ -29,7 +29,7 @@ from libcloud.common.hostvirtual import HostVirtualResponse
 from libcloud.common.hostvirtual import HostVirtualConnection
 from libcloud.common.hostvirtual import HostVirtualException
 from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState, InvalidCredsError
+from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
@@ -72,6 +72,13 @@ class HostVirtualNodeDriver(NodeDriver):
         private_ips = []
         extra = {}
 
+        if 'plan_id' in data:
+            extra['size'] = data['plan_id']
+        if 'os_id' in data:
+            extra['image'] = data['os_id']
+        if 'location_id' in data:
+            extra['location'] = data['location_id']
+
         public_ips.append(data['ip'])
 
         node = Node(id=data['mbpkgid'], name=data['fqdn'], state=state,
@@ -99,7 +106,7 @@ class HostVirtualNodeDriver(NodeDriver):
             data=json.dumps(params)).object
         sizes = []
         for size in result:
-            n = NodeSize(id=size['plan'],
+            n = NodeSize(id=size['plan_id'],
                          name=size['plan'],
                          ram=size['ram'],
                          disk=size['disk'],
@@ -116,9 +123,9 @@ class HostVirtualNodeDriver(NodeDriver):
             i = NodeImage(id=image["id"],
                           name=image["os"],
                           driver=self.connection.driver,
-                          extra={
-                              'hypervisor': image['tech'],
-                              'arch': image['bits']})
+                          extra=image)
+            del i.extra['id']
+            del i.extra['os']
             images.append(i)
         return images
 
@@ -143,7 +150,7 @@ class HostVirtualNodeDriver(NodeDriver):
             dc = '3'
 
         params = {'fqdn': name,
-                  'plan': size.id,
+                  'plan': size.name,
                   'image': image.id,
                   'location': dc
                   }
@@ -158,10 +165,7 @@ class HostVirtualNodeDriver(NodeDriver):
             params['password'] = password
 
         if not ssh_key and not password:
-            raise HostVirtualException(500, "Need SSH key or root password")
-
-        if password is None:
-            raise HostVirtualException(500, "Root password cannot be empty")
+            raise HostVirtualException(500, "Need SSH key or Root password")
 
         result = self.connection.request(API_ROOT + '/cloud/buy_build',
                                          data=json.dumps(params),
@@ -184,6 +188,22 @@ class HostVirtualNodeDriver(NodeDriver):
             method='POST').object
 
         return bool(result)
+
+    def ex_get_node(self, node_id):
+        """
+        Get a single node.
+
+        @param      node_id: id of the node that we need the node object for
+        @type       node_id: C{str}
+
+        @rtype: L{Node}
+        """
+
+        params = {'mbpkgid': node_id}
+        result = self.connection.request(
+            API_ROOT + '/cloud/server', params=params).object
+        node = self._to_node(result)
+        return node
 
     def ex_stop_node(self, node):
         """
@@ -215,6 +235,75 @@ class HostVirtualNodeDriver(NodeDriver):
         result = self.connection.request(
             API_ROOT + '/cloud/server/start',
             data=json.dumps(params),
+            method='POST').object
+
+        return bool(result)
+
+    def ex_build_node(self, **kwargs):
+        """
+        Build a server on a VR package and get it booted
+
+        @keyword node: node which should be used
+        @type    node: L{Node}
+
+        @keyword image: The distribution to deploy on your server (mandatory)
+        @type    image: L{NodeImage}
+
+        @keyword auth: an SSH key or root password (mandatory)
+        @type    auth: L{NodeAuthSSHKey} or L{NodeAuthPassword}
+
+        @keyword location: which datacenter to create the server in
+        @type    location: L{NodeLocation}
+
+        @rtype: C{bool}
+        """
+
+        node = kwargs['node']
+
+        if 'image' in kwargs:
+            image = kwargs['image']
+        else:
+            image = node.extra['image']
+
+        params = {
+            'mbpkgid': node.id,
+            'image': image,
+            'fqdn': node.name,
+            'location': node.extra['location'],
+        }
+
+        auth = kwargs['auth']
+
+        ssh_key = None
+        password = None
+        if isinstance(auth, NodeAuthSSHKey):
+            ssh_key = auth.pubkey
+            params['ssh_key'] = ssh_key
+        elif isinstance(auth, NodeAuthPassword):
+            password = auth.password
+            params['password'] = password
+
+        if not ssh_key and not password:
+            raise HostVirtualException(500, "Need SSH key or Root password")
+
+        result = self.connection.request(API_ROOT + '/cloud/server/build',
+                                         data=json.dumps(params),
+                                         method='POST').object
+        return bool(result)
+
+    def ex_delete_node(self, node):
+        """
+        Delete a node.
+
+        @param      node: Node which should be used
+        @type       node: L{Node}
+
+        @rtype: C{bool}
+        """
+
+        params = {'mbpkgid': node.id}
+        result = self.connection.request(
+            API_ROOT + '/cloud/server/delete', data=json.dumps(params),
             method='POST').object
 
         return bool(result)

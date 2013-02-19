@@ -675,10 +675,10 @@ class NodeDriver(BaseDriver):
         try:
             # Wait until node is up and running and has IP assigned
             ssh_interface = kwargs.get('ssh_interface', 'public_ips')
-            node, ip_addresses = self._wait_until_running(
-                node=node,
+            node, ip_addresses = self.wait_until_running(
+                nodes=[node],
                 wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
-                ssh_interface=ssh_interface)
+                ssh_interface=ssh_interface)[0]
 
             if password:
                 node.extra['password'] = password
@@ -780,11 +780,19 @@ class NodeDriver(BaseDriver):
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
-        """
-        Block until node is fully booted and has an IP address assigned.
+        # This is here for backward compatibility and will be removed in the
+        # next major release
+        return wait_until_running(nodes=[node], wait_period=wait_period,
+                                  timeout=timeout, ssh_interface=ssh_interface,
+                                  force_ipv4=force_ipv4)
 
-        @keyword    node: Node instance.
-        @type       node: C{Node}
+    def wait_until_running(self, nodes, wait_period=3, timeout=600,
+                           ssh_interface='public_ips', force_ipv4=True):
+        """
+        Block until the given nodes are fully booted and have an IP address assigned.
+
+        @keyword    nodes: list of node instances.
+        @type       nodes: C{List} of L{Node}
 
         @keyword    wait_period: How many seconds to between each loop
                                  iteration (default is 3)
@@ -802,8 +810,12 @@ class NodeDriver(BaseDriver):
         @keyword    force_ipv4: Ignore ipv6 IP addresses (default is True).
         @type       force_ipv4: C{bool}
 
-        @return: C{(Node, ip_addresses)} tuple of Node instance and
+        @return: C{[(Node, ip_addresses)]} list of tuple of Node instance and
                  list of ip_address on success.
+
+        @return: List of tuple of Node instance and list of ip_address on
+                 success (node, ip_addresses).
+        @rtype: C{list} of C{tuple}
         """
         def is_supported(address):
             """Return True for supported address"""
@@ -823,19 +835,22 @@ class NodeDriver(BaseDriver):
             raise ValueError('ssh_interface argument must either be' +
                              'public_ips or private_ips')
 
+        uuids = set([n.uuid for n in nodes])
         while time.time() < end:
             nodes = self.list_nodes()
-            nodes = list([n for n in nodes if n.uuid == node.uuid])
+            nodes = list([n for n in nodes if n.uuid in uuids])
 
-            if len(nodes) > 1:
-                raise LibcloudError(value=('Booted single node[%s], ' % node
-                                    + 'but multiple nodes have same UUID'),
+            if len(nodes) > len(uuids):
+                found_uuids = [n.uuid for n in nodes]
+                raise LibcloudError(value=('Unable to match specified uuids ' +
+                                           '(%s) with existing nodes. Found ' % uuids +
+                                           'multiple nodes with same uuid: (%s)' % found_uuids),
                                     driver=self)
 
-            if (len(nodes) == 1 and nodes[0].state == NodeState.RUNNING and
-                    filter_addresses(getattr(nodes[0], ssh_interface))):
-                return (nodes[0], filter_addresses(getattr(nodes[0],
-                                                   ssh_interface)))
+            running_nodes = [n for n in nodes if n.state == NodeState.RUNNING]
+            addresses = [filter_addresses(getattr(n, ssh_interface)) for n in running_nodes]
+            if len(running_nodes) == len(uuids) == len(addresses):
+                return list(zip(running_nodes, addresses))
             else:
                 time.sleep(wait_period)
                 continue

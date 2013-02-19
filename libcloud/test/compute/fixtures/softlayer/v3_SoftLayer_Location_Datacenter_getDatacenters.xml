@@ -15,13 +15,13 @@
       <member>
        <name>name</name>
        <value>
-        <string>dal00</string>
+        <string>dal05</string>
        </value>
       </member>
       <member>
        <name>longName</name>
        <value>
-        <string>Corporate HQ</string>
+        <string>Dallas 5</string>
        </value>
       </member>
      </struct>
@@ -88,6 +88,28 @@
        <name>longName</name>
        <value>
         <string>Washington, DC</string>
+       </value>
+      </member>
+     </struct>
+    </value>
+    <value>
+     <struct>
+      <member>
+       <name>id</name>
+       <value>
+        <int>12345</int>
+       </value>
+      </member>
+      <member>
+       <name>name</name>
+       <value>
+        <string>newcity01</string>
+       </value>
+      </member>
+      <member>
+       <name>longName</name>
+       <value>
+        <string>New City</string>
        </value>
       </member>
      </struct>

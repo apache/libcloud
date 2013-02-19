@@ -45,9 +45,9 @@ class HostVirtualTest(unittest.TestCase):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 10)
-        self.assertEqual(sizes[0].id, 'VR256')
-        self.assertEqual(sizes[4].id, 'VR1024')
+        self.assertEqual(len(sizes), 14)
+        self.assertEqual(sizes[0].id, '31')
+        self.assertEqual(sizes[4].id, '71')
         self.assertEqual(sizes[2].ram, '512MB')
         self.assertEqual(sizes[2].disk, '20GB')
         self.assertEqual(sizes[3].bandwidth, '600GB')
@@ -70,17 +70,28 @@ class HostVirtualTest(unittest.TestCase):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.reboot_node(node))
 
-    def test_stop_node(self):
+    def test_ex_get_node(self):
+        node = self.driver.ex_get_node(node_id='62291')
+        self.assertEqual(node.id, '62291')
+        self.assertEqual(node.name, 'server1.vr-cluster.org')
+        self.assertEqual(node.state, NodeState.TERMINATED)
+        self.assertTrue('208.111.45.250' in node.public_ips)
+
+    def test_ex_stop_node(self):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.ex_stop_node(node))
 
-    def test_start_node(self):
+    def test_ex_start_node(self):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.ex_start_node(node))
 
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.destroy_node(node))
+
+    def test_ex_delete_node(self):
+        node = self.driver.list_nodes()[0]
+        self.assertTrue(self.driver.ex_delete_node(node))
 
     def test_create_node(self):
         auth = NodeAuthPassword('vr!@#hosted#@!')
@@ -94,6 +105,14 @@ class HostVirtualTest(unittest.TestCase):
         )
         self.assertEqual('76070', node.id)
         self.assertEqual('test.com', node.name)
+
+    def test_ex_build_node(self):
+        node = self.driver.list_nodes()[0]
+        auth = NodeAuthPassword('vr!@#hosted#@!')
+        self.assertTrue(self.driver.ex_build_node(
+            node=node,
+            auth=auth
+        ))
 
     def test_create_node_in_location(self):
         auth = NodeAuthPassword('vr!@#hosted#@!')
@@ -116,6 +135,10 @@ class HostVirtualMockHttp(MockHttp):
 
     def _vapi_cloud_servers(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _vapi_cloud_server(self, method, url, body, headers):
+        body = self.fixtures.load('get_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _vapi_cloud_sizes(self, method, url, body, headers):
@@ -148,6 +171,14 @@ class HostVirtualMockHttp(MockHttp):
 
     def _vapi_cloud_buy_build(self, method, url, body, headers):
         body = self.fixtures.load('create_node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _vapi_cloud_server_build(self, method, url, body, headers):
+        body = self.fixtures.load('create_node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _vapi_cloud_server_delete(self, method, url, body, headers):
+        body = self.fixtures.load('node_destroy.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

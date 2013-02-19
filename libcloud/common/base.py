@@ -516,7 +516,8 @@ class Connection(object):
         object's `request` that does some helpful pre-processing.
 
         @type action: C{str}
-        @param action: A path
+        @param action: A path. This can include arguments. If included,
+            any extra parameters are appended to the existing ones.
 
         @type params: C{dict}
         @param params: Optional mapping of additional parameters to send. If
@@ -574,7 +575,10 @@ class Connection(object):
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
-            url = '?'.join((action, urlencode(params)))
+            if '?' in action:
+                url = '&'.join((action, urlencode(params)))
+            else:
+                url = '?'.join((action, urlencode(params)))
         else:
             url = action
 

@@ -134,13 +134,14 @@ class Container(object):
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None):
+    def upload_object(self, file_path, object_name, extra=None, **kwargs):
         return self.driver.upload_object(
-            file_path, self, object_name, extra)
+            file_path, self, object_name, extra=extra, **kwargs)
 
-    def upload_object_via_stream(self, iterator, object_name, extra=None):
+    def upload_object_via_stream(self, iterator, object_name, extra=None,
+                                 **kwargs):
         return self.driver.upload_object_via_stream(
-            iterator, self, object_name, extra)
+            iterator, self, object_name, extra=extra, **kwargs)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
@@ -615,7 +616,7 @@ class StorageDriver(BaseDriver):
             file_size = os.path.getsize(file_path)
             upload_func_kwargs['chunked'] = False
 
-        if file_size is not None:
+        if file_size is not None and 'Content-Length' not in headers:
             headers['Content-Length'] = file_size
 
         headers['Content-Type'] = content_type
@@ -676,7 +677,7 @@ class StorageDriver(BaseDriver):
         return True, data_hash, bytes_transferred
 
     def _stream_data(self, response, iterator, chunked=False,
-                     calculate_hash=True, chunk_size=None):
+                     calculate_hash=True, chunk_size=None, data=None):
         """
         Stream a data over an http connection.
 

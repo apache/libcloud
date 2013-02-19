@@ -30,7 +30,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
-    OpenStack_1_1_NodeDriver
+    OpenStack_1_1_NodeDriver, OpenStackSecurityGroup, OpenStackSecurityGroupRule
 )
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
@@ -161,7 +161,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(ret), 1)
         node = ret[0]
         self.assertEqual('67.23.21.33', node.public_ips[0])
-        self.assertEqual('10.176.168.218', node.private_ips[0])
+        self.assertTrue('10.176.168.218' in node.private_ips)
         self.assertEqual(node.extra.get('flavorId'), '1')
         self.assertEqual(node.extra.get('imageId'), '11')
         self.assertEqual(type(node.extra.get('metadata')), type(dict()))
@@ -202,6 +202,16 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.create_node(name='racktest', image=image, size=size)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
+
+    def test_create_node_without_adminPass(self):
+        OpenStackMockHttp.type = 'NO_ADMIN_PASS'
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size)
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra.get('password'), None)
 
     def test_create_node_ex_shared_ip_group(self):
         OpenStackMockHttp.type = 'EX_SHARED_IP_GROUP'
@@ -440,6 +450,10 @@ class OpenStackMockHttp(MockHttpTestCase):
         body = self.fixtures.load('v1_slug_servers.xml')
         return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
+    def _v1_0_slug_servers_NO_ADMIN_PASS(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_no_admin_pass.xml')
+        return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
+
     def _v1_0_slug_servers_EX_SHARED_IP_GROUP(self, method, url, body, headers):
         # test_create_node_ex_shared_ip_group
         # Verify that the body contains sharedIpGroupId XML element
@@ -640,8 +654,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual('12065', node.id)
         self.assertEqual('50.57.94.35', node.public_ips[0])
         self.assertEqual('2001:4801:7808:52:16:3eff:fe47:788a', node.public_ips[1])
-        self.assertEqual('10.182.64.34', node.private_ips[0])
-        self.assertEqual('fec0:4801:7808:52:16:3eff:fe60:187d', node.private_ips[1])
+        self.assertTrue('10.182.64.34' in  node.private_ips)
+        self.assertTrue('12.16.18.28' in node.private_ips)
+        self.assertTrue('fec0:4801:7808:52:16:3eff:fe60:187d' in node.private_ips)
 
         self.assertEqual(node.extra.get('flavorId'), '2')
         self.assertEqual(node.extra.get('imageId'), '7')
@@ -856,6 +871,73 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_unrescue(node)
         self.assertTrue(result)
 
+    def test_ex_get_node_security_groups(self):
+        node = Node(id='1c01300f-ef97-4937-8f03-ac676d6234be', name=None,
+                    state=None, public_ips=None, private_ips=None, driver=self.driver)
+        security_groups = self.driver.ex_get_node_security_groups(node)
+        self.assertEqual(len(security_groups), 2, 'Wrong security groups count')
+
+        security_group = security_groups[1]
+        self.assertEqual(security_group.id, 4)
+        self.assertEqual(security_group.tenant_id, '68')
+        self.assertEqual(security_group.name, 'ftp')
+        self.assertEqual(security_group.description, 'FTP Client-Server - Open 20-21 ports')
+        self.assertEqual(security_group.rules[0].id, 1)
+        self.assertEqual(security_group.rules[0].parent_group_id, 4)
+        self.assertEqual(security_group.rules[0].ip_protocol, "tcp")
+        self.assertEqual(security_group.rules[0].from_port, 20)
+        self.assertEqual(security_group.rules[0].to_port, 21)
+        self.assertEqual(security_group.rules[0].ip_range, '0.0.0.0/0')
+
+    def test_ex_list_security_groups(self):
+        security_groups = self.driver.ex_list_security_groups()
+        self.assertEqual(len(security_groups), 2, 'Wrong security groups count')
+
+        security_group = security_groups[1]
+        self.assertEqual(security_group.id, 4)
+        self.assertEqual(security_group.tenant_id, '68')
+        self.assertEqual(security_group.name, 'ftp')
+        self.assertEqual(security_group.description, 'FTP Client-Server - Open 20-21 ports')
+        self.assertEqual(security_group.rules[0].id, 1)
+        self.assertEqual(security_group.rules[0].parent_group_id, 4)
+        self.assertEqual(security_group.rules[0].ip_protocol, "tcp")
+        self.assertEqual(security_group.rules[0].from_port, 20)
+        self.assertEqual(security_group.rules[0].to_port, 21)
+        self.assertEqual(security_group.rules[0].ip_range, '0.0.0.0/0')
+
+    def test_ex_create_security_group(self):
+        name = 'test'
+        description = 'Test Security Group'
+        security_group = self.driver.ex_create_security_group(name, description)
+
+        self.assertEqual(security_group.id, 6)
+        self.assertEqual(security_group.tenant_id, '68')
+        self.assertEqual(security_group.name, name)
+        self.assertEqual(security_group.description, description)
+        self.assertEqual(len(security_group.rules), 0)
+
+    def test_ex_delete_security_group(self):
+        security_group = OpenStackSecurityGroup(id=6, tenant_id=None, name=None, description=None, driver=self.driver)
+        result = self.driver.ex_delete_security_group(security_group)
+        self.assertTrue(result)
+
+    def test_ex_create_security_group_rule(self):
+        security_group = OpenStackSecurityGroup(id=6, tenant_id=None, name=None, description=None, driver=self.driver)
+        security_group_rule = self.driver.ex_create_security_group_rule(security_group, 'tcp', 14, 16, '0.0.0.0/0')
+
+        self.assertEqual(security_group_rule.id, 2)
+        self.assertEqual(security_group_rule.parent_group_id, 6)
+        self.assertEqual(security_group_rule.ip_protocol, 'tcp')
+        self.assertEqual(security_group_rule.from_port, 14)
+        self.assertEqual(security_group_rule.to_port, 16)
+        self.assertEqual(security_group_rule.ip_range, '0.0.0.0/0')
+        self.assertEqual(security_group_rule.tenant_id, None)
+
+    def test_ex_delete_security_group_rule(self):
+        security_group_rule = OpenStackSecurityGroupRule(id=2, parent_group_id=None, ip_protocol=None, from_port=None, to_port=None, driver=self.driver)
+        result = self.driver.ex_delete_security_group_rule(security_group_rule)
+        self.assertTrue(result)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1008,6 +1090,44 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         if method == "GET":
             body = self.fixtures.load('_images_4949f9ee_2421_4c81_8b49_13119446008b.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_servers_1c01300f_ef97_4937_8f03_ac676d6234be_os_security_groups(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_1c01300f-ef97-4937-8f03-ac676d6234be_os-security-groups.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_security_groups(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_os_security_groups.json')
+        elif method == "POST":
+            body = self.fixtures.load('_os_security_groups_create.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_security_groups_6(self, method, url, body, headers):
+        if method == "DELETE":
+            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_os_security_group_rules(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_os_security_group_rules_create.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_security_group_rules_2(self, method, url, body, headers):
+        if method == "DELETE":
+            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
 

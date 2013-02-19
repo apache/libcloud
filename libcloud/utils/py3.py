@@ -22,13 +22,26 @@ from __future__ import absolute_import
 
 import sys
 import types
+from xml.etree import ElementTree as ET
 
-PY3 = False
 PY2 = False
 PY25 = False
+PY3 = False
+PY32 = False
+
+if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
+    PY2 = True
+
+if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
+    PY25 = True
 
 if sys.version_info >= (3, 0):
     PY3 = True
+
+if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
+    PY32 = True
+
+if PY3:
     import http.client as httplib
     from io import StringIO
     import urllib
@@ -38,6 +51,7 @@ if sys.version_info >= (3, 0):
     from urllib.parse import quote as urlquote
     from urllib.parse import unquote as urlunquote
     from urllib.parse import urlencode as urlencode
+    from os.path import relpath
 
     basestring = str
 
@@ -59,8 +73,10 @@ if sys.version_info >= (3, 0):
     next = __builtins__['next']
     def dictvalues(d):
         return list(d.values())
+
+    def tostring(node):
+        return ET.tostring(node, encoding='unicode')
 else:
-    PY2 = True
     import httplib
     from StringIO import StringIO
     import urllib
@@ -70,6 +86,9 @@ else:
     from urllib import quote as urlquote
     from urllib import unquote as urlunquote
     from urllib import urlencode as urlencode
+
+    if not PY25:
+        from os.path import relpath
 
     basestring = unicode = str
 
@@ -84,5 +103,27 @@ else:
     def dictvalues(d):
         return d.values()
 
-if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
-    PY25 = True
+    tostring = ET.tostring
+
+if PY25:
+    import posixpath
+
+    # Taken from http://jimmyg.org/work/code/barenecessities/index.html
+    # (MIT license)
+    def relpath(path, start=posixpath.curdir):
+        """Return a relative version of a path"""
+        if not path:
+            raise ValueError("no path specified")
+        start_list = posixpath.abspath(start).split(posixpath.sep)
+        path_list = posixpath.abspath(path).split(posixpath.sep)
+        # Work out how much of the filepath is shared by start and path.
+        i = len(posixpath.commonprefix([start_list, path_list]))
+        rel_list = [posixpath.pardir] * (len(start_list) - i) + path_list[i:]
+        if not rel_list:
+            return posixpath.curdir
+        return posixpath.join(*rel_list)
+
+if PY32:
+    from imp import reload
+else:
+    from __builtin__ import reload

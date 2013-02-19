@@ -21,27 +21,21 @@ from __future__ import with_statement
 
 import sys
 import base64
-import hmac
 import os
-import time
 import copy
-from datetime import datetime
 
-from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.aws import AWSBaseResponse
+from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, StorageSnapshot
+from libcloud.compute.base import NodeImage, StorageVolume
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -155,6 +149,20 @@ INSTANCE_TYPES = {
         'ram': 63488,
         'disk': 3370,
         'bandwidth': None
+    },
+    'cr1.8xlarge': {
+        'id': 'cr1.8xlarge',
+        'name': 'High Memory Cluster Eight Extra Large',
+        'ram': 244000,
+        'disk': 240,
+        'bandwidth': None
+    },
+    'hs1.8xlarge': {
+        'id': 'hs1.8xlarge',
+        'name': 'High Storage Eight Extra Large Instance',
+        'ram': 119808,
+        'disk': 48000,
+        'bandwidth': None
     }
 }
 
@@ -178,7 +186,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'cc1.4xlarge',
             'cc2.8xlarge',
-            'cg1.4xlarge'
+            'cg1.4xlarge',
+            'cr1.8xlarge',
+            'hs1.8xlarge'
         ]
     },
     'us-west-1': {
@@ -194,6 +204,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -229,6 +241,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge'
@@ -247,6 +261,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -264,6 +280,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -299,6 +317,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -316,7 +336,7 @@ REGION_DETAILS = {
 }
 
 VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
-VALID_EC2_DATACENTERS.remove('nimbus')
+VALID_EC2_DATACENTERS = [d for d in VALID_EC2_DATACENTERS if d != 'nimbus']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -366,56 +386,14 @@ class EC2Response(AWSBaseResponse):
         return "\n".join(err_list)
 
 
-class EC2Connection(ConnectionUserAndKey):
+class EC2Connection(SignedAWSConnection):
     """
     Represents a single connection to the EC2 Endpoint.
     """
 
+    version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
-
-    def add_default_params(self, params):
-        params['SignatureVersion'] = '2'
-        params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
-        params['Version'] = API_VERSION
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                            time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
-        return params
-
-    def _get_aws_auth_param(self, params, secret_key, path='/'):
-        """
-        Creates the signature required for AWS, per
-        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +
-                       CanonicalizedQueryString <from the preceding step>
-        """
-        keys = list(params.keys())
-        keys.sort()
-        pairs = []
-        for key in keys:
-            pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(params[key], safe='-_~'))
-
-        qs = '&'.join(pairs)
-
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
-
-        string_to_sign = '\n'.join(('GET', hostname, path, qs))
-
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign),
-                     digestmod=sha256).digest()
-        )
-        return b64_hmac.decode('utf-8')
 
 
 class ExEC2AvailabilityZone(object):
@@ -450,7 +428,7 @@ class BaseEC2NodeDriver(NodeDriver):
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
-        'shutting-down': NodeState.TERMINATED,
+        'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
 
@@ -563,9 +541,7 @@ class BaseEC2NodeDriver(NodeDriver):
                 'clienttoken': findattr(element=element, xpath="clientToken",
                                         namespace=NAMESPACE),
                 'groups': groups,
-                'tags': tags,
-                'architecture': findattr(element=element, xpath="architecture",
-                                         namespace=NAMESPACE),
+                'tags': tags
             }
         )
         return n
@@ -614,47 +590,15 @@ class BaseEC2NodeDriver(NodeDriver):
         )
         return n
 
-    def _to_volumes(self, object, xpath):
-        return [self._to_volume(el, '')
-                for el in object.findall(fixxpath(xpath=xpath,
-                                                  namespace=NAMESPACE))]
-
     def _to_volume(self, element, name):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
-        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
-        device = findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE)
-        created = findtext(element=element, xpath='createTime', namespace=NAMESPACE)
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
-                             driver=self,
-                             extra={'state': state,
-                                    'device': device,
-                                    'created': datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
-                             })
-
-    def _to_snapshots(self, object, xpath):
-        return [self._to_snapshot(el, '')
-                for el in object.findall(fixxpath(xpath=xpath,
-                                                  namespace=NAMESPACE))]
-
-    def _to_snapshot(self, element, name):
-        snapId = findtext(element=element, xpath='snapshotId',
-                          namespace=NAMESPACE)
-        status = findtext(element=element, xpath='status',
-                          namespace=NAMESPACE)
-        size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
-        description = findtext(element=element, xpath='description', namespace=NAMESPACE)
-        created = findtext(element=element, xpath='startTime', namespace=NAMESPACE)
-        return StorageSnapshot(id=snapId,
-                               size=int(size),
-                               description=description,
-                               driver=self,
-                               extra={'state': status,
-                                      'created': datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')})
+                             driver=self)
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -700,12 +644,24 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None, owners=None):
+    def list_images(self, location=None, ex_image_ids=None):
+        """
+        List all images
+
+        Ex_image_ids parameter is used to filter the list of
+        images that should be returned. Only the images
+        with the corresponding image ids will be returned.
+
+        @param      ex_image_ids: List of C{NodeImage.id}
+        @type       ex_image_ids: C{list} of C{str}
+
+        @rtype: C{list} of L{NodeImage}
+        """
         params = {'Action': 'DescribeImages'}
-        if isinstance(owners, list):
-            params.update(dict([('Owner.%s' % id, owner) for id, owner in enumerate(owners)]))
-        elif isinstance(owners, str):
-            params.update({'Owner.0': owners})
+
+        if ex_image_ids:
+            params.update(self._pathlist('ImageId', ex_image_ids))
+
         images = self._to_images(
             self.connection.request(self.path, params=params).object
         )
@@ -759,88 +715,6 @@ class BaseEC2NodeDriver(NodeDriver):
 
         self.connection.request(self.path, params=params)
         return True
-
-    def ex_register_image(self, snapshot, name, arch='i386', description=None, kernelid=None, ramdiskid=None,
-                          blocks_maps=None):
-        """
-        Register image from snapshot
-        """
-
-        params = {
-            'Action': 'RegisterImage',
-            'Name': name,
-            'Architecture': arch,
-            'RootDeviceName': '/dev/sda1',
-            'BlockDeviceMapping.1.DeviceName': '/dev/sda1',
-            'BlockDeviceMapping.1.Ebs.SnapshotId': snapshot.id,
-        }
-        if blocks_maps:
-            params.update(blocks_maps)
-        if description:
-            params.update({'Description': description})
-        if kernelid:
-            params.update({'KernelId': kernelid})
-        if ramdiskid:
-            params.update({'RamdiskId': ramdiskid})
-        response = self.connection.request(self.path, params=params)
-        imageId = findtext(element=response.object, xpath='imageId',
-                                          namespace=NAMESPACE)
-        return imageId
-
-    def ex_delete_image(self, image):
-        params  = {
-            'Action': 'DeregisterImage',
-            'ImageId': image.id
-        }
-        request = self.connection.request(self.path, params=params)
-        element = findtext(element=request.object, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
-
-
-    def ex_list_volumes(self, node=None):
-        params = {
-            'Action': 'DescribeVolumes',
-        }
-        if node:
-            params.update({'Filter.1.Name': 'attachment.instance-id',
-                           'Filter.1.Value.1': node.id})
-        request = self.connection.request(self.path, params=params)
-        volumes = self._to_volumes(request.object, 'volumeSet/item')
-        return volumes
-
-    def ex_create_snapshot(self, volume, description=None):
-        params = {
-            'Action': 'CreateSnapshot',
-            'VolumeId': volume.id,
-        }
-        if description:
-            params.update({'Description': description})
-        request = self.connection.request(self.path, params=params)
-        snapshot = self._to_snapshot(request.object, name='')
-        return snapshot
-
-    def ex_delete_snapshot(self, snapshot):
-        params = {
-            'Action': 'DeleteSnapshot',
-            'SnapshotId': snapshot.id
-        }
-        request = self.connection.request(self.path, params=params)
-        element = findtext(element=request.object, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
-
-    def ex_list_snapshots(self, snapshot=None, owner='self'):
-        params = {
-            'Action': 'DescribeSnapshots'
-        }
-        if snapshot:
-            params.update({'SnapshotId': snapshot.id})
-        if owner:
-            params.update({'Owner': owner})
-        request = self.connection.request(self.path, params=params)
-        snapshots = self._to_snapshots(request.object, 'snapshotSet/item')
-        return snapshots
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
@@ -902,20 +776,6 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyName': key_name,
             'keyFingerprint': key_fingerprint,
         }
-
-    def ex_delete_keypair(self, name):
-        """
-        Delete keypair
-        @param name: The name of the keypair to Delete
-        """
-        params = {
-            'Action': 'DeleteKeyPair',
-            'KeyName': name
-        }
-        response = self.connection.request(self.path, params=params).object
-        result = findtext(element=response, xpath='return',
-                            namespace=NAMESPACE)
-        return True if result == 'true' else False
 
     def ex_describe_all_keypairs(self):
         """
@@ -1369,33 +1229,6 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
-    def ex_modify_image_attribute(self, image_id, attributes):
-        """
-        Modify image attributes.
-        A list of valid attributes can be found at http://goo.gl/Ne9Bv
-
-        @param      image_id: Image id
-        @type       image_id: L{str}
-
-        @param      attributes: Dictionary with node attributes
-        @type       attributes: C{dict}
-
-        @return: True on success, False otherwise.
-        @rtype: C{bool}
-        """
-        attributes = attributes or {}
-        attributes.update({'ImageId': image_id})
-
-        params = {'Action': 'ModifyImageAttribute'}
-        params.update(attributes)
-
-        result = self.connection.request(self.path,
-            params=params.copy()).object
-
-        element = findtext(element=result, xpath='return',
-            namespace=NAMESPACE)
-        return element == 'true'
-
     def ex_change_node_size(self, node, new_size):
         """
         Change the node size.
@@ -1444,6 +1277,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_clienttoken: Unique identifier to ensure idempotency
         @type       ex_clienttoken: C{str}
+
+        @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
+                    mappings. Example:
+                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+        @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1480,6 +1318,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
+
+        if 'ex_blockdevicemappings' in kwargs:
+            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
+                    mapping['DeviceName']
+                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
+                    mapping['VirtualName']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
@@ -1559,7 +1404,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
-        'shutting-down': NodeState.TERMINATED,
+        'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
 
@@ -1656,6 +1501,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
     """
 
     name = 'Eucalyptus'
+    website = 'http://www.eucalyptus.com/'
     api_name = 'ec2_us_east'
     region_name = 'us-east-1'
     connectionCls = EucConnection
@@ -1700,6 +1546,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
 
     type = Provider.NIMBUS
     name = 'Nimbus'
+    website = 'http://www.nimbusproject.org/'
     country = 'Private'
     api_name = 'nimbus'
     region_name = 'nimbus'

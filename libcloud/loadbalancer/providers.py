@@ -33,7 +33,9 @@ DRIVERS = {
         Provider.NINEFOLD:
             ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
         Provider.BRIGHTBOX:
-            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver')
+            ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
+        Provider.ELB:
+            ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver')
 }
 
 

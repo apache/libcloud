@@ -160,6 +160,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'REBUILD': NodeState.PENDING,
         'ACTIVE': NodeState.RUNNING,
         'SUSPENDED': NodeState.TERMINATED,
+        'DELETED': NodeState.TERMINATED,
         'QUEUE_RESIZE': NodeState.PENDING,
         'PREP_RESIZE': NodeState.PENDING,
         'VERIFY_RESIZE': NodeState.RUNNING,
@@ -921,6 +922,112 @@ class OpenStackNetwork(object):
                self.name, self.cidr,)
 
 
+class OpenStackSecurityGroup(object):
+    """
+    A Security Group.
+    """
+
+    def __init__(self, id, tenant_id, name, description, driver, rules=None,
+                 extra=None):
+        """
+        Constructor.
+
+        @keyword    id: Group id.
+        @type       id: C{str}
+
+        @keyword    tenant_id: Owner of the security group.
+        @type       tenant_id: C{str}
+
+        @keyword    name: Human-readable name for the security group. Might
+                          not be unique.
+        @type       name: C{str}
+
+        @keyword    description: Human-readable description of a security
+                                 group.
+        @type       description: C{str}
+
+        @keyword    rules: Rules associated with this group.
+        @type       description: C{list} of L{OpenStackSecurityGroupRule}
+
+        @keyword    extra: Extra attributes associated with this group.
+        @type       extra: C{dict}
+        """
+        self.id = id
+        self.tenant_id = tenant_id
+        self.name = name
+        self.description = description
+        self.driver = driver
+        self.rules = rules or []
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<OpenStackSecurityGroup id=%s tenant_id=%s name=%s \
+        description=%s>' % (self.id, self.tenant_id, self.name,
+                            self.description))
+
+
+class OpenStackSecurityGroupRule(object):
+    """
+    A Rule of a Security Group.
+    """
+
+    def __init__(self, id, parent_group_id, ip_protocol, from_port, to_port,
+                 driver, ip_range=None, group=None, tenant_id=None,
+                 extra=None):
+        """
+        Constructor.
+
+        @keyword    id: Rule id.
+        @type       id: C{str}
+
+        @keyword    parent_group_id: ID of the parent security group.
+        @type       parent_group_id: C{str}
+
+        @keyword    ip_protocol: IP Protocol (icmp, tcp, udp, etc).
+        @type       ip_protocol: C{str}
+
+        @keyword    from_port: Port at start of range.
+        @type       from_port: C{int}
+
+        @keyword    to_port: Port at end of range.
+        @type       to_port: C{int}
+
+        @keyword    ip_range: CIDR for address range.
+        @type       ip_range: C{str}
+
+        @keyword    group: Name of a source security group to apply to rule.
+        @type       group: C{str}
+
+        @keyword    tenant_id: Owner of the security group.
+        @type       tenant_id: C{str}
+
+        @keyword    extra: Extra attributes associated with this rule.
+        @type       extra: C{dict}
+        """
+        self.id = id
+        self.parent_group_id = parent_group_id
+        self.ip_protocol = ip_protocol
+        self.from_port = from_port
+        self.to_port = to_port
+        self.driver = driver
+        self.ip_range = ''
+        self.group = {}
+
+        if group is None:
+            self.ip_range = ip_range
+        else:
+            self.group = {'name': group, 'tenant_id': tenant_id}
+
+        self.tenant_id = tenant_id
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<OpenStackSecurityGroupRule id=%s parent_group_id=%s \
+                ip_protocol=%s from_port=%s to_port=%s>' % (self.id,
+                self.parent_group_id, self.ip_protocol, self.from_port,
+                self.to_port))
+
+
 class OpenStack_1_1_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_1_Response
     accept_format = 'application/json'
@@ -967,6 +1074,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         @keyword    networks: The server is launched into a set of Networks.
         @type       networks: L{OpenStackNetwork}
+
+        @keyword    ex_security_groups: List of security groups to assign to
+                                        the node
+        @type       ex_security_groups: C{list} of L{OpenStackSecurityGroup}
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -979,7 +1090,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         server_resp = self.connection.request(
             '/servers/%s' % create_response['id'])
         server_object = server_resp.object['server']
-        server_object['adminPass'] = create_response['adminPass']
+
+        # adminPass is not always present
+        # http://docs.openstack.org/essex/openstack-compute/admin/content/configuring-compute-API.html#d6e1833
+        server_object['adminPass'] = create_response.get('adminPass', None)
 
         return self._to_node(server_object)
 
@@ -1037,6 +1151,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             networks = kwargs['networks']
             networks = [{'uuid': network.id} for network in networks]
             server_params['networks'] = networks
+
+        if 'ex_security_groups' in kwargs:
+            server_params['security_groups'] = []
+            for security_group in kwargs['ex_security_groups']:
+                name = security_group.name
+                server_params['security_groups'].append({'name': name})
 
         if 'name' in kwargs:
             server_params['name'] = kwargs.get('name')
@@ -1275,6 +1395,149 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='DELETE')
         return resp.status == httplib.ACCEPTED
 
+    def _to_security_group_rules(self, obj):
+        return [self._to_security_group_rule(security_group_rule) for
+                security_group_rule in obj]
+
+    def _to_security_group_rule(self, obj):
+        ip_range = group = tenant_id = None
+        if obj['group'] == {}:
+            ip_range = obj['ip_range'].get('cidr', None)
+        else:
+            group = obj['group'].get('name', None)
+            tenant_id = obj['group'].get('tenant_id', None)
+
+        return OpenStackSecurityGroupRule(id=obj['id'],
+                                          parent_group_id=
+                                          obj['parent_group_id'],
+                                          ip_protocol=obj['ip_protocol'],
+                                          from_port=obj['from_port'],
+                                          to_port=obj['to_port'],
+                                          driver=self,
+                                          ip_range=ip_range,
+                                          group=group,
+                                          tenant_id=tenant_id)
+
+    def _to_security_groups(self, obj):
+        security_groups = obj['security_groups']
+        return [self._to_security_group(security_group) for security_group in
+                security_groups]
+
+    def _to_security_group(self, obj):
+        return OpenStackSecurityGroup(id=obj['id'],
+                                      tenant_id=obj['tenant_id'],
+                                      name=obj['name'],
+                                      description=obj.get('description', ''),
+                                      rules=self._to_security_group_rules(
+                                      obj.get('rules', [])),
+                                      driver=self)
+
+    def ex_list_security_groups(self):
+        """
+        Get a list of Security Groups that are available.
+
+        @rtype: C{list} of L{OpenStackSecurityGroup}
+        """
+        return self._to_security_groups(
+            self.connection.request('/os-security-groups').object)
+
+    def ex_get_node_security_groups(self, node):
+        """
+        Get Security Groups of the specified server.
+
+        @rtype: C{list} of L{OpenStackSecurityGroup}
+        """
+        return self._to_security_groups(
+            self.connection.request('/servers/%s/os-security-groups' %
+                                    (node.id)).object)
+
+    def ex_create_security_group(self, name, description):
+        """
+        Create a new Security Group
+
+        @param name: Name of the new Security Group
+        @type  name: C{str}
+
+        @param description: Description of the new Security Group
+        @type  description: C{str}
+
+        @rtype: L{OpenStackSecurityGroup}
+        """
+        return self._to_security_group(self.connection.request(
+            '/os-security-groups', method='POST',
+            data={'security_group': {'name': name, 'description': description}}
+        ).object['security_group'])
+
+    def ex_delete_security_group(self, security_group):
+        """
+        Delete a Security Group.
+
+        @param security_group: Security Group should be deleted
+        @type  security_group: L{OpenStackSecurityGroup}
+
+        @rtype: C{bool}
+        """
+        resp = self.connection.request('/os-security-groups/%s' %
+                                       (security_group.id),
+                                       method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
+    def ex_create_security_group_rule(self, security_group, ip_protocol,
+                                      from_port, to_port, cidr=None,
+                                      source_security_group=None):
+        """
+        Create a new Rule in a Security Group
+
+        @param security_group: Security Group in which to add the rule
+        @type  security_group: L{OpenStackSecurityGroup}
+
+        @param ip_protocol: Protocol to which this rule applies
+                            Examples: tcp, udp, ...
+        @type  ip_protocol: C{str}
+
+        @param from_port: First port of the port range
+        @type  from_port: C{int}
+
+        @param to_port: Last port of the port range
+        @type  to_port: C{int}
+
+        @param cidr: CIDR notation of the source IP range for this rule
+        @type  cidr: C{str}
+
+        @param source_security_group: Existing Security Group to use as the
+                                      source (instead of CIDR)
+        @type  source_security_group: L{OpenStackSecurityGroup
+
+        @rtype: L{OpenStackSecurityGroupRule}
+        """
+        source_security_group_id = None
+        if type(source_security_group) == OpenStackSecurityGroup:
+            source_security_group_id = source_security_group.id
+
+        return self._to_security_group_rule(self.connection.request(
+            '/os-security-group-rules', method='POST',
+            data={'security_group_rule': {
+            'ip_protocol': ip_protocol,
+            'from_port': from_port,
+            'to_port': to_port,
+            'cidr': cidr,
+            'group_id': source_security_group_id,
+            'parent_group_id': security_group.id}}
+        ).object['security_group_rule'])
+
+    def ex_delete_security_group_rule(self, rule):
+        """
+        Delete a Rule from a Security Group.
+
+        @param rule: Rule should be deleted
+        @type  rule: L{OpenStackSecurityGroupRule}
+
+        @rtype: C{bool}
+        """
+        resp = self.connection.request('/os-security-group-rules/%s' %
+                                       (rule.id), method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
     def ex_get_size(self, size_id):
         """
         Get a NodeSize
@@ -1333,16 +1596,25 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_node(obj['server'])
 
     def _to_node(self, api_node):
+        public_networks_labels = ['public', 'internet']
+
+        public_ips, private_ips = [], []
+
+        for label, values in api_node['addresses'].items():
+            ips = [v['addr'] for v in values]
+
+            if label in public_networks_labels:
+                public_ips.extend(ips)
+            else:
+                private_ips.extend(ips)
+
         return Node(
             id=api_node['id'],
             name=api_node['name'],
             state=self.NODE_STATE_MAP.get(api_node['status'],
                                           NodeState.UNKNOWN),
-            public_ips=[addr_desc['addr'] for addr_desc in
-                        chain(api_node['addresses'].get('public', []),
-                              api_node['addresses'].get('internet', []))],
-            private_ips=[addr_desc['addr'] for addr_desc in
-                         api_node['addresses'].get('private', [])],
+            public_ips=public_ips,
+            private_ips=private_ips,
             driver=self,
             extra=dict(
                 hostId=api_node['hostId'],
@@ -1352,9 +1624,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 imageId=api_node['image']['id'],
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
-                    link['rel'] == 'self'),
+                         link['rel'] == 'self'),
                 metadata=api_node['metadata'],
-                password=api_node.get('adminPass'),
+                password=api_node.get('adminPass', None),
                 created=api_node['created'],
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),

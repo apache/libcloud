@@ -29,6 +29,7 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 from os.path import split as psplit
+from os.path import join as pjoin
 
 
 class BaseSSHClient(object):
@@ -120,6 +121,7 @@ class BaseSSHClient(object):
 
 
 class ParamikoSSHClient(BaseSSHClient):
+
     """
     A SSH Client powered by Paramiko.
     """
@@ -179,6 +181,19 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp.close()
 
     def run(self, cmd):
+        if cmd[0] != '/':
+            # If 'cmd' based on relative path,
+            # set the absoute path joining the HOME path
+            sftp = self.client.open_sftp()
+            # Chdir to its own directory is mandatory because otherwise
+            # the 'getcwd()' method returns None
+            sftp.chdir('.')
+            cwd = sftp.getcwd()
+            sftp.close()
+
+            # Join the command to the current path
+            cmd = pjoin(cwd, cmd)
+
         # based on exec_command()
         bufsize = -1
         t = self.client.get_transport()

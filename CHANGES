@@ -11,7 +11,7 @@ Changes with Apache Libcloud in development:
 
       Existing list_* methods which previously used LazyList class are
       preserving the old behavior and new iterate_* methods which use a new
-      generator based approach have been added.
+      generator based approach have been added. (LIBCLOUD-254)
       [Mahendra M]
 
     - Replace old ENUM style provider constants and replace them with a string
@@ -19,6 +19,24 @@ Changes with Apache Libcloud in development:
       This change allows users to dynamically register new drivers using a new
       set_driver method. (LIBCLOUD-255)
       [Mahendra M]
+
+    - Allow user to explicitly specify which CA file is used for verifying
+      the server certificate by setting 'SSL_CERT_FILE' environment variable.
+
+      Note: When this variable is specified, the specified path is the only
+      CA file which is used to verifying the server certificate. (LIBCLOUD-283)
+      [Tomaz Muraus, Erinn Looney-Triggs]
+
+    - Add a common module (libcloud.common.xmlrpc) for handling XML-RPC
+      requests using Libcloud http layer.
+
+      Also refactor existing drivers which use xmlrpclib directly (VCL, Gandi,
+      Softlayer) to use this module.
+
+      This change allows drivers to support LIBCLOUD_DEBUG and SSL certificate
+      validation functionality. Previously they have bypassed Libcloud http
+      layer so this functionality was not available. (LIBCLOUD-288)
+      [John Carr]
 
   *) Compute
 
@@ -47,6 +65,7 @@ Changes with Apache Libcloud in development:
       - Expose generic query method (ex_query)
       - Provide functionality to get and set control access for vApps. This way
         created vApps can be shared between users/groups or everyone.
+     (LIBCLOUD-251)
      [Michal Galet]
 
    - Update EC2 pricing data to reflect new, lower prices -
@@ -57,7 +76,7 @@ Changes with Apache Libcloud in development:
      the code to make it easier to maintain.
      [Tomaz Muraus]
 
-   - Add a new driver for HostVirtual (http://www.vr.org) provider. 
+   - Add a new driver for HostVirtual (http://www.vr.org) provider.
      (LIBCLOUD-249)
      [Dinesh Bhoopathy]
 
@@ -68,9 +87,94 @@ Changes with Apache Libcloud in development:
    - Add a new driver for new Asia Pacific (Sydney) EC2 region.
      [Tomaz Muraus]
 
+   - Add support for managing security groups to the OpenStack driver. This
+     patch adds the following extension methods:
+     - ex_list_security_groups, ex_get_node_security_groups methods
+     - ex_create_security_group, ex_delete_security_group
+     - ex_create_security_group_rule, ex_delete_security_group_rule
+     (LIBCLOUD-253)
+     [L. Schaub]
+
+   - Modify ElasticStack driver class to pass 'vnc auto' instead of
+     'vnc:ip auto' argument to the API when creating a server.
+     It looks like 'vnc:ip' has been replaced with 'vnc'.
+     [Rick Copeland, Tomaz Muraus]
+
+   - Add new EC2 instance type - High Storage Eight Extra Large Instance
+     (hs1.8xlarge).
+     [Tomaz Muraus]
+
+   - Map 'shutting-down' node state in EC2 driver to UNKNOWN. Previously
+     it was mapped to TERMINATED. (LIBCLOUD-280)
+
+     Note: This change is backward incompatible which means you need to update
+     your code if you rely on the old behavior.
+     [Tomaz Muraus, Marcin Kuzminski]
+
+   - Change _wait_until_running method so it supports waiting on multiple nodes
+     and make it public (wait_until_running). (LIBCLOUD-274)
+     [Nick Bailey]
+
+   - Add new EC2 instance type - High Memory Cluster Eight Extra Large.
+     (cr1.8xlarge).
+     [Tomaz Muraus]
+
+   - Add new driver for Abiquo provider - http://www.abiquo.com (LIBCLOUD-250).
+     [Jaume Devesa]
+
+   - Allow user to pass 'ex_blockdevicemappings' kwarg to the EC2 driver
+     'create_node' method. (LIBCLOUD-282)
+     [Joe Miller, Tomaz Muraus]
+
+   - Improve error handling in the Brightbox driver.
+     [Tomaz Muraus]
+
+   - Fix the ScriptDeployment step to work correctly if user provides a
+     relative path for the script argument. (LIBCLOUD-278)
+     [Jaume Devesa]
+
+   - Fix Softlayer driver and make sure all the code is up to date and works
+     with the latest version of the actual Softlayer deployment (v3).
+     (LIBCLOUD-287)
+     [Kevin McDonald]
+
+   - Update EC2 driver, m3 instance types are now available in all the regions
+     except Brazil.
+
+     Also update pricing to reflect new (decreased) prices.
+     [Tomaz Muraus]
+
+   - Minor improvements in the HostVirtual driver and add new ex_get_node and
+     ex_build_node extension method. (LIBCLOUD-249)
+     [Dinesh Bhoopathy]
+
+   - Add ex_destroy_image method to IBM SCE driver. (LIBCLOUD-291)
+     [Perry Zou]
+
+   - Add the following new regions to the ElasticHosts driver: sjc-c, syd-v,
+     hkg-e. (LIBCLOUD-293)
+     [Tomaz Muraus]
+
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response.
+     [Gavin McCance, Tomaz Muraus]
+
+   - Allow users to filter images returned by the list_images method in the EC2
+     driver by providing ex_image_ids argument. (LIBCLOUD-294)
+     [Chris Psaltis, Joseph Hall]
+
+   - Add support for OpenNebula 3.8. (LIBCLOUD-295)
+     [Guillaume ZITTA]
+
+   -  Improve public and private IP address handling in OpenStack 1.1 driver.
+      Assume every IP address which doesn't have a label "public" or "internet"
+      is private. (LIBCLOUD-297)
+      [Grischa Meyer, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
+      (LIBCLOUD-252, LIBCLOUD-258, LIBCLOUD-265, LIBCLOUD-273)
       [Mahendra M]
 
     - Fix a bug which caused the connection to not be closed when using Python
@@ -95,6 +199,20 @@ Changes with Apache Libcloud in development:
       future.
       [Tomaz Muraus]
 
+    - Support for multipart uploads and other improvemetns in the S3 driver
+      so it can more easily be re-used with other implementations (e.g. Google
+      Storage, etc.).
+
+      Also default to a multipart upload when using upload_object_via_stream.
+      This methods is more efficient compared to old approach because it only
+      requires buffering a single multipart chunk (5 MB) in memory.
+      (LIBCLOUD-269)
+      [Mahendra M]
+
+    - Add new driver for Windows Azure Storage with support for block and page
+      blobs. (LIBCLOUD-80)
+      [Mahendra M]
+
   *) DNS
 
     - Update 'if type' checks in the update_record methods to behave correctly
@@ -104,6 +222,49 @@ Changes with Apache Libcloud in development:
 
     - New driver for HostVirtual provider (www.vr.org). (LIBCLOUD-249)
       [Dinesh Bhoopathy]
+
+    - Finish Amazon Route53 driver. (LIBCLOUD-132)
+      [John Carr]
+
+    - Add new driver for Gandi provider (https://www.gandi.net). (LIBCLOUD-281)
+      [John Carr]
+
+  *) Load-Balancer
+
+    - Add new driver for AWS Elastic Load Balancing service. (LIBCLOUD-169)
+      [John Carr]
+
+Changes with Apache Libcloud 0.11.4:
+
+  *) General
+
+    - Fix some of tests failures which happened in Python 3.3 due to randomized
+      dictionary ordering. (LIBCLOUD-245)
+      [Tomaz Muraus]
+
+  *) Compute
+
+    - Fix a bug where a numeric instead of a string value was used for the
+      content-length header in VCloud driver. (LIBCLOUD-256)
+      [Brian DeGeeter, Tomaz Muraus]
+
+  *) Storage
+
+    - Don't ignore ex_force_service_region argument in the CloudFiles driver.
+      (LIBCLOUD-260)
+      [Dan Di Spaltro]
+
+    - Fix a bug which caused the connection to not be closed when using Python
+      2.6 and calling get_object on an object which doesn't exist in the S3
+      driver. (LIBCLOUD-257)
+      [John Carr]
+
+  *) DNS
+
+    - Update 'if type' checks in the update_record methods to behave correctly
+      if users passes in RecordType.A with a value of 0 - if type is not None.
+      (LIBCLOUD-247)
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.11.3:
 

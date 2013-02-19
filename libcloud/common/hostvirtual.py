@@ -19,6 +19,7 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.base import ConnectionKey, JsonResponse
+from libcloud.compute.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 
 API_HOST = 'www.vr.org'
@@ -57,13 +58,10 @@ class HostVirtualResponse(JsonResponse):
         return data
 
     def parse_error(self):
-        context = self.connection.context
         data = self.parse_body()
-        status = int(self.status)
 
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError(
-                data['error']['code'] + ': ' + data['error']['message'])
+            raise InvalidCredsError('%(code)s:%(message)s' % (data['error']))
         elif self.status == httplib.PRECONDITION_FAILED:
             raise HostVirtualException(
                 data['error']['code'], data['error']['message'])

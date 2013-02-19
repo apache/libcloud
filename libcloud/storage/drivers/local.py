@@ -31,6 +31,7 @@ except ImportError:
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
+from libcloud.utils.py3 import relpath
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.common.types import LibcloudError
@@ -76,6 +77,7 @@ class LocalStorageDriver(StorageDriver):
     connectionCls = Connection
     name = 'Local Storage'
     website = 'http://example.com'
+    hash_type = 'md5'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
@@ -169,13 +171,20 @@ class LocalStorageDriver(StorageDriver):
             raise ObjectDoesNotExistError(value=None, driver=self,
                                           object_name=object_name)
 
+        # Make a hash for the file based on the metadata. We can safely
+        # use only the mtime attribute here. If the file contents change,
+        # the underlying file-system will change mtime
+        data_hash = self._get_hash_function()
+        data_hash.update(str(stat.st_mtime))
+        data_hash = data_hash.hexdigest()
+
         extra = {}
         extra['creation_time'] = stat.st_ctime
         extra['access_time'] = stat.st_atime
         extra['modify_time'] = stat.st_mtime
 
         return Object(name=object_name, size=stat.st_size, extra=extra,
-                      driver=self, container=container, hash=None,
+                      driver=self, container=container, hash=data_hash,
                       meta_data=None)
 
     def iterate_containers(self):
@@ -207,7 +216,7 @@ class LocalStorageDriver(StorageDriver):
 
             for name in files:
                 full_path = os.path.join(folder, name)
-                object_name = os.path.relpath(full_path, start=cpath)
+                object_name = relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
     def iterate_container_objects(self, container):

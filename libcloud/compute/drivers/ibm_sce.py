@@ -26,6 +26,7 @@ import base64
 import time
 
 from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
@@ -329,7 +330,7 @@ class IBMNodeDriver(NodeDriver):
         url = REST_BASE + '/instances/%s' % (node.id)
         status = int(self.connection.request(action=url,
                                              method='DELETE').status)
-        return status == 200
+        return status == httplib.OK
 
     def destroy_volume(self, volume):
         """
@@ -341,6 +342,21 @@ class IBMNodeDriver(NodeDriver):
         @rtype: C{bool}
         """
         url = REST_BASE + '/storage/%s' % (volume.id)
+        status = int(self.connection.request(action=url,
+                                             method='DELETE').status)
+        return status == httplib.OK
+
+    def ex_destroy_image(self,image):
+        """
+        Destroys an image.
+
+        @param      image: Image to be destroyed
+        @type       image: L{NodeImage}
+
+        @return: C{bool}
+        """
+
+        url = REST_BASE + '/offerings/image/%s' % (image.id)
         status = int(self.connection.request(action=url,
                                              method='DELETE').status)
         return status == 200

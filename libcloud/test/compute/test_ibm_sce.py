@@ -187,6 +187,12 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         IBMMockHttp.type = 'DESTROY'
         ret = self.driver.destroy_volume(vols[0])
         self.assertTrue(ret)
+        
+    def test_ex_destroy_image(self):
+        image = self.driver.list_images()
+        IBMMockHttp.type = 'DESTROY'
+        ret = self.driver.ex_destroy_image(image[0])
+        self.assertTrue(ret)
 
     def test_detach_volume(self):
         nodes = self.driver.list_nodes()
@@ -278,7 +284,11 @@ class IBMMockHttp(MockHttp):
     def _computecloud_enterprise_api_rest_20100331_storage_39281_DESTROY(self, method, url, body, headers):
         body = self.fixtures.load('destroy_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
+        
+    def _computecloud_enterprise_api_rest_20100331_offerings_image_2_DESTROY(self, method, url, body, headers):
+        body = self.fixtures.load('destroy_image.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])    
+    
     def _computecloud_enterprise_api_rest_20100331_instances_26557_DETACH(self, method, url, body, headers):
         body = self.fixtures.load('detach_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

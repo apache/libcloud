@@ -631,6 +631,56 @@ class OpenNebula_3_2_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         self.assertEqual(size.bandwidth, None)
         self.assertEqual(size.price, None)
 
+class OpenNebula_3_8_Tests(unittest.TestCase, OpenNebulaCaseMixin):
+    """
+    OpenNebula.org test suite for OpenNebula v3.8.
+    """
+
+    def setUp(self):
+        """
+        Setup test environment.
+        """
+        OpenNebulaNodeDriver.connectionCls.conn_classes = (
+            OpenNebula_3_8_MockHttp, OpenNebula_3_8_MockHttp)
+        self.driver = OpenNebulaNodeDriver(*OPENNEBULA_PARAMS + ('3.8',))
+
+    def test_list_sizes(self):
+        """
+        Test ex_list_networks functionality.
+        """
+        sizes = self.driver.list_sizes()
+
+        self.assertEqual(len(sizes), 3)
+        size = sizes[0]
+        self.assertEqual(size.id, '1')
+        self.assertEqual(size.name, 'small')
+        self.assertEqual(size.ram, 1024)
+        self.assertEqual(size.cpu, 1)
+        self.assertEqual(size.vcpu, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.price, None)
+
+        size = sizes[1]
+        self.assertEqual(size.id, '2')
+        self.assertEqual(size.name, 'medium')
+        self.assertEqual(size.ram, 4096)
+        self.assertEqual(size.cpu, 4)
+        self.assertEqual(size.vcpu, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.price, None)
+
+        size = sizes[2]
+        self.assertEqual(size.id, '3')
+        self.assertEqual(size.name, 'large')
+        self.assertEqual(size.ram, 8192)
+        self.assertEqual(size.cpu, 8)
+        self.assertEqual(size.vcpu, None)
+        self.assertEqual(size.disk, None)
+        self.assertEqual(size.bandwidth, None)
+        self.assertEqual(size.price, None)
+
 
 class OpenNebula_1_4_MockHttp(MockHttp):
     """
@@ -1017,6 +1067,46 @@ class OpenNebula_3_2_MockHttp(OpenNebula_3_0_MockHttp):
         """
         if method == 'GET':
             body = self.fixtures_3_2.load('instance_type_collection.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+class OpenNebula_3_8_MockHttp(OpenNebula_3_2_MockHttp):
+    """
+    Mock HTTP server for testing v3.8 of the OpenNebula.org compute driver.
+    """
+
+    fixtures_3_8 = ComputeFileFixtures('opennebula_3_8')
+
+    def _instance_type(self, method, url, body, headers):
+        """
+        Instance type pool.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_8.load('instance_type_collection.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _instance_type_small(self, method, url, body, headers):
+        """
+        Small instance type.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_8.load('instance_type_small.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _instance_type_medium(self, method, url, body, headers):
+        """
+        Medium instance type pool.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_8.load('instance_type_medium.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _instance_type_large(self, method, url, body, headers):
+        """
+        Large instance type pool.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_8.load('instance_type_large.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
