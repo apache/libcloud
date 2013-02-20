@@ -23,7 +23,6 @@ Google Compute Engine documentation:
 developers.google.com/compute/docs
 """
 
-import json
 import getpass
 import os
 import paramiko
@@ -117,7 +116,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         self.default_network_interfaces = 'default'
 
 
-    def list_nodes(self, project=None, zone=None):
+    def list_nodes(self, project=None, location=None):
         """
         List all Google Compute Engine nodes associated with the current
         project.
@@ -127,9 +126,11 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         list_nodes = []
         if project is None:
             project = self.project
-        if zone is None:
-            zone = self.default_zone
-        req = self.request.instances().list(project=project, zone=zone).execute()
+        if location is None:
+            location = self.default_zone
+        else:
+            location = location.name
+        req = self.request.instances().list(project=project, zone=location).execute()
         items = req['items'] if 'items' in req else []
         for instance in items:
             node = self._to_node(instance)
@@ -167,7 +168,6 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         for machine_type in self.request.machineTypes().list(project=project).execute()['items']:
             size = self._to_node_size(machine_type)
             list_sizes.append(size)
-
         return list_sizes
 
     def list_locations(self, project=None):
@@ -182,7 +182,6 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         for zone in self.request.zones().list(project=project).execute()['items']:
             location = self._to_node_location(zone)
             list_locations.append(location)
-
         return list_locations
 
     def ex_get_network(self, project=None, network=None):
@@ -194,7 +193,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         return network
 
 
-    def create_node(self, name, size, image, location=None, project=None, metadata={}, **kwargs):
+    def create_node(self, name, size, image, location=None, project=None, metadata=None, **kwargs):
         """
         Create a new Google Compute Engine node.
 
@@ -216,6 +215,8 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         @param      metadata: Metadata to start node
         @type       location: L{dict}
 
+        @param      kwargs: Additional options: scopes, startup_script, startup_script_url
+
         @rtype: L{Node}
         """
         #TODO: Add metadata, script, keys. In every method use image/location instance not string!
@@ -223,7 +224,9 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
             project = self.project
         if location is None:
             location = self.default_zone
-        response = self.request.instances().insert(project=project, zone=location.name, body={
+        else:
+            location = location.name
+        body = {
             'name': name,
             'machineType': size.extra['url'],
             'networkInterfaces': [
@@ -240,13 +243,38 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
                     'type': 'EPHEMERAL',
                 }
             ],
-            'metadata': [],
+            'metadata': {'items': []},
             'disks': [],
             'image': image.name,
-        }).execute()
-        resp = self._blocking_request(response, project)
+            "serviceAccounts": [{
+                "kind": "compute#serviceAccount",
+                "email": "default",
+                "scopes": [
+                    "https://www.googleapis.com/auth/userinfo.email",
+                    "https://www.googleapis.com/auth/compute",
+                    "https://www.googleapis.com/auth/devstorage.full_control"
+                ]}],
+        }
+
+        if metadata:
+            body['metadata']['items'] = [{'key': x, 'value': metadata[x]} for x in metadata]
+        if 'startup_script_url' in kwargs:
+            body['metadata']['items'].append([{
+                'key': 'startup-script-url',
+                'value': kwargs['startup_script_url']
+            }])
+        if 'startup_script' in kwargs:
+            body['metadata']['items'].append([{
+                'key': 'startup-script',
+                'value': open(kwargs['startup_script'], 'r').read()
+            }])
+        if 'scopes' in kwargs:
+            body['serviceAccounts']['scopes'] = kwargs['scopes']
+
+        request = self.request.instances().insert(project=project, zone=location, body=body).execute()
+        response = self._blocking_request(request, project)
         if 'error' in response:
-            raise Exception('OOps! %s' % response['error'])
+            raise Exception('OOoops! %s' % response['error'])
         return self._get_node(name, project, location.name)
 
     def reboot_node(self, node):
@@ -296,7 +324,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         if project is None:
             project = self.project
         if location is None:
-            location = self.default_zone
+            location = node['zone'].rsplit('/')[-1]
         try:
             self.request.instances().delete(project=project, zone=location, instance=node.name).execute()
             return True
