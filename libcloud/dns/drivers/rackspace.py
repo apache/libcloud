@@ -240,7 +240,10 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])
-
+        
+        if 'priority' in extra:
+            data['priority'] = int(extra['priority']) 
+            
         payload = {'records': [data]}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         response = self.connection.async_request(action='/domains/%s/records'
@@ -342,7 +345,10 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
         if 'ttl' in data:
             extra['ttl'] = data['ttl']
-
+        
+        if 'priority' in data:
+            extra['priority'] = data['priority']
+            
         if 'comment' in data:
             extra['comment'] = data['comment']
 
