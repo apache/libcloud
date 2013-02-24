@@ -199,7 +199,7 @@ Changes with Apache Libcloud in development:
       future.
       [Tomaz Muraus]
 
-    - Support for multipart uploads and other improvemetns in the S3 driver
+    - Support for multipart uploads and other improvements in the S3 driver
       so it can more easily be re-used with other implementations (e.g. Google
       Storage, etc.).
 
