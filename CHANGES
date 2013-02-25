@@ -171,6 +171,10 @@ Changes with Apache Libcloud in development:
       is private. (LIBCLOUD-297)
       [Grischa Meyer, Tomaz Muraus]
 
+   - Add missing 'deletd' -> terminated mapping to OpenStack driver.
+     (LIBCLOUD-276)
+     [Jayyy V]
+
    - Fix create_node in OpenStack driver to work correctly if 'adminPass'
      attribute is not present in the response. (LIBCLOUD-292)
      [Gavin McCance, Tomaz Muraus]
