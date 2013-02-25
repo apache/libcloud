@@ -161,6 +161,10 @@ Changes with Apache Libcloud 0.12.1:
       is private. (LIBCLOUD-297)
       [Grischa Meyer, Tomaz Muraus]
 
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response. (LIBCLOUD-292)
+     [Gavin McCance, Tomaz Muraus]
+
   *) Storage
 
     - Add a new local storage driver.
