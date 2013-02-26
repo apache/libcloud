@@ -9,6 +9,12 @@ Changes with Apache Libcloud in development:
        is private. (LIBCLOUD-297)
        [Grischa Meyer, Tomaz Muraus]
 
+  *) Compute
+
+    - Allow user to specify 'priority' extra argument when creating a MX or SRV
+      record.
+      [Brian Jinwright, Tomaz Muraus]
+
 Changes with Apache Libcloud 0.12.1:
 
   *) General

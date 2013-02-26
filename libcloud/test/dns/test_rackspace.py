@@ -109,6 +109,7 @@ class RackspaceUSTests(unittest.TestCase):
         self.assertEqual(records[0].type, RecordType.A)
         self.assertEqual(records[0].data, '127.7.7.7')
         self.assertEqual(records[0].extra['ttl'], 777)
+        self.assertEqual(records[0].extra['comment'], 'lulz')
         self.assertEqual(records[0].extra['fqdn'], 'test3.%s' %
                          (records[0].zone.domain))
 
