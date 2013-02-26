@@ -16,7 +16,12 @@ import os
 import sys
 import doctest
 
-from distutils.core import setup
+from distribute_setup import use_setuptools
+#wget http://python-distribute.org/distribute_setup.py -O distribute_setup.py
+use_setuptools()
+
+from setuptools import setup, find_packages
+
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob

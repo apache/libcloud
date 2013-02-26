@@ -11,5 +11,9 @@ MANIFEST
 /.coverage
 coverage_html_report/
 .idea
-libcloud/test/secrets.py
+.cache
+*.egg
+*.egg-info
+distribute*.tar.gz
 dist/*apache-libcloud*
+libcloud/test/secrets.py
