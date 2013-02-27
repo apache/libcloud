@@ -600,7 +600,8 @@ class BaseEC2NodeDriver(NodeDriver):
                              name=name,
                              size=int(size),
                              driver=self,
-                             extra={'state': state,})
+                             extra={'state': state,
+                                    'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE)})
 
     def list_nodes(self, ex_node_ids=None):
         """
