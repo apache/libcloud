@@ -2,14 +2,20 @@
 
 Changes with Apache Libcloud in development:
 
+  *) General
+
+    - Fix Python 3.x related regressions. (LIBCLOUD-245)
+      Reported by Arfrever Frehtes Taifersar Arahesis.
+      [Tomaz Muraus]
+
   *) Compute
 
-    -  Improve public and private IP address handling in OpenStack 1.1 driver.
-       Assume every IP address which doesn't have a label "public" or "internet"
-       is private. (LIBCLOUD-297)
-       [Grischa Meyer, Tomaz Muraus]
+    - Improve public and private IP address handling in OpenStack 1.1 driver.
+      Assume every IP address which doesn't have a label "public" or "internet"
+      is private. (LIBCLOUD-297)
+      [Grischa Meyer, Tomaz Muraus]
 
-  *) Compute
+  *) DNS 
 
     - Allow user to specify 'priority' extra argument when creating a MX or SRV
       record.
