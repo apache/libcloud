@@ -594,11 +594,13 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
-                             driver=self)
+                             driver=self,
+                             extra={'state': state,})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -715,6 +717,21 @@ class BaseEC2NodeDriver(NodeDriver):
 
         self.connection.request(self.path, params=params)
         return True
+
+    def ex_describe_volumes(self, node=None):
+        params = {
+            'Action': 'DescribeVolumes'
+        }
+        if node:
+            params.update({
+                'Filter.1.Name': 'attachment.instance-id',
+                'Filter.1.Value': node.id,
+            })
+        response = self.connection.request(self.path, params=params).object
+        volumes = [self._to_volume(el, '') for el in response.findall(
+            fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
+        ]
+        return volumes
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
@@ -1252,6 +1269,18 @@ class BaseEC2NodeDriver(NodeDriver):
 
         attributes = {'InstanceType.Value': new_size.id}
         return self.ex_modify_instance_attribute(node, attributes)
+
+    def ex_modify_image_attribute(self, image, attributes):
+        attributes = attributes or {}
+        attributes.update({'ImageId': image.id})
+        params = {'Action': 'ModifyImageAttribute'}
+        params.update(attributes)
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def create_node(self, **kwargs):
         """Create a new EC2 node
