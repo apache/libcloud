@@ -57,6 +57,14 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
     host = 'rpc.gandi.net'
     endpoint = '/xmlrpc/'
 
+    def __init__(self, key, password=None):
+        # Note: Method resolution order in this case is
+        # XMLRPCConnection -> Connection and Connection doesn't take key as the
+        # first argument so we specify a keyword argument instead.
+        # Previously it was GandiConnection -> ConnectionKey so it worked fine.
+        super(GandiConnection, self).__init__(key=key)
+        self.driver = BaseGandiDriver
+
     def request(self, method, *args):
         args = (self.key, ) + args
         return super(GandiConnection, self).request(method, *args)
