@@ -8,6 +8,12 @@ Changes with Apache Libcloud 0.12.2:
       Reported by Arfrever Frehtes Taifersar Arahesis.
       [Tomaz Muraus]
 
+    - Fix a regression introduced with recent xmlrpiclib changes which broke all
+      the Gandi.net drivers. (LIBCLOUD-288)
+
+      Reported by Hutson Betts.
+      [Tomaz Muraus]
+
   *) Compute
 
     - Improve public and private IP address handling in OpenStack 1.1 driver.
@@ -15,7 +21,7 @@ Changes with Apache Libcloud 0.12.2:
       is private. (LIBCLOUD-297)
       [Grischa Meyer, Tomaz Muraus]
 
-  *) DNS 
+  *) DNS
 
     - Allow user to specify 'priority' extra argument when creating a MX or SRV
       record.
