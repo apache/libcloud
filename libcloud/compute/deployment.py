@@ -91,7 +91,7 @@ class FileDeployment(Deployment):
         @keyword source: Local path of file to be installed
 
         @type target: C{str}
-        @keyword target: Path to install file on node 
+        @keyword target: Path to install file on node
         """
         self.source = source
         self.target = target
@@ -137,8 +137,11 @@ class ScriptDeployment(Deployment):
         self.exit_status = None
         self.delete = delete
         self.name = name
+
         if self.name is None:
-            self.name = "/root/deployment_%s.sh" % (binascii.hexlify(os.urandom(4)))
+            # File is put under user's home directory
+            # (~/libcloud_deployment_<random_string>.sh)
+            self.name = 'libcloud_deployment_%s.sh' % (binascii.hexlify(os.urandom(4)))
 
     def run(self, node, client):
         """
@@ -149,8 +152,10 @@ class ScriptDeployment(Deployment):
 
         client.put(path=self.name, chmod=int('755', 8), contents=self.script)
         self.stdout, self.stderr, self.exit_status = client.run(self.name)
+
         if self.delete:
             client.delete(self.name)
+
         return node
 
 

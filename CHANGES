@@ -14,6 +14,16 @@ Changes with Apache Libcloud 0.12.2:
       Reported by Hutson Betts.
       [Tomaz Muraus]
 
+    - Improve deploy code to work correctly if the ssh user doesn't have access
+      to the /root directory.
+
+      Previously the ScriptDeployment script was stored in /root folder by
+      default. Now it's stored in users home directory under filename
+      ~/libcloud_deploymeny_<random>.sh. (LIBCLOUD-302)
+
+      Reported by rotem on #libcloud.
+      [Tomaz Muraus]
+
   *) Compute
 
     - Improve public and private IP address handling in OpenStack 1.1 driver.
