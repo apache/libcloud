@@ -157,8 +157,13 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp = self.client.open_sftp()
         # less than ideal, but we need to mkdir stuff otherwise file() fails
         head, tail = psplit(path)
+
         if path[0] == "/":
             sftp.chdir("/")
+        else:
+            # Relative path - start from a home directory (~)
+            sftp.chdir('.')
+
         for part in head.split("/"):
             if part != "":
                 try:
@@ -168,6 +173,7 @@ class ParamikoSSHClient(BaseSSHClient):
                     # catch EEXIST consistently *sigh*
                     pass
                 sftp.chdir(part)
+
         ak = sftp.file(tail, mode=mode)
         ak.write(contents)
         if chmod is not None:
