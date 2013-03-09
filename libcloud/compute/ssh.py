@@ -28,6 +28,10 @@ except ImportError:
 # warning on Python 2.6.
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
+import os
+import subprocess
+import logging
+
 from os.path import split as psplit
 from os.path import join as pjoin
 
@@ -220,9 +224,97 @@ class ParamikoSSHClient(BaseSSHClient):
 
 
 class ShellOutSSHClient(BaseSSHClient):
-    # TODO: write this one
+    """
+    This client shells out to "ssh" binary to run commands on the remote
+    server.
+
+    Note: This client should not be used in production.
+    """
+
+    def __init__(self, hostname, port=22, username='root', password=None,
+                 key=None, timeout=None):
+        super(ShellOutSSHClient, self).__init__(hostname, port, username,
+                                                password, key, timeout)
+        if self.password:
+            raise ValueError('ShellOutSSHClient only supports key auth')
+
+        child = subprocess.Popen(['ssh'], stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        child.communicate()
+
+        if child.returncode == 127:
+            raise ValueError('ssh client is not available')
+
+        self.logger = self._get_and_setup_logger()
+
+    def connect(self):
+        """
+        This client doesn't support persistent connections establish a new
+        connection every time "run" method is called.
+        """
+        return True
+
+    def run(self, cmd):
+        return self._run_remote_shell_command(cmd)
+
+    def put(self, path, contents=None, chmod=None, mode='w'):
+        if mode == 'w':
+            redirect = '>'
+        elif mode == 'a':
+            redirect = '>>'
+        else:
+            raise ValueError('Invalid mode: ' + mode)
+
+        cmd = ['echo "%s" %s %s' % (contents, redirect, path)]
+        self._run_remote_shell_command(cmd)
+
+    def delete(self, path):
+        cmd = ['rm', '-rf', path]
+        self._run_remote_shell_command(cmd)
+
+    def close(self):
+        pass
+
+    def _get_and_setup_logger(self):
+        logger = logging.getLogger('libcloud.compute.ssh')
+        path = os.getenv('LIBCLOUD_DEBUG')
+
+        if path:
+            handler = logging.FileHandler(path)
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
+
+        return logger
+
+    def _get_base_ssh_command(self):
+        cmd = ['ssh']
+
+        if self.key:
+            cmd += ['-i', self.key]
+
+        if self.timeout:
+            cmd += ['-oConnectTimeout=%s' % (self.timeout)]
+
+        cmd += ['%s@%s' % (self.username, self.hostname)]
+
+        return cmd
+
+    def _run_remote_shell_command(self, cmd):
+        base_cmd = self._get_base_ssh_command()
+        full_cmd = base_cmd + [' '.join(cmd)]
+
+        self.logger.debug('Executing command: "%s"' % (' '.join(full_cmd)))
+
+        child = subprocess.Popen(full_cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        stdout, stderr = child.communicate()
+        return (stdout, stderr, child.returncode)
+
+
+class MockSSHClient(BaseSSHClient):
     pass
+
 
 SSHClient = ParamikoSSHClient
 if not have_paramiko:
-    SSHClient = ShellOutSSHClient
+    SSHClient = MockSSHClient
