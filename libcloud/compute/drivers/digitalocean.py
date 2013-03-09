@@ -94,7 +94,8 @@ class DigitalOceanNodeDriver(NodeDriver):
         data = self.connection.request('/sizes').object['sizes']
         return list(map(self._to_size, data))
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
+                    **kwargs):
         params = {'name': name, 'size_id': size.id, 'image_id': image.id,
                   'region_id': location.id}
 
