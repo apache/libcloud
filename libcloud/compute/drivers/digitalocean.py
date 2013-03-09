@@ -19,13 +19,16 @@ Digital Ocean Driver
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.compute.types import Provider, NodeState
+from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
 
 class DigitalOceanResponse(JsonResponse):
-    pass
+    def parse_error(self):
+        if self.status == httplib.FOUND and '/api/error' in self.body:
+            # Hacky, but DigitalOcean error responses are awful
+            raise InvalidCredsError(self.body)
 
 
 class SSHKey(object):
@@ -126,12 +129,12 @@ class DigitalOceanNodeDriver(NodeDriver):
 
     def _to_node(self, data):
         extra_keys = ['backups_active', 'region_id']
-        if 'staus' in data:
+        if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
         else:
             state = NodeState.UNKNOWN
 
-        if 'ip_address' in data:
+        if 'ip_address' in data and data['ip_address'] is not None:
             public_ips = [data['ip_address']]
         else:
             public_ips = []
