@@ -1,6 +1,6 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.12.2:
+Changes with Apache Libcloud in development:
 
   *) General
 
@@ -30,6 +30,10 @@ Changes with Apache Libcloud 0.12.2:
       Assume every IP address which doesn't have a label "public" or "internet"
       is private. (LIBCLOUD-297)
       [Grischa Meyer, Tomaz Muraus]
+
+    - Add new driver for DigitalOcean provider - https://www.digitalocean.com/.
+      (LIBCLOUD-304)
+      [Tomaz Muraus]
 
   *) DNS
 
