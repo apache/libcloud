@@ -96,6 +96,16 @@ class DigitalOceanNodeDriver(NodeDriver):
 
     def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
                     **kwargs):
+        """
+        Create a node.
+
+        @keyword    ex_ssh_key_ids: A list of ssh key ids which will be added to
+                                 the server. (optional)
+        @type       ex_ssh_key_ids: C{list} of C{str}
+
+        @return: The newly created node.
+        @rtype: L{Node}
+        """
         params = {'name': name, 'size_id': size.id, 'image_id': image.id,
                   'region_id': location.id}
 
@@ -114,10 +124,25 @@ class DigitalOceanNodeDriver(NodeDriver):
         return res.status == httplib.OK
 
     def ex_list_ssh_keys(self):
+        """
+        List all the available SSH keys.
+
+        @return: Available SSH keys.
+        @rtype: C{list} of L{SSHKey}
+        """
         data = self.connection.request('/ssh_keys').object['ssh_keys']
         return list(map(self._to_ssh_key, data))
 
     def ex_create_ssh_key(self, name, ssh_key_pub):
+        """
+        Create a new SSH key.
+
+        @param      name: Key name (required)
+        @type       name: C{str}
+
+        @param      name: Valid public key string (required)
+        @type       name: C{str}
+        """
         params = {'name': name, 'ssh_pub_key': ssh_key_pub}
         data = self.connection.request('/ssh_keys/new/', method='GET',
                                        params=params).object
@@ -125,6 +150,12 @@ class DigitalOceanNodeDriver(NodeDriver):
         return self._to_ssh_key(data=data['ssh_key'])
 
     def ex_destroy_ssh_key(self, key_id):
+        """
+        Delete an existing SSH key.
+
+        @param      key_id: SSH key id (required)
+        @type       key_id: C{str}
+        """
         res = self.connection.request('/ssh_keys/%s/destroy/' % (key_id))
         return res.status == httplib.OK
 
