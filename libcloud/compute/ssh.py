@@ -300,6 +300,15 @@ class ShellOutSSHClient(BaseSSHClient):
         return cmd
 
     def _run_remote_shell_command(self, cmd):
+        """
+        Run a command on a remote server.
+
+        @param      cmd: Command to run.
+        @type       cmd: C{list} of C{str}
+
+        @return: Command stdout, stderr and status code.
+        @rtype: C{tuple}
+        """
         base_cmd = self._get_base_ssh_command()
         full_cmd = base_cmd + [' '.join(cmd)]
 
