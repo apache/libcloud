@@ -255,7 +255,7 @@ class ShellOutSSHClient(BaseSSHClient):
         return True
 
     def run(self, cmd):
-        return self._run_remote_shell_command(cmd)
+        return self._run_remote_shell_command([cmd])
 
     def put(self, path, contents=None, chmod=None, mode='w'):
         if mode == 'w':
