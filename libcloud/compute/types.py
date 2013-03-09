@@ -114,6 +114,7 @@ class Provider(object):
     RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     HOSTVIRTUAL = 'hostvirtual'
     ABIQUO = 'abiquo'
+    DIGITAL_OCEAN = 'digitalocean'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
