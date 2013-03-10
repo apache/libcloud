@@ -277,6 +277,7 @@ class ShellOutSSHClient(BaseSSHClient):
 
         cmd = ['echo "%s" %s %s' % (contents, redirect, path)]
         self._run_remote_shell_command(cmd)
+        return path
 
     def delete(self, path):
         cmd = ['rm', '-rf', path]
