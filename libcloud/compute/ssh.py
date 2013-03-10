@@ -70,7 +70,9 @@ class BaseSSHClient(object):
         """
         Connect to the remote node over SSH.
 
-        @return: C{bool}
+        @return: True if the connection has been successfuly established, False
+                 otherwise.
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'connect not implemented for this ssh client')
@@ -90,6 +92,9 @@ class BaseSSHClient(object):
 
         @type mode: C{str}
         @keyword mode: Mode in which the file is opened.
+
+        @return: Full path to the location where a file has been saved.
+        @rtype: C{str}
         """
         raise NotImplementedError(
             'put not implemented for this ssh client')
@@ -100,6 +105,10 @@ class BaseSSHClient(object):
 
         @type path: C{str}
         @keyword path: File path on the remote node.
+
+        @return: True if the file has been successfuly deleted, False
+                 otherwise.
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'delete not implemented for this ssh client')
@@ -119,6 +128,10 @@ class BaseSSHClient(object):
     def close(self):
         """
         Shutdown connection to the remote node.
+
+        @return: True if the connection has been successfuly closed, False
+                 otherwise.
+        @rtype: C{bool}
         """
         raise NotImplementedError(
             'close not implemented for this ssh client')
@@ -178,12 +191,21 @@ class ParamikoSSHClient(BaseSSHClient):
                     pass
                 sftp.chdir(part)
 
+        cwd = sftp.getcwd()
+
         ak = sftp.file(tail, mode=mode)
         ak.write(contents)
         if chmod is not None:
             ak.chmod(chmod)
         ak.close()
         sftp.close()
+
+        if path[0] == '/':
+            file_path = path
+        else:
+            file_path = pjoin(cwd, path)
+
+        return file_path
 
     def delete(self, path):
         sftp = self.client.open_sftp()
@@ -208,6 +230,7 @@ class ParamikoSSHClient(BaseSSHClient):
 
     def close(self):
         self.client.close()
+        return True
 
 
 class ShellOutSSHClient(BaseSSHClient):
@@ -260,7 +283,7 @@ class ShellOutSSHClient(BaseSSHClient):
         self._run_remote_shell_command(cmd)
 
     def close(self):
-        pass
+        return True
 
     def _get_and_setup_logger(self):
         logger = logging.getLogger('libcloud.compute.ssh')

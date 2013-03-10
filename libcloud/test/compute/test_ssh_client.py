@@ -211,7 +211,7 @@ class ShellOutSSHClientTests(unittest.TestCase):
 
     def test_close_success(self):
         client = ShellOutSSHClient(hostname='localhost', username='root')
-        self.assertEqual(client.close(), None)
+        self.assertTrue(client.close())
 
     def test_get_base_ssh_command(self):
         client1 = ShellOutSSHClient(hostname='localhost', username='root')
