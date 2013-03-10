@@ -191,19 +191,6 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp.close()
 
     def run(self, cmd):
-        if cmd[0] != '/':
-            # If 'cmd' based on relative path,
-            # set the absoute path joining the HOME path
-            sftp = self.client.open_sftp()
-            # Chdir to its own directory is mandatory because otherwise
-            # the 'getcwd()' method returns None
-            sftp.chdir('.')
-            cwd = sftp.getcwd()
-            sftp.close()
-
-            # Join the command to the current path
-            cmd = pjoin(cwd, cmd)
-
         # based on exec_command()
         bufsize = -1
         t = self.client.get_transport()
