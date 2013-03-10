@@ -117,40 +117,6 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         mock.close()
 
-    def _disabled_test_run_script_with_relative_path(self):
-        """
-        Execute script with relative path.
-        """
-        mock = self.ssh_cli
-
-        # Define behaviour then ask for 'current directory'
-        mock.client.open_sftp().getcwd.return_value = '/home/ubuntu/'
-
-        # Script without full path
-        sd = 'random_script.sh'
-
-        # Without assertions because they are the same than the previous
-        # 'test_basic_usage' method
-        mock.connect()
-
-        mock_cli = mock.client  # The actual mocked object: SSHClient
-
-        mock.put(sd, chmod=600)
-        # Make assertions over 'put' method
-        mock_cli.open_sftp().file.assert_called_once_with('random_script.sh',
-                                                          mode='w')
-        mock_cli.open_sftp().file().chmod.assert_called_once_with(600)
-
-        mock.run(sd)
-        # Make assertions over the 'run' method
-        mock_cli.open_sftp().chdir.assert_called_with(".")
-        mock_cli.open_sftp().getcwd.assert_called_once()
-        full_sd = '/home/ubuntu/random_script.sh'
-        mock_cli.get_transport().open_session().exec_command \
-                .assert_called_once_with(full_sd)
-
-        mock.close()
-
     def test_delete_script(self):
         """
         Provide a basic test with 'delete' action.

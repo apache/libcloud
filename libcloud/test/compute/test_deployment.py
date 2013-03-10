@@ -111,6 +111,26 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
 
+    def test_script_deployment_relative_path(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        sd = ScriptDeployment(script='echo "foo"', name='relative.sh')
+        sd.run(self.node, client)
+
+        client.run.assert_called_once_with('/home/ubuntu/relative.sh')
+
+    def test_script_deployment_absolute_path(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        sd = ScriptDeployment(script='echo "foo"', name='/root/relative.sh')
+        sd.run(self.node, client)
+
+        client.run.assert_called_once_with('/root/relative.sh')
+
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
             def __init__(self, name):
