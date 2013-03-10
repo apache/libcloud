@@ -211,6 +211,7 @@ class ParamikoSSHClient(BaseSSHClient):
         sftp = self.client.open_sftp()
         sftp.unlink(path)
         sftp.close()
+        return True
 
     def run(self, cmd):
         # based on exec_command()
@@ -282,6 +283,7 @@ class ShellOutSSHClient(BaseSSHClient):
     def delete(self, path):
         cmd = ['rm', '-rf', path]
         self._run_remote_shell_command(cmd)
+        return True
 
     def close(self):
         return True
