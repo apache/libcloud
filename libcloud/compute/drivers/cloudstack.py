@@ -280,18 +280,31 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         @type node: L{CloudStackNode}
         """
+        if type(node) is not CloudStackNode:
+            raise LibcloudError("Must pass a valid node")
 
-        return_value = self._async_request('startVirtualMachine', id=node.id)
-        return return_value
+        available_nodes = self.list_nodes();
 
+        for n in available_nodes:
+            if node.id == n.id:
+                return self._async_request('startVirtualMachine', id=node.id)
+
+        return False
 
     def stop_node(self, node):
         """
         @type node: L{CloudStackNode}
         """
+        if type(node) is not CloudStackNode:
+            raise LibcloudError("Must pass a valid node")
 
-        return_value = self._async_request('stopVirtualMachine', id=node.id)
-        return return_value
+        available_nodes = self.list_nodes();
+
+        for n in available_nodes:
+            if node.id == n.id:
+                return self._async_request('stopVirtualMachine', id=node.id)
+
+        return False
 
     def ex_list_disk_offerings(self):
         """Fetch a list of all available disk offerings.
