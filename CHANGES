@@ -35,6 +35,11 @@ Changes with Apache Libcloud in development:
       (LIBCLOUD-304)
       [Tomaz Muraus]
 
+    - Fix a regression in ParamikoSSHClient.run method which caused this methid
+      to only work as expected if you passed an absolute or a relative path to
+      the script to it. (LIBCLOUD-278)
+      [Tomaz Muraus]
+
   *) DNS
 
     - Allow user to specify 'priority' extra argument when creating a MX or SRV
