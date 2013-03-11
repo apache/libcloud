@@ -840,6 +840,16 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyName': key_name
         }
 
+    def ex_delete_keypair(self, name):
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName.1': name
+        }
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
     def ex_list_security_groups(self):
         """
         List existing Security Groups.
