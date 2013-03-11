@@ -110,6 +110,7 @@ class Provider(object):
     GRIDSPOT = 'gridspot'
     HOSTVIRTUAL = 'hostvirtual'
     ABIQUO = 'abiquo'
+    DIGITAL_OCEAN = 'digitalocean'
 
     EC2_US_EAST = 'ec2_us_east'
     EC2_EU = 'ec2_eu_west'  # deprecated name

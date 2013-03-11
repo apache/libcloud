@@ -1,6 +1,6 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud 0.12.2:
+Changes with Apache Libcloud in development:
 
   *) General
 
@@ -25,7 +25,16 @@ Changes with Apache Libcloud 0.12.2:
       is private. (LIBCLOUD-297)
       [Grischa Meyer, Tomaz Muraus]
 
-  *) DNS 
+    - Add new driver for DigitalOcean provider - https://www.digitalocean.com/.
+      (LIBCLOUD-304)
+      [Tomaz Muraus]
+
+    - Fix a regression in ParamikoSSHClient.run method which caused this methid
+      to only work as expected if you passed an absolute or a relative path to
+      the script to it. (LIBCLOUD-278)
+      [Tomaz Muraus]
+
+  *) DNS
 
     - Allow user to specify 'priority' extra argument when creating a MX or SRV
       record.

@@ -14,10 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import
+
 import sys
 import unittest
 
 from libcloud.compute.ssh import ParamikoSSHClient
+from libcloud.compute.ssh import ShellOutSSHClient
 from libcloud.compute.ssh import have_paramiko
 
 from mock import patch, Mock
@@ -114,40 +117,6 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         mock.close()
 
-    def test_run_script_with_relative_path(self):
-        """
-        Execute script with relative path.
-        """
-        mock = self.ssh_cli
-
-        # Define behaviour then ask for 'current directory'
-        mock.client.open_sftp().getcwd.return_value = '/home/ubuntu/'
-
-        # Script without full path
-        sd = 'random_script.sh'
-
-        # Without assertions because they are the same than the previous
-        # 'test_basic_usage' method
-        mock.connect()
-
-        mock_cli = mock.client  # The actual mocked object: SSHClient
-
-        mock.put(sd, chmod=600)
-        # Make assertions over 'put' method
-        mock_cli.open_sftp().file.assert_called_once_with('random_script.sh',
-                                                          mode='w')
-        mock_cli.open_sftp().file().chmod.assert_called_once_with(600)
-
-        mock.run(sd)
-        # Make assertions over the 'run' method
-        mock_cli.open_sftp().chdir.assert_called_with(".")
-        mock_cli.open_sftp().getcwd.assert_called_once()
-        full_sd = '/home/ubuntu/random_script.sh'
-        mock_cli.get_transport().open_session().exec_command \
-                .assert_called_once_with(full_sd)
-
-        mock.close()
-
     def test_delete_script(self):
         """
         Provide a basic test with 'delete' action.
@@ -164,9 +133,68 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         mock.close()
 
+
 if not ParamikoSSHClient:
     class ParamikoSSHClientTests(unittest.TestCase):
         pass
+
+
+class ShellOutSSHClientTests(unittest.TestCase):
+    def test_password_auth_not_supported(self):
+        try:
+            ShellOutSSHClient(hostname='localhost', username='foo',
+                              password='bar')
+        except ValueError:
+            e = sys.exc_info()[1]
+            msg = str(e)
+            self.assertTrue('ShellOutSSHClient only supports key auth' in msg)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ssh_executable_not_available(self):
+        class MockChild(object):
+            returncode = 127
+
+            def communicate(*args, **kwargs):
+                pass
+
+        def mock_popen(*args, **kwargs):
+            return MockChild()
+
+        with patch('subprocess.Popen', mock_popen):
+            try:
+                ShellOutSSHClient(hostname='localhost', username='foo')
+            except ValueError:
+                e = sys.exc_info()[1]
+                msg = str(e)
+                self.assertTrue('ssh client is not available' in msg)
+            else:
+                self.fail('Exception was not thrown')
+
+    def test_connect_success(self):
+        client = ShellOutSSHClient(hostname='localhost', username='root')
+        self.assertTrue(client.connect())
+
+    def test_close_success(self):
+        client = ShellOutSSHClient(hostname='localhost', username='root')
+        self.assertTrue(client.close())
+
+    def test_get_base_ssh_command(self):
+        client1 = ShellOutSSHClient(hostname='localhost', username='root')
+        client2 = ShellOutSSHClient(hostname='localhost', username='root',
+                                    key='/home/my.key')
+        client3 = ShellOutSSHClient(hostname='localhost', username='root',
+                                    key='/home/my.key', timeout=5)
+
+        cmd1 = client1._get_base_ssh_command()
+        cmd2 = client2._get_base_ssh_command()
+        cmd3 = client3._get_base_ssh_command()
+
+        self.assertEquals(cmd1, ['ssh', 'root@localhost'])
+        self.assertEquals(cmd2, ['ssh', '-i', '/home/my.key',
+                                 'root@localhost'])
+        self.assertEquals(cmd3, ['ssh', '-i', '/home/my.key',
+                                 '-oConnectTimeout=5', 'root@localhost'])
 
 
 if __name__ == '__main__':

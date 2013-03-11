@@ -149,9 +149,17 @@ class ScriptDeployment(Deployment):
 
         See also L{Deployment.run}
         """
+        file_path = client.put(path=self.name, chmod=int('755', 8),
+                               contents=self.script)
 
-        client.put(path=self.name, chmod=int('755', 8), contents=self.script)
-        self.stdout, self.stderr, self.exit_status = client.run(self.name)
+        # Pre-pend cwd if user specified a relative path
+        if self.name[0] != '/':
+            base_path = os.path.dirname(file_path)
+            name = os.path.join(base_path, self.name)
+        else:
+            name = self.name
+
+        self.stdout, self.stderr, self.exit_status = client.run(name)
 
         if self.delete:
             client.delete(self.name)
