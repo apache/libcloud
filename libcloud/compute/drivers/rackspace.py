@@ -170,3 +170,21 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         super(RackspaceNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure, host=host,
                                                   port=port, **kwargs)
+
+    def list_locations(self):
+        """
+        Lists available locations
+
+        Locations cannot be set or retrieved via the API, but currently
+        there are three locations, DFW, ORD and LON.
+
+        @inherits: L{OpenStack_1_1_NodeDriver.list_locations}
+        """
+        if self.datacenter == 'dfw':
+            locations = [NodeLocation(0, 'Rackspace Dallas', 'US', self)]
+        elif self.datacenter == 'ord':
+            locations = [NodeLocation(0, 'Rackspace Chicago', 'US', self)]
+        elif self.datacenter == 'lon':
+            locations = [NodeLocation(0, 'Rackspace London', 'UK', self)]
+
+        return locations
