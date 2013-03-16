@@ -8,6 +8,12 @@ Changes with Apache Libcloud in development:
       Reported by Arfrever Frehtes Taifersar Arahesis.
       [Tomaz Muraus]
 
+    - Fix a regression introduced with recent xmlrpiclib changes which broke all
+      the Gandi.net drivers. (LIBCLOUD-288)
+
+      Reported by Hutson Betts.
+      [Tomaz Muraus]
+
     - Improve deploy code to work correctly if the ssh user doesn't have access
       to the /root directory.
 
