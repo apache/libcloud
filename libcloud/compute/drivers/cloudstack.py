@@ -275,6 +275,37 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._async_request('rebootVirtualMachine', id=node.id)
         return True
 
+
+    def start_node(self, node):
+        """
+        @type node: L{CloudStackNode}
+        """
+        if type(node) is not CloudStackNode:
+            raise LibcloudError("Must pass a valid node")
+
+        available_nodes = self.list_nodes();
+
+        for n in available_nodes:
+            if node.id == n.id:
+                return self._async_request('startVirtualMachine', id=node.id)
+
+        return False
+
+    def stop_node(self, node):
+        """
+        @type node: L{CloudStackNode}
+        """
+        if type(node) is not CloudStackNode:
+            raise LibcloudError("Must pass a valid node")
+
+        available_nodes = self.list_nodes();
+
+        for n in available_nodes:
+            if node.id == n.id:
+                return self._async_request('stopVirtualMachine', id=node.id)
+
+        return False
+
     def ex_list_disk_offerings(self):
         """Fetch a list of all available disk offerings.
 
@@ -476,3 +507,60 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   url=url,
                                   zoneid=location.id,
                                   **extra_args)
+    def ex_register_template(self, name, description, url, location, extractable, passwordEnabled, os, public, featured, hypervisor, format):
+        """
+        Registers an existing template by URL.
+
+        @param      name: Name which should be used
+        @type       name: C{str}
+
+        @param      description: Description which should be used
+        @type       description: C{str}
+
+        @param      url: Url should be used
+        @type       url: C{str}
+
+        @param      location: Location which should be used
+        @type       location: C{int}
+
+        @param      extractable: Whether the template is extractable
+        @type       extractable: C{bool}
+
+        @param      passwordEnabled
+        @type       passwordEnabled: C{bool}
+
+        @param      os: OS type of the template
+        @type       os: C{int}
+
+        @param      public: Whether the template is public or not
+        @type       public: C{bool}
+
+        @param      featured: Whether the template is featured or not
+        @type       featured: C{bool}
+
+        @param      hypervisor: The hypervisor type of the template
+        @type       hypervisor: C{str}
+
+        @param      format: Template format, eg: VHD
+        @type       format: C{str}
+
+
+        @rtype: C{bool}
+        """
+
+        if location is None:
+            location = self.list_locations()[0]
+
+        return self._sync_request('registerTemplate',
+                                  name=name,
+                                  displayText=description,
+                                  url=url,
+                                  zoneid=location,
+                                  format=format,
+                                  isextractable=extractable,
+                                  passwordEnabled=passwordEnabled,
+                                  osTypeId=os,
+                                  hypervisor=hypervisor,
+                                  ispublic=public,
+                                  isfeatured=featured
+                                  )
