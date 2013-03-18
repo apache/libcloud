@@ -507,45 +507,60 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   url=url,
                                   zoneid=location.id,
                                   **extra_args)
-    def ex_register_template(self, name,url,location,extractable,passwordEnabled,os,public,featured):
+    def ex_register_template(self, name, description, url, location, extractable, passwordEnabled, os, public, featured, hypervisor, format):
         """
         Registers an existing template by URL.
 
         @param      name: Name which should be used
         @type       name: C{str}
 
+        @param      description: Description which should be used
+        @type       description: C{str}
+
         @param      url: Url should be used
         @type       url: C{str}
 
         @param      location: Location which should be used
-        @type       location: L{NodeLocation}
+        @type       location: C{int}
 
-        @rtype: C{str}
+        @param      extractable: Whether the template is extractable
+        @type       extractable: C{bool}
+
+        @param      passwordEnabled
+        @type       passwordEnabled: C{bool}
+
+        @param      os: OS type of the template
+        @type       os: C{int}
+
+        @param      public: Whether the template is public or not
+        @type       public: C{bool}
+
+        @param      featured: Whether the template is featured or not
+        @type       featured: C{bool}
+
+        @param      hypervisor: The hypervisor type of the template
+        @type       hypervisor: C{str}
+
+        @param      format: Template format, eg: VHD
+        @type       format: C{str}
+
+
+        @rtype: C{bool}
         """
-        
-        """registerTemplate&response=json&sessionkey=r4MlxonrQbDoFQ8DZB%2FeDDV%2BOTY%3D&
-        name=TestTempla&
-        displayText=TestTemplate&
-        url=http%3A%2F%2Fmonitor.ninefold.com%2Fzone1nfs03%2Ftemplate%2Ftmpl%2F2%2F3464%2Fe6f2177a-7f64-430e-a0ba-8dbb4f606713.vhd&
-        zoneid=a9d951b0-36ef-4a44-8427-aae0270ddb75&
-        format=VHD&
-        isextractable=true&
-        passwordEnabled=true&
-        osTypeId=112&
-        hypervisor=XenServer&
-        ispublic=false&
-        isfeatured=false&
-        _=1363579096234"""
+
+        if location is None:
+            location = self.list_locations()[0]
+
         return self._sync_request('registerTemplate',
                                   name=name,
-                                  displayText=name,
+                                  displayText=description,
                                   url=url,
                                   zoneid=location,
-                                  format="VHD",
+                                  format=format,
                                   isextractable=extractable,
                                   passwordEnabled=passwordEnabled,
                                   osTypeId=os,
-                                  hypervisor="XenServer",
+                                  hypervisor=hypervisor,
                                   ispublic=public,
                                   isfeatured=featured
                                   )
