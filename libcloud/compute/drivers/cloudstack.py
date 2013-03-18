@@ -507,3 +507,45 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   url=url,
                                   zoneid=location.id,
                                   **extra_args)
+    def ex_register_template(self, name,url,location,extractable,passwordEnabled,os,public,featured):
+        """
+        Registers an existing template by URL.
+
+        @param      name: Name which should be used
+        @type       name: C{str}
+
+        @param      url: Url should be used
+        @type       url: C{str}
+
+        @param      location: Location which should be used
+        @type       location: L{NodeLocation}
+
+        @rtype: C{str}
+        """
+        
+        """registerTemplate&response=json&sessionkey=r4MlxonrQbDoFQ8DZB%2FeDDV%2BOTY%3D&
+        name=TestTempla&
+        displayText=TestTemplate&
+        url=http%3A%2F%2Fmonitor.ninefold.com%2Fzone1nfs03%2Ftemplate%2Ftmpl%2F2%2F3464%2Fe6f2177a-7f64-430e-a0ba-8dbb4f606713.vhd&
+        zoneid=a9d951b0-36ef-4a44-8427-aae0270ddb75&
+        format=VHD&
+        isextractable=true&
+        passwordEnabled=true&
+        osTypeId=112&
+        hypervisor=XenServer&
+        ispublic=false&
+        isfeatured=false&
+        _=1363579096234"""
+        return self._sync_request('registerTemplate',
+                                  name=name,
+                                  displayText=name,
+                                  url=url,
+                                  zoneid=location,
+                                  format="VHD",
+                                  isextractable=extractable,
+                                  passwordEnabled=passwordEnabled,
+                                  osTypeId=os,
+                                  hypervisor="XenServer",
+                                  ispublic=public,
+                                  isfeatured=featured
+                                  )
