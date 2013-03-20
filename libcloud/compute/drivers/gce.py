@@ -56,6 +56,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         "STAGING": NodeState.PENDING,
         "RUNNING": NodeState.RUNNING,
         "STOPPED": NodeState.TERMINATED,
+        "STOPPING": NodeState.TERMINATED,
         "TERMINATED": NodeState.TERMINATED
     }
 
