@@ -765,7 +765,8 @@ class NodeDriver(BaseDriver):
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):
         """
-        Block until the given nodes are fully booted and have an IP address assigned.
+        Block until the given nodes are fully booted and have an IP address
+        assigned.
 
         @keyword    nodes: list of node instances.
         @type       nodes: C{List} of L{Node}
@@ -818,13 +819,14 @@ class NodeDriver(BaseDriver):
 
             if len(nodes) > len(uuids):
                 found_uuids = [n.uuid for n in nodes]
-                raise LibcloudError(value=('Unable to match specified uuids ' +
-                                           '(%s) with existing nodes. Found ' % uuids +
-                                           'multiple nodes with same uuid: (%s)' % found_uuids),
-                                    driver=self)
+                msg = ('Unable to match specified uuids ' +
+                       '(%s) with existing nodes. Found ' % (uuids) +
+                       'multiple nodes with same uuid: (%s)' % (found_uuids))
+                raise LibcloudError(value=msg, driver=self)
 
             running_nodes = [n for n in nodes if n.state == NodeState.RUNNING]
-            addresses = [filter_addresses(getattr(n, ssh_interface)) for n in running_nodes]
+            addresses = [filter_addresses(getattr(n, ssh_interface)) for n in
+                         running_nodes]
             if len(running_nodes) == len(uuids) == len(addresses):
                 return list(zip(running_nodes, addresses))
             else:
