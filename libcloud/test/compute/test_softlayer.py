@@ -143,24 +143,24 @@ class SoftLayerMockHttp(MockHttp):
         meth_name = "%s_%s" % (url, meth_name)
         return getattr(self, meth_name)(method, url, body, headers)
 
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_getCreateObjectOptions(
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_getCreateObjectOptions(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3__SoftLayer_Account_getVirtualGuests(
+    def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(
             self, method, url, body, headers):
         body = self.fixtures.load('v3_SoftLayer_Account_getVirtualGuests.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3__SoftLayer_Location_Datacenter_getDatacenters(
+    def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_createObject(
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_createObject(
             self, method, url, body, headers):
         fixture = {
             None: 'v3__SoftLayer_Virtual_Guest_createObject.xml',
@@ -170,18 +170,18 @@ class SoftLayerMockHttp(MockHttp):
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_getObject(
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_getObject(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'v3__SoftLayer_Virtual_Guest_getObject.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_rebootSoft(
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_rebootSoft(
             self, method, url, body, headers):
         body = self.fixtures.load('empty.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3__SoftLayer_Virtual_Guest_deleteObject(
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_deleteObject(
             self, method, url, body, headers):
         body = self.fixtures.load('empty.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
