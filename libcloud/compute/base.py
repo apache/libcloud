@@ -592,6 +592,11 @@ class NodeDriver(BaseDriver):
                                   SSH server (default is root)
         @type       ssh_username: C{str}
 
+        @keyword    ssh_alternate_usernames: Optional list of ssh usernames to
+                                             try to connect with if using the
+                                             default one fails
+        @type       ssh_alternate_usernames: C{list}
+
         @keyword    ssh_port: Optional SSH server port (default is 22)
         @type       ssh_port: C{int}
 
@@ -647,41 +652,52 @@ class NodeDriver(BaseDriver):
         if 'generates_password' in self.features['create_node']:
             password = node.extra.get('password')
 
+        ssh_interface = kwargs.get('ssh_interface', 'public_ips')
+
+        # Wait until node is up and running and has IP assigned
         try:
-            # Wait until node is up and running and has IP assigned
-            ssh_interface = kwargs.get('ssh_interface', 'public_ips')
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
                 wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
                 ssh_interface=ssh_interface)[0]
-
-            if password:
-                node.extra['password'] = password
-
-            ssh_username = kwargs.get('ssh_username', 'root')
-            ssh_port = kwargs.get('ssh_port', 22)
-            ssh_timeout = kwargs.get('ssh_timeout', 10)
-            ssh_key_file = kwargs.get('ssh_key', None)
-            timeout = kwargs.get('timeout', SSH_CONNECT_TIMEOUT)
-
-            ssh_client = SSHClient(hostname=ip_addresses[0],
-                                   port=ssh_port, username=ssh_username,
-                                   password=password,
-                                   key=ssh_key_file,
-                                   timeout=ssh_timeout)
-
-            # Connect to the SSH server running on the node
-            ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                                  timeout=timeout)
-
-            # Execute the deployment task
-            self._run_deployment_script(task=kwargs['deploy'],
-                                        node=node,
-                                        ssh_client=ssh_client,
-                                        max_tries=max_tries)
         except Exception:
             e = sys.exc_info()[1]
             raise DeploymentError(node=node, original_exception=e, driver=self)
+
+        if password:
+            node.extra['password'] = password
+
+        ssh_username = kwargs.get('ssh_username', 'root')
+        ssh_alternate_usernames = kwargs.get('ssh_alternate_usernames', [])
+        ssh_port = kwargs.get('ssh_port', 22)
+        ssh_timeout = kwargs.get('ssh_timeout', 10)
+        ssh_key_file = kwargs.get('ssh_key', None)
+        timeout = kwargs.get('timeout', SSH_CONNECT_TIMEOUT)
+
+        deploy_error = None
+
+        for username in ([ssh_username] + ssh_alternate_usernames):
+            try:
+                self._connect_and_run_deployment_script(
+                    task=kwargs['deploy'], node=node,
+                    ssh_hostname=ip_addresses[0], ssh_port=ssh_port,
+                    ssh_username=username, ssh_password=password,
+                    ssh_key_file=ssh_key_file, ssh_timeout=ssh_timeout,
+                    timeout=timeout, max_tries=max_tries)
+            except Exception:
+                # Try alternate username
+                # Todo: Need to fix paramiko so we can catch a more specific
+                # exception
+                e = sys.exc_info()[1]
+                deploy_error = e
+            else:
+                # Script sucesfully executed, don't try alternate username
+                deploy_error = None
+                break
+
+        if deploy_error is not None:
+            raise DeploymentError(node=node, original_exception=deploy_error,
+                                  driver=self)
 
         return node
 
@@ -872,6 +888,25 @@ class NodeDriver(BaseDriver):
         raise LibcloudError(value='Could not connect to the remote SSH ' +
                             'server. Giving up.', driver=self)
 
+    def _connect_and_run_deployment_script(self, task, node, ssh_hostname,
+                                           ssh_port, ssh_username,
+                                           ssh_password, ssh_key_file,
+                                           ssh_timeout, timeout, max_tries):
+        ssh_client = SSHClient(hostname=ssh_hostname,
+                               port=ssh_port, username=ssh_username,
+                               password=ssh_password,
+                               key=ssh_key_file,
+                               timeout=ssh_timeout)
+
+        # Connect to the SSH server running on the node
+        ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
+                                              timeout=timeout)
+
+        # Execute the deployment task
+        self._run_deployment_script(task=task, node=node,
+                                    ssh_client=ssh_client,
+                                    max_tries=max_tries)
+
     def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
         """
         Run the deployment script on the provided node. At this point it is
@@ -897,6 +932,7 @@ class NodeDriver(BaseDriver):
             try:
                 node = task.run(node, ssh_client)
             except Exception:
+                e = sys.exc_info()[1]
                 tries += 1
                 if tries >= max_tries:
                     e = sys.exc_info()[1]
