@@ -757,9 +757,10 @@ class NodeDriver(BaseDriver):
                             ssh_interface='public_ips', force_ipv4=True):
         # This is here for backward compatibility and will be removed in the
         # next major release
-        return wait_until_running(nodes=[node], wait_period=wait_period,
-                                  timeout=timeout, ssh_interface=ssh_interface,
-                                  force_ipv4=force_ipv4)
+        return self._wait_until_running(nodes=[node], wait_period=wait_period,
+                                        timeout=timeout,
+                                        ssh_interface=ssh_interface,
+                                        force_ipv4=force_ipv4)
 
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):
