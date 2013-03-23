@@ -108,7 +108,8 @@ class SoftLayerResponse(XMLRPCResponse):
 
 class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
     responseCls = SoftLayerResponse
-    endpoint = '/xmlrpc/v3/'
+    host = 'api.softlayer.com'
+    endpoint = '/xmlrpc/v3'
 
     def request(self, service, method, *args, **kwargs):
         headers = {}

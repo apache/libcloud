@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development:
+
+ *) Compute
+
+    - Fix a regression in Softlayer driver caused by the xmlrpclib changes.
+      (LIBCLOUD-310)
+      [Jason Johnson]
+
 Changes with Apache Libcloud 0.12.3:
 
   *) General
