@@ -348,7 +348,7 @@ class EC2NodeLocation(NodeLocation):
         return (('<EC2NodeLocation: id=%s, name=%s, country=%s, '
                  'availability_zone=%s driver=%s>')
                 % (self.id, self.name, self.country,
-                   self.availability_zone.name, self.driver.name))
+                   self.availability_zone, self.driver.name))
 
 
 class EC2Response(AWSBaseResponse):
