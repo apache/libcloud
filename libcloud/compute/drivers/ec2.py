@@ -672,7 +672,7 @@ class BaseEC2NodeDriver(NodeDriver):
         for index, availability_zone in \
                 enumerate(self.ex_list_availability_zones()):
                     locations.append(EC2NodeLocation(
-                        index, availability_zone, self.country, self,
+                        index, availability_zone.name, self.country, self,
                         availability_zone)
                     )
         return locations

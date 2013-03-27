@@ -13,6 +13,10 @@ Changes with Apache Libcloud in development:
       default one doesn't work. (LIBCLOUD-309)
       [Chris Psaltis, Tomaz Muraus]
 
+    - Fix a bug in EC2 list_locations method - 'name' attribute didn't contain a
+      the right value.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.12.3:
 
   *) General
