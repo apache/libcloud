@@ -24,7 +24,7 @@ from libcloud.utils.py3 import u
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
-from libcloud.compute.deployment import FileDeployment
+from libcloud.compute.deployment import ScriptFileDeployment, FileDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
@@ -110,6 +110,14 @@ class DeploymentTests(unittest.TestCase):
                         client=MockClient(hostname='localhost')))
         self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
+
+    def test_script_file_deployment(self):
+        file_path = os.path.abspath(__file__)
+        with open(file_path, 'rb') as fp:
+            content = fp.read()
+
+        sfd1 = ScriptFileDeployment(script_file=file_path)
+        self.assertEqual(sfd1.script, content)
 
     def test_script_deployment_relative_path(self):
         client = Mock()

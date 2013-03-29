@@ -123,7 +123,8 @@ class ScriptDeployment(Deployment):
         @keyword script: Contents of the script to run
 
         @type name: C{str}
-        @keyword name: Name of the script to upload it as, if not specified, a random name will be choosen.
+        @keyword name: Name of the script to upload it as, if not specified,
+                       a random name will be choosen.
 
         @type delete: C{bool}
         @keyword delete: Whether to delete the script on completion.
@@ -165,6 +166,31 @@ class ScriptDeployment(Deployment):
             client.delete(self.name)
 
         return node
+
+
+class ScriptFileDeployment(ScriptDeployment):
+    """
+    Runs an arbitrary Shell Script task from a file.
+    """
+
+    def __init__(self, script_file, name=None, delete=False):
+        """
+        @type script_file: C{str}
+        @keyword script_file: Path to a file containing the script to run
+
+        @type name: C{str}
+        @keyword name: Name of the script to upload it as, if not specified,
+                       a random name will be choosen.
+
+        @type delete: C{bool}
+        @keyword delete: Whether to delete the script on completion.
+        """
+        with open(script_file, 'rb') as fp:
+            content = fp.read()
+
+        super(ScriptFileDeployment, self).__init__(script=content,
+                                               name=name,
+                                               delete=delete)
 
 
 class MultiStepDeployment(Deployment):

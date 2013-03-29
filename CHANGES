@@ -17,6 +17,10 @@ Changes with Apache Libcloud in development:
       the right value.
       [Tomaz Muraus]
 
+    - Add new ScriptFileDeployment deployment class which reads deploy script
+      from a file.
+      [Rudolf J Streif]
+
 Changes with Apache Libcloud 0.12.3:
 
   *) General
