@@ -23,6 +23,7 @@ import sys
 import base64
 import os
 import copy
+from datetime import datetime
 
 from xml.etree import ElementTree as ET
 
@@ -613,8 +614,11 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId', namespace=NAMESPACE)
         size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        time = findtext(element=element, xpath='startTime', namespace=NAMESPACE)
         description = findtext(element=element, xpath='description', namespace=NAMESPACE)
-        return StorageSnapshot(snapId, size, description, self, extra={'volume_id': volId, 'state': state})
+        return StorageSnapshot(snapId, size, description, self, extra={'volume_id': volId,
+                                                                       'state': state,
+                                                                       'start_time': datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.000Z')})
 
     def list_nodes(self, ex_node_ids=None):
         """
