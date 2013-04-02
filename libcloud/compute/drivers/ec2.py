@@ -35,7 +35,7 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import NodeImage, StorageVolume, StorageSnapshot
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -603,6 +603,19 @@ class BaseEC2NodeDriver(NodeDriver):
                              extra={'state': state,
                                     'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE)})
 
+    def _to_snapshots(self, response):
+        return [self._to_snapshot(el) for el in response.findall(
+            fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_snapshot(self, element):
+        snapId = findtext(element=element, xpath='snapshotId', namespace=NAMESPACE)
+        volId = findtext(element=element, xpath='volumeId', namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        description = findtext(element=element, xpath='description', namespace=NAMESPACE)
+        return StorageSnapshot(snapId, size, description, self, extra={'volume_id': volId, 'state': state})
+
     def list_nodes(self, ex_node_ids=None):
         """
         List all nodes
@@ -723,7 +736,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_describe_volumes(self, node=None):
         params = {
-            'Action': 'DescribeVolumes'
+            'Action': 'DescribeVolumes',
         }
         if node:
             params.update({
@@ -735,6 +748,64 @@ class BaseEC2NodeDriver(NodeDriver):
             fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
         ]
         return volumes
+
+    def create_snapshot(self, volume, description=None):
+        """
+        Create snapshot from volume
+        @param volume: Create snapshot from this volume
+        @type volume: C{StorageVolume}
+        @param description: Description for new snapshot
+        @return: C{StorageSnapshot}
+        """
+        params = {
+            'Action': 'CreateSnapshot',
+            'VolumeId': volume.id,
+        }
+        if description:
+            params.update({
+                'Description': description,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshot = self._to_snapshot(response)
+        return snapshot
+
+    def ex_describe_snapshots(self, snapshot=None, owner=None):
+        """
+        Describe all snapshots
+        @param snapshot: If this setted, describe only this snapshot id
+        @param owner: Owner for snapshot: self|amazon|ID
+        @return: C{list(StorageSnapshots)}
+        """
+        params = {
+            'Action': 'DescribeSnapshots',
+        }
+        if snapshot:
+            params.update({
+                'SnapshotId.1': snapshot.id,
+            })
+        if owner:
+            params.update({
+                'Owner.1': owner,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshots = self._to_snapshots(response)
+        return snapshots
+
+    def ex_delete_snapshot(self, snapshot):
+        params = {
+            'Action': 'DeleteSnapshot',
+            'SnapshotId': snapshot.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def ex_delete_image(self, image):
+        params = {
+            'Action': 'DeregisterImage',
+            'ImageId': image.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
