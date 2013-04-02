@@ -48,17 +48,22 @@ if PY3:
     import urllib as urllib2
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
+
     from urllib.parse import quote as urlquote
     from urllib.parse import unquote as urlunquote
     from urllib.parse import urlencode as urlencode
     from os.path import relpath
+
+    from imp import reload
+
+    from builtins import bytes
+    from builtins import next
 
     basestring = str
 
     def method_type(callable, instance, klass):
         return types.MethodType(callable, instance or klass())
 
-    bytes = __builtins__['bytes']
     def b(s):
         if isinstance(s, str):
             return s.encode('utf-8')
@@ -70,7 +75,7 @@ if PY3:
         # assume n is a Latin-1 string of length 1
         return ord(n)
     u = str
-    next = __builtins__['next']
+
     def dictvalues(d):
         return list(d.values())
 
@@ -86,6 +91,8 @@ else:
     from urllib import quote as urlquote
     from urllib import unquote as urlunquote
     from urllib import urlencode as urlencode
+
+    from __builtin__ import reload
 
     if not PY25:
         from os.path import relpath
@@ -122,8 +129,3 @@ if PY25:
         if not rel_list:
             return posixpath.curdir
         return posixpath.join(*rel_list)
-
-if PY32:
-    from imp import reload
-else:
-    from __builtin__ import reload

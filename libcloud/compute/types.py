@@ -116,6 +116,7 @@ class Provider(object):
     HOSTVIRTUAL = 'hostvirtual'
     GCE = 'gce'
     ABIQUO = 'abiquo'
+    DIGITAL_OCEAN = 'digitalocean'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'

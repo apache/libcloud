@@ -28,6 +28,7 @@ from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.drivers.ec2 import REGION_DETAILS
+from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.utils.py3 import urlparse
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume
@@ -172,7 +173,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_location(self):
         locations = self.driver.list_locations()
         self.assertTrue(len(locations) > 0)
+        self.assertEqual(locations[0].name, 'eu-west-1a')
         self.assertTrue(locations[0].availability_zone != None)
+        self.assertTrue(isinstance(locations[0].availability_zone,
+                                   ExEC2AvailabilityZone))
 
     def test_list_security_groups(self):
         groups = self.driver.ex_list_security_groups()

@@ -2,6 +2,73 @@
 
 Changes with Apache Libcloud in development:
 
+ *) Compute
+
+    - Fix a regression in Softlayer driver caused by the xmlrpclib changes.
+      (LIBCLOUD-310)
+      [Jason Johnson]
+
+    - Allow user to pass alternate ssh usernames to deploy_node
+      (ssh_alternate_usernames kwarg) which are used for authentication if the
+      default one doesn't work. (LIBCLOUD-309)
+      [Chris Psaltis, Tomaz Muraus]
+
+    - Fix a bug in EC2 list_locations method - 'name' attribute didn't contain a
+      the right value.
+      [Tomaz Muraus]
+
+    - Add new ScriptFileDeployment deployment class which reads deploy script
+      from a file.
+      [Rudolf J Streif]
+
+Changes with Apache Libcloud 0.12.3:
+
+  *) General
+
+    - Fix Python 3.x related regressions. (LIBCLOUD-245)
+      Reported by Arfrever Frehtes Taifersar Arahesis.
+      [Tomaz Muraus]
+
+    - Fix a regression introduced with recent xmlrpiclib changes which broke all
+      the Gandi.net drivers. (LIBCLOUD-288)
+
+      Reported by Hutson Betts.
+      [Tomaz Muraus]
+
+    - Improve deploy code to work correctly if the ssh user doesn't have access
+      to the /root directory.
+
+      Previously the ScriptDeployment script was stored in /root folder by
+      default. Now it's stored in users home directory under filename
+      ~/libcloud_deploymeny_<random>.sh. (LIBCLOUD-302)
+
+      Reported by rotem on #libcloud.
+      [Tomaz Muraus]
+
+  *) Compute
+
+    - Improve public and private IP address handling in OpenStack 1.1 driver.
+      Assume every IP address which doesn't have a label "public" or "internet"
+      is private. (LIBCLOUD-297)
+      [Grischa Meyer, Tomaz Muraus]
+
+    - Add new driver for DigitalOcean provider - https://www.digitalocean.com/.
+      (LIBCLOUD-304)
+      [Tomaz Muraus]
+
+    - Fix a regression in ParamikoSSHClient.run method which caused this methid
+      to only work as expected if you passed an absolute or a relative path to
+      the script to it. (LIBCLOUD-278)
+      [Tomaz Muraus]
+
+  *) DNS
+
+    - Allow user to specify 'priority' extra argument when creating a MX or SRV
+      record.
+      [Brian Jinwright, Tomaz Muraus]
+
+Changes with Apache Libcloud 0.12.1:
+
   *) General
 
     - Deprecate LazyList method of iteration over large paginated collections
@@ -166,10 +233,13 @@ Changes with Apache Libcloud in development:
    - Add support for OpenNebula 3.8. (LIBCLOUD-295)
      [Guillaume ZITTA]
 
-   -  Improve public and private IP address handling in OpenStack 1.1 driver.
-      Assume every IP address which doesn't have a label "public" or "internet"
-      is private. (LIBCLOUD-297)
-      [Grischa Meyer, Tomaz Muraus]
+   - Add missing 'deletd' -> terminated mapping to OpenStack driver.
+     (LIBCLOUD-276)
+     [Jayyy V]
+
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response. (LIBCLOUD-292)
+     [Gavin McCance, Tomaz Muraus]
 
   *) Storage
 
@@ -199,7 +269,7 @@ Changes with Apache Libcloud in development:
       future.
       [Tomaz Muraus]
 
-    - Support for multipart uploads and other improvemetns in the S3 driver
+    - Support for multipart uploads and other improvements in the S3 driver
       so it can more easily be re-used with other implementations (e.g. Google
       Storage, etc.).
 

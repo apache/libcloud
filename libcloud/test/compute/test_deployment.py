@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 import sys
 import time
@@ -24,7 +26,7 @@ from libcloud.utils.py3 import u
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
-from libcloud.compute.deployment import FileDeployment
+from libcloud.compute.deployment import ScriptFileDeployment, FileDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
@@ -110,6 +112,34 @@ class DeploymentTests(unittest.TestCase):
                         client=MockClient(hostname='localhost')))
         self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
+
+    def test_script_file_deployment(self):
+        file_path = os.path.abspath(__file__)
+        with open(file_path, 'rb') as fp:
+            content = fp.read()
+
+        sfd1 = ScriptFileDeployment(script_file=file_path)
+        self.assertEqual(sfd1.script, content)
+
+    def test_script_deployment_relative_path(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        sd = ScriptDeployment(script='echo "foo"', name='relative.sh')
+        sd.run(self.node, client)
+
+        client.run.assert_called_once_with('/home/ubuntu/relative.sh')
+
+    def test_script_deployment_absolute_path(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        sd = ScriptDeployment(script='echo "foo"', name='/root/relative.sh')
+        sd.run(self.node, client)
+
+        client.run.assert_called_once_with('/root/relative.sh')
 
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):

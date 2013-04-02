@@ -124,7 +124,9 @@ DRIVERS = {
     Provider.GCE:                                                                                                                                                                  
         ('libcloud.compute.drivers.gce', 'GoogleComputeEngineNodeDriver'),
     Provider.ABIQUO:
-        ('libcloud.compute.drivers.abiquo', 'AbiquoNodeDriver')
+        ('libcloud.compute.drivers.abiquo', 'AbiquoNodeDriver'),
+    Provider.DIGITAL_OCEAN:
+        ('libcloud.compute.drivers.digitalocean', 'DigitalOceanNodeDriver')
 }
 
 
