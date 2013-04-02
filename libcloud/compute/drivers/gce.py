@@ -28,6 +28,7 @@ import os
 import paramiko
 import sys
 
+import httplib
 import httplib2
 from oauth2client.client import SignedJwtAssertionCredentials
 from apiclient.discovery import build
@@ -42,6 +43,7 @@ GCE_SCOPE = 'https://www.googleapis.com/auth/compute'
 GCE_AUTH_VERSION = 'v1beta14'
 
 #TODO: Add Node class to GCE and use one iterface from libcloud
+
 
 class GoogleComputeEngineNodeDriver(NodeDriver):
     """
@@ -131,7 +133,10 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
             location = self.default_zone
         else:
             location = location.name
-        req = self.request.instances().list(project=project, zone=location).execute()
+        try:
+            req = self.request.instances().list(project=project, zone=location).execute()
+        except httplib.BadStatusLine:
+            req = self.request.instances().list(project=project, zone=location).execute()
         items = req['items'] if 'items' in req else []
         for instance in items:
             node = self._to_node(instance)

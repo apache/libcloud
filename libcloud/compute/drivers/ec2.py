@@ -647,7 +647,7 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None, ex_image_ids=None):
+    def list_images(self, location=None, ex_image_ids=None, owner=None):
         """
         List all images
 
@@ -661,6 +661,8 @@ class BaseEC2NodeDriver(NodeDriver):
         @rtype: C{list} of L{NodeImage}
         """
         params = {'Action': 'DescribeImages'}
+        if owner:
+            params.update({'Owner.1': owner})
 
         if ex_image_ids:
             params.update(self._pathlist('ImageId', ex_image_ids))
