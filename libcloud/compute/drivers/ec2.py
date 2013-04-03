@@ -596,13 +596,14 @@ class BaseEC2NodeDriver(NodeDriver):
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
-
+        create_time = findtext(element=element, xpath='createTime', namespace=NAMESPACE)
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
                              driver=self,
                              extra={'state': state,
-                                    'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE)})
+                                    'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE),
+                                    'create-time': datetime.strptime(create_time, '%Y-%m-%dT%H:%M:%S.000Z')})
 
     def _to_snapshots(self, response):
         return [self._to_snapshot(el) for el in response.findall(
@@ -616,9 +617,10 @@ class BaseEC2NodeDriver(NodeDriver):
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
         time = findtext(element=element, xpath='startTime', namespace=NAMESPACE)
         description = findtext(element=element, xpath='description', namespace=NAMESPACE)
-        return StorageSnapshot(snapId, size, description, self, extra={'volume_id': volId,
-                                                                       'state': state,
-                                                                       'start_time': datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.000Z')})
+        return StorageSnapshot(snapId, size, description, self,
+                               extra={'volume_id': volId,
+                                        'state': state,
+                                        'start-time': datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.000Z')})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -1119,8 +1121,6 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
                   'Filter.0.Value.0': resource.id,
-                  'Filter.1.Name': 'resource-type',
-                  'Filter.1.Value.0': 'instance',
                   }
 
         result = self.connection.request(self.path,
