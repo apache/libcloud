@@ -41,6 +41,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
         self.assertEqual(node.id, "8098")
         self.assertEqual(node.name, 'api-node3')
+        self.assertEqual(node.extra['PLANID'], '1')
         self.assertTrue('75.127.96.245' in node.public_ips)
         self.assertEqual(node.private_ips, [])
 
@@ -97,7 +98,7 @@ class LinodeMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _avail_linodeplans(self, method, url, body, headers):
-        body = '{"ERRORARRAY":[],"ACTION":"avail.linodeplans","DATA":[{"AVAIL":{"2":27,"3":0,"4":0,"6":0},"DISK":16,"PRICE":19.95,"PLANID":1,"LABEL":"Linode 360","RAM":360,"XFER":200},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":24,"PRICE":29.95,"PLANID":2,"LABEL":"Linode 540","RAM":540,"XFER":300},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":32,"PRICE":39.95,"PLANID":3,"LABEL":"Linode 720","RAM":720,"XFER":400},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":48,"PRICE":59.95,"PLANID":4,"LABEL":"Linode 1080","RAM":1080,"XFER":600},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":64,"PRICE":79.95,"PLANID":5,"LABEL":"Linode 1440","RAM":1440,"XFER":800},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":128,"PRICE":159.95,"PLANID":6,"LABEL":"Linode 2880","RAM":2880,"XFER":1600},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":256,"PRICE":319.95,"PLANID":7,"LABEL":"Linode 5760","RAM":5760,"XFER":2000},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":384,"PRICE":479.95,"PLANID":8,"LABEL":"Linode 8640","RAM":8640,"XFER":2000},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":512,"PRICE":639.95,"PLANID":9,"LABEL":"Linode 11520","RAM":11520,"XFER":2000},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":640,"PRICE":799.95,"PLANID":10,"LABEL":"Linode 14400","RAM":14400,"XFER":2000}]}'
+        body = '{"ERRORARRAY":[],"ACTION":"avail.linodeplans","DATA":[{"AVAIL":{"2":27,"3":0,"4":0,"6":0},"DISK":16,"PRICE":19.95,"PLANID":1,"LABEL":"Linode 360","RAM":360,"XFER":200},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":24,"PRICE":29.95,"PLANID":2,"LABEL":"Linode 512","RAM":512,"XFER":300},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":32,"PRICE":39.95,"PLANID":3,"LABEL":"Linode 720","RAM":720,"XFER":400},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":48,"PRICE":59.95,"PLANID":4,"LABEL":"Linode 1080","RAM":1080,"XFER":600},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":64,"PRICE":79.95,"PLANID":5,"LABEL":"Linode 1440","RAM":1440,"XFER":800},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":128,"PRICE":159.95,"PLANID":6,"LABEL":"Linode 2880","RAM":2880,"XFER":1600},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":256,"PRICE":319.95,"PLANID":7,"LABEL":"Linode 5760","RAM":5760,"XFER":2000},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":384,"PRICE":479.95,"PLANID":8,"LABEL":"Linode 8640","RAM":8640,"XFER":2000},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":512,"PRICE":639.95,"PLANID":9,"LABEL":"Linode 11520","RAM":11520,"XFER":2000},{"AVAIL":{"2":0,"3":0,"4":0,"6":0},"DISK":640,"PRICE":799.95,"PLANID":10,"LABEL":"Linode 14400","RAM":14400,"XFER":2000}]}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _avail_distributions(self, method, url, body, headers):
@@ -141,7 +142,7 @@ class LinodeMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_list(self, method, url, body, headers):
-        body = '{"ACTION": "linode.list", "DATA": [{"ALERT_DISKIO_ENABLED": 1, "BACKUPWEEKLYDAY": 0, "LABEL": "api-node3", "DATACENTERID": 5, "ALERT_BWOUT_ENABLED": 1, "ALERT_CPU_THRESHOLD": 10, "TOTALHD": 100, "ALERT_BWQUOTA_THRESHOLD": 81, "ALERT_BWQUOTA_ENABLED": 1, "TOTALXFER": 200, "STATUS": 2, "ALERT_BWIN_ENABLED": 1, "ALERT_BWIN_THRESHOLD": 5, "ALERT_DISKIO_THRESHOLD": 200, "WATCHDOG": 1, "LINODEID": 8098, "BACKUPWINDOW": 1, "TOTALRAM": 540, "LPM_DISPLAYGROUP": "", "ALERT_BWOUT_THRESHOLD": 5, "BACKUPSENABLED": 1, "ALERT_CPU_ENABLED": 1}], "ERRORARRAY": []}'
+        body = '{"ACTION": "linode.list", "DATA": [{"ALERT_DISKIO_ENABLED": 1, "BACKUPWEEKLYDAY": 0, "LABEL": "api-node3", "DATACENTERID": 5, "ALERT_BWOUT_ENABLED": 1, "ALERT_CPU_THRESHOLD": 10, "TOTALHD": 100, "ALERT_BWQUOTA_THRESHOLD": 81, "ALERT_BWQUOTA_ENABLED": 1, "TOTALXFER": 200, "STATUS": 2, "ALERT_BWIN_ENABLED": 1, "ALERT_BWIN_THRESHOLD": 5, "ALERT_DISKIO_THRESHOLD": 200, "WATCHDOG": 1, "LINODEID": 8098, "BACKUPWINDOW": 1, "TOTALRAM": 512, "LPM_DISPLAYGROUP": "", "ALERT_BWOUT_THRESHOLD": 5, "BACKUPSENABLED": 1, "ALERT_CPU_ENABLED": 1}], "ERRORARRAY": []}'
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _linode_ip_list(self, method, url, body, headers):
