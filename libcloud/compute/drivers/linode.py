@@ -73,7 +73,6 @@ class LinodeNodeDriver(NodeDriver):
     name = "Linode"
     website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
-    _linode_plan_ids = LINODE_PLAN_IDS
 
     def __init__(self, key):
         """Instantiate the driver with the given API key
@@ -84,6 +83,7 @@ class LinodeNodeDriver(NodeDriver):
         @rtype: C{None}
         """
         self.datacenter = None
+        self.plan_ids = None
         NodeDriver.__init__(self, key)
 
     # Converts Linode's state from DB to a NodeState constant.
@@ -470,6 +470,15 @@ class LinodeNodeDriver(NodeDriver):
         dcs = ", ".join([d["DATACENTERID"] for d in data])
         self.datacenter = None
         raise LinodeException(0xFD, "Invalid datacenter (use one of %s)" % dcs)
+        
+    def _get_plan_id_by_ram(self, ram):
+        if not self.plan_ids:
+            self.plan_ids = self.list_sizes()
+            
+        for plan in self.plan_ids:
+            if plan.ram == ram:  
+                return plan.id
+        return 0
 
     def _to_nodes(self, objs):
         """Convert returned JSON Linodes into Node instances
@@ -488,7 +497,7 @@ class LinodeNodeDriver(NodeDriver):
                                   state=self.LINODE_STATES[o["STATUS"]],
                                   driver=self.connection.driver)
             n.extra = copy(o)
-            n.extra["PLANID"] = self._linode_plan_ids.get(o.get("TOTALRAM"))
+            n.extra["PLANID"] = self._get_plan_id_by_ram(o.get("TOTALRAM"))
             batch.append({"api_action": "linode.ip.list", "LinodeID": lid})
 
         # Avoid batch limitation
