@@ -41,8 +41,7 @@ from copy import copy
 
 from libcloud.utils.py3 import PY3
 
-from libcloud.common.linode import (API_ROOT, LinodeException,
-                                    LinodeConnection, LINODE_PLAN_IDS)
+from libcloud.common.linode import (API_ROOT, LinodeException, LinodeConnection)
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
 from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
