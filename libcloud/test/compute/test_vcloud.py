@@ -277,7 +277,7 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
         VCloudNodeDriver.connectionCls.host = 'test'
         VCloudNodeDriver.connectionCls.conn_classes = (None, VCloud_1_5_MockHttp)
         VCloud_1_5_MockHttp.type = None
-        self.driver = VCloud_1_5_NodeDriver(*VCLOUD_PARAMS, api_version='5.1')
+        self.driver = VCloud_1_5_NodeDriver(*VCLOUD_PARAMS, **{'api_version': '5.1'})
 
     def _test_create_node_valid_ex_vm_memory(self):
         # TODO: Hook up the fixture
