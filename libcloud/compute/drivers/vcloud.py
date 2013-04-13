@@ -380,6 +380,8 @@ class VCloudNodeDriver(NodeDriver):
                 cls = VCloudNodeDriver
             elif api_version == '1.5':
                 cls = VCloud_1_5_NodeDriver
+            elif api_version == '5.1':
+                cls = VCloud_1_5_NodeDriver
             else:
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" %
@@ -1858,3 +1860,15 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                    cpu=cpu,
                    memory=memory,
                    storage=storage)
+
+
+class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
+
+    @staticmethod
+    def _validate_vm_memory(vm_memory):
+        if vm_memory is None:
+            return None
+        elif (vm_memory % 4) != 0:
+            #The vcd 5.1 virtual machine memory size must be a multiple of 4 MB
+            raise ValueError(
+                '%s is not a valid vApp VM memory value' % (vm_memory))
