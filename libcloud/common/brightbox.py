@@ -46,7 +46,8 @@ class BrightboxResponse(JsonResponse):
 
             return response['error']
         elif 'error_name' in response:
-            return '%s: %s' % (response['error_name'], response['errors'][0])
+            full_err = '\n'.join(response['errors'])
+            return '%s: %s' % (response['error_name'], full_err)
 
         return self.body
 
