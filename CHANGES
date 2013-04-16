@@ -26,6 +26,11 @@ Changes with Apache Libcloud in development:
       (LIBCLOUD-314)
       [Trevor Powell]
 
+ *) Storage
+
+    - Fix a regression with removed ex_force_service_region constructor kwarg in
+      the CloudFiles driver. (LIBCLOUD-260)
+
 Changes with Apache Libcloud 0.12.3:
 
   *) General
