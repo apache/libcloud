@@ -71,10 +71,12 @@ class BrightboxLBDriver(Driver):
         """
 
         listeners = [{'in': port_in, 'out': port_out, 'protocol': protocol}
-                     for port_in, port_out, protocol in ports]
+                     for port_in, port_out, protocol in ports
+                     if protocol in ['tcp', 'http', 'http+ws']]
 
         healthcheck = [{'type': protocol, 'port': port_in}
                        for port_in, port_out, protocol in ports]
+
         ## brightbox supports only 1 HC, so we choose the first one
         healthcheck = healthcheck[0]
         response = self._post(
