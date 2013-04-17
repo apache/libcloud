@@ -67,7 +67,8 @@ class BrightboxNodeDriver(NodeDriver):
                                      'interfaces', 'snapshots',
                                      'server_groups', 'hostname',
                                      'started_at', 'created_at',
-                                     'deleted_at'])
+                                     'deleted_at', 'console_token',
+                                     'console_token_expires'])
         # deleting servers will have an empty zone for brightbox
         extra_data['zone'] = None
         if data['zone']:
@@ -186,7 +187,7 @@ class BrightboxNodeDriver(NodeDriver):
         data = self.connection.request('/%s/servers/%s'
                                        % (self.api_version, server_id)).object
         if raw == False:
-            return list(map(self._to_node, data))
+            return self._to_node(data)
         else:
             return data
 
