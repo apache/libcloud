@@ -7,6 +7,9 @@ Changes with Apache Libcloud in deveploment:
     - Fix destroy_node method in the experimental libvirt driver.
       [Aymen Fitati]
 
+    - Add ex_start_node method to the Joyent driver. (LIBCLOUD-319)
+      [rszabo50]
+
 Changes with Apache Libcloud 0.12.4:
 
  *) Compute

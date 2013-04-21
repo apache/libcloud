@@ -76,6 +76,10 @@ class JoyentTestCase(unittest.TestCase):
         node = self.driver.list_nodes()[0]
         self.assertTrue(self.driver.ex_stop_node(node))
 
+    def test_ex_start_node(self):
+        node = self.driver.list_nodes()[0]
+        self.assertTrue(self.driver.ex_start_node(node))
+
 
 class JoyentHttp(MockHttp):
     fixtures = ComputeFileFixtures('joyent')
