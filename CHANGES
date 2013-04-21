@@ -1,6 +1,6 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud 0.12.4:
 
  *) Compute
 
@@ -25,6 +25,11 @@ Changes with Apache Libcloud in development:
       which is a multiple of four for ex_vm_memory kwarg in create_node method.
       (LIBCLOUD-314)
       [Trevor Powell]
+
+ *) Storage
+
+    - Fix a regression with removed ex_force_service_region constructor kwarg in
+      the CloudFiles driver. (LIBCLOUD-260)
 
 Changes with Apache Libcloud 0.12.3:
 
