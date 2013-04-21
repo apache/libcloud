@@ -1,5 +1,12 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in deveploment:
+
+ *) Compute
+
+    - Fix destroy_node method in the experimental libvirt driver.
+      [Aymen Fitati]
+
 Changes with Apache Libcloud 0.12.4:
 
  *) Compute
