@@ -10,6 +10,10 @@ Changes with Apache Libcloud in deveploment:
     - Add ex_start_node method to the Joyent driver. (LIBCLOUD-319)
       [rszabo50]
 
+ *) Load Balancer
+
+    - Add ex_list_current_usage method to the Rackspace driver.
+
 Changes with Apache Libcloud 0.12.4:
 
  *) Compute
