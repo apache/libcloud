@@ -147,5 +147,5 @@ class LibvirtNodeDriver(NodeDriver):
         return domain
         
     def _get_domain_for_name(self, domain):
-        domain = self.connection.lookupByName(int(domaine))
+        domain = self.connection.lookupByName(domaine)
         return domain
