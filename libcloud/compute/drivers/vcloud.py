@@ -381,7 +381,7 @@ class VCloudNodeDriver(NodeDriver):
             elif api_version == '1.5':
                 cls = VCloud_1_5_NodeDriver
             elif api_version == '5.1':
-                cls = VCloud_1_5_NodeDriver
+                cls = VCloud_5_1_NodeDriver
             else:
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" %
