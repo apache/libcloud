@@ -23,7 +23,7 @@ import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import u
-from libcloud.utils.py3 import PY32
+from libcloud.utils.py3 import PY3
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
@@ -115,13 +115,12 @@ class DeploymentTests(unittest.TestCase):
                         client=MockClient(hostname='localhost')))
 
     def test_script_file_deployment(self):
-        # TODO: Fix 3.2 compatibility
-        if PY32:
-            return
-
         file_path = os.path.abspath(__file__)
         with open(file_path, 'rb') as fp:
             content = fp.read()
+
+        if PY3:
+            content = content.decode('utf-8')
 
         sfd1 = ScriptFileDeployment(script_file=file_path)
         self.assertEqual(sfd1.script, content)
