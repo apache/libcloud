@@ -23,15 +23,26 @@ import libcloud
 
 from libcloud.utils.py3 import xmlrpclib
 
+from libcloud.common.base import ConnectionUserAndKey
+from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage
 
 DATACENTERS = {
+    'hou02': {'country': 'US'},
     'sea01': {'country': 'US'},
     'wdc01': {'country': 'US'},
-    'dal01': {'country': 'US'}
+    'dal01': {'country': 'US'},
+    'dal02': {'country': 'US'},
+    'dal04': {'country': 'US'},
+    'dal05': {'country': 'US'},
+    'dal06': {'country': 'US'},
+    'dal07': {'country': 'US'},
+    'sjc01': {'country': 'US'},
+    'sng01': {'country': 'SG'},
+    'ams01': {'country': 'NL'},
 }
 
 NODE_STATE_MAP = {
@@ -40,113 +51,45 @@ NODE_STATE_MAP = {
     'PAUSED': NodeState.TERMINATED,
 }
 
-DEFAULT_PACKAGE = 46
+SL_BASE_TEMPLATES = [
+    {
+        'name': '1 CPU, 1GB ram, 25GB',
+        'ram': 1024,
+        'disk': 25,
+        'cpus': 1,
+    }, {
+        'name': '1 CPU, 1GB ram, 100GB',
+        'ram': 1024,
+        'disk': 100,
+        'cpus': 1,
+    }, {
+        'name': '2 CPU, 2GB ram, 100GB',
+        'ram': 4 * 1024,
+        'disk': 100,
+        'cpus': 2,
+    }, {
+        'name': '4 CPU, 4GB ram, 100GB',
+        'ram': 4 * 1024,
+        'disk': 100,
+        'cpus': 4,
+    }, {
+        'name': '8 CPU, 8GB ram, 100GB',
+        'ram': 8 * 1024,
+        'disk': 100,
+        'cpus': 8,
+    }]
 
-SL_IMAGES = [
-    {'id': 1684, 'name': 'CentOS 5 - Minimal Install (32 bit)'},
-    {'id': 1685, 'name': 'CentOS 5 - Minimal Install (64 bit)'},
-    {'id': 1686, 'name': 'CentOS 5 - LAMP Install (32 bit)'},
-    {'id': 1687, 'name': 'CentOS 5 - LAMP Install (64 bit)'},
-    {'id': 1688,
-     'name': 'Red Hat Enterprise Linux 5 - Minimal Install (32 bit)'},
-    {'id': 1689,
-     'name': 'Red Hat Enterprise Linux 5 - Minimal Install (64 bit)'},
-    {'id': 1690, 'name': 'Red Hat Enterprise Linux 5 - LAMP Install (32 bit)'},
-    {'id': 1691, 'name': 'Red Hat Enterprise Linux 5 - LAMP Install (64 bit)'},
-    {'id': 1692,
-     'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (32 bit)'},
-    {'id': 1693,
-     'name': 'Ubuntu Linux 8 LTS Hardy Heron - Minimal Install (64 bit)'},
-    {'id': 1694,
-     'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (32 bit)'},
-    {'id': 1695,
-     'name': 'Ubuntu Linux 8 LTS Hardy Heron - LAMP Install (64 bit)'},
-    {'id': 1696,
-     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (32 bit)'},
-    {'id': 1697,
-     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - Minimal Install (64 bit)'},
-    {'id': 1698,
-     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (32 bit)'},
-    {'id': 1699,
-     'name': 'Debian GNU/Linux 5.0 Lenny/Stable - LAMP Install (64 bit)'},
-    {'id': 1700, 'name': 'Windows Server 2003 Standard SP2 with R2 (32 bit)'},
-    {'id': 1701, 'name': 'Windows Server 2003 Standard SP2 with R2 (64 bit)'},
-    {'id': 1703,
-     'name': 'Windows Server 2003 Enterprise SP2 with R2 (64 bit)'},
-    {'id': 1705, 'name': 'Windows Server 2008 Standard Edition (64bit)'},
-    {'id': 1715, 'name': 'Windows Server 2003 Datacenter SP2 (64 bit)'},
-    {'id': 1716, 'name': 'Windows Server 2003 Datacenter SP2 (32 bit)'},
-    {'id': 1742, 'name': 'Windows Server 2008 Standard Edition SP2 (32bit)'},
-    {'id': 1752, 'name': 'Windows Server 2008 Standard Edition SP2 (64bit)'},
-    {'id': 1756, 'name': 'Windows Server 2008 Enterprise Edition SP2 (32bit)'},
-    {'id': 1761, 'name': 'Windows Server 2008 Enterprise Edition SP2 (64bit)'},
-    {'id': 1766, 'name': 'Windows Server 2008 Datacenter Edition SP2 (32bit)'},
-    {'id': 1770, 'name': 'Windows Server 2008 Datacenter Edition SP2 (64bit)'},
-    {'id': 1857, 'name': 'Windows Server 2008 R2 Standard Edition (64bit)'},
-    {'id': 1860, 'name': 'Windows Server 2008 R2 Enterprise Edition (64bit)'},
-    {'id': 1863, 'name': 'Windows Server 2008 R2 Datacenter Edition (64bit)'},
-]
+SL_TEMPLATES = {}
+for i, template in enumerate(SL_BASE_TEMPLATES):
+    # Add local disk templates
+    local = template.copy()
+    local['local_disk'] = True
+    SL_TEMPLATES['sl%s_local_disk' % (i + 1,)] = local
 
-"""
-The following code snippet will print out all available "prices"
-    mask = { 'items': '' }
-    res = self.connection.request(
-        "SoftLayer_Product_Package",
-        "getObject",
-        res,
-        id=46,
-        object_mask=mask
-    )
-
-    from pprint import pprint; pprint(res)
-"""
-SL_TEMPLATES = {
-    'sl1': {
-        'imagedata': {
-            'name': '2 x 2.0 GHz, 1GB ram, 100GB',
-            'ram': 1024,
-            'disk': 100,
-            'bandwidth': None
-        },
-        'prices': [
-            {'id': 1644},  # 1 GB
-            {'id': 1639},  # 100 GB (SAN)
-            {'id': 1963},  # Private 2 x 2.0 GHz Cores
-            {'id': 21},  # 1 IP Address
-            {'id': 55},  # Host Ping
-            {'id': 58},  # Automated Notification
-            {'id': 1800},  # 0 GB Bandwidth
-            {'id': 57},  # Email and Ticket
-            {'id': 274},  # 1000 Mbps Public & Private Networks
-            {'id': 905},  # Reboot / Remote Console
-            {'id': 418},  # Nessus Vulnerability Assessment & Reporting
-            {'id': 420},  # Unlimited SSL VPN Users & 1 PPTP VPN User per account
-        ],
-    },
-    'sl2': {
-        'imagedata': {
-            'name': '2 x 2.0 GHz, 4GB ram, 350GB',
-            'ram': 4096,
-            'disk': 350,
-            'bandwidth': None
-        },
-        'prices': [
-            {'id': 1646},  # 4 GB
-            {'id': 1639},  # 100 GB (SAN) - This is the only available "First Disk"
-            {'id': 1638},  # 250 GB (SAN)
-            {'id': 1963},  # Private 2 x 2.0 GHz Cores
-            {'id': 21},  # 1 IP Address
-            {'id': 55},  # Host Ping
-            {'id': 58},  # Automated Notification
-            {'id': 1800},  # 0 GB Bandwidth
-            {'id': 57},  # Email and Ticket
-            {'id': 274},  # 1000 Mbps Public & Private Networks
-            {'id': 905},  # Reboot / Remote Console
-            {'id': 418},  # Nessus Vulnerability Assessment & Reporting
-            {'id': 420},  # Unlimited SSL VPN Users & 1 PPTP VPN User per account
-        ],
-    }
-}
+    # Add san disk templates
+    san = template.copy()
+    san['local_disk'] = False
+    SL_TEMPLATES['sl%s_san_disk' % (i + 1,)] = san
 
 
 class SoftLayerException(LibcloudError):
@@ -156,75 +99,38 @@ class SoftLayerException(LibcloudError):
     pass
 
 
-class SoftLayerSafeTransport(xmlrpclib.SafeTransport):
-    pass
+class SoftLayerResponse(XMLRPCResponse):
+    defaultExceptionCls = SoftLayerException
+    exceptions = {
+        'SoftLayer_Account': InvalidCredsError,
+    }
 
 
-class SoftLayerTransport(xmlrpclib.Transport):
-    pass
-
-
-class SoftLayerProxy(xmlrpclib.ServerProxy):
-    transportCls = (SoftLayerTransport, SoftLayerSafeTransport)
-    API_PREFIX = 'https://api.softlayer.com/xmlrpc/v3/'
-
-    def __init__(self, service, user_agent, verbose=0):
-        cls = self.transportCls[0]
-        if SoftLayerProxy.API_PREFIX[:8] == "https://":
-            cls = self.transportCls[1]
-        t = cls(use_datetime=0)
-        t.user_agent = user_agent
-        xmlrpclib.ServerProxy.__init__(
-            self,
-            uri="%s/%s" % (SoftLayerProxy.API_PREFIX, service),
-            transport=t,
-            verbose=verbose
-        )
-
-
-class SoftLayerConnection(object):
-    """
-    Connection class for the SoftLayer driver
-    """
-
-    proxyCls = SoftLayerProxy
-    driver = None
-
-    def __init__(self, user, key):
-        self.user = user
-        self.key = key
-        self.ua = []
+class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
+    responseCls = SoftLayerResponse
+    host = 'api.softlayer.com'
+    endpoint = '/xmlrpc/v3'
 
     def request(self, service, method, *args, **kwargs):
-        sl = self.proxyCls(service, self._user_agent())
-
         headers = {}
         headers.update(self._get_auth_headers())
         headers.update(self._get_init_params(service, kwargs.get('id')))
         headers.update(
             self._get_object_mask(service, kwargs.get('object_mask')))
-        params = [{'headers': headers}] + list(args)
+        headers.update(
+            self._get_object_mask(service, kwargs.get('object_mask')))
 
-        try:
-            return getattr(sl, method)(*params)
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
-            if e.faultCode == "SoftLayer_Account":
-                raise InvalidCredsError(e.faultString)
-            raise SoftLayerException(e)
+        args = ({'headers': headers}, ) + args
+        endpoint = '%s/%s' % (self.endpoint, service)
 
-    def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (libcloud.__version__,
-                                       self.driver.name,
-                                       "".join([" (%s)" % x for x in self.ua]))
-
-    def user_agent_append(self, s):
-        self.ua.append(s)
+        return super(SoftLayerConnection, self).request(method, *args,
+                                                        **{'endpoint':
+                                                            endpoint})
 
     def _get_auth_headers(self):
         return {
             'authenticate': {
-                'username': self.user,
+                'username': self.user_id,
                 'apiKey': self.key
             }
         }
@@ -262,30 +168,12 @@ class SoftLayerNodeDriver(NodeDriver):
     website = 'http://www.softlayer.com/'
     type = Provider.SOFTLAYER
 
-    features = {"create_node": ["generates_password"]}
-
-    def __init__(self, key, secret=None, secure=False):
-        """
-        @param    key:    API key or username to used (required)
-        @type     key:    C{str}
-
-        @param    secret: Secret password to be used (required)
-        @type     secret: C{str}
-
-        @param    secure: Weither to use HTTPS or HTTP.
-        @type     secure: C{bool}
-
-        @rtype: C{None}
-        """
-        self.key = key
-        self.secret = secret
-        self.connection = self.connectionCls(key, secret)
-        self.connection.driver = self
+    features = {'create_node': ['generates_password']}
 
     def _to_node(self, host):
         try:
             password = \
-                host['softwareComponents'][0]['passwords'][0]['password']
+                host['operatingSystem']['passwords'][0]['password']
         except (IndexError, KeyError):
             password = None
 
@@ -293,13 +181,13 @@ class SoftLayerNodeDriver(NodeDriver):
             'hourlyRecurringFee', 0)
         recurringFee = host.get('billingItem', {}).get('recurringFee', 0)
         recurringMonths = host.get('billingItem', {}).get('recurringMonths', 0)
+        createDate = host.get('createDate', None)
 
         return Node(
             id=host['id'],
             name=host['hostname'],
             state=NODE_STATE_MAP.get(
-                host['powerState']['keyName'],
-                NodeState.UNKNOWN
+                host['powerState']['keyName'], NodeState.UNKNOWN
             ),
             public_ips=[host['primaryIpAddress']],
             private_ips=[host['primaryBackendIpAddress']],
@@ -309,59 +197,44 @@ class SoftLayerNodeDriver(NodeDriver):
                 'hourlyRecurringFee': hourlyRecurringFee,
                 'recurringFee': recurringFee,
                 'recurringMonths': recurringMonths,
+                'created': createDate,
             }
         )
-
-    def _to_nodes(self, hosts):
-        return [self._to_node(h) for h in hosts]
 
     def destroy_node(self, node):
-        billing_item = self.connection.request(
-            "SoftLayer_Virtual_Guest",
-            "getBillingItem",
-            id=node.id
+        self.connection.request(
+            'SoftLayer_Virtual_Guest', 'deleteObject', id=node.id
         )
+        return True
 
-        if billing_item:
-            res = self.connection.request(
-                "SoftLayer_Billing_Item",
-                "cancelService",
-                id=billing_item['id']
-            )
-            return res
-        else:
-            return False
+    def reboot_node(self, node):
+        self.connection.request(
+            'SoftLayer_Virtual_Guest', 'rebootSoft', id=node.id
+        )
+        return True
 
-    def _get_order_information(self, order_id, timeout=1200, check_interval=5):
+    def _get_order_information(self, node_id, timeout=1200, check_interval=5):
         mask = {
-            'orderTopLevelItems': {
-                'billingItem': {
-                    'resource': {
-                        'softwareComponents': {'passwords': ''},
-                        'powerState': '',
-                    }
-                },
-            }
+            'billingItem': '',
+            'powerState': '',
+            'operatingSystem': {'passwords': ''},
+            'provisionDate': '',
         }
 
         for i in range(0, timeout, check_interval):
-            try:
-                res = self.connection.request(
-                    "SoftLayer_Billing_Order",
-                    "getObject",
-                    id=order_id,
-                    object_mask=mask
-                )
-                item = res['orderTopLevelItems'][0]['billingItem']['resource']
-                if item['softwareComponents'][0]['passwords']:
-                    return item
+            res = self.connection.request(
+                'SoftLayer_Virtual_Guest',
+                'getObject',
+                id=node_id,
+                object_mask=mask
+            ).object
 
-            except (KeyError, IndexError):
-                pass
+            if res.get('provisionDate', None):
+                return res
 
             time.sleep(check_interval)
 
-        return None
+        raise SoftLayerException('Timeout on getting node details')
 
     def create_node(self, **kwargs):
         """Create a new SoftLayer node
@@ -370,55 +243,111 @@ class SoftLayerNodeDriver(NodeDriver):
 
         @keyword    ex_domain: e.g. libcloud.org
         @type       ex_domain: C{str}
+        @keyword    ex_cpus: e.g. 2
+        @type       ex_cpus: C{int}
+        @keyword    ex_disk: e.g. 100
+        @type       ex_disk: C{int}
+        @keyword    ex_ram: e.g. 2048
+        @type       ex_ram: C{int}
+        @keyword    ex_bandwidth: e.g. 100
+        @type       ex_bandwidth: C{int}
+        @keyword    ex_local_disk: e.g. True
+        @type       ex_local_disk: C{bool}
+        @keyword    ex_datacenter: e.g. Dal05
+        @type       ex_datacenter: C{str}
+        @keyword    ex_os: e.g. UBUNTU_LATEST
+        @type       ex_os: C{str}
         """
         name = kwargs['name']
-        image = kwargs['image']
-        size = kwargs['size']
-        domain = kwargs.get('ex_domain')
-        location = kwargs['location']
-        if domain is None:
-            if name.find(".") != -1:
-                domain = name[name.find('.') + 1:]
+        os = 'DEBIAN_LATEST'
+        if 'ex_os' in kwargs:
+            os = kwargs['ex_os']
+        elif 'image' in kwargs:
+            os = kwargs['image'].id
 
+        size = kwargs.get('size', NodeSize(id=None, name='Custom', ram=None,
+                                           disk=None, bandwidth=None,
+                                           price=None,
+                                           driver=self.connection.driver))
+
+        ex_size_data = SL_TEMPLATES.get(size.id) or {}
+        cpu_count = kwargs.get('ex_cpus') or ex_size_data.get('cpus') or 1
+        ram = kwargs.get('ex_ram') or size.ram or 2048
+        bandwidth = kwargs.get('ex_bandwidth') or size.bandwidth or 10
+        hourly = 'true' if kwargs.get('ex_hourly', True) else 'false'
+
+        local_disk = 'true'
+        if ex_size_data.get('local_disk') is False:
+            local_disk = 'false'
+
+        if kwargs.get('ex_local_disk') is False:
+            local_disk = 'false'
+
+        disk_size = 100
+        if size.disk:
+            disk_size = size.disk
+        if kwargs.get('ex_disk'):
+            disk_size = kwargs.get('ex_disk')
+
+        datacenter = ''
+        if 'ex_datacenter' in kwargs:
+            datacenter = kwargs['ex_datacenter']
+        elif 'location' in kwargs:
+            datacenter = kwargs['location'].id
+
+        domain = kwargs.get('ex_domain')
+        if domain is None:
+            if name.find('.') != -1:
+                domain = name[name.find('.') + 1:]
         if domain is None:
             # TODO: domain is a required argument for the Sofylayer API, but it
             # it shouldn't be.
-            domain = "exmaple.com"
+            domain = 'example.com'
 
-        res = {'prices': SL_TEMPLATES[size.id]['prices']}
-        res['packageId'] = DEFAULT_PACKAGE
-        res['prices'].append({'id': image.id})  # Add OS to order
-        res['location'] = location.id
-        res['complexType'] = 'SoftLayer_Container_Product_Order_Virtual_Guest'
-        res['quantity'] = 1
-        res['useHourlyPricing'] = True
-        res['virtualGuests'] = [
-            {
-                'hostname': name,
-                'domain': domain
-            }
-        ]
+        newCCI = {
+            'hostname': name,
+            'domain': domain,
+            'startCpus': cpu_count,
+            'maxMemory': ram,
+            'networkComponents': [{'maxSpeed': bandwidth}],
+            'hourlyBillingFlag': hourly,
+            'operatingSystemReferenceCode': os,
+            'localDiskFlag': local_disk,
+            'blockDevices': [
+                {
+                    'device': '0',
+                    'diskImage': {
+                        'capacity': disk_size,
+                    }
+                }
+            ]
+
+        }
+
+        if datacenter:
+            newCCI['datacenter'] = {'name': datacenter}
 
         res = self.connection.request(
-            "SoftLayer_Product_Order",
-            "placeOrder",
-            res
-        )
+            'SoftLayer_Virtual_Guest', 'createObject', newCCI
+        ).object
 
-        order_id = res['orderId']
-        raw_node = self._get_order_information(order_id)
+        node_id = res['id']
+        raw_node = self._get_order_information(node_id)
 
         return self._to_node(raw_node)
 
     def _to_image(self, img):
         return NodeImage(
-            id=img['id'],
-            name=img['name'],
+            id=img['template']['operatingSystemReferenceCode'],
+            name=img['itemPrice']['item']['description'],
             driver=self.connection.driver
         )
 
     def list_images(self, location=None):
-        return [self._to_image(i) for i in SL_IMAGES]
+        result = self.connection.request(
+            'SoftLayer_Virtual_Guest', 'getCreateObjectOptions'
+        ).object
+        return [self._to_image(i) for i in result['operatingSystems']]
 
     def _to_size(self, id, size):
         return NodeSize(
@@ -426,38 +355,32 @@ class SoftLayerNodeDriver(NodeDriver):
             name=size['name'],
             ram=size['ram'],
             disk=size['disk'],
-            bandwidth=size['bandwidth'],
+            bandwidth=size.get('bandwidth'),
             price=None,
             driver=self.connection.driver,
         )
 
     def list_sizes(self, location=None):
-        return [self._to_size(id, s['imagedata']) for id, s in
-                list(SL_TEMPLATES.items())]
+        return [self._to_size(id, s) for id, s in SL_TEMPLATES.items()]
 
     def _to_loc(self, loc):
-        return NodeLocation(
-            id=loc['id'],
-            name=loc['name'],
-            country=DATACENTERS[loc['name']]['country'],
-            driver=self
-        )
+        country = 'UNKNOWN'
+        if loc['name'] in DATACENTERS:
+            country = DATACENTERS[loc['name']]['country']
+        return NodeLocation(id=loc['name'], name=loc['longName'],
+                            country=country, driver=self)
 
     def list_locations(self):
         res = self.connection.request(
-            "SoftLayer_Location_Datacenter",
-            "getDatacenters"
-        )
-
-        # checking "in DATACENTERS", because some of the locations returned
-        # by getDatacenters are not useable.
-        return [self._to_loc(l) for l in res if l['name'] in DATACENTERS]
+            'SoftLayer_Location_Datacenter', 'getDatacenters'
+        ).object
+        return [self._to_loc(l) for l in res]
 
     def list_nodes(self):
         mask = {
             'virtualGuests': {
                 'powerState': '',
-                'softwareComponents': {'passwords': ''},
+                'operatingSystem': {'passwords': ''},
                 'billingItem': '',
             },
         }
@@ -465,14 +388,5 @@ class SoftLayerNodeDriver(NodeDriver):
             "SoftLayer_Account",
             "getVirtualGuests",
             object_mask=mask
-        )
-        nodes = self._to_nodes(res)
-        return nodes
-
-    def reboot_node(self, node):
-        res = self.connection.request(
-            "SoftLayer_Virtual_Guest",
-            "rebootHard",
-            id=node.id
-        )
-        return res
+        ).object
+        return [self._to_node(h) for h in res]

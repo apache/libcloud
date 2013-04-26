@@ -1298,6 +1298,21 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
         return resp.status == httplib.ACCEPTED
 
+    def ex_list_current_usage(self, balancer):
+        """
+        Return current load balancer usage report.
+
+        @param balancer: Balancer to remove the access rules from.
+        @type  balancer: L{LoadBalancer}
+
+        @return: Raw load balancer usage object.
+        @rtype: C{dict}
+        """
+        uri = '/loadbalancers/%s/usage/current' % (balancer.id)
+        resp = self.connection.request(uri, method='GET')
+
+        return resp.object
+
     def _to_protocols(self, object):
         protocols = []
         for item in object["protocols"]:

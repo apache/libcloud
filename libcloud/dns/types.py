@@ -35,6 +35,7 @@ class Provider(object):
     RACKSPACE_UK = 'rackspace_uk'
     ROUTE53 = 'route53'
     HOSTVIRTUAL = 'hostvirtual'
+    GANDI = 'gandi'
 
 
 class RecordType(object):
@@ -57,6 +58,8 @@ class RecordType(object):
     REDIRECT = 13
     GEO = 14
     URL = 15
+    WKS = 16
+    LOC = 17
 
     @classmethod
     def __repr__(self, value):
@@ -66,6 +69,7 @@ class RecordType(object):
 
 class ZoneError(LibcloudError):
     error_type = 'ZoneError'
+    kwargs = ('zone_id', )
 
     def __init__(self, value, driver, zone_id):
         self.zone_id = zone_id

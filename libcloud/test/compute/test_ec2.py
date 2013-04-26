@@ -28,14 +28,22 @@ from libcloud.compute.drivers.ec2 import EC2SAEastNodeDriver
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.drivers.ec2 import REGION_DETAILS
+from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
+from libcloud.utils.py3 import urlparse
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume
 
-from libcloud.test import MockHttp, LibcloudTestCase
+from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import EC2_PARAMS
+
+try:
+    parse_qsl = urlparse.parse_qsl
+except AttributeError:
+    import cgi
+    parse_qsl = cgi.parse_qsl
 
 
 class BaseEC2Tests(LibcloudTestCase):
@@ -165,7 +173,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_location(self):
         locations = self.driver.list_locations()
         self.assertTrue(len(locations) > 0)
+        self.assertEqual(locations[0].name, 'eu-west-1a')
         self.assertTrue(locations[0].availability_zone != None)
+        self.assertTrue(isinstance(locations[0].availability_zone,
+                                   ExEC2AvailabilityZone))
 
     def test_list_security_groups(self):
         groups = self.driver.ex_list_security_groups()
@@ -190,6 +201,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.ex_stop_node(node)
         self.assertTrue(ret)
+
+    def test_ex_create_node_with_ex_blockdevicemappings(self):
+        EC2MockHttp.type = 'create_ex_blockdevicemappings'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        mappings = [
+            {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'},
+            {'DeviceName': '/dev/sdc', 'VirtualName': 'ephemeral1'}
+        ]
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
+        self.assertEqual(node.id, 'i-2ba64342')
 
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -223,14 +250,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 15)
+                self.assertEqual(len(sizes), 17)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
+                self.assertTrue('cr1.8xlarge' in ids)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 11)
+                self.assertEqual(len(sizes), 13)
             else:
-                self.assertEqual(len(sizes), 10)
+                self.assertEqual(len(sizes), 12)
 
         self.driver.region_name = region_old
 
@@ -241,6 +269,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(image.name,
                     'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
         self.assertEqual(image.id, 'ami-be3adfd7')
+
+    def test_list_images_with_image_ids(self):
+        images = self.driver.list_images(ex_image_ids=['ami-be3adfd7'])
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0].name,
+                    'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
 
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
@@ -441,7 +475,7 @@ class EC2SAEastOldStyleModelTests(EC2OldStyleModelTests):
     driver_klass = EC2SAEastNodeDriver
 
 
-class EC2MockHttp(MockHttp):
+class EC2MockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('ec2')
 
     def _DescribeInstances(self, method, url, body, headers):
@@ -481,6 +515,20 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _create_ex_blockdevicemappings_RunInstances(self, method, url, body, headers):
+        parameters = dict(parse_qsl(url))
+        self.assertEqual(parameters['BlockDeviceMapping.1.DeviceName'],
+                         '/dev/sdb')
+        self.assertEqual(parameters['BlockDeviceMapping.1.VirtualName'],
+                         'ephemeral0')
+        self.assertEqual(parameters['BlockDeviceMapping.2.DeviceName'],
+                         '/dev/sdc')
+        self.assertEqual(parameters['BlockDeviceMapping.2.VirtualName'],
+                         'ephemeral1')
+
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 import sys
 import shutil
@@ -30,7 +32,13 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.local import LocalStorageDriver
+
+try:
+    from libcloud.storage.drivers.local import LocalStorageDriver
+except ImportError:
+    print('lockfile library is not available, skipping local_storage tests...')
+    LocalStorageDriver = None
+
 from libcloud.storage.drivers.dummy import DummyIterator
 
 
@@ -50,10 +58,11 @@ class LocalTests(unittest.TestCase):
         self.key = None
 
     def make_tmp_file(self):
-        tmppath = tempfile.mktemp()
-        tmpfile = open(tmppath, 'w')
-        tmpfile.write('blah' * 1024)
-        tmpfile.close()
+        _, tmppath = tempfile.mkstemp()
+
+        with open(tmppath, 'w') as fp:
+            fp.write('blah' * 1024)
+
         return tmppath
 
     def remove_tmp_file(self, tmppath):
@@ -99,7 +108,7 @@ class LocalTests(unittest.TestCase):
         self.assertEqual(len(objects), 5)
 
         for obj in objects:
-            self.assertEqual(obj.hash, None)
+            self.assertNotEqual(obj.hash, None)
             self.assertEqual(obj.size, 4096)
             self.assertEqual(obj.container.name, 'test3')
             self.assertTrue('creation_time' in obj.extra)
@@ -157,7 +166,7 @@ class LocalTests(unittest.TestCase):
         self.assertEqual(obj.name, 'test')
         self.assertEqual(obj.container.name, 'test5')
         self.assertEqual(obj.size, 4096)
-        self.assertEqual(obj.hash, None)
+        self.assertNotEqual(obj.hash, None)
         self.assertTrue('creation_time' in obj.extra)
         self.assertTrue('modify_time' in obj.extra)
         self.assertTrue('access_time' in obj.extra)
@@ -308,6 +317,11 @@ class LocalTests(unittest.TestCase):
         obj.delete()
         container.delete()
         self.remove_tmp_file(tmppath)
+
+
+if not LocalStorageDriver:
+    class LocalTests(unittest.TestCase):
+        pass
 
 
 if __name__ == '__main__':

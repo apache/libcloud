@@ -1,6 +1,105 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud in deveploment:
+
+ *) Compute
+
+    - Fix destroy_node method in the experimental libvirt driver.
+      [Aymen Fitati]
+
+    - Add ex_start_node method to the Joyent driver. (LIBCLOUD-319)
+      [rszabo50]
+
+    - Fix Python 3 compatibility issue in the ScriptFileDeployment class.
+      (LIBCLOUD-321)
+      [Arfrever Frehtes Taifersar Arahesis]
+
+    - Add ex_set_metadata_entry and ex_get_metadata method to the VCloud driver.
+      (LIBCLOUD-318)
+      [Michel Samia]
+
+ *) Load Balancer
+
+    - Add ex_list_current_usage method to the Rackspace driver.
+
+Changes with Apache Libcloud 0.12.4:
+
+ *) Compute
+
+    - Fix a regression in Softlayer driver caused by the xmlrpclib changes.
+      (LIBCLOUD-310)
+      [Jason Johnson]
+
+    - Allow user to pass alternate ssh usernames to deploy_node
+      (ssh_alternate_usernames kwarg) which are used for authentication if the
+      default one doesn't work. (LIBCLOUD-309)
+      [Chris Psaltis, Tomaz Muraus]
+
+    - Fix a bug in EC2 list_locations method - 'name' attribute didn't contain a
+      the right value.
+      [Tomaz Muraus]
+
+    - Add new ScriptFileDeployment deployment class which reads deploy script
+      from a file.
+      [Rudolf J Streif]
+
+    - Add support for API version 5.1 to the vCloud driver and accept any value
+      which is a multiple of four for ex_vm_memory kwarg in create_node method.
+      (LIBCLOUD-314)
+      [Trevor Powell]
+
+ *) Storage
+
+    - Fix a regression with removed ex_force_service_region constructor kwarg in
+      the CloudFiles driver. (LIBCLOUD-260)
+
+Changes with Apache Libcloud 0.12.3:
+
+  *) General
+
+    - Fix Python 3.x related regressions. (LIBCLOUD-245)
+      Reported by Arfrever Frehtes Taifersar Arahesis.
+      [Tomaz Muraus]
+
+    - Fix a regression introduced with recent xmlrpiclib changes which broke all
+      the Gandi.net drivers. (LIBCLOUD-288)
+
+      Reported by Hutson Betts.
+      [Tomaz Muraus]
+
+    - Improve deploy code to work correctly if the ssh user doesn't have access
+      to the /root directory.
+
+      Previously the ScriptDeployment script was stored in /root folder by
+      default. Now it's stored in users home directory under filename
+      ~/libcloud_deploymeny_<random>.sh. (LIBCLOUD-302)
+
+      Reported by rotem on #libcloud.
+      [Tomaz Muraus]
+
+  *) Compute
+
+    - Improve public and private IP address handling in OpenStack 1.1 driver.
+      Assume every IP address which doesn't have a label "public" or "internet"
+      is private. (LIBCLOUD-297)
+      [Grischa Meyer, Tomaz Muraus]
+
+    - Add new driver for DigitalOcean provider - https://www.digitalocean.com/.
+      (LIBCLOUD-304)
+      [Tomaz Muraus]
+
+    - Fix a regression in ParamikoSSHClient.run method which caused this methid
+      to only work as expected if you passed an absolute or a relative path to
+      the script to it. (LIBCLOUD-278)
+      [Tomaz Muraus]
+
+  *) DNS
+
+    - Allow user to specify 'priority' extra argument when creating a MX or SRV
+      record.
+      [Brian Jinwright, Tomaz Muraus]
+
+Changes with Apache Libcloud 0.12.1:
 
   *) General
 
@@ -11,7 +110,7 @@ Changes with Apache Libcloud in development:
 
       Existing list_* methods which previously used LazyList class are
       preserving the old behavior and new iterate_* methods which use a new
-      generator based approach have been added.
+      generator based approach have been added. (LIBCLOUD-254)
       [Mahendra M]
 
     - Replace old ENUM style provider constants and replace them with a string
@@ -19,6 +118,24 @@ Changes with Apache Libcloud in development:
       This change allows users to dynamically register new drivers using a new
       set_driver method. (LIBCLOUD-255)
       [Mahendra M]
+
+    - Allow user to explicitly specify which CA file is used for verifying
+      the server certificate by setting 'SSL_CERT_FILE' environment variable.
+
+      Note: When this variable is specified, the specified path is the only
+      CA file which is used to verifying the server certificate. (LIBCLOUD-283)
+      [Tomaz Muraus, Erinn Looney-Triggs]
+
+    - Add a common module (libcloud.common.xmlrpc) for handling XML-RPC
+      requests using Libcloud http layer.
+
+      Also refactor existing drivers which use xmlrpclib directly (VCL, Gandi,
+      Softlayer) to use this module.
+
+      This change allows drivers to support LIBCLOUD_DEBUG and SSL certificate
+      validation functionality. Previously they have bypassed Libcloud http
+      layer so this functionality was not available. (LIBCLOUD-288)
+      [John Carr]
 
   *) Compute
 
@@ -47,6 +164,7 @@ Changes with Apache Libcloud in development:
       - Expose generic query method (ex_query)
       - Provide functionality to get and set control access for vApps. This way
         created vApps can be shared between users/groups or everyone.
+     (LIBCLOUD-251)
      [Michal Galet]
 
    - Update EC2 pricing data to reflect new, lower prices -
@@ -76,14 +194,89 @@ Changes with Apache Libcloud in development:
      (LIBCLOUD-253)
      [L. Schaub]
 
-   - Modify ElasticStack driver class to not pass 'vnc:ip auto' argument to the
-     API when creating a server. It looks like this argument is not supported
-     anymore.
+   - Modify ElasticStack driver class to pass 'vnc auto' instead of
+     'vnc:ip auto' argument to the API when creating a server.
+     It looks like 'vnc:ip' has been replaced with 'vnc'.
      [Rick Copeland, Tomaz Muraus]
+
+   - Add new EC2 instance type - High Storage Eight Extra Large Instance
+     (hs1.8xlarge).
+     [Tomaz Muraus]
+
+   - Map 'shutting-down' node state in EC2 driver to UNKNOWN. Previously
+     it was mapped to TERMINATED. (LIBCLOUD-280)
+
+     Note: This change is backward incompatible which means you need to update
+     your code if you rely on the old behavior.
+     [Tomaz Muraus, Marcin Kuzminski]
+
+   - Change _wait_until_running method so it supports waiting on multiple nodes
+     and make it public (wait_until_running). (LIBCLOUD-274)
+     [Nick Bailey]
+
+   - Add new EC2 instance type - High Memory Cluster Eight Extra Large.
+     (cr1.8xlarge).
+     [Tomaz Muraus]
+
+   - Add new driver for Abiquo provider - http://www.abiquo.com (LIBCLOUD-250).
+     [Jaume Devesa]
+
+   - Allow user to pass 'ex_blockdevicemappings' kwarg to the EC2 driver
+     'create_node' method. (LIBCLOUD-282)
+     [Joe Miller, Tomaz Muraus]
+
+   - Improve error handling in the Brightbox driver.
+     [Tomaz Muraus]
+
+   - Fix the ScriptDeployment step to work correctly if user provides a
+     relative path for the script argument. (LIBCLOUD-278)
+     [Jaume Devesa]
+
+   - Fix Softlayer driver and make sure all the code is up to date and works
+     with the latest version of the actual Softlayer deployment (v3).
+     (LIBCLOUD-287)
+     [Kevin McDonald]
+
+   - Update EC2 driver, m3 instance types are now available in all the regions
+     except Brazil.
+
+     Also update pricing to reflect new (decreased) prices.
+     [Tomaz Muraus]
+
+   - Minor improvements in the HostVirtual driver and add new ex_get_node and
+     ex_build_node extension method. (LIBCLOUD-249)
+     [Dinesh Bhoopathy]
+
+   - Add ex_destroy_image method to IBM SCE driver. (LIBCLOUD-291)
+     [Perry Zou]
+
+   - Add the following new regions to the ElasticHosts driver: sjc-c, syd-v,
+     hkg-e. (LIBCLOUD-293)
+     [Tomaz Muraus]
+
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response.
+     [Gavin McCance, Tomaz Muraus]
+
+   - Allow users to filter images returned by the list_images method in the EC2
+     driver by providing ex_image_ids argument. (LIBCLOUD-294)
+     [Chris Psaltis, Joseph Hall]
+
+   - Add support for OpenNebula 3.8. (LIBCLOUD-295)
+     [Guillaume ZITTA]
+
+   - Add missing 'deletd' -> terminated mapping to OpenStack driver.
+     (LIBCLOUD-276)
+     [Jayyy V]
+
+   - Fix create_node in OpenStack driver to work correctly if 'adminPass'
+     attribute is not present in the response. (LIBCLOUD-292)
+     [Gavin McCance, Tomaz Muraus]
 
   *) Storage
 
     - Add a new local storage driver.
+      (LIBCLOUD-252, LIBCLOUD-258, LIBCLOUD-265, LIBCLOUD-273)
       [Mahendra M]
 
     - Fix a bug which caused the connection to not be closed when using Python
@@ -108,7 +301,7 @@ Changes with Apache Libcloud in development:
       future.
       [Tomaz Muraus]
 
-    - Support for multipart uploads and other improvemetns in the S3 driver
+    - Support for multipart uploads and other improvements in the S3 driver
       so it can more easily be re-used with other implementations (e.g. Google
       Storage, etc.).
 
@@ -116,6 +309,10 @@ Changes with Apache Libcloud in development:
       This methods is more efficient compared to old approach because it only
       requires buffering a single multipart chunk (5 MB) in memory.
       (LIBCLOUD-269)
+      [Mahendra M]
+
+    - Add new driver for Windows Azure Storage with support for block and page
+      blobs. (LIBCLOUD-80)
       [Mahendra M]
 
   *) DNS
@@ -127,6 +324,49 @@ Changes with Apache Libcloud in development:
 
     - New driver for HostVirtual provider (www.vr.org). (LIBCLOUD-249)
       [Dinesh Bhoopathy]
+
+    - Finish Amazon Route53 driver. (LIBCLOUD-132)
+      [John Carr]
+
+    - Add new driver for Gandi provider (https://www.gandi.net). (LIBCLOUD-281)
+      [John Carr]
+
+  *) Load-Balancer
+
+    - Add new driver for AWS Elastic Load Balancing service. (LIBCLOUD-169)
+      [John Carr]
+
+Changes with Apache Libcloud 0.11.4:
+
+  *) General
+
+    - Fix some of tests failures which happened in Python 3.3 due to randomized
+      dictionary ordering. (LIBCLOUD-245)
+      [Tomaz Muraus]
+
+  *) Compute
+
+    - Fix a bug where a numeric instead of a string value was used for the
+      content-length header in VCloud driver. (LIBCLOUD-256)
+      [Brian DeGeeter, Tomaz Muraus]
+
+  *) Storage
+
+    - Don't ignore ex_force_service_region argument in the CloudFiles driver.
+      (LIBCLOUD-260)
+      [Dan Di Spaltro]
+
+    - Fix a bug which caused the connection to not be closed when using Python
+      2.6 and calling get_object on an object which doesn't exist in the S3
+      driver. (LIBCLOUD-257)
+      [John Carr]
+
+  *) DNS
+
+    - Update 'if type' checks in the update_record methods to behave correctly
+      if users passes in RecordType.A with a value of 0 - if type is not None.
+      (LIBCLOUD-247)
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.11.3:
 

@@ -34,7 +34,7 @@ from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
 VALID_ZONE_EXTRA_PARAMS = ['email', 'comment', 'ns1']
-VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment']
+VALID_RECORD_EXTRA_PARAMS = ['ttl', 'comment', 'priority']
 
 
 class RackspaceDNSResponse(OpenStack_1_1_Response):
@@ -241,6 +241,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         if 'ttl' in extra:
             data['ttl'] = int(extra['ttl'])
 
+        if 'priority' in extra:
+            data['priority'] = int(extra['priority'])
+
         payload = {'records': [data]}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         response = self.connection.async_request(action='/domains/%s/records'
@@ -340,11 +343,9 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         record_data = data['data']
         extra = {'fqdn': fqdn}
 
-        if 'ttl' in data:
-            extra['ttl'] = data['ttl']
-
-        if 'comment' in data:
-            extra['comment'] = data['comment']
+        for key in VALID_RECORD_EXTRA_PARAMS:
+            if key in data:
+                extra[key] = data[key]
 
         record = Record(id=str(id), name=name, type=type, data=record_data,
                         zone=zone, driver=self, extra=extra)

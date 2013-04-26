@@ -884,6 +884,12 @@ class RackspaceLBTests(unittest.TestCase):
             condition=MemberCondition.ENABLED, weight=12)
         self.assertTrue(resp)
 
+    def test_ex_list_current_usage(self):
+        balancer = self.driver.get_balancer(balancer_id='8290')
+        usage = self.driver.ex_list_current_usage(balancer=balancer)
+        self.assertEqual(usage['loadBalancerUsageRecords'][0]['incomingTransferSsl'],
+                         6182163)
+
 
 class RackspaceUKLBTests(RackspaceLBTests):
 
@@ -1411,6 +1417,13 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             response_body['loadBalancer']['id'] = 3137
             response_body['loadBalancer']['protocol'] = 'IMAPv4'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
+        raise NotImplementedError
+
+    def _v1_0_slug_loadbalancers_8290_usage_current(self, method, url, body,
+                                                    headers):
+        if method == 'GET':
+            body = self.fixtures.load('v1_0_slug_loadbalancers_8290_usage_current.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
     def _v1_1_auth(self, method, url, body, headers):

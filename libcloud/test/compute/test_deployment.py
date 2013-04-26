@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 import sys
 import time
@@ -21,10 +23,11 @@ import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import u
+from libcloud.utils.py3 import PY3
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
-from libcloud.compute.deployment import FileDeployment
+from libcloud.compute.deployment import ScriptFileDeployment, FileDeployment
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
@@ -70,6 +73,9 @@ class DeploymentTests(unittest.TestCase):
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
                    public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
                    driver=Rackspace)
+        self.node2 = Node(id=123456, name='test', state=NodeState.RUNNING,
+                          public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
+                          driver=Rackspace)
 
     def test_multi_step_deployment(self):
         msd = MultiStepDeployment()
@@ -108,6 +114,37 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node, sd2.run(node=self.node,
                         client=MockClient(hostname='localhost')))
 
+    def test_script_file_deployment(self):
+        file_path = os.path.abspath(__file__)
+        with open(file_path, 'rb') as fp:
+            content = fp.read()
+
+        if PY3:
+            content = content.decode('utf-8')
+
+        sfd1 = ScriptFileDeployment(script_file=file_path)
+        self.assertEqual(sfd1.script, content)
+
+    def test_script_deployment_relative_path(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        sd = ScriptDeployment(script='echo "foo"', name='relative.sh')
+        sd.run(self.node, client)
+
+        client.run.assert_called_once_with('/home/ubuntu/relative.sh')
+
+    def test_script_deployment_absolute_path(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        sd = ScriptDeployment(script='echo "foo"', name='/root/relative.sh')
+        sd.run(self.node, client)
+
+        client.run.assert_called_once_with('/root/relative.sh')
+
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
             def __init__(self, name):
@@ -139,28 +176,28 @@ class DeploymentTests(unittest.TestCase):
             self.fail('TypeError was not thrown')
 
     def test_wait_until_running_running_instantly(self):
-        node2, ips = self.driver._wait_until_running(node=self.node, wait_period=1,
-                                                     timeout=10)
+        node2, ips = self.driver.wait_until_running(nodes=[self.node], wait_period=1,
+                                                     timeout=10)[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
 
     def test_wait_until_running_running_after_1_second(self):
         RackspaceMockHttp.type = '1_SECOND_DELAY'
-        node2, ips = self.driver._wait_until_running(node=self.node, wait_period=1,
-                                                     timeout=10)
+        node2, ips = self.driver.wait_until_running(nodes=[self.node], wait_period=1,
+                                                     timeout=10)[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
 
     def test_wait_until_running_running_after_1_second_private_ips(self):
         RackspaceMockHttp.type = '1_SECOND_DELAY'
-        node2, ips = self.driver._wait_until_running(node=self.node, wait_period=1,
-                                                     timeout=10, ssh_interface='private_ips')
+        node2, ips = self.driver.wait_until_running(nodes=[self.node], wait_period=1,
+                                                     timeout=10, ssh_interface='private_ips')[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['10.176.168.218'], ips)
 
     def test_wait_until_running_invalid_ssh_interface_argument(self):
         try:
-            self.driver._wait_until_running(node=self.node, wait_period=1,
+            self.driver.wait_until_running(nodes=[self.node], wait_period=1,
                                             ssh_interface='invalid')
         except ValueError:
             pass
@@ -171,7 +208,7 @@ class DeploymentTests(unittest.TestCase):
         RackspaceMockHttp.type = 'TIMEOUT'
 
         try:
-            self.driver._wait_until_running(node=self.node, wait_period=0.5,
+            self.driver.wait_until_running(nodes=[self.node], wait_period=0.5,
                                             timeout=1)
         except LibcloudError:
             e = sys.exc_info()[1]
@@ -183,8 +220,8 @@ class DeploymentTests(unittest.TestCase):
         RackspaceMockHttp.type = 'MISSING'
 
         try:
-            self.driver._wait_until_running(node=self.node, wait_period=0.5,
-                                            timeout=1)
+            self.driver.wait_until_running(nodes=[self.node], wait_period=0.5,
+                                           timeout=1)
         except LibcloudError:
             e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Timed out after 1 second') != -1)
@@ -195,13 +232,23 @@ class DeploymentTests(unittest.TestCase):
         RackspaceMockHttp.type = 'SAME_UUID'
 
         try:
-            self.driver._wait_until_running(node=self.node, wait_period=0.5,
+            self.driver.wait_until_running(nodes=[self.node], wait_period=0.5,
                                             timeout=1)
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(e.value.find('multiple nodes have same UUID') != -1)
+            self.assertTrue(e.value.find('Unable to match specified uuids') != -1)
         else:
             self.fail('Exception was not thrown')
+
+    def test_wait_until_running_running_wait_for_multiple_nodes(self):
+        RackspaceMockHttp.type = 'MULTIPLE_NODES'
+
+        nodes = self.driver.wait_until_running(nodes=[self.node, self.node2], wait_period=0.5,
+                                               timeout=1)
+        self.assertEqual(self.node.uuid, nodes[0][0].uuid)
+        self.assertEqual(self.node2.uuid, nodes[1][0].uuid)
+        self.assertEqual(['67.23.21.33'], nodes[0][1])
+        self.assertEqual(['67.23.21.34'], nodes[1][1])
 
     def test_ssh_client_connect_success(self):
         mock_ssh_client = Mock()
@@ -398,6 +445,10 @@ class RackspaceMockHttp(MockHttp):
 
     def _v1_0_slug_servers_detail_SAME_UUID(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_deployment_same_uuid.xml')
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_MULTIPLE_NODES(self, method, url, body, headers):
+        body = self.fixtures.load('v1_slug_servers_detail_deployment_multiple_nodes.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
 

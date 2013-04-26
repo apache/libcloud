@@ -22,7 +22,7 @@ from __future__ import with_statement
 import os
 import binascii
 
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import basestring, PY3
 
 
 class Deployment(object):
@@ -91,7 +91,7 @@ class FileDeployment(Deployment):
         @keyword source: Local path of file to be installed
 
         @type target: C{str}
-        @keyword target: Path to install file on node 
+        @keyword target: Path to install file on node
         """
         self.source = source
         self.target = target
@@ -123,7 +123,8 @@ class ScriptDeployment(Deployment):
         @keyword script: Contents of the script to run
 
         @type name: C{str}
-        @keyword name: Name of the script to upload it as, if not specified, a random name will be choosen.
+        @keyword name: Name of the script to upload it as, if not specified,
+                       a random name will be choosen.
 
         @type delete: C{bool}
         @keyword delete: Whether to delete the script on completion.
@@ -137,8 +138,11 @@ class ScriptDeployment(Deployment):
         self.exit_status = None
         self.delete = delete
         self.name = name
+
         if self.name is None:
-            self.name = "/root/deployment_%s.sh" % (binascii.hexlify(os.urandom(4)))
+            # File is put under user's home directory
+            # (~/libcloud_deployment_<random_string>.sh)
+            self.name = 'libcloud_deployment_%s.sh' % (binascii.hexlify(os.urandom(4)))
 
     def run(self, node, client):
         """
@@ -146,12 +150,50 @@ class ScriptDeployment(Deployment):
 
         See also L{Deployment.run}
         """
+        file_path = client.put(path=self.name, chmod=int('755', 8),
+                               contents=self.script)
 
-        client.put(path=self.name, chmod=int('755', 8), contents=self.script)
-        self.stdout, self.stderr, self.exit_status = client.run(self.name)
+        # Pre-pend cwd if user specified a relative path
+        if self.name[0] != '/':
+            base_path = os.path.dirname(file_path)
+            name = os.path.join(base_path, self.name)
+        else:
+            name = self.name
+
+        self.stdout, self.stderr, self.exit_status = client.run(name)
+
         if self.delete:
             client.delete(self.name)
+
         return node
+
+
+class ScriptFileDeployment(ScriptDeployment):
+    """
+    Runs an arbitrary Shell Script task from a file.
+    """
+
+    def __init__(self, script_file, name=None, delete=False):
+        """
+        @type script_file: C{str}
+        @keyword script_file: Path to a file containing the script to run
+
+        @type name: C{str}
+        @keyword name: Name of the script to upload it as, if not specified,
+                       a random name will be choosen.
+
+        @type delete: C{bool}
+        @keyword delete: Whether to delete the script on completion.
+        """
+        with open(script_file, 'rb') as fp:
+            content = fp.read()
+
+        if PY3:
+            content = content.decode('utf-8')
+
+        super(ScriptFileDeployment, self).__init__(script=content,
+                                               name=name,
+                                               delete=delete)
 
 
 class MultiStepDeployment(Deployment):

@@ -37,6 +37,7 @@ class Provider(object):
     NINEFOLD = 'ninefold'
     RACKSPACE_UK = 'rackspace_uk'
     BRIGHTBOX = 'brightbox'
+    ELB = 'elb'
 
 
 class State(object):

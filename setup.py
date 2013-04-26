@@ -51,6 +51,9 @@ if sys.version_info <= (2, 4):
           ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
+# pre-2.6 will need the ssl PyPI package
+pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
+
 
 def read_version_string():
     version = None
@@ -106,8 +109,6 @@ class TestCommand(Command):
             print("Please copy the new secret.py-dist file over otherwise" +
                   " tests might fail")
 
-        pre_python26 = (sys.version_info[0] == 2
-                        and sys.version_info[1] < 6)
         if pre_python26:
             missing = []
             # test for dependencies
@@ -130,13 +131,6 @@ class TestCommand(Command):
         testfiles = []
         for test_path in TEST_PATHS:
             for t in glob(pjoin(self._dir, test_path, 'test_*.py')):
-                if (sys.version_info >= (3, 2) and sys.version_info < (3, 3) or
-                    sys.version_info >= (2, 5) and sys.version_info < (2, 6)) \
-                        and t.find('test_local.py') >= 0:
-                    # Lockfile doesn't work with 2.5 and 3.2. Temporary disable
-                    # local_storage test until fixes have been submitted
-                    # upstream
-                    continue
                 testfiles.append('.'.join(
                     [test_path.replace('/', '.'), splitext(basename(t))[0]]))
 
@@ -222,8 +216,6 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
-# pre-2.6 will need the ssl PyPI package
-pre_python26 = (sys.version_info[0] == 2 and sys.version_info[1] < 6)
 
 setup(
     name='apache-libcloud',

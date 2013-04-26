@@ -21,20 +21,15 @@ from __future__ import with_statement
 
 import sys
 import base64
-import hmac
 import os
-import time
 import copy
 
-from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
-from libcloud.common.base import ConnectionUserAndKey
-from libcloud.common.aws import AWSBaseResponse
+from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
@@ -154,6 +149,20 @@ INSTANCE_TYPES = {
         'ram': 63488,
         'disk': 3370,
         'bandwidth': None
+    },
+    'cr1.8xlarge': {
+        'id': 'cr1.8xlarge',
+        'name': 'High Memory Cluster Eight Extra Large',
+        'ram': 244000,
+        'disk': 240,
+        'bandwidth': None
+    },
+    'hs1.8xlarge': {
+        'id': 'hs1.8xlarge',
+        'name': 'High Storage Eight Extra Large Instance',
+        'ram': 119808,
+        'disk': 48000,
+        'bandwidth': None
     }
 }
 
@@ -177,7 +186,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'cc1.4xlarge',
             'cc2.8xlarge',
-            'cg1.4xlarge'
+            'cg1.4xlarge',
+            'cr1.8xlarge',
+            'hs1.8xlarge'
         ]
     },
     'us-west-1': {
@@ -193,6 +204,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -228,6 +241,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge'
@@ -246,6 +261,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -263,6 +280,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -298,6 +317,8 @@ REGION_DETAILS = {
             'm2.xlarge',
             'm2.2xlarge',
             'm2.4xlarge',
+            'm3.xlarge',
+            'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
         ]
@@ -327,7 +348,7 @@ class EC2NodeLocation(NodeLocation):
         return (('<EC2NodeLocation: id=%s, name=%s, country=%s, '
                  'availability_zone=%s driver=%s>')
                 % (self.id, self.name, self.country,
-                   self.availability_zone.name, self.driver.name))
+                   self.availability_zone, self.driver.name))
 
 
 class EC2Response(AWSBaseResponse):
@@ -365,56 +386,14 @@ class EC2Response(AWSBaseResponse):
         return "\n".join(err_list)
 
 
-class EC2Connection(ConnectionUserAndKey):
+class EC2Connection(SignedAWSConnection):
     """
     Represents a single connection to the EC2 Endpoint.
     """
 
+    version = API_VERSION
     host = REGION_DETAILS['us-east-1']['endpoint']
     responseCls = EC2Response
-
-    def add_default_params(self, params):
-        params['SignatureVersion'] = '2'
-        params['SignatureMethod'] = 'HmacSHA256'
-        params['AWSAccessKeyId'] = self.user_id
-        params['Version'] = API_VERSION
-        params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
-                                            time.gmtime())
-        params['Signature'] = self._get_aws_auth_param(params, self.key,
-                                                       self.action)
-        return params
-
-    def _get_aws_auth_param(self, params, secret_key, path='/'):
-        """
-        Creates the signature required for AWS, per
-        http://bit.ly/aR7GaQ [docs.amazonwebservices.com]:
-
-        StringToSign = HTTPVerb + "\n" +
-                       ValueOfHostHeaderInLowercase + "\n" +
-                       HTTPRequestURI + "\n" +
-                       CanonicalizedQueryString <from the preceding step>
-        """
-        keys = list(params.keys())
-        keys.sort()
-        pairs = []
-        for key in keys:
-            pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(params[key], safe='-_~'))
-
-        qs = '&'.join(pairs)
-
-        hostname = self.host
-        if (self.secure and self.port != 443) or \
-           (not self.secure and self.port != 80):
-            hostname += ":" + str(self.port)
-
-        string_to_sign = '\n'.join(('GET', hostname, path, qs))
-
-        b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key), b(string_to_sign),
-                     digestmod=sha256).digest()
-        )
-        return b64_hmac.decode('utf-8')
 
 
 class ExEC2AvailabilityZone(object):
@@ -449,7 +428,7 @@ class BaseEC2NodeDriver(NodeDriver):
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
-        'shutting-down': NodeState.TERMINATED,
+        'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
 
@@ -665,8 +644,24 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, ex_image_ids=None):
+        """
+        List all images
+
+        Ex_image_ids parameter is used to filter the list of
+        images that should be returned. Only the images
+        with the corresponding image ids will be returned.
+
+        @param      ex_image_ids: List of C{NodeImage.id}
+        @type       ex_image_ids: C{list} of C{str}
+
+        @rtype: C{list} of L{NodeImage}
+        """
         params = {'Action': 'DescribeImages'}
+
+        if ex_image_ids:
+            params.update(self._pathlist('ImageId', ex_image_ids))
+
         images = self._to_images(
             self.connection.request(self.path, params=params).object
         )
@@ -677,7 +672,7 @@ class BaseEC2NodeDriver(NodeDriver):
         for index, availability_zone in \
                 enumerate(self.ex_list_availability_zones()):
                     locations.append(EC2NodeLocation(
-                        index, availability_zone, self.country, self,
+                        index, availability_zone.name, self.country, self,
                         availability_zone)
                     )
         return locations
@@ -1282,6 +1277,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_clienttoken: Unique identifier to ensure idempotency
         @type       ex_clienttoken: C{str}
+
+        @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
+                    mappings. Example:
+                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+        @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1318,6 +1318,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_clienttoken' in kwargs:
             params['ClientToken'] = kwargs['ex_clienttoken']
+
+        if 'ex_blockdevicemappings' in kwargs:
+            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
+                    mapping['DeviceName']
+                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
+                    mapping['VirtualName']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
@@ -1397,7 +1404,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
-        'shutting-down': NodeState.TERMINATED,
+        'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
 
@@ -1494,6 +1501,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
     """
 
     name = 'Eucalyptus'
+    website = 'http://www.eucalyptus.com/'
     api_name = 'ec2_us_east'
     region_name = 'us-east-1'
     connectionCls = EucConnection
@@ -1538,6 +1546,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
 
     type = Provider.NIMBUS
     name = 'Nimbus'
+    website = 'http://www.nimbusproject.org/'
     country = 'Private'
     api_name = 'nimbus'
     region_name = 'nimbus'
