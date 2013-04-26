@@ -14,6 +14,10 @@ Changes with Apache Libcloud in deveploment:
       (LIBCLOUD-321)
       [Arfrever Frehtes Taifersar Arahesis]
 
+    - Add ex_set_metadata_entry and ex_get_metadata method to the VCloud driver.
+      (LIBCLOUD-318)
+      [Michel Samia]
+
  *) Load Balancer
 
     - Add ex_list_current_usage method to the Rackspace driver.
