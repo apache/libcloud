@@ -387,7 +387,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         extra['status'] = node['status']
         extra['machine_type'] = node['machineType']
         extra['zone'] = node['zone']
-        extra['image'] = node['image']
+        #extra['image'] = node['image']
         extra['disks'] = node['disks']
         extra['networkInterfaces'] = node['networkInterfaces']
         extra['id'] = node['id']
@@ -403,7 +403,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self, size=node['machineType'], image=node['image'],
+                    driver=self, size=node['machineType'],
                     extra=extra)
 
     def _to_node_image(self, image):
