@@ -396,7 +396,7 @@ class GoogleComputeEngineNodeDriver(NodeDriver):
         extra['metadata'] = node['metadata']
 
         for network_interface in node['networkInterfaces']:
-            private_ips.append(network_interface['networkIP'])
+            private_ips.append(network_interface.get('networkIP', ''))
             for access_config in network_interface['accessConfigs']:
                 public_ips.append(access_config['natIP'])
 

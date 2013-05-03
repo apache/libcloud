@@ -236,7 +236,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             node.extra['ip_forwarding_rules'] = rules
 
             rules = self._sync_request('listPortForwardingRules')
-            adresses = self.ex_list_public_ip()
+            adresses = self.ex_describe_public_ip()
             port_rules = []
             public_rules_ip = set()
             for rule in rules.get('portforwardingrule', []):
@@ -321,7 +321,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._async_request('rebootVirtualMachine', id=node.id)
         return True
 
-    def ex_list_disk_offerings(self):
+    def ex_describe_disk_offerings(self):
         """Fetch a list of all available disk offerings.
 
         @rtype: C{list} of L{CloudStackDiskOffering}
@@ -342,7 +342,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def create_volume(self, size, name, location, snapshot=None):
         # TODO Add snapshot handling
-        for diskOffering in self.ex_list_disk_offerings():
+        for diskOffering in self.ex_describe_disk_offerings():
             if diskOffering.size == size or diskOffering.customizable:
                 break
         else:
@@ -387,7 +387,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._sync_request('deleteVolume', id=volume.id)
         return True
 
-    def ex_list_volumes(self, node=None):
+    def ex_describe_volumes(self, node=None):
         """
         @type node: L{CloudStackNode}
         """
@@ -412,7 +412,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                     )
                 ))
         return volumes
-
 
     def ex_allocate_public_ip(self, node):
         """
@@ -555,7 +554,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   zoneid=location.id,
                                   **extra_args)
 
-    def ex_list_public_ip(self):
+    def ex_describe_public_ip(self):
         addresses = self._sync_request('listPublicIpAddresses')
         return [CloudStackAddress(None, addr['id'], addr['ipaddress']) for addr in addresses.get('publicipaddress', [])]
 
@@ -584,7 +583,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         result = self._async_request('createPortForwardingRule', **args)
         result = result['portforwardingrule']
-        adresses = self.ex_list_public_ip()
+        adresses = self.ex_describe_public_ip()
         rule = CloudStackForwardingRule(node=node,
             id=result['id'],
             address=filter(lambda addr: addr.address == result['ipaddress'], adresses)[0],
@@ -599,9 +598,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node.public_ip.append(result['ipaddress'])
         return rule
 
-    def ex_list_port_forwarding_rule(self):
+    def ex_describe_port_forwarding_rule(self):
         rules = self._sync_request('listPortForwardingRules')
-        adresses = self.ex_list_public_ip()
+        adresses = self.ex_describe_public_ip()
         nodes = self.list_nodes()
         all_rules = []
         for rule in rules.get('portforwardingrule', []):
@@ -641,7 +640,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         resp = self._async_request('createTemplate', **params)
         return resp['template']['id']
 
-    def ex_list_snapshots(self, snapshot=None):
+    def ex_describe_snapshots(self, snapshot=None):
         if snapshot:
             snapshots = self._sync_request('listSnapshots', id=snapshot.id)
         else:
