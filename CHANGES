@@ -18,6 +18,9 @@ Changes with Apache Libcloud in deveploment:
       (LIBCLOUD-318)
       [Michel Samia]
 
+    - Various improvements and bug-fixes in the VCloud driver. (LIBCLOUD-323)
+      [Michel Samia]
+
  *) Load Balancer
 
     - Add ex_list_current_usage method to the Rackspace driver.
