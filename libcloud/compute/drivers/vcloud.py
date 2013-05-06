@@ -20,7 +20,6 @@ import sys
 import re
 import base64
 import os
-import urllib
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlparse
@@ -56,7 +55,6 @@ DEFAULT_API_VERSION = '0.8'
 Valid vCloud API v1.5 input values.
 """
 VIRTUAL_CPU_VALS_1_5 = [i for i in range(1, 9)]
-VIRTUAL_MEMORY_VALS_1_5 = [2 ** i for i in range(2, 19)]
 FENCE_MODE_VALS_1_5 = ['bridged', 'isolated', 'natRouted']
 IP_MODE_VALS_1_5 = ['POOL', 'DHCP', 'MANUAL', 'NONE']
 
@@ -590,9 +588,10 @@ class VCloudNodeDriver(NodeDriver):
                 except Exception:
                     # The vApp was probably removed since the previous vDC query, ignore
                     e = sys.exc_info()[1]
-                    if not (e.args[0].tag.endswith('Error') and
+                    if not (isinstance(e.args[0], _ElementInterface) and
+                            e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') == 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
-                        raise e
+                        raise
 
         return nodes
 
@@ -1573,7 +1572,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
     def _validate_vm_memory(vm_memory):
         if vm_memory is None:
             return
-        elif vm_memory not in VIRTUAL_MEMORY_VALS_1_5:
+        elif vm_memory not in VIRTUAL_MEMORY_VALS:
             raise ValueError(
                 '%s is not a valid vApp VM memory value' % vm_memory)
 
@@ -1859,15 +1858,18 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                     public_ips.append(external_ip.text)
                 elif ip is not None:
                     public_ips.append(ip.text)
+            os_type_elem = vm_elem.find('{http://schemas.dmtf.org/ovf/envelope/1}OperatingSystemSection')
+            if os_type_elem:
+                os_type = os_type_elem.get('{http://www.vmware.com/schema/ovf}osType')
+            else:
+                os_type = None
             vm = {
                 'id': vm_elem.get('href'),
                 'name': vm_elem.get('name'),
                 'state': self.NODE_STATE_MAP[vm_elem.get('status')],
                 'public_ips': public_ips,
                 'private_ips': private_ips,
-                'os_type': vm_elem
-                    .find('{http://schemas.dmtf.org/ovf/envelope/1}OperatingSystemSection')
-                    .get('{http://www.vmware.com/schema/ovf}osType')
+                'os_type': os_type
             }
             vms.append(vm)
 
