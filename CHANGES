@@ -2,6 +2,13 @@
 
 Changes with Apache Libcloud in deveploment:
 
+ *) General
+
+   - Add homebrew curl-ca-bundle path to CA_CERTS_PATH. This will make Libcloud
+     use homebrew curl ca bundle file (if available) for server certificate
+     validation. (LIBCLOUD-324)
+     [Robert Chiniquy]
+
  *) Compute
 
     - Fix destroy_node method in the experimental libvirt driver.
