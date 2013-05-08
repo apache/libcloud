@@ -28,6 +28,10 @@ Changes with Apache Libcloud in deveploment:
     - Various improvements and bug-fixes in the VCloud driver. (LIBCLOUD-323)
       [Michel Samia]
 
+    - Various bug fixes and improvements in the HostVirtual driver.
+      (LIBCLOUD-249)
+      [Dinesh Bhoopathy]
+
  *) Load Balancer
 
     - Add ex_list_current_usage method to the Rackspace driver.
