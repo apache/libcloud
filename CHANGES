@@ -28,6 +28,11 @@ Changes with Apache Libcloud in deveploment:
     - Various improvements and bug-fixes in the VCloud driver. (LIBCLOUD-323)
       [Michel Samia]
 
+    - Modify list_sizes method in the OpenStack driver to include
+      OpenStackNodeSize object which includes 'vcpus' attribute which holds
+      a number of virtual CPUs for this size. (LIBCLOUD-325)
+      [Carlo]
+
  *) Load Balancer
 
     - Add ex_list_current_usage method to the Rackspace driver.

@@ -672,6 +672,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
 
+        self.assertEqual(sizes[0].vcpus, 8)
+
     def test_list_sizes_with_specified_pricing(self):
 
         pricing = dict((str(i), i * 5.0) for i in range(1, 9))
