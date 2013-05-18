@@ -33,6 +33,14 @@ Changes with Apache Libcloud in deveploment:
       a number of virtual CPUs for this size. (LIBCLOUD-325)
       [Carlo]
 
+    - For consistency rename "ex_describe_keypairs" method in the EC2 driver to
+      "ex_describe_keypair".
+      [Tomaz Muraus]
+
+    - Modify "ex_describe_keypair" method to return key fingerprint in the
+      return value. (LIBCLOUD-326)
+      [Andre Merzky, Tomaz Muraus]
+
  *) Load Balancer
 
     - Add ex_list_current_usage method to the Rackspace driver.

@@ -800,7 +800,14 @@ class BaseEC2NodeDriver(NodeDriver):
         return names
 
     def ex_describe_keypairs(self, name):
-        """Describes a keypair by name
+        """
+        Here for backward compatibility.
+        """
+        return self.ex_describe_keypair(name=name)
+
+    def ex_describe_keypair(self, name):
+        """
+        Describes a keypair by name.
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -818,8 +825,12 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         key_name = findattr(element=response, xpath='keySet/item/keyName',
                             namespace=NAMESPACE)
+        fingerprint = findattr(element=response,
+                               xpath='keySet/item/keyFingerprint',
+                               namespace=NAMESPACE).strip()
         return {
-            'keyName': key_name
+            'keyName': key_name,
+            'keyFingerprint': fingerprint
         }
 
     def ex_list_security_groups(self):
