@@ -95,7 +95,6 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
                 httplib.responses[httplib.OK])
 
 
-
 class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
 
     driver_klass = RackspaceNodeDriver

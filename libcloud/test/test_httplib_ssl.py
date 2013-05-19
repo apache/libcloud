@@ -28,6 +28,7 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
 ORIGINAL_CA_CERS_PATH = libcloud.security.CA_CERTS_PATH
 
+
 class TestHttpLibSSLTests(unittest.TestCase):
 
     def setUp(self):
@@ -48,7 +49,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_custom_ca_path_using_env_var_is_directory(self):
-        file_path  = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.dirname(os.path.abspath(__file__))
         os.environ['SSL_CERT_FILE'] = file_path
 
         try:
@@ -64,7 +65,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         # When setting a path we don't actually check that a valid CA file is
         # provied.
         # This happens later in the code in httplib_ssl.connect method
-        file_path  = os.path.abspath(__file__)
+        file_path = os.path.abspath(__file__)
         os.environ['SSL_CERT_FILE'] = file_path
 
         reload(libcloud.security)

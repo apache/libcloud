@@ -28,6 +28,7 @@ from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
+
 class GoGridTests(unittest.TestCase):
 
     def setUp(self):
@@ -149,6 +150,7 @@ class GoGridTests(unittest.TestCase):
 
         self.assertTrue(ret1)
         self.assertTrue(ret2)
+
 
 class GoGridLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')

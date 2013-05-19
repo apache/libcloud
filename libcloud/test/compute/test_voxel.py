@@ -25,6 +25,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import VOXEL_PARAMS
 
+
 class VoxelTest(unittest.TestCase):
 
     def setUp(self):
@@ -121,6 +122,7 @@ class VoxelTest(unittest.TestCase):
                     driver=self.driver)
 
         self.assertTrue(node.destroy())
+
 
 class VoxelMockHttp(MockHttp):
 

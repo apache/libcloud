@@ -40,6 +40,7 @@ def _filter_names(names):
                  and (not n.endswith('.py'))]
     return names
 
+
 def relative_to(base, relativee):
     """
     Gets 'relativee' relative to 'basepath'.
@@ -61,6 +62,7 @@ def relative_to(base, relativee):
             relative = relative[1:]
         return os.path.join(base, relative)
     raise ValueError("%s is not a subpath of %s" % (relativee, basepath))
+
 
 def get_packages(dname, pkgname=None, results=None, ignore=None, parent=None):
     """

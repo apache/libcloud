@@ -102,11 +102,14 @@ else:
     method_type = types.MethodType
 
     b = bytes = str
+
     def byte(n):
         return n
     u = unicode
+
     def next(i):
         return i.next()
+
     def dictvalues(d):
         return d.values()
 

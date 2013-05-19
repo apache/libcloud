@@ -528,7 +528,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
     def _v1_1_auth_UNAUTHORIZED(self, method, url, body, headers):
         body = self.auth_fixtures.load('_v1_1__auth_unauthorized.json')
-        return  (httplib.UNAUTHORIZED, body, self.json_content_headers, httplib.responses[httplib.UNAUTHORIZED])
+        return (httplib.UNAUTHORIZED, body, self.json_content_headers, httplib.responses[httplib.UNAUTHORIZED])
 
     def _v1_1_auth_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
         body = self.auth_fixtures.load('_v1_1__auth_mssing_token.json')
@@ -594,7 +594,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_get_endpoint_populates_host_port_and_request_path(self):
         # simulate a subclass overriding this method
-        self.driver.connection.get_endpoint = lambda : 'http://endpoint_auth_url.com:1555/service_url'
+        self.driver.connection.get_endpoint = lambda: 'http://endpoint_auth_url.com:1555/service_url'
         self.driver.connection.auth_token = None
         self.driver.connection._ex_force_base_url = None
         self.driver.connection._populate_hosts_and_request_paths()
@@ -654,7 +654,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual('12065', node.id)
         self.assertEqual('50.57.94.35', node.public_ips[0])
         self.assertEqual('2001:4801:7808:52:16:3eff:fe47:788a', node.public_ips[1])
-        self.assertTrue('10.182.64.34' in  node.private_ips)
+        self.assertTrue('10.182.64.34' in node.private_ips)
         self.assertTrue('12.16.18.28' in node.private_ips)
         self.assertTrue('fec0:4801:7808:52:16:3eff:fe60:187d' in node.private_ips)
 
@@ -852,7 +852,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection.request("/servers/12066", params={"key": "value"})
 
     def test_cache_busts_with_list_of_tuples(self):
-        params = [("key", "value1"), ("key", "value2") ]
+        params = [("key", "value1"), ("key", "value2")]
         self.driver.connection.request("/servers/12067", params=params)
 
     def test_ex_rescue_with_password(self):
@@ -1041,7 +1041,6 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
         raise NotImplementedError()
-
 
     def _v1_1_slug_servers_12064(self, method, url, body, headers):
         if method == "GET":

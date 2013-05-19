@@ -27,6 +27,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import OPSOURCE_PARAMS
 
+
 class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
@@ -38,7 +39,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         OpsourceMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
-            self.assertTrue(False) # Above command should have thrown an InvalidCredsException
+            self.assertTrue(False)  # Above command should have thrown an InvalidCredsException
         except InvalidCredsError:
             self.assertTrue(True)
 
@@ -61,7 +62,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
                     public_ips=None, private_ips=None, driver=self.driver)
         try:
             node.reboot()
-            self.assertTrue(False) # above command should have thrown OpsourceAPIException
+            self.assertTrue(False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
 
@@ -77,7 +78,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
                     public_ips=None, private_ips=None, driver=self.driver)
         try:
             node.destroy()
-            self.assertTrue(False) # above command should have thrown OpsourceAPIException
+            self.assertTrue(False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
 
@@ -103,7 +104,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
                     public_ips=None, private_ips=None, driver=self.driver)
         try:
             self.driver.ex_shutdown_graceful(node)
-            self.assertTrue(False) # above command should have thrown OpsourceAPIException
+            self.assertTrue(False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
 
@@ -119,7 +120,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
                     public_ips=None, private_ips=None, driver=self.driver)
         try:
             self.driver.ex_start_node(node)
-            self.assertTrue(False) # above command should have thrown OpsourceAPIException
+            self.assertTrue(False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
 
@@ -135,7 +136,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
                     public_ips=None, private_ips=None, driver=self.driver)
         try:
             self.driver.ex_power_off(node)
-            self.assertTrue(False) # above command should have thrown OpsourceAPIException
+            self.assertTrue(False)  # above command should have thrown OpsourceAPIException
         except OpsourceAPIException:
             self.assertTrue(True)
 
@@ -143,6 +144,7 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         nets = self.driver.ex_list_networks()
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
+
 
 class OpsourceMockHttp(MockHttp):
 
