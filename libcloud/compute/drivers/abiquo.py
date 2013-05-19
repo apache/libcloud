@@ -684,7 +684,7 @@ class AbiquoNodeDriver(NodeDriver):
         for vapp in vapps_element.findall('virtualAppliance'):
             if vapp.findtext('name') == group_name:
                 uri_vapp = get_href(vapp, 'edit')
-                return  NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
+                return NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
 
         # target group not found: create it. Since it is an extension of
         # the basic 'libcloud' functionality, we try to be as flexible as

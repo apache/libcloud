@@ -318,7 +318,6 @@ class RackspaceMockHttp(MockHttp):
     fixtures = DNSFileFixtures('rackspace')
     base_headers = {'content-type': 'application/json'}
 
-
     def _v1_1_auth(self, method, url, body, headers):
         body = self.fixtures.load('auth_1_1.json')
         # fake auth token response

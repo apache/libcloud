@@ -274,15 +274,15 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_set_control_access(self):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
         control_access = ControlAccess(node, None, [Subject(
-            name =  'MyGroup',
-            type = 'group',
-            access_level = ControlAccess.AccessLevel.FULL_CONTROL)])
+            name='MyGroup',
+            type='group',
+            access_level=ControlAccess.AccessLevel.FULL_CONTROL)])
         self.driver.ex_set_control_access(node, control_access)
 
     def test_ex_get_metadata(self):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
         metadata = self.driver.ex_get_metadata(node)
-        self.assertEqual(metadata, {'owners':'msamia@netsuite.com'})
+        self.assertEqual(metadata, {'owners': 'msamia@netsuite.com'})
 
     def test_ex_set_metadata_entry(self):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
@@ -335,10 +335,9 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
                     ex_vm_memory=value
                 )
             except ValueError:
-               pass
+                pass
             else:
-               self.fail('Exception was not thrown')
-
+                self.fail('Exception was not thrown')
 
     def test_list_images(self):
         ret = self.driver.list_images()
@@ -416,6 +415,7 @@ class AnotherErrorMember(Exception):
 
     def get(self, foo):
         return 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'
+
 
 class AnotherError(Exception):
     pass

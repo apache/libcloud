@@ -101,6 +101,7 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'slicetest')
         self.assertEqual(node.extra.get('password'), 'fooadfa1231')
 
+
 class SlicehostMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('slicehost')

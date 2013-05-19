@@ -28,7 +28,7 @@ if PY3:
 
 from libcloud.storage.base import StorageDriver
 
-from libcloud.test import StorageMockHttp # pylint: disable-msg=E0611
+from libcloud.test import StorageMockHttp  # pylint: disable-msg=E0611
 
 
 class BaseStorageTests(unittest.TestCase):
