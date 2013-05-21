@@ -179,7 +179,9 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_auth_token_expires_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
-        self.assertEquals(self.driver.connection.auth_token_expires, "2011-09-18T02:44:17.000-05:00")
+
+        expires = self.driver.connection.auth_token_expires
+        self.assertEquals(expires.isoformat(), "2011-09-18T02:44:17-05:00")
 
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
@@ -655,7 +657,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection.auth_token_expires = None
         self.driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals(self.driver.connection.auth_token_expires, "2011-11-23T21:00:14.000-06:00")
+        expires = self.driver.connection.auth_token_expires
+        self.assertEquals(expires.isoformat(), "2011-11-23T21:00:14-06:00")
 
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can re-authenticate

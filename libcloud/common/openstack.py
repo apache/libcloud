@@ -21,6 +21,7 @@ import binascii
 import os
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.iso8601 import parse_date
 
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import (LibcloudError, InvalidCredsError,
@@ -178,9 +179,12 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             except Exception:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)
+
             try:
+                expires = body['auth']['token']['expires']
+
                 self.auth_token = body['auth']['token']['id']
-                self.auth_token_expires = body['auth']['token']['expires']
+                self.auth_token_expires = parse_date(expires)
                 self.urls = body['auth']['serviceCatalog']
                 self.auth_user_info = None
             except KeyError:
@@ -234,8 +238,10 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
             try:
                 access = body['access']
+                expires = access['token']['expires']
+
                 self.auth_token = access['token']['id']
-                self.auth_token_expires = access['token']['expires']
+                self.auth_token_expires = parse_date(expires)
                 self.urls = access['serviceCatalog']
                 self.auth_user_info = access.get('user', {})
             except KeyError:
@@ -244,6 +250,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                                              missing required elements', e)
 
         return self
+
 
 class OpenStackServiceCatalog(object):
     """
