@@ -124,6 +124,12 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
             self.assertTrue(len(osa.urls) >= 1)
             self.assertTrue(osa.auth_token is not None)
 
+            if auth_version in ['1.1', '2.0', '2.0_apikey', '2.0_password']:
+                self.assertTrue(osa.auth_token_expires is not None)
+
+            if auth_version in ['2.0', '2.0_apikey', '2.0_password']:
+                self.assertTrue(osa.auth_user_info is not None)
+
     def test_token_expiration_and_force_reuath(self):
         # TODO
         pass

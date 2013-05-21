@@ -98,6 +98,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
         self.urls = {}
         self.auth_token = None
+        self.auth_token_expires = None
         self.auth_user_info = None
 
     def morph_action_hook(self, action):
