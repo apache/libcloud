@@ -35,8 +35,8 @@ AUTH_API_VERSION = '1.1'
 
 __all__ = [
     "OpenStackBaseConnection",
-    "OpenStackAuthConnection",
-    ]
+    "OpenStackAuthConnection"
+]
 
 
 # @TODO: Refactor for re-use by other openstack drivers
@@ -87,17 +87,18 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
 
-        if timeout:
-            self.timeout = timeout
-
         super(OpenStackAuthConnection, self).__init__(
-            user_id, key, url=auth_url, timeout=self.timeout)
+            user_id, key, url=auth_url, timeout=timeout)
 
         self.auth_version = auth_version
         self.auth_url = auth_url
-        self.urls = {}
         self.driver = self.parent_conn.driver
         self.tenant_name = tenant_name
+        self.timeout = timeout
+
+        self.urls = {}
+        self.auth_token = None
+        self.auth_user_info = None
 
     def morph_action_hook(self, action):
         return action
@@ -153,6 +154,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 raise MalformedResponseError('Missing X-Auth-Token in \
                                               response headers')
 
+        return self
+
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id,
                                               'key': self.key}})
@@ -183,6 +186,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
+
+        return self
 
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
@@ -237,6 +242,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
 
+        return self
 
 class OpenStackServiceCatalog(object):
     """
@@ -421,6 +427,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
 
+        self._osa = None
+
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
 
@@ -487,7 +495,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         if not self.auth_token:
             aurl = self.auth_url
 
-            if self._ex_force_auth_url != None:
+            if self._ex_force_auth_url is not None:
                 aurl = self._ex_force_auth_url
 
             if aurl == None:

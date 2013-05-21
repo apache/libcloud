@@ -27,6 +27,7 @@ from libcloud.utils.py3 import u
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
                                   LibcloudError
 from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackAuthConnection
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
@@ -70,6 +71,7 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
 
 
 class OpenStackServiceCatalogTests(unittest.TestCase):
+    # TODO refactor and move into libcloud/test/common
     def test_connection_get_service_catalog(self):
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
         connection.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
@@ -90,6 +92,50 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
         self.assertTrue('cloudFilesCDN' in catalog)
         self.assertEqual(len(endpoints), 2)
         self.assertEqual(public_urls, expected_urls)
+
+
+class OpenStackAuthConnectionTests(unittest.TestCase):
+    # TODO refactor and move into libcloud/test/common
+    def test_basic_authentication(self):
+        tuples = [
+           ('1.0', OpenStackMockHttp),
+           ('1.1', OpenStackMockHttp),
+           ('2.0', OpenStack_2_0_MockHttp),
+           ('2.0_apikey', OpenStack_2_0_MockHttp),
+           ('2.0_password', OpenStack_2_0_MockHttp)
+        ]
+
+        user_id = OPENSTACK_PARAMS[0]
+        key = OPENSTACK_PARAMS[1]
+
+        for (auth_version, mock_http_class) in tuples:
+            connection = \
+                    self._get_mock_connection(mock_http_class=mock_http_class)
+            auth_url = connection.auth_url
+
+            osa = OpenStackAuthConnection(connection, auth_url, auth_version,
+                                          user_id, key)
+
+            self.assertEqual(osa.urls, {})
+            self.assertEqual(osa.auth_token, None)
+            self.assertEqual(osa.auth_user_info, None)
+            osa = osa.authenticate()
+
+            self.assertTrue(len(osa.urls) >= 1)
+            self.assertTrue(osa.auth_token is not None)
+
+    def test_token_expiration_and_force_reuath(self):
+        # TODO
+        pass
+
+    def _get_mock_connection(self, mock_http_class):
+        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
+        connection.conn_classes = (mock_http_class, mock_http_class)
+        connection.auth_url = "https://auth.api.example.com/v1.1/"
+        connection._ex_force_base_url = "https://www.foo.com"
+        connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
+
+        return connection
 
 
 class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
