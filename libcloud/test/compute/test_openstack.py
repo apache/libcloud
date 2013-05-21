@@ -26,6 +26,7 @@ from libcloud.utils.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
                                   LibcloudError
+from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
@@ -66,6 +67,29 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
         body = OpenStack_1_0_Response(http_response, None).parse_body()
 
         self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
+
+
+class OpenStackServiceCatalogTests(unittest.TestCase):
+    def test_connection_get_service_catalog(self):
+        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
+        connection.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
+        connection.auth_url = "https://auth.api.example.com/v1.1/"
+        connection._ex_force_base_url = "https://www.foo.com"
+        connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
+
+        result = connection.get_service_catalog()
+        catalog = result.get_catalog()
+        endpoints = result.get_endpoints('cloudFilesCDN', 'cloudFilesCDN')
+        public_urls = result.get_public_urls('cloudFilesCDN', 'cloudFilesCDN')
+
+        expected_urls = [
+            'https://cdn2.clouddrive.com/v1/MossoCloudFS',
+            'https://cdn2.clouddrive.com/v1/MossoCloudFS'
+        ]
+
+        self.assertTrue('cloudFilesCDN' in catalog)
+        self.assertEqual(len(endpoints), 2)
+        self.assertEqual(public_urls, expected_urls)
 
 
 class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
