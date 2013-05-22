@@ -129,7 +129,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         headers['Content-Type'] = 'application/json; charset=UTF-8'
         return headers
 
-    def authenticate(self, force=True):
+    def authenticate(self, force=False):
         """
         Authenticate against the keystone api.
 
