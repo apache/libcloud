@@ -32,6 +32,7 @@ from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
                                   LibcloudError
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackAuthConnection
+from libcloud.common.openstack import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
@@ -186,6 +187,23 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
                 osa.auth_token_expires = tomorrow
 
         self.assertEqual(mocked_auth_method.call_count, 1)
+
+        # No force reauth, valid / non-expired token which is about to expire in
+        # less than AUTH_TOKEN_EXPIRES_GRACE_SECONDS
+        soon = datetime.datetime.now() + \
+            datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS - 1)
+        osa.auth_token = None
+
+        mocked_auth_method.call_count = 0
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
+        for i in range(0, count):
+            osa.authenticate(force=False)
+
+            if i == 0:
+                osa.auth_token_expires = soon
+
+        self.assertEqual(mocked_auth_method.call_count, 5)
 
     def _get_mock_connection(self, mock_http_class):
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)

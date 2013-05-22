@@ -19,8 +19,7 @@ Common utilities for OpenStack
 import sys
 import binascii
 import os
-
-from datetime import datetime
+import datetime
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.iso8601 import parse_date
@@ -44,11 +43,19 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '2.0_password'
 ]
 
+# How many seconds to substract from the auth token expiration time before
+# testing if the token is still valid.
+# The time is subtracted to account for the HTTP request latency and prevent
+# user from getting "InvalidCredsError" if token is about to expire.
+AUTH_TOKEN_EXPIRES_GRACE_SECONDS = 5
+
 __all__ = [
     'OpenStackBaseConnection',
     'OpenStackAuthConnection',
     'OpenStackServiceCatalog',
-    'OpenStackDriverMixin'
+    'OpenStackDriverMixin',
+
+    'AUTH_TOKEN_EXPIRES_GRACE_SECONDS'
 ]
 
 
@@ -132,8 +139,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         """
         if not force and self.auth_version in AUTH_VERSIONS_WITH_EXPIRES \
            and self._is_token_valid():
-           # If token is still valid, there is no need to re-authenticate
-           return self
+            # If token is still valid, there is no need to re-authenticate
+            return self
 
         if self.auth_version == "1.0":
             return self.authenticate_1_0()
@@ -288,8 +295,11 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         if not self.auth_token_expires:
             return False
 
-        time_tuple_expires = self.auth_token_expires.utctimetuple()
-        time_tuple_now = datetime.utcnow().utctimetuple()
+        expires = self.auth_token_expires - \
+                datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
+
+        time_tuple_expires = expires.utctimetuple()
+        time_tuple_now = datetime.datetime.utcnow().utctimetuple()
 
         # TODO: Subtract some reasonable grace time period
         if time_tuple_now < time_tuple_expires:
