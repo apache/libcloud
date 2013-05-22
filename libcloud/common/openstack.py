@@ -45,8 +45,10 @@ AUTH_VERSIONS_WITH_EXPIRES = [
 ]
 
 __all__ = [
-    "OpenStackBaseConnection",
-    "OpenStackAuthConnection"
+    'OpenStackBaseConnection',
+    'OpenStackAuthConnection',
+    'OpenStackServiceCatalog',
+    'OpenStackDriverMixin'
 ]
 
 
