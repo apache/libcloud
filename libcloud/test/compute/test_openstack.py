@@ -12,13 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 import unittest
+import datetime
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
+from mock import Mock
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
@@ -130,9 +134,58 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
             if auth_version in ['2.0', '2.0_apikey', '2.0_password']:
                 self.assertTrue(osa.auth_user_info is not None)
 
-    def test_token_expiration_and_force_reuath(self):
-        # TODO
-        pass
+    def test_token_expiration_and_force_reauthentication(self):
+        user_id = OPENSTACK_PARAMS[0]
+        key = OPENSTACK_PARAMS[1]
+
+        connection = self._get_mock_connection(OpenStack_2_0_MockHttp)
+        auth_url = connection.auth_url
+        auth_version = '2.0'
+
+        yesterday = datetime.datetime.today() - datetime.timedelta(1)
+        tomorrow = datetime.datetime.today() + datetime.timedelta(1)
+
+        osa = OpenStackAuthConnection(connection, auth_url, auth_version,
+                                      user_id, key)
+
+        mocked_auth_method = Mock(wraps=osa.authenticate_2_0_with_body)
+        osa.authenticate_2_0_with_body = mocked_auth_method
+
+        # Force re-auth, expired token
+        osa.auth_token = None
+        osa.auth_token_expires = yesterday
+        count = 5
+
+        for i in range(0, count):
+            osa.authenticate(force=True)
+
+        self.assertEqual(mocked_auth_method.call_count, count)
+
+        # No force reauth, expired token
+        osa.auth_token = None
+        osa.auth_token_expires = yesterday
+
+        mocked_auth_method.call_count = 0
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
+        for i in range(0, count):
+            osa.authenticate(force=False)
+
+        self.assertEqual(mocked_auth_method.call_count, count)
+
+        # No force reauth, valid / non-expired token
+        osa.auth_token = None
+
+        mocked_auth_method.call_count = 0
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
+        for i in range(0, count):
+            osa.authenticate(force=False)
+
+            if i == 0:
+                osa.auth_token_expires = tomorrow
+
+        self.assertEqual(mocked_auth_method.call_count, 1)
 
     def _get_mock_connection(self, mock_http_class):
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
@@ -1120,7 +1173,6 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
         raise NotImplementedError()
-
 
     def _v1_1_slug_servers_12064(self, method, url, body, headers):
         if method == "GET":

@@ -20,6 +20,8 @@ import sys
 import binascii
 import os
 
+from datetime import datetime
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.iso8601 import parse_date
 
@@ -33,6 +35,14 @@ except ImportError:
     import json
 
 AUTH_API_VERSION = '1.1'
+
+# Auth versions which contain token expiration information.
+AUTH_VERSIONS_WITH_EXPIRES = [
+    '1.1',
+    '2.0',
+    '2.0_apikey',
+    '2.0_password'
+]
 
 __all__ = [
     "OpenStackBaseConnection",
@@ -110,7 +120,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         headers['Content-Type'] = 'application/json; charset=UTF-8'
         return headers
 
-    def authenticate(self):
+    def authenticate(self, force=True):
+        """
+        Authenticate against the keystone api.
+
+        @param force: Forcefully update the token even if it's already cached
+                      and still valid.
+        @type force: C{bool}
+        """
+        if not force and self.auth_version in AUTH_VERSIONS_WITH_EXPIRES \
+           and self._is_token_valid():
+           # If token is still valid, there is no need to re-authenticate
+           return self
+
         if self.auth_version == "1.0":
             return self.authenticate_1_0()
         elif self.auth_version == "1.1":
@@ -251,6 +273,27 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
         return self
 
+    def _is_token_valid(self):
+        """
+        Return True if the current taken is already cached and hasn't expired
+        yet.
+
+        @rtype: C{bool}
+        """
+        if not self.auth_token:
+            return False
+
+        if not self.auth_token_expires:
+            return False
+
+        time_tuple_expires = self.auth_token_expires.utctimetuple()
+        time_tuple_now = datetime.utcnow().utctimetuple()
+
+        # TODO: Subtract some reasonable grace time period
+        if time_tuple_now < time_tuple_expires:
+            return True
+
+        return False
 
 class OpenStackServiceCatalog(object):
     """
