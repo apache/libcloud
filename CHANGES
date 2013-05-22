@@ -9,6 +9,15 @@ Changes with Apache Libcloud in deveploment:
      validation. (LIBCLOUD-324)
      [Robert Chiniquy]
 
+   - Modify OpenStackAuthConnection and change auth_token_expires attribute to
+     be a datetime object instead of a string.
+     [Tomaz Muraus]
+
+   - Modify OpenStackAuthConnection to support re-using of the existing auth
+     token if it's still valid instead of re-authenticating on every
+     authenticate() call.
+     [Tomaz Muraus]
+
  *) Compute
 
     - Fix destroy_node method in the experimental libvirt driver.
