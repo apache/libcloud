@@ -54,6 +54,10 @@ Changes with Apache Libcloud in deveploment:
       return value. (LIBCLOUD-326)
       [Andre Merzky, Tomaz Muraus]
 
+    - Populate private_ips attribute in the CloudStack drive when returning
+      a Node object from the create_node method. (LIBCLOUD-329)
+      [Sebastien Goasguen, Tomaz Muraus]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles

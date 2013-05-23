@@ -170,35 +170,40 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         vms = self._sync_request('listVirtualMachines')
         addrs = self._sync_request('listPublicIpAddresses')
 
-        public_ips = {}
+        public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
-            if vm_id not in public_ips:
-                public_ips[vm_id] = {}
-            public_ips[vm_id][addr['ipaddress']] = addr['id']
+            if vm_id not in public_ips_map:
+                public_ips_map[vm_id] = {}
+            public_ips_map[vm_id][addr['ipaddress']] = addr['id']
 
         nodes = []
 
         for vm in vms.get('virtualmachine', []):
+            state = self.NODE_STATE_MAP[vm['state']]
+
+            public_ips = []
             private_ips = []
 
             for nic in vm['nic']:
                 if 'ipaddress' in nic:
                     private_ips.append(nic['ipaddress'])
 
+            public_ips = public_ips_map.get(vm['id'], {}).keys()
+
             node = CloudStackNode(
                 id=vm['id'],
                 name=vm.get('displayname', None),
-                state=self.NODE_STATE_MAP[vm['state']],
-                public_ips=public_ips.get(vm['id'], {}).keys(),
+                state=state,
+                public_ips=public_ips,
                 private_ips=private_ips,
                 driver=self,
                 extra={'zoneid': vm['zoneid'], }
             )
 
-            addrs = public_ips.get(vm['id'], {}).items()
+            addrs = public_ips_map.get(vm['id'], {}).items()
             addrs = [CloudStackAddress(node, v, k) for k, v in addrs]
             node.extra['ip_addresses'] = addrs
 
@@ -244,13 +249,17 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         )
 
         node = result['virtualmachine']
+        state = self.NODE_STATE_MAP[node['state']]
+
+        public_ips = []
+        private_ips = [nic['ipaddress'] for nic in node['nic']]
 
         return Node(
             id=node['id'],
             name=node['displayname'],
-            state=self.NODE_STATE_MAP[node['state']],
-            public_ips=[],
-            private_ips=[],
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
             driver=self,
             extra={
                 'zoneid': location.id,
