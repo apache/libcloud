@@ -33,6 +33,8 @@ datetime.datetime(2007, 1, 25, 12, 0, tzinfo=<iso8601.iso8601.Utc ...>)
 from datetime import datetime, timedelta, tzinfo
 import re
 
+from libcloud.utils.py3 import basestring
+
 __all__ = ["parse_date", "ParseError"]
 
 # Adapted from http://delete.me.uk/2005/03/iso8601.html
