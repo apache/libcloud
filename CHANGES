@@ -54,6 +54,14 @@ Changes with Apache Libcloud in deveploment:
       return value. (LIBCLOUD-326)
       [Andre Merzky, Tomaz Muraus]
 
+ *) Storage
+
+    - Fix an issue with double encoding the container name in the CloudFiles
+      driver upload_object method.
+      Also properly encode container and object name used in the HTTP request
+      in the get_container and get_object method. (LIBCLOUD-328)
+      [Tomaz Muraus]
+
  *) Load Balancer
 
     - Add ex_list_current_usage method to the Rackspace driver.
