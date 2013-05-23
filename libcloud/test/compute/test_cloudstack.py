@@ -58,6 +58,20 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
             return
         self.assertTrue(False)
 
+    def test_create_node_default_location_success(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        default_location = self.driver.list_locations()[0]
+
+        node = self.driver.create_node(name='fred',
+                                       image=image,
+                                       size=size)
+
+        self.assertEqual(node.name, 'fred')
+        self.assertEqual(node.public_ips, [])
+        self.assertEqual(node.private_ips, ['1.1.1.2'])
+        self.assertEqual(node.extra['zoneid'], default_location.id)
+
     def test_list_images_no_images_available(self):
         CloudStackMockHttp.fixture_tag = 'notemplates'
 
