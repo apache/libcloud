@@ -9,6 +9,15 @@ Changes with Apache Libcloud in deveploment:
      validation. (LIBCLOUD-324)
      [Robert Chiniquy]
 
+   - Modify OpenStackAuthConnection and change auth_token_expires attribute to
+     be a datetime object instead of a string.
+     [Tomaz Muraus]
+
+   - Modify OpenStackAuthConnection to support re-using of the existing auth
+     token if it's still valid instead of re-authenticating on every
+     authenticate() call.
+     [Tomaz Muraus]
+
  *) Compute
 
     - Fix destroy_node method in the experimental libvirt driver.
@@ -40,6 +49,14 @@ Changes with Apache Libcloud in deveploment:
     - Modify "ex_describe_keypair" method to return key fingerprint in the
       return value. (LIBCLOUD-326)
       [Andre Merzky, Tomaz Muraus]
+
+ *) Storage
+
+    - Fix an issue with double encoding the container name in the CloudFiles
+      driver upload_object method.
+      Also properly encode container and object name used in the HTTP request
+      in the get_container and get_object method. (LIBCLOUD-328)
+      [Tomaz Muraus]
 
  *) Load Balancer
 
