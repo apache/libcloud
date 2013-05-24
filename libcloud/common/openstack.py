@@ -461,6 +461,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     @param ex_force_service_region: Region to use when selecting an
     service.  If not specified, a provider specific default will be used.
     @type ex_force_service_region: C{string}
+
+    @param ex_auth_connection: OpenStackAuthConnection instance to use for
+    making HTTP requests. If not specified, a new one is instantiated.
+    @type ex_auth_connection: C{OpenStackAuthConnection}
     """
 
     auth_url = None
@@ -482,7 +486,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_tenant_name=None,
                  ex_force_service_type=None,
                  ex_force_service_name=None,
-                 ex_force_service_region=None):
+                 ex_force_service_region=None,
+                 ex_auth_connection=None):
 
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
@@ -492,7 +497,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
 
-        self._osa = None
+        self._auth_connection = ex_auth_connection
 
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
@@ -539,6 +544,29 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         raise LibcloudError('Could not find specified endpoint')
 
+    def get_auth_connection_instance(self):
+        """
+        Return an OpenStackAuthConnection instance for this connection.
+        """
+        auth_url = self.auth_url
+
+        if self._ex_force_auth_url is not None:
+            auth_url = self._ex_force_auth_url
+
+        if auth_url is None:
+            raise LibcloudError('OpenStack instance must ' +
+                                'have auth_url set')
+
+        if not self._auth_connection:
+            self._auth_connection = OpenStackAuthConnection(self, auth_url,
+                                                            self._auth_version,
+                                                            self.user_id,
+                                                            self.key,
+                                                            tenant_name=self._ex_tenant_name,
+                                                            timeout=self.timeout)
+
+        return self._auth_connection
+
     def add_default_headers(self, headers):
         headers['X-Auth-Token'] = self.auth_token
         headers['Accept'] = self.accept_format
@@ -558,29 +586,17 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         """
 
         if not self.auth_token:
-            aurl = self.auth_url
-
-            if self._ex_force_auth_url is not None:
-                aurl = self._ex_force_auth_url
-
-            if aurl == None:
-                raise LibcloudError('OpenStack instance must ' +
-                                    'have auth_url set')
-
-            osa = OpenStackAuthConnection(self, aurl, self._auth_version,
-                                          self.user_id, self.key,
-                                          tenant_name=self._ex_tenant_name,
-                                          timeout=self.timeout)
+            auth_connection = self.get_auth_connection_instance()
 
             # may throw InvalidCreds, etc
-            osa.authenticate()
+            auth_connection.authenticate()
 
-            self.auth_token = osa.auth_token
-            self.auth_token_expires = osa.auth_token_expires
-            self.auth_user_info = osa.auth_user_info
+            self.auth_token = auth_connection.auth_token
+            self.auth_token_expires = auth_connection.auth_token_expires
+            self.auth_user_info = auth_connection.auth_user_info
 
             # pull out and parse the service catalog
-            self.service_catalog = OpenStackServiceCatalog(osa.urls,
+            self.service_catalog = OpenStackServiceCatalog(auth_connection.urls,
                     ex_force_auth_version=self._auth_version)
 
         # Set up connection info
@@ -609,6 +625,7 @@ class OpenStackDriverMixin(object):
         self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
         self._ex_force_service_region = kwargs.get('ex_force_service_region',
                                                    None)
+        self._auth_connection = kwargs.get('ex_auth_connection', None)
 
     def openstack_connection_kwargs(self):
         """
@@ -632,4 +649,8 @@ class OpenStackDriverMixin(object):
             rv['ex_force_service_name'] = self._ex_force_service_name
         if self._ex_force_service_region:
             rv['ex_force_service_region'] = self._ex_force_service_region
+
+        if self._auth_connection:
+            rv['ex_auth_connection'] = self._auth_connection
+
         return rv
