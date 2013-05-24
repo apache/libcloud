@@ -44,6 +44,12 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 LibcloudHTTPConnection = httplib.HTTPConnection
 
 
+# Stores information about all of the issued HTTP request.
+# Request logger is only active is LIBCLOUD_DEBUG and LIBCLOUD_REQUESTS_STATS
+# environment variable is set and should NOT be used in production.
+REQUESTS_LOG = []
+
+
 class HTTPResponse(httplib.HTTPResponse):
     # On python 2.6 some calls can hang because HEAD isn't quite properly
     # supported.
@@ -239,6 +245,7 @@ class LoggingConnection():
     @cvar log: file-like object that logs entries are written to.
     """
     log = None
+    enable_requests_stats = False
 
     def _log_response(self, r):
         rv = "# -------- begin %d:%d response ----------\n" % (id(self), id(r))
@@ -312,10 +319,16 @@ class LoggingConnection():
         if body is not None and len(body) > 0:
             cmd.extend(["--data-binary", pquote(body)])
 
+        url = pquote(self._get_url(path=url))
+
         cmd.extend(["--compress"])
-        cmd.extend([pquote("%s://%s:%d%s" % (self.protocol, self.host,
-                                             self.port, url))])
+        cmd.extend([url])
         return " ".join(cmd)
+
+    def _get_url(self, path):
+        url = '%s://%s:%d%s' % (self.protocol, self.host,
+                                self.port, path)
+        return url
 
 
 class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
@@ -335,11 +348,18 @@ class LoggingHTTPSConnection(LoggingConnection, LibcloudHTTPSConnection):
 
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
+
         if self.log is not None:
             pre = "# -------- begin %d request ----------\n" % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
+
+        if self.enable_requests_stats:
+            full_url = self._get_url(path=url)
+            obj = {'method': method, 'url': full_url}
+            REQUESTS_LOG.append(obj)
+
         return LibcloudHTTPSConnection.request(self, method, url, body,
                                                headers)
 

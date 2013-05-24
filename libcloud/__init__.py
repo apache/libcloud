@@ -22,11 +22,17 @@ libcloud provides a unified interface to the cloud computing resources.
 __all__ = ['__version__', 'enable_debug']
 __version__ = '0.12.4'
 
+import os
+import atexit
+
 try:
     import paramiko
     have_paramiko = True
 except ImportError:
     have_paramiko = False
+
+
+from libcloud.utils.debug import print_request_statistics
 
 
 def enable_debug(fo):
@@ -38,11 +44,21 @@ def enable_debug(fo):
     """
     from libcloud.common.base import (Connection,
                                       LoggingHTTPConnection,
-                                      LoggingHTTPSConnection)
+                                      LoggingHTTPSConnection,
+                                      REQUESTS_LOG)
     LoggingHTTPSConnection.log = fo
     LoggingHTTPConnection.log = fo
     Connection.conn_classes = (LoggingHTTPConnection,
                                LoggingHTTPSConnection)
+
+    # Register a handler which prints some request statistics upon exit
+    enable_requests_stats = os.getenv('LIBCLOUD_REQUESTS_STATS')
+
+    if enable_requests_stats:
+        LoggingHTTPSConnection.enable_requests_stats = True
+        LoggingHTTPConnection.enable_requests_stats = True
+        atexit.register(print_request_statistics, fo=fo,
+                        requests_log=REQUESTS_LOG)
 
 
 def _init_once():
@@ -52,7 +68,6 @@ def _init_once():
     This checks for the LIBCLOUD_DEBUG enviroment variable, which if it exists
     is where we will log debug information about the provider transports.
     """
-    import os
     path = os.getenv('LIBCLOUD_DEBUG')
     if path:
         fo = open(path, 'a')
