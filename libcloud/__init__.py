@@ -32,9 +32,6 @@ except ImportError:
     have_paramiko = False
 
 
-from libcloud.utils.debug import print_request_statistics
-
-
 def enable_debug(fo):
     """
     Enable library wide debugging to a file-like object.
@@ -55,6 +52,8 @@ def enable_debug(fo):
     enable_requests_stats = os.getenv('LIBCLOUD_REQUESTS_STATS')
 
     if enable_requests_stats:
+        from libcloud.utils.debug import print_request_statistics
+
         LoggingHTTPSConnection.enable_requests_stats = True
         LoggingHTTPConnection.enable_requests_stats = True
         atexit.register(print_request_statistics, fo=fo,
