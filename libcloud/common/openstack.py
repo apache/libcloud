@@ -55,7 +55,7 @@ __all__ = [
     'OpenStackServiceCatalog',
     'OpenStackDriverMixin',
     "OpenStackBaseConnection",
-    "OpenStackAuthConnection"
+    "OpenStackAuthConnection",
 
     'AUTH_TOKEN_EXPIRES_GRACE_SECONDS'
 ]
@@ -615,42 +615,50 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
 class OpenStackDriverMixin(object):
 
+    # Extenstion arguments which are passed to the connection class.
+    EXTENSTION_ARGUMENTS = [
+        'ex_force_base_url',
+        'ex_force_auth_token',
+        'ex_force_auth_url',
+        'ex_force_auth_version',
+        'ex_tenant_name',
+        'ex_force_service_type',
+        'ex_force_service_name',
+        'ex_force_service_region',
+        'ex_auth_connection'
+    ]
+
     def __init__(self, *args, **kwargs):
-        self._ex_force_base_url = kwargs.get('ex_force_base_url', None)
-        self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
-        self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
-        self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
-        self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
-        self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
-        self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
-        self._ex_force_service_region = kwargs.get('ex_force_service_region',
-                                                   None)
-        self._auth_connection = kwargs.get('ex_auth_connection', None)
+        pairs = self._get_argument_pairs()
+        for argument_name, attribute_name in pairs:
+            value = kwargs.get(argument_name, None)
+
+            if value is None:
+                continue
+
+            setattr(self, attribute_name, value)
 
     def openstack_connection_kwargs(self):
         """
-
         @rtype: C{dict}
         """
-        rv = {}
-        if self._ex_force_base_url:
-            rv['ex_force_base_url'] = self._ex_force_base_url
-        if self._ex_force_auth_token:
-            rv['ex_force_auth_token'] = self._ex_force_auth_token
-        if self._ex_force_auth_url:
-            rv['ex_force_auth_url'] = self._ex_force_auth_url
-        if self._ex_force_auth_version:
-            rv['ex_force_auth_version'] = self._ex_force_auth_version
-        if self._ex_tenant_name:
-            rv['ex_tenant_name'] = self._ex_tenant_name
-        if self._ex_force_service_type:
-            rv['ex_force_service_type'] = self._ex_force_service_type
-        if self._ex_force_service_name:
-            rv['ex_force_service_name'] = self._ex_force_service_name
-        if self._ex_force_service_region:
-            rv['ex_force_service_region'] = self._ex_force_service_region
+        result = {}
 
-        if self._auth_connection:
-            rv['ex_auth_connection'] = self._auth_connection
+        pairs = self._get_argument_pairs()
+        for argument_name, attribute_name in pairs:
+            value = getattr(self, attribute_name, None)
 
-        return rv
+            if not value:
+                continue
+
+            result[argument_name] = value
+
+        return result
+
+    def _get_argument_pairs(self):
+        result = []
+        for argument_name in self.EXTENSTION_ARGUMENTS:
+            attribute_name = '_%s' % (argument_name)
+            result.append([argument_name, attribute_name])
+
+        return result
