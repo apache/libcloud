@@ -58,6 +58,11 @@ Changes with Apache Libcloud in deveploment:
       a Node object from the create_node method. (LIBCLOUD-329)
       [Sebastien Goasguen, Tomaz Muraus]
 
+    - Allow user to pass extra arguments via "extra_args" argument which are
+      then passed to the "deployVirtualMachine" call in the CloudStack driver
+      create_node method. (LIBCLOUD-330)
+      [Sebastien Goasguen, Tomaz Muraus]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
