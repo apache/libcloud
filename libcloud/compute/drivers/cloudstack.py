@@ -230,22 +230,34 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   0, self))
         return sizes
 
-    def create_node(self, name, size, image, location=None, **kwargs):
+    def create_node(self, name, size, image, location=None, extra_args=None,
+                    **kwargs):
         """
         @inherits: L{NodeDriver.create_node}
+
+        @keyword  extra_args: Extra argument passed to the
+        "deployVirtualMachine" call. A list of available arguments can be found
+        at http://cloudstack.apache.org/docs/api/apidocs-4.0.0/root_admin/deployVirtualMachine.html
+        @type     extra_args:   C{dict}
+
         @rtype: L{CloudStackNode}
         """
-        extra_args = {}
+
+        if extra_args:
+            request_args = extra_args.copy()
+        else:
+            request_args = {}
+
         if location is None:
             location = self.list_locations()[0]
 
         if 'network_id' in kwargs:
-            extra_args['networkids'] = network_id
+            request_args['networkids'] = network_id
 
         result = self._async_request(
             'deployVirtualMachine', name=name, displayname=name,
             serviceofferingid=size.id, templateid=image.id,
-            zoneid=location.id, **extra_args
+            zoneid=location.id, **request_args
         )
 
         node = result['virtualmachine']
