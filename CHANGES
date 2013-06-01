@@ -63,6 +63,9 @@ Changes with Apache Libcloud in deveploment:
       create_node method. (LIBCLOUD-330)
       [Sebastien Goasguen, Tomaz Muraus]
 
+    - Update Gandi driver to handle new billing model. (LIBCLOUD-317)
+      [Aymeric Barantal]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
