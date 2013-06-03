@@ -62,6 +62,10 @@ Changes with Apache Libcloud in deveploment:
     - Update Gandi driver to handle new billing model. (LIBCLOUD-317)
       [Aymeric Barantal]
 
+    - Fix a bug in the Linode driver and remove extra newline which is added
+      when generating a random root password in create_node. (LIBCLOUD-334)
+      [Juan Carlos Moreno]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
