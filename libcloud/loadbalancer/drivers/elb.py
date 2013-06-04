@@ -74,8 +74,8 @@ class ElasticLBDriver(Driver):
             'Listeners.member.1.InstancePort': str(port),
             'Listeners.member.1.InstanceProtocol': protocol.upper(),
             'Listeners.member.1.LoadBalancerPort': str(port),
-            'Listeners.member.1.Protocol': protocol.upper(),
-        }
+            'Listeners.member.1.Protocol': protocol.upper()
+            }
 
         for i, z in enumerate(ex_members_availability_zones):
             zone = ''.join((self.region, z))
@@ -93,7 +93,7 @@ class ElasticLBDriver(Driver):
         )
         balancer._members = []
         return balancer
-
+   
     def destroy_balancer(self, balancer):
         params = {
             'Action': 'DeleteLoadBalancer',
