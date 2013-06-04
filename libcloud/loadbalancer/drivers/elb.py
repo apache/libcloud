@@ -63,25 +63,19 @@ class ElasticLBDriver(Driver):
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)
 
-    def create_balancer(self, name, ports, protocols, algorithm, members,
+    def create_balancer(self, name, port, protocol, algorithm, members,
                         ex_members_availability_zones=None):
         if ex_members_availability_zones is None:
             ex_members_availability_zones = ['a']
-        if not (len(ports) == len(protocols)):
-            raise SizeFit('ports and protocols not same size')
-
+       
         params = {
             'Action': 'CreateLoadBalancer',
-            'LoadBalancerName': name
+            'LoadBalancerName': name,
+            'Listeners.member.1.InstancePort': str(port),
+            'Listeners.member.1.InstanceProtocol': protocol.upper(),
+            'Listeners.member.1.LoadBalancerPort':str(port),
+            'Listeners.member.1.Protocol':protocol.upper()
             }
-        iter = 1
-        for port in ports:
-            params['Listeners.member.{0}.InstancePort'.format(str(iter))] = str(port)
-            params['Listeners.member.{0}.InstanceProtocol'.format(str(iter))] = protocols[iter-1].upper()
-            params['Listeners.member.{0}.LoadBalancerPort'.format(str(iter))] = str(port)
-            params['Listeners.member.{0}.Protocol'.format(str(iter))] = protocols[iter-1].upper()
-            iter += 1
-
         for i, z in enumerate(ex_members_availability_zones):
             zone = ''.join((self.region, z))
             params['AvailabilityZones.member.%d' % (i + 1)] = zone
@@ -93,16 +87,40 @@ class ElasticLBDriver(Driver):
             name=name,
             state=State.PENDING,
             ip=findtext(element=data, xpath='DNSName', namespace=NS),
-            port=ports,
+            port=port,
             driver=self.connection.driver
         )
         balancer._members = []
         return balancer
     
-    def create_HealthCheck(self, name, port, protocol, interval = 30,timeout = 5, unhealthyThreshold = 2,
-                            healthyThreshold = 10, path = ''):
+    def create_balancer_listener(self, name, ports, protocols,certificate_Id = ''):
+
+        if not (len(ports) == len(protocols)):
+            raise SizeFit('ports and protocols not same size')
+
+        params = {
+            'Action': 'CreateLoadBalancerListeners',
+            'LoadBalancerName': name
+            }
+        #iter = 1
+        for iter , port in enumerate(ports,1):
+            params['Listeners.member.{0}.InstancePort'.format(str(iter))] = str(port)
+            params['Listeners.member.{0}.InstanceProtocol'.format(str(iter))] =protocols[iter-1].upper()
+            params['Listeners.member.{0}.LoadBalancerPort'.format(str(iter))] = str(port)
+            params['Listeners.member.{0}.Protocol'.format(str(iter))] = protocols[iter-1].upper()
+            if port == 433:
+                params['Listeners.member.{0}.SSLCertificateId'.format(str(iter))] = certificate_Id
+
+
+
+        data = self.connection.request(ROOT, params=params).object
+        
+        return data
+    
+    def create_health_check(self, name, port, protocol, interval=30,timeout=5, unhealthyThreshold=2,
+                            healthyThreshold=10, path = ''):
         if path is None:
-            path = ['']
+            path = ''
 
         params = {
             'Action': 'ConfigureHealthCheck',
@@ -113,9 +131,9 @@ class ElasticLBDriver(Driver):
             'HealthCheck.Timeout': str(timeout),
             'HealthCheck.Target': '{0}:{1}/{2}'.format(protocol,str(port),path)
             }
-        healtCheck = self.connection.request(ROOT, params=params).object
+        healt_Check = self.connection.request(ROOT, params=params).object
 
-        return healtCheck
+        return healt_Check
     
     def destroy_balancer(self, balancer):
         params = {
