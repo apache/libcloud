@@ -255,7 +255,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             location = self.list_locations()[0]
 
         if 'network_id' in kwargs:
-            request_args['networkids'] = network_id
+            request_args['networkids'] = kwargs['network_id']
 
         result = self._async_request(
             'deployVirtualMachine', name=name, displayname=name,
