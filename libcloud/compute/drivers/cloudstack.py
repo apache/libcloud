@@ -513,10 +513,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         @rtype:    L{dict}
         """
 
-        extra_args = {}
-        for key in kwargs.keys():
-            extra_args[key] = kwargs[key]
-
+        extra_args = kwargs.copy()
         res = self._sync_request('listSSHKeyPairs', **extra_args)
         return res['sshkeypair']
 
@@ -542,15 +539,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         @return:   A keypair dictionary
         @rtype:    C{dict}
         """
-
-        extra_args = {}
-        for key in kwargs.keys():
-            extra_args[key] = kwargs[key]
+        extra_args = kwargs.copy()
 
         for keypair in self.ex_list_keypairs():
             if keypair['name'] == name:
                 raise LibcloudError('SSH KeyPair with name=%s already exists'
-                                    % name)
+                                    % (name))
 
         res = self._sync_request('createSSHKeyPair', name=name, **extra_args)
         return res['keypair']
@@ -576,12 +570,193 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         @rtype:    C{bool}
         """
 
-        extra_args = {}
-        for key in kwargs.keys():
-            extra_args[key] = kwargs[key]
+        extra_args = kwargs.copy()
 
         res = self._sync_request('deleteSSHKeyPair', name=name, **extra_args)
         return res['success']
+
+    def ex_list_security_groups(self, **kwargs):
+        """
+        Lists Security Groups
+
+        @param domainid: List only resources belonging to the domain specified
+        @type  domainid: C{uuid}
+
+        @param account: List resources by account. Must be used with
+                                                   the domainId parameter.
+        @type  account: C{str}
+
+        @param listall: If set to false, list only resources belonging to
+                                         the command's caller; if set to true
+                                         list resources that the caller is
+                                         authorized to see.
+                                         Default value is false
+        @type  listall: C{bool}
+
+        @param pagesize: Number of entries per page
+        @type  pagesize: C{int}
+
+        @param keyword: List by keyword
+        @type  keyword: C{str}
+
+        @param tags: List resources by tags (key/value pairs)
+        @type  tags: C{dict}
+
+        @param id: list the security group by the id provided
+        @type  id: C{uuid}
+
+        @param securitygroupname: lists security groups by name
+        @type  securitygroupname: C{str}
+
+        @param virtualmachineid: lists security groups by virtual machine id
+        @type  virtualmachineid: C{uuid}
+
+        @param projectid: list objects by project
+        @type  projectid: C{uuid}
+
+        @param isrecursive: (boolean) defaults to false, but if true,
+                                      lists all resources from the parent
+                                      specified by the domainId till leaves.
+        @type  isrecursive: C{bool}
+
+        @param page: (integer)
+        @type  page: C{int}
+
+        @rtype C{list}
+        """
+        extra_args = kwargs
+        return self._sync_request('listSecurityGroups',
+                                  **extra_args)['securitygroup']
+
+    def ex_create_security_group(self, name, **kwargs):
+        """
+        Creates a new Security Group
+
+        @param name: name of the security group (required)
+        @type  name: C{str}
+
+        @param account: An optional account for the security group.
+                        Must be used with domainId.
+        @type  account: C{str}
+
+        @param domainid: An optional domainId for the security group.
+                         If the account parameter is used,
+                         domainId must also be used.
+        @type  domainid: C{uuid}
+
+        @param description: The description of the security group
+        @type  description: C{str}
+
+        @param projectid: Deploy vm for the project
+        @type  projectid: C{uuid}
+
+        @rtype: C{dict}
+        """
+
+        extra_args = kwargs.copy()
+
+        for sg in self.ex_list_security_groups():
+            if name in sg['name']:
+                raise LibcloudError('This Security Group name already exists')
+
+        return self._sync_request('createSecurityGroup',
+                                  name=name, **extra_args)['securitygroup']
+
+    def ex_delete_security_group(self, name):
+        """
+        Deletes a given Security Group
+
+        @param domainid: The domain ID of account owning
+                         the security group
+        @type  domainid: C{uuid}
+
+        @param id: The ID of the security group.
+                   Mutually exclusive with name parameter
+        @type  id: C{uuid}
+
+        @param name: The ID of the security group.
+                     Mutually exclusive with id parameter
+        @type name: C{str}
+
+        @param account: The account of the security group.
+                        Must be specified with domain ID
+        @type  account: C{str}
+
+        @param projectid:  The project of the security group
+        @type  projectid:  C{uuid}
+
+        @rtype: C{bool}
+        """
+
+        return self._sync_request('deleteSecurityGroup', name=name)['success']
+
+    def ex_authorize_security_group_ingress(self, securitygroupname,
+                                            protocol, cidrlist, startport,
+                                            endport=None):
+        """
+        Creates a new Security Group Ingress rule
+
+        @param domainid: An optional domainId for the security group.
+                         If the account parameter is used,
+                         domainId must also be used.
+        @type domainid: C{uuid}
+
+        @param startport: Start port for this ingress rule
+        @type  startport: C{int}
+
+        @param securitygroupid: The ID of the security group.
+                                Mutually exclusive with securityGroupName
+                                parameter
+        @type  securitygroupid: C{uuid}
+
+        @param cidrlist: The cidr list associated
+        @type  cidrlist: C{list}
+
+        @param usersecuritygrouplist: user to security group mapping
+        @type  usersecuritygrouplist: C{map}
+
+        @param securitygroupname: The name of the security group.
+                                  Mutually exclusive with
+                                  securityGroupName parameter
+        @type  securitygroupname: C{str}
+
+        @param account: An optional account for the security group.
+                        Must be used with domainId.
+        @type  account: C{str}
+
+        @param icmpcode: Error code for this icmp message
+        @type  icmpcode: C{int}
+
+        @param protocol: TCP is default. UDP is the other supported protocol
+        @type  protocol: C{str}
+
+        @param icmptype: type of the icmp message being sent
+        @type  icmptype: C{int}
+
+        @param projectid: An optional project of the security group
+        @type  projectid: C{uuid}
+
+        @param endport: end port for this ingress rule
+        @type  endport: C{int}
+
+        @rtype: C{list}
+        """
+
+        protocol = protocol.upper()
+        if protocol not in ('TCP', 'ICMP'):
+            raise LibcloudError('Only TCP and ICMP are allowed')
+
+        args = {
+            'securitygroupname': securitygroupname,
+            'protocol': protocol,
+            'startport': int(startport),
+            'cidrlist': cidrlist
+        }
+        if endport is None:
+            args['endport'] = int(startport)
+
+        return self._async_request('authorizeSecurityGroupIngress',
+                                   **args)['securitygroup']
 
     def ex_register_iso(self, name, url, location=None, **kwargs):
         """

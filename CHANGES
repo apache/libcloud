@@ -70,8 +70,12 @@ Changes with Apache Libcloud in deveploment:
       when generating a random root password in create_node. (LIBCLOUD-334)
       [Juan Carlos Moreno]
 
-    - Add extension functions for managing keypairs to the CloudStack driver.
+    - Add extension methods for managing keypairs to the CloudStack driver.
       (LIBCLOUD-333)
+      [sebastien goasguen]
+
+    - Add extension methods for managing security groups to the CloudStack 
+      driver. (LIBCLOUD-332)
       [sebastien goasguen]
 
  *) Storage
