@@ -70,6 +70,10 @@ Changes with Apache Libcloud in deveploment:
       when generating a random root password in create_node. (LIBCLOUD-334)
       [Juan Carlos Moreno]
 
+    - Add extension functions for managing keypairs to the CloudStack driver.
+      (LIBCLOUD-333)
+      [sebastien goasguen]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles

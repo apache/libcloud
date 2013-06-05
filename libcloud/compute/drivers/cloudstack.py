@@ -148,11 +148,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         imgs = self._sync_request('listTemplates', **args)
         images = []
         for img in imgs.get('template', []):
-            images.append(NodeImage(img['id'], img['name'], self, {
-                'hypervisor': img['hypervisor'],
-                'format': img['format'],
-                'os': img['ostypename'],
-                }))
+            images.append(NodeImage(img['id'], img['name'], self,
+                                    {'hypervisor': img['hypervisor'],
+                                     'format': img['format'],
+                                     'os': img['ostypename'],
+                                     }
+                                    )
+                          )
         return images
 
     def list_locations(self):
@@ -237,7 +239,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         @keyword  extra_args: Extra argument passed to the
         "deployVirtualMachine" call. A list of available arguments can be found
-        at http://cloudstack.apache.org/docs/api/apidocs-4.0.0/root_admin/deployVirtualMachine.html
+        at http://cloudstack.apache.org/docs/api/apidocs-4.0.0/root_admin/ \
+           deployVirtualMachine.html
         @type     extra_args:   C{dict}
 
         @rtype: L{CloudStackNode}
@@ -273,11 +276,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self,
-            extra={
-                'zoneid': location.id,
-                'ip_addresses': [],
-                'forwarding_rules': [],
-                }
+            extra={'zoneid': location.id,
+                   'ip_addresses': [],
+                   'forwarding_rules': [],
+                   }
         )
 
     def destroy_node(self, node):
@@ -462,6 +464,124 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node.extra['ip_forwarding_rules'].remove(rule)
         self._async_request('deleteIpForwardingRule', id=rule.id)
         return True
+
+    def ex_list_keypairs(self, **kwargs):
+        """
+        List Registered SSH Key Pairs
+
+        @param     projectid: list objects by project
+        @type      projectid: C{uuid}
+
+        @param     page: The page to list the keypairs from
+        @type      page: C{int}
+
+        @param     keyword: List by keyword
+        @type      keyword: C{str}
+
+        @param     listall: If set to false, list only resources
+                            belonging to the command's caller;
+                            if set to true - list resources that
+                            the caller is authorized to see.
+                            Default value is false
+
+        @type      listall: C{bool}
+
+        @param     pagesize: The number of results per page
+        @type      pagesize: C{int}
+
+        @param     account: List resources by account.
+                            Must be used with the domainId parameter
+        @type      account: C{str}
+
+        @param     isrecursive: Defaults to false, but if true,
+                                lists all resources from
+                                the parent specified by the
+                                domainId till leaves.
+        @type      isrecursive: C{bool}
+
+        @param     fingerprint: A public key fingerprint to look for
+        @type      fingerprint: C{str}
+
+        @param     name: A key pair name to look for
+        @type      name: C{str}
+
+        @param     domainid: List only resources belonging to
+                                     the domain specified
+        @type      domainid: C{uuid}
+
+        @return:   A list of keypair dictionaries
+        @rtype:    L{dict}
+        """
+
+        extra_args = {}
+        for key in kwargs.keys():
+            extra_args[key] = kwargs[key]
+
+        res = self._sync_request('listSSHKeyPairs', **extra_args)
+        return res['sshkeypair']
+
+    def ex_create_keypair(self, name, **kwargs):
+        """
+        Creates a SSH KeyPair, returns fingerprint and private key
+
+        @param     name: Name of the keypair (required)
+        @type      name: C{str}
+
+        @param     projectid: An optional project for the ssh key
+        @type      projectid: C{str}
+
+        @param     domainid: An optional domainId for the ssh key.
+                             If the account parameter is used,
+                             domainId must also be used.
+        @type      domainid: C{str}
+
+        @param     account: An optional account for the ssh key.
+                            Must be used with domainId.
+        @type      account: C{str}
+
+        @return:   A keypair dictionary
+        @rtype:    C{dict}
+        """
+
+        extra_args = {}
+        for key in kwargs.keys():
+            extra_args[key] = kwargs[key]
+
+        for keypair in self.ex_list_keypairs():
+            if keypair['name'] == name:
+                raise LibcloudError('SSH KeyPair with name=%s already exists'
+                                    % name)
+
+        res = self._sync_request('createSSHKeyPair', name=name, **extra_args)
+        return res['keypair']
+
+    def ex_delete_keypair(self, name, **kwargs):
+        """
+        Deletes an existing SSH KeyPair
+
+        @param     name: Name of the keypair (required)
+        @type      name: C{str}
+
+        @param     projectid: The project associated with keypair
+        @type      projectid: C{uuid}
+
+        @param     domainid : The domain ID associated with the keypair
+        @type      domainid: C{uuid}
+
+        @param     account : The account associated with the keypair.
+                             Must be used with the domainId parameter.
+        @type      account: C{str}
+
+        @return:   True of False based on success of Keypair deletion
+        @rtype:    C{bool}
+        """
+
+        extra_args = {}
+        for key in kwargs.keys():
+            extra_args[key] = kwargs[key]
+
+        res = self._sync_request('deleteSSHKeyPair', name=name, **extra_args)
+        return res['success']
 
     def ex_register_iso(self, name, url, location=None, **kwargs):
         """
