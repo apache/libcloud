@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
 import unittest
 
@@ -17,10 +32,12 @@ except AttributeError:
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 from libcloud.compute.types import DeploymentError, LibcloudError
+from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
 from libcloud.test import MockHttpTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
+
 
 class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
@@ -104,9 +121,9 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
 
         self.assertRaises(
-                LibcloudError,
-                self.driver.create_volume,
-                    'vol-0', location, 11)
+            LibcloudError,
+            self.driver.create_volume,
+            'vol-0', location, 11)
 
     def test_create_volume_with_custom_disk_size_offering(self):
         CloudStackMockHttp.fixture_tag = 'withcustomdisksize'
@@ -127,6 +144,60 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         attachReturnVal = self.driver.attach_volume(volume, node)
 
         self.assertTrue(attachReturnVal)
+
+    def test_list_nodes(self):
+        node = self.driver.list_nodes()[0]
+        self.assertEquals('test', node.name)
+
+    def test_list_locations(self):
+        location = self.driver.list_locations()[0]
+        self.assertEquals('Sydney', location.name)
+
+    def test_start_node(self):
+        node = self.driver.list_nodes()[0]
+        res = node.ex_start()
+        self.assertEquals('Starting', res)
+
+    def test_stop_node(self):
+        node = self.driver.list_nodes()[0]
+        res = node.ex_stop()
+        self.assertEquals('Stopped', res)
+
+    def test_list_keypairs(self):
+        keypairs = self.driver.ex_list_keypairs()
+        fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
+                      '00:00:00:00:00'
+
+        self.assertEqual(keypairs[0]['name'], 'cs-keypair')
+        self.assertEqual(keypairs[0]['fingerprint'], fingerprint)
+
+    def test_create_keypair(self):
+        self.assertRaises(LibcloudError, self.driver.ex_create_keypair,
+                'cs-keypair')
+
+    def test_delete_keypair(self):
+        res = self.driver.ex_delete_keypair('cs-keypair')
+        self.assertTrue(res)
+
+    def test_list_security_groups(self):
+        groups = self.driver.ex_list_security_groups()
+        self.assertEqual(groups[0]['name'], 'default')
+
+    def test_create_security_group(self):
+        group = self.driver.ex_create_security_group(name='MySG')
+        self.assertEqual(group['name'], 'MySG')
+
+    def test_delete_security_group(self):
+        res = self.driver.ex_delete_security_group(name='MySG')
+        self.assertTrue(res)
+
+    def test_authorize_security_group_ingress(self):
+        res = self.driver.ex_authorize_security_group_ingress('MySG',
+                                                              'TCP',
+                                                              '22',
+                                                              '22',
+                                                              '0.0.0.0/0')
+        self.assertTrue(res)
 
 
 class CloudStackMockHttp(MockHttpTestCase):
