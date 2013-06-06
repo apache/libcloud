@@ -41,6 +41,14 @@ class CloudStackNode(Node):
         "Delete a NAT/firewall rule."
         return self.driver.ex_delete_ip_forwarding_rule(self, rule)
 
+    def ex_start(self):
+        "Starts a stopped virtual machine"
+        return self.driver.ex_start(self)
+
+    def ex_stop(self):
+        "Stops a running virtual machine"
+        return self.driver.ex_stop(self)
+
 
 class CloudStackAddress(object):
     "A public IP address."
@@ -298,8 +306,47 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._async_request('rebootVirtualMachine', id=node.id)
         return True
 
+    def ex_start(self, node):
+        """
+        Starts/Resumes a stopped virtual machine
+
+        @type node: L{CloudStackNode}
+
+        @param id: The ID of the virtual machine (required)
+        @type  id: C{uuid}
+
+        @param hostid: destination Host ID to deploy the VM to
+                       parameter available for root admin only
+        @type  hostid: C{uuid}
+
+        @rtype C{str}
+        """
+        res = self._async_request('startVirtualMachine', id=node.id)
+        return res['virtualmachine']['state']
+
+    def ex_stop(self, node):
+        """
+        Stops/Suspends a running virtual machine
+
+        @type node: L{CloudStackNode}
+
+        @param id: The ID of the virtual machine
+        @type  id: C{uuid}
+
+        @param forced: Force stop the VM
+                       (vm is marked as Stopped even when command
+                        fails to be send to the backend).
+                       The caller knows the VM is stopped.
+        @type  forced: C{bool}
+
+        @rtype C{str}
+        """
+        res = self._async_request('stopVirtualMachine', id=node.id)
+        return res['virtualmachine']['state']
+
     def ex_list_disk_offerings(self):
-        """Fetch a list of all available disk offerings.
+        """
+        Fetch a list of all available disk offerings.
 
         @rtype: C{list} of L{CloudStackDiskOffering}
         """
@@ -364,7 +411,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_allocate_public_ip(self, node):
         """
-        "Allocate a public IP and bind it to a node.
+        Allocate a public IP and bind it to a node.
 
         @param node: Node which should be used
         @type  node: L{CloudStackNode}
