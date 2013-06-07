@@ -85,6 +85,10 @@ Changes with Apache Libcloud in deveploment:
     - Fix old _wait_until_running method. (LIBCLOUD-339)
       [Bob Thompson]
 
+    - Allow user to override default async task completion timeout by
+      specifying ex_clone_timeout argument. (LIBCLOUD-340)
+      [Michal Galet]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
