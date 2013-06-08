@@ -46,7 +46,7 @@ INSTANCE_TYPES = {
         'cpu': 1,
         'memory': 256,
         'disk': 3,
-        'bandwidth': 100,
+        'bandwidth': 10240,
     },
     'medium': {
         'id': 'medium',
@@ -54,7 +54,7 @@ INSTANCE_TYPES = {
         'cpu': 1,
         'memory': 1024,
         'disk': 20,
-        'bandwidth': 100,
+        'bandwidth': 10240,
     },
     'large': {
         'id': 'large',
@@ -62,7 +62,7 @@ INSTANCE_TYPES = {
         'cpu': 2,
         'memory': 2048,
         'disk': 50,
-        'bandwidth': 100,
+        'bandwidth': 10240,
     },
     'extra-large': {
         'id': 'x-large',
@@ -70,7 +70,7 @@ INSTANCE_TYPES = {
         'cpu': 4,
         'memory': 4096,
         'disk': 100,
-        'bandwidth': 100,
+        'bandwidth': 10240,
     },
 }
 
