@@ -81,6 +81,9 @@ Changes with Apache Libcloud in deveploment:
     - Fix old _wait_until_running method. (LIBCLOUD-339)
       [Bob Thompson]
 
+    - Fix a bug in the GoGrid driver get_uuid method. (LIBCLOUD-341)
+      [Bob Thompson]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
