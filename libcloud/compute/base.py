@@ -658,7 +658,8 @@ class NodeDriver(BaseDriver):
         try:
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
-                wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
+                wait_period=3,
+                timeout=kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT),
                 ssh_interface=ssh_interface)[0]
         except Exception:
             e = sys.exc_info()[1]
