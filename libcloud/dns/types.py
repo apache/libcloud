@@ -33,6 +33,7 @@ class Provider(object):
     ZERIGO = 'zerigo'
     RACKSPACE_US = 'rackspace_us'
     RACKSPACE_UK = 'rackspace_uk'
+    RACKSPACE_AU = 'rackspace_au'
     ROUTE53 = 'route53'
     HOSTVIRTUAL = 'hostvirtual'
     GANDI = 'gandi'

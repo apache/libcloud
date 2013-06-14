@@ -36,6 +36,7 @@ class Provider(object):
     GOGRID = 'gogrid'
     NINEFOLD = 'ninefold'
     RACKSPACE_UK = 'rackspace_uk'
+    RACKSPACE_AU = 'rackspace_au'
     BRIGHTBOX = 'brightbox'
     ELB = 'elb'
 
