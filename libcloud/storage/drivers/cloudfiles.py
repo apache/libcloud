@@ -49,7 +49,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 
 from libcloud.common.rackspace import (
-    AUTH_URL_US, AUTH_URL_UK)
+    AUTH_URL_US, AUTH_URL_UK, AUTH_URL_AU)
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
@@ -799,6 +799,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             kwargs['auth_url'] = AUTH_URL_US
         elif self.datacenter == 'lon':
             kwargs['auth_url'] = AUTH_URL_UK
+        elif self.datacenter == 'syd':
+            kwargs['auth_url'] = AUTH_URL_AU
 
         kwargs.update(self.openstack_connection_kwargs())
         return kwargs

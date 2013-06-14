@@ -29,7 +29,7 @@ from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection,\
     OpenStackDriverMixin
-from libcloud.common.rackspace import (AUTH_URL_US, AUTH_URL_UK)
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK, AUTH_URL_AU
 
 
 class RackspaceResponse(JsonResponse):
@@ -297,6 +297,10 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
 
 class RackspaceUKConnection(RackspaceConnection):
     auth_url = AUTH_URL_UK
+
+
+class RackspaceAUConnection(RackspaceConnection):
+    auth_url = AUTH_URL_AU
 
 
 class RackspaceLBDriver(Driver, OpenStackDriverMixin):
@@ -1536,3 +1540,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
 class RackspaceUKLBDriver(RackspaceLBDriver):
     connectionCls = RackspaceUKConnection
+
+
+class RackspaceAULBDriver(RackspaceLBDriver):
+    connectionCls = RackspaceAUConnection

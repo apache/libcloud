@@ -28,6 +28,8 @@ DRIVERS = {
         ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
     Provider.RACKSPACE_UK:
         ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver'),
+    Provider.RACKSPACE_AU:
+        ('libcloud.dns.drivers.rackspace', 'RackspaceAUDNSDriver'),
     Provider.HOSTVIRTUAL:
         ('libcloud.dns.drivers.hostvirtual', 'HostVirtualDNSDriver'),
     Provider.ROUTE53:
