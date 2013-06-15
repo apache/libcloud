@@ -572,10 +572,8 @@ class Connection(object):
             headers.update({'Host': self.host})
 
         # Encode data if necessary
-        if data != '' and data is not None:
+        if data:
             data = self.encode_data(data)
-
-        if data is not None:
             headers.update({'Content-Length': str(len(data))})
 
         params, headers = self.pre_connect_hook(params, headers)
@@ -672,7 +670,7 @@ class PollingConnection(Connection):
     timeout = 200
     request_method = 'request'
 
-    def async_request(self, action, params=None, data='', headers=None,
+    def async_request(self, action, params=None, data=None, headers=None,
                       method='GET', context=None):
         """
         Perform an 'async' request to the specified path. Keep in mind that
@@ -738,7 +736,7 @@ class PollingConnection(Connection):
 
         return response
 
-    def get_request_kwargs(self, action, params=None, data='', headers=None,
+    def get_request_kwargs(self, action, params=None, data=None, headers=None,
                            method='GET', context=None):
         """
         Arguments which are passed to the initial request() call inside
