@@ -564,31 +564,35 @@ class Connection(object):
         """
         if params is None:
             params = {}
+
         if headers is None:
             headers = {}
 
         action = self.morph_action_hook(action)
         self.action = action
         self.method = method
+
         # Extend default parameters
         params = self.add_default_params(params)
+
         # Extend default headers
         headers = self.add_default_headers(headers)
+
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
 
-        # Indicate that support gzip and deflate compression
+        # Indicate that we support gzip and deflate compression
         headers.update({'Accept-Encoding': 'gzip,deflate'})
 
-        p = int(self.port)
+        port = int(self.port)
 
-        if p not in (80, 443):
-            headers.update({'Host': "%s:%d" % (self.host, p)})
+        if port not in (80, 443):
+            headers.update({'Host': "%s:%d" % (self.host, port)})
         else:
             headers.update({'Host': self.host})
 
         # Encode data if necessary
-        if data != '' and data != None:
+        if data != '' and data is not None:
             data = self.encode_data(data)
 
         if data is not None:
