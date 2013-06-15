@@ -25,27 +25,26 @@ except ImportError:
 import os.path
 from os.path import join as pjoin
 
-PRICING_FILE_PATH = 'data/pricing.json'
+CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, 'data/pricing.json')
+CUSTOM_PRICING_FILE_PATH = os.path.expanduser('~/.libcloud/pricing.json')
 
-PRICING_DATA = {}
+# Pricing data cache
+PRICING_DATA = {
+    'compute': {},
+    'storage': {}
+}
 
 VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 
 
-def clear_pricing_data():
-    PRICING_DATA.clear()
-    PRICING_DATA.update({
-        'compute': {},
-        'storage': {},
-    })
-clear_pricing_data()
-
-
 def get_pricing_file_path(file_path=None):
-    pricing_directory = os.path.dirname(os.path.abspath(__file__))
-    pricing_file_path = pjoin(pricing_directory, PRICING_FILE_PATH)
+    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and \
+       os.path.isfile(CUSTOM_PRICING_FILE_PATH):
+        # Custom pricing file is available, use it
+        return CUSTOM_PRICING_FILE_PATH
 
-    return pricing_file_path
+    return DEFAULT_PRICING_FILE_PATH
 
 
 def get_pricing(driver_type, driver_name, pricing_file_path=None):
@@ -57,6 +56,10 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
 
     @type driver_name: C{str}
     @param driver_name: Driver name
+
+    @type pricing_file_path: C{str}
+    @param pricing_file_path: Custom path to a price file. If not provided
+                              it uses a default path.
 
     @rtype: C{dict}
     @return: Dictionary with pricing where a key name is size ID and
@@ -126,10 +129,20 @@ def get_size_price(driver_type, driver_name, size_id):
 
 def invalidate_pricing_cache():
     """
-    Invalidate the cache for all the drivers.
+    Invalidate pricing cache for all the drivers.
     """
     PRICING_DATA['compute'] = {}
     PRICING_DATA['storage'] = {}
+
+
+def clear_pricing_data():
+    """
+    Invalidate pricing cache for all the drivers.
+
+    Note: This method does the same thing as invalidate_pricing_cache and is
+    here for backward compatibility reasons.
+    """
+    invalidate_pricing_cache()
 
 
 def invalidate_module_pricing_cache(driver_type, driver_name):
