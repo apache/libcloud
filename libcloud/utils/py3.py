@@ -59,6 +59,9 @@ if PY3:
     from builtins import bytes
     from builtins import next
 
+    parse_qs = urlparse.parse_qs
+    parse_qsl = urlparse.parse_qsl
+
     basestring = str
 
     def method_type(callable, instance, klass):
@@ -93,6 +96,15 @@ else:
     from urllib import urlencode as urlencode
 
     from __builtin__ import reload
+
+    if PY25:
+        import cgi
+
+        parse_qs = cgi.parse_qs
+        parse_qsl = cgi.parse_qsl
+    else:
+        parse_qs = urlparse.parse_qs
+        parse_qsl = urlparse.parse_qsl
 
     if not PY25:
         from os.path import relpath

@@ -17,11 +17,10 @@ import sys
 import random
 import unittest
 
-from cgi import parse_qs
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import u
 
 
