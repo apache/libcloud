@@ -505,10 +505,17 @@ class Connection(object):
         self.connection = connection
 
     def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (
+        user_agent_suffix = ' '.join(['(%s)' % x for x in self.ua])
+
+        if self.driver:
+            user_agent = 'libcloud/%s (%s) %s' % (
                   libcloud.__version__,
-                  self.driver.name,
-                  "".join([" (%s)" % x for x in self.ua]))
+                  self.driver.name, user_agent_suffix)
+        else:
+            user_agent = 'libcloud/%s %s' % (
+                  libcloud.__version__, user_agent_suffix)
+
+        return user_agent
 
     def user_agent_append(self, token):
         """
