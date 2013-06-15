@@ -18,6 +18,10 @@ Changes with Apache Libcloud in deveploment:
      authenticate() call.
      [Tomaz Muraus]
 
+   - Modify base Connection class to not send Content-Length header if body is
+     not provided.
+     [Tomaz Muraus]
+
  *) Compute
 
     - Fix destroy_node method in the experimental libvirt driver.
