@@ -88,6 +88,9 @@ Changes with Apache Libcloud in deveploment:
       (LIBCLOUD-249)
       [Dinesh Bhoopathy]
 
+    - Fix a bug with deploy_node not respecting 'timeout' kwarg.
+      [Kevin Carter]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
