@@ -603,9 +603,9 @@ class Connection(object):
 
         if params:
             if '?' in action:
-                url = '&'.join((action, urlencode(params)))
+                url = '&'.join((action, urlencode(params, doseq=True)))
             else:
-                url = '?'.join((action, urlencode(params)))
+                url = '?'.join((action, urlencode(params, doseq=True)))
         else:
             url = action
 
