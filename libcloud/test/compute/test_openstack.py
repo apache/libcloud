@@ -77,9 +77,12 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
 
 class OpenStackServiceCatalogTests(unittest.TestCase):
     # TODO refactor and move into libcloud/test/common
+    def setUp(self):
+        OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
+                                                OpenStackMockHttp)
+
     def test_connection_get_service_catalog(self):
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
-        connection.conn_classes = (OpenStackMockHttp, OpenStackMockHttp)
         connection.auth_url = "https://auth.api.example.com/v1.1/"
         connection._ex_force_base_url = "https://www.foo.com"
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
@@ -101,6 +104,7 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
 
 class OpenStackAuthConnectionTests(unittest.TestCase):
     # TODO refactor and move into libcloud/test/common
+
     def test_basic_authentication(self):
         tuples = [
            ('1.0', OpenStackMockHttp),
@@ -206,8 +210,10 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
         self.assertEqual(mocked_auth_method.call_count, 5)
 
     def _get_mock_connection(self, mock_http_class):
+        OpenStackBaseConnection.conn_classes = (mock_http_class,
+                                                mock_http_class)
+
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
-        connection.conn_classes = (mock_http_class, mock_http_class)
         connection.auth_url = "https://auth.api.example.com/v1.1/"
         connection._ex_force_base_url = "https://www.foo.com"
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
