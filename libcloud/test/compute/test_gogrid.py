@@ -17,6 +17,7 @@ import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qs
 
 from libcloud.compute.base import NodeState, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
@@ -265,11 +266,6 @@ class GoGridMockHttp(MockHttp):
 
     def _api_common_lookup_list(self, method, url, body, headers):
         _valid_lookups = ("ip.datacenter",)
-
-        try:
-            from urlparse import parse_qs
-        except ImportError:
-            from cgi import parse_qs
 
         lookup = parse_qs(urlparse.urlparse(url).query)["lookup"][0]
         if lookup in _valid_lookups:

@@ -24,12 +24,7 @@ except ImportError:
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
-
-try:
-    parse_qsl = urlparse.parse_qsl
-except AttributeError:
-    import cgi
-    parse_qsl = cgi.parse_qsl
+from libcloud.utils.py3 import parse_qsl
 
 from libcloud.common.cloudstack import CloudStackConnection, CloudStackResponse
 from libcloud.common.types import MalformedResponseError
