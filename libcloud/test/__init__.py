@@ -77,9 +77,9 @@ class MockResponse(object):
     reason = ''
     version = 11
 
-    def __init__(self, status, body, headers=None, reason=None):
+    def __init__(self, status, body=None, headers=None, reason=None):
         self.status = status
-        self.body = StringIO(u(body))
+        self.body = StringIO(u(body)) if body else StringIO()
         self.headers = headers or self.headers
         self.reason = reason or self.reason
 

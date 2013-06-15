@@ -285,13 +285,16 @@ class BrightboxMockHttp(MockHttp):
                 return self.response(httplib.OK, self.fixtures.load('list_zones.json'))
     def _2_0_zones(self, method, url, body, headers):
         return self.response(httplib.BAD_REQUEST, '{"error_name":"unrecognised_endpoint", "errors": ["The request was for an unrecognised API endpoint"]}')
-        
+
     def _1_0_cloud_ips(self, method, url, body, headers):
         if method == 'GET':
             return self.response(httplib.OK, self.fixtures.load('list_cloud_ips.json'))
         elif method == 'POST':
-            body = json.loads(body)
+            if body:
+                body = json.loads(body)
+
             node = json.loads(self.fixtures.load('create_cloud_ip.json'))
+
             if 'reverse_dns' in body:
                 node['reverse_dns'] = body['reverse_dns']
             return self.response(httplib.ACCEPTED, json.dumps(node))
@@ -305,7 +308,7 @@ class BrightboxMockHttp(MockHttp):
                 return self.response(httplib.OK, '')
             else:
                 return self.response(httplib.BAD_REQUEST, '{"error_name":"bad dns", "errors": ["Bad dns"]}')
-            
+
     def _1_0_cloud_ips_cip_jsjc5_map(self, method, url, body, headers):
         if method == 'POST':
             body = json.loads(body)
