@@ -1536,7 +1536,3 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
 class RackspaceUKLBDriver(RackspaceLBDriver):
     connectionCls = RackspaceUKConnection
-
-
-class RackspaceAULBDriver(RackspaceLBDriver):
-    connectionCls = RackspaceAUConnection

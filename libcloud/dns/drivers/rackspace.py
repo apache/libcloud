@@ -392,9 +392,3 @@ class RackspaceUKDNSDriver(RackspaceDNSDriver):
     name = 'Rackspace DNS (UK)'
     type = Provider.RACKSPACE_UK
     connectionCls = RackspaceUKDNSConnection
-
-
-class RackspaceAUDNSDriver(RackspaceDNSDriver):
-    name = 'Rackspace DNS (AU)'
-    type = Provider.RACKSPACE_AU
-    connectionCls = RackspaceAUDNSConnection

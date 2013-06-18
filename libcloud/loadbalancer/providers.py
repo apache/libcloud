@@ -28,8 +28,6 @@ DRIVERS = {
             ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
         Provider.RACKSPACE_UK:
             ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver'),
-        Provider.RACKSPACE_AU:
-            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceAULBDriver'),
         Provider.GOGRID:
             ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
         Provider.NINEFOLD:
