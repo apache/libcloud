@@ -48,8 +48,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 
-from libcloud.common.rackspace import (
-    AUTH_URL_US, AUTH_URL_UK, AUTH_URL_AU)
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
@@ -795,12 +794,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def _ex_connection_class_kwargs(self):
         kwargs = {'ex_force_service_region': self.datacenter}
 
-        if self.datacenter in ['dfw', 'ord']:
+        if self.datacenter in ['dfw', 'ord', 'syd']:
             kwargs['auth_url'] = AUTH_URL_US
         elif self.datacenter == 'lon':
             kwargs['auth_url'] = AUTH_URL_UK
-        elif self.datacenter == 'syd':
-            kwargs['auth_url'] = AUTH_URL_AU
 
         kwargs.update(self.openstack_connection_kwargs())
         return kwargs

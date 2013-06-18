@@ -22,8 +22,7 @@ from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
     OpenStack_1_1_NodeDriver
 
-from libcloud.common.rackspace import (
-    AUTH_URL_US, AUTH_URL_UK, AUTH_URL_AU)
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 
 
 ENDPOINT_ARGS_MAP = {
@@ -157,15 +156,12 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         if datacenter not in ['dfw', 'ord', 'lon', 'syd']:
             raise ValueError('Invalid datacenter: %s' % (datacenter))
 
-        if datacenter in ['dfw', 'ord']:
+        if datacenter in ['dfw', 'ord', 'syd']:
             self.connectionCls.auth_url = AUTH_URL_US
             self.api_name = 'rackspacenovaus'
         elif datacenter == 'lon':
             self.connectionCls.auth_url = AUTH_URL_UK
             self.api_name = 'rackspacenovalon'
-        elif datacenter == 'syd':
-            self.connectionCls.auth_url = AUTH_URL_AU
-            self.api_name = 'rackspacenovasyd'
 
         self.connectionCls._auth_version = '2.0'
         self.connectionCls.get_endpoint_args = \
