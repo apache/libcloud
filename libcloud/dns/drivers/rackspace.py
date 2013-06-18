@@ -25,7 +25,7 @@ import copy
 from libcloud.common.base import PollingConnection
 from libcloud.common.types import LibcloudError
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK, AUTH_URL_AU
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
 
@@ -125,10 +125,6 @@ class RackspaceUSDNSConnection(RackspaceDNSConnection):
 
 class RackspaceUKDNSConnection(RackspaceDNSConnection):
     auth_url = AUTH_URL_UK
-
-
-class RackspaceAUDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_AU
 
 
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
