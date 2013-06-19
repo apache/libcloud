@@ -77,15 +77,17 @@ class Vdc(object):
     Virtual datacenter (vDC) representation
     """
 
-    def __init__(self, id, name, driver, allocation_model=None, cpu=None,
-                 memory=None, storage=None):
+    def __init__(self, id, name, driver, enabled=True, allocation_model=None,
+                 cpu=None, memory=None, storage=None, vm_quota=None):
         self.id = id
         self.name = name
         self.driver = driver
+        self.enabled = enabled
         self.allocation_model = allocation_model
         self.cpu = cpu
         self.memory = memory
         self.storage = storage
+        self.vm_quota = vm_quota
 
     def __repr__(self):
         return ('<Vdc: id=%s, name=%s, driver=%s  ...>'
@@ -141,6 +143,29 @@ class Subject(object):
     def __repr__(self):
         return ('<Subject: type=%s, name=%s, access_level=%s>'
                 % (self.type, self.name, self.access_level))
+
+
+class QueryResult(object):
+    """
+    Query result object. Is iterable.
+    """
+    def __init__(self, id, total, page, page_size, name, records):
+        self.id = id
+        self.total = total
+        self.page = page
+        self.page_size = page_size
+        self.name = name
+        self.records = records
+
+    def __len__(self):
+        return len(self.records)
+
+    def __getitem__(self, item):
+        return self.records[item]
+
+    def __repr__(self):
+        return ('<QueryResult: id=%s, total=%s, page=%s ...>'
+                % (self.id, self.total, self.page))
 
 
 class InstantiateVAppXML(object):
@@ -1248,8 +1273,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                  sort_desc=None):
         """
         Queries vCloud for specified type. See http://www.vmware.com/pdf/vcd_15_api_guide.pdf
-        for details. Each element of the returned list is a dictionary with all
-        attributes from the record.
+        for details. Result returned as QueryResult object. Elements of the
+        returned list are dictionary with all attributes from the record.
 
         @param type: type to query (r.g. user, group, vApp etc.)
         @type  type: C{str}
@@ -1269,7 +1294,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         @param sort_desc: sort in descending order by specified field
         @type  sort_desc: C{str}
 
-        @rtype: C{list} of dict
+        @rtype: C{QueryResult}
         """
         # This is a workaround for filter parameter encoding
         # the urllib encodes (name==Developers%20Only) into
@@ -1290,14 +1315,19 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 filter = '(' + filter + ')'
             url += '&filter=' + filter.replace(' ', '+')
 
-        results = []
+        records = []
         res = self.connection.request(url)
         for elem in res.object:
             if not elem.tag.endswith('Link'):
                 result = elem.attrib
                 result['type'] = elem.tag.split('}')[1]
-                results.append(result)
-        return results
+                records.append(result)
+        return QueryResult(id=res.object.get('href'),
+                           total=int(res.object.get('total')),
+                           page=int(res.object.get('page')),
+                           page_size=int(res.object.get('pageSize')),
+                           name=res.object.get('name'),
+                           records=records)
 
     def create_node(self, **kwargs):
         """Creates and returns node. If the source image is:
@@ -1922,13 +1952,21 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         memory = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'ComputeCapacity/Memory')))
         storage = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'StorageCapacity')))
 
+        vm_quota = vdc_elm.findtext(fixxpath(vdc_elm, 'VmQuota'))
+        vm_quota = int(vm_quota)
+
+        enabled = vdc_elm.findtext(fixxpath(vdc_elm, 'IsEnabled'))
+        enabled = enabled == 'true'
+
         return Vdc(id=vdc_elm.get('href'),
                    name=vdc_elm.get('name'),
                    driver=self,
+                   enabled=enabled,
                    allocation_model=vdc_elm.findtext(fixxpath(vdc_elm, 'AllocationModel')),
                    cpu=cpu,
                    memory=memory,
-                   storage=storage)
+                   storage=storage,
+                   vm_quota=vm_quota)
 
 
 class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
