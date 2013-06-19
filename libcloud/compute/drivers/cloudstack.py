@@ -41,6 +41,14 @@ class CloudStackNode(Node):
         "Delete a NAT/firewall rule."
         return self.driver.ex_delete_ip_forwarding_rule(self, rule)
 
+    def ex_start(self):
+        "Starts a stopped virtual machine"
+        return self.driver.ex_start(self)
+
+    def ex_stop(self):
+        "Stops a running virtual machine"
+        return self.driver.ex_stop(self)
+
 
 class CloudStackAddress(object):
     "A public IP address."
@@ -148,11 +156,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         imgs = self._sync_request('listTemplates', **args)
         images = []
         for img in imgs.get('template', []):
-            images.append(NodeImage(img['id'], img['name'], self, {
-                'hypervisor': img['hypervisor'],
-                'format': img['format'],
-                'os': img['ostypename'],
-                }))
+            images.append(NodeImage(img['id'], img['name'], self,
+                                    {'hypervisor': img['hypervisor'],
+                                     'format': img['format'],
+                                     'os': img['ostypename'],
+                                     }
+                                    )
+                          )
         return images
 
     def list_locations(self):
@@ -170,35 +180,40 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         vms = self._sync_request('listVirtualMachines')
         addrs = self._sync_request('listPublicIpAddresses')
 
-        public_ips = {}
+        public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
             vm_id = addr['virtualmachineid']
-            if vm_id not in public_ips:
-                public_ips[vm_id] = {}
-            public_ips[vm_id][addr['ipaddress']] = addr['id']
+            if vm_id not in public_ips_map:
+                public_ips_map[vm_id] = {}
+            public_ips_map[vm_id][addr['ipaddress']] = addr['id']
 
         nodes = []
 
         for vm in vms.get('virtualmachine', []):
+            state = self.NODE_STATE_MAP[vm['state']]
+
+            public_ips = []
             private_ips = []
 
             for nic in vm['nic']:
                 if 'ipaddress' in nic:
                     private_ips.append(nic['ipaddress'])
 
+            public_ips = public_ips_map.get(vm['id'], {}).keys()
+
             node = CloudStackNode(
                 id=vm['id'],
                 name=vm.get('displayname', None),
-                state=self.NODE_STATE_MAP[vm['state']],
-                public_ips=public_ips.get(vm['id'], {}).keys(),
+                state=state,
+                public_ips=public_ips,
                 private_ips=private_ips,
                 driver=self,
                 extra={'zoneid': vm['zoneid'], }
             )
 
-            addrs = public_ips.get(vm['id'], {}).items()
+            addrs = public_ips_map.get(vm['id'], {}).items()
             addrs = [CloudStackAddress(node, v, k) for k, v in addrs]
             node.extra['ip_addresses'] = addrs
 
@@ -225,38 +240,54 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   0, self))
         return sizes
 
-    def create_node(self, name, size, image, location=None, **kwargs):
+    def create_node(self, name, size, image, location=None, extra_args=None,
+                    **kwargs):
         """
         @inherits: L{NodeDriver.create_node}
+
+        @keyword  extra_args: Extra argument passed to the
+        "deployVirtualMachine" call. A list of available arguments can be found
+        at http://cloudstack.apache.org/docs/api/apidocs-4.0.0/root_admin/ \
+           deployVirtualMachine.html
+        @type     extra_args:   C{dict}
+
         @rtype: L{CloudStackNode}
         """
-        extra_args = {}
+
+        if extra_args:
+            request_args = extra_args.copy()
+        else:
+            request_args = {}
+
         if location is None:
             location = self.list_locations()[0]
 
         if 'network_id' in kwargs:
-            extra_args['networkids'] = network_id
+            request_args['networkids'] = kwargs['network_id']
 
         result = self._async_request(
             'deployVirtualMachine', name=name, displayname=name,
             serviceofferingid=size.id, templateid=image.id,
-            zoneid=location.id, **extra_args
+            zoneid=location.id, **request_args
         )
 
         node = result['virtualmachine']
+        state = self.NODE_STATE_MAP[node['state']]
+
+        public_ips = []
+        private_ips = [nic['ipaddress'] for nic in node['nic']]
 
         return Node(
             id=node['id'],
             name=node['displayname'],
-            state=self.NODE_STATE_MAP[node['state']],
-            public_ips=[],
-            private_ips=[],
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
             driver=self,
-            extra={
-                'zoneid': location.id,
-                'ip_addresses': [],
-                'forwarding_rules': [],
-                }
+            extra={'zoneid': location.id,
+                   'ip_addresses': [],
+                   'forwarding_rules': [],
+                   }
         )
 
     def destroy_node(self, node):
@@ -275,8 +306,47 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._async_request('rebootVirtualMachine', id=node.id)
         return True
 
+    def ex_start(self, node):
+        """
+        Starts/Resumes a stopped virtual machine
+
+        @type node: L{CloudStackNode}
+
+        @param id: The ID of the virtual machine (required)
+        @type  id: C{uuid}
+
+        @param hostid: destination Host ID to deploy the VM to
+                       parameter available for root admin only
+        @type  hostid: C{uuid}
+
+        @rtype C{str}
+        """
+        res = self._async_request('startVirtualMachine', id=node.id)
+        return res['virtualmachine']['state']
+
+    def ex_stop(self, node):
+        """
+        Stops/Suspends a running virtual machine
+
+        @type node: L{CloudStackNode}
+
+        @param id: The ID of the virtual machine
+        @type  id: C{uuid}
+
+        @param forced: Force stop the VM
+                       (vm is marked as Stopped even when command
+                        fails to be send to the backend).
+                       The caller knows the VM is stopped.
+        @type  forced: C{bool}
+
+        @rtype C{str}
+        """
+        res = self._async_request('stopVirtualMachine', id=node.id)
+        return res['virtualmachine']['state']
+
     def ex_list_disk_offerings(self):
-        """Fetch a list of all available disk offerings.
+        """
+        Fetch a list of all available disk offerings.
 
         @rtype: C{list} of L{CloudStackDiskOffering}
         """
@@ -341,7 +411,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_allocate_public_ip(self, node):
         """
-        "Allocate a public IP and bind it to a node.
+        Allocate a public IP and bind it to a node.
 
         @param node: Node which should be used
         @type  node: L{CloudStackNode}
@@ -441,6 +511,299 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node.extra['ip_forwarding_rules'].remove(rule)
         self._async_request('deleteIpForwardingRule', id=rule.id)
         return True
+
+    def ex_list_keypairs(self, **kwargs):
+        """
+        List Registered SSH Key Pairs
+
+        @param     projectid: list objects by project
+        @type      projectid: C{uuid}
+
+        @param     page: The page to list the keypairs from
+        @type      page: C{int}
+
+        @param     keyword: List by keyword
+        @type      keyword: C{str}
+
+        @param     listall: If set to false, list only resources
+                            belonging to the command's caller;
+                            if set to true - list resources that
+                            the caller is authorized to see.
+                            Default value is false
+
+        @type      listall: C{bool}
+
+        @param     pagesize: The number of results per page
+        @type      pagesize: C{int}
+
+        @param     account: List resources by account.
+                            Must be used with the domainId parameter
+        @type      account: C{str}
+
+        @param     isrecursive: Defaults to false, but if true,
+                                lists all resources from
+                                the parent specified by the
+                                domainId till leaves.
+        @type      isrecursive: C{bool}
+
+        @param     fingerprint: A public key fingerprint to look for
+        @type      fingerprint: C{str}
+
+        @param     name: A key pair name to look for
+        @type      name: C{str}
+
+        @param     domainid: List only resources belonging to
+                                     the domain specified
+        @type      domainid: C{uuid}
+
+        @return:   A list of keypair dictionaries
+        @rtype:    L{dict}
+        """
+
+        extra_args = kwargs.copy()
+        res = self._sync_request('listSSHKeyPairs', **extra_args)
+        return res['sshkeypair']
+
+    def ex_create_keypair(self, name, **kwargs):
+        """
+        Creates a SSH KeyPair, returns fingerprint and private key
+
+        @param     name: Name of the keypair (required)
+        @type      name: C{str}
+
+        @param     projectid: An optional project for the ssh key
+        @type      projectid: C{str}
+
+        @param     domainid: An optional domainId for the ssh key.
+                             If the account parameter is used,
+                             domainId must also be used.
+        @type      domainid: C{str}
+
+        @param     account: An optional account for the ssh key.
+                            Must be used with domainId.
+        @type      account: C{str}
+
+        @return:   A keypair dictionary
+        @rtype:    C{dict}
+        """
+        extra_args = kwargs.copy()
+
+        for keypair in self.ex_list_keypairs():
+            if keypair['name'] == name:
+                raise LibcloudError('SSH KeyPair with name=%s already exists'
+                                    % (name))
+
+        res = self._sync_request('createSSHKeyPair', name=name, **extra_args)
+        return res['keypair']
+
+    def ex_delete_keypair(self, name, **kwargs):
+        """
+        Deletes an existing SSH KeyPair
+
+        @param     name: Name of the keypair (required)
+        @type      name: C{str}
+
+        @param     projectid: The project associated with keypair
+        @type      projectid: C{uuid}
+
+        @param     domainid : The domain ID associated with the keypair
+        @type      domainid: C{uuid}
+
+        @param     account : The account associated with the keypair.
+                             Must be used with the domainId parameter.
+        @type      account: C{str}
+
+        @return:   True of False based on success of Keypair deletion
+        @rtype:    C{bool}
+        """
+
+        extra_args = kwargs.copy()
+
+        res = self._sync_request('deleteSSHKeyPair', name=name, **extra_args)
+        return res['success']
+
+    def ex_list_security_groups(self, **kwargs):
+        """
+        Lists Security Groups
+
+        @param domainid: List only resources belonging to the domain specified
+        @type  domainid: C{uuid}
+
+        @param account: List resources by account. Must be used with
+                                                   the domainId parameter.
+        @type  account: C{str}
+
+        @param listall: If set to false, list only resources belonging to
+                                         the command's caller; if set to true
+                                         list resources that the caller is
+                                         authorized to see.
+                                         Default value is false
+        @type  listall: C{bool}
+
+        @param pagesize: Number of entries per page
+        @type  pagesize: C{int}
+
+        @param keyword: List by keyword
+        @type  keyword: C{str}
+
+        @param tags: List resources by tags (key/value pairs)
+        @type  tags: C{dict}
+
+        @param id: list the security group by the id provided
+        @type  id: C{uuid}
+
+        @param securitygroupname: lists security groups by name
+        @type  securitygroupname: C{str}
+
+        @param virtualmachineid: lists security groups by virtual machine id
+        @type  virtualmachineid: C{uuid}
+
+        @param projectid: list objects by project
+        @type  projectid: C{uuid}
+
+        @param isrecursive: (boolean) defaults to false, but if true,
+                                      lists all resources from the parent
+                                      specified by the domainId till leaves.
+        @type  isrecursive: C{bool}
+
+        @param page: (integer)
+        @type  page: C{int}
+
+        @rtype C{list}
+        """
+        extra_args = kwargs
+        return self._sync_request('listSecurityGroups',
+                                  **extra_args)['securitygroup']
+
+    def ex_create_security_group(self, name, **kwargs):
+        """
+        Creates a new Security Group
+
+        @param name: name of the security group (required)
+        @type  name: C{str}
+
+        @param account: An optional account for the security group.
+                        Must be used with domainId.
+        @type  account: C{str}
+
+        @param domainid: An optional domainId for the security group.
+                         If the account parameter is used,
+                         domainId must also be used.
+        @type  domainid: C{uuid}
+
+        @param description: The description of the security group
+        @type  description: C{str}
+
+        @param projectid: Deploy vm for the project
+        @type  projectid: C{uuid}
+
+        @rtype: C{dict}
+        """
+
+        extra_args = kwargs.copy()
+
+        for sg in self.ex_list_security_groups():
+            if name in sg['name']:
+                raise LibcloudError('This Security Group name already exists')
+
+        return self._sync_request('createSecurityGroup',
+                                  name=name, **extra_args)['securitygroup']
+
+    def ex_delete_security_group(self, name):
+        """
+        Deletes a given Security Group
+
+        @param domainid: The domain ID of account owning
+                         the security group
+        @type  domainid: C{uuid}
+
+        @param id: The ID of the security group.
+                   Mutually exclusive with name parameter
+        @type  id: C{uuid}
+
+        @param name: The ID of the security group.
+                     Mutually exclusive with id parameter
+        @type name: C{str}
+
+        @param account: The account of the security group.
+                        Must be specified with domain ID
+        @type  account: C{str}
+
+        @param projectid:  The project of the security group
+        @type  projectid:  C{uuid}
+
+        @rtype: C{bool}
+        """
+
+        return self._sync_request('deleteSecurityGroup', name=name)['success']
+
+    def ex_authorize_security_group_ingress(self, securitygroupname,
+                                            protocol, cidrlist, startport,
+                                            endport=None):
+        """
+        Creates a new Security Group Ingress rule
+
+        @param domainid: An optional domainId for the security group.
+                         If the account parameter is used,
+                         domainId must also be used.
+        @type domainid: C{uuid}
+
+        @param startport: Start port for this ingress rule
+        @type  startport: C{int}
+
+        @param securitygroupid: The ID of the security group.
+                                Mutually exclusive with securityGroupName
+                                parameter
+        @type  securitygroupid: C{uuid}
+
+        @param cidrlist: The cidr list associated
+        @type  cidrlist: C{list}
+
+        @param usersecuritygrouplist: user to security group mapping
+        @type  usersecuritygrouplist: C{map}
+
+        @param securitygroupname: The name of the security group.
+                                  Mutually exclusive with
+                                  securityGroupName parameter
+        @type  securitygroupname: C{str}
+
+        @param account: An optional account for the security group.
+                        Must be used with domainId.
+        @type  account: C{str}
+
+        @param icmpcode: Error code for this icmp message
+        @type  icmpcode: C{int}
+
+        @param protocol: TCP is default. UDP is the other supported protocol
+        @type  protocol: C{str}
+
+        @param icmptype: type of the icmp message being sent
+        @type  icmptype: C{int}
+
+        @param projectid: An optional project of the security group
+        @type  projectid: C{uuid}
+
+        @param endport: end port for this ingress rule
+        @type  endport: C{int}
+
+        @rtype: C{list}
+        """
+
+        protocol = protocol.upper()
+        if protocol not in ('TCP', 'ICMP'):
+            raise LibcloudError('Only TCP and ICMP are allowed')
+
+        args = {
+            'securitygroupname': securitygroupname,
+            'protocol': protocol,
+            'startport': int(startport),
+            'cidrlist': cidrlist
+        }
+        if endport is None:
+            args['endport'] = int(startport)
+
+        return self._async_request('authorizeSecurityGroupIngress',
+                                   **args)['securitygroup']
 
     def ex_register_iso(self, name, url, location=None, **kwargs):
         """

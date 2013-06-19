@@ -16,6 +16,7 @@ import sys
 import unittest
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import parse_qsl
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
@@ -38,12 +39,6 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import EC2_PARAMS
-
-try:
-    parse_qsl = urlparse.parse_qsl
-except AttributeError:
-    import cgi
-    parse_qsl = cgi.parse_qsl
 
 
 class BaseEC2Tests(LibcloudTestCase):
@@ -287,6 +282,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_ex_describe_all_keypairs(self):
         keys = self.driver.ex_describe_all_keypairs()
         self.assertEqual(keys, ['gsg-keypair'])
+
+    def test_ex_describe_keypairs(self):
+        keypair1 = self.driver.ex_describe_keypair('gsg-keypair')
+
+        # Test backward compatibility
+        keypair2 = self.driver.ex_describe_keypairs('gsg-keypair')
+
+        fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
+                      '00:00:00:00:00'
+
+        self.assertEqual(keypair1['keyName'], 'gsg-keypair')
+        self.assertEqual(keypair1['keyFingerprint'], fingerprint)
+        self.assertEqual(keypair2['keyName'], 'gsg-keypair')
+        self.assertEqual(keypair2['keyFingerprint'], fingerprint)
 
     def test_ex_describe_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)

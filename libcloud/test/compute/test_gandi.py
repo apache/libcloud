@@ -155,35 +155,73 @@ class GandiTests(unittest.TestCase):
         self.assertTrue(self.driver.ex_update_disk(disks[0], new_size=4096))
 
 
+class GandiRatingTests(unittest.TestCase):
+    """Tests where rating model is involved"""
+
+    node_name = 'test2'
+
+    def setUp(self):
+        GandiNodeDriver.connectionCls.conn_classes = (
+            GandiMockRatingHttp, GandiMockRatingHttp)
+        GandiMockRatingHttp.type = None
+        self.driver = GandiNodeDriver(*GANDI_PARAMS)
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertEqual(len(sizes), 4)
+
+    def test_create_node(self):
+        login = 'libcloud'
+        passwd = ''.join(random.choice(string.ascii_letters)
+                         for i in range(10))
+
+        # Get france datacenter
+        loc = list(filter(lambda x: 'france' in x.country.lower(),
+                          self.driver.list_locations()))[0]
+
+        # Get a debian image
+        images = self.driver.list_images(loc)
+        images = [x for x in images if x.name.lower().startswith('debian')]
+        img = list(filter(lambda x: '5' in x.name, images))[0]
+
+        # Get a configuration size
+        size = self.driver.list_sizes()[0]
+        node = self.driver.create_node(name=self.node_name, login=login,
+                                       password=passwd, image=img,
+                                       location=loc, size=size)
+        self.assertEqual(node.name, self.node_name)
+
+
+
 class GandiMockHttp(BaseGandiMockHttp):
 
     fixtures = ComputeFileFixtures('gandi')
 
-    def _xmlrpc__datacenter_list(self, method, url, body, headers):
+    def _xmlrpc__hosting_datacenter_list(self, method, url, body, headers):
         body = self.fixtures.load('datacenter_list.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__image_list(self, method, url, body, headers):
+    def _xmlrpc__hosting_image_list(self, method, url, body, headers):
         body = self.fixtures.load('image_list_dc0.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_list(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_list(self, method, url, body, headers):
         body = self.fixtures.load('vm_list.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__ip_list(self, method, url, body, headers):
+    def _xmlrpc__hosting_ip_list(self, method, url, body, headers):
         body = self.fixtures.load('ip_list.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__account_info(self, method, url, body, headers):
+    def _xmlrpc__hosting_account_info(self, method, url, body, headers):
         body = self.fixtures.load('account_info.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_info(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_info(self, method, url, body, headers):
         body = self.fixtures.load('vm_info.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_delete(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_delete(self, method, url, body, headers):
         body = self.fixtures.load('vm_delete.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -191,60 +229,91 @@ class GandiMockHttp(BaseGandiMockHttp):
         body = self.fixtures.load('operation_info.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_create_from(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_create_from(self, method, url, body, headers):
         body = self.fixtures.load('vm_create_from.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_reboot(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_reboot(self, method, url, body, headers):
         body = self.fixtures.load('vm_reboot.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_stop(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_stop(self, method, url, body, headers):
         body = self.fixtures.load('vm_stop.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__iface_list(self, method, url, body, headers):
+    def _xmlrpc__hosting_iface_list(self, method, url, body, headers):
         body = self.fixtures.load('iface_list.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__disk_list(self, method, url, body, headers):
+    def _xmlrpc__hosting_disk_list(self, method, url, body, headers):
         body = self.fixtures.load('disk_list.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_iface_attach(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_iface_attach(self, method, url, body, headers):
         body = self.fixtures.load('iface_attach.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_iface_detach(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_iface_detach(self, method, url, body, headers):
         body = self.fixtures.load('iface_detach.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_disk_attach(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_disk_attach(self, method, url, body, headers):
         body = self.fixtures.load('disk_attach.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__vm_disk_detach(self, method, url, body, headers):
+    def _xmlrpc__hosting_vm_disk_detach(self, method, url, body, headers):
         body = self.fixtures.load('disk_detach.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__disk_create(self, method, url, body, headers):
+    def _xmlrpc__hosting_disk_create(self, method, url, body, headers):
         body = self.fixtures.load('disk_create.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__disk_create_from(self, method, url, body, headers):
+    def _xmlrpc__hosting_disk_create_from(self, method, url, body, headers):
         body = self.fixtures.load('disk_create_from.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__disk_info(self, method, url, body, headers):
+    def _xmlrpc__hosting_disk_info(self, method, url, body, headers):
         body = self.fixtures.load('disk_info.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__disk_update(self, method, url, body, headers):
+    def _xmlrpc__hosting_disk_update(self, method, url, body, headers):
         body = self.fixtures.load('disk_update.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc__disk_delete(self, method, url, body, headers):
+    def _xmlrpc__hosting_disk_delete(self, method, url, body, headers):
         body = self.fixtures.load('disk_delete.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+class GandiMockRatingHttp(BaseGandiMockHttp):
+    """Fixtures needed for tests related to rating model"""
+
+    fixtures = ComputeFileFixtures('gandi')
+
+    def _xmlrpc__hosting_datacenter_list(self, method, url, body, headers):
+        body = self.fixtures.load('datacenter_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_image_list(self, method, url, body, headers):
+        body = self.fixtures.load('image_list_dc0.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_vm_create_from(self, method, url, body, headers):
+        body = self.fixtures.load('vm_create_from.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__operation_info(self, method, url, body, headers):
+        body = self.fixtures.load('operation_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_vm_info(self, method, url, body, headers):
+        body = self.fixtures.load('vm_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    # Specific to rating tests
+    def _xmlrpc__hosting_account_info(self, method, url, body, headers):
+        body = self.fixtures.load('account_info_rating.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

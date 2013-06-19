@@ -2,6 +2,26 @@
 
 Changes with Apache Libcloud in deveploment:
 
+ *) General
+
+   - Add homebrew curl-ca-bundle path to CA_CERTS_PATH. This will make Libcloud
+     use homebrew curl ca bundle file (if available) for server certificate
+     validation. (LIBCLOUD-324)
+     [Robert Chiniquy]
+
+   - Modify OpenStackAuthConnection and change auth_token_expires attribute to
+     be a datetime object instead of a string.
+     [Tomaz Muraus]
+
+   - Modify OpenStackAuthConnection to support re-using of the existing auth
+     token if it's still valid instead of re-authenticating on every
+     authenticate() call.
+     [Tomaz Muraus]
+
+   - Modify base Connection class to not send Content-Length header if body is
+     not provided.
+     [Tomaz Muraus]
+
  *) Compute
 
     - Fix destroy_node method in the experimental libvirt driver.
@@ -20,6 +40,72 @@ Changes with Apache Libcloud in deveploment:
 
     - Various improvements and bug-fixes in the VCloud driver. (LIBCLOUD-323)
       [Michel Samia]
+
+    - Various bug fixes and improvements in the HostVirtual driver.
+      (LIBCLOUD-249)
+      [Dinesh Bhoopathy]
+
+    - Modify list_sizes method in the OpenStack driver to include
+      OpenStackNodeSize object which includes 'vcpus' attribute which holds
+      a number of virtual CPUs for this size. (LIBCLOUD-325)
+      [Carlo]
+
+    - For consistency rename "ex_describe_keypairs" method in the EC2 driver to
+      "ex_describe_keypair".
+      [Tomaz Muraus]
+
+    - Modify "ex_describe_keypair" method to return key fingerprint in the
+      return value. (LIBCLOUD-326)
+      [Andre Merzky, Tomaz Muraus]
+
+    - Populate private_ips attribute in the CloudStack drive when returning
+      a Node object from the create_node method. (LIBCLOUD-329)
+      [Sebastien Goasguen, Tomaz Muraus]
+
+    - Allow user to pass extra arguments via "extra_args" argument which are
+      then passed to the "deployVirtualMachine" call in the CloudStack driver
+      create_node method. (LIBCLOUD-330)
+      [Sebastien Goasguen, Tomaz Muraus]
+
+    - Update Gandi driver to handle new billing model. (LIBCLOUD-317)
+      [Aymeric Barantal]
+
+    - Fix a bug in the Linode driver and remove extra newline which is added
+      when generating a random root password in create_node. (LIBCLOUD-334)
+      [Juan Carlos Moreno]
+
+    - Add extension methods for managing keypairs to the CloudStack driver.
+      (LIBCLOUD-333)
+      [sebastien goasguen]
+
+    - Add extension methods for managing security groups to the CloudStack
+      driver. (LIBCLOUD-332)
+      [sebastien goasguen]
+
+    - Add extension methods for starting and stoping the node to the
+      CloudStack driver. (LIBCLOUD-338)
+      [sebastien goasguen]
+
+    - Fix old _wait_until_running method. (LIBCLOUD-339)
+      [Bob Thompson]
+
+    - Allow user to override default async task completion timeout by
+      specifying ex_clone_timeout argument. (LIBCLOUD-340)
+      [Michal Galet]
+
+    - Fix a bug in the GoGrid driver get_uuid method. (LIBCLOUD-341)
+      [Bob Thompson]
+
+    - Fix a bug with deploy_node not respecting 'timeout' kwarg.
+      [Kevin Carter]
+
+ *) Storage
+
+    - Fix an issue with double encoding the container name in the CloudFiles
+      driver upload_object method.
+      Also properly encode container and object name used in the HTTP request
+      in the get_container and get_object method. (LIBCLOUD-328)
+      [Tomaz Muraus]
 
  *) Load Balancer
 

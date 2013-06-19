@@ -1,14 +1,24 @@
-Apache libcloud - a unified interface into the cloud
+Apache Libcloud - a unified interface into the cloud
 ====================================================
 
-The goal of this project is to create a basic yet functional standard library
-into various cloud providers.
+Apache Libcloud is a Python library which hides differences between different
+cloud provider APIs and allows you to manage different cloud resources
+through a unified and easy to use API.
+
+Resource you can manage with Libcloud are divided in the following categories:
+
+* Cloud Servers - services such as Amazon EC2 and Rackspace CloudServers
+  (libcloud.compute.*)
+* Cloud Storage - services such as Amazon S3 and Rackspace CloudFiles
+  (libcloud.storage.*)
+* Load Balancers as a Service, LBaaS (libcloud.loadbalancer.*)
+* DNS as a Service, DNSaaS (libcloud.dns.*)
 
 Apache libcloud is an Apache project, see <http://libcloud.apache.org> for
 more information.
 
 For API documentation and examples, see:
- <http://libcloud.apache.org/getting-started.html>
+<http://libcloud.apache.org/getting-started.html>
 
 Feedback
 ========

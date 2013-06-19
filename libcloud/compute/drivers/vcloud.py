@@ -47,6 +47,7 @@ of memory. This should be either 512 or a multiple of 1024 (1 GB)."
 """
 VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1, 9)]
 
+# Default timeout (in seconds) for long running tasks
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
 DEFAULT_API_VERSION = '0.8'
@@ -1344,6 +1345,13 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         @keyword    ex_deploy: set to False if the node shouldn't be deployed (started) after creation
         @type       ex_deploy: C{bool}
+
+        @keyword    ex_clone_timeout: timeout in seconds for clone/instantiate VM operation.
+                                      Cloning might be a time consuming operation especially
+                                      when linked clones are disabled or VMs are created
+                                      on different datastores.
+                                      Overrides the default task completion value.
+        @type       ex_clone_timeout: C{int}
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -1357,6 +1365,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         ex_vm_ipmode = kwargs.get('ex_vm_ipmode', None)
         ex_deploy = kwargs.get('ex_deploy', True)
         ex_vdc = kwargs.get('ex_vdc', None)
+        ex_clone_timeout = kwargs.get('ex_clone_timeout',
+                                      DEFAULT_TASK_COMPLETION_TIMEOUT)
 
         self._validate_vm_names(ex_vm_names)
         self._validate_vm_cpu(ex_vm_cpu)
@@ -1376,12 +1386,16 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vdc = self._get_vdc(ex_vdc)
 
         if self._is_node(image):
-            vapp_name, vapp_href = self._clone_node(name, image, vdc)
+            vapp_name, vapp_href = self._clone_node(name,
+                                                    image,
+                                                    vdc,
+                                                    ex_clone_timeout)
         else:
             vapp_name, vapp_href = self._instantiate_node(name, image,
                                                           network_elem,
                                                           vdc, ex_vm_network,
-                                                          ex_vm_fence)
+                                                          ex_vm_fence,
+                                                          ex_clone_timeout)
 
         self._change_vm_names(vapp_href, ex_vm_names)
         self._change_vm_cpu(vapp_href, ex_vm_cpu)
@@ -1411,7 +1425,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return node
 
     def _instantiate_node(self, name, image, network_elem, vdc, vm_network,
-                          vm_fence):
+                          vm_fence, instantiate_timeout):
         instantiate_xml = Instantiate_1_5_VAppXML(
             name=name,
             template=image.id,
@@ -1432,10 +1446,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         task_href = res.object.find(fixxpath(res.object, "Tasks/Task")).get(
             'href')
-        self._wait_for_task_completion(task_href)
+        self._wait_for_task_completion(task_href, instantiate_timeout)
         return vapp_name, vapp_href
 
-    def _clone_node(self, name, sourceNode, vdc):
+    def _clone_node(self, name, sourceNode, vdc, clone_timeout):
         clone_xml = ET.Element(
             "CloneVAppParams",
             {'name': name, 'deploy': 'false', 'powerOn': 'false',
@@ -1456,7 +1470,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vapp_href = res.object.get('href')
 
         task_href = res.object.find(fixxpath(res.object, "Tasks/Task")).get('href')
-        self._wait_for_task_completion(task_href)
+        self._wait_for_task_completion(task_href, clone_timeout)
 
         res = self.connection.request(get_url_path(vapp_href))
 
