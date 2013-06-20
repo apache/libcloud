@@ -20,8 +20,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.types import LibcloudError
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.rackspace import RackspaceUSDNSDriver
-from libcloud.dns.drivers.rackspace import RackspaceUKDNSDriver
+from libcloud.dns.drivers.rackspace import RackspaceDNSDriver
 
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
@@ -29,13 +28,14 @@ from libcloud.test.secrets import DNS_PARAMS_RACKSPACE
 
 
 class RackspaceUSTests(unittest.TestCase):
-    klass = RackspaceUSDNSDriver
+    klass = RackspaceDNSDriver
+    region = 'dfw'
 
     def setUp(self):
         self.klass.connectionCls.conn_classes = (
                 None, RackspaceMockHttp)
         RackspaceMockHttp.type = None
-        self.driver = self.klass(*DNS_PARAMS_RACKSPACE)
+        self.driver = self.klass(*DNS_PARAMS_RACKSPACE, region=self.region)
         self.driver.connection.poll_interval = 0.0
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
@@ -311,7 +311,7 @@ class RackspaceUSTests(unittest.TestCase):
 
 
 class RackspaceUK1Tests(RackspaceUSTests):
-    klass = RackspaceUKDNSDriver
+    region = 'lon'
 
 
 class RackspaceMockHttp(MockHttp):
