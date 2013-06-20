@@ -118,7 +118,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         'Starting': NodeState.REBOOTING,
         'Stopped': NodeState.TERMINATED,
         'Stopping': NodeState.TERMINATED,
-        'Destroyed': NodeState.TERMINATED
+        'Destroyed': NodeState.TERMINATED,
+        'Expunging': NodeState.TERMINATED
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
@@ -274,7 +275,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         public_ips = []
         private_ips = [nic['ipaddress'] for nic in node['nic']]
 
-        return Node(
+        return CloudStackNode(
             id=node['id'],
             name=node['displayname'],
             state=state,
