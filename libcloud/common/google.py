@@ -1,0 +1,466 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Module for Google Connection and Authentication classes.
+"""
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
+import base64
+import calendar
+import errno
+import time
+import datetime
+import os
+import socket
+import urllib
+import urlparse
+
+
+from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
+                                  PollingConnection)
+from libcloud.compute.types import (InvalidCredsError,
+                                    MalformedResponseError,
+                                    LibcloudError)
+
+try:
+    from Crypto.Hash import SHA256
+    from Crypto.PublicKey import RSA
+    from Crypto.Signature import PKCS1_v1_5
+except ImportError:
+    # The pycrypto library is unavailable
+    SHA256 = None
+    RSA = None
+    PKCS1_v1_5 = None
+
+TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+
+class GoogleAuthError(LibcloudError):
+    """Generic Error class for various authentication errors."""
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return repr(self.value)
+
+
+class GoogleResponse(JsonResponse):
+    pass
+
+
+class GoogleBaseDriver(object):
+    name = "Google API"
+
+
+class GoogleBaseAuthConnection(ConnectionUserAndKey):
+    """
+    Base class for Google Authentication.  Should be subclassed for specific
+    types of authentication.
+    """
+    driver = GoogleBaseDriver
+    responseCls = GoogleResponse
+    name = 'Google Auth'
+    host = 'accounts.google.com'
+    auth_path = '/o/oauth2/auth'
+
+    def add_default_headers(self, headers):
+        headers['Content-Type'] = "application/x-www-form-urlencoded"
+        headers['Host'] = self.host
+        return headers
+
+    def _token_request(self, request_body):
+        """
+        Return an updated token from a token request body.
+
+        @param  request_body: A dictionary of values to send in the body of the
+                              token request.
+        @type   request_body: C{dict}
+
+        @return:  A dictionary with updated token information
+        @rtype:   C{dict}
+        """
+        data = urllib.urlencode(request_body)
+        now = datetime.datetime.utcnow()
+        response = self.request('/o/oauth2/token', method='POST', data=data)
+        token_info = response.object
+        if 'expires_in' in token_info:
+            expire_time = now + datetime.timedelta(
+                seconds=token_info['expires_in'])
+            token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
+        return token_info
+
+    def __init__(self, user_id, key, scope,
+                 redirect_uri='urn:ietf:wg:oauth:2.0:oob',
+                 login_hint=None, **kwargs):
+        """
+        @param  user_id: The email address (for service accounts) or Client ID
+                         (for installed apps) to be used for authentication.
+        @type   user_id: C{str}
+
+        @param  key: The RSA Key (for service accounts) or file path containing
+                     key or Client Secret (for installed apps) to be used for
+                     authentication.
+        @type   key: C{str}
+
+        @param  scope: A list of urls defining the scope of authentication
+                       to grant.
+        @type   scope: C{list}
+
+        @keyword  redirect_uri: The Redirect URI for the authentication
+                                request.  See Google OAUTH2 documentation for
+                                more info.
+        @type     redirect_uri: C{str}
+
+        @keyword  login_hint: Login hint for authentication request.  Useful
+                              for Installed Application authentication.
+        @type     login_hint: C{str}
+        """
+
+        self.scope = " ".join(scope)
+        self.redirect_uri = redirect_uri
+        self.login_hint = login_hint
+
+        super(GoogleBaseAuthConnection, self).__init__(user_id, key, **kwargs)
+
+
+class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
+    """Authentication connection for "Installed Application" authentication."""
+    def get_code(self):
+        """
+        Give the user a URL that they can visit to authenticate and obtain a
+        code.  This method will ask for that code that the user can paste in.
+
+        @return:  Code supplied by the user after authenticating
+        @rtype:   C{str}
+        """
+        auth_params = {'response_type': 'code',
+                       'client_id': self.user_id,
+                       'redirect_uri': self.redirect_uri,
+                       'scope': self.scope,
+                       'state': 'Libcloud Request'}
+        if self.login_hint:
+            auth_params['login_hint'] = self.login_hint
+
+        data = urllib.urlencode(auth_params)
+
+        url = 'https://%s%s?%s' % (self.host, self.auth_path, data)
+        print('Please Go to the following URL and sign in:')
+        print(url)
+        code = raw_input('Enter Code:')
+        return code
+
+    def get_new_token(self):
+        """
+        Get a new token. Generally used when no previous token exists or there
+        is no refresh token
+
+        @return:  Dictionary containing token information
+        @rtype:   C{dict}
+        """
+        # Ask the user for a code
+        code = self.get_code()
+
+        token_request = {'code': code,
+                         'client_id': self.user_id,
+                         'client_secret': self.key,
+                         'redirect_uri': self.redirect_uri,
+                         'grant_type': 'authorization_code'}
+
+        return self._token_request(token_request)
+
+    def refresh_token(self, token_info):
+        """
+        Use the refresh token supplied in the token info to get a new token.
+
+        @param  token_info: Dictionary containing current token information
+        @type   token_info: C{dict}
+
+        @return:  A dictionary containing updated token information.
+        @rtype:   C{dict}
+        """
+        if 'refresh_token' not in token_info:
+            return self.get_new_token()
+        refresh_request = {'refresh_token': token_info['refresh_token'],
+                           'client_id': self.user_id,
+                           'client_secret': self.key,
+                           'grant_type': 'refresh_token'}
+
+        new_token = self._token_request(refresh_request)
+        if 'refresh_token' not in new_token:
+            new_token['refresh_token'] = token_info['refresh_token']
+        return new_token
+
+
+class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
+    """Authentication class for "Service Account" authentication."""
+    def __init__(self, user_id, key, *args, **kwargs):
+        """
+        Check to see if PyCrypto is available, and convert key file path into a
+        key string if the key is in a file.
+
+        @param  user_id: Email address to be used for Service Account
+                authentication.
+        @type   user_id: C{str}
+
+        @param  key: The RSA Key or path to file containing the key.
+        @type   key: C{str}
+        """
+        if SHA256 is None:
+            raise GoogleAuthError('PyCrypto library required for '
+                                  'Service Accout Authentication.')
+        keypath = os.path.expanduser(key)
+        try:
+            key = open(keypath).read()
+        except IOError:
+            pass
+        super(GoogleServiceAcctAuthConnection, self).__init__(
+            user_id, key, *args, **kwargs)
+
+    def get_new_token(self):
+        """
+        Get a new token using the email address and RSA Key.
+
+        @return:  Dictionary containing token information
+        @rtype:   C{dict}
+        """
+        # The header is always the same
+        header = {'alg': 'RS256', 'typ': 'JWT'}
+        header_enc = base64.urlsafe_b64encode(json.dumps(header))
+
+        # Construct a claim set
+        claim_set = {'iss': self.user_id,
+                     'scope': self.scope,
+                     'aud': 'https://accounts.google.com/o/oauth2/token',
+                     'exp': int(time.time()) + 3600,
+                     'iat': int(time.time())}
+        claim_set_enc = base64.urlsafe_b64encode(json.dumps(claim_set))
+
+        # The message contains both the header and claim set
+        message = '%s.%s' % (header_enc, claim_set_enc)
+        # Then the message is signed using the key supplied
+        key = RSA.importKey(self.key)
+        hash_func = SHA256.new(message)
+        signer = PKCS1_v1_5.new(key)
+        signature = base64.urlsafe_b64encode(signer.sign(hash_func))
+
+        # Finally the message and signature are sent to get a token
+        jwt = '%s.%s' % (message, signature)
+        request = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                   'assertion': jwt}
+
+        return self._token_request(request)
+
+    def refresh_token(self, token_info):
+        """
+        Refresh the current token.
+
+        Service Account authentication doesn't supply a "refresh token" so
+        this simply gets a new token using the email address/key.
+
+        @param  token_info: Dictionary contining token information.
+                            (Not used, but here for compatibility)
+        @type   token_info: C{dict}
+
+        @return:  A dictionary containing updated token information.
+        @rtype:   C{dict}
+        """
+        return self.get_new_token()
+
+
+class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
+    """Base connection class for interacting with Google APIs."""
+    driver = GoogleBaseDriver
+    responseCls = GoogleResponse
+    poll_interval = 2.0
+    timeout = 60
+
+    def __init__(self, user_id, key, auth_type=None,
+                 credential_file=None, **kwargs):
+        """
+        Determine authentication type, set up appropriate authentication
+        connection and get initial authentication information.
+
+        @param  user_id: The email address (for service accounts) or Client ID
+                         (for installed apps) to be used for authentication.
+        @type   user_id: C{str}
+
+        @param  key: The RSA Key (for service accounts) or file path containing
+                     key or Client Secret (for installed apps) to be used for
+                     authentication.
+        @type   key: C{str}
+
+        @keyword  auth_type: Accepted values are "SA" or "IA"
+                             ("Service Account" or "Installed Application").
+                             If not supplied, auth_type will be guessed based
+                             on value of user_id.
+        @type     auth_type: C{str}
+
+        @keyword  credential_file: Path to file for caching authentication
+                                   information.
+        @type     credential_file: C{str}
+        """
+        self.credential_file = credential_file or '~/.gce_libcloud_auth'
+
+        if auth_type is None:
+            # Try to guess.  Service accounts use an email address
+            # as the user id.
+            if '@' in user_id:
+                auth_type = 'SA'
+            else:
+                auth_type = 'IA'
+
+        self.token_info = self._get_token_info_from_file()
+        if auth_type == 'SA':
+            self.auth_conn = GoogleServiceAcctAuthConnection(
+                user_id, key, self.scope, **kwargs)
+        elif auth_type == 'IA':
+            self.auth_conn = GoogleInstalledAppAuthConnection(
+                user_id, key, self.scope, **kwargs)
+        else:
+            raise GoogleAuthError('auth_type should be \'SA\' or \'IA\'')
+
+        if self.token_info is None:
+            self.token_info = self.auth_conn.get_new_token()
+            self._write_token_info_to_file()
+
+        self.token_expire_time = datetime.datetime.strptime(
+            self.token_info['expire_time'], TIMESTAMP_FORMAT)
+
+        super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
+
+    def add_default_headers(self, headers):
+        """
+        @inherits: L{Connection.add_default_headers}
+        """
+        headers['Content-Type'] = "application/json"
+        headers['Host'] = self.host
+        return headers
+
+    def pre_connect_hook(self, params, headers):
+        """
+        Check to make sure that token hasn't expired.  If it has, get an
+        updated token.  Also, add the token to the headers.
+
+        @inherits: L{Connection.pre_connect_hook}
+        """
+        now = datetime.datetime.utcnow()
+        if self.token_expire_time < now:
+            self.token_info = self.auth_conn.refresh_token(self.token_info)
+            self.token_expire_time = datetime.datetime.strptime(
+                self.token_info['expire_time'], TIMESTAMP_FORMAT)
+            self._write_token_info_to_file()
+        headers['Authorization'] = 'Bearer %s' % (
+            self.token_info['access_token'])
+
+        return params, headers
+
+    def encode_data(self, data):
+        """Encode data to JSON"""
+        return json.dumps(data)
+
+    def request(self, *args, **kwargs):
+        """
+        @inherits: L{Connection.request}
+        """
+        # Adds some retry logic for the occasional
+        # "Connection Reset by peer" error.
+        retries = 4
+        tries = 0
+        while tries < (retries - 1):
+            try:
+                return super(GoogleBaseConnection, self).request(
+                    *args, **kwargs)
+            except socket.error as e:
+                if e.errno == 104:
+                    tries = tries + 1
+                else:
+                    raise
+        # One more time, then give up.
+        return super(GoogleBaseConnecion, self).request(*args, **kwargs)
+
+    def _get_token_info_from_file(self):
+        """
+        Read credential file and return token information.
+
+        @return:  Token information dictionary, or None
+        @rtype:   C{dict} or C{None}
+        """
+        token_info = None
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
+        try:
+            f = open(filename)
+            data = f.read()
+            f.close()
+            token_info = json.loads(data)
+        except IOError:
+            pass
+        return token_info
+
+    def _write_token_info_to_file(self):
+        """
+        Write token_info to credential file.
+        """
+        filename = os.path.realpath(os.path.expanduser(self.credential_file))
+        f = open(filename, 'w')
+        data = json.dumps(self.token_info)
+        f.write(data)
+        f.close()
+
+    def has_completed(self, response):
+        """
+        Determine if operation has completed based on response.
+
+        @param  response: JSON response
+        @type   response: I{responseCls}
+
+        @return:  True if complete, False otherwise
+        @rtype:   C{bool}
+        """
+        if response.object['status'] == 'DONE':
+            return True
+        else:
+            return False
+
+    def get_poll_request_kwargs(self, response, context, request_kwargs):
+        """
+        @inherits: L{PollingConnection.get_poll_request_kwargs}
+        """
+        return {'action': response.object['selfLink']}
+
+    def morph_action_hook(self, action):
+        """
+        Update action to correct request path.
+
+        In many places, the Google API returns a full URL to a resource.
+        This will strip the scheme and host off of the path and just return
+        the request.  Otherwise, it will append the base request_path to
+        the action.
+
+        @param  action: The action to be called in the http request
+        @type   action: C{str}
+
+        @return:  The modified request based on the action
+        @rtype:   C{str}
+        """
+        if action.startswith('https://'):
+            u = urlparse.urlsplit(action)
+            request = urlparse.urlunsplit((None, None, u[2], u[3], u[4]))
+        else:
+            request = self.request_path + action
+        return request
