@@ -95,6 +95,10 @@ Changes with Apache Libcloud in deveploment:
     - Fix a bug with deploy_node not respecting 'timeout' kwarg.
       [Kevin Carter]
 
+    - Modify create_node method in CloudStack driver to return an instance of
+      CloudStackNode and add a new "expunging" node state. (LIBCLOUD-345)
+      [sebastien goasguen]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
