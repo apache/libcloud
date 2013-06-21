@@ -189,7 +189,7 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
 
         # No force reauth, valid / non-expired token which is about to expire in
         # less than AUTH_TOKEN_EXPIRES_GRACE_SECONDS
-        soon = datetime.datetime.now() + \
+        soon = datetime.datetime.utcnow() + \
             datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS - 1)
         osa.auth_token = None
 
