@@ -99,6 +99,10 @@ Changes with Apache Libcloud in deveploment:
       CloudStackNode and add a new "expunging" node state. (LIBCLOUD-345)
       [sebastien goasguen]
 
+    - Update API endpoint hostnames in the ElasticHost driver and use hostnames
+      which return a valid SSL certificate. (LIBCLOUD-346)
+      [Bob Thompson]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
