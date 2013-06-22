@@ -829,7 +829,7 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     name = 'CloudFiles (UK)'
     _datacenter = 'lon'
 
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs['datacenter'] = 'lon'
         super(CloudFilesUKStorageDriver, self).__init__(*args, **kwargs)
 
