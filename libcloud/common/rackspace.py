@@ -17,7 +17,7 @@
 Common settings for Rackspace Cloud Servers and Cloud Files
 """
 
-AUTH_URL = 'https://auth.api.rackspacecloud.com/v1.1/'
+AUTH_URL = 'https://auth.api.rackspacecloud.com/v2.0/'
 
 __all__ = [
     'AUTH_URL',
