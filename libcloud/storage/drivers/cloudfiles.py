@@ -48,7 +48,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
@@ -102,45 +102,39 @@ class CloudFilesConnection(OpenStackBaseConnection):
 
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
+    auth_url = AUTH_URL
+    _auth_version = '2.0'
 
-    def __init__(self, user_id, key, secure=True, auth_url=AUTH_URL_US,
-                 **kwargs):
+    def __init__(self, user_id, key, secure=True, **kwargs):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
                                                    **kwargs)
-        self.auth_url = auth_url
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
 
-        if self._ex_force_service_region:
-            self.service_region = self._ex_force_service_region
-
     def get_endpoint(self):
-        # First, we parse out both files and cdn endpoints
-        # for each auth version
+        region = self._ex_force_service_region.upper()
+
         if '2.0' in self._auth_version:
-            eps = self.service_catalog.get_endpoints(
+            ep = self.service_catalog.get_endpoint(
                 service_type='object-store',
-                name='cloudFiles')
-            cdn_eps = self.service_catalog.get_endpoints(
+                name='cloudFiles',
+                region=region)
+            cdn_ep = self.service_catalog.get_endpoint(
                 service_type='object-store',
-                name='cloudFilesCDN')
-        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-            eps = self.service_catalog.get_endpoints(name='cloudFiles')
-            cdn_eps = self.service_catalog.get_endpoints(name='cloudFilesCDN')
+                name='cloudFilesCDN',
+                region=region)
+        else:
+            raise LibcloudError(
+                'Auth version "%s" not supported' % (self._auth_version))
 
         # if this is a CDN request, return the cdn url instead
         if self.cdn_request:
-            eps = cdn_eps
+            ep = cdn_ep
 
-        if self._ex_force_service_region:
-            eps = [ep for ep in eps if ep['region'].lower() == self._ex_force_service_region.lower()]
-
-        if len(eps) == 0:
+        if not ep:
             # TODO: Better error message
             raise LibcloudError('Could not find specified endpoint')
-
-        ep = eps[0]
 
         if 'publicURL' in ep:
             return ep['publicURL']
@@ -211,8 +205,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         @param datacenter: Datacenter ID which should be used.
         @type datacenter: C{str}
         """
-        if hasattr(self, '_datacenter'):
-            datacenter = self._datacenter
 
         # This is here for backard compatibility
         if 'ex_force_service_region' in kwargs:
@@ -793,12 +785,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def _ex_connection_class_kwargs(self):
         kwargs = {'ex_force_service_region': self.datacenter}
-
-        if self.datacenter in ['dfw', 'ord', 'syd']:
-            kwargs['auth_url'] = AUTH_URL_US
-        elif self.datacenter == 'lon':
-            kwargs['auth_url'] = AUTH_URL_UK
-
         kwargs.update(self.openstack_connection_kwargs())
         return kwargs
 
@@ -810,6 +796,8 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_US
     name = 'CloudFiles (US)'
+
+
     _datacenter = 'ord'
 
 
@@ -841,6 +829,9 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
     name = 'CloudFiles (UK)'
     _datacenter = 'lon'
 
+    def __init__(*args, **kwargs):
+        kwargs['datacenter'] = 'lon'
+        super(CloudFilesUKStorageDriver, self).__init__(*args, **kwargs)
 
 class FileChunkReader(object):
     def __init__(self, file_path, chunk_size):
