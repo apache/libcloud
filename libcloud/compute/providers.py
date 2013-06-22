@@ -70,6 +70,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.rackspace', 'RackspaceNodeDriver'),
     Provider.RACKSPACE_UK:
         ('libcloud.compute.drivers.rackspace', 'RackspaceUKNodeDriver'),
+    Provider.RACKSPACE_AU:
+        ('libcloud.compute.drivers.rackspace', 'RackspaceAUNodeDriver'),
     Provider.SLICEHOST:
         ('libcloud.compute.drivers.slicehost', 'SlicehostNodeDriver'),
     Provider.VPSNET:

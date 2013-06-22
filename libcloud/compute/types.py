@@ -124,6 +124,7 @@ class Provider(object):
 
     RACKSPACE = 'rackspace'
     RACKSPACE_UK = 'rackspace_uk'
+    RACKSPACE_AU  = 'rackspace_au'
     RACKSPACE_NOVA_BETA = 'rackspace_nova_beta'
     RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
     RACKSPACE_NOVA_LON = 'rackspace_nova_lon'

@@ -34,8 +34,8 @@ class RackspaceConnection(OpenStack_1_0_Connection):
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
 
     def get_endpoint(self):
-
         ep = {}
+
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(service_type='compute',
                                                    name='cloudServers')
@@ -74,7 +74,8 @@ class RackspaceUKConnection(RackspaceConnection):
 
 
 class RackspaceUKNodeDriver(RackspaceNodeDriver):
-    """Driver for Rackspace in the UK (London)
+    """
+    Driver for Rackspace in the UK (London)
     """
 
     name = 'Rackspace (UK)'
@@ -82,3 +83,35 @@ class RackspaceUKNodeDriver(RackspaceNodeDriver):
 
     def list_locations(self):
         return [NodeLocation(0, 'Rackspace UK London', 'UK', self)]
+
+
+class RackspaceAUConnection(RackspaceConnection):
+    """
+    Connection class for the Rackspace Sydney datacenter
+    """
+
+    auth_url = AUTH_URL_US
+    _auth_version = '2.0'
+
+    def get_endpoint(self):
+        ep = {}
+
+        ep = self.service_catalog.get_endpoint(service_type='compute',
+                                               name='cloudServersOpenStack',
+                                               region='SYD')
+
+        if 'publicURL' in ep:
+            return ep['publicURL']
+
+        raise LibcloudError('Could not find specified endpoint')
+
+
+class RackspaceAUNodeDriver(RackspaceNodeDriver):
+    """Driver for Rackspace in the UK (London)
+    """
+
+    name = 'Rackspace (Sydney, Australia)'
+    connectionCls = RackspaceAUConnection
+
+    def list_locations(self):
+        return [NodeLocation(0, 'Rackspace Sydney, Australia', 'AU', self)]

@@ -103,6 +103,9 @@ Changes with Apache Libcloud in deveploment:
       which return a valid SSL certificate. (LIBCLOUD-346)
       [Bob Thompson]
 
+    - Add a driver for Rackspace's new datacenter in Sydney, Australia.
+      [Alex Gaynor, Tomaz Muraus]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
