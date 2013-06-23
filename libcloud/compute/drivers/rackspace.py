@@ -20,8 +20,7 @@ from libcloud.compute.base import NodeLocation
 from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response
 
-from libcloud.common.rackspace import (
-    AUTH_URL_US, AUTH_URL_UK)
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 
 
 class RackspaceConnection(OpenStack_1_0_Connection):
@@ -42,10 +41,12 @@ class RackspaceConnection(OpenStack_1_0_Connection):
         elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
             ep = self.service_catalog.get_endpoint(name='cloudServers')
 
-        if 'publicURL' in ep:
-            return ep['publicURL']
+        public_url = ep.get('publicURL', None)
 
-        raise LibcloudError('Could not find specified endpoint')
+        if not public_url:
+            raise LibcloudError('Could not find specified endpoint')
+
+        return public_url
 
 
 class RackspaceNodeDriver(OpenStack_1_0_NodeDriver):
@@ -71,6 +72,24 @@ class RackspaceUKConnection(RackspaceConnection):
     Connection class for the Rackspace UK driver
     """
     auth_url = AUTH_URL_UK
+    _auth_version = '2.0'
+
+    def get_endpoint(self):
+        ep = self.service_catalog.get_endpoint(service_type='compute',
+                                               name='cloudServers')
+
+        public_url = ep.get('publicURL', None)
+
+        if not public_url:
+            raise LibcloudError('Could not find specified endpoint')
+
+        # Hack which is required because of how global auth works (old
+        # US accounts work with the lon endpoint, but don't have it in
+        # the service catalog)
+        public_url = public_url.replace('https://servers.api',
+                                        'https://lon.servers.api')
+
+        return public_url
 
 
 class RackspaceUKNodeDriver(RackspaceNodeDriver):
@@ -94,8 +113,6 @@ class RackspaceAUConnection(RackspaceConnection):
     _auth_version = '2.0'
 
     def get_endpoint(self):
-        ep = {}
-
         ep = self.service_catalog.get_endpoint(service_type='compute',
                                                name='cloudServersOpenStack',
                                                region='SYD')
