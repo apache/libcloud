@@ -434,6 +434,15 @@ Changes with Apache Libcloud 0.12.1:
     - Add new driver for Gandi provider (https://www.gandi.net). (LIBCLOUD-281)
       [John Carr]
 
+    - Deprecate RACKSPACE_US and RACKSPACE_UK storage provider constants and
+      add a new RACKSPACE constant.
+      Driver referenced by this constant takes a "region" keyword argument
+      and can be one of 'us' or 'uk'.
+
+      Note: Deprecated constants will continue to work for the foreseeable
+      future.
+      [Tomaz Muraus]
+
   *) Load-Balancer
 
     - Add new driver for AWS Elastic Load Balancing service. (LIBCLOUD-169)

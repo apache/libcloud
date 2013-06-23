@@ -24,10 +24,8 @@ __all__ = [
 ]
 
 DRIVERS = {
-        Provider.RACKSPACE_US:
+        Provider.RACKSPACE:
             ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
-        Provider.RACKSPACE_UK:
-            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver'),
         Provider.GOGRID:
             ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
         Provider.NINEFOLD:
@@ -35,7 +33,13 @@ DRIVERS = {
         Provider.BRIGHTBOX:
             ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
         Provider.ELB:
-            ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver')
+            ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver'),
+
+        # Deprecated
+        Provider.RACKSPACE_US:
+            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
+        Provider.RACKSPACE_UK:
+            ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceUKLBDriver')
 }
 
 

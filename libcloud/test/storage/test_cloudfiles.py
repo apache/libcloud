@@ -147,7 +147,7 @@ class CloudFilesTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_service_catalog(self):
-        url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS' % \
+        url = 'https://storage4.%s1.clouddrive.com/v1/MossoCloudFS' % \
               (self.datacenter)
         self.assertEqual(
              url,
@@ -155,7 +155,7 @@ class CloudFilesTests(unittest.TestCase):
 
         self.driver.connection.cdn_request = True
         self.assertEqual(
-             'https://cdn2.clouddrive.com/v1/MossoCloudFS',
+             'https://cdn.clouddrive.com/v1/MossoCloudFS',
              self.driver.connection.get_endpoint())
         self.driver.connection.cdn_request = False
 
@@ -723,7 +723,7 @@ class CloudFilesTests(unittest.TestCase):
                                     "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
         sig = hmac.new(b('foo'), b(hmac_body), sha1).hexdigest()
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
-        temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.datacenter, sig)
+        temp_url = 'https://storage4.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.datacenter, sig)
 
         self.assertEquals(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
@@ -761,8 +761,14 @@ class CloudFilesDeprecatedUKTests(CloudFilesTests):
 class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
 
     fixtures = StorageFileFixtures('cloudfiles')
-    auth_fixtures = OpenStackFixtures()
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
+
+    def _v2_0_tokens(self, method, url, body, headers):
+        headers = copy.deepcopy(self.base_headers)
+        body = self.fixtures.load('_v2_0__auth.json')
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
+
 
     # fake auth token response
     def _v1_0(self, method, url, body, headers):
@@ -1003,10 +1009,6 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             status_code = httplib.NOT_FOUND
 
         return (status_code, body, headers, httplib.responses[httplib.OK])
-
-    def _v1_1_auth(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v1_1__auth.json')
-        return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
 
 
 class CloudFilesMockRawResponse(MockRawResponse):
