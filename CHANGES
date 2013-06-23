@@ -22,6 +22,12 @@ Changes with Apache Libcloud in deveploment:
      not provided.
      [Tomaz Muraus]
 
+ *) Misc
+
+   - Add unittest2 library dependency for tests and update some tests to use
+     it.
+     [Tomaz Muraus]
+
  *) Compute
 
     - Fix destroy_node method in the experimental libvirt driver.
