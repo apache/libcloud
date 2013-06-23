@@ -70,14 +70,17 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
         if not public_url:
             raise LibcloudError('Could not find specified endpoint')
 
-        # This is a nasty hack, but because of how global auth and old accounts
-        # work, there is no way around it.
+        # This is a nasty hack, but it's required because of how the
+        # auth system works.
+        # Old US accounts can access UK API endpoint, but they don't
+        # have this endpoint in the service catalog. Same goes for the
+        # old UK accounts and US endpoint.
         if self.region == 'us':
-            # Old UK account, which only has us endpoint in the catalog
+            # Old UK account, which only have uk endpoint in the catalog
             public_url = public_url.replace('https://lon.servers.api',
                                             'https://servers.api')
         if self.region == 'uk':
-            # Old US account, which only has uk endpoint in the catalog
+            # Old US account, which only has us endpoints in the catalog
             public_url = public_url.replace('https://servers.api',
                                             'https://lon.servers.api')
 
