@@ -113,16 +113,6 @@
                 "type": "compute"
             },
             {
-                "name": "cloudDNS",
-                "endpoints": [
-                    {
-                        "tenantId": "11111",
-                        "publicURL": "https://dns.api.rackspacecloud.com/v1.0/11111"
-                    }
-                ],
-                "type": "rax:dns"
-            },
-            {
                 "name": "cloudLoadBalancers",
                 "endpoints": [
                     {
@@ -139,10 +129,15 @@
                         "region": "ORD",
                         "tenantId": "11111",
                         "publicURL": "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/11111"
+                    },
+                    {
+                        "region": "LON",
+                        "tenantId": "11111",
+                        "publicURL": "https://lon.loadbalancers.api.rackspacecloud.com/v1.0/11111"
                     }
                 ],
                 "type": "rax:load-balancer"
-            },
+            }
         ],
         "user": {
             "id": "7",
