@@ -26,10 +26,26 @@ from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
 from libcloud.common.types import LibcloudError
 from libcloud.common.base import JsonResponse, PollingConnection
+from libcloud.compute.drivers.rackspace import RackspaceConnection
 from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection,\
     OpenStackDriverMixin
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL
+
+ENDPOINT_ARGS_MAP = {
+    'dfw': {'service_type': 'rax:load-balancer',
+            'name': 'cloudLoadBalancers',
+            'region': 'DFW'},
+    'ord': {'service_type': 'rax:load-balancer',
+            'name': 'cloudLoadBalancers',
+            'region': 'ORD'},
+    'lon': {'service_type': 'rax:load-balancer',
+            'name': 'cloudLoadBalancers',
+            'region': 'LON'},
+    'syd': {'service_type': 'rax:load-balancer',
+            'name': 'cloudLoadBalancers',
+            'region': 'SYD'},
+}
 
 
 class RackspaceResponse(JsonResponse):
@@ -222,19 +238,11 @@ class RackspaceAccessRule(object):
         return as_dict
 
 
-class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
+class RackspaceConnection(RackspaceConnection, PollingConnection):
     responseCls = RackspaceResponse
-    auth_url = AUTH_URL_US
+    auth_url = AUTH_URL
     poll_interval = 2
     timeout = 80
-
-    def __init__(self, user_id, key, secure=True, ex_force_region='ord',
-                 **kwargs):
-        super(RackspaceConnection, self).__init__(user_id, key, secure,
-                                                  **kwargs)
-        self.api_version = 'v1.0'
-        self.accept_format = 'application/json'
-        self._ex_force_region = ex_force_region
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -263,40 +271,6 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
                                 driver=self.driver)
 
         return state == 'ACTIVE'
-
-    def get_endpoint(self):
-        """
-        FIXME:
-        Dirty, dirty hack. Loadbalancers so not show up in the auth 1.1 service
-        catalog, so we build it from the servers url.
-        """
-
-        if self._auth_version == "1.1":
-            ep = self.service_catalog.get_endpoint(name="cloudServers")
-
-            return self._construct_loadbalancer_endpoint_from_servers_endpoint(
-                ep)
-        elif "2.0" in self._auth_version:
-            ep = self.service_catalog.get_endpoint(name="cloudServers",
-                                                   service_type="compute",
-                                                   region=None)
-
-            return self._construct_loadbalancer_endpoint_from_servers_endpoint(
-                ep)
-        else:
-            raise LibcloudError(
-                "Auth version %s not supported" % self._auth_version)
-
-    def _construct_loadbalancer_endpoint_from_servers_endpoint(self, ep):
-        if 'publicURL' in ep:
-            loadbalancer_prefix = "%s.loadbalancers" % self._ex_force_region
-            return ep['publicURL'].replace("servers", loadbalancer_prefix)
-        else:
-            raise LibcloudError('Could not find specified endpoint')
-
-
-class RackspaceUKConnection(RackspaceConnection):
-    auth_url = AUTH_URL_UK
 
 
 class RackspaceLBDriver(Driver, OpenStackDriverMixin):
@@ -333,15 +307,22 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
     def __init__(self, *args, **kwargs):
+        datacenter = kwargs.pop('datacenter', 'ord')
+        ex_force_region = kwargs.pop('ex_force_region', None)
+
+        if ex_force_region:
+            # For backward compatibility
+            datacenter = ex_force_region
+
+        self.datacenter = datacenter
+
         OpenStackDriverMixin.__init__(self, *args, **kwargs)
-        self._ex_force_region = kwargs.pop('ex_force_region', None)
         super(RackspaceLBDriver, self).__init__(*args, **kwargs)
 
     def _ex_connection_class_kwargs(self):
-        kwargs = self.openstack_connection_kwargs()
-        if self._ex_force_region:
-            kwargs['ex_force_region'] = self._ex_force_region
-
+        endpoint_args = ENDPOINT_ARGS_MAP[self.datacenter]
+        kwargs = {'get_endpoint_args': endpoint_args}
+        kwargs.update(self.openstack_connection_kwargs())
         return kwargs
 
     def list_protocols(self):
@@ -1535,4 +1516,6 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
 
 class RackspaceUKLBDriver(RackspaceLBDriver):
-    connectionCls = RackspaceUKConnection
+    def __init__(self, *args, **kwargs):
+        kwargs['datacenter'] = 'lon'
+        super(RackspaceUKLBDriver, self).__init__(*args, **kwargs)
