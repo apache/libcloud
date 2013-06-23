@@ -26,6 +26,7 @@ from xml.etree import ElementTree as ET
 
 PY2 = False
 PY25 = False
+PY27 = False
 PY3 = False
 PY32 = False
 
@@ -34,6 +35,9 @@ if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
 
 if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
     PY25 = True
+
+if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
+    PY27 = True
 
 if sys.version_info >= (3, 0):
     PY3 = True
@@ -141,3 +145,5 @@ if PY25:
         if not rel_list:
             return posixpath.curdir
         return posixpath.join(*rel_list)
+
+unittest2_required = not (PY27 or PY3)

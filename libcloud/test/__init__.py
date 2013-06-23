@@ -15,13 +15,18 @@
 
 import sys
 import random
-import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import u
+from libcloud.utils.py3 import unittest2_required
+
+if unittest2_required:
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 XML_HEADERS = {'content-type': 'application/xml'}

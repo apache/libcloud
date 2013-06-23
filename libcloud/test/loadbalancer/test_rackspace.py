@@ -15,7 +15,6 @@
 
 import sys
 import datetime
-import unittest
 
 try:
     import simplejson as json
@@ -32,6 +31,7 @@ from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
 from libcloud.common.types import LibcloudError
 
+from libcloud.test import unittest
 from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures, OpenStackFixtures
 
@@ -1329,7 +1329,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3130(self, method, url, body, headers):
         """ update_balancer(b, protocol='HTTPS'), then get_balancer('3130') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'protocol': 'HTTPS'})
+            self.assertDictEqual(json.loads(body), {'protocol': 'HTTPS'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1341,7 +1341,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3131(self, method, url, body, headers):
         """ update_balancer(b, port=443), then get_balancer('3131') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'port': 1337})
+            self.assertDictEqual(json.loads(body), {'port': 1337})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1353,7 +1353,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3132(self, method, url, body, headers):
         """ update_balancer(b, name='new_lb_name'), then get_balancer('3132') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'name': 'new_lb_name'})
+            self.assertDictEqual(json.loads(body), {'name': 'new_lb_name'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1365,7 +1365,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3133(self, method, url, body, headers):
         """ update_balancer(b, algorithm='ROUND_ROBIN'), then get_balancer('3133') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'algorithm': 'ROUND_ROBIN'})
+            self.assertDictEqual(json.loads(body), {'algorithm': 'ROUND_ROBIN'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1383,7 +1383,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3135(self, method, url, body, headers):
         """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3135') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'protocol': 'IMAPv2'})
+            self.assertDictEqual(json.loads(body), {'protocol': 'IMAPv2'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1395,7 +1395,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3136(self, method, url, body, headers):
         """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3136') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'protocol': 'IMAPv3'})
+            self.assertDictEqual(json.loads(body), {'protocol': 'IMAPv3'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1407,7 +1407,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_3137(self, method, url, body, headers):
         """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3137') """
         if method == "PUT":
-            self.assertEqual(json.loads(body), {'protocol': 'IMAPv4'})
+            self.assertDictEqual(json.loads(body), {'protocol': 'IMAPv4'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
