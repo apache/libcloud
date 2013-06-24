@@ -257,18 +257,21 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.ex_power_off_node(node)
 
     def test_ex_query(self):
-        result = self.driver.ex_query('user', filter='name==jrambo', page=2, page_size=30, sort_desc='startDate')
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]['type'], 'UserRecord')
-        self.assertEqual(result[0]['name'], 'jrambo')
-        self.assertEqual(result[0]['isLdapUser'], 'true')
-        self.assertEqual(result.page_size, 30)
-        self.assertEqual(result.total, 133)
-        self.assertEqual(result.page, 2)
+        result = self.driver.ex_query('user', filter='name==jrambo', page_size=3, sort_desc='startDate')
+
+        self.assertEqual(result.page_size, 3)
+        self.assertEqual(result.total, 5)
         self.assertEqual(result.name, 'user')
-        self.assertEqual(len([x for x in result]), 1)
-
-
+        self.assertEqual(len(result), 5)
+        items = [x for x in result]
+        self.assertEqual(len(items), 5)
+        self.assertEqual(items[0]['type'], 'UserRecord')
+        self.assertEqual(items[0]['name'], 'jrambo1')
+        self.assertEqual(items[0]['isLdapUser'], 'true')
+        self.assertEqual(items[1]['name'], 'jrambo2')
+        self.assertEqual(items[2]['name'], 'jrambo3')
+        self.assertEqual(items[3]['name'], 'jrambo4')
+        self.assertEqual(items[4]['name'], 'jrambo5')
 
     def test_ex_get_control_access(self):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
@@ -604,10 +607,15 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_query(self, method, url, body, headers):
         assert method == 'GET'
         if 'type=user' in url:
-            self.assertTrue('page=2' in url)
             self.assertTrue('filter=(name==jrambo)' in url)
             self.assertTrue('sortDesc=startDate')
-            body = self.fixtures.load('api_query_user.xml')
+            if 'page=1' in url:
+                body = self.fixtures.load('api_query_user.xml')
+            elif 'page=2' in url:
+                body = self.fixtures.load('api_query_user__page2.xml')
+            else:
+                body = self.fixtures.load('api_query_user__stop_iteration.xml')
+                return httplib.BAD_REQUEST, body, headers, httplib.responses[httplib.BAD_REQUEST]
         elif 'type=group' in url:
             body = self.fixtures.load('api_query_group.xml')
         else:

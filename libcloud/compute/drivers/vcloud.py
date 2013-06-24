@@ -147,21 +147,65 @@ class Subject(object):
 
 class QueryResult(object):
     """
-    Query result object. Is iterable.
+    Query result object. Is iterable with lazy loading.
     """
-    def __init__(self, id, total, page, page_size, name, records):
-        self.id = id
-        self.total = total
-        self.page = page
+    def __init__(self, driver, type, filter, sort_asc, sort_desc, page_size):
+        self.driver = driver
         self.page_size = page_size
-        self.name = name
-        self.records = records
+
+        self.params = {
+            'type': type,
+            'pageSize': page_size
+        }
+        if sort_asc:
+            self.params['sortAsc'] = sort_asc
+        if sort_desc:
+            self.params['sortDesc'] = sort_desc
+
+        self.url = '/api/query?' + urlencode(self.params)
+        if filter:
+            if not filter.startswith('('):
+                filter = '(' + filter + ')'
+            self.url += '&filter=' + filter.replace(' ', '+')
+
+        self.id = self.url
+        self.page = 0
+        self._fetch_page()
 
     def __len__(self):
-        return len(self.records)
+        return self.total
 
-    def __getitem__(self, item):
-        return self.records[item]
+    def __iter__(self):
+        return self.iterate_records()
+
+    def iterate_records(self):
+        while self.records:
+            item = self.records.pop(0)
+            yield item
+            if not self.records:
+                try:
+                    self._fetch_page()
+                except Exception:
+                    e = sys.exc_info()[1]
+                    if (isinstance(e.args[0], _ElementInterface) and
+                            e.args[0].tag.endswith('Error') and
+                            e.args[0].get('minorErrorCode') == 'BAD_REQUEST' and
+                            re.match('Invalid parameter page=\\d+ must be less or equal to \\d+', e.args[0].get('message'))):
+                        raise StopIteration
+                    else:
+                        raise
+
+    def _fetch_page(self):
+        self.records = []
+        self.page += 1
+        res = self.driver.connection.request('{0}&page={1}'.format(self.url, self.page))
+        for elem in res.object:
+            if not elem.tag.endswith('Link'):
+                result = elem.attrib
+                result['type'] = elem.tag.split('}')[1]
+                self.records.append(result)
+        self.total = int(res.object.get('total'))
+        self.name = res.object.get('name')
 
     def __repr__(self):
         return ('<QueryResult: id=%s, total=%s, page=%s ...>'
@@ -1204,7 +1248,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 if not res:
                     raise LibcloudError('Specified subject "%s %s" not found '
                                         % (subject.type, subject.name))
-                href = res[0]['href']
+                href = res.iterate_records().next()['href']
             ET.SubElement(setting, 'Subject', {'href': href})
             ET.SubElement(setting, 'AccessLevel').text = subject.access_level
 
@@ -1269,8 +1313,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             method='POST')
         self._wait_for_task_completion(res.object.get('href'))
 
-    def ex_query(self, type, filter=None, page=1, page_size=100, sort_asc=None,
-                 sort_desc=None):
+    def ex_query(self, type, filter=None, sort_asc=None,
+                 sort_desc=None, page_size=100):
         """
         Queries vCloud for specified type. See http://www.vmware.com/pdf/vcd_15_api_guide.pdf
         for details. Result returned as QueryResult object. Elements of the
@@ -1282,52 +1326,27 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         @param filter: filter expression (see documentation for syntax)
         @type  filter: C{str}
 
-        @param page: page number
-        @type  page: C{int}
-
-        @param page_size: page size
-        @type  page_size: C{int}
-
         @param sort_asc: sort in ascending order by specified field
         @type  sort_asc: C{str}
 
         @param sort_desc: sort in descending order by specified field
         @type  sort_desc: C{str}
 
+        @param page_size: page size for internal pagination (for optimizations)
+        @type  page_size: C{int}
+
         @rtype: C{QueryResult}
         """
         # This is a workaround for filter parameter encoding
         # the urllib encodes (name==Developers%20Only) into
         # %28name%3D%3DDevelopers%20Only%29) which is not accepted by vCloud
-        params = {
-            'type': type,
-            'pageSize': page_size,
-            'page': page,
-        }
-        if sort_asc:
-            params['sortAsc'] = sort_asc
-        if sort_desc:
-            params['sortDesc'] = sort_desc
 
-        url = '/api/query?' + urlencode(params)
-        if filter:
-            if not filter.startswith('('):
-                filter = '(' + filter + ')'
-            url += '&filter=' + filter.replace(' ', '+')
-
-        records = []
-        res = self.connection.request(url)
-        for elem in res.object:
-            if not elem.tag.endswith('Link'):
-                result = elem.attrib
-                result['type'] = elem.tag.split('}')[1]
-                records.append(result)
-        return QueryResult(id=res.object.get('href'),
-                           total=int(res.object.get('total')),
-                           page=int(res.object.get('page')),
-                           page_size=int(res.object.get('pageSize')),
-                           name=res.object.get('name'),
-                           records=records)
+        return QueryResult(driver=self,
+                           type=type,
+                           filter=filter,
+                           sort_asc=sort_asc,
+                           sort_desc=sort_desc,
+                           page_size=page_size)
 
     def create_node(self, **kwargs):
         """Creates and returns node. If the source image is:

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <ns0:Error majorErrorCode="400"
+            message="Invalid parameter page=4 must be less or equal to 3"
+            minorErrorCode="BAD_REQUEST"
+            ns1:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://172.17.64.41/api/v1.5/schema/master.xsd"
+            xmlns:ns0="http://www.vmware.com/vcloud/v1.5" xmlns:ns1="http://www.w3.org/2001/XMLSchema-instance" />
