@@ -263,7 +263,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(result.total, 5)
         self.assertEqual(result.name, 'user')
         self.assertEqual(len(result), 5)
-        items = [x for x in result]
+        items = list(result)
         self.assertEqual(len(items), 5)
         self.assertEqual(items[0]['type'], 'UserRecord')
         self.assertEqual(items[0]['name'], 'jrambo1')
@@ -613,9 +613,6 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
                 body = self.fixtures.load('api_query_user.xml')
             elif 'page=2' in url:
                 body = self.fixtures.load('api_query_user__page2.xml')
-            else:
-                body = self.fixtures.load('api_query_user__stop_iteration.xml')
-                return httplib.BAD_REQUEST, body, headers, httplib.responses[httplib.BAD_REQUEST]
         elif 'type=group' in url:
             body = self.fixtures.load('api_query_group.xml')
         else:

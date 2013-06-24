@@ -148,6 +148,24 @@ class Subject(object):
 class QueryResult(object):
     """
     Query result object. Is iterable with lazy loading.
+    @param  driver: driver object
+    @type   driver: L{VCloudDriver}
+
+    @param  type: type of record to query (ex. vApp, vm, user etc.)
+    @type   type: C{str}
+
+    @param  filter: filter expression.
+                    See http://www.vmware.com/pdf/vcd_15_api_guide.pdf
+    @type   type: C{str}
+
+    @param sort_asc: sort in ascending order by specified field
+    @type  sort_asc: C{str}
+
+    @param sort_desc: sort in descending order by specified field
+    @type  sort_desc: C{str}
+
+    @param page_size: page size for internal pagination
+    @type  page_size: C{int}
     """
     def __init__(self, driver, type, filter, sort_asc, sort_desc, page_size):
         self.driver = driver
@@ -169,6 +187,7 @@ class QueryResult(object):
             self.url += '&filter=' + filter.replace(' ', '+')
 
         self.id = self.url
+        self.total = 0
         self._page = 0
         self._fetch_page()
 
@@ -179,26 +198,34 @@ class QueryResult(object):
         return self.iterate_records()
 
     def iterate_records(self):
+        current_index = 0
         while self._records:
             item = self._records.pop(0)
             yield item
+
+            # Are we at the end?
+            current_index += 1
+            if current_index >= self.total:
+                raise StopIteration
+
             if not self._records:
                 try:
                     self._fetch_page()
                 except Exception:
                     e = sys.exc_info()[1]
-                    if (isinstance(e.args[0], _ElementInterface) and
+                    if (len(e.args) > 0 and
+                            isinstance(e.args[0], _ElementInterface) and
                             e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') == 'BAD_REQUEST' and
                             re.match('Invalid parameter page=\\d+ must be less or equal to \\d+', e.args[0].get('message'))):
                         raise StopIteration
                     else:
-                        raise
+                        raise e
 
     def _fetch_page(self):
         self._records = []
         self._page += 1
-        res = self.driver.connection.request('{0}&page={1}'.format(self.url, self._page))
+        res = self.driver.connection.request('%s&page=%s' % (self.url, self._page))
         for elem in res.object:
             if not elem.tag.endswith('Link'):
                 result = elem.attrib
@@ -1337,10 +1364,6 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         @rtype: C{QueryResult}
         """
-        # This is a workaround for filter parameter encoding
-        # the urllib encodes (name==Developers%20Only) into
-        # %28name%3D%3DDevelopers%20Only%29) which is not accepted by vCloud
-
         return QueryResult(driver=self,
                            type=type,
                            filter=filter,
