@@ -99,6 +99,23 @@ class CloudStackDiskOffering(object):
         return self.__class__ is other.__class__ and self.id == other.id
 
 
+class CloudStackNetwork(object):
+    """Class representing a CloudStack Network"""
+
+    def __init__(self, displaytext, name, networkofferingid, id, zoneid):
+        self.displaytext = displaytext
+        self.name = name
+        self.networkofferingid = networkofferingid
+        self.id = id
+        self.zoneid = zoneid
+
+    def __repr__(self):
+        return (('<CloudStackNetwork: id=%s, displaytext=%s, name=%s, '
+                 'networkofferingid=%s, zoneid=%s, dirver=%s>')
+                % (self.id, self.displaytext, self.name,
+                   self.networkofferingid, self.zoneid, self.driver.name))
+
+
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
 
@@ -157,13 +174,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         imgs = self._sync_request('listTemplates', **args)
         images = []
         for img in imgs.get('template', []):
-            images.append(NodeImage(img['id'], img['name'], self,
-                                    {'hypervisor': img['hypervisor'],
-                                     'format': img['format'],
-                                     'os': img['ostypename'],
-                                     }
-                                    )
-                          )
+            images.append(NodeImage(
+                id=img['id'],
+                name=img['name'],
+                driver=self.connection.driver,
+                extra={
+                    'hypervisor': img['hypervisor'],
+                    'format': img['format'],
+                    'os': img['ostypename']}))
         return images
 
     def list_locations(self):
@@ -364,6 +382,22 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                     customizable=diskOfferDict['iscustomized']))
 
         return diskOfferings
+
+    def ex_list_networks(self):
+        """List the available networks"""
+
+        nets = self._sync_request('listNetworks')['network']
+
+        networks = []
+        for net in nets:
+            networks.append(CloudStackNetwork(
+                net['displaytext'],
+                net['name'],
+                net['networkofferingid'],
+                net['id'],
+                net['zoneid']))
+
+        return networks
 
     def create_volume(self, size, name, location, snapshot=None):
         # TODO Add snapshot handling
