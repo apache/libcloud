@@ -229,6 +229,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(vdcs), 1)
         self.assertEqual(vdcs[0].id, 'https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0')
         self.assertEqual(vdcs[0].name, 'MyVdc')
+        self.assertEqual(vdcs[0].enabled, False)
         self.assertEqual(vdcs[0].allocation_model, 'AllocationPool')
         self.assertEqual(vdcs[0].storage.limit, 5120000)
         self.assertEqual(vdcs[0].storage.used, 1984512)
@@ -239,6 +240,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(vdcs[0].memory.limit, 527360)
         self.assertEqual(vdcs[0].memory.used, 130752)
         self.assertEqual(vdcs[0].memory.units, 'MB')
+        self.assertEqual(vdcs[0].vm_quota, 7)
 
     def test_ex_list_nodes(self):
         self.assertEqual(len(self.driver.ex_list_nodes()), len(self.driver.list_nodes()))
@@ -255,11 +257,21 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.ex_power_off_node(node)
 
     def test_ex_query(self):
-        results = self.driver.ex_query('user', filter='name==jrambo', page=2, page_size=30, sort_desc='startDate')
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['type'], 'UserRecord')
-        self.assertEqual(results[0]['name'], 'jrambo')
-        self.assertEqual(results[0]['isLdapUser'], 'true')
+        result = self.driver.ex_query('user', filter='name==jrambo', page_size=3, sort_desc='startDate')
+
+        self.assertEqual(result.page_size, 3)
+        self.assertEqual(result.total, 5)
+        self.assertEqual(result.name, 'user')
+        self.assertEqual(len(result), 5)
+        items = list(result)
+        self.assertEqual(len(items), 5)
+        self.assertEqual(items[0]['type'], 'UserRecord')
+        self.assertEqual(items[0]['name'], 'jrambo1')
+        self.assertEqual(items[0]['isLdapUser'], 'true')
+        self.assertEqual(items[1]['name'], 'jrambo2')
+        self.assertEqual(items[2]['name'], 'jrambo3')
+        self.assertEqual(items[3]['name'], 'jrambo4')
+        self.assertEqual(items[4]['name'], 'jrambo5')
 
     def test_ex_get_control_access(self):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
@@ -595,10 +607,12 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_query(self, method, url, body, headers):
         assert method == 'GET'
         if 'type=user' in url:
-            self.assertTrue('page=2' in url)
             self.assertTrue('filter=(name==jrambo)' in url)
             self.assertTrue('sortDesc=startDate')
-            body = self.fixtures.load('api_query_user.xml')
+            if 'page=1' in url:
+                body = self.fixtures.load('api_query_user.xml')
+            elif 'page=2' in url:
+                body = self.fixtures.load('api_query_user__page2.xml')
         elif 'type=group' in url:
             body = self.fixtures.load('api_query_group.xml')
         else:

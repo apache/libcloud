@@ -52,6 +52,6 @@
    </Capabilities>
    <NicQuota>0</NicQuota>
    <NetworkQuota>1024</NetworkQuota>
-   <VmQuota>150</VmQuota>
-   <IsEnabled>true</IsEnabled>
+   <VmQuota>7</VmQuota>
+   <IsEnabled>false</IsEnabled>
 </Vdc>

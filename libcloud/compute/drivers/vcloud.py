@@ -77,15 +77,17 @@ class Vdc(object):
     Virtual datacenter (vDC) representation
     """
 
-    def __init__(self, id, name, driver, allocation_model=None, cpu=None,
-                 memory=None, storage=None):
+    def __init__(self, id, name, driver, enabled=True, allocation_model=None,
+                 cpu=None, memory=None, storage=None, vm_quota=None):
         self.id = id
         self.name = name
         self.driver = driver
+        self.enabled = enabled
         self.allocation_model = allocation_model
         self.cpu = cpu
         self.memory = memory
         self.storage = storage
+        self.vm_quota = vm_quota
 
     def __repr__(self):
         return ('<Vdc: id=%s, name=%s, driver=%s  ...>'
@@ -141,6 +143,100 @@ class Subject(object):
     def __repr__(self):
         return ('<Subject: type=%s, name=%s, access_level=%s>'
                 % (self.type, self.name, self.access_level))
+
+
+class QueryResult(object):
+    """
+    Query result object. Is iterable with lazy loading.
+    @param  driver: driver object
+    @type   driver: L{VCloudDriver}
+
+    @param  type: type of record to query (ex. vApp, vm, user etc.)
+    @type   type: C{str}
+
+    @param  filter: filter expression.
+                    See http://www.vmware.com/pdf/vcd_15_api_guide.pdf
+    @type   type: C{str}
+
+    @param sort_asc: sort in ascending order by specified field
+    @type  sort_asc: C{str}
+
+    @param sort_desc: sort in descending order by specified field
+    @type  sort_desc: C{str}
+
+    @param page_size: page size for internal pagination
+    @type  page_size: C{int}
+    """
+    def __init__(self, driver, type, filter, sort_asc, sort_desc, page_size):
+        self.driver = driver
+        self.page_size = page_size
+
+        self.params = {
+            'type': type,
+            'pageSize': page_size
+        }
+        if sort_asc:
+            self.params['sortAsc'] = sort_asc
+        if sort_desc:
+            self.params['sortDesc'] = sort_desc
+
+        self.url = '/api/query?' + urlencode(self.params)
+        if filter:
+            if not filter.startswith('('):
+                filter = '(' + filter + ')'
+            self.url += '&filter=' + filter.replace(' ', '+')
+
+        self.id = self.url
+        self.total = 0
+        self._page = 0
+        self._fetch_page()
+
+    def __len__(self):
+        return self.total
+
+    def __iter__(self):
+        return self.iterate_records()
+
+    def iterate_records(self):
+        current_index = 0
+        while self._records:
+            item = self._records.pop(0)
+            yield item
+
+            # Are we at the end?
+            current_index += 1
+            if current_index >= self.total:
+                raise StopIteration
+
+            if not self._records:
+                try:
+                    self._fetch_page()
+                except Exception:
+                    e = sys.exc_info()[1]
+                    if (len(e.args) > 0 and
+                            isinstance(e.args[0], _ElementInterface) and
+                            e.args[0].tag.endswith('Error') and
+                            e.args[0].get('minorErrorCode') == 'BAD_REQUEST' and
+                            re.match('Invalid parameter page=\\d+ must be less or equal to \\d+', e.args[0].get('message'))):
+                        raise StopIteration
+                    else:
+                        raise e
+
+    def _fetch_page(self):
+        self._records = []
+        self._page += 1
+        res = self.driver.connection.request('%s&page=%s' % (self.url, self._page))
+        for elem in res.object:
+            if not elem.tag.endswith('Link'):
+                result = elem.attrib
+                result['type'] = elem.tag.split('}')[1]
+                self._records.append(result)
+        self.total = int(res.object.get('total'))
+        self.name = res.object.get('name')
+
+    def __repr__(self):
+        return ('<QueryResult: id=%s, total=%s, page=%s ...>'
+                % (self.id, self.total, self._page))
 
 
 class InstantiateVAppXML(object):
@@ -1179,7 +1275,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 if not res:
                     raise LibcloudError('Specified subject "%s %s" not found '
                                         % (subject.type, subject.name))
-                href = res[0]['href']
+                href = res.iterate_records().next()['href']
             ET.SubElement(setting, 'Subject', {'href': href})
             ET.SubElement(setting, 'AccessLevel').text = subject.access_level
 
@@ -1244,12 +1340,12 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             method='POST')
         self._wait_for_task_completion(res.object.get('href'))
 
-    def ex_query(self, type, filter=None, page=1, page_size=100, sort_asc=None,
-                 sort_desc=None):
+    def ex_query(self, type, filter=None, sort_asc=None,
+                 sort_desc=None, page_size=100):
         """
         Queries vCloud for specified type. See http://www.vmware.com/pdf/vcd_15_api_guide.pdf
-        for details. Each element of the returned list is a dictionary with all
-        attributes from the record.
+        for details. Result returned as QueryResult object. Elements of the
+        returned list are dictionary with all attributes from the record.
 
         @param type: type to query (r.g. user, group, vApp etc.)
         @type  type: C{str}
@@ -1257,47 +1353,23 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         @param filter: filter expression (see documentation for syntax)
         @type  filter: C{str}
 
-        @param page: page number
-        @type  page: C{int}
-
-        @param page_size: page size
-        @type  page_size: C{int}
-
         @param sort_asc: sort in ascending order by specified field
         @type  sort_asc: C{str}
 
         @param sort_desc: sort in descending order by specified field
         @type  sort_desc: C{str}
 
-        @rtype: C{list} of dict
+        @param page_size: page size for internal pagination (for optimizations)
+        @type  page_size: C{int}
+
+        @rtype: C{QueryResult}
         """
-        # This is a workaround for filter parameter encoding
-        # the urllib encodes (name==Developers%20Only) into
-        # %28name%3D%3DDevelopers%20Only%29) which is not accepted by vCloud
-        params = {
-            'type': type,
-            'pageSize': page_size,
-            'page': page,
-        }
-        if sort_asc:
-            params['sortAsc'] = sort_asc
-        if sort_desc:
-            params['sortDesc'] = sort_desc
-
-        url = '/api/query?' + urlencode(params)
-        if filter:
-            if not filter.startswith('('):
-                filter = '(' + filter + ')'
-            url += '&filter=' + filter.replace(' ', '+')
-
-        results = []
-        res = self.connection.request(url)
-        for elem in res.object:
-            if not elem.tag.endswith('Link'):
-                result = elem.attrib
-                result['type'] = elem.tag.split('}')[1]
-                results.append(result)
-        return results
+        return QueryResult(driver=self,
+                           type=type,
+                           filter=filter,
+                           sort_asc=sort_asc,
+                           sort_desc=sort_desc,
+                           page_size=page_size)
 
     def create_node(self, **kwargs):
         """Creates and returns node. If the source image is:
@@ -1922,13 +1994,21 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         memory = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'ComputeCapacity/Memory')))
         storage = get_capacity_values(vdc_elm.find(fixxpath(vdc_elm, 'StorageCapacity')))
 
+        vm_quota = vdc_elm.findtext(fixxpath(vdc_elm, 'VmQuota'))
+        vm_quota = int(vm_quota)
+
+        enabled = vdc_elm.findtext(fixxpath(vdc_elm, 'IsEnabled'))
+        enabled = enabled == 'true'
+
         return Vdc(id=vdc_elm.get('href'),
                    name=vdc_elm.get('name'),
                    driver=self,
+                   enabled=enabled,
                    allocation_model=vdc_elm.findtext(fixxpath(vdc_elm, 'AllocationModel')),
                    cpu=cpu,
                    memory=memory,
-                   storage=storage)
+                   storage=storage,
+                   vm_quota=vm_quota)
 
 
 class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
