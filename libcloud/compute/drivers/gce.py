@@ -19,7 +19,6 @@ Module for Google Compute Engine Driver.
 import datetime
 import time
 import sys
-import urlparse
 import os
 import getpass
 
@@ -238,6 +237,11 @@ class GCEZone(NodeLocation):
         Returns the next Maintenance Window.
 
         @return:  A dictionary containing maintenance window info
+                  The dictionary contains 4 keys with values of type C{str}
+                      - C{name}: The name of the maintence window
+                      - C{description}: Description of the maintenance window
+                      - C{beginTime}: RFC3339 Timestamp
+                      - C{endTime}: RFC3339 Timestamp
         @rtype:   C{dict}
         """
         begin = None
@@ -350,12 +354,10 @@ class GCENodeDriver(NodeDriver):
         """
         self.auth_type = auth_type
         self.project = project
+        if not self.project:
+            raise ValueError('Project name must be specified using '
+                             '"project" keyword.')
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
-        if project:
-            self.project = project
-        else:
-            print "Please specify the project in your Driver's constructor"
-            sys.exit(1)
 
         # Cache Zone information to reduce API calls and increase speed
         self.base_path = '/compute/%s/projects/%s' % (API_VERSION,
@@ -415,13 +417,12 @@ class GCENodeDriver(NodeDriver):
         request = '/aggregated/%s' % res_type
         res_list = self.connection.request(request).object
         for k, v in res_list['items'].items():
-            if res_type in v:
-                for res in v[res_type]:
-                    if res['name'] == name:
-                        if region:
-                            return k.lstrip('regions/')
-                        else:
-                            return k.lstrip('zones/')
+            for res in v.get(res_type, []):
+                if res['name'] == name:
+                    if region:
+                        return k.lstrip('regions/')
+                    else:
+                        return k.lstrip('zones/')
 
     def _match_images(self, project, partial_name):
         """
@@ -485,17 +486,13 @@ class GCENodeDriver(NodeDriver):
         if 'items' in response:
             # The aggregated result returns dictionaries for each region
             if region is None:
-                for k, v in response['items'].items():
-                    if 'addresses' in v:
-                        for address in v['addresses']:
-                            address_obj = self._to_address(address)
-                            list_addresses.append(address_obj)
-
+                for v in response['items'].values():
+                    region_addresses = [self._to_address(a) for a in
+                                        v.get('addresses', [])]
+                    list_addresses.extend(region_addresses)
             else:
-                for address in response['items']:
-                    address_obj = self._to_address(address)
-                    list_addresses.append(address_obj)
-
+                list_addresses = [self._to_address(a) for a in
+                                  response['items']]
         return list_addresses
 
     def ex_list_firewalls(self):
@@ -508,10 +505,8 @@ class GCENodeDriver(NodeDriver):
         list_firewalls = []
         request = '/global/firewalls'
         response = self.connection.request(request, method='GET').object
-        if 'items' in response:
-            for firewall in response['items']:
-                list_firewalls.append(self._to_firewall(firewall))
-
+        list_firewalls = [self._to_firewall(f) for f in
+                          response.get('items', [])]
         return list_firewalls
 
     def list_images(self, ex_project=None):
@@ -527,22 +522,19 @@ class GCENodeDriver(NodeDriver):
         list_images = []
         request = '/global/images'
         if ex_project is None:
-            res = self.connection.request(request, method='GET').object
+            response = self.connection.request(request, method='GET').object
         else:
+            # Save the connection request_path
             save_request_path = self.connection.request_path
+            # Override the connection request path
             new_request_path = save_request_path.replace(self.project,
                                                          ex_project)
             self.connection.request_path = new_request_path
-            #new_base = self.base_path.replace(self.project, ex_project)
-            #uri = new_base + request
-            response = self.connection.request(request, method='GET')
-            res = response.object
+            response = self.connection.request(request, method='GET').object
+            # Restore the connection request_path
             self.connection.request_path = save_request_path
-
-        if 'items' in res:
-            for image in res['items']:
-                node_image = self._to_node_image(image)
-                list_images.append(node_image)
+        list_images = [self._to_node_image(i) for i in
+                       response.get('items', [])]
         return list_images
 
     def list_locations(self):
@@ -558,9 +550,7 @@ class GCENodeDriver(NodeDriver):
         list_locations = []
         request = '/zones'
         response = self.connection.request(request, method='GET').object
-        for location in response['items']:
-            list_locations.append(self._to_node_location(location))
-
+        list_locations = [self._to_node_location(l) for l in response['items']]
         return list_locations
 
     def ex_list_networks(self):
@@ -573,9 +563,8 @@ class GCENodeDriver(NodeDriver):
         list_networks = []
         request = '/global/networks'
         response = self.connection.request(request, method='GET').object
-        for network in response['items']:
-            list_networks.append(self._to_network(network))
-
+        list_networks = [self._to_network(n) for n in
+                         response.get('items', [])]
         return list_networks
 
     def list_nodes(self, ex_zone=None):
@@ -606,17 +595,12 @@ class GCENodeDriver(NodeDriver):
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if zone is None:
-                for k, v in response['items'].items():
-                    if 'instances' in v:
-                        for instance in v['instances']:
-                            node = self._to_node(instance)
-                            list_nodes.append(node)
-
+                for v in response['items'].values():
+                    zone_nodes = [self._to_node(i) for i in
+                                  v.get('instances', [])]
+                    list_nodes.extend(zone_nodes)
             else:
-                for instance in response['items']:
-                    node = self._to_node(instance)
-                    list_nodes.append(node)
-
+                list_nodes = [self._to_node(i) for i in response['items']]
         return list_nodes
 
     def list_sizes(self, location=None):
@@ -643,17 +627,12 @@ class GCENodeDriver(NodeDriver):
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if location is None:
-                for k, v in response['items'].items():
-                    if 'machineTypes' in v:
-                        for machine_type in v['machineTypes']:
-                            node_size = self._to_node_size(machine_type)
-                            list_sizes.append(node_size)
-
+                for v in response['items'].values():
+                    zone_sizes = [self._to_node_size(s) for s in
+                                  v.get('machineTypes', [])]
+                    list_sizes.extend(zone_sizes)
             else:
-                for machine_type in response['items']:
-                    node_size = self._to_node_size(machine_type)
-                    list_sizes.append(node_size)
-
+                list_sizes = [self._to_node_size(s) for s in response['items']]
         return list_sizes
 
     def ex_list_volumes(self, ex_zone=None):
@@ -684,17 +663,13 @@ class GCENodeDriver(NodeDriver):
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if zone is None:
-                for k, v in response['items'].items():
-                    if 'disks' in v:
-                        for disk in v['disks']:
-                            volume = self._to_storage_volume(disk)
-                            list_volumes.append(volume)
-
+                for v in response['items'].values():
+                    zone_volumes = [self._to_storage_volume(d) for d in
+                                    v.get('disks', [])]
+                    list_volumes.extend(zone_volumes)
             else:
-                for disk in response['items']:
-                    volume = self._to_storage_volume(disk)
-                    list_volumes.append(volume)
-
+                list_volumes = [self._to_storage_volume(d) for d in
+                                response['items']]
         return list_volumes
 
     def ex_list_zones(self):
@@ -707,9 +682,7 @@ class GCENodeDriver(NodeDriver):
         list_zones = []
         request = '/zones'
         response = self.connection.request(request, method='GET').object
-        for zone in response['items']:
-            list_zones.append(self._to_zone(zone))
-
+        list_zones = [self._to_zone(z) for z in response['items']]
         return list_zones
 
     def ex_create_address(self, name, region=None):
@@ -1228,8 +1201,10 @@ class GCENodeDriver(NodeDriver):
         @return:  A Node object for the new node.
         @rtype:   L{Node}
         """
+        with open(script, 'r') as f:
+            script_data = f.read()
         metadata = {'items': [{'key': 'startup-script',
-                               'value': open(script).read()}]}
+                               'value': script_data}]}
 
         return self.create_node(name, size, image, location=location,
                                 ex_network=ex_network, ex_tags=ex_tags,

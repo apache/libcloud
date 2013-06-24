@@ -16,6 +16,8 @@
 """
 Module for Google Connection and Authentication classes.
 """
+from __future__ import with_statement
+
 try:
     import simplejson as json
 except ImportError:
@@ -28,10 +30,9 @@ import time
 import datetime
 import os
 import socket
-import urllib
-import urlparse
 
-
+from libcloud.utils.py3 import urlencode
+from libcloud.utils.py3 import urlparse
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
 from libcloud.compute.types import (InvalidCredsError,
@@ -95,7 +96,7 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         @return:  A dictionary with updated token information
         @rtype:   C{dict}
         """
-        data = urllib.urlencode(request_body)
+        data = urlencode(request_body)
         now = datetime.datetime.utcnow()
         response = self.request('/o/oauth2/token', method='POST', data=data)
         token_info = response.object
@@ -157,7 +158,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         if self.login_hint:
             auth_params['login_hint'] = self.login_hint
 
-        data = urllib.urlencode(auth_params)
+        data = urlencode(auth_params)
 
         url = 'https://%s%s?%s' % (self.host, self.auth_path, data)
         print('Please Go to the following URL and sign in:')
@@ -224,11 +225,12 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         if SHA256 is None:
             raise GoogleAuthError('PyCrypto library required for '
                                   'Service Accout Authentication.')
+        # Check to see if 'key' is a file and read the file if it is.
         keypath = os.path.expanduser(key)
-        try:
-            key = open(keypath).read()
-        except IOError:
-            pass
+        is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+        if is_file_path:
+            with open(keypath, 'r') as f:
+                key = f.read()
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)
 
@@ -403,10 +405,10 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         token_info = None
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
+
         try:
-            f = open(filename)
-            data = f.read()
-            f.close()
+            with open(filename, 'r') as f:
+                data = f.read()
             token_info = json.loads(data)
         except IOError:
             pass
@@ -417,10 +419,9 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         Write token_info to credential file.
         """
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
-        f = open(filename, 'w')
         data = json.dumps(self.token_info)
-        f.write(data)
-        f.close()
+        with open(filename, 'w') as f:
+          f.write(data)
 
     def has_completed(self, response):
         """
