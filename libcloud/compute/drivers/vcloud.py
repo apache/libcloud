@@ -169,7 +169,7 @@ class QueryResult(object):
             self.url += '&filter=' + filter.replace(' ', '+')
 
         self.id = self.url
-        self.page = 0
+        self._page = 0
         self._fetch_page()
 
     def __len__(self):
@@ -179,10 +179,10 @@ class QueryResult(object):
         return self.iterate_records()
 
     def iterate_records(self):
-        while self.records:
-            item = self.records.pop(0)
+        while self._records:
+            item = self._records.pop(0)
             yield item
-            if not self.records:
+            if not self._records:
                 try:
                     self._fetch_page()
                 except Exception:
@@ -196,20 +196,20 @@ class QueryResult(object):
                         raise
 
     def _fetch_page(self):
-        self.records = []
-        self.page += 1
-        res = self.driver.connection.request('{0}&page={1}'.format(self.url, self.page))
+        self._records = []
+        self._page += 1
+        res = self.driver.connection.request('{0}&page={1}'.format(self.url, self._page))
         for elem in res.object:
             if not elem.tag.endswith('Link'):
                 result = elem.attrib
                 result['type'] = elem.tag.split('}')[1]
-                self.records.append(result)
+                self._records.append(result)
         self.total = int(res.object.get('total'))
         self.name = res.object.get('name')
 
     def __repr__(self):
         return ('<QueryResult: id=%s, total=%s, page=%s ...>'
-                % (self.id, self.total, self.page))
+                % (self.id, self.total, self._page))
 
 
 class InstantiateVAppXML(object):
