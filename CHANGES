@@ -113,6 +113,10 @@ Changes with Apache Libcloud in deveploment:
       which return a valid SSL certificate. (LIBCLOUD-346)
       [Bob Thompson]
 
+    - Add ex_list_networks method and missing tests for list_templates to the
+      CloudStack driver. (LIBCLOUD-349)
+      [Philipp Strube]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
