@@ -16,6 +16,7 @@
 __all__ = [
     "LibcloudError",
     "MalformedResponseError",
+    "ProviderError",
     "InvalidCredsError",
     "InvalidCredsException",
     "LazyList"
@@ -61,12 +62,19 @@ class MalformedResponseError(LibcloudError):
                 + repr(self.body))
 
 
-class InvalidCredsError(LibcloudError):
-    """Exception used when invalid credentials are used on a provider."""
+class ProviderError(LibcloudError):
+    """Exception used when provider gives back
+    error response (HTTP 4xx, 5xx) for a request.
 
-    def __init__(self, value='Invalid credentials with the provider',
+    Specific sub types can be derieved for errors like
+    HTTP 401 : InvalidCredsError
+    HTTP 404 : NodeNotFoundError, ContainerDoesNotExistError
+    """
+
+    def __init__(self, value, http_code,
                  driver=None):
         self.value = value
+        self.http_code = http_code
         self.driver = driver
 
     def __str__(self):
@@ -74,6 +82,16 @@ class InvalidCredsError(LibcloudError):
 
     def __repr__(self):
         return repr(self.value)
+
+
+class InvalidCredsError(ProviderError):
+    """Exception used when invalid credentials are used on a provider."""
+
+    def __init__(self, value='Invalid credentials with the provider',
+                 driver=None):
+        super(InvalidCredsError, self).__init__(value,
+                                                http_code=401,
+                                                driver=driver)
 
 
 # Deprecated alias of L{InvalidCredsError}
