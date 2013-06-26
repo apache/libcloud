@@ -30,6 +30,7 @@ from libcloud.test.secrets import DNS_PARAMS_RACKSPACE
 
 class RackspaceUSTests(unittest.TestCase):
     klass = RackspaceUSDNSDriver
+    region = ''
 
     def setUp(self):
         self.klass.connectionCls.conn_classes = (
@@ -70,8 +71,13 @@ class RackspaceUSTests(unittest.TestCase):
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals('https://dns.api.rackspacecloud.com/v1.0/11111',
-            driver.connection.get_endpoint())
+        if self.region:
+            url = 'https://%s.dns.api.rackspacecloud.com/v1.0/11111' % \
+                  (self.region)
+        else:
+            url = 'https://dns.api.rackspacecloud.com/v1.0/11111'
+
+        self.assertEquals(url, driver.connection.get_endpoint())
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
@@ -310,8 +316,9 @@ class RackspaceUSTests(unittest.TestCase):
                           'foo.bar')
 
 
-class RackspaceUK1Tests(RackspaceUSTests):
+class RackspaceUKTests(RackspaceUSTests):
     klass = RackspaceUKDNSDriver
+    region = 'lon'
 
 
 class RackspaceMockHttp(MockHttp):

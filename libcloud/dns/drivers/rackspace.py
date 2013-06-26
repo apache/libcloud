@@ -25,7 +25,7 @@ import copy
 from libcloud.common.base import PollingConnection
 from libcloud.common.types import LibcloudError
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL_US
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
 
@@ -71,7 +71,6 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     """
     Rackspace DNS Connection class.
     """
-
     responseCls = RackspaceDNSResponse
     XML_NAMESPACE = None
     poll_interval = 2.5
@@ -124,7 +123,14 @@ class RackspaceUSDNSConnection(RackspaceDNSConnection):
 
 
 class RackspaceUKDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_UK
+    auth_url = AUTH_URL_US
+
+    def get_endpoint(self):
+        public_url = super(RackspaceUKDNSConnection, self).get_endpoint()
+        public_url = public_url.replace('https://dns.api',
+                                        'https://lon.dns.api')
+
+        return public_url
 
 
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
