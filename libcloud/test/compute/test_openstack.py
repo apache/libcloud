@@ -104,6 +104,9 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
 
 class OpenStackAuthConnectionTests(unittest.TestCase):
     # TODO refactor and move into libcloud/test/common
+    def setUp(self):
+        OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
+                                                OpenStackMockHttp)
 
     def test_basic_authentication(self):
         tuples = [
