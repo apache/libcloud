@@ -121,6 +121,10 @@ Changes with Apache Libcloud in deveploment:
       CloudStack driver. (LIBCLOUD-349)
       [Philipp Strube]
 
+    - Correctly throw InvalidCredsError if user passes invalid credentials to
+      the DigitalOcean driver.
+      [Tomaz muraus]
+
  *) Storage
 
     - Fix an issue with double encoding the container name in the CloudFiles
