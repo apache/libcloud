@@ -29,7 +29,7 @@ from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection,\
     OpenStackDriverMixin
-from libcloud.common.rackspace import (AUTH_URL_US, AUTH_URL_UK)
+from libcloud.common.rackspace import AUTH_URL_US
 
 
 class RackspaceResponse(JsonResponse):
@@ -289,14 +289,24 @@ class RackspaceConnection(OpenStackBaseConnection, PollingConnection):
 
     def _construct_loadbalancer_endpoint_from_servers_endpoint(self, ep):
         if 'publicURL' in ep:
-            loadbalancer_prefix = "%s.loadbalancers" % self._ex_force_region
-            return ep['publicURL'].replace("servers", loadbalancer_prefix)
+            public_url = ep['publicURL']
+
+            # Old, UK accont
+            public_url = public_url.replace('lon.servers', 'servers')
+            loadbalancer_prefix = '%s.loadbalancers' % (self._ex_force_region)
+
+            return public_url.replace('servers', loadbalancer_prefix)
         else:
             raise LibcloudError('Could not find specified endpoint')
 
 
 class RackspaceUKConnection(RackspaceConnection):
-    auth_url = AUTH_URL_UK
+    auth_url = AUTH_URL_US
+
+    def __init__(self, user_id, key, secure=True, ex_force_region='lon',
+                 **kwargs):
+        super(RackspaceUKConnection, self).__init__(user_id, key, secure,
+                                                    ex_force_region, **kwargs)
 
 
 class RackspaceLBDriver(Driver, OpenStackDriverMixin):
