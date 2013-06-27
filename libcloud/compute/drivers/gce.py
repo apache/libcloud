@@ -47,13 +47,10 @@ def timestamp_to_datetime(timestamp):
     @rtype:   C{datetime}
     """
     ts = datetime.datetime.strptime(timestamp[:-6], '%Y-%m-%dT%H:%M:%S.%f')
-    if timestamp[-1] == 'Z':
-        return ts
-    else:
-        tz_hours = int(timestamp[-5:-3])
-        tz_mins = int(timestamp[-2:]) * int(timestamp[-6:-5] + '1')
-        tz_delta = datetime.timedelta(hours=tz_hours, minutes=tz_mins)
-        return ts + tz_delta
+    tz_hours = int(timestamp[-5:-3])
+    tz_mins = int(timestamp[-2:]) * int(timestamp[-6:-5] + '1')
+    tz_delta = datetime.timedelta(hours=tz_hours, minutes=tz_mins)
+    return ts + tz_delta
 
 
 class GCEError(LibcloudError):
@@ -228,6 +225,14 @@ class GCEZone(NodeLocation):
         super(GCEZone, self).__init__(id=str(id), name=name, country=country,
                                       driver=driver)
 
+    def _now(self):
+        """
+        Returns current UTC time.
+
+        Can be overridden in unittests.
+        """
+        return datetime.datetime.utcnow()
+
     def _get_next_maint(self):
         """
         Returns the next Maintenance Window.
@@ -259,7 +264,7 @@ class GCEZone(NodeLocation):
         @rtype:   C{datetime.timedelta}
         """
         next_window = self._get_next_maint()
-        now = datetime.datetime.utcnow()
+        now = self._now()
         next_begin = timestamp_to_datetime(next_window['beginTime'])
         return next_begin - now
 
@@ -403,9 +408,9 @@ class GCENodeDriver(NodeDriver):
             for res in v.get(res_type, []):
                 if res['name'] == name:
                     if region:
-                        return k.lstrip('regions/')
+                        return k.replace('regions/', '')
                     else:
-                        return k.lstrip('zones/')
+                        return k.replace('zones/', '')
 
     def _match_images(self, project, partial_name):
         """
@@ -598,6 +603,8 @@ class GCENodeDriver(NodeDriver):
         """
         list_sizes = []
         location = location or self.zone
+        if location == 'all':
+            location = None
         if location is None:
             request = '/aggregated/machineTypes'
         elif hasattr(location, 'name'):
@@ -975,7 +982,6 @@ class GCENodeDriver(NodeDriver):
             if (time.time() - start_time >= timeout):
                 raise Exception("Timeout (%s sec) while waiting for multiple "
                                 "instances")
-            time.sleep(3)
             complete = True
             for i, operation in enumerate(responses):
                 if operation is None:
@@ -995,6 +1001,7 @@ class GCENodeDriver(NodeDriver):
                         node_list[i] = self.ex_get_node(name, location.name)
                 else:
                     complete = False
+                    time.sleep(2)
         return node_list
 
     def create_volume(self, size, name, location=None, image=None,
@@ -1211,9 +1218,9 @@ class GCENodeDriver(NodeDriver):
 
         request = '/zones/%s/instances/%s/attachDisk' % (
             node.extra['zone'].name, node.name)
-        response = self.connection.request(request, method='POST',
-                                           data=volume_data).object
-        if error in response:
+        response = self.connection.async_request(request, method='POST',
+                                                 data=volume_data).object
+        if 'error' in response:
             self._cateforize_error(response['error'])
         else:
             return True
@@ -1351,7 +1358,6 @@ class GCENodeDriver(NodeDriver):
             if (time.time() - start_time >= timeout):
                 raise Exception("Timeout (%s sec) while waiting to delete "
                                 "multiple instances")
-            time.sleep(3)
             complete = True
             for i, operation in enumerate(responses):
                 if operation is None:
@@ -1369,6 +1375,7 @@ class GCENodeDriver(NodeDriver):
                         success[i] = True
                 else:
                     complete = False
+                    time.sleep(2)
         return success
 
     def destroy_volume(self, volume):
@@ -1709,7 +1716,7 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
         extra['selfLink'] = machine_type['selfLink']
-        extra['zone'] = machine_type['zone']
+        extra['zone'] = self.ex_get_zone(machine_type['zone'])
         extra['description'] = machine_type['description']
         extra['guestCpus'] = machine_type['guestCpus']
         extra['creationTimestamp'] = machine_type['creationTimestamp']
