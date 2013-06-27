@@ -388,11 +388,12 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             try:
                 return super(GoogleBaseConnection, self).request(
                     *args, **kwargs)
-            except socket.error as e:
-                if e.errno == 104:
+            except socket.error:
+                e = sys.exc_info()[1]
+                if e.errno == errno.ECONNRESET:
                     tries = tries + 1
                 else:
-                    raise
+                    raise e
         # One more time, then give up.
         return super(GoogleBaseConnecion, self).request(*args, **kwargs)
 
