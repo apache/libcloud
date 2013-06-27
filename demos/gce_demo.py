@@ -66,10 +66,12 @@ CLEANUP = True
 args = getattr(secrets, 'GCE_PARAMS', ())
 kwargs = getattr(secrets, 'GCE_KEYWORD_PARAMS', {})
 
+
 # ==== HELPER FUNCTIONS ====
 def get_gce_driver():
     driver = get_driver(Provider.GCE)(*args, datacenter=DATACENTER, **kwargs)
     return driver
+
 
 def display(title, resource_list):
     """
@@ -125,8 +127,8 @@ def clean_up(base_name, node_list=None, resource_list=None):
             else:
                 print('   Failed to Delete %s' % resource.name)
 
-# ==== DEMO CODE STARTS HERE ====
 
+# ==== DEMO CODE STARTS HERE ====
 def main():
     global gce
     gce = get_gce_driver()
@@ -185,13 +187,12 @@ def main():
         disk_name = '%s-attach-disk' % DEMO_BASE_NAME
         volume = gce.create_volume(1, disk_name)
         if volume.attach(node_1):
-          print ('   Attached %s to %s' % (volume.name, node_1.name))
+            print ('   Attached %s to %s' % (volume.name, node_1.name))
 
         if CLEANUP:
             # == Detach the disk ==
             if gce.detach_volume(volume, ex_node=node_1):
                 print('   Detached %s from %s' % (volume.name, node_1.name))
-
 
     # == Create Node with persistent disk ==
     print('Creating Node with Persistent disk:')
@@ -207,7 +208,8 @@ def main():
     # Create Node with Disk
     node_2 = gce.create_node(name, size, image, ex_tags=['libcloud'],
                              ex_boot_disk=volume)
-    print('   Node %s created with attached disk %s' % (node_2.name, volume.name))
+    print('   Node %s created with attached disk %s' % (node_2.name,
+                                                        volume.name))
 
     # == Update Tags for Node ==
     print('Updating Tags for %s' % node_2.name)
@@ -223,7 +225,8 @@ def main():
     number = MAX_NODES - 2
     if number > 0:
         print('Creating Multiple Nodes (%s):' % number)
-        multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image, number,
+        multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
+                                                   number,
                                                    ex_tags=['libcloud'])
         for node in multi_nodes:
             print('   Node %s created.' % node.name)
@@ -248,7 +251,8 @@ def main():
     print('Creating an Address:')
     name = '%s-address' % DEMO_BASE_NAME
     address_1 = gce.ex_create_address(name)
-    print('   Address %s created with IP %s' % (address_1.name, address_1.address))
+    print('   Address %s created with IP %s' % (address_1.name,
+                                                address_1.address))
 
     # == List Updated Resources in current zone/region ==
     print('Updated Resources in current zone/region:')
@@ -266,7 +270,6 @@ def main():
 
     networks = gce.ex_list_networks()
     display('Networks', networks)
-
 
     if CLEANUP:
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
