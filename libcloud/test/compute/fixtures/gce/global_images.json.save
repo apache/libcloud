@@ -1,0 +1,22 @@
+{
+  "id": "projects/project_name/global/images",
+  "items": [
+    {
+      "creationTimestamp": "2013-06-19T13:47:20.563-07:00",
+      "description": "Local Debian GNU/Linux 7.1 (wheezy) built on 2013-06-17",
+      "id": "1549141992333368759",
+      "kind": "compute#image",
+      "name": "debian-7-wheezy-v20130617",
+      "preferredKernel": "https://www.googleapis.com/compute/v1beta15/projects/google/global/kernels/gce-v20130603",
+      "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+      },
+      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+      "sourceType": "RAW",
+      "status": "READY"
+    }
+  ],
+  "kind": "compute#imageList",
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/images"
+}
