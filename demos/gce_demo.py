@@ -15,9 +15,23 @@
 # limitations under the License.
 
 
-# This example performs several tasks on Google Compute Engine.  It should be
-# run directly. This can also serve as an integration test for the GCE
-# Node Driver.
+# This example performs several tasks on Google Compute Engine.  It can be run
+# directly or can be imported into an interactive python session.  This can
+# also serve as an integration test for the GCE Node Driver.
+#
+# To run interactively:
+#    - Make sure you have valid values in secrets.py
+#    - Run 'python' in this directory, then:
+#        import gce_demo
+#        gce = gce_demo.get_gce_driver()
+#        gce.list_nodes()
+#        etc.
+#    - Or, to run the full demo from the interactive python shell:
+#        import gce_demo
+#        gce_demo.CLEANUP = False               # optional
+#        gce_demo.MAX_NODES = 4                 # optional
+#        gce_demo.DATACENTER = 'us-central1-a'  # optional
+#        gce_demo.main()
 
 import os.path
 import sys
@@ -52,12 +66,11 @@ CLEANUP = True
 args = getattr(secrets, 'GCE_PARAMS', ())
 kwargs = getattr(secrets, 'GCE_KEYWORD_PARAMS', {})
 
-gce = get_driver(Provider.GCE)(*args,
-                               datacenter=DATACENTER,
-                               **kwargs)
-
-
 # ==== HELPER FUNCTIONS ====
+def get_gce_driver():
+    driver = get_driver(Provider.GCE)(*args, datacenter=DATACENTER, **kwargs)
+    return driver
+
 def display(title, resource_list):
     """
     Display a list of resources.
@@ -114,123 +127,151 @@ def clean_up(base_name, node_list=None, resource_list=None):
 
 # ==== DEMO CODE STARTS HERE ====
 
-# Get project info and print name
-project = gce.ex_get_project()
-print('Project: %s' % project.name)
+def main():
+    global gce
+    gce = get_gce_driver()
+    # Get project info and print name
+    project = gce.ex_get_project()
+    print('Project: %s' % project.name)
 
-# == Get Lists of Everything and Display the lists (up to 10) ==
-# These can either just return values for the current datacenter (zone)
-# or for everything.
-all_nodes = gce.list_nodes(ex_zone='all')
-display('Nodes', all_nodes)
+    # == Get Lists of Everything and Display the lists (up to 10) ==
+    # These can either just return values for the current datacenter (zone)
+    # or for everything.
+    all_nodes = gce.list_nodes(ex_zone='all')
+    display('Nodes', all_nodes)
 
-all_addresses = gce.ex_list_addresses(region='all')
-display('Addresses', all_addresses)
+    all_addresses = gce.ex_list_addresses(region='all')
+    display('Addresses', all_addresses)
 
-all_volumes = gce.ex_list_volumes(ex_zone='all')
-display('Volumes', all_volumes)
+    all_volumes = gce.ex_list_volumes(ex_zone='all')
+    display('Volumes', all_volumes)
 
-# This can return everything, but there is a large amount of overlap,
-# so we'll just get the sizes from the current zone.
-sizes = gce.list_sizes()
-display('Sizes', sizes)
+    # This can return everything, but there is a large amount of overlap,
+    # so we'll just get the sizes from the current zone.
+    sizes = gce.list_sizes()
+    display('Sizes', sizes)
 
-# These are global
-firewalls = gce.ex_list_firewalls()
-display('Firewalls', firewalls)
+    # These are global
+    firewalls = gce.ex_list_firewalls()
+    display('Firewalls', firewalls)
 
-networks = gce.ex_list_networks()
-display('Networks', networks)
+    networks = gce.ex_list_networks()
+    display('Networks', networks)
 
-images = gce.list_images()
-display('Images', images)
+    images = gce.list_images()
+    display('Images', images)
 
-locations = gce.list_locations()
-display('Locations', locations)
+    locations = gce.list_locations()
+    display('Locations', locations)
 
-zones = gce.ex_list_zones()
-display('Zones', zones)
+    zones = gce.ex_list_zones()
+    display('Zones', zones)
 
-# == Clean up any old demo resources ==
-print('Cleaning up any "%s" resources:' % DEMO_BASE_NAME)
-clean_up(DEMO_BASE_NAME, all_nodes,
-         all_addresses + all_volumes + firewalls + networks)
+    # == Clean up any old demo resources ==
+    print('Cleaning up any "%s" resources:' % DEMO_BASE_NAME)
+    clean_up(DEMO_BASE_NAME, all_nodes,
+             all_addresses + all_volumes + firewalls + networks)
 
-# == Create Node with non-persistent disk ==
-if MAX_NODES > 1:
-    print('Creating Node with non-persistent disk:')
-    name = '%s-np-node' % DEMO_BASE_NAME
-    node_1 = gce.create_node(name, 'n1-standard-1', 'debian-7',
-                             ex_tags=['libcloud'])
-    print('   Node %s created' % name)
+    # == Create Node with non-persistent disk ==
+    if MAX_NODES > 1:
+        print('Creating Node with non-persistent disk:')
+        name = '%s-np-node' % DEMO_BASE_NAME
+        node_1 = gce.create_node(name, 'n1-standard-1', 'debian-7',
+                                 ex_tags=['libcloud'])
+        print('   Node %s created' % name)
 
-# == Create Node with persistent disk ==
-print('Creating Node with Persistent disk:')
-name = '%s-persist-node' % DEMO_BASE_NAME
-# Use objects this time instead of names
-# Get latest Debian 7 image
-image = gce.ex_get_image('debian-7')
-# Get Machine Size
-size = gce.ex_get_size('n1-standard-1')
-# Create Disk.  Size is None to just take default of image
-volume_name = '%s-boot-disk' % DEMO_BASE_NAME
-volume = gce.create_volume(None, volume_name, image=image)
-# Create Node with Disk
-node_2 = gce.create_node(name, size, image, ex_tags=['libcloud'],
-                         ex_boot_disk=volume)
-print('   Node %s created with attached disk %s' % (node_2.name, volume.name))
+        # == Create, and attach a disk ==
+        print('Creating a new disk:')
+        disk_name = '%s-attach-disk' % DEMO_BASE_NAME
+        volume = gce.create_volume(1, disk_name)
+        if volume.attach(node_1):
+          print ('   Attached %s to %s' % (volume.name, node_1.name))
 
-# == Create Multiple nodes at once ==
-base_name = '%s-muliple-nodes' % DEMO_BASE_NAME
-number = MAX_NODES - 2
-if number > 0:
-    print('Creating Multiple Nodes (%s):' % number)
-    multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image, number,
-                                               ex_tags=['libcloud'])
-    for node in multi_nodes:
-        print('   Node %s created.' % node.name)
-
-# == Create a Network ==
-print('Creating Network:')
-name = '%s-network' % DEMO_BASE_NAME
-cidr = '10.10.0.0/16'
-network_1 = gce.ex_create_network(name, cidr)
-print('   Network %s created' % network_1.name)
-
-# == Create a Firewall ==
-print('Creating a Firewall:')
-name = '%s-firewall' % DEMO_BASE_NAME
-allowed = [{'IPProtocol': 'tcp',
-            'ports': ['3141']}]
-firewall_1 = gce.ex_create_firewall(name, allowed, network=network_1,
-                                    source_tags=['libcloud'])
-print('   Firewall %s created' % firewall_1.name)
-
-# == Create a Static Address ==
-print('Creating an Address:')
-name = '%s-address' % DEMO_BASE_NAME
-address_1 = gce.ex_create_address(name)
-print('   Address %s created with IP %s' % (address_1.name, address_1.address))
-
-# == List Updated Resources in current zone/region ==
-print('Updated Resources in current zone/region:')
-nodes = gce.list_nodes()
-display('Nodes', nodes)
-
-addresses = gce.ex_list_addresses()
-display('Addresses', addresses)
-
-volumes = gce.ex_list_volumes()
-display('Volumes', volumes)
-
-firewalls = gce.ex_list_firewalls()
-display('Firewalls', firewalls)
-
-networks = gce.ex_list_networks()
-display('Networks', networks)
+        if CLEANUP:
+            # == Detach the disk ==
+            if gce.detach_volume(volume, ex_node=node_1):
+                print('   Detached %s from %s' % (volume.name, node_1.name))
 
 
-if CLEANUP:
-    print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
-    clean_up(DEMO_BASE_NAME, nodes,
-             addresses + volumes + firewalls + networks)
+    # == Create Node with persistent disk ==
+    print('Creating Node with Persistent disk:')
+    name = '%s-persist-node' % DEMO_BASE_NAME
+    # Use objects this time instead of names
+    # Get latest Debian 7 image
+    image = gce.ex_get_image('debian-7')
+    # Get Machine Size
+    size = gce.ex_get_size('n1-standard-1')
+    # Create Disk.  Size is None to just take default of image
+    volume_name = '%s-boot-disk' % DEMO_BASE_NAME
+    volume = gce.create_volume(None, volume_name, image=image)
+    # Create Node with Disk
+    node_2 = gce.create_node(name, size, image, ex_tags=['libcloud'],
+                             ex_boot_disk=volume)
+    print('   Node %s created with attached disk %s' % (node_2.name, volume.name))
+
+    # == Update Tags for Node ==
+    print('Updating Tags for %s' % node_2.name)
+    tags = node_2.extra['tags']
+    tags.append('newtag')
+    if gce.ex_set_node_tags(node_2, tags):
+        print('   Tags updated for %s' % node_2.name)
+    check_node = gce.ex_get_node(node_2.name)
+    print('   New tags: %s' % check_node.extra['tags'])
+
+    # == Create Multiple nodes at once ==
+    base_name = '%s-multiple-nodes' % DEMO_BASE_NAME
+    number = MAX_NODES - 2
+    if number > 0:
+        print('Creating Multiple Nodes (%s):' % number)
+        multi_nodes = gce.ex_create_multiple_nodes(base_name, size, image, number,
+                                                   ex_tags=['libcloud'])
+        for node in multi_nodes:
+            print('   Node %s created.' % node.name)
+
+    # == Create a Network ==
+    print('Creating Network:')
+    name = '%s-network' % DEMO_BASE_NAME
+    cidr = '10.10.0.0/16'
+    network_1 = gce.ex_create_network(name, cidr)
+    print('   Network %s created' % network_1.name)
+
+    # == Create a Firewall ==
+    print('Creating a Firewall:')
+    name = '%s-firewall' % DEMO_BASE_NAME
+    allowed = [{'IPProtocol': 'tcp',
+                'ports': ['3141']}]
+    firewall_1 = gce.ex_create_firewall(name, allowed, network=network_1,
+                                        source_tags=['libcloud'])
+    print('   Firewall %s created' % firewall_1.name)
+
+    # == Create a Static Address ==
+    print('Creating an Address:')
+    name = '%s-address' % DEMO_BASE_NAME
+    address_1 = gce.ex_create_address(name)
+    print('   Address %s created with IP %s' % (address_1.name, address_1.address))
+
+    # == List Updated Resources in current zone/region ==
+    print('Updated Resources in current zone/region:')
+    nodes = gce.list_nodes()
+    display('Nodes', nodes)
+
+    addresses = gce.ex_list_addresses()
+    display('Addresses', addresses)
+
+    volumes = gce.ex_list_volumes()
+    display('Volumes', volumes)
+
+    firewalls = gce.ex_list_firewalls()
+    display('Firewalls', firewalls)
+
+    networks = gce.ex_list_networks()
+    display('Networks', networks)
+
+
+    if CLEANUP:
+        print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
+        clean_up(DEMO_BASE_NAME, nodes,
+                 addresses + volumes + firewalls + networks)
+
+if __name__ == '__main__':
+    main()
