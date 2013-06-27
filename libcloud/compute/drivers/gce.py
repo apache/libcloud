@@ -15,17 +15,13 @@
 """
 Module for Google Compute Engine Driver.
 """
+from __future__ import with_statement
 
 import datetime
 import time
 import sys
 import os
 import getpass
-
-try:
-    import paramiko
-except ImportError:
-    paramiko = None
 
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
@@ -318,8 +314,7 @@ class GCENodeDriver(NodeDriver):
         "TERMINATED": NodeState.TERMINATED
     }
 
-    def __init__(self, user_id, key, datacenter=None,
-                 project=None, ssh_username=None, ssh_private_key_file=None,
+    def __init__(self, user_id, key, datacenter=None, project=None,
                  auth_type=None, **kwargs):
         """
         @param  user_id: The email address (for service accounts) or Client ID
@@ -337,14 +332,6 @@ class GCENodeDriver(NodeDriver):
 
         @keyword  project: Your GCE project name. (required)
         @type     project: C{str}
-
-        @keyword  ssh_username: SSH Username that has permission to do a
-                                password-less reboot of an instance with sudo.
-        @type     ssh_username: C{str}
-
-        @keyword  ssh_private_key_file: Name of file containing ssh key that
-                                        corresponds to ssh_username.
-        @type     ssh_private_key_file: C{str}
 
         @keyword  auth_type: Accepted values are "SA" or "IA"
                              ("Service Account" or "Installed Application").
@@ -370,10 +357,6 @@ class GCENodeDriver(NodeDriver):
             self.zone = self.ex_get_zone(datacenter)
         else:
             self.zone = None
-        self.ssh_username = ssh_username
-        self.ssh_private_key_file = ssh_private_key_file
-        if paramiko:
-            self.SSHClient = paramiko.SSHClient()
 
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
@@ -1098,47 +1081,20 @@ class GCENodeDriver(NodeDriver):
         """
         Reboot a node.
 
-        Requires SSH access and will fail if ssh_username &
-        ssh_private_key_file were not set in the driver constructor.
-
         @param  node: Node to be rebooted
         @type   node: L{Node}
 
         @return:  True if successful, False if not
         @rtype:   C{bool}
         """
-        ssh_username = self.ssh_username
-        if ssh_username is None:
-            return False
-        ssh_private_key = self.ssh_private_key_file
-        if ssh_private_key is None:
-            return False
-        if not paramiko:
-            return False
-        ssh_host = node.private_ips[0]
-        ssh_private_key_file = os.path.expanduser(ssh_private_key)
-        ssh_private_key_pass = ''
-
-        try:
-            pkey = paramiko.RSAKey.from_private_key_file(ssh_private_key_file,
-                                                         ssh_private_key_pass)
-        except paramiko.SSHException:
-            prompt = ('Enter passphrase for key \'' + ssh_private_key_file
-                      + '\': ')
-            ssh_private_key_pass = getpass.getpass(prompt=prompt)
-            pkey = paramiko.RSAKey.from_private_key_file(ssh_private_key_file,
-                                                         ssh_private_key_pass)
-
-        try:
-            ssh_client = self.SSHClient
-            ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh_client.connect(ssh_host, username=ssh_username, pkey=pkey)
-            ssh_client.exec_command('sudo reboot')
-            ssh_client.close()
-            return True
-
-        except:
-            return False
+        request = '/zones/%s/instances/%s/reset' % (node.extra['zone'].name,
+                                                    node.name)
+        response = self.connection.async_request(request, method='POST',
+                                                 data='ignored').object
+        if 'error' in response:
+          self._categorize_error(response['error'])
+        else:
+          return True
 
     def ex_set_node_tags(self, node, tags):
         """
