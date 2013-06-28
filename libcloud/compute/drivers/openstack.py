@@ -34,10 +34,10 @@ from xml.etree import ElementTree as ET
 
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
-from libcloud.common.types import MalformedResponseError
+from libcloud.common.types import MalformedResponseError, ProviderError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
-from libcloud.compute.base import NodeDriver, Node, NodeLocation
+from libcloud.compute.base import NodeDriver, Node, NodeLocation, StorageVolume
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
 from libcloud.utils.xml import findall
@@ -57,6 +57,10 @@ __all__ = [
 ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
 
 DEFAULT_API_VERSION = '1.1'
+
+
+class OpenStackException(ProviderError):
+    pass
 
 
 class OpenStackResponse(Response):
@@ -205,6 +209,67 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     def list_nodes(self):
         return self._to_nodes(
             self.connection.request('/servers/detail').object)
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        if snapshot:
+            raise NotImplementedError(
+                "create_volume does not yet support create from snapshot")
+        return self.connection.request('/os-volumes',
+                                       method='POST',
+                                       data={
+                                           'volume': {
+                                               'display_name': name,
+                                               'display_description': name,
+                                               'size': size,
+                                               'volume_type': None,
+                                               'metadata': {
+                                                   'contents': name,
+                                               },
+                                               'availability_zone': location,
+                                           }
+                                       }).success()
+
+    def destroy_volume(self, volume):
+        return self.connection.request('/os-volumes/%s' % volume.id,
+                                       method='DELETE').success()
+
+    def attach_volume(self, node, volume, device="auto"):
+        # when "auto" or None is provided for device, openstack will let
+        # the guest OS pick the next available device (fi. /dev/vdb)
+        return self.connection.request(
+            '/servers/%s/os-volume_attachments' % node.id,
+            method='POST',
+            data={
+                'volumeAttachment': {
+                    'volumeId': volume.id,
+                    'device': device,
+                }
+            }).success()
+
+    def detach_volume(self, volume, ex_node=None):
+        # when ex_node is not provided, volume is detached from all nodes
+        failed_nodes = []
+        for attachment in volume.extra['attachments']:
+            if not ex_node or ex_node.id == attachment['serverId']:
+                if not self.connection.request(
+                    '/servers/%s/os-volume_attachments/%s' %
+                    (attachment['serverId'], attachment['id']),
+                    method='DELETE').success():
+                    failed_nodes.append(attachment['serverId'])
+        if failed_nodes:
+            raise OpenStackException(
+                'detach_volume failed for nodes with id: %s' %
+                ', '.join(failed_nodes), 500, self
+            )
+        return True
+
+    def list_volumes(self):
+        return self._to_volumes(
+            self.connection.request('/os-volumes').object)
+
+    def ex_get_volume(self, volumeId):
+        return self._to_volume(
+            self.connection.request('/os-volumes/%s' % volumeId).object)
 
     def list_images(self, location=None, ex_only_active=True):
         """
@@ -1153,6 +1218,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         servers = obj['servers']
         return [self._to_node(server) for server in servers]
 
+    def _to_volumes(self, obj):
+        volumes = obj['volumes']
+        return [self._to_volume(volume) for volume in volumes]
+
     def _to_sizes(self, obj):
         flavors = obj['flavors']
         return [self._to_size(flavor) for flavor in flavors]
@@ -1656,6 +1725,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
             ),
+        )
+
+    def _to_volume(self, api_node):
+        if 'volume' in api_node:
+            api_node = api_node['volume']
+        return StorageVolume(
+            id=api_node['id'],
+            name=api_node['displayName'],
+            size=api_node['size'],
+            driver=self,
+            extra={
+                'description': api_node['displayDescription'],
+                'attachments': [att for att in api_node['attachments'] if att],
+            }
         )
 
     def _to_size(self, api_flavor, price=None, bandwidth=None):
