@@ -770,6 +770,16 @@ class NodeDriver(BaseDriver):
 
         raise NotImplementedError('detach not implemented for this driver')
 
+    def list_volumes(self):
+        """
+        List storage volumes.
+
+        @return: list of storageVolume objects
+        @rtype: C{list} of L{StorageVolume}
+        """
+        raise NotImplementedError(
+            'list_volumes not implemented for this driver')
+
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
         # This is here for backward compatibility and will be removed in the
