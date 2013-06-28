@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.compute.base import Node, NodeImage, NodeLocation
+from libcloud.compute.base import Node, NodeImage, NodeLocation, StorageVolume
 from libcloud.pricing import get_pricing
 
 
 class TestCaseMixin(object):
     should_list_locations = True
     should_have_pricing = False
+    should_list_volumes = False
 
     def test_list_nodes_response(self):
         nodes = self.driver.list_nodes()
@@ -45,6 +46,15 @@ class TestCaseMixin(object):
         self.assertTrue(isinstance(images, list))
         for image in images:
             self.assertTrue(isinstance(image, NodeImage))
+
+    def test_list_volumes_response(self):
+        if not self.should_list_volumes:
+            return None
+
+        volumes = self.driver.list_volumes()
+        self.assertTrue(isinstance(volumes, list))
+        for volume in volumes:
+            self.assertTrue(isinstance(volume, StorageVolume))
 
     def test_list_locations_response(self):
         if not self.should_list_locations:
