@@ -21,6 +21,8 @@
 #
 # To run interactively:
 #    - Make sure you have valid values in secrets.py
+#      (For more information about setting up your credentials, see the
+#      libcloud/common/google.py docstring)
 #    - Run 'python' in this directory, then:
 #        import gce_demo
 #        gce = gce_demo.get_gce_driver()

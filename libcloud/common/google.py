@@ -15,6 +15,47 @@
 
 """
 Module for Google Connection and Authentication classes.
+
+Information about setting up your Google OAUTH2 credentials:
+
+For libcloud, there are two basic methods for authenticating to Google using
+OAUTH2: Service Accounts and Client IDs for Installed Applications.
+
+Both are initially set up from the
+U{API Console<https://code.google.com/apis/console#access>}
+
+Setting up Service Account authentication (note that you need the PyCrypto
+package installed to use this):
+    - Go to the API Console
+    - Click on "Create another client ID..."
+    - Select "Service account" and click on "Create client ID"
+    - Download the Private Key
+    - The key that you download is a PKCS12 key.  It needs to be converted to
+      the PEM format.
+    - Convert the key using OpenSSL (the default password is 'notasecret'):
+      C{openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
+      | openssl rsa -out PRIV.pem}
+    - Move the .pem file to a safe location.
+    - To Authenticate, you will need to pass the Service Account's "Email
+      address" in as the user_id and the path to the .pem file as the key.
+
+Setting up Installed Application authentication:
+    - Go to the API Connsole
+    - Click on "Create another client ID..."
+    - Select "Installed application" and click on "Create client ID"
+    - To Authenticate, pass in the "Client ID" as the user_id and the "Client
+      secret" as the key
+    - The first time that you do this, the libcloud will give you a URL to
+      visit.  Copy and paste the URL into a browser.
+    - When you go to the URL it will ask you to log in (if you aren't already)
+      and ask you if you want to allow the project access to your account.
+    - Click on Accept and you will be given a code.
+    - Paste that code at the prompt given to you by the Google libcloud
+      connection.
+    - At that point, a token & refresh token will be stored in your home
+      directory and will be used for authentication.
+
+Please remember to secure your keys and access tokens.
 """
 from __future__ import with_statement
 
@@ -31,8 +72,7 @@ import datetime
 import os
 import socket
 
-from libcloud.utils.py3 import urlencode
-from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
 from libcloud.compute.types import (InvalidCredsError,
@@ -80,32 +120,6 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
     host = 'accounts.google.com'
     auth_path = '/o/oauth2/auth'
 
-    def add_default_headers(self, headers):
-        headers['Content-Type'] = "application/x-www-form-urlencoded"
-        headers['Host'] = self.host
-        return headers
-
-    def _token_request(self, request_body):
-        """
-        Return an updated token from a token request body.
-
-        @param  request_body: A dictionary of values to send in the body of the
-                              token request.
-        @type   request_body: C{dict}
-
-        @return:  A dictionary with updated token information
-        @rtype:   C{dict}
-        """
-        data = urlencode(request_body)
-        now = datetime.datetime.utcnow()
-        response = self.request('/o/oauth2/token', method='POST', data=data)
-        token_info = response.object
-        if 'expires_in' in token_info:
-            expire_time = now + datetime.timedelta(
-                seconds=token_info['expires_in'])
-            token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
-        return token_info
-
     def __init__(self, user_id, key, scope,
                  redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                  login_hint=None, **kwargs):
@@ -139,6 +153,35 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
 
         super(GoogleBaseAuthConnection, self).__init__(user_id, key, **kwargs)
 
+    def _now(self):
+        return datetime.datetime.utcnow()
+
+    def add_default_headers(self, headers):
+        headers['Content-Type'] = "application/x-www-form-urlencoded"
+        headers['Host'] = self.host
+        return headers
+
+    def _token_request(self, request_body):
+        """
+        Return an updated token from a token request body.
+
+        @param  request_body: A dictionary of values to send in the body of the
+                              token request.
+        @type   request_body: C{dict}
+
+        @return:  A dictionary with updated token information
+        @rtype:   C{dict}
+        """
+        data = urlencode(request_body)
+        now = self._now()
+        response = self.request('/o/oauth2/token', method='POST', data=data)
+        token_info = response.object
+        if 'expires_in' in token_info:
+            expire_time = now + datetime.timedelta(
+                seconds=token_info['expires_in'])
+            token_info['expire_time'] = expire_time.strftime(TIMESTAMP_FORMAT)
+        return token_info
+
 
 class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
     """Authentication connection for "Installed Application" authentication."""
@@ -163,7 +206,10 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         url = 'https://%s%s?%s' % (self.host, self.auth_path, data)
         print('Please Go to the following URL and sign in:')
         print(url)
-        code = raw_input('Enter Code:')
+        if PY3:
+            code = input('Enter Code:')
+        else:
+            code = raw_input('Enter Code:')
         return code
 
     def get_new_token(self):
@@ -289,8 +335,9 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     """Base connection class for interacting with Google APIs."""
     driver = GoogleBaseDriver
     responseCls = GoogleResponse
+    host = 'www.googleapis.com'
     poll_interval = 2.0
-    timeout = 60
+    timeout = 120
 
     def __init__(self, user_id, key, auth_type=None,
                  credential_file=None, **kwargs):
@@ -326,7 +373,9 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                 auth_type = 'SA'
             else:
                 auth_type = 'IA'
-
+        if 'scope' in kwargs:
+            self.scope = kwargs['scope']
+            kwargs.pop('scope', None)
         self.token_info = self._get_token_info_from_file()
         if auth_type == 'SA':
             self.auth_conn = GoogleServiceAcctAuthConnection(
@@ -346,6 +395,9 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
 
+    def _now(self):
+        return datetime.datetime.utcnow()
+
     def add_default_headers(self, headers):
         """
         @inherits: L{Connection.add_default_headers}
@@ -361,7 +413,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         @inherits: L{Connection.pre_connect_hook}
         """
-        now = datetime.datetime.utcnow()
+        now = self._now()
         if self.token_expire_time < now:
             self.token_info = self.auth_conn.refresh_token(self.token_info)
             self.token_expire_time = datetime.datetime.strptime(
@@ -422,7 +474,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
         data = json.dumps(self.token_info)
         with open(filename, 'w') as f:
-          f.write(data)
+            f.write(data)
 
     def has_completed(self, response):
         """
@@ -462,7 +514,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         if action.startswith('https://'):
             u = urlparse.urlsplit(action)
-            request = urlparse.urlunsplit((None, None, u[2], u[3], u[4]))
+            request = urlparse.urlunsplit(('', '', u[2], u[3], u[4]))
         else:
             request = self.request_path + action
         return request

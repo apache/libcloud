@@ -967,7 +967,7 @@ class GCENodeDriver(NodeDriver):
 
         node_list = [None] * number
         responses = []
-        for i in xrange(number):
+        for i in range(number):
             name = '%s-%03d' % (base_name, i)
             request, node_data = self._create_node_req(name, size, image,
                                                        location, ex_network,
@@ -1099,9 +1099,9 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.async_request(request, method='POST',
                                                  data='ignored').object
         if 'error' in response:
-          self._categorize_error(response['error'])
+            self._categorize_error(response['error'])
         else:
-          return True
+            return True
 
     def ex_set_node_tags(self, node, tags):
         """
