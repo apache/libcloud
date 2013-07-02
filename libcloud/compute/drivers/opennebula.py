@@ -1138,6 +1138,10 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
         ET.SubElement(params,
                       'STORAGE',
                       {'href': '/storage/%s' % (str(volume.id))})
+
+        target = ET.SubElement(params, 'TARGET')
+        target.text = device
+
         xml = ET.tostring(action)
 
         url = '/compute/%s/action' % node.id
