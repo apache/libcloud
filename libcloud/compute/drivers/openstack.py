@@ -1388,7 +1388,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @rtype: C{list} of L{OpenStackNetwork}
         """
         return self._to_networks(
-            self.connection.request('/os-networksv2').object)
+            self.connection.request('/os-networks').object)
 
     def ex_create_network(self, name, cidr):
         """
@@ -1403,7 +1403,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @rtype: L{OpenStackNetwork}
         """
         return self._to_network(self.connection.request(
-            '/os-networksv2', method='POST',
+            '/os-networks', method='POST',
             data={'network': {'cidr': cidr, 'label': name}}
         ).object['network'])
 
@@ -1416,7 +1416,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         @rtype: C{bool}
         """
-        resp = self.connection.request('/os-networksv2/%s' % (network.id),
+        resp = self.connection.request('/os-networks/%s' % (network.id),
                                        method='DELETE')
         return resp.status == httplib.ACCEPTED
 
