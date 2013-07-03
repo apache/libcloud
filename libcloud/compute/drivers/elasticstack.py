@@ -469,6 +469,14 @@ class ElasticStackBaseNodeDriver(NodeDriver):
         if 'vnc:password' in data:
             extra['vnc:password'] = data['vnc:password']
 
+        boot_device = data['boot']
+
+        if isinstance(boot_device, list):
+            for device in boot_device:
+                extra[device] = data[device]
+        else:
+            extra[boot_device] = data[boot_device]
+
         if ssh_password:
             extra.update({'password': ssh_password})
 
