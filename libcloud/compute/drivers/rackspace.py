@@ -15,6 +15,8 @@
 """
 Rackspace driver
 """
+
+from libcloud.utils.py3 import httplib
 from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.base import NodeLocation
 from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
@@ -172,3 +174,42 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         super(RackspaceNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure, host=host,
                                                   port=port, **kwargs)
+
+    def ex_list_networks(self):
+        """
+        Get a list of Networks that are available.
+
+        @rtype: C{list} of L{OpenStackNetwork}
+        """
+        return self._to_networks(
+            self.connection.request('/os-networksv2').object)
+
+    def ex_create_network(self, name, cidr):
+        """
+        Create a new Network
+
+        @param name: Name of network which should be used
+        @type name: C{str}
+
+        @param cidr: cidr of network which should be used
+        @type cidr: C{str}
+
+        @rtype: L{OpenStackNetwork}
+        """
+        return self._to_network(self.connection.request(
+            '/os-networksv2', method='POST',
+            data={'network': {'cidr': cidr, 'label': name}}
+        ).object['network'])
+
+    def ex_delete_network(self, network):
+        """
+        Get a list of NodeNetorks that are available.
+
+        @param network: Network which should be used
+        @type network: L{OpenStackNetwork}
+
+        @rtype: C{bool}
+        """
+        resp = self.connection.request('/os-networksv2/%s' % (network.id),
+                                       method='DELETE')
+        return resp.status == httplib.ACCEPTED
