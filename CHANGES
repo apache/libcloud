@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development
+
+ *) Compute
+
+    - Modify ElasticHosts drive to store drive UUID in 'extra' field.
+      (LIBCLOUD-357)
+      [Bob Thompson]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
