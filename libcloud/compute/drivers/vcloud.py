@@ -764,6 +764,97 @@ class VCloudNodeDriver(NodeDriver):
 
     features = {"create_node": ["password"]}
 
+    def ex_download_template(self, vapp_template_idhref=None, download_directory=None):
+        """
+        Download OVF, and vmdk files for the vApp Template given into the directory given
+        should be queried.
+
+        @param vapp_template_idhref: None, vApp template id(href) to download
+        @type vapp_template_idhref:  C{str}
+
+        @param download_directory: None, Local Directory to use when downloading vApp template files
+        @type download_directory:  C{str}
+
+        """
+
+	image_enable_href = None
+	image_ovf_href = None
+	
+	# Directory setup
+	if not os.path.exists( download_directory ):
+		os.makedirs( download_directory )
+
+	# Enable template for download
+
+	try:
+		res = self.connection.request(get_url_path(vapp_template_idhref))
+	except:
+		raise ValueError("Problem getting template information. Please check template href.")
+
+	print "Enable template for download.."
+	res = self.connection.request(get_url_path(vapp_template_idhref))
+	# Did we get back a good response?
+	links = res.object.findall(fixxpath(res.object, 'Link'))
+	for l in links:
+		if l.attrib['rel'] == "enable": 
+			image_enable_href = l.attrib['href']
+
+	## Start the process
+	res = self.connection.request( image_enable_href , method='POST')
+	## Wait for it...
+	print "Wait for enable process to finish..."
+	self._wait_for_task_completion(res.object.get('href'))
+
+	## Okay now we are done.  Check out the vapp template again and grab out the download link
+	res = self.connection.request(get_url_path(vapp_template_idhref))
+	links = res.object.findall(fixxpath(res.object, 'Link'))
+	for l in links:
+		if l.attrib['rel'] == "download:default" and l.attrib['type'] == "text/xml": 
+			image_ovf_href = l.attrib['href']
+
+	# Download OVF
+
+	res = self.connection.request(get_url_path(image_ovf_href))
+	## We will get a url back like this:  https://example.com/transfer/629c6/descriptor.ovf
+	## We need the url and directory, but not the file "descriptor.ovf"
+	urlpath = image_ovf_href.split("/")
+	urlpath.pop()
+	downloadurl = "/".join(urlpath)
+	#print "download path: " + downloadurl
+	f = open( os.path.join(download_directory, "descriptor.ovf"), 'w')
+	f.write ( ET.tostring(res.object) )
+	f.close()
+
+	# Download vmdk(s) 
+
+	vmdks = res.object.findall(fixxpath(res.object, 'References/File'))
+	for vmdk in vmdks:
+		vmdk_href = vmdk.attrib['{http://schemas.dmtf.org/ovf/envelope/1}href']
+		#print "Download: " +  downloadurl + "/" + vmdk_href
+
+		filepath = downloadurl + "/" + vmdk_href 
+		req = urllib2.Request( filepath , headers=self.connection.add_default_headers(headers={}) )
+		u = urllib2.urlopen( req ) 
+		f = open( os.path.join(download_directory, vmdk_href ) , 'wb')
+		meta = u.info()
+		file_size = int(meta.getheaders("Content-Length")[0])
+		print "Downloading: %s Bytes: %s" % (vmdk_href, file_size)
+
+		file_size_dl = 0
+		block_sz = 8192
+		while True:
+			buffer = u.read(block_sz)
+			if not buffer:
+				break
+
+			file_size_dl += len(buffer)
+			f.write(buffer)
+			status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+			status = status + chr(8)*(len(status)+1)
+			print status,
+
+		f.close()
+
 
 class HostingComConnection(VCloudConnection):
     """
