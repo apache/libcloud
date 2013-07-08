@@ -946,6 +946,25 @@ class OpenStackNetwork(object):
                self.name, self.cidr,)
 
 
+class OpenStackFloatingIp(object):
+    """
+    A Virtual Network.
+    """
+
+    def __init__(self, id, ip, fixed_ip, pool, instance_id, driver, extra=None):
+        self.id = str(id)
+        self.ip = ip
+        self.fixed_ip = fixed_ip
+        self.pool = pool
+        self.instance_id = instance_id
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStackFloatingIp id="%s" ip="%s" fixed_ip="%s">' % (self.id,
+               self.ip, self.fixed_ip,)
+
+
 class OpenStackSecurityGroup(object):
     """
     A Security Group.
@@ -1409,7 +1428,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
     def ex_delete_network(self, network):
         """
-        Get a list of NodeNetorks that are available.
+        Delete a given network
 
         @param network: Network which should be used
         @type network: L{OpenStackNetwork}
@@ -1418,6 +1437,84 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         resp = self.connection.request('/os-networks/%s' % (network.id),
                                        method='DELETE')
+        return resp.status == httplib.ACCEPTED
+
+    def _to_floating_ips(self, obj):
+        floating_ips = obj['floating_ips']
+        return [self._to_floating_ip(floating_ip)
+                for floating_ip in floating_ips]
+
+    def _to_floating_ip(self, obj):
+        return OpenStackFloatingIp(id=obj['id'],
+                                   ip=obj['ip'],
+                                   fixed_ip=obj['ip'],
+                                   pool=obj['pool'],
+                                   instance_id=obj['instance_id'],
+                                   driver=self)
+
+    def ex_list_floating_ips(self):
+        """
+        Get a list of Floating ips that are available.
+
+        @rtype: C{list} of L{OpenStackFloatingIp}
+        """
+        return self._to_floating_ips(
+            self.connection.request('/os-floating-ips').object)
+
+    def ex_get_floating_ip(self, floating_ip):
+        """
+        Get a Floating ip based on id.
+
+        @rtype: L{OpenStackFloatingIp}
+        """
+        return self._to_floating_ips(
+            self.connection.request('/os-floating-ips/%s' % (floating_ip.id)).object)
+
+    def ex_create_floating_ip(self, pool=None):
+        """
+        Create (allocate) a floating ip
+
+        @param pool: Name of pool to pick address from
+        @type pool: C{str}
+
+        @rtype: L{OpenStackFloatingIp}
+        """
+        return self._to_floating_ip(self.connection.request(
+            '/os-floating-ips', method='POST',
+            data={'pool': pool}).object)
+
+    def ex_delete_floating_ip(self, floating_ip):
+        """
+        Delete a given floating ip
+
+        @param floating_ip: Floating IP which should be used
+        @type floating_ip: L{OpenStackFloatingIp}
+
+        @rtype: C{bool}
+        """
+        resp = self.connection.request('/os-floating-ips/%s' % (floating_ip.id),
+                                       method='DELETE')
+        return resp.status == httplib.ACCEPTED
+
+
+    def ex_add_floating_ip(self, node, floating_ip):
+        """
+        Add a floating ip to an instance
+        """
+        params = {'address': floating_ip.ip}
+        if floating_ip.fixed_ip:
+            #TODO: this seems to not work somehow ?
+            #params['fixed_address'] = floating_ip.fixed_ip
+            pass
+        resp = self._node_action(node, 'addFloatingIp', **params)
+        return resp.status == httplib.ACCEPTED
+
+    def ex_remove_floating_ip(self, node, floating_ip):
+        """
+        Remove a floating IP address.
+        """
+        params = {'address': floating_ip.ip}
+        resp = self._node_action(node, 'removeFloatingIp', **params)
         return resp.status == httplib.ACCEPTED
 
     def _to_security_group_rules(self, obj):
