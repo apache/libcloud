@@ -896,9 +896,10 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         # per node.
         if len(disks) > 1:
             return disks
-
-        if len(disks) == 1:
+        elif len(disks) == 1:
             return disks[0]
+        else:
+            return None
 
     def _extract_size(self, compute):
         """
