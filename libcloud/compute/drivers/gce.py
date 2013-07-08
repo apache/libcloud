@@ -625,7 +625,7 @@ class GCENodeDriver(NodeDriver):
                 list_sizes = [self._to_node_size(s) for s in response['items']]
         return list_sizes
 
-    def ex_list_volumes(self, ex_zone=None):
+    def list_volumes(self, ex_zone=None):
         """
         Return a list of volumes for a zone or all.
 

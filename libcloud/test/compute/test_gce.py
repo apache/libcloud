@@ -140,10 +140,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(sizes_all[0].name, 'n1-highmem-8')
         self.assertEqual(sizes_all[0].extra['zone'].name, 'us-central1-a')
 
-    def test_ex_list_volumes(self):
-        volumes = self.driver.ex_list_volumes()
-        volumes_all = self.driver.ex_list_volumes('all')
-        volumes_uc1a = self.driver.ex_list_volumes('us-central1-a')
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        volumes_all = self.driver.list_volumes('all')
+        volumes_uc1a = self.driver.list_volumes('us-central1-a')
         self.assertEqual(len(volumes), 3)
         self.assertEqual(len(volumes_all), 3)
         self.assertEqual(len(volumes_uc1a), 3)

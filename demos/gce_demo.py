@@ -147,7 +147,7 @@ def main():
     all_addresses = gce.ex_list_addresses(region='all')
     display('Addresses', all_addresses)
 
-    all_volumes = gce.ex_list_volumes(ex_zone='all')
+    all_volumes = gce.list_volumes(ex_zone='all')
     display('Volumes', all_volumes)
 
     # This can return everything, but there is a large amount of overlap,
@@ -264,7 +264,7 @@ def main():
     addresses = gce.ex_list_addresses()
     display('Addresses', addresses)
 
-    volumes = gce.ex_list_volumes()
+    volumes = gce.list_volumes()
     display('Volumes', volumes)
 
     firewalls = gce.ex_list_firewalls()
