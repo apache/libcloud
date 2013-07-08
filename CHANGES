@@ -8,6 +8,10 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-357)
       [Bob Thompson]
 
+    - Add support for volume related functions to OpenNebula driver.
+      (LIBCLOUD-354)
+      [Emanuele Rocca]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
