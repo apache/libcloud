@@ -1085,12 +1085,6 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
     OpenNebula.org node driver for OpenNebula.org v3.6.
     """
 
-    def _to_volume(self, storage):
-        return StorageVolume(id=storage.findtext('ID'),
-                             name=storage.findtext('NAME'),
-                             size=int(storage.findtext('SIZE')),
-                             driver=self.connection.driver)
-
     def create_volume(self, size, name, location=None, snapshot=None):
         storage = ET.Element('STORAGE')
 
@@ -1184,6 +1178,24 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
 
         return False
 
+    def list_volumes(self):
+        return self._to_volumes(self.connection.request('/storage').object)
+
+    def _to_volume(self, storage):
+        return StorageVolume(id=storage.findtext('ID'),
+                             name=storage.findtext('NAME'),
+                             size=int(storage.findtext('SIZE')),
+                             driver=self.connection.driver)
+
+    def _to_volumes(self, object):
+        volumes = []
+        for storage in object.findall('STORAGE'):
+            storage_id = storage.attrib['href'].partition('/storage/')[2]
+
+            volumes.append(self._to_volume(
+                self.connection.request('/storage/%s' % storage_id).object))
+
+        return  volumes
 
 class OpenNebula_3_8_NodeDriver(OpenNebula_3_6_NodeDriver):
     """

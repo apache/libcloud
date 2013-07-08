@@ -684,6 +684,21 @@ class OpenNebula_3_6_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         ret = self.driver.detach_volume(node.image)
         self.assertFalse(ret)
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+
+        self.assertEqual(len(volumes), 2)
+
+        volume = volumes[0]
+        self.assertEqual(volume.id, '5')
+        self.assertEqual(volume.size, 2048)
+        self.assertEqual(volume.name, 'Ubuntu 9.04 LAMP')
+
+        volume = volumes[1]
+        self.assertEqual(volume.id, '15')
+        self.assertEqual(volume.size, 1024)
+        self.assertEqual(volume.name, 'Debian Sid')
+
 class OpenNebula_3_8_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v3.8.
@@ -1184,6 +1199,14 @@ class OpenNebula_3_6_MockHttp(OpenNebula_3_2_MockHttp):
         """
         if method == 'GET':
             body = self.fixtures_3_6.load('disk_10.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _storage_15(self, method, url, body, headers):
+        """
+        Storage entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_6.load('disk_15.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 class OpenNebula_3_8_MockHttp(OpenNebula_3_2_MockHttp):
