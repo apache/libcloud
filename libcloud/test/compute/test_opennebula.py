@@ -677,6 +677,13 @@ class OpenNebula_3_6_Tests(unittest.TestCase, OpenNebulaCaseMixin):
         ret = self.driver.detach_volume(image)
         self.assertTrue(ret)
 
+        nodes = self.driver.list_nodes()
+        # node with only a single associated image
+        node = nodes[1]
+
+        ret = self.driver.detach_volume(node.image)
+        self.assertFalse(ret)
+
 class OpenNebula_3_8_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     """
     OpenNebula.org test suite for OpenNebula v3.8.
@@ -1154,6 +1161,29 @@ class OpenNebula_3_6_MockHttp(OpenNebula_3_2_MockHttp):
                     httplib.responses[httplib.ACCEPTED])
 
         if method == 'GET':
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _compute_15(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures_3_6.load('compute_15.xml')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        if method == 'PUT':
+            body = ""
+            return (httplib.ACCEPTED, body, {},
+                    httplib.responses[httplib.ACCEPTED])
+
+        if method == 'DELETE':
+            body = ""
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
+
+    def _storage_10(self, method, url, body, headers):
+        """
+        Storage entry resource.
+        """
+        if method == 'GET':
+            body = self.fixtures_3_6.load('disk_10.xml')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 class OpenNebula_3_8_MockHttp(OpenNebula_3_2_MockHttp):
