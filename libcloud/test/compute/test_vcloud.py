@@ -343,6 +343,31 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_list_images(self):
         ret = self.driver.list_images()
         self.assertEqual('https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
+        
+    #Test the download template function with bad template href
+    def test_invalid_ex_download_template(self):
+    	vapp_template_idhref="http://Fake_Template_name-12345"
+    	download_directory="/tmp/test_invalid_ex_download_template/"
+    	
+    	try:
+    		self.driver.ex_download_template(vapp_template_idhref, download_directory )
+    	except ValueError:
+    		pass
+    	else:
+    		self.fail('Exception was not thrown')
+    		
+    #Test the download template function with good template href
+    def test_ex_download_template(self):
+    	vapp_template_idhref="https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158"
+    	download_directory="/tmp/test_invalid_ex_download_template/"
+    	
+    	try:
+    		self.driver.ex_download_template(vapp_template_idhref, download_directory )
+    	except ValueError:
+    		self.fail('Exception was thrown')
+    	else:
+    		pass
+
 
 
 class TerremarkMockHttp(MockHttp):
