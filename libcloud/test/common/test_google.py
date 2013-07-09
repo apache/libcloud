@@ -18,7 +18,11 @@ Tests for Google Connection classes.
 import datetime
 import sys
 import unittest
-import json
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from libcloud.utils.py3 import httplib
 
@@ -53,8 +57,9 @@ class GoogleBaseAuthConnectionTest(LibcloudTestCase):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                  GoogleAuthMockHttp)
         self.mock_scope = ['https://www.googleapis.com/auth/foo']
+        kwargs = {'scope': self.mock_scope}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS,
-                                                     scope=self.mock_scope)
+                                                     **kwargs)
 
     def test_add_default_headers(self):
         old_headers = {}
@@ -84,8 +89,9 @@ class GoogleInstalledAppAuthConnectionTest(LibcloudTestCase):
         GoogleInstalledAppAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                          GoogleAuthMockHttp)
         self.mock_scope = ['https://www.googleapis.com/auth/foo']
+        kwargs = {'scope': self.mock_scope}
         self.conn = GoogleInstalledAppAuthConnection(*GCE_PARAMS,
-                                                     scope=self.mock_scope)
+                                                     **kwargs)
 
     def test_refresh_token(self):
         # This token info doesn't have a refresh token, so a new token will be
@@ -123,21 +129,23 @@ class GoogleBaseConnectionTest(LibcloudTestCase):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                  GoogleAuthMockHttp)
         self.mock_scope = ['https://www.googleapis.com/auth/foo']
-        self.conn = GoogleBaseConnection(*GCE_PARAMS, auth_type='IA',
-                                         scope=self.mock_scope)
+        kwargs = {'scope': self.mock_scope, 'auth_type': 'IA'}
+        self.conn = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
 
     def test_auth_type(self):
-
         self.assertRaises(GoogleAuthError, GoogleBaseConnection, *GCE_PARAMS,
-                          auth_type='XX')
+                          **{'auth_type': 'XX'})
+
+        kwargs = {'scope': self.mock_scope}
+
         if SHA256:
-            conn1 = GoogleBaseConnection(*GCE_PARAMS, auth_type='SA',
-                                         scope=self.mock_scope)
+            kwargs['auth_type'] = 'SA'
+            conn1 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
             self.assertTrue(isinstance(conn1.auth_conn,
                                        GoogleServiceAcctAuthConnection))
 
-        conn2 = GoogleBaseConnection(*GCE_PARAMS, auth_type='IA',
-                                     scope=self.mock_scope)
+        kwargs['auth_type'] = 'IA'
+        conn2 = GoogleBaseConnection(*GCE_PARAMS, **kwargs)
         self.assertTrue(isinstance(conn2.auth_conn,
                                    GoogleInstalledAppAuthConnection))
 
