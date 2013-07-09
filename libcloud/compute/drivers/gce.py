@@ -46,7 +46,9 @@ def timestamp_to_datetime(timestamp):
     @return:  Datetime object corresponding to timestamp
     @rtype:   C{datetime}
     """
-    ts = datetime.datetime.strptime(timestamp[:-6], '%Y-%m-%dT%H:%M:%S.%f')
+    # We remove timezone offset and microseconds (Python 2.5 strptime doesn't
+    # support %f)
+    ts = datetime.datetime.strptime(timestamp[:-10], '%Y-%m-%dT%H:%M:%S')
     tz_hours = int(timestamp[-5:-3])
     tz_mins = int(timestamp[-2:]) * int(timestamp[-6:-5] + '1')
     tz_delta = datetime.timedelta(hours=tz_hours, minutes=tz_mins)

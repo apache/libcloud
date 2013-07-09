@@ -58,13 +58,14 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         GoogleBaseAuthConnection.conn_classes = (GoogleAuthMockHttp,
                                                  GoogleAuthMockHttp)
         GCEMockHttp.type = None
-        self.driver = GCENodeDriver(*GCE_PARAMS, auth_type='IA',
-                                    datacenter=self.datacenter,
-                                    **GCE_KEYWORD_PARAMS)
+        kwargs = GCE_KEYWORD_PARAMS.copy()
+        kwargs['auth_type'] = 'IA'
+        kwargs['datacenter'] = self.datacenter
+        self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
 
     def test_timestamp_to_datetime(self):
         timestamp1 = '2013-06-26T10:05:19.340-07:00'
-        datetime1 = datetime.datetime(2013, 6, 26, 17, 5, 19, 340000)
+        datetime1 = datetime.datetime(2013, 6, 26, 17, 5, 19)
         self.assertEqual(timestamp_to_datetime(timestamp1), datetime1)
         timestamp2 = '2013-06-26T17:43:15.000-00:00'
         datetime2 = datetime.datetime(2013, 6, 26, 17, 43, 15)
