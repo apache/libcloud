@@ -12,6 +12,10 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-354)
       [Emanuele Rocca]
 
+    - Add methods for managing store volumes to the OpenStack driver.
+      (LIBCLOUD-353)
+      [Bernard Kerckenaere]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
