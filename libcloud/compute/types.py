@@ -44,6 +44,7 @@ class Provider(object):
     @cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
     @cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     @cvar SLICEHOST: Slicehost.com
+    @cvar GCE: Google Compute Engine
     @cvar GOGRID: GoGrid
     @cvar VPSNET: VPS.net
     @cvar LINODE: Linode.com
@@ -72,6 +73,7 @@ class Provider(object):
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
     SLICEHOST = 'slicehost'
+    GCE = 'gce'
     GOGRID = 'gogrid'
     VPSNET = 'vpsnet'
     LINODE = 'linode'

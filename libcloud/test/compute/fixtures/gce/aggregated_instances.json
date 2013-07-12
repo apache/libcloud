@@ -1,0 +1,414 @@
+{
+  "id": "projects/project_name/aggregated/instances",
+  "items": {
+    "zones/europe-west1-a": {
+      "instances": [
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:13:38.295-07:00",
+          "disks": [
+            {
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "type": "SCRATCH"
+            }
+          ],
+          "id": "4658881585544531189",
+          "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-europe-multiple-nodes-000",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "192.158.29.167",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.144.78"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-multiple-nodes-000",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:13:21.549-07:00",
+          "disks": [
+            {
+              "boot": true,
+              "deviceName": "libcloud-demo-europe-boot-disk",
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "source": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-boot-disk",
+              "type": "PERSISTENT"
+            }
+          ],
+          "id": "0681789716029574243",
+          "kernel": "https://www.googleapis.com/compute/v1beta15/projects/google/global/kernels/gce-v20130603",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-europe-persist-node",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "192.158.29.121",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.206.91"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-persist-node",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:12:29.726-07:00",
+          "disks": [
+            {
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "type": "SCRATCH"
+            }
+          ],
+          "id": "14308265828754333159",
+          "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-europe-np-node",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "192.158.29.88",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.66.77"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-np-node",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a"
+        }
+      ]
+    },
+    "zones/europe-west1-b": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/europe-west1-b"
+          }
+        ],
+        "message": "There are no results for scope 'zones/europe-west1-b' on this page."
+      }
+    },
+    "zones/us-central1-a": {
+      "instances": [
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:11:02.386-07:00",
+          "disks": [
+            {
+              "boot": true,
+              "deviceName": "libcloud-demo-boot-disk",
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "source": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/disks/libcloud-demo-boot-disk",
+              "type": "PERSISTENT"
+            }
+          ],
+          "id": "2378270030714524465",
+          "kernel": "https://www.googleapis.com/compute/v1beta15/projects/google/global/kernels/gce-v20130603",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-persist-node",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "108.59.81.66",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.192.190"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/libcloud-demo-persist-node",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:11:19.247-07:00",
+          "disks": [
+            {
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "type": "SCRATCH"
+            }
+          ],
+          "id": "8573880455005118258",
+          "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-multiple-nodes-000",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "108.59.81.107",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.224.165"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/libcloud-demo-multiple-nodes-000",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:00:12.021-07:00",
+          "disks": [
+            {
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "type": "SCRATCH"
+            }
+          ],
+          "id": "1845312225624811608",
+          "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "node-name",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "173.255.115.146",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.113.94"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/node-name",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "42WmSpB8rSM="
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:10:09.700-07:00",
+          "disks": [
+            {
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "type": "SCRATCH"
+            }
+          ],
+          "id": "03138438763739542377",
+          "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-np-node",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "108.59.80.244",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.147.18"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/libcloud-demo-np-node",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-06-26T15:11:19.662-07:00",
+          "disks": [
+            {
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "type": "SCRATCH"
+            }
+          ],
+          "id": "17221721898919682654",
+          "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-multiple-nodes-001",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "108.59.81.166",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+              "networkIP": "10.240.223.109"
+            }
+          ],
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/libcloud-demo-multiple-nodes-001",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        }
+      ]
+    },
+    "zones/us-central1-b": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/us-central1-b"
+          }
+        ],
+        "message": "There are no results for scope 'zones/us-central1-b' on this page."
+      }
+    },
+    "zones/us-central2-a": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/us-central2-a"
+          }
+        ],
+        "message": "There are no results for scope 'zones/us-central2-a' on this page."
+      }
+    }
+  },
+  "kind": "compute#instanceAggregatedList",
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/aggregated/instances"
+}
