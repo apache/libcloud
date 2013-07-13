@@ -16,6 +16,9 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-353)
       [Bernard Kerckenaere]
 
+    - Add new driver for Google Compute Engine (LIBCLOUD-266)
+      [Rick Wright]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
