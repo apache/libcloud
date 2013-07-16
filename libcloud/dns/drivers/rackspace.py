@@ -14,9 +14,9 @@
 # limitations under the License.
 from libcloud.common.openstack import OpenStackDriverMixin
 
+
 __all__ = [
-    'RackspaceUSDNSDriver',
-    'RackspaceUKDNSDriver'
+    'RackspaceDNSDriver',
 ]
 
 from libcloud.utils.py3 import httplib
@@ -29,7 +29,7 @@ from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
 
-from libcloud.dns.types import Provider, RecordType
+from libcloud.dns.types import RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
@@ -119,18 +119,21 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
             raise LibcloudError('Could not find specified endpoint')
 
 
-class RackspaceUSDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_US
-
-
-class RackspaceUKDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_UK
-
-
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
     website = 'http://www.rackspace.com/'
+    connectionCls = RackspaceDNSConnection
 
     def __init__(self, *args, **kwargs):
+        datacenter = kwargs.pop('datacenter', 'dfw')
+        if datacenter not in ['dfw', 'ord', 'lon']:
+            raise ValueError('Invalid datacenter: %s' % (datacenter))
+
+        if datacenter in ['dfw', 'ord']:
+            self.connectionCls.auth_url = AUTH_URL_US
+        elif datacenter == 'lon':
+            self.connectionCls.auth_url = AUTH_URL_UK
+
+        self.datacenter = datacenter
         OpenStackDriverMixin.__init__(self, *args, **kwargs)
         super(RackspaceDNSDriver, self).__init__(*args, **kwargs)
 
@@ -380,15 +383,3 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         """
         name = name.replace('.%s' % (domain), '')
         return name
-
-
-class RackspaceUSDNSDriver(RackspaceDNSDriver):
-    name = 'Rackspace DNS (US)'
-    type = Provider.RACKSPACE_US
-    connectionCls = RackspaceUSDNSConnection
-
-
-class RackspaceUKDNSDriver(RackspaceDNSDriver):
-    name = 'Rackspace DNS (UK)'
-    type = Provider.RACKSPACE_UK
-    connectionCls = RackspaceUKDNSConnection
