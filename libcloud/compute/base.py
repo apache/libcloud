@@ -415,7 +415,7 @@ class StorageVolume(UuidMixin):
 
         @returns C{VolumeSnapshot}
         """
-        return self.driver.snapshot_volume(volume=self, name=name)
+        return self.driver.create_volume_snapshot(volume=self, name=name)
 
     def destroy(self):
         """
@@ -441,7 +441,7 @@ class VolumeSnapshot(object):
 
         @returns C{bool}
         """
-        return self.driver.destroy_snapshot(snapshot=self)
+        return self.driver.destroy_volume_snapshot(snapshot=self)
 
 
 class NodeDriver(BaseDriver):
@@ -817,23 +817,23 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_volume_snapshots not implemented for this driver')
 
-    def snapshot_volume(self, volume, name):
+    def create_volume_snapshot(self, volume, name):
         """
         Creates a snapshot of the storage volume.
 
         @rtype: L{VolumeSnapshot}
         """
         raise NotImplementedError(
-            'snapshot_volume not implemented for this driver')
+            'create_volume_snapshot not implemented for this driver')
 
-    def destroy_snapshot(self, snapshot):
+    def destroy_volume_snapshot(self, snapshot):
         """
         Destroys a snapshot.
 
         @rtype: L{bool}
         """
         raise NotImplementedError(
-            'destroy_snapshot not implemented for this driver')
+            'destroy_volume_snapshot not implemented for this driver')
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
