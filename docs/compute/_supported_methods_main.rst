@@ -4,6 +4,7 @@ Provider                              list nodes create node reboot node destroy
 `Abiquo`_                             yes        yes         yes         yes          yes         yes        no         
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
 `Brightbox`_                          yes        yes         yes         yes          yes         no         no         
+`CloudFrames`_                        yes        yes         yes         yes          yes         yes        no
 `CloudSigma`_                         yes        yes         yes         yes          yes         yes        no         
 `CloudSigma`_                         yes        yes         yes         yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
@@ -62,6 +63,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
+.. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
