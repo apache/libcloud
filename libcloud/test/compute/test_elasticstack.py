@@ -216,7 +216,7 @@ class ElasticStackMockHttp(MockHttp):
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_38df0986_4d85_4b76_b502_3878ffc80161_gunzip(self, method, url, body, headers):
         # ElasticHosts image
-        return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_90aa51f2_15c0_4cff_81ee_e93aa20b9468_gunzip(self, method, url, body, headers):
         # Skalikloud image

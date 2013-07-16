@@ -276,7 +276,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             method='POST'
         )
 
-        if response.status != 204:
+        if response.status not in (200, 204):
             raise ElasticStackException('Drive imaging failed')
 
         # We wait until the drive is imaged and then boot up the node
