@@ -136,7 +136,9 @@ DRIVERS = {
     Provider.DIGITAL_OCEAN:
         ('libcloud.compute.drivers.digitalocean', 'DigitalOceanNodeDriver'),
     Provider.NEPHOSCALE:
-        ('libcloud.compute.drivers.nephoscale', 'NephoscaleNodeDriver')
+        ('libcloud.compute.drivers.nephoscale', 'NephoscaleNodeDriver'),
+    Provider.CLOUDFRAMES:
+        ('libcloud.compute.drivers.cloudframes', 'CloudFramesNodeDriver'),
 }
 
 
