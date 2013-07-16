@@ -403,8 +403,23 @@ class StorageVolume(UuidMixin):
 
         return self.driver.detach_volume(volume=self)
 
+    def list_snapshots(self):
+        """
+        @returns C{list} of C{VolumeSnapshot}
+        """
+        return self.driver.list_volume_snapshots(volume=self)
+
+    def snapshot(self, name):
+        """
+        Creates a snapshot of this volume.
+
+        @returns C{VolumeSnapshot}
+        """
+        return self.driver.create_volume_snapshot(volume=self, name=name)
+
     def destroy(self):
-        """Destroy this storage volume.
+        """
+        Destroy this storage volume.
 
         @returns C{bool}
         """
@@ -414,6 +429,19 @@ class StorageVolume(UuidMixin):
     def __repr__(self):
         return '<StorageVolume id=%s size=%s driver=%s>' % (
                self.id, self.size, self.driver.name)
+
+
+class VolumeSnapshot(object):
+    def __init__(self, driver):
+        self.driver = driver
+
+    def destroy(self):
+        """
+        Destroys this snapshot.
+
+        @returns C{bool}
+        """
+        return self.driver.destroy_volume_snapshot(snapshot=self)
 
 
 class NodeDriver(BaseDriver):
@@ -779,6 +807,33 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'list_volumes not implemented for this driver')
+
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots for a storage volume.
+
+        @rtype: C{list} of L{VolumeSnapshot}
+        """
+        raise NotImplementedError(
+            'list_volume_snapshots not implemented for this driver')
+
+    def create_volume_snapshot(self, volume, name):
+        """
+        Creates a snapshot of the storage volume.
+
+        @rtype: L{VolumeSnapshot}
+        """
+        raise NotImplementedError(
+            'create_volume_snapshot not implemented for this driver')
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Destroys a snapshot.
+
+        @rtype: L{bool}
+        """
+        raise NotImplementedError(
+            'destroy_volume_snapshot not implemented for this driver')
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
