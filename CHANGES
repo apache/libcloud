@@ -19,6 +19,9 @@ Changes with Apache Libcloud in development
     - Add new driver for Google Compute Engine (LIBCLOUD-266)
       [Rick Wright]
 
+    - Add Ubuntu Linux 12.04 image to ElasticHosts driver. (LIBCLOUD-364)
+      [Bob Thompson]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
