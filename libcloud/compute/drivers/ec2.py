@@ -1291,7 +1291,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
                     mappings. Example:
-                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+                    [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
+                     {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
         @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
@@ -1331,11 +1332,10 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
-            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
-                    mapping['DeviceName']
-                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
-                    mapping['VirtualName']
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings'],
+                                          start=1):
+                 for k, v in mapping.iteritems():
+                     params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
