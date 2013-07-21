@@ -185,12 +185,32 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
                         driver=self.driver)
         mappings = [
+            {'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
             {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'},
             {'DeviceName': '/dev/sdc', 'VirtualName': 'ephemeral1'}
         ]
         node = self.driver.create_node(name='foo', image=image, size=size,
                                        ex_blockdevicemappings=mappings)
         self.assertEqual(node.id, 'i-2ba64342')
+
+    def test_ex_create_node_with_ex_blockdevicemappings_attribute_error(self):
+        EC2MockHttp.type = 'create_ex_blockdevicemappings'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        mappings = 'this should be a list'
+        self.assertRaises(AttributeError, self.driver.create_node, name='foo',
+                                       image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
+
+        mappings = ['this should be a dict']
+        self.assertRaises(AttributeError, self.driver.create_node, name='foo',
+                                       image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
 
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -440,12 +460,16 @@ class EC2MockHttp(MockHttpTestCase):
     def _create_ex_blockdevicemappings_RunInstances(self, method, url, body, headers):
         parameters = dict(parse_qsl(url))
         self.assertEqual(parameters['BlockDeviceMapping.1.DeviceName'],
-                         '/dev/sdb')
-        self.assertEqual(parameters['BlockDeviceMapping.1.VirtualName'],
-                         'ephemeral0')
+                         '/dev/sda1')
+        self.assertEqual(parameters['BlockDeviceMapping.1.Ebs.VolumeSize'],
+                         '10')
         self.assertEqual(parameters['BlockDeviceMapping.2.DeviceName'],
-                         '/dev/sdc')
+                         '/dev/sdb')
         self.assertEqual(parameters['BlockDeviceMapping.2.VirtualName'],
+                         'ephemeral0')
+        self.assertEqual(parameters['BlockDeviceMapping.3.DeviceName'],
+                         '/dev/sdc')
+        self.assertEqual(parameters['BlockDeviceMapping.3.VirtualName'],
                          'ephemeral1')
 
         body = self.fixtures.load('run_instances.xml')
