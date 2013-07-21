@@ -214,6 +214,25 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                        ex_blockdevicemappings=mappings)
         self.assertEqual(node.id, 'i-2ba64342')
 
+    def test_ex_create_node_with_ex_blockdevicemappings_attribute_error(self):
+        EC2MockHttp.type = 'create_ex_blockdevicemappings'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        mappings = 'this should be a list'
+        self.assertRaises(AttributeError, self.driver.create_node, name='foo',
+                                       image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
+
+        mappings = ['this should be a dict']
+        self.assertRaises(AttributeError, self.driver.create_node, name='foo',
+                                       image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
+
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.destroy_node(node)

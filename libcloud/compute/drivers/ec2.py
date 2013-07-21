@@ -1332,10 +1332,17 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
+            if not isinstance(kwargs['ex_blockdevicemappings'], list):
+                raise AttributeError('ex_blockdevicemappings is not a list')
+
             for idx, mapping in enumerate(kwargs['ex_blockdevicemappings'],
                                           start=1):
-                 for k, v in mapping.iteritems():
-                     params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+                for k, v in mapping.items():
+                    if not isinstance(mapping, dict):
+                        raise AttributeError('mapping %s in '\
+                                            'ex_blockdevicemappings is not '\
+                                            'a dict' % mapping)
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
