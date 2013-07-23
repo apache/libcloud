@@ -260,7 +260,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name)
         container_name_encoded = self._encode_container_name(container_name)
-        object_name_encoded = self._encode_container_name(object_name)
+        object_name_encoded = self._encode_object_name(object_name)
 
         response = self.connection.request('/%s/%s' % (container_name_encoded,
                                                        object_name_encoded),
