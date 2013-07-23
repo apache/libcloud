@@ -201,6 +201,11 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(obj.meta_data['foo-bar'], 'test 1')
         self.assertEqual(obj.meta_data['bar-foo'], 'test 2')
 
+    def test_get_object_object_name_encoding(self):
+        obj = self.driver.get_object(container_name='test_container',
+                                     object_name='~/test_object/')
+        self.assertEqual(obj.name, '~/test_object/')
+
     def test_get_object_not_found(self):
         try:
             self.driver.get_object(container_name='test_container',
@@ -838,6 +843,22 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
                              'x-object-meta-bar-foo': 'test 2',
                              'content-type': 'application/zip'})
         return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_test_container__7E_test_object(
+        self, method, url, body, headers):
+        headers = copy.deepcopy(self.base_headers)
+        if method == 'HEAD':
+            # get_object_name_encoding
+            body = self.fixtures.load('list_container_objects_empty.json')
+            status_code = httplib.NO_CONTENT
+            headers.update({ 'content-length': 555,
+                             'last-modified': 'Tue, 25 Jan 2011 22:01:49 GMT',
+                             'etag': '6b21c4a111ac178feacf9ec9d0c71f17',
+                             'x-object-meta-foo-bar': 'test 1',
+                             'x-object-meta-bar-foo': 'test 2',
+                             'content-type': 'application/zip'})
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
 
     def _v1_MossoCloudFS_test_create_container(
         self, method, url, body, headers):
