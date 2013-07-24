@@ -760,7 +760,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         @param       node_id: ID of the node which should be used
         @type        node_id: C{str}
 
-        @rtype: C{bool}
+        @rtype: C{OpenStack_1_0_NodeIpAddresses}
         """
         # @TODO: Remove this if in 0.6
         if isinstance(node_id, Node):
