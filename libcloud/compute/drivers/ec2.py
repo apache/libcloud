@@ -1335,8 +1335,8 @@ class BaseEC2NodeDriver(NodeDriver):
             if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
                 raise AttributeError('ex_blockdevicemappings not list or tuple')
 
-            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings'],
-                                          start=1):
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                idx += 1  # we want 1-based indexes
                 if not isinstance(mapping, dict):
                     raise AttributeError('mapping %s in ex_blockdevicemappings '
                                          'not a dict' % mapping)
