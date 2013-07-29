@@ -29,7 +29,7 @@ from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection,\
     OpenStackDriverMixin
-from libcloud.common.rackspace import (AUTH_URL_US, AUTH_URL_UK)
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 
 
 class RackspaceResponse(JsonResponse):

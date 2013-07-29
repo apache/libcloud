@@ -1,6 +1,35 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in deveploment:
+Changes with Apache Libcloud in development
+
+ *) Compute
+
+    - Modify ElasticHosts drive to store drive UUID in 'extra' field.
+      (LIBCLOUD-357)
+      [Bob Thompson]
+
+    - Add support for volume related functions to OpenNebula driver.
+      (LIBCLOUD-354)
+      [Emanuele Rocca]
+
+    - Add methods for managing store volumes to the OpenStack driver.
+      (LIBCLOUD-353)
+      [Bernard Kerckenaere]
+
+    - Add new driver for Google Compute Engine (LIBCLOUD-266)
+      [Rick Wright]
+
+    - Add Ubuntu Linux 12.04 image to ElasticHosts driver. (LIBCLOUD-364)
+      [Bob Thompson]
+
+  *) Storage
+
+    - Fix a regression with calling encode_container_name instead of
+      encode_object_name on object name in get_object method.
+      Reported by Ben Meng (LIBCLOUD-366)
+      [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.0:
 
  *) General
 
@@ -16,6 +45,20 @@ Changes with Apache Libcloud in deveploment:
    - Modify OpenStackAuthConnection to support re-using of the existing auth
      token if it's still valid instead of re-authenticating on every
      authenticate() call.
+     [Tomaz Muraus]
+
+   - Modify base Connection class to not send Content-Length header if body is
+     not provided.
+     [Tomaz Muraus]
+
+   - Add the new error class ProviderError and modify InvalidCredsError to
+     inherit from it. (LIBCLOUD-331)
+     [Jayy Vis]
+
+ *) Misc
+
+   - Add unittest2 library dependency for tests and update some tests to use
+     it.
      [Tomaz Muraus]
 
  *) Compute
@@ -94,6 +137,22 @@ Changes with Apache Libcloud in deveploment:
 
     - Fix a bug with deploy_node not respecting 'timeout' kwarg.
       [Kevin Carter]
+
+    - Modify create_node method in CloudStack driver to return an instance of
+      CloudStackNode and add a new "expunging" node state. (LIBCLOUD-345)
+      [sebastien goasguen]
+
+    - Update API endpoint hostnames in the ElasticHost driver and use hostnames
+      which return a valid SSL certificate. (LIBCLOUD-346)
+      [Bob Thompson]
+
+    - Add ex_list_networks method and missing tests for list_templates to the
+      CloudStack driver. (LIBCLOUD-349)
+      [Philipp Strube]
+
+    - Correctly throw InvalidCredsError if user passes invalid credentials to
+      the DigitalOcean driver.
+      [Tomaz muraus]
 
  *) Storage
 

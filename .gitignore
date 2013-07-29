@@ -11,3 +11,4 @@ MANIFEST
 /.coverage
 coverage_html_report/
 .idea
+dist/*apache-libcloud*

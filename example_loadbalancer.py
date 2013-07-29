@@ -42,7 +42,7 @@ def main():
                                           algorithm=Algorithm.ROUND_ROBIN,
                                           port=80,
                                           protocol='http',
-                                          members)
+                                          members=members)
 
     print(new_balancer)
 

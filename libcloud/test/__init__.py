@@ -15,14 +15,18 @@
 
 import sys
 import random
-import unittest
-
-from cgi import parse_qs
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import u
+from libcloud.utils.py3 import unittest2_required
+
+if unittest2_required:
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 XML_HEADERS = {'content-type': 'application/xml'}
@@ -77,9 +81,9 @@ class MockResponse(object):
     reason = ''
     version = 11
 
-    def __init__(self, status, body, headers=None, reason=None):
+    def __init__(self, status, body=None, headers=None, reason=None):
         self.status = status
-        self.body = StringIO(u(body))
+        self.body = StringIO(u(body)) if body else StringIO()
         self.headers = headers or self.headers
         self.reason = reason or self.reason
 

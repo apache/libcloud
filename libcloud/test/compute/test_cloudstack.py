@@ -14,26 +14,23 @@
 # limitations under the License.
 
 import sys
-import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qsl
+
+from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-try:
-    parse_qsl = urlparse.parse_qsl
-except AttributeError:
-    import cgi
-    parse_qsl = cgi.parse_qsl
-
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 from libcloud.compute.types import DeploymentError, LibcloudError
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
+from libcloud.test import unittest
 from libcloud.test import MockHttpTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
@@ -95,6 +92,21 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEquals(0, len(images))
 
+    def test_list_images(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listTemplates_default.json')
+        templates = fixture['listtemplatesresponse']['template']
+
+        images = self.driver.list_images()
+        for i, image in enumerate(images):
+            # NodeImage expects id to be a string,
+            # the CloudStack fixture has an int
+            tid = str(templates[i]['id'])
+            tname = templates[i]['name']
+            self.assertIsInstance(image.driver, CloudStackNodeDriver)
+            self.assertEquals(image.id, tid)
+            self.assertEquals(image.name, tname)
+
     def test_ex_list_disk_offerings(self):
         diskOfferings = self.driver.ex_list_disk_offerings()
         self.assertEquals(1, len(diskOfferings))
@@ -103,6 +115,23 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         self.assertEquals('Disk offer 1', diskOffering.name)
         self.assertEquals(10, diskOffering.size)
+
+    def test_ex_list_networks(self):
+        _, fixture = CloudStackMockHttp()._load_fixture(
+            'listNetworks_default.json')
+        fixture_networks = fixture['listnetworksresponse']['network']
+
+        networks = self.driver.ex_list_networks()
+
+        for i, network in enumerate(networks):
+            self.assertEquals(network.id, fixture_networks[i]['id'])
+            self.assertEquals(
+                network.displaytext, fixture_networks[i]['displaytext'])
+            self.assertEquals(network.name, fixture_networks[i]['name'])
+            self.assertEquals(
+                network.networkofferingid,
+                fixture_networks[i]['networkofferingid'])
+            self.assertEquals(network.zoneid, fixture_networks[i]['zoneid'])
 
     def test_create_volume(self):
         volumeName = 'vol-0'
@@ -172,8 +201,10 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(keypairs[0]['fingerprint'], fingerprint)
 
     def test_create_keypair(self):
-        self.assertRaises(LibcloudError, self.driver.ex_create_keypair,
-                'cs-keypair')
+        self.assertRaises(
+            LibcloudError,
+            self.driver.ex_create_keypair,
+            'cs-keypair')
 
     def test_delete_keypair(self):
         res = self.driver.ex_delete_keypair('cs-keypair')

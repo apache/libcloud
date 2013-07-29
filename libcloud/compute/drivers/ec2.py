@@ -1291,7 +1291,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
                     mappings. Example:
-                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+                    [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
+                     {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
         @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
@@ -1331,11 +1332,16 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
-            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
-                    mapping['DeviceName']
-                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
-                    mapping['VirtualName']
+            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
+                raise AttributeError('ex_blockdevicemappings not list or tuple')
+
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                idx += 1  # we want 1-based indexes
+                if not isinstance(mapping, dict):
+                    raise AttributeError('mapping %s in ex_blockdevicemappings '
+                                         'not a dict' % mapping)
+                for k, v in mapping.items():
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')

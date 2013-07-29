@@ -39,7 +39,7 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
     OpenStack_1_1_NodeDriver, OpenStackSecurityGroup, OpenStackSecurityGroupRule
 )
-from libcloud.compute.base import Node, NodeImage, NodeSize
+from libcloud.compute.base import Node, NodeImage, NodeSize, StorageVolume
 from libcloud.pricing import set_pricing, clear_pricing_data
 
 from libcloud.test import MockResponse, MockHttpTestCase, XML_HEADERS
@@ -104,6 +104,9 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
 
 class OpenStackAuthConnectionTests(unittest.TestCase):
     # TODO refactor and move into libcloud/test/common
+    def setUp(self):
+        OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
+                                                OpenStackMockHttp)
 
     def test_basic_authentication(self):
         tuples = [
@@ -194,7 +197,7 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
 
         # No force reauth, valid / non-expired token which is about to expire in
         # less than AUTH_TOKEN_EXPIRES_GRACE_SECONDS
-        soon = datetime.datetime.now() + \
+        soon = datetime.datetime.utcnow() + \
             datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS - 1)
         osa.auth_token = None
 
@@ -223,6 +226,7 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
 
 class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
+    should_list_volumes = False
 
     driver_klass = OpenStack_1_0_NodeDriver
     driver_args = OPENSTACK_PARAMS
@@ -526,6 +530,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
 class OpenStack_1_0_FactoryMethodTests(OpenStack_1_0_Tests):
     should_list_locations = False
+    should_list_volumes = False
 
     driver_klass = OpenStack_1_0_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
@@ -695,6 +700,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
 class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
+    should_list_volumes = True
 
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = OpenStack_1_1_NodeDriver
@@ -820,6 +826,26 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['updated'], '2011-10-11T00:50:04Z')
         self.assertEqual(node.extra['created'], '2011-10-11T00:51:39Z')
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 2)
+        volume = volumes[0]
+
+        self.assertEqual('cd76a3a1-c4ce-40f6-9b9f-07a61508938d', volume.id)
+        self.assertEqual('test_volume_2', volume.name)
+        self.assertEqual(2, volume.size)
+
+        self.assertEqual(volume.extra['description'], '')
+        self.assertEqual(volume.extra['attachments'][0]['id'], 'cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+
+        volume = volumes[1]
+        self.assertEqual('cfcec3bc-b736-4db5-9535-4c24112691b5', volume.id)
+        self.assertEqual('test_volume', volume.name)
+        self.assertEqual(50, volume.size)
+
+        self.assertEqual(volume.extra['description'], 'some description')
+        self.assertEqual(volume.extra['attachments'], [])
+
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
@@ -887,6 +913,24 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_reboot_node(self):
         self.assertTrue(self.node.reboot())
+
+    def test_create_volume(self):
+        self.assertEqual(self.driver.create_volume(1, 'test'), True)
+
+    def test_destroy_volume(self):
+        volume = self.driver.ex_get_volume('cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(self.driver.destroy_volume(volume), True)
+
+    def test_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume('cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+
+    def test_detach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume('cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+        self.assertEqual(self.driver.detach_volume(volume), True)
 
     def test_ex_set_password(self):
         try:
@@ -1099,6 +1143,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
+    should_list_volumes = True
 
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
@@ -1287,6 +1332,42 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
+
+    def _v1_1_slug_os_volumes(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_os_volumes.json')
+        elif method == "POST":
+            body = self.fixtures.load('_os_volumes_create.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_os_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d.json')
+        elif method == "DELETE":
+            body = ''
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12065_os_volume_attachments(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_servers_12065_os_volume_attachments.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12065_os_volume_attachments_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == "DELETE":
+            body = ''
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
