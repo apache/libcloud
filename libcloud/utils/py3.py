@@ -28,7 +28,6 @@ PY2 = False
 PY25 = False
 PY27 = False
 PY3 = False
-PY31 = False
 PY32 = False
 
 if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
@@ -42,9 +41,6 @@ if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
 
 if sys.version_info >= (3, 0):
     PY3 = True
-
-if sys.version_info >= (3, 1) and sys.version_info < (3, 2):
-    PY31 = True
 
 if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
     PY32 = True
