@@ -13,17 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import with_statement
+
 """
 A class which handles loading the pricing files.
 """
+
+import os.path
+from os.path import join as pjoin
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-import os.path
-from os.path import join as pjoin
+from libcloud.utils.connection import get_response_object
+
+__all__ = [
+    'get_pricing',
+    'get_size_price',
+    'set_pricing',
+    'clear_pricing_data',
+    'download_pricing_file'
+]
+
+# Default URL to the pricing file
+DEFAULT_FILE_URL = 'https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json'
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, 'data/pricing.json')
@@ -157,3 +171,46 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
     """
     if driver_name in PRICING_DATA[driver_type]:
         del PRICING_DATA[driver_type][driver_name]
+
+
+def download_pricing_file(file_url=DEFAULT_FILE_URL,
+                          file_path=CUSTOM_PRICING_FILE_PATH):
+    """
+    Download pricing file from the file_url and save it to file_path.
+
+    @type file_url: C{str}
+    @param file_url: URL pointing to the pricing file.
+
+    @type file_path: C{str}
+    @param file_path: Path where a download pricing file will be saved.
+    """
+    dir_name = os.path.dirname(file_path)
+
+    if not os.path.exists(dir_name):
+        # Verify a valid path is provided
+        msg = ('Can\'t write to %s, directory %s, doesn\'t exist' %
+              (file_path, dir_name))
+        raise ValueError(msg)
+
+    if os.path.exists(file_path) and os.path.isdir(file_path):
+        msg = ('Can\'t write to %s file path because it\'s a'
+               ' directory' % (file_path))
+        raise ValueError(msg)
+
+    response = get_response_object(file_url)
+    body = response.body
+
+    # Verify pricing file is valid
+    try:
+        data = json.loads(body)
+    except json.decoder.JSONDecodeError:
+        msg = 'Provided URL doesn\'t contain valid pricing data'
+        raise Exception(msg)
+
+    if not data.get('updated', None):
+        msg = 'Provided URL doesn\'t contain valid pricing data'
+        raise Exception(msg)
+
+    # No need to stream it since file is small
+    with open(file_path, 'w') as file_handle:
+        file_handle.write(body)
