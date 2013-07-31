@@ -95,6 +95,7 @@ class TestCommand(Command):
                 import unittest2
                 unittest2
             except ImportError:
+                print('Python version: %s' % (sys.version))
                 print('Missing "unittest2" library. unittest2 is library is needed '
                       'to run the tests. You can install it using pip: '
                       'pip install unittest2')

@@ -146,4 +146,7 @@ if PY25:
             return posixpath.curdir
         return posixpath.join(*rel_list)
 
-unittest2_required = not (PY27 or PY3)
+if PY27 or PY3:
+    unittest2_required = False
+else:
+    unittest2_required = True
