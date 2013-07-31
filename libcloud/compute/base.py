@@ -78,7 +78,7 @@ class UuidMixin(object):
     def get_uuid(self):
         """Unique hash for a node, node image, or node size
 
-        @return: C{string}
+        :return: ``string``
 
         The hash is a function of an SHA1 hash of the node, node image,
         or node size's ID and its driver which means that it should be
@@ -188,7 +188,7 @@ class Node(UuidMixin):
     def reboot(self):
         """Reboot this node
 
-        @return: C{bool}
+        :return: ``bool``
 
         This calls the node's driver and reboots the node
 
@@ -210,7 +210,7 @@ class Node(UuidMixin):
     def destroy(self):
         """Destroy this node
 
-        @return: C{bool}
+        :return: ``bool``
 
         This calls the node's driver and destroys the node
 
@@ -382,14 +382,14 @@ class StorageVolume(UuidMixin):
         """
         Attach this volume to a node.
 
-        @param      node: Node to attach volume to
-        @type       node: L{Node}
+        :param node: Node to attach volume to
+        :type node: :class:`Node`
 
-        @param      device: Where the device is exposed,
+        :param device: Where the device is exposed,
                             e.g. '/dev/sdb (optional)
-        @type       device: C{str}
+        :type device: ``str``
 
-        @returns C{bool}
+        :return s ``bool``
         """
 
         return self.driver.attach_volume(node=node, volume=self, device=device)
@@ -398,14 +398,14 @@ class StorageVolume(UuidMixin):
         """
         Detach this volume from its node
 
-        @returns C{bool}
+        :return s ``bool``
         """
 
         return self.driver.detach_volume(volume=self)
 
     def list_snapshots(self):
         """
-        @returns C{list} of C{VolumeSnapshot}
+        :return s ``list`` of ``VolumeSnapshot``
         """
         return self.driver.list_volume_snapshots(volume=self)
 
@@ -413,7 +413,7 @@ class StorageVolume(UuidMixin):
         """
         Creates a snapshot of this volume.
 
-        @returns C{VolumeSnapshot}
+        :return s ``VolumeSnapshot``
         """
         return self.driver.create_volume_snapshot(volume=self, name=name)
 
@@ -421,7 +421,7 @@ class StorageVolume(UuidMixin):
         """
         Destroy this storage volume.
 
-        @returns C{bool}
+        :return s ``bool``
         """
 
         return self.driver.destroy_volume(volume=self)
@@ -439,7 +439,7 @@ class VolumeSnapshot(object):
         """
         Destroys this snapshot.
 
-        @returns C{bool}
+        :return s ``bool``
         """
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
@@ -461,10 +461,10 @@ class NodeDriver(BaseDriver):
     features = {"create_node": []}
     """
     List of available features for a driver.
-        - L{create_node}
-            - ssh_key: Supports L{NodeAuthSSHKey} as an authentication method
+        - :class:`create_node`
+            - ssh_key: Supports :class:`NodeAuthSSHKey` as an authentication method
               for nodes.
-            - password: Supports L{NodeAuthPassword} as an authentication
+            - password: Supports :class:`NodeAuthPassword` as an authentication
               method for nodes.
             - generates_password: Returns a password attribute on the Node
               object returned from creation.
@@ -481,26 +481,26 @@ class NodeDriver(BaseDriver):
     def create_node(self, **kwargs):
         """Create a new node instance.
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        :param name:   String with a name for this new node (required)
+        :type name:   ``str``
 
-        @keyword    size:   The size of resources allocated to this node.
+        :param size:   The size of resources allocated to this node.
                             (required)
-        @type       size:   L{NodeSize}
+        :type size:   :class:`NodeSize`
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :param image:  OS Image to boot on node. (required)
+        :type image:  :class:`NodeImage`
 
-        @keyword    location: Which data center to create a node in. If empty,
+        :param location: Which data center to create a node in. If empty,
                               undefined behavoir will be selected. (optional)
-        @type       location: L{NodeLocation}
+        :type location: :class:`NodeLocation`
 
-        @keyword    auth:   Initial authentication information for the node
+        :param auth:   Initial authentication information for the node
                             (optional)
-        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+        :type auth:   :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
-        @return: The newly created node.
-        @rtype: L{Node}
+        :return: The newly created node.
+        :rtype: :class:`Node`
         """
         raise NotImplementedError(
             'create_node not implemented for this driver')
@@ -511,11 +511,11 @@ class NodeDriver(BaseDriver):
         Depending upon the provider, this may destroy all data associated with
         the node, including backups.
 
-        @param node: The node to be destroyed
-        @type node: L{Node}
+        :param node: The node to be destroyed
+        :type node: :class:`Node`
 
-        @return: True if the destroy was successful, otherwise False
-        @rtype: C{bool}
+        :return: True if the destroy was successful, otherwise False
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'destroy_node not implemented for this driver')
@@ -524,11 +524,11 @@ class NodeDriver(BaseDriver):
         """
         Reboot a node.
 
-        @param node: The node to be rebooted
-        @type node: L{Node}
+        :param node: The node to be rebooted
+        :type node: :class:`Node`
 
-        @return: True if the reboot was successful, otherwise False
-        @rtype: C{bool}
+        :return: True if the reboot was successful, otherwise False
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'reboot_node not implemented for this driver')
@@ -536,8 +536,8 @@ class NodeDriver(BaseDriver):
     def list_nodes(self):
         """
         List all nodes
-        @return:  list of node objects
-        @rtype: C{list} of L{Node}
+        :return:  list of node objects
+        :rtype: ``list`` of :class:`Node`
         """
         raise NotImplementedError(
             'list_nodes not implemented for this driver')
@@ -546,11 +546,11 @@ class NodeDriver(BaseDriver):
         """
         List images on a provider
 
-        @keyword location: The location at which to list images
-        @type location: L{NodeLocation}
+        :param location: The location at which to list images
+        :type location: :class:`NodeLocation`
 
-        @return: list of node image objects
-        @rtype: C{list} of L{NodeImage}
+        :return: list of node image objects
+        :rtype: ``list`` of :class:`NodeImage`
         """
         raise NotImplementedError(
             'list_images not implemented for this driver')
@@ -559,11 +559,11 @@ class NodeDriver(BaseDriver):
         """
         List sizes on a provider
 
-        @keyword location: The location at which to list sizes
-        @type location: L{NodeLocation}
+        :param location: The location at which to list sizes
+        :type location: :class:`NodeLocation`
 
-        @return: list of node size objects
-        @rtype: C{list} of L{NodeSize}
+        :return: list of node size objects
+        :rtype: ``list`` of :class:`NodeSize`
         """
         raise NotImplementedError(
             'list_sizes not implemented for this driver')
@@ -572,8 +572,8 @@ class NodeDriver(BaseDriver):
         """
         List data centers for a provider
 
-        @return: list of node location objects
-        @rtype: C{list} of L{NodeLocation}
+        :return: list of node location objects
+        :rtype: ``list`` of :class:`NodeLocation`
         """
         raise NotImplementedError(
             'list_locations not implemented for this driver')
@@ -585,7 +585,7 @@ class NodeDriver(BaseDriver):
         Depends on a Provider Driver supporting either using a specific
         password or returning a generated password.
 
-        This function may raise a L{DeploymentException}, if a create_node
+        This function may raise a :class:`DeploymentException`, if a create_node
         call was successful, but there is a later error (like SSH failing or
         timing out).  This exception includes a Node object which you may want
         to destroy if incomplete deployments are not desirable.
@@ -609,48 +609,48 @@ class NodeDriver(BaseDriver):
         Deploy node is typically not overridden in subclasses.  The
         existing implementation should be able to handle most such.
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    deploy: Deployment to run once machine is online and
+        :param deploy: Deployment to run once machine is online and
                             availble to SSH.
-        @type       deploy: L{Deployment}
+        :type deploy: :class:`Deployment`
 
-        @keyword    ssh_username: Optional name of the account which is used
+        :param ssh_username: Optional name of the account which is used
                                   when connecting to
                                   SSH server (default is root)
-        @type       ssh_username: C{str}
+        :type ssh_username: ``str``
 
-        @keyword    ssh_alternate_usernames: Optional list of ssh usernames to
+        :param ssh_alternate_usernames: Optional list of ssh usernames to
                                              try to connect with if using the
                                              default one fails
-        @type       ssh_alternate_usernames: C{list}
+        :type ssh_alternate_usernames: ``list``
 
-        @keyword    ssh_port: Optional SSH server port (default is 22)
-        @type       ssh_port: C{int}
+        :param ssh_port: Optional SSH server port (default is 22)
+        :type ssh_port: ``int``
 
-        @keyword    ssh_timeout: Optional SSH connection timeout in seconds
+        :param ssh_timeout: Optional SSH connection timeout in seconds
                                  (default is None)
-        @type       ssh_timeout: C{float}
+        :type ssh_timeout: ``float``
 
-        @keyword    auth:   Initial authentication information for the node
+        :param auth:   Initial authentication information for the node
                             (optional)
-        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+        :type auth:   :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
-        @keyword    ssh_key: A path (or paths) to an SSH private key with which
+        :param ssh_key: A path (or paths) to an SSH private key with which
                              to attempt to authenticate. (optional)
-        @type       ssh_key: C{str} or C{list} of C{str}
+        :type ssh_key: ``str`` or ``list`` of ``str``
 
-        @keyword    timeout: How many seconds to wait before timing out.
+        :param timeout: How many seconds to wait before timing out.
                              (default is 600)
-        @type       timeout: C{int}
+        :type timeout: ``int``
 
-        @keyword    max_tries: How many times to retry if a deployment fails
+        :param max_tries: How many times to retry if a deployment fails
                                before giving up (default is 3)
-        @type       max_tries: C{int}
+        :type max_tries: ``int``
 
-        @keyword    ssh_interface: The interface to wait for. Default is
+        :param ssh_interface: The interface to wait for. Default is
                                    'public_ips', other option is 'private_ips'.
-        @type       ssh_interface: C{str}
+        :type ssh_interface: ``str``
         """
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError('paramiko is not installed. You can install ' +
@@ -734,23 +734,23 @@ class NodeDriver(BaseDriver):
         """
         Create a new volume.
 
-        @param      size: Size of volume in gigabytes (required)
-        @type       size: C{int}
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
 
-        @keyword    name: Name of the volume to be created
-        @type       name: C{str}
+        :param name: Name of the volume to be created
+        :type name: ``str``
 
-        @keyword    location: Which data center to create a volume in. If
+        :param location: Which data center to create a volume in. If
                                empty, undefined behavoir will be selected.
                                (optional)
-        @type       location: L{NodeLocation}
+        :type location: :class:`NodeLocation`
 
-        @keyword    snapshot:  Name of snapshot from which to create the new
+        :param snapshot:  Name of snapshot from which to create the new
                                volume.  (optional)
-        @type       snapshot:  C{str}
+        :type snapshot:  ``str``
 
-        @return: The newly created volume.
-        @rtype: L{StorageVolume}
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
         """
         raise NotImplementedError(
             'create_volume not implemented for this driver')
@@ -759,10 +759,10 @@ class NodeDriver(BaseDriver):
         """
         Destroys a storage volume.
 
-        @param      volume: Volume to be destroyed
-        @type       volume: L{StorageVolume}
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         raise NotImplementedError(
@@ -772,17 +772,11 @@ class NodeDriver(BaseDriver):
         """
         Attaches volume to node.
 
-        @param      node: Node to attach volume to
-        @type       node: L{Node}
+        :param Node node: Node to attach volume to.
+        :param StorageVolume volume: Volume to attach.
+        :param str device: Where the device is exposed, e.g. '/dev/sdb'
 
-        @param      volume: Volume to attach
-        @type       volume: L{StorageVolume}
-
-        @param      device: Where the device is exposed,
-                            e.g. '/dev/sdb (optional)
-        @type       device: C{str}
-
-        @rtype: C{bool}
+        :return bool:
         """
         raise NotImplementedError('attach not implemented for this driver')
 
@@ -790,10 +784,8 @@ class NodeDriver(BaseDriver):
         """
         Detaches a volume from a node.
 
-        @param      volume: Volume to be detached
-        @type       volume: L{StorageVolume}
-
-        @rtype: C{bool}
+        :param StorageVolume volume: Volume to be detached
+        :return bool:
         """
 
         raise NotImplementedError('detach not implemented for this driver')
@@ -802,8 +794,7 @@ class NodeDriver(BaseDriver):
         """
         List storage volumes.
 
-        @return: list of storageVolume objects
-        @rtype: C{list} of L{StorageVolume}
+        :return [StorageVolume]:
         """
         raise NotImplementedError(
             'list_volumes not implemented for this driver')
@@ -812,7 +803,7 @@ class NodeDriver(BaseDriver):
         """
         List snapshots for a storage volume.
 
-        @rtype: C{list} of L{VolumeSnapshot}
+        :rtype: ``list`` of :class:`VolumeSnapshot`
         """
         raise NotImplementedError(
             'list_volume_snapshots not implemented for this driver')
@@ -821,7 +812,7 @@ class NodeDriver(BaseDriver):
         """
         Creates a snapshot of the storage volume.
 
-        @rtype: L{VolumeSnapshot}
+        :rtype: :class:`VolumeSnapshot`
         """
         raise NotImplementedError(
             'create_volume_snapshot not implemented for this driver')
@@ -830,7 +821,7 @@ class NodeDriver(BaseDriver):
         """
         Destroys a snapshot.
 
-        @rtype: L{bool}
+        :rtype: :class:`bool`
         """
         raise NotImplementedError(
             'destroy_volume_snapshot not implemented for this driver')
@@ -850,31 +841,28 @@ class NodeDriver(BaseDriver):
         Block until the given nodes are fully booted and have an IP address
         assigned.
 
-        @keyword    nodes: list of node instances.
-        @type       nodes: C{List} of L{Node}
+        :param nodes: list of node instances.
+        :type nodes: ``List`` of :class:`Node`
 
-        @keyword    wait_period: How many seconds to between each loop
+        :param wait_period: How many seconds to between each loop
                                  iteration (default is 3)
-        @type       wait_period: C{int}
+        :type wait_period: ``int``
 
-        @keyword    timeout: How many seconds to wait before timing out
+        :param timeout: How many seconds to wait before timing out
                              (default is 600)
-        @type       timeout: C{int}
+        :type timeout: ``int``
 
-        @keyword    ssh_interface: The interface to wait for.
+        :param ssh_interface: The interface to wait for.
                                    Default is 'public_ips', other option is
                                    'private_ips'.
-        @type       ssh_interface: C{str}
+        :type ssh_interface: ``str``
 
-        @keyword    force_ipv4: Ignore ipv6 IP addresses (default is True).
-        @type       force_ipv4: C{bool}
+        :param force_ipv4: Ignore ipv6 IP addresses (default is True).
+        :type force_ipv4: ``bool``
 
-        @return: C{[(Node, ip_addresses)]} list of tuple of Node instance and
+        :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
                  list of ip_address on success.
-
-        @return: List of tuple of Node instance and list of ip_address on
-                 success (node, ip_addresses).
-        @rtype: C{list} of C{tuple}
+        :rtype: ``list`` of ``tuple``
         """
         def is_supported(address):
             """Return True for supported address"""
@@ -923,18 +911,18 @@ class NodeDriver(BaseDriver):
         Try to connect to the remote SSH server. If a connection times out or
         is refused it is retried up to timeout number of seconds.
 
-        @keyword    ssh_client: A configured SSHClient instance
-        @type       ssh_client: C{SSHClient}
+        :param ssh_client: A configured SSHClient instance
+        :type ssh_client: ``SSHClient``
 
-        @keyword    wait_period: How many seconds to wait between each loop
+        :param wait_period: How many seconds to wait between each loop
                                  iteration (default is 1.5)
-        @type       wait_period: C{int}
+        :type wait_period: ``int``
 
-        @keyword    timeout: How many seconds to wait before timing out
+        :param timeout: How many seconds to wait before timing out
                              (default is 600)
-        @type       timeout: C{int}
+        :type timeout: ``int``
 
-        @return: C{SSHClient} on success
+        :return: ``SSHClient`` on success
         """
         start = time.time()
         end = start + timeout
@@ -978,20 +966,20 @@ class NodeDriver(BaseDriver):
         Run the deployment script on the provided node. At this point it is
         assumed that SSH connection has already been established.
 
-        @keyword    task: Deployment task to run on the node.
-        @type       task: C{Deployment}
+        :param task: Deployment task to run on the node.
+        :type task: ``Deployment``
 
-        @keyword    node: Node to operate one
-        @type       node: C{Node}
+        :param node: Node to operate one
+        :type node: ``Node``
 
-        @keyword    ssh_client: A configured and connected SSHClient instance
-        @type       ssh_client: C{SSHClient}
+        :param ssh_client: A configured and connected SSHClient instance
+        :type ssh_client: ``SSHClient``
 
-        @keyword    max_tries: How many times to retry if a deployment fails
+        :param max_tries: How many times to retry if a deployment fails
                                before giving up (default is 3)
-        @type       max_tries: C{int}
+        :type max_tries: ``int``
 
-        @return: C{Node} Node instance on success.
+        :return: ``Node`` Node instance on success.
         """
         tries = 0
         while tries < max_tries:
@@ -1018,10 +1006,10 @@ def is_private_subnet(ip):
     """
     Utility function to check if an IP address is inside a private subnet.
 
-    @type ip: C{str}
-    @keyword ip: IP address to check
+    :type ip: ``str``
+    :param ip: IP address to check
 
-    @return: C{bool} if the specified IP address is private.
+    :return: ``bool`` if the specified IP address is private.
     """
     priv_subnets = [{'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
                     {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
@@ -1043,7 +1031,7 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     """
     Check if the provided address is valid IPv4 or IPv6 adddress.
 
-    @return: C{bool} True if the provided address is valid.
+    :return: ``bool`` True if the provided address is valid.
     """
     try:
         socket.inet_pton(family, address)
