@@ -20,4 +20,4 @@ Terminology
 * **NodeImage** - represents an operating system image.
 * **NodeLocation** - represents a physical location where a server can be.
 * **NodeState** - represents a node state. Standard states are: ``running``,
-  ``rebooting``, ``terminated``, ``pending``, and ``unknown```.
+  ``rebooting``, ``terminated``, ``pending``, and ``unknown``.
