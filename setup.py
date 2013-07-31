@@ -31,7 +31,7 @@ except ImportError:
 
 import libcloud.utils.misc
 from libcloud.utils.dist import get_packages, get_data_files
-from libcloud.utils.py3 import unittest2_required, PY31, PY32
+from libcloud.utils.py3 import unittest2_required
 
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
@@ -228,13 +228,6 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
-if pre_python26:
-    dependencies = ['ssl', 'simplejson', 'argparse']
-elif PY31 or PY32:
-    dependencies = ['argparse']
-else:
-    dependencies = []
-
 
 setup(
     name='apache-libcloud',
@@ -244,7 +237,7 @@ setup(
                 ' and documentation, please see http://libcloud.apache.org',
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    requires=dependencies,
+    requires=([], ['ssl', 'simplejson'],)[pre_python26],
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
