@@ -21,3 +21,8 @@ Terminology
 * **NodeLocation** - represents a physical location where a server can be.
 * **NodeState** - represents a node state. Standard states are: ``running``,
   ``rebooting``, ``terminated``, ``pending``, and ``unknown``.
+
+Examples
+--------
+
+We have :doc:`examples of several common patterns </compute/examples>`.
