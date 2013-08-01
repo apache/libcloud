@@ -494,25 +494,25 @@ class NodeDriver(BaseDriver):
         if isinstance(auth, NodeAuthPassword):
             if 'password' in self.features['create_node']:
                 return auth
-            raise ProviderError(
+            raise LibcloudError(
                 'Password provided as authentication information, but password'
-                'not supported')
+                'not supported', driver=self)
 
         if isinstance(auth, NodeAuthSSHKey):
             if 'ssh_key' in self.features['create_node']:
                 return auth
-            raise ProviderError(
+            raise LibcloudError(
                 'SSH Key provided as authentication information, but SSH Key'
-                'not supported')
+                'not supported', driver=self)
 
         if 'password' in self.features['create_node']:
             value = os.urandom(16)
             return NodeAuthPassword(binascii.hexlify(value), generated=True)
 
         if auth:
-            raise ProviderError(
+            raise LibcloudError(
                 '"auth" argument provided, but it was not a NodeAuthPassword'
-                'or NodeAuthSSHKey object')
+                'or NodeAuthSSHKey object', driver=self)
 
     def create_node(self, **kwargs):
         """Create a new node instance.
