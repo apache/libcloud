@@ -358,8 +358,9 @@ class NodeAuthPassword(object):
     """
     A password to be used for authentication to a node.
     """
-    def __init__(self, password):
+    def __init__(self, password, generated=False):
         self.password = password
+        self.generated = generated
 
     def __repr__(self):
         return '<NodeAuthPassword>'
@@ -478,6 +479,41 @@ class NodeDriver(BaseDriver):
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
 
+    def _get_and_check_auth(self, auth):
+        """
+        Helper function for providers supporting L{NodeAuthPassword} or
+        L{NodeAuthSSHKey}
+
+        Validates that only a supported object type is passed to the auth
+        parameter and raises an exception if it is not.
+
+        If no L{NodeAuthPassword} object is provided but one is expected then a
+        password is automatically generated.
+        """
+
+        if isinstance(auth, NodeAuthPassword):
+            if 'password' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'Password provided as authentication information, but password'
+                'not supported', driver=self)
+
+        if isinstance(auth, NodeAuthSSHKey):
+            if 'ssh_key' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'SSH Key provided as authentication information, but SSH Key'
+                'not supported', driver=self)
+
+        if 'password' in self.features['create_node']:
+            value = os.urandom(16)
+            return NodeAuthPassword(binascii.hexlify(value), generated=True)
+
+        if auth:
+            raise LibcloudError(
+                '"auth" argument provided, but it was not a NodeAuthPassword'
+                'or NodeAuthSSHKey object', driver=self)
+
     def create_node(self, **kwargs):
         """Create a new node instance.
 
@@ -582,8 +618,8 @@ class NodeDriver(BaseDriver):
         """
         Create a new node, and start deployment.
 
-        Depends on a Provider Driver supporting either using a specific
-        password or returning a generated password.
+        Depends on user providing authentication information or the Provider
+        Driver generating a password and returning it.
 
         This function may raise a :class:`DeploymentException`, if a create_node
         call was successful, but there is a later error (like SSH failing or
@@ -656,29 +692,33 @@ class NodeDriver(BaseDriver):
             raise RuntimeError('paramiko is not installed. You can install ' +
                                'it using pip: pip install paramiko')
 
-        password = None
-
-        if 'create_node' not in self.features:
-            raise NotImplementedError(
-                'deploy_node not implemented for this driver')
-        elif 'generates_password' not in self.features["create_node"]:
-            if 'password' not in self.features["create_node"] and \
-               'ssh_key' not in self.features["create_node"]:
+        if 'auth' in kwargs:
+            auth = kwargs['auth']
+            if not isinstance(auth, (NodeAuthSSHKey, NodeAuthPassword)):
+                raise NotImplementedError(
+                    'If providing auth, only NodeAuthSSHKey or'
+                    'NodeAuthPassword is supported')
+        elif 'ssh_key' in kwargs:
+            # If an ssh_key is provided we can try deploy_node
+            pass
+        elif 'create_node' in self.features:
+            f = self.features['create_node']
+            if not 'generates_password' in f and not "password" in f:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
-
-            if 'auth' not in kwargs:
-                value = os.urandom(16)
-                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(value))
-
-            if 'ssh_key' not in kwargs:
-                password = kwargs['auth'].password
+        else:
+            raise NotImplementedError(
+                'deploy_node not implemented for this driver')
 
         node = self.create_node(**kwargs)
         max_tries = kwargs.get('max_tries', 3)
 
-        if 'generates_password' in self.features['create_node']:
-            password = node.extra.get('password')
+        password = None
+        if 'auth' in kwargs:
+            if isinstance(kwargs['auth'], NodeAuthPassword):
+                password = kwargs['auth'].password
+        elif 'password' in node.extra:
+            password = node.extra['password']
 
         ssh_interface = kwargs.get('ssh_interface', 'public_ips')
 
@@ -692,9 +732,6 @@ class NodeDriver(BaseDriver):
         except Exception:
             e = sys.exc_info()[1]
             raise DeploymentError(node=node, original_exception=e, driver=self)
-
-        if password:
-            node.extra['password'] = password
 
         ssh_username = kwargs.get('ssh_username', 'root')
         ssh_alternate_usernames = kwargs.get('ssh_alternate_usernames', [])
