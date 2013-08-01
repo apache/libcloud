@@ -2,6 +2,17 @@
 
 Changes with Apache Libcloud in development
 
+ *) General
+
+    - By default read pricing data from ~/.libcloud/pricing.json if this file
+      exists. If it doesn't it uses old behavior and falls back to pricing file
+      bundled with a libcloud release.
+      [Tomaz Muraus]
+
+    - Add libcloud.pricing.download_pricing_file function for downloading and
+      updating the pricing file.
+      [Tomaz Muraus]
+
  *) Compute
 
     - Modify ElasticHosts drive to store drive UUID in 'extra' field.
