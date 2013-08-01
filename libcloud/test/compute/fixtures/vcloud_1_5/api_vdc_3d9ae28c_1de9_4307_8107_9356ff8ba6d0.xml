@@ -36,6 +36,7 @@
    <ResourceEntities>
       <ResourceEntity type="application/vnd.vmware.vcloud.vApp+xml" name="testNode" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a"/>
       <ResourceEntity type="application/vnd.vmware.vcloud.vApp+xml" name="testNode2" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b"/>
+      <ResourceEntity type="application/vnd.vmware.vcloud.vApp+xml" name="testNode3" href="https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6c"/>
       <ResourceEntity type="application/vnd.vmware.vcloud.vApp+xml" name="deleted-test" href="https://vm-vcloud/api/vApp/vapp-access-to-resource-forbidden"/>
       <ResourceEntity type="application/vnd.vmware.vcloud.vAppTemplate+xml" name="VMTemplate_Master" href="https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158"/>
    </ResourceEntities>

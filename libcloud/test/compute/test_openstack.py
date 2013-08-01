@@ -12,13 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 import unittest
+import datetime
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
+from mock import Mock
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import method_type
@@ -26,13 +30,16 @@ from libcloud.utils.py3 import u
 
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
                                   LibcloudError
+from libcloud.common.openstack import OpenStackBaseConnection
+from libcloud.common.openstack import OpenStackAuthConnection
+from libcloud.common.openstack import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
     OpenStack_1_1_NodeDriver, OpenStackSecurityGroup, OpenStackSecurityGroupRule
 )
-from libcloud.compute.base import Node, NodeImage, NodeSize
+from libcloud.compute.base import Node, NodeImage, NodeSize, StorageVolume
 from libcloud.pricing import set_pricing, clear_pricing_data
 
 from libcloud.test import MockResponse, MockHttpTestCase, XML_HEADERS
@@ -68,8 +75,158 @@ class OpenStack_1_0_ResponseTestCase(unittest.TestCase):
         self.assertEqual(body, RESPONSE_BODY, "Non-XML body should be returned as is")
 
 
+class OpenStackServiceCatalogTests(unittest.TestCase):
+    # TODO refactor and move into libcloud/test/common
+    def setUp(self):
+        OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
+                                                OpenStackMockHttp)
+
+    def test_connection_get_service_catalog(self):
+        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
+        connection.auth_url = "https://auth.api.example.com/v1.1/"
+        connection._ex_force_base_url = "https://www.foo.com"
+        connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
+
+        result = connection.get_service_catalog()
+        catalog = result.get_catalog()
+        endpoints = result.get_endpoints('cloudFilesCDN', 'cloudFilesCDN')
+        public_urls = result.get_public_urls('cloudFilesCDN', 'cloudFilesCDN')
+
+        expected_urls = [
+            'https://cdn2.clouddrive.com/v1/MossoCloudFS',
+            'https://cdn2.clouddrive.com/v1/MossoCloudFS'
+        ]
+
+        self.assertTrue('cloudFilesCDN' in catalog)
+        self.assertEqual(len(endpoints), 2)
+        self.assertEqual(public_urls, expected_urls)
+
+
+class OpenStackAuthConnectionTests(unittest.TestCase):
+    # TODO refactor and move into libcloud/test/common
+    def setUp(self):
+        OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
+                                                OpenStackMockHttp)
+
+    def test_basic_authentication(self):
+        tuples = [
+           ('1.0', OpenStackMockHttp),
+           ('1.1', OpenStackMockHttp),
+           ('2.0', OpenStack_2_0_MockHttp),
+           ('2.0_apikey', OpenStack_2_0_MockHttp),
+           ('2.0_password', OpenStack_2_0_MockHttp)
+        ]
+
+        user_id = OPENSTACK_PARAMS[0]
+        key = OPENSTACK_PARAMS[1]
+
+        for (auth_version, mock_http_class) in tuples:
+            connection = \
+                    self._get_mock_connection(mock_http_class=mock_http_class)
+            auth_url = connection.auth_url
+
+            osa = OpenStackAuthConnection(connection, auth_url, auth_version,
+                                          user_id, key)
+
+            self.assertEqual(osa.urls, {})
+            self.assertEqual(osa.auth_token, None)
+            self.assertEqual(osa.auth_user_info, None)
+            osa = osa.authenticate()
+
+            self.assertTrue(len(osa.urls) >= 1)
+            self.assertTrue(osa.auth_token is not None)
+
+            if auth_version in ['1.1', '2.0', '2.0_apikey', '2.0_password']:
+                self.assertTrue(osa.auth_token_expires is not None)
+
+            if auth_version in ['2.0', '2.0_apikey', '2.0_password']:
+                self.assertTrue(osa.auth_user_info is not None)
+
+    def test_token_expiration_and_force_reauthentication(self):
+        user_id = OPENSTACK_PARAMS[0]
+        key = OPENSTACK_PARAMS[1]
+
+        connection = self._get_mock_connection(OpenStack_2_0_MockHttp)
+        auth_url = connection.auth_url
+        auth_version = '2.0'
+
+        yesterday = datetime.datetime.today() - datetime.timedelta(1)
+        tomorrow = datetime.datetime.today() + datetime.timedelta(1)
+
+        osa = OpenStackAuthConnection(connection, auth_url, auth_version,
+                                      user_id, key)
+
+        mocked_auth_method = Mock(wraps=osa.authenticate_2_0_with_body)
+        osa.authenticate_2_0_with_body = mocked_auth_method
+
+        # Force re-auth, expired token
+        osa.auth_token = None
+        osa.auth_token_expires = yesterday
+        count = 5
+
+        for i in range(0, count):
+            osa.authenticate(force=True)
+
+        self.assertEqual(mocked_auth_method.call_count, count)
+
+        # No force reauth, expired token
+        osa.auth_token = None
+        osa.auth_token_expires = yesterday
+
+        mocked_auth_method.call_count = 0
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
+        for i in range(0, count):
+            osa.authenticate(force=False)
+
+        self.assertEqual(mocked_auth_method.call_count, count)
+
+        # No force reauth, valid / non-expired token
+        osa.auth_token = None
+
+        mocked_auth_method.call_count = 0
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
+        for i in range(0, count):
+            osa.authenticate(force=False)
+
+            if i == 0:
+                osa.auth_token_expires = tomorrow
+
+        self.assertEqual(mocked_auth_method.call_count, 1)
+
+        # No force reauth, valid / non-expired token which is about to expire in
+        # less than AUTH_TOKEN_EXPIRES_GRACE_SECONDS
+        soon = datetime.datetime.utcnow() + \
+            datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS - 1)
+        osa.auth_token = None
+
+        mocked_auth_method.call_count = 0
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
+        for i in range(0, count):
+            osa.authenticate(force=False)
+
+            if i == 0:
+                osa.auth_token_expires = soon
+
+        self.assertEqual(mocked_auth_method.call_count, 5)
+
+    def _get_mock_connection(self, mock_http_class):
+        OpenStackBaseConnection.conn_classes = (mock_http_class,
+                                                mock_http_class)
+
+        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
+        connection.auth_url = "https://auth.api.example.com/v1.1/"
+        connection._ex_force_base_url = "https://www.foo.com"
+        connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
+
+        return connection
+
+
 class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
+    should_list_volumes = False
 
     driver_klass = OpenStack_1_0_NodeDriver
     driver_args = OPENSTACK_PARAMS
@@ -103,7 +260,9 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_auth_token_expires_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
-        self.assertEquals(self.driver.connection.auth_token_expires, "2011-09-18T02:44:17.000-05:00")
+
+        expires = self.driver.connection.auth_token_expires
+        self.assertEquals(expires.isoformat(), "2011-09-18T02:44:17-05:00")
 
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
@@ -371,6 +530,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
 class OpenStack_1_0_FactoryMethodTests(OpenStack_1_0_Tests):
     should_list_locations = False
+    should_list_volumes = False
 
     driver_klass = OpenStack_1_0_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
@@ -540,6 +700,7 @@ class OpenStackMockHttp(MockHttpTestCase):
 
 class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     should_list_locations = False
+    should_list_volumes = True
 
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = OpenStack_1_1_NodeDriver
@@ -579,7 +740,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection.auth_token_expires = None
         self.driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals(self.driver.connection.auth_token_expires, "2011-11-23T21:00:14.000-06:00")
+        expires = self.driver.connection.auth_token_expires
+        self.assertEquals(expires.isoformat(), "2011-11-23T21:00:14-06:00")
 
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can re-authenticate
@@ -664,6 +826,26 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['updated'], '2011-10-11T00:50:04Z')
         self.assertEqual(node.extra['created'], '2011-10-11T00:51:39Z')
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 2)
+        volume = volumes[0]
+
+        self.assertEqual('cd76a3a1-c4ce-40f6-9b9f-07a61508938d', volume.id)
+        self.assertEqual('test_volume_2', volume.name)
+        self.assertEqual(2, volume.size)
+
+        self.assertEqual(volume.extra['description'], '')
+        self.assertEqual(volume.extra['attachments'][0]['id'], 'cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+
+        volume = volumes[1]
+        self.assertEqual('cfcec3bc-b736-4db5-9535-4c24112691b5', volume.id)
+        self.assertEqual('test_volume', volume.name)
+        self.assertEqual(50, volume.size)
+
+        self.assertEqual(volume.extra['description'], 'some description')
+        self.assertEqual(volume.extra['attachments'], [])
+
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
@@ -671,6 +853,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         for size in sizes:
             self.assertTrue(isinstance(size.price, float),
                             'Wrong size price type')
+
+        self.assertEqual(sizes[0].vcpus, 8)
 
     def test_list_sizes_with_specified_pricing(self):
 
@@ -729,6 +913,24 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_reboot_node(self):
         self.assertTrue(self.node.reboot())
+
+    def test_create_volume(self):
+        self.assertEqual(self.driver.create_volume(1, 'test'), True)
+
+    def test_destroy_volume(self):
+        volume = self.driver.ex_get_volume('cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(self.driver.destroy_volume(volume), True)
+
+    def test_attach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume('cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+
+    def test_detach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume('cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+        self.assertEqual(self.driver.detach_volume(volume), True)
 
     def test_ex_set_password(self):
         try:
@@ -941,6 +1143,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
+    should_list_volumes = True
 
     driver_klass = OpenStack_1_1_NodeDriver
     driver_type = get_driver(Provider.OPENSTACK)
@@ -1040,7 +1243,6 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
 
         raise NotImplementedError()
 
-
     def _v1_1_slug_servers_12064(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('_servers_12064.json')
@@ -1130,6 +1332,42 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
+
+    def _v1_1_slug_os_volumes(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_os_volumes.json')
+        elif method == "POST":
+            body = self.fixtures.load('_os_volumes_create.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_os_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d.json')
+        elif method == "DELETE":
+            body = ''
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12065_os_volume_attachments(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_servers_12065_os_volume_attachments.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12065_os_volume_attachments_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == "DELETE":
+            body = ''
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures

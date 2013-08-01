@@ -1,17 +1,3 @@
 {
-  "mbpkgid": "76070",
-  "package_status": "Active",
-  "domu_package": null,
-  "rescue": null,
-  "locked": null,
-  "state": null,
-  "installed": null,
-  "package": null,
-  "ipv6": "",
-  "city": null,
-  "fqdn": "test.com",
-  "uptime": false,
-  "ip": null,
-  "name": "VR512",
-  "status": "BUILDING"
+  "id": "62291"
 }

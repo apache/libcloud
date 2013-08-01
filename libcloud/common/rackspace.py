@@ -23,4 +23,4 @@ AUTH_URL_UK = 'https://lon.auth.api.rackspacecloud.com/v1.1/'
 __all__ = [
     "AUTH_URL_US",
     "AUTH_URL_UK",
-    ]
+]

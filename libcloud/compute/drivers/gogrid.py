@@ -85,7 +85,7 @@ class GoGridNode(Node):
     # so uuid of node should not change after add is completed
     def get_uuid(self):
         return hashlib.sha1(
-            b("%s:%d" % (self.public_ips, self.driver.type))
+            b("%s:%s" % (self.public_ips, self.driver.type))
         ).hexdigest()
 
 

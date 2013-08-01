@@ -27,42 +27,42 @@ API_ENDPOINTS = {
     'uk-1': {
         'name': 'London Peer 1',
         'country': 'United Kingdom',
-        'host': 'api.lon-p.elastichosts.com'
+        'host': 'api-lon-p.elastichosts.com'
     },
     'uk-2': {
         'name': 'London BlueSquare',
         'country': 'United Kingdom',
-        'host': 'api.lon-b.elastichosts.com'
+        'host': 'api-lon-b.elastichosts.com'
     },
     'us-1': {
         'name': 'San Antonio Peer 1',
         'country': 'United States',
-        'host': 'api.sat-p.elastichosts.com'
+        'host': 'api-sat-p.elastichosts.com'
     },
     'us-2': {
         'name': 'Los Angeles Peer 1',
         'country': 'United States',
-        'host': 'api.lax-p.elastichosts.com'
+        'host': 'api-lax-p.elastichosts.com'
     },
     'us-3': {
         'name': 'San Jose (Silicon Valley)',
         'country': 'United States',
-        'host': 'api.sjc-c.elastichosts.com'
+        'host': 'api-sjc-c.elastichosts.com'
     },
     'ca-1': {
         'name': 'Toronto Peer 1',
         'country': 'Canada',
-        'host': 'api.tor-p.elastichosts.com'
+        'host': 'api-tor-p.elastichosts.com'
     },
     'au-1': {
         'name': 'Sydney',
         'country': 'Australia',
-        'host': 'api.syd-v.elastichosts.com'
+        'host': 'api-syd-v.elastichosts.com'
     },
     'cn-1': {
         'name': 'Hong Kong',
         'country': 'China',
-        'host': 'api.hkg-e.elastichosts.com'
+        'host': 'api-hkg-e.elastichosts.com'
     }
 }
 
@@ -86,6 +86,12 @@ STANDARD_DRIVES = {
     'aee5589a-88c3-43ef-bb0a-9cab6e64192d': {
         'uuid': 'aee5589a-88c3-43ef-bb0a-9cab6e64192d',
         'description': 'Ubuntu Linux 10.04',
+        'size_gunzipped': '1GB',
+        'supports_deployment': True,
+    },
+    '62f512cd-82c7-498e-88d8-a09ac2ef20e7': {
+        'uuid': '62f512cd-82c7-498e-88d8-a09ac2ef20e7',
+        'description': 'Ubuntu Linux 12.04',
         'size_gunzipped': '1GB',
         'supports_deployment': True,
     },

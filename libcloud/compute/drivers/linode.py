@@ -319,7 +319,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            root = binascii.b2a_base64(os.urandom(8)).decode('ascii')
+            root = binascii.b2a_base64(os.urandom(8)).decode('ascii').strip()
 
         params = {
             "api_action": "linode.disk.createfromdistribution",

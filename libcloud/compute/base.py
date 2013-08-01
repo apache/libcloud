@@ -403,8 +403,23 @@ class StorageVolume(UuidMixin):
 
         return self.driver.detach_volume(volume=self)
 
+    def list_snapshots(self):
+        """
+        @returns C{list} of C{VolumeSnapshot}
+        """
+        return self.driver.list_volume_snapshots(volume=self)
+
+    def snapshot(self, name):
+        """
+        Creates a snapshot of this volume.
+
+        @returns C{VolumeSnapshot}
+        """
+        return self.driver.create_volume_snapshot(volume=self, name=name)
+
     def destroy(self):
-        """Destroy this storage volume.
+        """
+        Destroy this storage volume.
 
         @returns C{bool}
         """
@@ -416,6 +431,7 @@ class StorageVolume(UuidMixin):
                self.id, self.size, self.driver.name)
 
 
+<<<<<<< HEAD
 class StorageSnapshot(UuidMixin):
     """
     A base StorageSnapshot class
@@ -439,6 +455,19 @@ class StorageSnapshot(UuidMixin):
     def __repr__(self):
         return '<StorageSnapshot id=%s size=%s driver=%s>' % (
             self.id, self.size, self.driver.name)
+=======
+class VolumeSnapshot(object):
+    def __init__(self, driver):
+        self.driver = driver
+
+    def destroy(self):
+        """
+        Destroys this snapshot.
+
+        @returns C{bool}
+        """
+        return self.driver.destroy_volume_snapshot(snapshot=self)
+>>>>>>> a3218e80108f91f42577968191ecd8de2016c377
 
 
 class NodeDriver(BaseDriver):
@@ -683,7 +712,8 @@ class NodeDriver(BaseDriver):
         try:
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
-                wait_period=3, timeout=NODE_ONLINE_WAIT_TIMEOUT,
+                wait_period=3,
+                timeout=kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT),
                 ssh_interface=ssh_interface)[0]
         except Exception:
             e = sys.exc_info()[1]
@@ -794,14 +824,51 @@ class NodeDriver(BaseDriver):
 
         raise NotImplementedError('detach not implemented for this driver')
 
+    def list_volumes(self):
+        """
+        List storage volumes.
+
+        @return: list of storageVolume objects
+        @rtype: C{list} of L{StorageVolume}
+        """
+        raise NotImplementedError(
+            'list_volumes not implemented for this driver')
+
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots for a storage volume.
+
+        @rtype: C{list} of L{VolumeSnapshot}
+        """
+        raise NotImplementedError(
+            'list_volume_snapshots not implemented for this driver')
+
+    def create_volume_snapshot(self, volume, name):
+        """
+        Creates a snapshot of the storage volume.
+
+        @rtype: L{VolumeSnapshot}
+        """
+        raise NotImplementedError(
+            'create_volume_snapshot not implemented for this driver')
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Destroys a snapshot.
+
+        @rtype: L{bool}
+        """
+        raise NotImplementedError(
+            'destroy_volume_snapshot not implemented for this driver')
+
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
         # This is here for backward compatibility and will be removed in the
         # next major release
-        return self._wait_until_running(nodes=[node], wait_period=wait_period,
-                                        timeout=timeout,
-                                        ssh_interface=ssh_interface,
-                                        force_ipv4=force_ipv4)
+        return self.wait_until_running(nodes=[node], wait_period=wait_period,
+                                       timeout=timeout,
+                                       ssh_interface=ssh_interface,
+                                       force_ipv4=force_ipv4)
 
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):

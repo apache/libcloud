@@ -897,7 +897,14 @@ class BaseEC2NodeDriver(NodeDriver):
         return names
 
     def ex_describe_keypairs(self, name):
-        """Describes a keypair by name
+        """
+        Here for backward compatibility.
+        """
+        return self.ex_describe_keypair(name=name)
+
+    def ex_describe_keypair(self, name):
+        """
+        Describes a keypair by name.
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -915,8 +922,12 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         key_name = findattr(element=response, xpath='keySet/item/keyName',
                             namespace=NAMESPACE)
+        fingerprint = findattr(element=response,
+                               xpath='keySet/item/keyFingerprint',
+                               namespace=NAMESPACE).strip()
         return {
-            'keyName': key_name
+            'keyName': key_name,
+            'keyFingerprint': fingerprint
         }
 
     def ex_delete_keypair(self, name):
@@ -1397,7 +1408,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
                     mappings. Example:
-                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+                    [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
+                     {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
         @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
@@ -1437,11 +1449,16 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
-            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
-                    mapping['DeviceName']
-                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
-                    mapping['VirtualName']
+            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
+                raise AttributeError('ex_blockdevicemappings not list or tuple')
+
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                idx += 1  # we want 1-based indexes
+                if not isinstance(mapping, dict):
+                    raise AttributeError('mapping %s in ex_blockdevicemappings '
+                                         'not a dict' % mapping)
+                for k, v in mapping.items():
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')

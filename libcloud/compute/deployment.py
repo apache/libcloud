@@ -22,7 +22,7 @@ from __future__ import with_statement
 import os
 import binascii
 
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import basestring, PY3
 
 
 class Deployment(object):
@@ -187,6 +187,9 @@ class ScriptFileDeployment(ScriptDeployment):
         """
         with open(script_file, 'rb') as fp:
             content = fp.read()
+
+        if PY3:
+            content = content.decode('utf-8')
 
         super(ScriptFileDeployment, self).__init__(script=content,
                                                name=name,

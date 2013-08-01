@@ -1,0 +1,42 @@
+{
+  "canIpForward": false,
+  "creationTimestamp": "2013-06-26T15:00:12.021-07:00",
+  "disks": [
+    {
+      "index": 0,
+      "kind": "compute#attachedDisk",
+      "mode": "READ_WRITE",
+      "type": "SCRATCH"
+    }
+  ],
+  "id": "1845312225624811608",
+  "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+  "kind": "compute#instance",
+  "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+  "metadata": {
+    "fingerprint": "42WmSpB8rSM=",
+    "kind": "compute#metadata"
+  },
+  "name": "node-name",
+  "networkInterfaces": [
+    {
+      "accessConfigs": [
+        {
+          "kind": "compute#accessConfig",
+          "name": "External NAT",
+          "natIP": "173.255.115.146",
+          "type": "ONE_TO_ONE_NAT"
+        }
+      ],
+      "name": "nic0",
+      "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+      "networkIP": "10.240.113.94"
+    }
+  ],
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/node-name",
+  "status": "RUNNING",
+  "tags": {
+    "fingerprint": "42WmSpB8rSM="
+  },
+  "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+}

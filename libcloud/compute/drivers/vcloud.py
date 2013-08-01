@@ -20,7 +20,6 @@ import sys
 import re
 import base64
 import os
-import urllib
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlparse
@@ -48,6 +47,7 @@ of memory. This should be either 512 or a multiple of 1024 (1 GB)."
 """
 VIRTUAL_MEMORY_VALS = [512] + [1024 * i for i in range(1, 9)]
 
+# Default timeout (in seconds) for long running tasks
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
 DEFAULT_API_VERSION = '0.8'
@@ -56,7 +56,6 @@ DEFAULT_API_VERSION = '0.8'
 Valid vCloud API v1.5 input values.
 """
 VIRTUAL_CPU_VALS_1_5 = [i for i in range(1, 9)]
-VIRTUAL_MEMORY_VALS_1_5 = [2 ** i for i in range(2, 19)]
 FENCE_MODE_VALS_1_5 = ['bridged', 'isolated', 'natRouted']
 IP_MODE_VALS_1_5 = ['POOL', 'DHCP', 'MANUAL', 'NONE']
 
@@ -380,6 +379,8 @@ class VCloudNodeDriver(NodeDriver):
                 cls = VCloudNodeDriver
             elif api_version == '1.5':
                 cls = VCloud_1_5_NodeDriver
+            elif api_version == '5.1':
+                cls = VCloud_5_1_NodeDriver
             else:
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" %
@@ -588,9 +589,10 @@ class VCloudNodeDriver(NodeDriver):
                 except Exception:
                     # The vApp was probably removed since the previous vDC query, ignore
                     e = sys.exc_info()[1]
-                    if not (e.args[0].tag.endswith('Error') and
+                    if not (isinstance(e.args[0], _ElementInterface) and
+                            e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') == 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
-                        raise e
+                        raise
 
         return nodes
 
@@ -1189,6 +1191,59 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             },
             method='POST')
 
+    def ex_get_metadata(self, node):
+        """
+        @param  node: node
+        @type   node: L{Node}
+
+        @return: dictionary mapping metadata keys to metadata values
+        @rtype: dictionary mapping C{str} to C{str}
+        """
+        res = self.connection.request('%s/metadata' % (get_url_path(node.id)))
+        metadata_entries = res.object.findall(fixxpath(res.object, 'MetadataEntry'))
+        res_dict = {}
+
+        for entry in metadata_entries:
+            key = entry.findtext(fixxpath(res.object, 'Key'))
+            value = entry.findtext(fixxpath(res.object, 'Value'))
+            res_dict[key] = value
+
+        return res_dict
+
+    def ex_set_metadata_entry(self, node, key, value):
+        """
+        @param  node: node
+        @type   node: L{Node}
+
+        @param key: metadata key to be set
+        @type key: C{str}
+
+        @param value: metadata value to be set
+        @type value: C{str}
+
+        @rtype: C{None}
+        """
+        metadata_elem = ET.Element(
+            'Metadata',
+            {'xmlns': "http://www.vmware.com/vcloud/v1.5",
+             'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+        )
+        entry = ET.SubElement(metadata_elem, 'MetadataEntry')
+        key_elem = ET.SubElement(entry, 'Key')
+        key_elem.text = key
+        value_elem = ET.SubElement(entry, 'Value')
+        value_elem.text = value
+
+        # send it back to the server
+        res = self.connection.request(
+            '%s/metadata' % get_url_path(node.id),
+            data=ET.tostring(metadata_elem),
+            headers={
+                'Content-Type': 'application/vnd.vmware.vcloud.metadata+xml'
+            },
+            method='POST')
+        self._wait_for_task_completion(res.object.get('href'))
+
     def ex_query(self, type, filter=None, page=1, page_size=100, sort_asc=None,
                  sort_desc=None):
         """
@@ -1290,6 +1345,13 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         @keyword    ex_deploy: set to False if the node shouldn't be deployed (started) after creation
         @type       ex_deploy: C{bool}
+
+        @keyword    ex_clone_timeout: timeout in seconds for clone/instantiate VM operation.
+                                      Cloning might be a time consuming operation especially
+                                      when linked clones are disabled or VMs are created
+                                      on different datastores.
+                                      Overrides the default task completion value.
+        @type       ex_clone_timeout: C{int}
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -1303,6 +1365,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         ex_vm_ipmode = kwargs.get('ex_vm_ipmode', None)
         ex_deploy = kwargs.get('ex_deploy', True)
         ex_vdc = kwargs.get('ex_vdc', None)
+        ex_clone_timeout = kwargs.get('ex_clone_timeout',
+                                      DEFAULT_TASK_COMPLETION_TIMEOUT)
 
         self._validate_vm_names(ex_vm_names)
         self._validate_vm_cpu(ex_vm_cpu)
@@ -1322,12 +1386,16 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vdc = self._get_vdc(ex_vdc)
 
         if self._is_node(image):
-            vapp_name, vapp_href = self._clone_node(name, image, vdc)
+            vapp_name, vapp_href = self._clone_node(name,
+                                                    image,
+                                                    vdc,
+                                                    ex_clone_timeout)
         else:
             vapp_name, vapp_href = self._instantiate_node(name, image,
                                                           network_elem,
                                                           vdc, ex_vm_network,
-                                                          ex_vm_fence)
+                                                          ex_vm_fence,
+                                                          ex_clone_timeout)
 
         self._change_vm_names(vapp_href, ex_vm_names)
         self._change_vm_cpu(vapp_href, ex_vm_cpu)
@@ -1357,7 +1425,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return node
 
     def _instantiate_node(self, name, image, network_elem, vdc, vm_network,
-                          vm_fence):
+                          vm_fence, instantiate_timeout):
         instantiate_xml = Instantiate_1_5_VAppXML(
             name=name,
             template=image.id,
@@ -1378,10 +1446,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         task_href = res.object.find(fixxpath(res.object, "Tasks/Task")).get(
             'href')
-        self._wait_for_task_completion(task_href)
+        self._wait_for_task_completion(task_href, instantiate_timeout)
         return vapp_name, vapp_href
 
-    def _clone_node(self, name, sourceNode, vdc):
+    def _clone_node(self, name, sourceNode, vdc, clone_timeout):
         clone_xml = ET.Element(
             "CloneVAppParams",
             {'name': name, 'deploy': 'false', 'powerOn': 'false',
@@ -1402,7 +1470,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vapp_href = res.object.get('href')
 
         task_href = res.object.find(fixxpath(res.object, "Tasks/Task")).get('href')
-        self._wait_for_task_completion(task_href)
+        self._wait_for_task_completion(task_href, clone_timeout)
 
         res = self.connection.request(get_url_path(vapp_href))
 
@@ -1518,7 +1586,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
     def _validate_vm_memory(vm_memory):
         if vm_memory is None:
             return
-        elif vm_memory not in VIRTUAL_MEMORY_VALS_1_5:
+        elif vm_memory not in VIRTUAL_MEMORY_VALS:
             raise ValueError(
                 '%s is not a valid vApp VM memory value' % vm_memory)
 
@@ -1804,15 +1872,18 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                     public_ips.append(external_ip.text)
                 elif ip is not None:
                     public_ips.append(ip.text)
+            os_type_elem = vm_elem.find('{http://schemas.dmtf.org/ovf/envelope/1}OperatingSystemSection')
+            if os_type_elem:
+                os_type = os_type_elem.get('{http://www.vmware.com/schema/ovf}osType')
+            else:
+                os_type = None
             vm = {
                 'id': vm_elem.get('href'),
                 'name': vm_elem.get('name'),
                 'state': self.NODE_STATE_MAP[vm_elem.get('status')],
                 'public_ips': public_ips,
                 'private_ips': private_ips,
-                'os_type': vm_elem
-                    .find('{http://schemas.dmtf.org/ovf/envelope/1}OperatingSystemSection')
-                    .get('{http://www.vmware.com/schema/ovf}osType')
+                'os_type': os_type
             }
             vms.append(vm)
 
@@ -1858,3 +1929,15 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                    cpu=cpu,
                    memory=memory,
                    storage=storage)
+
+
+class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
+
+    @staticmethod
+    def _validate_vm_memory(vm_memory):
+        if vm_memory is None:
+            return None
+        elif (vm_memory % 4) != 0:
+            #The vcd 5.1 virtual machine memory size must be a multiple of 4 MB
+            raise ValueError(
+                '%s is not a valid vApp VM memory value' % (vm_memory))

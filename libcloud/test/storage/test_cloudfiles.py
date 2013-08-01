@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -28,6 +29,7 @@ import libcloud.utils.files
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlquote
 
 if PY3:
     from io import FileIO as file
@@ -105,6 +107,23 @@ class CloudFilesTests(unittest.TestCase):
             driver.connection.host)
         self.assertEquals('/v1/MossoCloudFS',
             driver.connection.request_path)
+
+    def test_invalid_ex_force_service_region(self):
+        driver = CloudFilesStorageDriver('driver', 'dummy',
+                ex_force_service_region='invalid')
+
+        try:
+            driver.list_containers()
+        except:
+            e = sys.exc_info()[1]
+            self.assertEquals(e.value, 'Could not find specified endpoint')
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_ex_force_service_region(self):
+        driver = CloudFilesStorageDriver('driver', 'dummy',
+                ex_force_service_region='ORD')
+        driver.list_containers()
 
     def test_force_auth_url_kwargs(self):
         kwargs = {
@@ -206,6 +225,11 @@ class CloudFilesTests(unittest.TestCase):
             obj.extra['last_modified'], 'Tue, 25 Jan 2011 22:01:49 GMT')
         self.assertEqual(obj.meta_data['foo-bar'], 'test 1')
         self.assertEqual(obj.meta_data['bar-foo'], 'test 2')
+
+    def test_get_object_object_name_encoding(self):
+        obj = self.driver.get_object(container_name='test_container',
+                                     object_name='~/test_object/')
+        self.assertEqual(obj.name, '~/test_object/')
 
     def test_get_object_not_found(self):
         try:
@@ -652,6 +676,26 @@ class CloudFilesTests(unittest.TestCase):
         finally:
             self.driver.connection.request = _request
 
+    def test_create_container_put_object_name_encoding(self):
+        def upload_file(self, response, file_path, chunked=False,
+                     calculate_hash=True):
+            return True, 'hash343hhash89h932439jsaa89', 1000
+
+        old_func = CloudFilesStorageDriver._upload_file
+        CloudFilesStorageDriver._upload_file = upload_file
+
+        container_name = 'speci@l_name'
+        object_name = 'm@obj€ct'
+        file_path = os.path.abspath(__file__)
+
+        container = self.driver.create_container(container_name=container_name)
+        self.assertEqual(container.name, container_name)
+
+        obj = self.driver.upload_object(file_path=file_path, container=container,
+                                        object_name=object_name)
+        self.assertEqual(obj.name, object_name)
+        CloudFilesStorageDriver._upload_file = old_func
+
     def test_ex_enable_static_website(self):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         result = self.driver.ex_enable_static_website(container=container,
@@ -855,9 +899,41 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
                              'content-type': 'application/zip'})
         return (status_code, body, headers, httplib.responses[httplib.OK])
 
+    def _v1_MossoCloudFS_test_container__7E_test_object(
+        self, method, url, body, headers):
+        headers = copy.deepcopy(self.base_headers)
+        if method == 'HEAD':
+            # get_object_name_encoding
+            body = self.fixtures.load('list_container_objects_empty.json')
+            status_code = httplib.NO_CONTENT
+            headers.update({ 'content-length': 555,
+                             'last-modified': 'Tue, 25 Jan 2011 22:01:49 GMT',
+                             'etag': '6b21c4a111ac178feacf9ec9d0c71f17',
+                             'x-object-meta-foo-bar': 'test 1',
+                             'x-object-meta-bar-foo': 'test 2',
+                             'content-type': 'application/zip'})
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
+
     def _v1_MossoCloudFS_test_create_container(
         self, method, url, body, headers):
         # test_create_container_success
+        headers = copy.deepcopy(self.base_headers)
+        body = self.fixtures.load('list_container_objects_empty.json')
+        headers = copy.deepcopy(self.base_headers)
+        headers.update({ 'content-length': 18,
+                         'date': 'Mon, 28 Feb 2011 07:52:57 GMT'
+                       })
+        status_code = httplib.CREATED
+        return (status_code, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_speci_40l_name(self, method, url, body, headers):
+        # test_create_container_put_object_name_encoding
+        # Verify that the name is properly url encoded
+        container_name = 'speci@l_name'
+        encoded_container_name = urlquote(container_name)
+        self.assertTrue(encoded_container_name in url)
+
         headers = copy.deepcopy(self.base_headers)
         body = self.fixtures.load('list_container_objects_empty.json')
         headers = copy.deepcopy(self.base_headers)
@@ -968,6 +1044,19 @@ class CloudFilesMockRawResponse(MockRawResponse):
         headers.update(self.base_headers)
         headers['etag'] = 'hash343hhash89h932439jsaa89'
         return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_speci_40l_name_m_40obj_E2_82_ACct(self, method, url,
+                                                           body, headers):
+        # test_create_container_put_object_name_encoding
+        # Verify that the name is properly url encoded
+        object_name = 'm@obj€ct'
+        encoded_object_name = urlquote(object_name)
+
+        headers = copy.deepcopy(self.base_headers)
+        body = ''
+        headers['etag'] = 'hash343hhash89h932439jsaa89'
+        return (httplib.CREATED, body, headers, httplib.responses[httplib.OK])
+
 
     def _v1_MossoCloudFS_foo_bar_container_empty(self, method, url, body,
                                                  headers):

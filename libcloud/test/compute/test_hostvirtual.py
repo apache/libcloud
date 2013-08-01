@@ -103,13 +103,21 @@ class HostVirtualTest(unittest.TestCase):
             size=size,
             auth=auth
         )
-        self.assertEqual('76070', node.id)
-        self.assertEqual('test.com', node.name)
+        self.assertEqual('62291', node.id)
+        self.assertEqual('server1.vr-cluster.org', node.name)
 
-    def test_ex_build_node(self):
+    def test_ex_provision_node(self):
         node = self.driver.list_nodes()[0]
         auth = NodeAuthPassword('vr!@#hosted#@!')
-        self.assertTrue(self.driver.ex_build_node(
+        self.assertTrue(self.driver.ex_provision_node(
+            node=node,
+            auth=auth
+        ))
+
+    def test_ex_provision_node(self):
+        node = self.driver.list_nodes()[0]
+        auth = NodeAuthPassword('vr!@#hosted#@!')
+        self.assertTrue(self.driver.ex_provision_node(
             node=node,
             auth=auth
         ))
@@ -126,8 +134,8 @@ class HostVirtualTest(unittest.TestCase):
             auth=auth,
             location=location
         )
-        self.assertEqual('76070', node.id)
-        self.assertEqual('test.com', node.name)
+        self.assertEqual('62291', node.id)
+        self.assertEqual('server1.vr-cluster.org', node.name)
 
 
 class HostVirtualMockHttp(MockHttp):
@@ -161,7 +169,7 @@ class HostVirtualMockHttp(MockHttp):
         body = self.fixtures.load('node_reboot.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server_stop(self, method, url, body, headers):
+    def _vapi_cloud_server_shutdown(self, method, url, body, headers):
         body = self.fixtures.load('node_stop.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -169,7 +177,7 @@ class HostVirtualMockHttp(MockHttp):
         body = self.fixtures.load('node_start.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_buy_build(self, method, url, body, headers):
+    def _vapi_cloud_buy(self, method, url, body, headers):
         body = self.fixtures.load('create_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
