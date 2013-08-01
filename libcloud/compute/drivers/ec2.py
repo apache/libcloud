@@ -423,7 +423,6 @@ class BaseEC2NodeDriver(NodeDriver):
 
     connectionCls = EC2Connection
     path = '/'
-    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -1333,13 +1332,15 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'ex_blockdevicemappings' in kwargs:
             if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
-                raise AttributeError('ex_blockdevicemappings not list or tuple')
+                raise AttributeError(
+                    'ex_blockdevicemappings not list or tuple')
 
             for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
                 idx += 1  # we want 1-based indexes
                 if not isinstance(mapping, dict):
-                    raise AttributeError('mapping %s in ex_blockdevicemappings '
-                                         'not a dict' % mapping)
+                    raise AttributeError(
+                        'mapping %s in ex_blockdevicemappings '
+                        'not a dict' % mapping)
                 for k, v in mapping.items():
                     params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 

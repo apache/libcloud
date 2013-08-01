@@ -75,7 +75,6 @@ class DigitalOceanNodeDriver(NodeDriver):
     type = Provider.DIGITAL_OCEAN
     name = 'Digital Ocean'
     website = 'https://www.digitalocean.com'
-    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {'new': NodeState.PENDING,
                       'off': NodeState.REBOOTING,

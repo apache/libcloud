@@ -208,7 +208,7 @@ class LinodeNodeDriver(NodeDriver):
         name = kwargs["name"]
         image = kwargs["image"]
         size = kwargs["size"]
-        auth = kwargs["auth"]
+        auth = self._get_and_check_auth(kwargs["auth"])
 
         # Pick a location (resolves LIBCLOUD-41 in JIRA)
         if "location" in kwargs:
@@ -372,7 +372,10 @@ class LinodeNodeDriver(NodeDriver):
         nodes = self._to_nodes(data)
 
         if len(nodes) == 1:
-            return nodes[0]
+            node = nodes[0]
+            if getattr(auth, "generated", False):
+                node.extra['password'] = auth.password
+            return node
 
         return None
 
