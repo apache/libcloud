@@ -74,6 +74,7 @@ class LinodeNodeDriver(NodeDriver):
     website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
+    features = {'create_node': ['ssh_key', 'password']}
 
     def __init__(self, key):
         """Instantiate the driver with the given API key
@@ -520,8 +521,6 @@ class LinodeNodeDriver(NodeDriver):
                     nodes[lid].private_ips
                 which.append(ip["IPADDRESS"])
         return list(nodes.values())
-
-    features = {"create_node": ["ssh_key", "password"]}
 
 
 def _izip_longest(*args, **kwds):

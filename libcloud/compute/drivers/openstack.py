@@ -387,7 +387,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     connectionCls = OpenStack_1_0_Connection
     type = Provider.OPENSTACK
 
-    features = {"create_node": ["generates_password"]}
+    features = {'create_node': ['generates_password']}
 
     def __init__(self, *args, **kwargs):
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',

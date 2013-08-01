@@ -241,7 +241,7 @@ class OpsourceNodeDriver(NodeDriver):
     name = 'Opsource'
     website = 'http://www.opsource.net/'
     type = Provider.OPSOURCE
-    features = {"create_node": ["password"]}
+    features = {'create_node': ['password']}
 
     def create_node(self, **kwargs):
         """

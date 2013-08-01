@@ -372,6 +372,8 @@ class VCloudNodeDriver(NodeDriver):
                       '3': NodeState.PENDING,
                       '4': NodeState.RUNNING}
 
+    features = {'create_node': ['password']}
+
     def __new__(cls, key, secret=None, secure=True, host=None, port=None,
                 api_version=DEFAULT_API_VERSION, **kwargs):
         if cls is VCloudNodeDriver:
@@ -760,8 +762,6 @@ class VCloudNodeDriver(NodeDriver):
             node.extra['password'] = auth.password
 
         return node
-
-    features = {"create_node": ["password"]}
 
 
 class HostingComConnection(VCloudConnection):
