@@ -142,7 +142,9 @@ class ScriptDeployment(Deployment):
         if self.name is None:
             # File is put under user's home directory
             # (~/libcloud_deployment_<random_string>.sh)
-            self.name = 'libcloud_deployment_%s.sh' % (binascii.hexlify(os.urandom(4)))
+            random_string = binascii.hexlify(os.urandom(4))
+            random_string = random_string.decode('ascii')
+            self.name = 'libcloud_deployment_%s.sh' % (random_string)
 
     def run(self, node, client):
         """

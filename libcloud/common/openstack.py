@@ -587,7 +587,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 self._tuple_from_url(url)
 
     def _add_cache_busting_to_params(self, params):
-        cache_busting_number = binascii.hexlify(os.urandom(8))
+        cache_busting_number = binascii.hexlify(os.urandom(8)).decode('ascii')
 
         if isinstance(params, dict):
             params['cache-busting'] = cache_busting_number

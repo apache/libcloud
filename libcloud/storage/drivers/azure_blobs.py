@@ -295,8 +295,9 @@ class AzureBlobsStorageDriver(StorageDriver):
         }
 
         if extra['md5_hash']:
-            extra['md5_hash'] = binascii.hexlify(
-                            base64.b64decode(b(extra['md5_hash'])))
+            value = binascii.hexlify(base64.b64decode(b(extra['md5_hash'])))
+            value = value.decode('ascii')
+            extra['md5_hash'] = value
 
         meta_data = {}
         for meta in metadata.getchildren():
@@ -344,8 +345,9 @@ class AzureBlobsStorageDriver(StorageDriver):
         }
 
         if extra['md5_hash']:
-            extra['md5_hash'] = binascii.hexlify(
-                            base64.b64decode(b(extra['md5_hash'])))
+            value = binascii.hexlify(base64.b64decode(b(extra['md5_hash'])))
+            value = value.decode('ascii')
+            extra['md5_hash'] = value
 
         meta_data = {}
         for key, value in response.headers.items():
