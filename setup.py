@@ -119,7 +119,7 @@ class TestCommand(Command):
 
         if mtime_dist > mtime_current:
             print("It looks like test/secrets.py file is out of date.")
-            print("Please copy the new secret.py-dist file over otherwise" +
+            print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
         if pre_python26:
