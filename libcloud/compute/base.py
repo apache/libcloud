@@ -507,7 +507,8 @@ class NodeDriver(BaseDriver):
 
         if 'password' in self.features['create_node']:
             value = os.urandom(16)
-            return NodeAuthPassword(binascii.hexlify(value), generated=True)
+            value = binascii.hexlify(value).decode('ascii')
+            return NodeAuthPassword(value, generated=True)
 
         if auth:
             raise LibcloudError(
