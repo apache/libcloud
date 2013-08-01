@@ -719,12 +719,8 @@ class VCloudNodeDriver(NodeDriver):
             network = ''
 
         password = None
-        if 'auth' in kwargs:
-            auth = kwargs['auth']
-            if isinstance(auth, NodeAuthPassword):
-                password = auth.password
-            else:
-                raise ValueError('auth must be of NodeAuthPassword type')
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+        password = auth.password
 
         instantiate_xml = InstantiateVAppXML(
             name=name,
@@ -759,6 +755,9 @@ class VCloudNodeDriver(NodeDriver):
 
         res = self.connection.request(vapp_path)
         node = self._to_node(res.object)
+
+        if getattr(auth, "generated", False):
+            node.extra['password'] = auth.password
 
         return node
 

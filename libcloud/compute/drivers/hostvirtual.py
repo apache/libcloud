@@ -61,6 +61,7 @@ class HostVirtualNodeDriver(NodeDriver):
     name = 'HostVirtual'
     website = 'http://www.vr.org'
     connectionCls = HostVirtualComputeConnection
+    features = {'create_node': ['ssh_key', 'password']}
 
     def __init__(self, key):
         self.location = None
@@ -164,6 +165,8 @@ class HostVirtualNodeDriver(NodeDriver):
         size = kwargs['size']
         image = kwargs['image']
 
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+
         params = {'plan': size.name}
 
         dc = DEFAULT_NODE_LOCATION_ID
@@ -186,9 +189,12 @@ class HostVirtualNodeDriver(NodeDriver):
         })
 
         # provisioning a server using the stub node
-        self.ex_provision_node(node=stub_node, auth=kwargs['auth'])
-
+        self.ex_provision_node(node=stub_node, auth=auth)
         node = self._wait_for_node(stub_node.id)
+
+        if getattr(auth, 'generated', False):
+            node.extra['password'] = auth.password
+
         return node
 
     def reboot_node(self, node):

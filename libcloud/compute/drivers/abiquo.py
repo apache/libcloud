@@ -40,7 +40,6 @@ class AbiquoNodeDriver(NodeDriver):
     name = 'Abiquo'
     website = 'http://www.abiquo.com/'
     connectionCls = AbiquoConnection
-    features = {'create_node': ['password']}
     timeout = 2000  # some images take a lot of time!
 
     # Media Types
@@ -103,10 +102,6 @@ class AbiquoNodeDriver(NodeDriver):
         @keyword    location: Which data center to create a node in. If empty,
                               undefined behavoir will be selected. (optional)
         @type       location: L{NodeLocation}
-
-        @keyword    auth:   Initial authentication information for the node
-                            (optional)
-        @type       auth:   L{NodeAuthPassword}
 
         @keyword   group_name:  Which group this node belongs to. If empty,
                                  it will be created into 'libcloud' group. If
@@ -684,7 +679,7 @@ class AbiquoNodeDriver(NodeDriver):
         for vapp in vapps_element.findall('virtualAppliance'):
             if vapp.findtext('name') == group_name:
                 uri_vapp = get_href(vapp, 'edit')
-                return  NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
+                return NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
 
         # target group not found: create it. Since it is an extension of
         # the basic 'libcloud' functionality, we try to be as flexible as
