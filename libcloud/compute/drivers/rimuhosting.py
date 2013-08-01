@@ -284,11 +284,8 @@ class RimuHostingNodeDriver(NodeDriver):
             data['instantiation_options']['control_panel'] = \
                 kwargs['ex_control_panel']
 
-        if 'auth' in kwargs:
-            auth = kwargs['auth']
-            if not isinstance(auth, NodeAuthPassword):
-                raise ValueError('auth must be of NodeAuthPassword type')
-            data['instantiation_options']['password'] = auth.password
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+        data['instantiation_options']['password'] = auth.password
 
         if 'ex_billing_oid' in kwargs:
             #TODO check for valid oid.

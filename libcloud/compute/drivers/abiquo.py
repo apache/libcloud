@@ -103,10 +103,6 @@ class AbiquoNodeDriver(NodeDriver):
                               undefined behavoir will be selected. (optional)
         @type       location: L{NodeLocation}
 
-        @keyword    auth:   Initial authentication information for the node
-                            (optional)
-        @type       auth:   L{NodeAuthPassword}
-
         @keyword   group_name:  Which group this node belongs to. If empty,
                                  it will be created into 'libcloud' group. If
                                  it does not found any group in the target
@@ -683,7 +679,7 @@ class AbiquoNodeDriver(NodeDriver):
         for vapp in vapps_element.findall('virtualAppliance'):
             if vapp.findtext('name') == group_name:
                 uri_vapp = get_href(vapp, 'edit')
-                return  NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
+                return NodeGroup(self, vapp.findtext('name'), uri=uri_vapp)
 
         # target group not found: create it. Since it is an extension of
         # the basic 'libcloud' functionality, we try to be as flexible as
