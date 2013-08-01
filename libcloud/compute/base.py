@@ -509,6 +509,11 @@ class NodeDriver(BaseDriver):
             value = os.urandom(16)
             return NodeAuthPassword(binascii.hexlify(value), generated=True)
 
+        if auth:
+            raise ProviderError(
+                '"auth" argument provided, but it was not a NodeAuthPassword'
+                'or NodeAuthSSHKey object')
+
     def create_node(self, **kwargs):
         """Create a new node instance.
 
