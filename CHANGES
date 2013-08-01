@@ -33,6 +33,10 @@ Changes with Apache Libcloud in development
     - Add Ubuntu Linux 12.04 image to ElasticHosts driver. (LIBCLOUD-364)
       [Bob Thompson]
 
+    - Fix create_node "features" metadata and update affected drivers.
+      (LIBCLOUD-367)
+      [John Carr]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
