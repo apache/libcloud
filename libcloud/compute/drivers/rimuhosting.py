@@ -116,6 +116,7 @@ class RimuHostingNodeDriver(NodeDriver):
     name = 'RimuHosting'
     website = 'http://rimuhosting.com/'
     connectionCls = RimuHostingConnection
+    features = {'create_node': ['password']}
 
     def __init__(self, key, host=API_HOST, port=443,
                  api_context=API_CONTEXT, secure=True):
@@ -345,5 +346,3 @@ class RimuHostingNodeDriver(NodeDriver):
             NodeLocation('DCLONDON', "RimuHosting London", 'GB', self),
             NodeLocation('DCSYDNEY', "RimuHosting Sydney", 'AU', self),
         ]
-
-    features = {"create_node": ["password"]}

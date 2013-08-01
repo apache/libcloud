@@ -423,7 +423,6 @@ class BaseEC2NodeDriver(NodeDriver):
 
     connectionCls = EC2Connection
     path = '/'
-    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -1415,8 +1414,6 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     name = 'Amazon EC2'
     website = 'http://aws.amazon.com/ec2/'
     path = '/'
-
-    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,

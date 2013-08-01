@@ -135,6 +135,7 @@ class BlueboxNodeDriver(NodeDriver):
     api_name = 'bluebox'
     name = 'Bluebox Blocks'
     website = 'http://bluebox.net'
+    features = {'create_node': ['ssh_key', 'password']}
 
     def list_nodes(self):
         result = self.connection.request('/api/blocks.json')

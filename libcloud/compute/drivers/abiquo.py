@@ -40,7 +40,6 @@ class AbiquoNodeDriver(NodeDriver):
     name = 'Abiquo'
     website = 'http://www.abiquo.com/'
     connectionCls = AbiquoConnection
-    features = {'create_node': ['password']}
     timeout = 2000  # some images take a lot of time!
 
     # Media Types

@@ -61,6 +61,7 @@ class HostVirtualNodeDriver(NodeDriver):
     name = 'HostVirtual'
     website = 'http://www.vr.org'
     connectionCls = HostVirtualComputeConnection
+    features = {'create_node': ['ssh_key', 'password']}
 
     def __init__(self, key):
         self.location = None
