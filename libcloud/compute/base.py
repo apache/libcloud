@@ -492,20 +492,20 @@ class NodeDriver(BaseDriver):
         """
 
         if isinstance(auth, NodeAuthPassword):
-            if "password" in self.features['create_node']:
+            if 'password' in self.features['create_node']:
                 return auth
             raise ProviderError(
-                "Password provided as authentication information, but password"
-                "not supported")
+                'Password provided as authentication information, but password'
+                'not supported')
 
         if isinstance(auth, NodeAuthSSHKey):
-            if "ssh_key" in self.features['create_node']:
+            if 'ssh_key' in self.features['create_node']:
                 return auth
             raise ProviderError(
-                "SSH Key provided as authentication information, but SSH Key"
-                "not supported")
+                'SSH Key provided as authentication information, but SSH Key'
+                'not supported')
 
-        if "password" in self.features['create_node']:
+        if 'password' in self.features['create_node']:
             value = os.urandom(16)
             return NodeAuthPassword(binascii.hexlify(value), generated=True)
 
@@ -693,17 +693,14 @@ class NodeDriver(BaseDriver):
                 raise NotImplementedError(
                     'If providing auth, only NodeAuthSSHKey or'
                     'NodeAuthPassword is supported')
-
         elif 'ssh_key' in kwargs:
             # If an ssh_key is provided we can try deploy_node
             pass
-
         elif 'create_node' in self.features:
             f = self.features['create_node']
             if not 'generates_password' in f and not "password" in f:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
-
         else:
             raise NotImplementedError(
                 'deploy_node not implemented for this driver')
