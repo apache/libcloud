@@ -34,15 +34,19 @@ driver.destroy_node(node)
 node = driver.create_node(name='test node 2', image=image, ex_deploy=False)
 
 # Create node with custom CPU & Memory values
-node = driver.create_node(name='test node 3', image=image, ex_vm_cpu=3, ex_vm_memory=1024)
+node = driver.create_node(name='test node 3', image=image, ex_vm_cpu=3,
+                          ex_vm_memory=1024)
 
-# Create node with customised networking parameters (eg. for OVF imported images)
+# Create node with customised networking parameters (eg. for OVF
+# imported images)
 node = driver.create_node(name='test node 4', image=image,
-                          ex_vm_network='your vm net name', ex_network='your org net name',
+                          ex_vm_network='your vm net name',
+                          ex_network='your org net name',
                           ex_vm_fence='bridged', ex_vm_ipmode='DHCP')
 
 # Create node in a custom virtual data center
-node = driver.create_node(name='test node 4', image=image, ex_vdc='your vdc name')
+node = driver.create_node(name='test node 4', image=image,
+                          ex_vdc='your vdc name')
 
 # Create node with guest OS customisation script to be run at first boot
 node = driver.create_node(name='test node 5', image=image,
