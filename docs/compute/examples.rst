@@ -12,3 +12,28 @@ using a generic OpenStack driver.
    :language: python
 
 .. _`trystack.org`: http://trystack.org/
+
+Create an OpenStack node using a local OpenStack provider
+---------------------------------------------------------
+
+This example shows how to create a node using a local OpenStack installation.
+Don't forget to replace ``your_auth_username``, ``your_auth_password`` and
+``ex_force_auth_url`` with the correct values specific to your installation.
+
+.. note::
+    This example works with Libcloud version 0.9.0 and above.
+
+.. literalinclude:: /examples/compute/openstack_simple.py
+   :language: python
+
+Create a VMware vCloud v1.5 node using generic provider
+-------------------------------------------------------
+
+This example demonstrates how to launch a VMware vCloud v1.5 node on a
+generic provider such as a test lab.
+
+.. note::
+    This example works with Libcloud version 0.10.1 and above.
+
+.. literalinclude:: /examples/compute/vmware_vcloud_1.5.py
+   :language: python
