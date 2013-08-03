@@ -20,7 +20,7 @@ resources:
   RackSpace CloudServers
 * :doc:`Cloud object storage </storage/index>` - services such as Amazon S3 and
   Rackspace CloudFiles
-* :doc:`Load Balancers as a Service </loadbalancers/index>`
+* :doc:`Load Balancers as a Service </loadbalancer/index>`
 * :doc:`DNS as a Service </dns/index>`
 
 
@@ -30,7 +30,7 @@ resources:
 
     compute/*
     storage/*
-    loadbalancers/*
+    loadbalancer/*
     dns/*
 
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html
