@@ -32,7 +32,7 @@ Resource you can manage with Libcloud are divided in the following categories:
 
 .. toctree::
     :glob:
-    :maxdepth: 2
+    :maxdepth: 3
     :hidden:
 
     compute/*

@@ -10,8 +10,17 @@ allow you to execute arbitrary shell commands. This functionality is usually
 used to prepare your freshly created server, install your SSH key, and run a
 configuration management tool (such as Puppet, Chef, or cfengine) on it.
 
+Besides managing cloud and virtual servers, compute components allso allows you
+to manage cloud block storage (not to be confused with cloud object storage)
+for providers which support it.
+Block storage management is lives under compute API, because it is in most cases
+tightly coupled with compute resources.
+
 Terminology
 -----------
+
+Compute
+~~~~~~~
 
 * **Node** - represents a cloud or virtual server.
 * **NodeSize** - represents node hardware configuration. Usually this is amount
@@ -21,6 +30,12 @@ Terminology
 * **NodeLocation** - represents a physical location where a server can be.
 * **NodeState** - represents a node state. Standard states are: ``running``,
   ``rebooting``, ``terminated``, ``pending``, and ``unknown``.
+
+Block Storage
+~~~~~~~~~~~~~
+
+* **StorageVolume** - represents a block storage volume
+* **VolumeSnapshot** - represents a point in time snapshot of a StorageVolume
 
 Examples
 --------
