@@ -23,14 +23,15 @@ resources:
 * :doc:`Load Balancers as a Service </loadbalancer/index>`
 * :doc:`DNS as a Service </dns/index>`
 
-
 .. toctree::
     :glob:
+    :maxdepth: 2
     :hidden:
 
     compute/*
     storage/*
     loadbalancer/*
     dns/*
+    other/*
 
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html
