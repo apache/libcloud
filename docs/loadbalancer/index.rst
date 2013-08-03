@@ -1,9 +1,17 @@
 Load Balancers
 ==============
 
-.. note::
+Load Balancer API allows you to manage Load Balancers as a service and services
+such as Rackspace Cloud Load Balancers, GoGrid Load Balancers and Ninefold Load
+Balancers.
 
-    TODO: Write me!
+Terminology
+-----------
+
+* **LoadBalancer** - represents a load balancer instance.
+* **Member** - represents a load balancer member.
+* **Algorithm** - represents a load balancing algorithm (round-robin, random,
+  least connections, etc.).
 
 Examples
 --------

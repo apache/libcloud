@@ -1,9 +1,18 @@
 Object Storage
 ==============
 
-.. note::
+Storage API allows you to manage cloud object storage (not to be confused with
+cloud block storage) and services such as Amazon S3, Rackspace CloudFiles,
+Google Storage and others.
 
-    TODO: Write me!
+Terminology
+-----------
+
+* **Object** - represents an object or so called BLOB.
+* **Container** - represents a container which can contain multiple objects.
+  You can think of it as a folder on a file system. Difference between
+  container and a folder on file system is that containers cannot be nested.
+  Some APIs and providers (e.g. AWS) refer to it as a Bucket.
 
 Examples
 --------
