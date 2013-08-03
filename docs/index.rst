@@ -25,6 +25,11 @@ Resource you can manage with Libcloud are divided in the following categories:
 * :doc:`Load Balancers as a Service </loadbalancer/index>`
 * :doc:`DNS as a Service </dns/index>`
 
+.. figure:: /_static/images/supported_providers.png
+    :align: center
+
+    A subset of supported providers in Libcloud.
+
 .. toctree::
     :glob:
     :maxdepth: 2
