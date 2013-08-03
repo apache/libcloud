@@ -7,6 +7,11 @@ Welcome to Apache Libcloud's documentation!
     Sphinx, so this may be incomplete. We apologize for the inconvenience and we
     hope the upcoming awesomeness will make up for it.
 
+.. note::
+
+    Unless noted otherwise, all of the examples in the documentation are
+    licensed under the `Apache 2.0 license`_.
+
 Apache Libcloud is a Python library which abstracts away the differences
 between multiple cloud providers. It current can manage four different cloud
 resources:
@@ -27,3 +32,5 @@ resources:
     storage/*
     loadbalancers/*
     dns/*
+
+.. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html
