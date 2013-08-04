@@ -18,7 +18,7 @@ a unified and easy to use API.
 
 Resource you can manage with Libcloud are divided in the following categories:
 
-* :doc:`Cloud Servers </compute/index>` - services such as Amazon EC2 and
+* :doc:`Cloud Servers and Block Storage </compute/index>` - services such as Amazon EC2 and
   RackSpace CloudServers
 * :doc:`Cloud Object Storage </storage/index>` - services such as Amazon S3 and
   Rackspace CloudFiles

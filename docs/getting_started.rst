@@ -1,14 +1,23 @@
 Getting Started
 ===============
 
-Installation
-------------
+Installation (stable version)
+----------------------------
 
-Libcloud is available on PyPi and can be installed using pip:
+Libcloud is available on PyPi. You can install latest stable version using pip:
 
 .. sourcecode:: bash
 
     pip install apache-libcloud
+
+Installation (development version)
+---------------------------------
+
+You can install latest development version from out Git repository:
+
+.. sourcecode:: bash
+
+    pip install -e https://git-wip-us.apache.org/repos/asf/libcloud.git@trunk#egg=apache-libcloud
 
 Upgrading
 ---------
@@ -19,26 +28,53 @@ If you used pip to install the library you can also use it to upgrade it:
 
     pip install --upgrade apache-libcloud
 
-Example: Connecting with a Driver
----------------------------------
+Using it
+--------
 
-.. literalinclude:: /examples/compute/list_nodes.py
-   :language: python
+This section describes a standard work-flow which you follow when working
+with any of the Libcloud drivers.
 
-Example: Creating a Node
-------------------------
+1. Obtain reference to the provider driver
 
-.. literalinclude:: /examples/compute/create_node.py
-   :language: python
+.. sourcecode:: python
 
-Example: List Nodes Across Multiple Providers
----------------------------------------------
+    from pprint import pprint
 
-.. literalinclude:: /examples/compute/list_nodes_across_multiple_providers.py
-   :language: python
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
 
-Example: Bootstrapping Puppet on a Node
----------------------------------------
+    cls = get_driver(Provider.RACKSPACE)
 
-.. literalinclude:: /examples/compute/bootstrapping_puppet_on_node.py
-   :language: python
+2. Instantiate the driver with your provider credentials
+
+.. sourcecode:: python
+
+   driver = cls('my username', 'my api key')
+
+3. Start using the driver
+
+.. sourcecode:: python
+
+    pprint(driver.list_sizes())
+    pprint(driver.list_nodes())
+
+4. Putting it all together
+
+.. sourcecode:: python
+
+    from pprint import pprint
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE)
+    driver = cls('my username', 'my api key')
+
+    pprint(driver.list_sizes())
+    pprint(driver.list_nodes())
+
+You can find more examples with common patterns which can help you get started
+on the :doc:`Compute Examples </compute/examples>` page.
+
+Where to go from here?
+----------------------

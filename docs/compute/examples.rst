@@ -1,6 +1,24 @@
 Compute Examples
 ================
 
+Example: Creating a Node
+------------------------
+
+.. literalinclude:: /examples/compute/create_node.py
+   :language: python
+
+Example: List Nodes Across Multiple Providers
+---------------------------------------------
+
+.. literalinclude:: /examples/compute/list_nodes_across_multiple_providers.py
+   :language: python
+
+Example: Bootstrapping Puppet on a Node
+---------------------------------------
+
+.. literalinclude:: /examples/compute/bootstrapping_puppet_on_node.py
+   :language: python
+
 Create an OpenStack node using trystack.org provider
 ----------------------------------------------------
 
