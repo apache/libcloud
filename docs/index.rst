@@ -30,10 +30,14 @@ Resource you can manage with Libcloud are divided in the following categories:
 
     A subset of supported providers in Libcloud.
 
+Documentation
+=============
+
 .. toctree::
     :glob:
     :maxdepth: 3
 
+    getting_started
     compute/index
     storage/index
     loadbalancer/index
