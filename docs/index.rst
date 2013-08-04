@@ -33,12 +33,12 @@ Resource you can manage with Libcloud are divided in the following categories:
 .. toctree::
     :glob:
     :maxdepth: 3
-    :hidden:
 
-    compute/*
-    storage/*
-    loadbalancer/*
-    dns/*
+    compute/index
+    storage/index
+    loadbalancer/index
+    dns/index
+    troubleshooting
     other/*
 
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html

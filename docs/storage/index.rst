@@ -14,6 +14,12 @@ Terminology
   container and a folder on file system is that containers cannot be nested.
   Some APIs and providers (e.g. AWS) refer to it as a Bucket.
 
+Supported Providers
+-------------------
+
+For a list of supported providers see :doc:`supported providers page
+</storage/supported_providers>`.
+
 Examples
 --------
 

@@ -13,6 +13,12 @@ Terminology
 * **Algorithm** - represents a load balancing algorithm (round-robin, random,
   least connections, etc.).
 
+Supported Providers
+-------------------
+
+For a list of supported providers see :doc:`supported providers page
+</loadbalancer/supported_providers>`.
+
 Examples
 --------
 

@@ -12,6 +12,12 @@ Terminology
   a record type and data attribute. Data depends on the record type.
 * **RecordType** - represents a DNS record type (A, AAAA, MX, TXT, etc.)
 
+Supported Providers
+-------------------
+
+For a list of supported providers see :doc:`supported providers page
+</dns/supported_providers>`.
+
 Examples
 --------
 

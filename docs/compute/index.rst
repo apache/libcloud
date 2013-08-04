@@ -37,6 +37,12 @@ Block Storage
 * **StorageVolume** - represents a block storage volume
 * **VolumeSnapshot** - represents a point in time snapshot of a StorageVolume
 
+Supported Providers
+-------------------
+
+For a list of supported providers see :doc:`supported providers page
+</compute/supported_providers>`.
+
 Examples
 --------
 
