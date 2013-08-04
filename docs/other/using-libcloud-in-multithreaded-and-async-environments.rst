@@ -63,7 +63,7 @@ thread pool.
 The example bellow demonstrates how to create a new node inside a thread
 without blocking the whole reactor.
 
-.. literalinclude:: /examples/misc/twist_create_node.py
+.. literalinclude:: /examples/misc/twisted_create_node.py
    :language: python
 
 

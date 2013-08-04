@@ -2,7 +2,7 @@ Getting Started
 ===============
 
 Installation (stable version)
-----------------------------
+-----------------------------
 
 Libcloud is available on PyPi. You can install latest stable version using pip:
 
@@ -11,7 +11,7 @@ Libcloud is available on PyPi. You can install latest stable version using pip:
     pip install apache-libcloud
 
 Installation (development version)
----------------------------------
+----------------------------------
 
 You can install latest development version from out Git repository:
 
