@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,9 +15,12 @@
 # limitations under the License.
 
 import os
+import sys
 import inspect
 from collections import OrderedDict
 from os.path import join as pjoin
+
+sys.path.insert(0, '../')
 
 from libcloud.compute .base import NodeDriver
 from libcloud.compute.providers import get_driver as get_compute_driver
