@@ -40,7 +40,8 @@ from libcloud.dns.types import Provider as DNSProvider
 
 BASE_API_METHODS = {
     'compute_main': ['list_nodes', 'create_node', 'reboot_node',
-                     'destroy_node', 'list_images', 'list_sizes'],
+                     'destroy_node', 'list_images', 'list_sizes',
+                     'deploy_node'],
     'compute_block_storage': ['list_volumes', 'create_volume',
                               'destroy_volume',
                               'attach_volume', 'detach_volume',
@@ -65,7 +66,8 @@ FRIENDLY_METHODS_NAMES = {
         'reboot_node': 'reboot node',
         'destroy_node': 'destroy node',
         'list_images': 'list images',
-        'list_sizes': 'list sizes'
+        'list_sizes': 'list sizes',
+        'deploy_node': 'deploy node'
     },
     'compute_block_storage': {
         'list_volumes': 'list volumes',
@@ -166,8 +168,14 @@ def generate_providers_table(api):
         for method_name in base_api_methods:
             base_method = base_methods[method_name]
             driver_method = driver_methods[method_name]
-            is_implemented = (id(driver_method.im_func) !=
-                              id(base_method.im_func))
+
+            if method_name == 'deploy_node':
+                features = getattr(cls, 'features', {}).get('create_node', [])
+                is_implemented = len(features) >= 1
+            else:
+                is_implemented = (id(driver_method.im_func) !=
+                                  id(base_method.im_func))
+
             result[name]['methods'][method_name] = is_implemented
 
     return result
