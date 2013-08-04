@@ -666,7 +666,7 @@ class NodeDriver(BaseDriver):
         :type ssh_port: ``int``
 
         :param ssh_timeout: Optional SSH connection timeout in seconds
-                                 (default is None)
+                                 (default is 10)
         :type ssh_timeout: ``float``
 
         :param auth:   Initial authentication information for the node
