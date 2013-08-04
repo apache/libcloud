@@ -20,7 +20,8 @@ import inspect
 from collections import OrderedDict
 from os.path import join as pjoin
 
-sys.path.insert(0, '../')
+this_dir = os.path.abspath(os.path.split(__file__)[0])
+sys.path.insert(0, os.path.join(this_dir, '../'))
 
 from libcloud.compute .base import NodeDriver
 from libcloud.compute.providers import get_driver as get_compute_driver
@@ -236,6 +237,10 @@ def generate_supported_providers_table(provider_matrix):
         data.append(row)
 
     result = generate_rst_table(data)
+
+    result += '\n\n'
+    for provider, values in provider_matrix.items():
+        result += '.. _`%s`: %s\n' % (values['name'], values['website'])
     return result
 
 
