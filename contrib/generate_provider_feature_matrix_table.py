@@ -39,8 +39,13 @@ from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
 
 BASE_API_METHODS = {
-    'compute': ['list_nodes', 'create_node', 'reboot_node', 'destroy_node',
-                'list_images', 'list_sizes'],
+    'compute_main': ['list_nodes', 'create_node', 'reboot_node',
+                     'destroy_node', 'list_images', 'list_sizes'],
+    'compute_block_storage': ['list_volumes', 'create_volume',
+                              'destroy_volume',
+                              'attach_volume', 'detach_volume',
+                              'list_volume_snapshots',
+                              'create_volume_snapshot'],
     'loadbalancer': ['create_balancer', 'list_balancers',
                      'balancer_list_members', 'balancer_attach_member',
                      'balancer_detach_member', 'balancer_attach_compute_node'],
@@ -54,13 +59,22 @@ BASE_API_METHODS = {
 }
 
 FRIENDLY_METHODS_NAMES = {
-    'compute': {
+    'compute_main': {
         'list_nodes': 'list nodes',
         'create_node': 'create node',
         'reboot_node': 'reboot node',
         'destroy_node': 'destroy node',
         'list_images': 'list images',
         'list_sizes': 'list sizes'
+    },
+    'compute_block_storage': {
+        'list_volumes': 'list volumes',
+        'create_volume': 'create volume',
+        'destroy_volume': 'destroy volume',
+        'attach_volume': 'attach volume',
+        'detach_volume': 'detach volume',
+        'list_volume_snapshots': 'list snapshots',
+        'create_volume_snapshot': 'create snapshop'
     },
     'loadbalancer': {
         'create_balancer': 'create balancer',
@@ -103,7 +117,7 @@ def get_provider_api_names(Provider):
 def generate_providers_table(api):
     result = {}
 
-    if api == 'compute':
+    if api in ['compute_main', 'compute_block_storage']:
         driver = NodeDriver
         drivers = COMPUTE_DRIVERS
         provider = ComputeProvider
@@ -219,11 +233,25 @@ def generate_tables():
         supported_providers = generate_supported_providers_table(result)
         supported_methods = generate_supported_methods_table(api, result)
 
+        docs_dir = api
+
+        if api.startswith('compute'):
+            docs_dir = 'compute'
+
         current_path = os.path.dirname(__file__)
         target_dir = os.path.abspath(pjoin(current_path,
-                                           '../docs/%s/' % (api)))
-        supported_providers_path = pjoin(target_dir, '_supported_providers.rst')
-        supported_methods_path = pjoin(target_dir, '_supported_methods.rst')
+                                           '../docs/%s/' % (docs_dir)))
+
+        file_name_1 = '_supported_providers.rst'
+        file_name_2 = '_supported_methods.rst'
+
+        if api == 'compute_main':
+            file_name_2 = '_supported_methods_main.rst'
+        elif api == 'compute_block_storage':
+            file_name_2 = '_supported_methods_block_storage.rst'
+
+        supported_providers_path = pjoin(target_dir, file_name_1)
+        supported_methods_path = pjoin(target_dir, file_name_2)
 
         with open(supported_providers_path, 'w') as fp:
             fp.write(supported_providers)
