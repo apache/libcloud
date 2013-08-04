@@ -218,8 +218,9 @@ def generate_supported_providers_table(provider_matrix):
     data.append(header)
     for provider, values in provider_matrix.items():
         name_str = '`%s`_' % (values['name'])
+        module_str = ':mod:`%s`' % (values['module'])
         class_str = ':class:`%s`' % (values['class'])
-        row = [name_str, values['constant'], values['module'], class_str]
+        row = [name_str, values['constant'], module_str, class_str]
         data.append(row)
 
     result = generate_rst_table(data)
