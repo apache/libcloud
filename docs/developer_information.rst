@@ -1,0 +1,52 @@
+Developer Information
+=====================
+
+Mailing Lists
+-------------
+
+All of the communication about Libcloud development happens on our mailing
+lists.
+
+* `users@libcloud.apache.org`_ - Mailing list for general talk about Libcloud
+  and other off-topic things
+  (`archive <https://mail-archives.apache.org/mod_mbox/libcloud-users/>`_)
+* `dev@libcloud.apache.org`_ - General mailing list for developers
+  (`archive <https://mail-archives.apache.org/mod_mbox/libcloud-dev/>`_)
+* `commits@libcloud.apache.org`_ - Commits messages go to this mailing list.
+  Keep ind mind that unlike the others, this mailing list is fairly noisy.
+  (`archive <https://mail-archives.apache.org/mod_mbox/libcloud-commits/>`_)
+
+Archive of old incubator mailing lists:
+
+* `incubator-libcloud`_
+* `incubator-libcloud-commits`_
+
+Issue Tracker
+-------------
+
+For bug and issue tracking we use JIRA located at
+https://issues.apache.org/jira/browse/LIBCLOUD.
+
+Testing
+-------
+
+For information how to run the tests and how to generate the test coverage
+report, please see the :doc:`Testing page </testing>`.
+
+Continuous Integration
+----------------------
+
+For continuous integration we use buildbot. You can find all the build reports
+`here <https://ci.apache.org/waterfall?builder=libcloud-trunk-tox&builder=libcloud-site-staging>`_.
+
+Test Coverage
+-------------
+
+Test coverage report is automatically generated after every push and can be
+found at http://ci.apache.org/projects/libcloud/coverage.
+
+.. _`users@libcloud.apache.org`: mailto:users-subscribe@libcloud.apache.org
+.. _`dev@libcloud.apache.org`: mailto:dev-subscribe@libcloud.apache.org
+.. _`commits@libcloud.apache.org`: mailto:commits-subscribe@libcloud.apache.org
+.. _`incubator-libcloud`: http://mail-archives.apache.org/mod_mbox/incubator-libcloud/
+.. _`incubator-libcloud-commits`: http://mail-archives.apache.org/mod_mbox/incubator-libcloud-commits/
