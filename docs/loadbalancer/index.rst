@@ -1,5 +1,5 @@
-Load Balancers
-==============
+Load Balancer
+=============
 
 .. note::
 
