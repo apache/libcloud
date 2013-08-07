@@ -1,6 +1,10 @@
 Object Storage
 ==============
 
+.. note::
+
+    Object Storage API is available in Libcloud 0.5.0 and higher.
+
 Storage API allows you to manage cloud object storage (not to be confused with
 cloud block storage) and services such as Amazon S3, Rackspace CloudFiles,
 Google Storage and others.

@@ -1,6 +1,10 @@
 Load Balancers
 ==============
 
+.. note::
+
+    Load Balancer API is available in Libcloud 0.5.0 and higher.
+
 Load Balancer API allows you to manage Load Balancers as a service and services
 such as Rackspace Cloud Load Balancers, GoGrid Load Balancers and Ninefold Load
 Balancers.

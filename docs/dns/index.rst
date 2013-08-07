@@ -1,6 +1,10 @@
 DNS
 ===
 
+.. note::
+
+    DNS API is available in Libcloud 0.6.0 and higher.
+
 DNS API allows you to manage DNS as A Service and services such as Zerigo DNS,
 Rackspace Cloud DNS and others.
 
