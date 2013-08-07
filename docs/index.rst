@@ -38,6 +38,7 @@ Documentation
     :maxdepth: 3
 
     getting_started
+    supported_providers
     compute/index
     storage/index
     loadbalancer/index
