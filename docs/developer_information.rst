@@ -1,6 +1,8 @@
 Developer Information
 =====================
 
+.. _mailing-lists:
+
 Mailing Lists
 -------------
 
@@ -20,6 +22,8 @@ Archive of old incubator mailing lists:
 
 * `incubator-libcloud`_
 * `incubator-libcloud-commits`_
+
+.. _issue-tracker:
 
 Issue Tracker
 -------------
