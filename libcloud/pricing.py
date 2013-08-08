@@ -65,18 +65,18 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     """
     Return pricing for the provided driver.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str`
+    :param driver_name: Driver name
 
-    @type pricing_file_path: C{str}
-    @param pricing_file_path: Custom path to a price file. If not provided
+    :type pricing_file_path: ``str``
+    :param pricing_file_path: Custom path to a price file. If not provided
                               it uses a default path.
 
-    @rtype: C{dict}
-    @return: Dictionary with pricing where a key name is size ID and
+    :rtype: ``dict``
+    :return: Dictionary with pricing where a key name is size ID and
              the value is a price.
     """
     if not driver_type in VALID_PRICING_DRIVER_TYPES:
@@ -106,14 +106,14 @@ def set_pricing(driver_type, driver_name, pricing):
     """
     Populate the driver pricing dictionary.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str``
+    :param driver_name: Driver name
 
-    @type pricing: C{dict}
-    @param pricing: Dictionary where a key is a size ID and a value is a price.
+    :type pricing: ``dict``
+    :param pricing: Dictionary where a key is a size ID and a value is a price.
     """
 
     PRICING_DATA[driver_type][driver_name] = pricing
@@ -123,18 +123,18 @@ def get_size_price(driver_type, driver_name, size_id):
     """
     Return price for the provided size.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str``
+    :param driver_name: Driver name
 
-    @type size_id: C{int/str}
-    @param size_id: Unique size ID (can be an integer or a string - depends on
+    :type size_id: ``str`` or ``int``
+    :param size_id: Unique size ID (can be an integer or a string - depends on
                     the driver)
 
-    @rtype: C{int}
-    @return: Size price.
+    :rtype: ``int``
+    :return: Size price.
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
     price = float(pricing[size_id])
@@ -163,11 +163,11 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
     """
     Invalidate the cache for the specified driver.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str``
+    :param driver_name: Driver name
     """
     if driver_name in PRICING_DATA[driver_type]:
         del PRICING_DATA[driver_type][driver_name]
@@ -178,11 +178,11 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL,
     """
     Download pricing file from the file_url and save it to file_path.
 
-    @type file_url: C{str}
-    @param file_url: URL pointing to the pricing file.
+    :type file_url: ``str``
+    :param file_url: URL pointing to the pricing file.
 
-    @type file_path: C{str}
-    @param file_path: Path where a download pricing file will be saved.
+    :type file_path: ``str``
+    :param file_path: Path where a download pricing file will be saved.
     """
     dir_name = os.path.dirname(file_path)
 
