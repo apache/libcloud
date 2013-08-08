@@ -592,9 +592,11 @@ class Connection(object):
             headers.update({'Host': self.host})
 
         # Encode data if necessary
-        if data:
+        if data is not None:
             data = self.encode_data(data)
-            headers.update({'Content-Length': str(len(data))})
+            # Only send Content-Length 0 with POST and PUT request
+            if len(data) > 0 or (len(data) == 0 and method in ['POST', 'PUT']):
+                headers.update({'Content-Length': str(len(data))})
 
         params, headers = self.pre_connect_hook(params, headers)
 

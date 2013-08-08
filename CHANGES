@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development
+
+ *) General
+
+    - Fix a regression introduced in 0.13.0 and make sure to include
+      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362)
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
