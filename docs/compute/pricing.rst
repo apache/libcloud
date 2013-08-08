@@ -5,7 +5,7 @@ For majority of the compute providers Libcloud provides estimated pricing
 information. Pricing information is available via the :attr:`price` attribute
 on the :class:`NodeSize` object. :attr:`price` attribute is a :func:`float`
 type and tells user how much it costs (in US dollars) to run a ``Node`` with a
-specified ``NodeSize`` for an hour.
+specified :class:`NodeSize` for an hour.
 
 Example bellow shows how to retrieve pricing for ``NodeSize`` objects using
 :func:`list_sizes` method.
@@ -42,9 +42,23 @@ Using a custom pricing file
 
     This functionality is only available in Libcloud trunk and higher.
 
+By default Libcloud reads pricing data from ``data/pricing.json`` file which
+is included in the release package. If you want to use a custom pricing file,
+simply put move the file to ``~/.libcloud.pricing.json``.
+
+If ``~/.libcloud.pricing.json`` file is available, Libcloud will use it instead
+of the default pricing file which comes bundled with the release.
+
 Updating pricing
 ----------------
 
 .. note::
 
     This functionality is only available in Libcloud trunk and higher.
+
+Currently only way to update pricing is programmatically using
+:func:`libcloud.pricing.download_pricing_file` function. By default this
+function retrieves the latest pricing file from our git repository and saves it
+to ``~/.libcloud.pricing.json``.
+
+.. autofunction:: libcloud.pricing.download_pricing_file

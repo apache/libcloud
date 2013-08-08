@@ -43,6 +43,15 @@ Supported Providers
 For a list of supported providers see :doc:`supported providers page
 </compute/supported_providers>`.
 
+Pricing
+-------
+
+For majority of the compute providers Libcloud provides estimated pricing
+information which tells users how much it costs per hour to run a :class:`Node`
+with a specific :class:`NodeSize`.
+
+For more information, please see the :doc:`pricing page </compute/pricing>`.
+
 Examples
 --------
 
