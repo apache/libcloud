@@ -82,6 +82,10 @@ class GoGridConnection(ConnectionUserAndKey):
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
+    def request(self, action, params=None, data='', headers=None, method='GET', raw=False):
+        return super(GoGridConnection, self).request(action, params, data,
+                     headers, method, raw)
+
 
 class GoGridIpAddress(object):
     """
