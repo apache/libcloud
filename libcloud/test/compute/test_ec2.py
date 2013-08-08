@@ -438,6 +438,8 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _create_ex_blockdevicemappings_RunInstances(self, method, url, body, headers):
+        # Need to remove '/?'
+        url = url[2:]
         parameters = dict(parse_qsl(url))
         self.assertEqual(parameters['BlockDeviceMapping.1.DeviceName'],
                          '/dev/sdb')
