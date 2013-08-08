@@ -412,7 +412,7 @@ class AnotherErrorMember(Exception):
         self.tag = 'Error'
 
     def get(self, foo):
-        return 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'
+        return 'ACCESS_TO_RESOURCE_IS_FORBIDDEN_1'
 
 class AnotherError(Exception):
     pass

@@ -31,7 +31,6 @@ urlparse = urlparse.urlparse
 import time
 
 from xml.etree import ElementTree as ET
-from xml.etree.ElementTree import _ElementInterface
 from xml.parsers.expat import ExpatError
 
 from libcloud.common.base import XmlResponse, ConnectionUserAndKey
@@ -588,8 +587,7 @@ class VCloudNodeDriver(NodeDriver):
                 except Exception:
                     # The vApp was probably removed since the previous vDC query, ignore
                     e = sys.exc_info()[1]
-                    if not (isinstance(e.args[0], _ElementInterface) and
-                            e.args[0].tag.endswith('Error') and
+                    if not (e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') == 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
                         raise
 
