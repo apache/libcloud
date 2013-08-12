@@ -55,11 +55,13 @@ BASE_API_METHODS = {
     'loadbalancer': ['create_balancer', 'list_balancers',
                      'balancer_list_members', 'balancer_attach_member',
                      'balancer_detach_member', 'balancer_attach_compute_node'],
-    'storage': ['list_containers', 'list_container_objects',
-                'create_container',
-                'delete_container', 'upload_object',
-                'upload_object_via_stream', 'download_object',
-                'download_object_as_stream', 'delete_object'],
+    'storage_main': ['list_containers', 'list_container_objects',
+                     'create_container',
+                     'delete_container', 'upload_object',
+                     'upload_object_via_stream', 'download_object',
+                     'download_object_as_stream', 'delete_object'],
+    'storage_cdn': ['enable_container_cdn', 'enable_object_cdn',
+                    'get_container_cdn_url', 'get_object_cdn_url'],
     'dns': ['list_zones', 'list_records', 'create_zone', 'update_zone',
             'create_record', 'update_record', 'delete_zone', 'delete_record']
 }
@@ -91,7 +93,7 @@ FRIENDLY_METHODS_NAMES = {
         'balancer_detach_member': 'detach member',
         'balancer_attach_compute_node': 'attach compute node'
     },
-    'storage': {
+    'storage_main': {
         'list_containers': 'list containers',
         'list_container_objects': 'list objects',
         'create_container': 'create container',
@@ -101,6 +103,12 @@ FRIENDLY_METHODS_NAMES = {
         'download_object': 'download object',
         'download_object_as_stream': 'streaming object download',
         'delete_object': 'delete object'
+    },
+    'storage_cdn': {
+        'enable_container_cdn': 'enable container cdn',
+        'enable_object_cdn': 'enable object cdn',
+        'get_container_cdn_url': 'get container cdn URL',
+        'get_object_cdn_url': 'get object cdn URL',
     },
     'dns': {
         'list_zones': 'list zones',
@@ -134,7 +142,7 @@ def generate_providers_table(api):
         drivers = LB_DRIVERS
         provider = LBProvider
         get_driver_method = get_lb_driver
-    elif api == 'storage':
+    elif api in ['storage_main', 'storage_cdn']:
         driver = StorageDriver
         drivers = STORAGE_DRIVERS
         provider = StorageProvider
@@ -255,6 +263,8 @@ def generate_tables():
 
         if api.startswith('compute'):
             docs_dir = 'compute'
+        elif api.startswith('storage'):
+            docs_dir = 'storage'
 
         current_path = os.path.dirname(__file__)
         target_dir = os.path.abspath(pjoin(current_path,
@@ -267,6 +277,10 @@ def generate_tables():
             file_name_2 = '_supported_methods_main.rst'
         elif api == 'compute_block_storage':
             file_name_2 = '_supported_methods_block_storage.rst'
+        elif api == 'storage_main':
+            file_name_2 = '_supported_methods_main.rst'
+        elif api == 'storage_cdn':
+            file_name_2 = '_supported_methods_cdn.rst'
 
         supported_providers_path = pjoin(target_dir, file_name_1)
         supported_methods_path = pjoin(target_dir, file_name_2)
