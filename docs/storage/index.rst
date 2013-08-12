@@ -9,6 +9,9 @@ Storage API allows you to manage cloud object storage (not to be confused with
 cloud block storage) and services such as Amazon S3, Rackspace CloudFiles,
 Google Storage and others.
 
+Besides managing cloud object storage, storage component also exposes simple
+CDN management functionality.
+
 Terminology
 -----------
 
