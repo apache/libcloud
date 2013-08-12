@@ -10,7 +10,7 @@ allow you to execute arbitrary shell commands. This functionality is usually
 used to prepare your freshly created server, install your SSH key, and run a
 configuration management tool (such as Puppet, Chef, or cfengine) on it.
 
-Besides managing cloud and virtual servers, compute components allso allows you
+Besides managing cloud and virtual servers, compute component also allows you
 to manage cloud block storage (not to be confused with cloud object storage)
 for providers which support it.
 Block storage management is lives under compute API, because it is in most cases
