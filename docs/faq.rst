@@ -11,6 +11,25 @@ that you can't manage block storage independent of the compute API.
 This also makes sense because in most cases you are only interested in attaching
 or detaching volumes from and to the compute nodes.
 
+What are the extension methods?
+-------------------------------
+
+Libcloud acts as a lowest common denominator and exposes a unified base API
+which allows you to work with many different cloud providers through a single
+code base.
+
+Being a lowest common denominator by definition means that not all of the
+functionality offered by different cloud service providers is available
+through a base API.
+
+Libcloud solves this problem and allows user to access provider specific
+functionality through so called extension methods. Extension methods are
+all the methods which are prefixed with the ``ex_``.
+
+Extension methods are there for your convenience, but you should be careful
+when you use them because they make switching or working with multiple
+providers harder.
+
 I want do add a new provider driver what should I do?
 -----------------------------------------------------
 
