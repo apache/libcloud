@@ -227,8 +227,39 @@ class S3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def iterate_container_objects(self, container):
+    def list_container_objects(self, container, ex_prefix=None):
+        """
+        Return a list of objects for the given container.
+
+        :param container: Container instance.
+        :type container: :class:`Container`
+
+        :param ex_prefix: Only return objects starting with ex_prefix
+        :type ex_prefix: ``str``
+
+        :return: A list of Object instances.
+        :rtype: ``list`` of :class:`Object`
+        """
+        return list(self.iterate_container_objects(container,
+            ex_prefix=ex_prefix))
+
+    def iterate_container_objects(self, container, ex_prefix=None):
+        """
+        Return a generator of objects for the given container.
+
+        :param container: Container instance
+        :type container: :class:`Container`
+
+        :param ex_prefix: Only return objects starting with ex_prefix
+        :type ex_prefix: ``str``
+
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
+        """
         params = {}
+        if ex_prefix:
+            params['prefix'] = ex_prefix
+
         last_key = None
         exhausted = False
         container_path = self._get_container_path(container)

@@ -188,6 +188,24 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(obj.size, 1160520)
         self.assertEqual(obj.container.name, 'test_container')
 
+    def test_list_container_objects_with_prefix(self):
+        CloudFilesMockHttp.type = 'EMPTY'
+        container = Container(
+            name='test_container', extra={}, driver=self.driver)
+        objects = self.driver.list_container_objects(container=container,
+            ex_prefix='test_prefix1')
+        self.assertEqual(len(objects), 0)
+
+        CloudFilesMockHttp.type = None
+        objects = self.driver.list_container_objects(container=container,
+            ex_prefix='test_prefix2')
+        self.assertEqual(len(objects), 4)
+
+        obj = [o for o in objects if o.name == 'foo test 1'][0]
+        self.assertEqual(obj.hash, '16265549b5bda64ecdaa5156de4c97cc')
+        self.assertEqual(obj.size, 1160520)
+        self.assertEqual(obj.container.name, 'test_container')
+
     def test_list_container_objects_iterator(self):
         CloudFilesMockHttp.type = 'ITERATOR'
         container = Container(

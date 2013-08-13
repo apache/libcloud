@@ -644,8 +644,38 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return obj
 
-    def iterate_container_objects(self, container):
+    def list_container_objects(self, container, ex_prefix=None):
+        """
+        Return a list of objects for the given container.
+
+        :param container: Container instance.
+        :type container: :class:`Container`
+
+        :param ex_prefix: Only get objects with names starting with ex_prefix
+        :type ex_prefix: ``str``
+
+        :return: A list of Object instances.
+        :rtype: ``list`` of :class:`Object`
+        """
+        return list(self.iterate_container_objects(container,
+            ex_prefix=ex_prefix))
+
+    def iterate_container_objects(self, container, ex_prefix=None):
+        """
+        Return a generator of objects for the given container.
+
+        :param container: Container instance
+        :type container: :class:`Container`
+
+        :param ex_prefix: Only get objects with names starting with ex_prefix
+        :type ex_prefix: ``str``
+
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
+        """
         params = {}
+        if ex_prefix:
+            params['prefix'] = ex_prefix
 
         while True:
             response = self.connection.request('/%s' % (container.name),
