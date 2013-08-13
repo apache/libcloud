@@ -299,6 +299,16 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
+    def test_ex_list_keypairs(self):
+        keypairs = self.driver.ex_list_keypairs()
+
+        fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
+                      '00:00:00:00:00'
+
+        self.assertEqual(len(keypairs), 1)
+        self.assertEqual(keypairs[0]['keyName'], 'gsg-keypair')
+        self.assertEqual(keypairs[0]['keyFingerprint'], fingerprint)
+
     def test_ex_describe_all_keypairs(self):
         keys = self.driver.ex_describe_all_keypairs()
         self.assertEqual(keys, ['gsg-keypair'])

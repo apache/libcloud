@@ -827,8 +827,11 @@ class BaseEC2NodeDriver(NodeDriver):
         for elem in findall(element=response, xpath='keySet/item',
                             namespace=NAMESPACE):
             keypair = {
-                'keyName': findtext(element=elem, xpath='keyName', namespace=NAMESPACE),
-                'keyFingerprint': findtext(element=elem, xpath='keyFingerprint', namespace=NAMESPACE),
+                'keyName': findtext(element=elem, xpath='keyName',
+                                    namespace=NAMESPACE),
+                'keyFingerprint': findtext(element=elem,
+                                           xpath='keyFingerprint',
+                                           namespace=NAMESPACE).strip(),
             }
             keypairs.append(keypair)
 
@@ -1371,7 +1374,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'auth' in kwargs:
             auth = self._get_and_check_auth(kwargs['auth'])
-            params['KeyName'] = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            params['KeyName'] = \
+                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
