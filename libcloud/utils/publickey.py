@@ -17,6 +17,12 @@ import base64
 import hashlib
 import struct
 
+__all__ = [
+    'get_pubkey_openssh_fingerprint',
+    'get_pubkey_ssh2_fingerprint',
+    'get_pubkey_comment'
+]
+
 try:
     from Crypto.Util.asn1 import DerSequence, DerObject, DerNull
     from Crypto.PublicKey.RSA import algorithmIdentifier, importKey
@@ -24,9 +30,11 @@ try:
 except ImportError:
     pycrypto_available = False
 
+
 def _to_md5_fingerprint(data):
-   hashed = hashlib.md5(data).digest()
-   return ":".join(x.encode("hex") for x in hashed)
+    hashed = hashlib.md5(data).digest()
+    return ":".join(x.encode("hex") for x in hashed)
+
 
 def get_pubkey_openssh_fingerprint(pubkey):
     # We import and export the key to make sure it is in OpenSSH format
@@ -36,6 +44,7 @@ def get_pubkey_openssh_fingerprint(pubkey):
     pubkey = k.exportKey('OpenSSH')[7:]
     decoded = base64.decodestring(pubkey)
     return _to_md5_fingerprint(decoded)
+
 
 def get_pubkey_ssh2_fingerprint(pubkey):
     # This is the format that EC2 shows for public key fingerprints in its
@@ -49,6 +58,7 @@ def get_pubkey_ssh2_fingerprint(pubkey):
     der = DerSequence([algorithmIdentifier, bitmap.encode()])
     return _to_md5_fingerprint(der.encode())
 
+
 def get_pubkey_comment(pubkey, default=None):
     if pubkey.startswith("ssh-"):
         # This is probably an OpenSSH key
@@ -56,4 +66,3 @@ def get_pubkey_comment(pubkey, default=None):
     if default:
         return default
     raise ValueError('Public key is not in a supported format')
-
