@@ -753,7 +753,7 @@ class BaseEC2NodeDriver(NodeDriver):
          unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
         @type       name: C{str}
 
-        @param     key_material: The filename with path of the public key to import.
+        @param     key_material: The contents of a public key file.
         @type      key_material: C{str}
 
         @rtype: C{dict}
