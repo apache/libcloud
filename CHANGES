@@ -52,6 +52,11 @@ Changes with Apache Libcloud in development
       Reported by Ben Meng (LIBCLOUD-366)
       [Tomaz Muraus]
 
+    - Allow users to filter objects starting with a prefix by passing ex_prefix
+      argument to the list_container_objects method in the S3, Google Storage
+      and CloudFiles driver. (LIBCLOUD-369)
+      [Stefan Friesel]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
