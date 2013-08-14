@@ -347,6 +347,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
+    def test_ex_find_or_import_keypair_by_key_material(self):
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        key_material = open(path).read()
+        key = self.driver.ex_find_or_import_keypair_by_key_material(key_material)
+        self.assertEqual(key['keyName'], 'keypair')
+        self.assertEqual(key['keyFingerprint'], null_fingerprint)
+
     def test_ex_create_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         self.driver.ex_create_tags(node, {'sample': 'tag'})
