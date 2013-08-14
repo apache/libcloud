@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import sys
 import unittest
 
@@ -39,6 +40,10 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import EC2_PARAMS
+
+
+null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
+                      '00:00:00:00:00'
 
 
 class BaseEC2Tests(LibcloudTestCase):
@@ -299,6 +304,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
+    def test_ex_list_keypairs(self):
+        keypairs = self.driver.ex_list_keypairs()
+
+        self.assertEqual(len(keypairs), 1)
+        self.assertEqual(keypairs[0]['keyName'], 'gsg-keypair')
+        self.assertEqual(keypairs[0]['keyFingerprint'], null_fingerprint)
+
     def test_ex_describe_all_keypairs(self):
         keys = self.driver.ex_describe_all_keypairs()
         self.assertEqual(keys, ['gsg-keypair'])
@@ -309,13 +321,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         # Test backward compatibility
         keypair2 = self.driver.ex_describe_keypairs('gsg-keypair')
 
-        fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
-                      '00:00:00:00:00'
-
         self.assertEqual(keypair1['keyName'], 'gsg-keypair')
-        self.assertEqual(keypair1['keyFingerprint'], fingerprint)
+        self.assertEqual(keypair1['keyFingerprint'], null_fingerprint)
         self.assertEqual(keypair2['keyName'], 'gsg-keypair')
-        self.assertEqual(keypair2['keyFingerprint'], fingerprint)
+        self.assertEqual(keypair2['keyFingerprint'], null_fingerprint)
 
     def test_ex_describe_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -325,6 +334,28 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('tag' in tags)
         self.assertTrue('owner' in tags)
         self.assertTrue('stack' in tags)
+
+    def test_ex_import_keypair_from_string(self):
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        key = self.driver.ex_import_keypair_from_string('keypair', open(path).read())
+        self.assertEqual(key['keyName'], 'keypair')
+        self.assertEqual(key['keyFingerprint'], null_fingerprint)
+
+    def test_ex_import_keypair(self):
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        key = self.driver.ex_import_keypair('keypair', path)
+        self.assertEqual(key['keyName'], 'keypair')
+        self.assertEqual(key['keyFingerprint'], null_fingerprint)
+
+    def test_ex_find_or_import_keypair_by_key_material(self):
+        if not 'ssh_key' in self.driver.features['create_node']:
+            print "Need 'pycrypto' to test ex_find_or_import_keypair_by_key_material"
+            return
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        key_material = open(path).read()
+        key = self.driver.ex_find_or_import_keypair_by_key_material(key_material)
+        self.assertEqual(key['keyName'], 'keypair')
+        self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
     def test_ex_create_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -581,6 +612,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeKeyPairs(self, method, url, body, headers):
         body = self.fixtures.load('describe_key_pairs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ImportKeyPair(self, method, url, body, headers):
+        body = self.fixtures.load('import_key_pair.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeTags(self, method, url, body, headers):
