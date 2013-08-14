@@ -29,6 +29,7 @@ from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
+from libcloud.utils.publickey import pycrypto_available
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
@@ -424,7 +425,8 @@ class BaseEC2NodeDriver(NodeDriver):
     """
 
     connectionCls = EC2Connection
-    features = {'create_node': ['ssh_key']}
+    if pycrypto_available:
+        features = {'create_node': ['ssh_key']}
     path = '/'
 
     NODE_STATE_MAP = {

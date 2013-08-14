@@ -348,6 +348,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
     def test_ex_find_or_import_keypair_by_key_material(self):
+        if not 'ssh_key' in self.driver.features['create_node']:
+            print "Need 'pycrypto' to test ex_find_or_import_keypair_by_key_material"
+            return
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
         key_material = open(path).read()
         key = self.driver.ex_find_or_import_keypair_by_key_material(key_material)
