@@ -48,10 +48,29 @@ Create a VMware vCloud v1.5 node using generic provider
 -------------------------------------------------------
 
 This example demonstrates how to launch a VMware vCloud v1.5 node on a
-generic provider such as a test lab.
+generic provider such as a test lab
 
 .. note::
     This example works with Libcloud version 0.10.1 and above.
 
 .. literalinclude:: /examples/compute/vmware_vcloud_1.5.py
+   :language: python
+
+
+Create EC2 node using a custom AMI
+----------------------------------
+
+This examples demonstrates how to create an EC2 node using a custom AMI (Amazon
+Machine Image).
+
+AMI's are region specific which means you need to select AMI which is available
+in the region of an EC2 driver you have instantiated.
+
+In Libcloud 0.13.0 and lower, region is determined based on the provider
+constant (``us-east-1`` is available as ``Provider.EC2_US_EAST``, ``us-west-1``
+is available as ``Provider.EC2_US_WEST`` and so on). For a full list of
+supported providers and provider constants, see
+:doc:`supported providers page </compute/supported_providers>`
+
+.. literalinclude:: /examples/compute/create_ec2_node_custom_ami.py
    :language: python
