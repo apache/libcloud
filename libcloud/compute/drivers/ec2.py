@@ -29,6 +29,8 @@ from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
+from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
@@ -422,6 +424,7 @@ class BaseEC2NodeDriver(NodeDriver):
     """
 
     connectionCls = EC2Connection
+    features = {'create_node': ['ssh_key']}
     path = '/'
 
     NODE_STATE_MAP = {
@@ -740,9 +743,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
-    def ex_import_keypair(self, name, keyfile):
+    def ex_import_keypair_from_string(self, name, key_material):
         """
-        imports a new public key
+        imports a new public key where the public key is passed in as a string
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -750,15 +753,12 @@ class BaseEC2NodeDriver(NodeDriver):
          unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
         @type       name: C{str}
 
-        @param     keyfile: The filename with path of the public key to import.
-        @type      keyfile: C{str}
+        @param     key_material: The contents of a public key file.
+        @type      key_material: C{str}
 
         @rtype: C{dict}
         """
-        with open(os.path.expanduser(keyfile)) as fh:
-            content = fh.read()
-
-        base64key = base64.b64encode(content)
+        base64key = base64.b64encode(key_material)
 
         params = {
             'Action': 'ImportKeyPair',
@@ -776,27 +776,76 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
-    def ex_describe_all_keypairs(self):
+    def ex_import_keypair(self, name, keyfile):
         """
-        Describes all keypairs.
+        imports a new public key where the public key is passed via a filename
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list} of C{str}
-        """
+        @param      name: The name of the public key to import. This must be
+         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        @type       name: C{str}
 
+        @param     keyfile: The filename with path of the public key to import.
+        @type      keyfile: C{str}
+
+        @rtype: C{dict}
+        """
+        with open(os.path.expanduser(keyfile)) as fh:
+            content = fh.read()
+        return self.ex_import_keypair_from_string(name, content)
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default='unnamed')
+        key_name = "%s-%s" % (key_comment, key_fingerprint)
+
+        for keypair in self.ex_list_keypairs():
+            if keypair['keyFingerprint'] == key_fingerprint:
+                return keypair
+
+        return self.ex_import_keypair_from_string(key_name, pubkey)
+
+    def ex_list_keypairs(self):
+        """
+        Lists all the keypair names and fingerprints.
+
+        @rtype: C{list} of C{dict}
+        """
         params = {
             'Action': 'DescribeKeyPairs'
         }
 
         response = self.connection.request(self.path, params=params).object
-        names = []
+        keypairs = []
         for elem in findall(element=response, xpath='keySet/item',
                             namespace=NAMESPACE):
-            name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
-            names.append(name)
+            keypair = {
+                'keyName': findtext(element=elem, xpath='keyName',
+                                    namespace=NAMESPACE),
+                'keyFingerprint': findtext(element=elem,
+                                           xpath='keyFingerprint',
+                                           namespace=NAMESPACE).strip(),
+            }
+            keypairs.append(keypair)
 
-        return names
+        return keypairs
+
+    def ex_describe_all_keypairs(self):
+        """
+        Describes all keypairs. This is here for backward compatibilty.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @rtype: C{list} of C{str}
+        """
+        return [k['keyName'] for k in self.ex_list_keypairs()]
 
     def ex_describe_keypairs(self, name):
         """
@@ -1319,6 +1368,14 @@ class BaseEC2NodeDriver(NodeDriver):
                     raise AttributeError('Invalid availability zone: %s'
                                          % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
+
+        if 'auth' in kwargs and 'ex_keyname' in kwargs:
+            raise AttributeError('Cannot specify auth and ex_keyname together')
+
+        if 'auth' in kwargs:
+            auth = self._get_and_check_auth(kwargs['auth'])
+            params['KeyName'] = \
+                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']

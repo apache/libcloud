@@ -41,6 +41,11 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-367)
       [John Carr]
 
+    - Update EC2 driver to accept the auth kwarg (it will accept NodeAuthSSH
+      objects and automatically import a public key that is not already
+      uploaded to the EC2 keyring). (Follow on from LIBCLOUD-367).
+      [John Carr]
+
     - Fix a bug in the ElasticHosts driver and check for right HTTP status
       code when determining drive imaging success. (LIBCLOUD-363)
       [Bob Thompson]
