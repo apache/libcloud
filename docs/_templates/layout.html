@@ -1,5 +1,10 @@
 {% extends "!layout.html" %}
 
+{% block rootrellink %}
+  <li><a href="https://libcloud.apache.org">Project Homepage</a> &raquo;</li>
+  {{ super() }}
+{% endblock %}
+
 {% block footer %}
 {{ super() }}
 <script>
