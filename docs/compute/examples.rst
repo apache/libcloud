@@ -56,6 +56,24 @@ generic provider such as a test lab
 .. literalinclude:: /examples/compute/vmware_vcloud_1.5.py
    :language: python
 
+Create EC2 node using a provided key pair and security groups
+-------------------------------------------------------------
+
+.. note::
+
+    This example assumes the provided key pair already exists. If the key pair
+    doesn't exist yet, you can create it using AWS dashboard, or
+    :func:`ex_import_keypair` driver method.
+
+This example demonstrates how to create an EC2 node using an existing key pair.
+Created node also gets added to the provided security groups.
+
+.. literalinclude:: /examples/compute/create_ec2_node_keypair_and_to_secgroup.py
+   :language: python
+
+As noted in the example, you use `ex_keyname` argument to specify key pair name
+and `ex_securitygroup` to specify a name of a single (``str``) or multiple
+groups (``list``) you want this node to be added to.
 
 Create EC2 node using a custom AMI
 ----------------------------------
