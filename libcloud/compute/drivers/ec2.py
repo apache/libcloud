@@ -1325,8 +1325,9 @@ class BaseEC2NodeDriver(NodeDriver):
         @keyword    ex_maxcount: Maximum number of instances to launch
         @type       ex_maxcount: C{int}
 
-        @keyword    ex_securitygroup: Name of security group
-        @type       ex_securitygroup: C{str}
+        @keyword    ex_securitygroup: Name of security group or a list of names
+                                      for multiple security groups.
+        @type       ex_securitygroup: C{str} or C{list}
 
         @keyword    ex_keyname: The name of the key pair
         @type       ex_keyname: C{str}
