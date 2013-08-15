@@ -13,7 +13,7 @@ is used.
 
 .. code-block:: python
 
-    set_driver('PROVIDER_NAME', 'path.to.the.module', 'DriverClass')
+    set_driver('provider_name', 'path.to.the.module', 'DriverClass')
 
 For example:
 
