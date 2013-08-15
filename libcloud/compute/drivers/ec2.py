@@ -758,7 +758,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @rtype: C{dict}
         """
-        base64key = base64.b64encode(key_material)
+        base64key = base64.b64encode(b(key_material))
 
         params = {
             'Action': 'ImportKeyPair',
