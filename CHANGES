@@ -62,6 +62,12 @@ Changes with Apache Libcloud in development
       and CloudFiles driver. (LIBCLOUD-369)
       [Stefan Friesel]
 
+  *) Load Balancer
+
+   - Expose CloudStack driver directly through the Provider.CLOUDSTACK
+     constant.
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
