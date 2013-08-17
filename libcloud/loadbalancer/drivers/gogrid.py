@@ -223,7 +223,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
                           state=self.LB_STATE_MAP.get(
                               el["state"]["name"], State.UNKNOWN),
                           ip=el["virtualip"]["ip"]["ip"],
-                          port=el["virtualip"]["port"],
+                          port=int(el["virtualip"]["port"]),
                           driver=self.connection.driver)
         return lb
 
@@ -233,6 +233,6 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
     def _to_member(self, el, balancer=None):
         member = Member(id=el["ip"]["id"],
                         ip=el["ip"]["ip"],
-                        port=el["port"],
+                        port=int(el["port"]),
                         balancer=balancer)
         return member
