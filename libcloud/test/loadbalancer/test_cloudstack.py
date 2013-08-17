@@ -11,6 +11,8 @@ from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qsl
 
 from libcloud.common.types import LibcloudError
+from libcloud.loadbalancer.types import Provider
+from libcloud.loadbalancer.providers import get_driver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 
@@ -21,12 +23,29 @@ class CloudStackLBTests(unittest.TestCase):
     def setUp(self):
         CloudStackLBDriver.connectionCls.conn_classes = \
             (None, CloudStackMockHttp)
+
+        CloudStackLBDriver.path = '/test/path'
+        CloudStackLBDriver.type = -1
+        CloudStackLBDriver.name = 'CloudStack'
         self.driver = CloudStackLBDriver('apikey', 'secret')
-        self.driver.path = '/test/path'
-        self.driver.type = -1
-        self.driver.name = 'CloudStack'
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
+
+    def test_user_must_provide_host_and_path(self):
+        CloudStackLBDriver.path = None
+        CloudStackLBDriver.type = Provider.CLOUDSTACK
+
+        expected_msg = 'When instantiating CloudStack driver directly ' + \
+                       'you also need to provide host and path argument'
+        cls = get_driver(Provider.CLOUDSTACK)
+
+        self.assertRaisesRegexp(Exception, expected_msg, cls,
+                                'key', 'secret')
+
+        try:
+            cls('key', 'secret', True, 'localhost', '/path')
+        except Exception:
+             self.fail('host and path provided but driver raised an exception')
 
     def test_list_supported_algorithms(self):
         algorithms = self.driver.list_supported_algorithms()
