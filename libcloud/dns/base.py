@@ -237,7 +237,7 @@ class DNSDriver(BaseDriver):
         """
         Create a new zone.
 
-        :param domain: Zone domain name.
+        :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
 
         :param type: Zone type (master / slave).
@@ -261,7 +261,7 @@ class DNSDriver(BaseDriver):
         :param zone: Zone to update.
         :type  zone: :class:`Zone`
 
-        :param domain: Zone domain name.
+        :param domain: Zone domain name (e.g. example.com)
         :type  domain: ``str``
 
         :param type: Zone type (master / slave).
@@ -282,7 +282,10 @@ class DNSDriver(BaseDriver):
         """
         Create a new record.
 
-        :param name: Hostname or FQDN.
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
         :type  name: ``str``
 
         :param zone: Zone where the requested record is created.
@@ -309,7 +312,10 @@ class DNSDriver(BaseDriver):
         :param record: Record to update.
         :type  record: :class:`Record`
 
-        :param name: Hostname or FQDN.
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
         :type  name: ``str``
 
         :param type: DNS record type (A, AAAA, ...).
