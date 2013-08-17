@@ -1,5 +1,4 @@
 import sys
-import unittest
 
 try:
     import simplejson as json
@@ -16,6 +15,7 @@ from libcloud.loadbalancer.providers import get_driver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 
+from libcloud.test import unittest
 from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
