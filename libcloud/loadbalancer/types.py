@@ -38,6 +38,7 @@ class Provider(object):
     RACKSPACE_UK = 'rackspace_uk'
     BRIGHTBOX = 'brightbox'
     ELB = 'elb'
+    CLOUDSTACK = 'cloudstack'
 
 
 class State(object):
