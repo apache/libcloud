@@ -27,7 +27,8 @@ except ImportError:
     import json
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
-from libcloud.compute.types import DeploymentError, LibcloudError
+from libcloud.compute.types import DeploymentError, LibcloudError, Provider
+from libcloud.compute.providers import get_driver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
 from libcloud.test import unittest
@@ -47,6 +48,19 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.driver.type = -1
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
+
+    def test_user_must_provide_host_and_path(self):
+        expected_msg = 'When instantiating CloudStack driver directly ' + \
+                       'you also need to provide host and path argument'
+        cls = get_driver(Provider.CLOUDSTACK)
+
+        self.assertRaisesRegexp(Exception, expected_msg, cls,
+                                'key', 'secret')
+
+        try:
+            cls('key', 'secret', True, 'localhost', '/path')
+        except Exception:
+             self.fail('host and path provided but driver raised an exception')
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
