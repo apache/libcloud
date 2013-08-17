@@ -42,6 +42,12 @@ Changes with Apache Libcloud 0.13.1
       (LIBCLOUD-378)
       [Mahendra M]
 
+  *) Load Balancer
+
+   - Expose CloudStack driver directly through the Provider.CLOUDSTACK
+     constant.
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
