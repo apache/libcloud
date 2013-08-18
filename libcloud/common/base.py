@@ -571,10 +571,12 @@ class Connection(object):
         else:
             headers.update({'Host': self.host})
 
-        # Encode data if necessary
-        if data is not None:
+        # Encode data if provided
+        if data:
             data = self.encode_data(data)
-            # Only send Content-Length 0 with POST and PUT request
+
+        # Only send Content-Length 0 with POST and PUT request
+        if data is not None:
             if len(data) > 0 or (len(data) == 0 and method in ['POST', 'PUT']):
                 headers.update({'Content-Length': str(len(data))})
 
