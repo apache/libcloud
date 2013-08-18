@@ -37,6 +37,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
 
     LB_STATE_MAP = {
         'Active': State.RUNNING,
+        'Add': State.PENDING,
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
@@ -124,12 +125,13 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         self._async_request('deleteLoadBalancerRule', id=balancer.id)
         self._async_request('disassociateIpAddress',
                             id=balancer.ex_public_ip_id)
+        return True
 
     def balancer_attach_member(self, balancer, member):
         member.port = balancer.ex_private_port
         self._async_request('assignToLoadBalancerRule', id=balancer.id,
                             virtualmachineids=member.id)
-        return True
+        return member
 
     def balancer_detach_member(self, balancer, member):
         self._async_request('removeFromLoadBalancerRule', id=balancer.id,
@@ -149,10 +151,10 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
             name=obj['name'],
             state=self.LB_STATE_MAP.get(obj['state'], State.UNKNOWN),
             ip=obj['publicip'],
-            port=obj['publicport'],
+            port=int(obj['publicport']),
             driver=self.connection.driver
         )
-        balancer.ex_private_port = obj['privateport']
+        balancer.ex_private_port = int(obj['privateport'])
         balancer.ex_public_ip_id = obj['publicipid']
         return balancer
 

@@ -89,7 +89,7 @@ class ElasticLBDriver(Driver):
             state=State.PENDING,
             ip=findtext(element=data, xpath='DNSName', namespace=NS),
             port=port,
-            driver=self.connection.driver
+            driver=self
         )
         balancer._members = []
         return balancer
@@ -140,15 +140,16 @@ class ElasticLBDriver(Driver):
     def _to_balancer(self, el):
         name = findtext(element=el, xpath='LoadBalancerName', namespace=NS)
         dns_name = findtext(el, xpath='DNSName', namespace=NS)
-        port = findtext(el, xpath='LoadBalancerPort', namespace=NS)
-
+        portxp = 'ListenerDescriptions/member[0]/Listener/LoadBalancerPort'
+        port = findtext(el, xpath=portxp, namespace=NS)
+        
         balancer = LoadBalancer(
             id=name,
             name=name,
-            state=State.UNKNOWN,
+            state=State.RUNNING,
             ip=dns_name,
-            port=port,
-            driver=self.connection.driver
+            port=int(port),
+            driver=self
         )
 
         xpath = 'Instances/member/InstanceId'
