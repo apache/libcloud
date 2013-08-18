@@ -19,6 +19,15 @@ Changes with Apache Libcloud in development
 
  *) Compute
 
+    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
+      add a new CLOUDFILES constant.
+      Driver referenced by this constant takes a "region" keyword argument
+      and can be one of 'ord', 'dfw' or 'lon'.
+
+      Note: Deprecated constants will continue to work for the foreseeable
+      future.
+      [Tomaz Muraus]
+
     - Modify ElasticHosts drive to store drive UUID in 'extra' field.
       (LIBCLOUD-357)
       [Bob Thompson]
@@ -473,15 +482,6 @@ Changes with Apache Libcloud 0.12.1:
 
     - Add ex_purge_object_from_cdn method to the CloudFiles driver.
       (LIBCLOUD-267)
-      [Tomaz Muraus]
-
-    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
-      add a new CLOUDFILES constant.
-      Driver referenced by this constant takes a "region" keyword argument
-      and can be one of 'ord', 'dfw' or 'lon'.
-
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
       [Tomaz Muraus]
 
     - Support for multipart uploads and other improvements in the S3 driver
