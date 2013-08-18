@@ -337,8 +337,8 @@ REGION_DETAILS = {
     }
 }
 
-VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
-VALID_EC2_DATACENTERS = [d for d in VALID_EC2_DATACENTERS if d != 'nimbus']
+VALID_EC2_REGIONS = REGION_DETAILS.keys()
+VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -1487,7 +1487,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         if hasattr(self, '_region'):
             region = self._region
 
-        if region not in VALID_EC2_DATACENTERS:
+        if region not in VALID_EC2_REGIONS:
             raise ValueError('Invalid region: %s' % (region))
 
         details = REGION_DETAILS[region]
