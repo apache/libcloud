@@ -204,21 +204,21 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     supports_chunked_encoding = True
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 datacenter='ord', **kwargs):
+                 region='ord', **kwargs):
         """
         @inherits:  L{StorageDriver.__init__}
 
-        @param datacenter: Datacenter ID which should be used.
-        @type datacenter: C{str}
+        @param region: ID of the region which should be used.
+        @type region: C{str}
         """
-        if hasattr(self, '_datacenter'):
-            datacenter = self._datacenter
+        if hasattr(self, '_region'):
+            region = self._region
 
         # This is here for backard compatibility
         if 'ex_force_service_region' in kwargs:
-            datacenter = kwargs['ex_force_service_region']
+            region = kwargs['ex_force_service_region']
 
-        self.datacenter = datacenter
+        self.region = region
 
         OpenStackDriverMixin.__init__(self, (), **kwargs)
         super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
@@ -822,11 +822,11 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return obj
 
     def _ex_connection_class_kwargs(self):
-        kwargs = {'ex_force_service_region': self.datacenter}
+        kwargs = {'ex_force_service_region': self.region}
 
-        if self.datacenter in ['dfw', 'ord', 'syd']:
+        if self.region in ['dfw', 'ord', 'syd']:
             kwargs['auth_url'] = AUTH_URL_US
-        elif self.datacenter == 'lon':
+        elif self.region == 'lon':
             kwargs['auth_url'] = AUTH_URL_UK
 
         kwargs.update(self.openstack_connection_kwargs())
@@ -840,7 +840,7 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_US
     name = 'CloudFiles (US)'
-    _datacenter = 'ord'
+    _region = 'ord'
 
 
 class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
@@ -869,7 +869,7 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_UK
     name = 'CloudFiles (UK)'
-    _datacenter = 'lon'
+    _region = 'lon'
 
 
 class FileChunkReader(object):

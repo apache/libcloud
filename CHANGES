@@ -477,7 +477,7 @@ Changes with Apache Libcloud 0.12.1:
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
       add a new CLOUDFILES constant.
-      Driver referenced by this constant takes a "datacenter" keyword argument
+      Driver referenced by this constant takes a "region" keyword argument
       and can be one of 'ord', 'dfw' or 'lon'.
 
       Note: Deprecated constants will continue to work for the foreseeable

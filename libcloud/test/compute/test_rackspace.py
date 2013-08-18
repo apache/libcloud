@@ -101,7 +101,7 @@ class RackspaceNovaDfwTests(OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'datacenter': 'dfw'}
+    driver_kwargs = {'region': 'dfw'}
 
     @classmethod
     def create_driver(self):
@@ -129,7 +129,7 @@ class RackspaceNovaOrdTests(OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'datacenter': 'ord'}
+    driver_kwargs = {'region': 'ord'}
 
     @classmethod
     def create_driver(self):
@@ -163,7 +163,7 @@ class RackspaceNovaLonTests(OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'datacenter': 'lon'}
+    driver_kwargs = {'region': 'lon'}
 
     @classmethod
     def create_driver(self):

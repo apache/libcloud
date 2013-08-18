@@ -56,7 +56,7 @@ class CloudFilesTests(unittest.TestCase):
     driver_klass = CloudFilesStorageDriver
     driver_args = ('dummy', 'dummy')
     driver_kwargs = {}
-    datacenter = 'ord'
+    region = 'ord'
 
     def setUp(self):
         self.driver_klass.connectionCls.conn_classes = (
@@ -148,7 +148,7 @@ class CloudFilesTests(unittest.TestCase):
 
     def test_service_catalog(self):
         url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS' % \
-              (self.datacenter)
+              (self.region)
         self.assertEqual(
              url,
              self.driver.connection.get_endpoint())
@@ -746,7 +746,7 @@ class CloudFilesTests(unittest.TestCase):
                                     "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
         sig = hmac.new(b('foo'), b(hmac_body), sha1).hexdigest()
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
-        temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.datacenter, sig)
+        temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.region, sig)
 
         self.assertEquals(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
@@ -773,12 +773,12 @@ class CloudFilesTests(unittest.TestCase):
 
 class CloudFilesDeprecatedUSTests(CloudFilesTests):
     driver_klass = CloudFilesUSStorageDriver
-    datacenter = 'ord'
+    region = 'ord'
 
 
 class CloudFilesDeprecatedUKTests(CloudFilesTests):
     driver_klass = CloudFilesUKStorageDriver
-    datacenter = 'lon'
+    region = 'lon'
 
 
 class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):

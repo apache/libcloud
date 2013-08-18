@@ -47,17 +47,17 @@ null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
 
 
 class BaseEC2Tests(LibcloudTestCase):
-    def test_instantiate_driver_valid_datacenters(self):
-        datacenters = REGION_DETAILS.keys()
-        datacenters = [d for d in datacenters if d != 'nimbus']
+    def test_instantiate_driver_valid_regions(self):
+        regions = REGION_DETAILS.keys()
+        regions = [d for d in regions if d != 'nimbus']
 
-        for datacenter in datacenters:
-            EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
+        for region in regions:
+            EC2NodeDriver(*EC2_PARAMS, **{'region': region})
 
-    def test_instantiate_driver_invalid_datacenters(self):
-        for datacenter in ['invalid', 'nimbus']:
+    def test_instantiate_driver_invalid_regions(self):
+        for region in ['invalid', 'nimbus']:
             try:
-                EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
+                EC2NodeDriver(*EC2_PARAMS, **{'region': region})
             except ValueError:
                 pass
             else:
@@ -66,7 +66,7 @@ class BaseEC2Tests(LibcloudTestCase):
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
     image_name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
-    datacenter = 'us-east-1'
+    region = 'us-east-1'
 
     def setUp(self):
         EC2MockHttp.test = self
@@ -75,7 +75,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         EC2MockHttp.type = None
 
         self.driver = EC2NodeDriver(*EC2_PARAMS,
-                                    **{'datacenter': self.datacenter})
+                                    **{'region': self.region})
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
@@ -457,31 +457,31 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
 
 class EC2USWest1Tests(EC2Tests):
-    datacenter = 'us-west-1'
+    region = 'us-west-1'
 
 
 class EC2USWest2Tests(EC2Tests):
-    datacenter = 'us-west-2'
+    region = 'us-west-2'
 
 
 class EC2EUWestTests(EC2Tests):
-    datacenter = 'eu-west-1'
+    region = 'eu-west-1'
 
 
 class EC2APSE1Tests(EC2Tests):
-    datacenter = 'ap-southeast-1'
+    region = 'ap-southeast-1'
 
 
 class EC2APNETests(EC2Tests):
-    datacenter = 'ap-northeast-1'
+    region = 'ap-northeast-1'
 
 
 class EC2APSE2Tests(EC2Tests):
-    datacenter = 'ap-southeast-2'
+    region = 'ap-southeast-2'
 
 
 class EC2SAEastTests(EC2Tests):
-    datacenter = 'sa-east-1'
+    region = 'sa-east-1'
 
 
 # Tests for the old, deprecated way of instantiating a driver.
