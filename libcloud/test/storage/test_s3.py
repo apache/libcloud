@@ -460,6 +460,7 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.hash, '4397da7a7649e8085de9916c240e8166')
         self.assertEqual(obj.size, 1234567)
         self.assertEqual(obj.container.name, 'test_container')
+        self.assertEqual(obj.extra['last_modified'], '2011-04-09T19:05:18.000Z')
         self.assertTrue('owner' in obj.meta_data)
 
     def test_list_container_objects_iterator_has_more(self):
