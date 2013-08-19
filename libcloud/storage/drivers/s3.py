@@ -851,6 +851,10 @@ class S3StorageDriver(StorageDriver):
                                       namespace=self.namespace)
         meta_data = {'owner': {'id': owner_id,
                                'display_name': owner_display_name}}
+        last_modified = findtext(element=element,
+                                 xpath='LastModified',
+                                 namespace=self.namespace)
+        extra = {'last_modified': last_modified}
 
         obj = Object(name=findtext(element=element, xpath='Key',
                                    namespace=self.namespace),
@@ -858,7 +862,7 @@ class S3StorageDriver(StorageDriver):
                                        namespace=self.namespace)),
                      hash=findtext(element=element, xpath='ETag',
                                    namespace=self.namespace).replace('"', ''),
-                     extra=None,
+                     extra=extra,
                      meta_data=meta_data,
                      container=container,
                      driver=self

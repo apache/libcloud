@@ -42,6 +42,10 @@ Changes with Apache Libcloud 0.13.1
       (LIBCLOUD-378)
       [Mahendra M]
 
+    - Store last_modified timestamp in the Object extra dictionary in the S3
+      driver. (LIBCLOUD-373)
+      [Stefan Friesel]
+
   *) Load Balancer
 
    - Expose CloudStack driver directly through the Provider.CLOUDSTACK
