@@ -63,6 +63,7 @@ of date.
 You are advised to add a separate remote for the official upstream repository:
 
 .. sourcecode:: bash
+
     git remote add upstream https://git-wip-us.apache.org/repos/asf/libcloud.git
 
 Github read-only mirror is used only for pull requests and code review. Once a
@@ -71,7 +72,7 @@ ready to be merged, user who submitted the pull request must close the pull
 request, create a patch and attach it to the original JIRA ticket.
 
 Contributing Bigger Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you are contributing a bigger change (e.g. large new feature or a new
 provider driver) you need to have have signed Apache Individual Contributor
 License Agreement (ICLA) in order to have your patch accepted.

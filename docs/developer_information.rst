@@ -11,12 +11,12 @@ lists.
 
 * `users@libcloud.apache.org`_ - Mailing list for general talk about Libcloud
   and other off-topic things
-  (`archive <https://mail-archives.apache.org/mod_mbox/libcloud-users/>`_)
+  (`users-archive <https://mail-archives.apache.org/mod_mbox/libcloud-users/>`_)
 * `dev@libcloud.apache.org`_ - General mailing list for developers
-  (`archive <https://mail-archives.apache.org/mod_mbox/libcloud-dev/>`_)
+  (`dev-archive <https://mail-archives.apache.org/mod_mbox/libcloud-dev/>`_)
 * `commits@libcloud.apache.org`_ - Commits messages go to this mailing list.
   Keep ind mind that unlike the others, this mailing list is fairly noisy.
-  (`archive <https://mail-archives.apache.org/mod_mbox/libcloud-commits/>`_)
+  (`commits-archive <https://mail-archives.apache.org/mod_mbox/libcloud-commits/>`_)
 
 Archive of old incubator mailing lists:
 

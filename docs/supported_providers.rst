@@ -4,7 +4,7 @@ Supported Providers
 This pages lists supported providers and methods for all the APIs.
 
 Compute
-------
+-------
 
 Provider Matrix
 ~~~~~~~~~~~~~~~
