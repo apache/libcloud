@@ -1325,9 +1325,9 @@ class BaseEC2NodeDriver(NodeDriver):
         @keyword    ex_maxcount: Maximum number of instances to launch
         @type       ex_maxcount: C{int}
 
-        @keyword    ex_securitygroup: Name of security group or a list of names
-                                      for multiple security groups.
-        @type       ex_securitygroup: C{str} or C{list}
+        @keyword    ex_security_groups: A list of namees of security groups to
+                                        assign to the node.
+        @type       ex_security_groups:   C{list}
 
         @keyword    ex_keyname: The name of the key pair
         @type       ex_keyname: C{str}
@@ -1354,12 +1354,22 @@ class BaseEC2NodeDriver(NodeDriver):
             'InstanceType': size.id
         }
 
-        if 'ex_securitygroup' in kwargs:
-            if not isinstance(kwargs['ex_securitygroup'], list):
-                kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
-            for sig in range(len(kwargs['ex_securitygroup'])):
+        if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
+            raise ValueError('You can only supply ex_security_groups or'
+                             ' ex_securitygroup')
+
+        # ex_securitygroup is here for backward compatibility
+        ex_security_groups = kwargs.get('ex_security_groups', None)
+        ex_securitygroup = kwargs.get('ex_securitygroup', None)
+        security_groups = ex_security_groups or ex_securitygroup
+
+        if security_groups:
+            if not isinstance(security_groups, (tuple, list)):
+                security_groups = [security_groups]
+
+            for sig in range(len(security_groups)):
                 params['SecurityGroup.%d' % (sig + 1,)] =\
-                    kwargs['ex_securitygroup'][sig]
+                    security_groups[sig]
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],

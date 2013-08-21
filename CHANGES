@@ -59,6 +59,13 @@ Changes with Apache Libcloud in development
       code when determining drive imaging success. (LIBCLOUD-363)
       [Bob Thompson]
 
+    - Unify extension argument names for assigning a node to security groups
+      in EC2 ad OpenStack driver.
+      Argument in the EC2 driver has been renamed from ex_securitygroup to
+      ex_security_groups. For backward compatibility reasons, old argument
+      will continue to work for the unforeseeable future. (LIBCLOUD-375)
+      [Tomaz Muraus]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of

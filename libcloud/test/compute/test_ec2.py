@@ -14,7 +14,8 @@
 # limitations under the License.
 import os
 import sys
-import unittest
+
+from mock import Mock
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import parse_qsl
@@ -39,6 +40,7 @@ from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+from libcloud.test import unittest
 from libcloud.test.secrets import EC2_PARAMS
 
 
@@ -455,6 +457,33 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         retValue = self.driver.detach_volume(vol)
         self.assertTrue(retValue)
 
+    def test_create_node_ex_security_groups(self):
+        EC2MockHttp.type = 'ex_security_groups'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        oldRequest = self.driver.connection.request
+
+        security_groups = ['group1', 'group2']
+
+        # Old, deprecated argument name
+        self.driver.create_node(name='foo', image=image, size=size,
+                                ex_securitygroup=security_groups)
+
+        # New argument name
+        self.driver.create_node(name='foo', image=image, size=size,
+                                ex_security_groups=security_groups)
+
+        # Test old and new arguments are mutally exclusive
+        self.assertRaises(ValueError, self.driver.create_node,
+                          name='foo', image=image, size=size,
+                          ex_securitygroup=security_groups,
+                          ex_security_groups=security_groups)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -565,6 +594,15 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_security_groups_RunInstances(self, method, url, body, headers):
+        params = dict(parse_qsl(url))
+
+        self.assertEqual(params['SecurityGroup.1'], 'group1')
+        self.assertEqual(params['SecurityGroup.1'], 'group1')
+
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
