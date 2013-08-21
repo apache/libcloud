@@ -181,7 +181,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra={
                     'hypervisor': img['hypervisor'],
                     'format': img['format'],
-                    'os': img['ostypename']}))
+                    'os': img['ostypename'],
+                    'displaytext': img['displaytext']}))
         return images
 
     def list_locations(self):
