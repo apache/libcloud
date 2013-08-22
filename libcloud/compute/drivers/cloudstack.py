@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
+import os
+
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
     NodeSize, StorageVolume
 from libcloud.compute.types import NodeState, LibcloudError
-
-import os
 
 class CloudStackNode(Node):
     "Subclass of Node so we can expose our extension methods."
