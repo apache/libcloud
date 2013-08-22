@@ -66,6 +66,10 @@ Changes with Apache Libcloud in development
       will continue to work for the unforeseeable future. (LIBCLOUD-375)
       [Tomaz Muraus]
 
+    - Add ex_import_keypair_from_string and ex_import_keypair method to the
+      CloudStack driver. (LIBCLOUD-380)
+      [Sebastien Goasguen]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
