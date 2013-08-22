@@ -42,6 +42,9 @@ CA_CERTS_PATH = [
 
     # macports: curl-ca-bundle
     '/opt/local/share/curl/curl-ca-bundle.crt',
+
+    # homebrew: curl-ca-bundle
+    '/usr/local/opt/curl-ca-bundle/share/ca-bundle.crt',
 ]
 
 # Allow user to explicitly specify which CA bundle to use, using an environment

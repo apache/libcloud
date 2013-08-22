@@ -186,6 +186,20 @@ class JoyentNodeDriver(NodeDriver):
                                          data=data, method='POST')
         return result.status == httplib.ACCEPTED
 
+    def ex_start_node(self, node):
+        """
+        Start node
+
+        @param  node: The node to be stopped
+        @type   node: L{Node}
+
+        @rtype: C{bool}
+        """
+        data = json.dumps({'action': 'start'})
+        result = self.connection.request('/my/machines/%s' % (node.id),
+                                         data=data, method='POST')
+        return result.status == httplib.ACCEPTED
+
     def _to_node(self, data):
         state = NODE_STATE_MAP[data['state']]
         public_ips = []

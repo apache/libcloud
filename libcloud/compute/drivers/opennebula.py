@@ -32,7 +32,7 @@ from libcloud.utils.py3 import b
 
 from libcloud.compute.base import NodeState, NodeDriver, Node, NodeLocation
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
-from libcloud.compute.base import NodeImage, NodeSize
+from libcloud.compute.base import NodeImage, NodeSize, StorageVolume
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.providers import Provider
 
@@ -301,6 +301,8 @@ class OpenNebulaNodeDriver(NodeDriver):
                 cls = OpenNebula_3_0_NodeDriver
             elif api_version in ['3.2']:
                 cls = OpenNebula_3_2_NodeDriver
+            elif api_version in ['3.6']:
+                cls = OpenNebula_3_6_NodeDriver
             elif api_version in ['3.8']:
                 cls = OpenNebula_3_8_NodeDriver
                 if 'plain_auth' not in kwargs:
@@ -868,25 +870,33 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
         @type  compute: L{ElementTree}
         @param compute: XML representation of a compute node.
 
-        @rtype:  L{NodeImage}
-        @return: First disk attached to a compute node.
+        @rtype:  C{list} of L{NodeImage}
+        @return: Disks attached to a compute node.
         """
         disks = list()
 
         for element in compute.findall('DISK'):
             disk = element.find('STORAGE')
-            disk_id = disk.attrib['href'].partition('/storage/')[2]
+            image_id = disk.attrib['href'].partition('/storage/')[2]
+
+            if 'id' in element.attrib:
+                disk_id = element.attrib['id']
+            else:
+                disk_id = None
 
             disks.append(
-                NodeImage(id=disk_id,
+                NodeImage(id=image_id,
                           name=disk.attrib.get('name', None),
                           driver=self.connection.driver,
                           extra={'type': element.findtext('TYPE'),
+                                 'disk_id': disk_id,
                                  'target': element.findtext('TARGET')}))
 
-        # @TODO: Return all disks when the Node type accepts multiple
-        # attached disks per node.
-        if len(disks) > 0:
+        # Return all disks when the Node type accepts multiple attached disks
+        # per node.
+        if len(disks) > 1:
+            return disks
+        elif len(disks) == 1:
             return disks[0]
         else:
             return None
@@ -1071,7 +1081,124 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
         return values
 
 
-class OpenNebula_3_8_NodeDriver(OpenNebula_3_2_NodeDriver):
+class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
+    """
+    OpenNebula.org node driver for OpenNebula.org v3.6.
+    """
+
+    def create_volume(self, size, name, location=None, snapshot=None):
+        storage = ET.Element('STORAGE')
+
+        vol_name = ET.SubElement(storage, 'NAME')
+        vol_name.text = name
+
+        vol_type = ET.SubElement(storage, 'TYPE')
+        vol_type.text = 'DATABLOCK'
+
+        description = ET.SubElement(storage, 'DESCRIPTION')
+        description.text = 'Attached storage'
+
+        public = ET.SubElement(storage, 'PUBLIC')
+        public.text = 'NO'
+
+        persistent = ET.SubElement(storage, 'PERSISTENT')
+        persistent.text = 'YES'
+
+        fstype = ET.SubElement(storage, 'FSTYPE')
+        fstype.text = 'ext3'
+
+        vol_size = ET.SubElement(storage, 'SIZE')
+        vol_size.text = str(size)
+
+        xml = ET.tostring(storage)
+        volume = self.connection.request('/storage',
+            { 'occixml': xml }, method='POST').object
+
+        return self._to_volume(volume)
+
+    def destroy_volume(self, volume):
+        url = '/storage/%s' % (str(volume.id))
+        resp = self.connection.request(url, method='DELETE')
+
+        return resp.status == httplib.NO_CONTENT
+
+    def attach_volume(self, node, volume, device):
+        action = ET.Element('ACTION')
+
+        perform = ET.SubElement(action, 'PERFORM')
+        perform.text = 'ATTACHDISK'
+
+        params = ET.SubElement(action, 'PARAMS')
+
+        ET.SubElement(params,
+                      'STORAGE',
+                      {'href': '/storage/%s' % (str(volume.id))})
+
+        target = ET.SubElement(params, 'TARGET')
+        target.text = device
+
+        xml = ET.tostring(action)
+
+        url = '/compute/%s/action' % node.id
+
+        resp = self.connection.request(url, method='POST', data=xml)
+        return resp.status == httplib.ACCEPTED
+
+    def _do_detach_volume(self, node_id, disk_id):
+        action = ET.Element('ACTION')
+
+        perform = ET.SubElement(action, 'PERFORM')
+        perform.text = 'DETACHDISK'
+
+        params = ET.SubElement(action, 'PARAMS')
+
+        ET.SubElement(params,
+                      'DISK',
+                      {'id': disk_id})
+
+        xml = ET.tostring(action)
+
+        url = '/compute/%s/action' % node_id
+
+        resp = self.connection.request(url, method='POST', data=xml)
+        return resp.status == httplib.ACCEPTED
+
+    def detach_volume(self, volume):
+        # We need to find the node using this volume
+        for node in self.list_nodes():
+            if type(node.image) is not list:
+                # This node has only one associated image. It is not the one we
+                # are after.
+                continue
+
+            for disk in node.image:
+                if disk.id == volume.id:
+                    # Node found. We can now detach the volume
+                    disk_id = disk.extra['disk_id']
+                    return self._do_detach_volume(node.id, disk_id)
+
+        return False
+
+    def list_volumes(self):
+        return self._to_volumes(self.connection.request('/storage').object)
+
+    def _to_volume(self, storage):
+        return StorageVolume(id=storage.findtext('ID'),
+                             name=storage.findtext('NAME'),
+                             size=int(storage.findtext('SIZE')),
+                             driver=self.connection.driver)
+
+    def _to_volumes(self, object):
+        volumes = []
+        for storage in object.findall('STORAGE'):
+            storage_id = storage.attrib['href'].partition('/storage/')[2]
+
+            volumes.append(self._to_volume(
+                self.connection.request('/storage/%s' % storage_id).object))
+
+        return  volumes
+
+class OpenNebula_3_8_NodeDriver(OpenNebula_3_6_NodeDriver):
     """
     OpenNebula.org node driver for OpenNebula.org v3.8.
     """

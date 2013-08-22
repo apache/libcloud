@@ -485,10 +485,17 @@ class Connection(object):
         self.connection = connection
 
     def _user_agent(self):
-        return 'libcloud/%s (%s)%s' % (
+        user_agent_suffix = ' '.join(['(%s)' % x for x in self.ua])
+
+        if self.driver:
+            user_agent = 'libcloud/%s (%s) %s' % (
                   libcloud.__version__,
-                  self.driver.name,
-                  "".join([" (%s)" % x for x in self.ua]))
+                  self.driver.name, user_agent_suffix)
+        else:
+            user_agent = 'libcloud/%s %s' % (
+                  libcloud.__version__, user_agent_suffix)
+
+        return user_agent
 
     def user_agent_append(self, token):
         """
@@ -502,13 +509,8 @@ class Connection(object):
         """
         self.ua.append(token)
 
-    def request(self,
-                action,
-                params=None,
-                data='',
-                headers=None,
-                method='GET',
-                raw=False):
+    def request(self, action, params=None, data=None, headers=None,
+                method='GET', raw=False):
         """
         Request a given `action`.
 
@@ -542,43 +544,49 @@ class Connection(object):
         """
         if params is None:
             params = {}
+
         if headers is None:
             headers = {}
 
         action = self.morph_action_hook(action)
         self.action = action
         self.method = method
+
         # Extend default parameters
         params = self.add_default_params(params)
+
         # Extend default headers
         headers = self.add_default_headers(headers)
+
         # We always send a user-agent header
         headers.update({'User-Agent': self._user_agent()})
 
-        # Indicate that support gzip and deflate compression
+        # Indicate that we support gzip and deflate compression
         headers.update({'Accept-Encoding': 'gzip,deflate'})
 
-        p = int(self.port)
+        port = int(self.port)
 
-        if p not in (80, 443):
-            headers.update({'Host': "%s:%d" % (self.host, p)})
+        if port not in (80, 443):
+            headers.update({'Host': "%s:%d" % (self.host, port)})
         else:
             headers.update({'Host': self.host})
 
-        # Encode data if necessary
-        if data != '' and data != None:
+        # Encode data if provided
+        if data:
             data = self.encode_data(data)
 
+        # Only send Content-Length 0 with POST and PUT request
         if data is not None:
-            headers.update({'Content-Length': str(len(data))})
+            if len(data) > 0 or (len(data) == 0 and method in ['POST', 'PUT']):
+                headers.update({'Content-Length': str(len(data))})
 
         params, headers = self.pre_connect_hook(params, headers)
 
         if params:
             if '?' in action:
-                url = '&'.join((action, urlencode(params)))
+                url = '&'.join((action, urlencode(params, doseq=True)))
             else:
-                url = '?'.join((action, urlencode(params)))
+                url = '?'.join((action, urlencode(params, doseq=True)))
         else:
             url = action
 
@@ -666,7 +674,7 @@ class PollingConnection(Connection):
     timeout = 6000
     request_method = 'request'
 
-    def async_request(self, action, params=None, data='', headers=None,
+    def async_request(self, action, params=None, data=None, headers=None,
                       method='GET', context=None):
         """
         Perform an 'async' request to the specified path. Keep in mind that
@@ -732,7 +740,7 @@ class PollingConnection(Connection):
 
         return response
 
-    def get_request_kwargs(self, action, params=None, data='', headers=None,
+    def get_request_kwargs(self, action, params=None, data=None, headers=None,
                            method='GET', context=None):
         """
         Arguments which are passed to the initial request() call inside

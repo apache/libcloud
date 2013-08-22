@@ -92,7 +92,7 @@ class LibvirtNodeDriver(NodeDriver):
 
     def destroy_node(self, node):
         domain = self._get_domain_for_node(node=node)
-        return domain.destroy(flags=0) == 0
+        return domain.destroy() == 0
 
     def ex_start(self, node):
         """

@@ -20,6 +20,7 @@ import unittest
 from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qs
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
@@ -39,13 +40,6 @@ from libcloud.test import StorageMockHttp, MockRawResponse # pylint: disable-msg
 from libcloud.test import MockHttpTestCase # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
-
-
-try:
-    parse_qs = urlparse.parse_qs
-except AttributeError:
-    import cgi
-    parse_qs = cgi.parse_qs
 
 
 class S3MockHttp(StorageMockHttp, MockHttpTestCase):
@@ -466,6 +460,7 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.hash, '4397da7a7649e8085de9916c240e8166')
         self.assertEqual(obj.size, 1234567)
         self.assertEqual(obj.container.name, 'test_container')
+        self.assertEqual(obj.extra['last_modified'], '2011-04-09T19:05:18.000Z')
         self.assertTrue('owner' in obj.meta_data)
 
     def test_list_container_objects_iterator_has_more(self):
@@ -481,6 +476,20 @@ class S3Tests(unittest.TestCase):
 
         self.assertTrue(obj in objects)
         self.assertEqual(len(objects), 5)
+
+    def test_list_container_objects_with_prefix(self):
+        self.mock_response_klass.type = None
+        container = Container(name='test_container', extra={},
+                              driver=self.driver)
+        objects = self.driver.list_container_objects(container=container,
+            ex_prefix='test_prefix')
+        self.assertEqual(len(objects), 1)
+
+        obj = [o for o in objects if o.name == '1.zip'][0]
+        self.assertEqual(obj.hash, '4397da7a7649e8085de9916c240e8166')
+        self.assertEqual(obj.size, 1234567)
+        self.assertEqual(obj.container.name, 'test_container')
+        self.assertTrue('owner' in obj.meta_data)
 
     def test_get_container_doesnt_exist(self):
         self.mock_response_klass.type = 'list_containers'

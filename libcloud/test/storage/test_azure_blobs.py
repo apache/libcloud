@@ -23,6 +23,7 @@ import tempfile
 from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qs
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
@@ -42,13 +43,6 @@ from libcloud.test import StorageMockHttp, MockRawResponse # pylint: disable-msg
 from libcloud.test import MockHttpTestCase # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
-
-
-try:
-    parse_qs = urlparse.parse_qs
-except AttributeError:
-    import cgi
-    parse_qs = cgi.parse_qs
 
 
 class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):

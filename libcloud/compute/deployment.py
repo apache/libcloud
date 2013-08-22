@@ -22,7 +22,7 @@ from __future__ import with_statement
 import os
 import binascii
 
-from libcloud.utils.py3 import basestring
+from libcloud.utils.py3 import basestring, PY3
 
 
 class Deployment(object):
@@ -142,7 +142,9 @@ class ScriptDeployment(Deployment):
         if self.name is None:
             # File is put under user's home directory
             # (~/libcloud_deployment_<random_string>.sh)
-            self.name = 'libcloud_deployment_%s.sh' % (binascii.hexlify(os.urandom(4)))
+            random_string = binascii.hexlify(os.urandom(4))
+            random_string = random_string.decode('ascii')
+            self.name = 'libcloud_deployment_%s.sh' % (random_string)
 
     def run(self, node, client):
         """
@@ -187,6 +189,9 @@ class ScriptFileDeployment(ScriptDeployment):
         """
         with open(script_file, 'rb') as fp:
             content = fp.read()
+
+        if PY3:
+            content = content.decode('utf-8')
 
         super(ScriptFileDeployment, self).__init__(script=content,
                                                name=name,

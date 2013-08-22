@@ -29,7 +29,7 @@ from libcloud.common.base import JsonResponse, PollingConnection
 from libcloud.loadbalancer.types import State, MemberCondition
 from libcloud.common.openstack import OpenStackBaseConnection,\
     OpenStackDriverMixin
-from libcloud.common.rackspace import (AUTH_URL_US, AUTH_URL_UK)
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 
 
 class RackspaceResponse(JsonResponse):
@@ -1297,6 +1297,21 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
                                        params=ids)
 
         return resp.status == httplib.ACCEPTED
+
+    def ex_list_current_usage(self, balancer):
+        """
+        Return current load balancer usage report.
+
+        @param balancer: Balancer to remove the access rules from.
+        @type  balancer: L{LoadBalancer}
+
+        @return: Raw load balancer usage object.
+        @rtype: C{dict}
+        """
+        uri = '/loadbalancers/%s/usage/current' % (balancer.id)
+        resp = self.connection.request(uri, method='GET')
+
+        return resp.object
 
     def _to_protocols(self, object):
         protocols = []

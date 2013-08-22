@@ -32,8 +32,8 @@ fi
 
 cd ..
 
-python setup.py sdist  --formats=bztar,zip
+python setup.py sdist  --formats=bztar,zip,gztar
 
 cd dist
 
-./hash-sign.sh -u ${user} *.tar.bz2 *.zip
+./hash-sign.sh -u ${user} *.tar.bz2 *.tar.gz *.zip

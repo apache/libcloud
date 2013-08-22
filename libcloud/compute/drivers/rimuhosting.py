@@ -116,6 +116,7 @@ class RimuHostingNodeDriver(NodeDriver):
     name = 'RimuHosting'
     website = 'http://rimuhosting.com/'
     connectionCls = RimuHostingConnection
+    features = {'create_node': ['password']}
 
     def __init__(self, key, host=API_HOST, port=443,
                  api_context=API_CONTEXT, secure=True):
@@ -283,11 +284,8 @@ class RimuHostingNodeDriver(NodeDriver):
             data['instantiation_options']['control_panel'] = \
                 kwargs['ex_control_panel']
 
-        if 'auth' in kwargs:
-            auth = kwargs['auth']
-            if not isinstance(auth, NodeAuthPassword):
-                raise ValueError('auth must be of NodeAuthPassword type')
-            data['instantiation_options']['password'] = auth.password
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+        data['instantiation_options']['password'] = auth.password
 
         if 'ex_billing_oid' in kwargs:
             #TODO check for valid oid.
@@ -345,5 +343,3 @@ class RimuHostingNodeDriver(NodeDriver):
             NodeLocation('DCLONDON', "RimuHosting London", 'GB', self),
             NodeLocation('DCSYDNEY', "RimuHosting Sydney", 'AU', self),
         ]
-
-    features = {"create_node": ["password"]}

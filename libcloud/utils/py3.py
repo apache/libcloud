@@ -26,6 +26,7 @@ from xml.etree import ElementTree as ET
 
 PY2 = False
 PY25 = False
+PY27 = False
 PY3 = False
 PY32 = False
 
@@ -34,6 +35,9 @@ if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
 
 if sys.version_info >= (2, 5) and sys.version_info <= (2, 6):
     PY25 = True
+
+if sys.version_info >= (2, 7) and sys.version_info <= (2, 8):
+    PY27 = True
 
 if sys.version_info >= (3, 0):
     PY3 = True
@@ -58,6 +62,9 @@ if PY3:
 
     from builtins import bytes
     from builtins import next
+
+    parse_qs = urlparse.parse_qs
+    parse_qsl = urlparse.parse_qsl
 
     basestring = str
 
@@ -94,6 +101,15 @@ else:
 
     from __builtin__ import reload
 
+    if PY25:
+        import cgi
+
+        parse_qs = cgi.parse_qs
+        parse_qsl = cgi.parse_qsl
+    else:
+        parse_qs = urlparse.parse_qs
+        parse_qsl = urlparse.parse_qsl
+
     if not PY25:
         from os.path import relpath
 
@@ -129,3 +145,8 @@ if PY25:
         if not rel_list:
             return posixpath.curdir
         return posixpath.join(*rel_list)
+
+if PY27 or PY3:
+    unittest2_required = False
+else:
+    unittest2_required = True

@@ -18,17 +18,12 @@ import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
+from libcloud.utils.py3 import parse_qsl
 
 try:
     import simplejson as json
 except ImportError:
     import json
-
-try:
-    parse_qsl = urlparse.parse_qsl
-except AttributeError:
-    import cgi
-    parse_qsl = cgi.parse_qsl
 
 from libcloud.compute.drivers.ktucloud import KTUCloudNodeDriver
 from libcloud.compute.types import DeploymentError, LibcloudError

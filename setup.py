@@ -31,6 +31,8 @@ except ImportError:
 
 import libcloud.utils.misc
 from libcloud.utils.dist import get_packages, get_data_files
+from libcloud.utils.py3 import unittest2_required
+
 libcloud.utils.misc.SHOW_DEPRECATION_WARNING = False
 
 
@@ -88,6 +90,17 @@ class TestCommand(Command):
                   'pip install mock')
             sys.exit(1)
 
+        if unittest2_required:
+            try:
+                import unittest2
+                unittest2
+            except ImportError:
+                print('Python version: %s' % (sys.version))
+                print('Missing "unittest2" library. unittest2 is library is needed '
+                      'to run the tests. You can install it using pip: '
+                      'pip install unittest2')
+                sys.exit(1)
+
         status = self._run_tests()
         sys.exit(status)
 
@@ -106,7 +119,7 @@ class TestCommand(Command):
 
         if mtime_dist > mtime_current:
             print("It looks like test/secrets.py file is out of date.")
-            print("Please copy the new secret.py-dist file over otherwise" +
+            print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
         if pre_python26:
@@ -254,4 +267,5 @@ setup(
         'Programming Language :: Python :: 3.0',
         'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: Implementation :: PyPy'])

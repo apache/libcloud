@@ -1,0 +1,207 @@
+{
+  "id": "projects/project_name/zones",
+  "items": [
+    {
+      "creationTimestamp": "2013-02-05T16:19:23.254-08:00",
+      "description": "europe-west1-a",
+      "id": "13416642339679437530",
+      "kind": "compute#zone",
+      "maintenanceWindows": [
+        {
+          "beginTime": "2013-08-03T12:00:00.000-07:00",
+          "description": "maintenance zone",
+          "endTime": "2013-08-18T12:00:00.000-07:00",
+          "name": "2013-08-03-planned-outage"
+        }
+      ],
+      "name": "europe-west1-a",
+      "quotas": [
+        {
+          "limit": 8.0,
+          "metric": "INSTANCES",
+          "usage": 3.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "CPUS",
+          "usage": 3.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "DISKS",
+          "usage": 1.0
+        },
+        {
+          "limit": 1024.0,
+          "metric": "DISKS_TOTAL_GB",
+          "usage": 10.0
+        }
+      ],
+      "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/europe-west1",
+      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a",
+      "status": "UP"
+    },
+    {
+      "creationTimestamp": "2013-02-05T16:19:23.254-08:00",
+      "description": "europe-west1-b",
+      "id": "20623650177407096",
+      "kind": "compute#zone",
+      "maintenanceWindows": [
+        {
+          "beginTime": "2013-09-28T12:00:00.000-07:00",
+          "description": "maintenance zone",
+          "endTime": "2013-10-13T12:00:00.000-07:00",
+          "name": "2013-09-28-planned-outage"
+        }
+      ],
+      "name": "europe-west1-b",
+      "quotas": [
+        {
+          "limit": 8.0,
+          "metric": "INSTANCES",
+          "usage": 0.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "CPUS",
+          "usage": 0.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "DISKS",
+          "usage": 0.0
+        },
+        {
+          "limit": 1024.0,
+          "metric": "DISKS_TOTAL_GB",
+          "usage": 0.0
+        }
+      ],
+      "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/europe-west1",
+      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-b",
+      "status": "UP"
+    },
+    {
+      "creationTimestamp": "2013-02-05T16:19:23.269-08:00",
+      "description": "us-central1-a",
+      "id": "13462829244527433283",
+      "kind": "compute#zone",
+      "maintenanceWindows": [
+        {
+          "beginTime": "2013-08-17T12:00:00.000-07:00",
+          "description": "maintenance zone",
+          "endTime": "2013-09-01T12:00:00.000-07:00",
+          "name": "2013-08-17-planned-outage"
+        }
+      ],
+      "name": "us-central1-a",
+      "quotas": [
+        {
+          "limit": 8.0,
+          "metric": "INSTANCES",
+          "usage": 4.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "CPUS",
+          "usage": 4.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "DISKS",
+          "usage": 2.0
+        },
+        {
+          "limit": 1024.0,
+          "metric": "DISKS_TOTAL_GB",
+          "usage": 20.0
+        }
+      ],
+      "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
+      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a",
+      "status": "UP"
+    },
+    {
+      "creationTimestamp": "2013-02-05T16:19:23.269-08:00",
+      "description": "us-central1-b",
+      "id": "1045862591201432620",
+      "kind": "compute#zone",
+      "maintenanceWindows": [
+        {
+          "beginTime": "2013-10-26T12:00:00.000-07:00",
+          "description": "maintenance zone",
+          "endTime": "2013-11-10T12:00:00.000-08:00",
+          "name": "2013-10-26-planned-outage"
+        }
+      ],
+      "name": "us-central1-b",
+      "quotas": [
+        {
+          "limit": 8.0,
+          "metric": "INSTANCES",
+          "usage": 0.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "CPUS",
+          "usage": 0.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "DISKS",
+          "usage": 0.0
+        },
+        {
+          "limit": 1024.0,
+          "metric": "DISKS_TOTAL_GB",
+          "usage": 0.0
+        }
+      ],
+      "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
+      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b",
+      "status": "UP"
+    },
+    {
+      "creationTimestamp": "2013-02-05T16:19:23.257-08:00",
+      "description": "us-central2-a",
+      "id": "1001467574647549152",
+      "kind": "compute#zone",
+      "maintenanceWindows": [
+        {
+          "beginTime": "2013-10-12T12:00:00.000-07:00",
+          "description": "maintenance zone",
+          "endTime": "2013-10-27T12:00:00.000-07:00",
+          "name": "2013-10-12-planned-outage"
+        }
+      ],
+      "name": "us-central2-a",
+      "quotas": [
+        {
+          "limit": 8.0,
+          "metric": "INSTANCES",
+          "usage": 0.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "CPUS",
+          "usage": 0.0
+        },
+        {
+          "limit": 8.0,
+          "metric": "DISKS",
+          "usage": 0.0
+        },
+        {
+          "limit": 1024.0,
+          "metric": "DISKS_TOTAL_GB",
+          "usage": 0.0
+        }
+      ],
+      "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central2",
+      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central2-a",
+      "status": "UP"
+    }
+  ],
+  "kind": "compute#zoneList",
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones"
+}

@@ -1,12 +1,15 @@
+RELEASING
 MANIFEST
 MANIFEST.in
 .gitignore
+tox.ini
 apidocs/
 CHANGES
 HACKING
 test/storage/fixtures/
 test/compute/fixtures/
 test/loadbalancer/fixtures/
+test/dns/fixtures/
 coverage_html_report/
 .coverage
 .coveragerc
@@ -14,5 +17,7 @@ libcloud/data/pricing.json
 libcloud/common/__init__.py
 libcloud/compute/__init__.py
 libcloud/storage/__init__.py
+libcloud/loadbalancer/__init__.py
+libcloud/dns/__init__.py
 test/storage/__init__.py
 test/pricing_test.json

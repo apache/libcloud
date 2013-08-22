@@ -1,0 +1,81 @@
+{
+  "id": "projects/project_name/aggregated/disks",
+  "items": {
+    "zones/europe-west1-a": {
+      "disks": [
+        {
+          "creationTimestamp": "2013-06-26T09:50:22.508-07:00",
+          "id": "0811494794539478718",
+          "kind": "compute#disk",
+          "name": "libcloud-demo-europe-boot-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-boot-disk",
+          "sizeGb": "10",
+          "status": "READY",
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a"
+        }
+      ]
+    },
+    "zones/europe-west1-b": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/europe-west1-b"
+          }
+        ],
+        "message": "There are no results for scope 'zones/europe-west1-b' on this page."
+      }
+    },
+    "zones/us-central1-a": {
+      "disks": [
+        {
+          "creationTimestamp": "2013-06-25T10:57:34.305-07:00",
+          "id": "14383387450728762434",
+          "kind": "compute#disk",
+          "name": "test-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/disks/test-disk",
+          "sizeGb": "10",
+          "status": "READY",
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        },
+        {
+          "creationTimestamp": "2013-06-26T09:47:09.178-07:00",
+          "id": "10880026303683859871",
+          "kind": "compute#disk",
+          "name": "libcloud-demo-boot-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/disks/libcloud-demo-boot-disk",
+          "sizeGb": "10",
+          "status": "READY",
+          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+        }
+      ]
+    },
+    "zones/us-central1-b": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/us-central1-b"
+          }
+        ],
+        "message": "There are no results for scope 'zones/us-central1-b' on this page."
+      }
+    },
+    "zones/us-central2-a": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/us-central2-a"
+          }
+        ],
+        "message": "There are no results for scope 'zones/us-central2-a' on this page."
+      }
+    }
+  },
+  "kind": "compute#diskAggregatedList",
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/aggregated/disks"
+}

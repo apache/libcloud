@@ -13,6 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = [
+    'get_driver',
+    'set_driver',
+    'merge_valid_keys',
+    'get_new_obj',
+    'str2dicts',
+    'dict2str',
+    'reverse_dict',
+    'lowercase_keys'
+]
+
 import sys
 
 
@@ -206,7 +217,7 @@ def dict2str(data):
     """
     result = ''
     for k in data:
-        if data[k] != None:
+        if data[k] is not None:
             result += '%s %s\n' % (str(k), str(data[k]))
         else:
             result += '%s\n' % str(k)

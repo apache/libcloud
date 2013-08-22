@@ -19,8 +19,10 @@ Common utilities for OpenStack
 import sys
 import binascii
 import os
+import datetime
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.iso8601 import parse_date
 
 from libcloud.common.base import ConnectionUserAndKey, Response
 from libcloud.compute.types import (LibcloudError, InvalidCredsError,
@@ -33,10 +35,28 @@ except ImportError:
 
 AUTH_API_VERSION = '1.1'
 
+# Auth versions which contain token expiration information.
+AUTH_VERSIONS_WITH_EXPIRES = [
+    '1.1',
+    '2.0',
+    '2.0_apikey',
+    '2.0_password'
+]
+
+# How many seconds to substract from the auth token expiration time before
+# testing if the token is still valid.
+# The time is subtracted to account for the HTTP request latency and prevent
+# user from getting "InvalidCredsError" if token is about to expire.
+AUTH_TOKEN_EXPIRES_GRACE_SECONDS = 5
+
 __all__ = [
-    "OpenStackBaseConnection",
-    "OpenStackAuthConnection",
-    ]
+    'OpenStackBaseConnection',
+    'OpenStackAuthConnection',
+    'OpenStackServiceCatalog',
+    'OpenStackDriverMixin',
+
+    'AUTH_TOKEN_EXPIRES_GRACE_SECONDS'
+]
 
 
 # @TODO: Refactor for re-use by other openstack drivers
@@ -87,17 +107,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
 
-        if timeout:
-            self.timeout = timeout
-
         super(OpenStackAuthConnection, self).__init__(
-            user_id, key, url=auth_url, timeout=self.timeout)
+            user_id, key, url=auth_url, timeout=timeout)
 
         self.auth_version = auth_version
         self.auth_url = auth_url
-        self.urls = {}
         self.driver = self.parent_conn.driver
         self.tenant_name = tenant_name
+        self.timeout = timeout
+
+        self.urls = {}
+        self.auth_token = None
+        self.auth_token_expires = None
+        self.auth_user_info = None
 
     def morph_action_hook(self, action):
         return action
@@ -107,7 +129,19 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         headers['Content-Type'] = 'application/json; charset=UTF-8'
         return headers
 
-    def authenticate(self):
+    def authenticate(self, force=False):
+        """
+        Authenticate against the keystone api.
+
+        @param force: Forcefully update the token even if it's already cached
+                      and still valid.
+        @type force: C{bool}
+        """
+        if not force and self.auth_version in AUTH_VERSIONS_WITH_EXPIRES \
+           and self._is_token_valid():
+            # If token is still valid, there is no need to re-authenticate
+            return self
+
         if self.auth_version == "1.0":
             return self.authenticate_1_0()
         elif self.auth_version == "1.1":
@@ -153,6 +187,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 raise MalformedResponseError('Missing X-Auth-Token in \
                                               response headers')
 
+        return self
+
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id,
                                               'key': self.key}})
@@ -174,15 +210,20 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             except Exception:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)
+
             try:
+                expires = body['auth']['token']['expires']
+
                 self.auth_token = body['auth']['token']['id']
-                self.auth_token_expires = body['auth']['token']['expires']
+                self.auth_token_expires = parse_date(expires)
                 self.urls = body['auth']['serviceCatalog']
                 self.auth_user_info = None
             except KeyError:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
+
+        return self
 
     def authenticate_2_0_with_apikey(self):
         # API Key based authentication uses the RAX-KSKEY extension.
@@ -228,8 +269,10 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
 
             try:
                 access = body['access']
+                expires = access['token']['expires']
+
                 self.auth_token = access['token']['id']
-                self.auth_token_expires = access['token']['expires']
+                self.auth_token_expires = parse_date(expires)
                 self.urls = access['serviceCatalog']
                 self.auth_user_info = access.get('user', {})
             except KeyError:
@@ -237,6 +280,32 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
 
+        return self
+
+    def _is_token_valid(self):
+        """
+        Return True if the current taken is already cached and hasn't expired
+        yet.
+
+        @rtype: C{bool}
+        """
+        if not self.auth_token:
+            return False
+
+        if not self.auth_token_expires:
+            return False
+
+        expires = self.auth_token_expires - \
+                datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
+
+        time_tuple_expires = expires.utctimetuple()
+        time_tuple_now = datetime.datetime.utcnow().utctimetuple()
+
+        # TODO: Subtract some reasonable grace time period
+        if time_tuple_now < time_tuple_expires:
+            return True
+
+        return False
 
 class OpenStackServiceCatalog(object):
     """
@@ -265,6 +334,20 @@ class OpenStackServiceCatalog(object):
             raise LibcloudError('auth version "%s" not supported'
                                 % (self._auth_version))
 
+    def get_catalog(self):
+        return self._service_catalog
+
+    def get_public_urls(self, service_type=None, name=None):
+        endpoints = self.get_endpoints(service_type=service_type,
+                                       name=name)
+
+        result = []
+        for endpoint in endpoints:
+            if 'publicURL' in endpoint:
+                result.append(endpoint['publicURL'])
+
+        return result
+
     def get_endpoints(self, service_type=None, name=None):
         eps = []
 
@@ -280,7 +363,6 @@ class OpenStackServiceCatalog(object):
         return eps
 
     def get_endpoint(self, service_type=None, name=None, region=None):
-
         if '2.0' in self._auth_version:
             endpoint = self._service_catalog.get(service_type, {}) \
                                             .get(name, {}).get(region, [])
@@ -294,7 +376,6 @@ class OpenStackServiceCatalog(object):
             return {}
 
     def _parse_auth_v1(self, service_catalog):
-
         for service, endpoints in service_catalog.items():
 
             self._service_catalog[service] = {}
@@ -409,6 +490,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
 
+        self._osa = None
+
         if ex_force_auth_token:
             self.auth_token = ex_force_auth_token
 
@@ -422,6 +505,12 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
 
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure, timeout=timeout)
+
+    def get_service_catalog(self):
+        if self.service_catalog is None:
+            self._populate_hosts_and_request_paths()
+
+        return self.service_catalog
 
     def get_endpoint(self):
         """
@@ -469,7 +558,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         if not self.auth_token:
             aurl = self.auth_url
 
-            if self._ex_force_auth_url != None:
+            if self._ex_force_auth_url is not None:
                 aurl = self._ex_force_auth_url
 
             if aurl == None:
@@ -498,7 +587,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                 self._tuple_from_url(url)
 
     def _add_cache_busting_to_params(self, params):
-        cache_busting_number = binascii.hexlify(os.urandom(8))
+        cache_busting_number = binascii.hexlify(os.urandom(8)).decode('ascii')
 
         if isinstance(params, dict):
             params['cache-busting'] = cache_busting_number

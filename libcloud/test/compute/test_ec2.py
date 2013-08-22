@@ -12,10 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import sys
-import unittest
+
+from mock import Mock
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import parse_qsl
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
@@ -37,27 +40,26 @@ from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+from libcloud.test import unittest
 from libcloud.test.secrets import EC2_PARAMS
 
-try:
-    parse_qsl = urlparse.parse_qsl
-except AttributeError:
-    import cgi
-    parse_qsl = cgi.parse_qsl
+
+null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
+                      '00:00:00:00:00'
 
 
 class BaseEC2Tests(LibcloudTestCase):
-    def test_instantiate_driver_valid_datacenters(self):
-        datacenters = REGION_DETAILS.keys()
-        datacenters = [d for d in datacenters if d != 'nimbus']
+    def test_instantiate_driver_valid_regions(self):
+        regions = REGION_DETAILS.keys()
+        regions = [d for d in regions if d != 'nimbus']
 
-        for datacenter in datacenters:
-            EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
+        for region in regions:
+            EC2NodeDriver(*EC2_PARAMS, **{'region': region})
 
-    def test_instantiate_driver_invalid_datacenters(self):
-        for datacenter in ['invalid', 'nimbus']:
+    def test_instantiate_driver_invalid_regions(self):
+        for region in ['invalid', 'nimbus']:
             try:
-                EC2NodeDriver(*EC2_PARAMS, **{'datacenter': datacenter})
+                EC2NodeDriver(*EC2_PARAMS, **{'region': region})
             except ValueError:
                 pass
             else:
@@ -66,7 +68,7 @@ class BaseEC2Tests(LibcloudTestCase):
 
 class EC2Tests(LibcloudTestCase, TestCaseMixin):
     image_name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
-    datacenter = 'us-east-1'
+    region = 'us-east-1'
 
     def setUp(self):
         EC2MockHttp.test = self
@@ -75,7 +77,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         EC2MockHttp.type = None
 
         self.driver = EC2NodeDriver(*EC2_PARAMS,
-                                    **{'datacenter': self.datacenter})
+                                    **{'region': self.region})
 
     def test_create_node(self):
         image = NodeImage(id='ami-be3adfd7',
@@ -211,12 +213,32 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
                         driver=self.driver)
         mappings = [
+            {'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
             {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'},
             {'DeviceName': '/dev/sdc', 'VirtualName': 'ephemeral1'}
         ]
         node = self.driver.create_node(name='foo', image=image, size=size,
                                        ex_blockdevicemappings=mappings)
         self.assertEqual(node.id, 'i-2ba64342')
+
+    def test_ex_create_node_with_ex_blockdevicemappings_attribute_error(self):
+        EC2MockHttp.type = 'create_ex_blockdevicemappings'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        mappings = 'this should be a list'
+        self.assertRaises(AttributeError, self.driver.create_node, name='foo',
+                                       image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
+
+        mappings = ['this should be a dict']
+        self.assertRaises(AttributeError, self.driver.create_node, name='foo',
+                                       image=image, size=size,
+                                       ex_blockdevicemappings=mappings)
 
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -284,9 +306,27 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
+    def test_ex_list_keypairs(self):
+        keypairs = self.driver.ex_list_keypairs()
+
+        self.assertEqual(len(keypairs), 1)
+        self.assertEqual(keypairs[0]['keyName'], 'gsg-keypair')
+        self.assertEqual(keypairs[0]['keyFingerprint'], null_fingerprint)
+
     def test_ex_describe_all_keypairs(self):
         keys = self.driver.ex_describe_all_keypairs()
         self.assertEqual(keys, ['gsg-keypair'])
+
+    def test_ex_describe_keypairs(self):
+        keypair1 = self.driver.ex_describe_keypair('gsg-keypair')
+
+        # Test backward compatibility
+        keypair2 = self.driver.ex_describe_keypairs('gsg-keypair')
+
+        self.assertEqual(keypair1['keyName'], 'gsg-keypair')
+        self.assertEqual(keypair1['keyFingerprint'], null_fingerprint)
+        self.assertEqual(keypair2['keyName'], 'gsg-keypair')
+        self.assertEqual(keypair2['keyFingerprint'], null_fingerprint)
 
     def test_ex_describe_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -296,6 +336,18 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('tag' in tags)
         self.assertTrue('owner' in tags)
         self.assertTrue('stack' in tags)
+
+    def test_ex_import_keypair_from_string(self):
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        key = self.driver.ex_import_keypair_from_string('keypair', open(path).read())
+        self.assertEqual(key['keyName'], 'keypair')
+        self.assertEqual(key['keyFingerprint'], null_fingerprint)
+
+    def test_ex_import_keypair(self):
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        key = self.driver.ex_import_keypair('keypair', path)
+        self.assertEqual(key['keyName'], 'keypair')
+        self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
     def test_ex_create_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -405,33 +457,60 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         retValue = self.driver.detach_volume(vol)
         self.assertTrue(retValue)
 
+    def test_create_node_ex_security_groups(self):
+        EC2MockHttp.type = 'ex_security_groups'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        oldRequest = self.driver.connection.request
+
+        security_groups = ['group1', 'group2']
+
+        # Old, deprecated argument name
+        self.driver.create_node(name='foo', image=image, size=size,
+                                ex_securitygroup=security_groups)
+
+        # New argument name
+        self.driver.create_node(name='foo', image=image, size=size,
+                                ex_security_groups=security_groups)
+
+        # Test old and new arguments are mutally exclusive
+        self.assertRaises(ValueError, self.driver.create_node,
+                          name='foo', image=image, size=size,
+                          ex_securitygroup=security_groups,
+                          ex_security_groups=security_groups)
+
 
 class EC2USWest1Tests(EC2Tests):
-    datacenter = 'us-west-1'
+    region = 'us-west-1'
 
 
 class EC2USWest2Tests(EC2Tests):
-    datacenter = 'us-west-2'
+    region = 'us-west-2'
 
 
 class EC2EUWestTests(EC2Tests):
-    datacenter = 'eu-west-1'
+    region = 'eu-west-1'
 
 
 class EC2APSE1Tests(EC2Tests):
-    datacenter = 'ap-southeast-1'
+    region = 'ap-southeast-1'
 
 
 class EC2APNETests(EC2Tests):
-    datacenter = 'ap-northeast-1'
+    region = 'ap-northeast-1'
 
 
 class EC2APSE2Tests(EC2Tests):
-    datacenter = 'ap-southeast-2'
+    region = 'ap-southeast-2'
 
 
 class EC2SAEastTests(EC2Tests):
-    datacenter = 'sa-east-1'
+    region = 'sa-east-1'
 
 
 # Tests for the old, deprecated way of instantiating a driver.
@@ -518,15 +597,30 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _ex_security_groups_RunInstances(self, method, url, body, headers):
+        params = dict(parse_qsl(url))
+
+        self.assertEqual(params['SecurityGroup.1'], 'group1')
+        self.assertEqual(params['SecurityGroup.1'], 'group1')
+
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _create_ex_blockdevicemappings_RunInstances(self, method, url, body, headers):
+        # Need to remove '/?'
+        url = url[2:]
         parameters = dict(parse_qsl(url))
         self.assertEqual(parameters['BlockDeviceMapping.1.DeviceName'],
-                         '/dev/sdb')
-        self.assertEqual(parameters['BlockDeviceMapping.1.VirtualName'],
-                         'ephemeral0')
+                         '/dev/sda1')
+        self.assertEqual(parameters['BlockDeviceMapping.1.Ebs.VolumeSize'],
+                         '10')
         self.assertEqual(parameters['BlockDeviceMapping.2.DeviceName'],
-                         '/dev/sdc')
+                         '/dev/sdb')
         self.assertEqual(parameters['BlockDeviceMapping.2.VirtualName'],
+                         'ephemeral0')
+        self.assertEqual(parameters['BlockDeviceMapping.3.DeviceName'],
+                         '/dev/sdc')
+        self.assertEqual(parameters['BlockDeviceMapping.3.VirtualName'],
                          'ephemeral1')
 
         body = self.fixtures.load('run_instances.xml')
@@ -546,6 +640,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeKeyPairs(self, method, url, body, headers):
         body = self.fixtures.load('describe_key_pairs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ImportKeyPair(self, method, url, body, headers):
+        body = self.fixtures.load('import_key_pair.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeTags(self, method, url, body, headers):

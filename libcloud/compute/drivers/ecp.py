@@ -102,7 +102,7 @@ class ECPConnection(ConnectionUserAndKey):
         #use a random boundary that does not appear in the fields
         boundary = ''
         while boundary in ''.join(fields):
-            boundary = u(binascii.hexlify(os.urandom(16)))
+            boundary = binascii.hexlify(os.urandom(16)).decode('utf-8')
         L = []
         for i in fields:
             L.append('--' + boundary)

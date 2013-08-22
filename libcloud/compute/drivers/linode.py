@@ -74,6 +74,7 @@ class LinodeNodeDriver(NodeDriver):
     website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
+    features = {'create_node': ['ssh_key', 'password']}
 
     def __init__(self, key):
         """Instantiate the driver with the given API key
@@ -208,7 +209,7 @@ class LinodeNodeDriver(NodeDriver):
         name = kwargs["name"]
         image = kwargs["image"]
         size = kwargs["size"]
-        auth = kwargs["auth"]
+        auth = self._get_and_check_auth(kwargs["auth"])
 
         # Pick a location (resolves LIBCLOUD-41 in JIRA)
         if "location" in kwargs:
@@ -319,7 +320,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
-            root = binascii.b2a_base64(os.urandom(8)).decode('ascii')
+            root = binascii.b2a_base64(os.urandom(8)).decode('ascii').strip()
 
         params = {
             "api_action": "linode.disk.createfromdistribution",
@@ -372,7 +373,10 @@ class LinodeNodeDriver(NodeDriver):
         nodes = self._to_nodes(data)
 
         if len(nodes) == 1:
-            return nodes[0]
+            node = nodes[0]
+            if getattr(auth, "generated", False):
+                node.extra['password'] = auth.password
+            return node
 
         return None
 
@@ -517,8 +521,6 @@ class LinodeNodeDriver(NodeDriver):
                     nodes[lid].private_ips
                 which.append(ip["IPADDRESS"])
         return list(nodes.values())
-
-    features = {"create_node": ["ssh_key", "password"]}
 
 
 def _izip_longest(*args, **kwds):

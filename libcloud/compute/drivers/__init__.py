@@ -27,6 +27,7 @@ __all__ = [
     'elasticstack',
     'elastichosts',
     'cloudsigma',
+    'gce',
     'gogrid',
     'hostvirtual',
     'ibm_sce',

@@ -29,6 +29,9 @@ class DigitalOceanResponse(JsonResponse):
         if self.status == httplib.FOUND and '/api/error' in self.body:
             # Hacky, but DigitalOcean error responses are awful
             raise InvalidCredsError(self.body)
+        elif self.status == httplib.UNAUTHORIZED:
+            body = self.parse_body()
+            raise InvalidCredsError(body['message'])
 
 
 class SSHKey(object):
@@ -72,7 +75,6 @@ class DigitalOceanNodeDriver(NodeDriver):
     type = Provider.DIGITAL_OCEAN
     name = 'Digital Ocean'
     website = 'https://www.digitalocean.com'
-    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {'new': NodeState.PENDING,
                       'off': NodeState.REBOOTING,
@@ -99,8 +101,8 @@ class DigitalOceanNodeDriver(NodeDriver):
         """
         Create a node.
 
-        @keyword    ex_ssh_key_ids: A list of ssh key ids which will be added to
-                                 the server. (optional)
+        @keyword    ex_ssh_key_ids: A list of ssh key ids which will be added
+                                   to the server. (optional)
         @type       ex_ssh_key_ids: C{list} of C{str}
 
         @return: The newly created node.

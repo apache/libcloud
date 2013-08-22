@@ -21,6 +21,8 @@ from libcloud.utils.py3 import httplib, b
 
 from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject
 from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess
+from libcloud.compute.drivers.vcloud import VCloud_5_1_NodeDriver
+from libcloud.compute.drivers.vcloud import Vdc
 from libcloud.compute.base import Node, NodeImage
 from libcloud.compute.types import NodeState
 
@@ -241,6 +243,13 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_list_nodes(self):
         self.assertEqual(len(self.driver.ex_list_nodes()), len(self.driver.list_nodes()))
 
+    def test_ex_list_nodes__masked_exception(self):
+        """
+        Test that we don't mask other exceptions.
+        """
+        brokenVdc = Vdc('/api/vdc/brokenVdc', 'brokenVdc', self.driver)
+        self.assertRaises(AnotherError, self.driver.ex_list_nodes, (brokenVdc))
+
     def test_ex_power_off(self):
         node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_power_off_node(node)
@@ -269,6 +278,71 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             type = 'group',
             access_level = ControlAccess.AccessLevel.FULL_CONTROL)])
         self.driver.ex_set_control_access(node, control_access)
+
+    def test_ex_get_metadata(self):
+        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        metadata = self.driver.ex_get_metadata(node)
+        self.assertEqual(metadata, {'owners':'msamia@netsuite.com'})
+
+    def test_ex_set_metadata_entry(self):
+        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        self.driver.ex_set_metadata_entry(node, 'foo', 'bar')
+
+
+class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
+
+    def setUp(self):
+        VCloudNodeDriver.connectionCls.host = 'test'
+        VCloudNodeDriver.connectionCls.conn_classes = (None, VCloud_1_5_MockHttp)
+        VCloud_1_5_MockHttp.type = None
+        self.driver = VCloudNodeDriver(*VCLOUD_PARAMS, **{'api_version': '5.1'})
+
+        self.assertTrue(isinstance(self.driver, VCloud_5_1_NodeDriver))
+
+    def _test_create_node_valid_ex_vm_memory(self):
+        # TODO: Hook up the fixture
+        values = [4, 1024, 4096]
+
+        image = self.driver.list_images()[0]
+        size = self.driver.list_sizes()[0]
+
+        for value in values:
+            self.driver.create_node(
+                name='testerpart2',
+                image=image,
+                size=size,
+                vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
+                network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
+                cpus=2,
+                ex_vm_memory=value
+            )
+
+    def test_create_node_invalid_ex_vm_memory(self):
+        values = [1, 3, 7]
+
+        image = self.driver.list_images()[0]
+        size = self.driver.list_sizes()[0]
+
+        for value in values:
+            try:
+                self.driver.create_node(
+                    name='testerpart2',
+                    image=image,
+                    size=size,
+                    vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
+                    network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
+                    cpus=2,
+                    ex_vm_memory=value
+                )
+            except ValueError:
+               pass
+            else:
+               self.fail('Exception was not thrown')
+
+
+    def test_list_images(self):
+        ret = self.driver.list_images()
+        self.assertEqual('https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
 
 
 class TerremarkMockHttp(MockHttp):
@@ -332,6 +406,21 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
 
+class AnotherErrorMember(Exception):
+    """
+    helper class for the synthetic exception
+    """
+
+    def __init__(self):
+        self.tag = 'Error'
+
+    def get(self, foo):
+        return 'ACCESS_TO_RESOURCE_IS_FORBIDDEN_1'
+
+class AnotherError(Exception):
+    pass
+
+
 class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     fixtures = ComputeFileFixtures('vcloud_1_5')
@@ -364,6 +453,14 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load('api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
+    def _api_vdc_brokenVdc(self, method, url, body, headers):
+        body = self.fixtures.load('api_vdc_brokenVdc.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_errorRaiser(self, method, url, body, headers):
+        m = AnotherErrorMember()
+        raise AnotherError(m)
+
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_instantiateVAppTemplate(self, method, url, body, headers):
         body = self.fixtures.load('api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_instantiateVAppTemplate.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
@@ -392,6 +489,10 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b(self, method, url, body, headers):
         body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c(self, method, url, body, headers):
+        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045(self, method, url, body, headers):
@@ -503,6 +604,14 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise AssertionError('Unexpected query type')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_metadata(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('api_vapp_post_metadata.xml')
+            return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
+        else:
+            body = self.fixtures.load('api_vapp_get_metadata.xml')
+            return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_controlAccess(self, method, url, body, headers):
         body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')

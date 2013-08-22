@@ -1,6 +1,231 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development:
+Changes with Apache Libcloud in development
+
+ *) General
+
+    - By default read pricing data from ~/.libcloud/pricing.json if this file
+      exists. If it doesn't it uses old behavior and falls back to pricing file
+      bundled with a libcloud release.
+      [Tomaz Muraus]
+
+    - Add libcloud.pricing.download_pricing_file function for downloading and
+      updating the pricing file.
+      [Tomaz Muraus]
+
+    - Fix a regression introduced in 0.13.0 and make sure to include
+      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362)
+      [Tomaz Muraus]
+
+ *) Compute
+
+    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
+      add a new CLOUDFILES constant.
+      Driver referenced by this constant takes a "region" keyword argument
+      and can be one of 'ord', 'dfw' or 'lon'.
+
+      Note: Deprecated constants will continue to work for the foreseeable
+      future.
+      [Tomaz Muraus]
+
+    - Modify ElasticHosts drive to store drive UUID in 'extra' field.
+      (LIBCLOUD-357)
+      [Bob Thompson]
+
+    - Add support for volume related functions to OpenNebula driver.
+      (LIBCLOUD-354)
+      [Emanuele Rocca]
+
+    - Add methods for managing store volumes to the OpenStack driver.
+      (LIBCLOUD-353)
+      [Bernard Kerckenaere]
+
+    - Add new driver for Google Compute Engine (LIBCLOUD-266)
+      [Rick Wright]
+
+    - Add Ubuntu Linux 12.04 image to ElasticHosts driver. (LIBCLOUD-364)
+      [Bob Thompson]
+
+    - Fix create_node "features" metadata and update affected drivers.
+      (LIBCLOUD-367)
+      [John Carr]
+
+    - Update EC2 driver to accept the auth kwarg (it will accept NodeAuthSSH
+      objects and automatically import a public key that is not already
+      uploaded to the EC2 keyring). (Follow on from LIBCLOUD-367).
+      [John Carr]
+
+    - Fix a bug in the ElasticHosts driver and check for right HTTP status
+      code when determining drive imaging success. (LIBCLOUD-363)
+      [Bob Thompson]
+
+    - Unify extension argument names for assigning a node to security groups
+      in EC2 ad OpenStack driver.
+      Argument in the EC2 driver has been renamed from ex_securitygroup to
+      ex_security_groups. For backward compatibility reasons, old argument
+      will continue to work for the unforeseeable future. (LIBCLOUD-375)
+      [Tomaz Muraus]
+
+  *) Storage
+
+    - Fix a regression with calling encode_container_name instead of
+      encode_object_name on object name in get_object method.
+      Reported by Ben Meng (LIBCLOUD-366)
+      [Tomaz Muraus]
+
+    - Allow users to filter objects starting with a prefix by passing ex_prefix
+      argument to the list_container_objects method in the S3, Google Storage
+      and CloudFiles driver. (LIBCLOUD-369)
+      [Stefan Friesel]
+
+    - Store last_modified timestamp in the Object extra dictionary in the S3
+      driver. (LIBCLOUD-373)
+      [Stefan Friesel]
+
+  *) Load Balancer
+
+   - Expose CloudStack driver directly through the Provider.CLOUDSTACK
+     constant.
+     [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.0:
+
+ *) General
+
+   - Add homebrew curl-ca-bundle path to CA_CERTS_PATH. This will make Libcloud
+     use homebrew curl ca bundle file (if available) for server certificate
+     validation. (LIBCLOUD-324)
+     [Robert Chiniquy]
+
+   - Modify OpenStackAuthConnection and change auth_token_expires attribute to
+     be a datetime object instead of a string.
+     [Tomaz Muraus]
+
+   - Modify OpenStackAuthConnection to support re-using of the existing auth
+     token if it's still valid instead of re-authenticating on every
+     authenticate() call.
+     [Tomaz Muraus]
+
+   - Modify base Connection class to not send Content-Length header if body is
+     not provided.
+     [Tomaz Muraus]
+
+   - Add the new error class ProviderError and modify InvalidCredsError to
+     inherit from it. (LIBCLOUD-331)
+     [Jayy Vis]
+
+ *) Misc
+
+   - Add unittest2 library dependency for tests and update some tests to use
+     it.
+     [Tomaz Muraus]
+
+ *) Compute
+
+    - Fix destroy_node method in the experimental libvirt driver.
+      [Aymen Fitati]
+
+    - Add ex_start_node method to the Joyent driver. (LIBCLOUD-319)
+      [rszabo50]
+
+    - Fix Python 3 compatibility issue in the ScriptFileDeployment class.
+      (LIBCLOUD-321)
+      [Arfrever Frehtes Taifersar Arahesis]
+
+    - Add ex_set_metadata_entry and ex_get_metadata method to the VCloud driver.
+      (LIBCLOUD-318)
+      [Michel Samia]
+
+    - Various improvements and bug-fixes in the VCloud driver. (LIBCLOUD-323)
+      [Michel Samia]
+
+    - Various bug fixes and improvements in the HostVirtual driver.
+      (LIBCLOUD-249)
+      [Dinesh Bhoopathy]
+
+    - Modify list_sizes method in the OpenStack driver to include
+      OpenStackNodeSize object which includes 'vcpus' attribute which holds
+      a number of virtual CPUs for this size. (LIBCLOUD-325)
+      [Carlo]
+
+    - For consistency rename "ex_describe_keypairs" method in the EC2 driver to
+      "ex_describe_keypair".
+      [Tomaz Muraus]
+
+    - Modify "ex_describe_keypair" method to return key fingerprint in the
+      return value. (LIBCLOUD-326)
+      [Andre Merzky, Tomaz Muraus]
+
+    - Populate private_ips attribute in the CloudStack drive when returning
+      a Node object from the create_node method. (LIBCLOUD-329)
+      [Sebastien Goasguen, Tomaz Muraus]
+
+    - Allow user to pass extra arguments via "extra_args" argument which are
+      then passed to the "deployVirtualMachine" call in the CloudStack driver
+      create_node method. (LIBCLOUD-330)
+      [Sebastien Goasguen, Tomaz Muraus]
+
+    - Update Gandi driver to handle new billing model. (LIBCLOUD-317)
+      [Aymeric Barantal]
+
+    - Fix a bug in the Linode driver and remove extra newline which is added
+      when generating a random root password in create_node. (LIBCLOUD-334)
+      [Juan Carlos Moreno]
+
+    - Add extension methods for managing keypairs to the CloudStack driver.
+      (LIBCLOUD-333)
+      [sebastien goasguen]
+
+    - Add extension methods for managing security groups to the CloudStack
+      driver. (LIBCLOUD-332)
+      [sebastien goasguen]
+
+    - Add extension methods for starting and stoping the node to the
+      CloudStack driver. (LIBCLOUD-338)
+      [sebastien goasguen]
+
+    - Fix old _wait_until_running method. (LIBCLOUD-339)
+      [Bob Thompson]
+
+    - Allow user to override default async task completion timeout by
+      specifying ex_clone_timeout argument. (LIBCLOUD-340)
+      [Michal Galet]
+
+    - Fix a bug in the GoGrid driver get_uuid method. (LIBCLOUD-341)
+      [Bob Thompson]
+
+    - Fix a bug with deploy_node not respecting 'timeout' kwarg.
+      [Kevin Carter]
+
+    - Modify create_node method in CloudStack driver to return an instance of
+      CloudStackNode and add a new "expunging" node state. (LIBCLOUD-345)
+      [sebastien goasguen]
+
+    - Update API endpoint hostnames in the ElasticHost driver and use hostnames
+      which return a valid SSL certificate. (LIBCLOUD-346)
+      [Bob Thompson]
+
+    - Add ex_list_networks method and missing tests for list_templates to the
+      CloudStack driver. (LIBCLOUD-349)
+      [Philipp Strube]
+
+    - Correctly throw InvalidCredsError if user passes invalid credentials to
+      the DigitalOcean driver.
+      [Tomaz muraus]
+
+ *) Storage
+
+    - Fix an issue with double encoding the container name in the CloudFiles
+      driver upload_object method.
+      Also properly encode container and object name used in the HTTP request
+      in the get_container and get_object method. (LIBCLOUD-328)
+      [Tomaz Muraus]
+
+ *) Load Balancer
+
+    - Add ex_list_current_usage method to the Rackspace driver.
+
+Changes with Apache Libcloud 0.12.4:
 
  *) Compute
 
@@ -20,6 +245,16 @@ Changes with Apache Libcloud in development:
     - Add new ScriptFileDeployment deployment class which reads deploy script
       from a file.
       [Rudolf J Streif]
+
+    - Add support for API version 5.1 to the vCloud driver and accept any value
+      which is a multiple of four for ex_vm_memory kwarg in create_node method.
+      (LIBCLOUD-314)
+      [Trevor Powell]
+
+ *) Storage
+
+    - Fix a regression with removed ex_force_service_region constructor kwarg in
+      the CloudFiles driver. (LIBCLOUD-260)
 
 Changes with Apache Libcloud 0.12.3:
 
@@ -258,15 +493,6 @@ Changes with Apache Libcloud 0.12.1:
 
     - Add ex_purge_object_from_cdn method to the CloudFiles driver.
       (LIBCLOUD-267)
-      [Tomaz Muraus]
-
-    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
-      add a new CLOUDFILES constant.
-      Driver referenced by this constant takes a "datacenter" keyword argument
-      and can be one of 'ord', 'dfw' or 'lon'.
-
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
       [Tomaz Muraus]
 
     - Support for multipart uploads and other improvements in the S3 driver

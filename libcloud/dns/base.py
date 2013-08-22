@@ -30,23 +30,23 @@ class Zone(object):
 
     def __init__(self, id, domain, type, ttl, driver, extra=None):
         """
-        @type id: C{str}
-        @param id: Zone id.
+        :param id: Zone id.
+        :type id: ``str``
 
-        @type domain: C{str}
-        @param domain: The name of the domain.
+        :param domain: The name of the domain.
+        :type domain: ``str``
 
-        @type type: C{string}
-        @param type: Zone type (master, slave).
+        :param type: Zone type (master, slave).
+        :type type: ``str``
 
-        @type ttl: C{int}
-        @param ttl: Default TTL for records in this zone (in seconds).
+        :param ttl: Default TTL for records in this zone (in seconds).
+        :type ttl: ``int``
 
-        @type driver: C{DNSDriver}
-        @param driver: DNSDriver instance.
+        :param driver: DNSDriver instance.
+        :type driver: :class:`DNSDriver`
 
-        @type extra: C{dict}
-        @param extra: (optional) Extra attributes (driver specific).
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
         """
         self.id = str(id) if id else None
         self.domain = domain
@@ -81,26 +81,26 @@ class Record(object):
 
     def __init__(self, id, name, type, data, zone, driver, extra=None):
         """
-        @type id: C{str}
-        @param id: Record id
+        :param id: Record id
+        :type id: ``str``
 
-        @type name: C{str}
-        @param name: Hostname or FQDN.
+        :param name: Hostname or FQDN.
+        :type name: ``str``
 
-        @type type: C{RecordType}
-        @param type: DNS record type (A, AAAA, ...).
+        :param type: DNS record type (A, AAAA, ...).
+        :type type: :class:`RecordType`
 
-        @type data: C{str}
-        @param data: Data for the record (depends on the record type).
+        :param data: Data for the record (depends on the record type).
+        :type data: ``str``
 
-        @type zone: C{Zone}
-        @param zone: Zone instance.
+        :param zone: Zone instance.
+        :type zone: :class:`Zone`
 
-        @type driver: C{DNSDriver}
-        @param driver: DNSDriver instance.
+        :param driver: DNSDriver instance.
+        :type driver: :class:`DNSDriver`
 
-        @type extra: C{dict}
-        @param extra: (optional) Extra attributes (driver specific).
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
         """
         self.id = str(id) if id else None
         self.name = name
@@ -126,7 +126,9 @@ class Record(object):
 
 class DNSDriver(BaseDriver):
     """
-    DNS driver.
+    A base DNSDriver class to derive from
+
+    This class is always subclassed by a specific driver.
     """
     connectionCls = ConnectionUserAndKey
     name = None
@@ -135,23 +137,23 @@ class DNSDriver(BaseDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
         """
-        @param    key: API key or username to used (required)
-        @type     key: C{str}
+        :param    key: API key or username to used (required)
+        :type     key: ``str``
 
-        @param    secret: Secret password to be used (required)
-        @type     secret: C{str}
+        :param    secret: Secret password to be used (required)
+        :type     secret: ``str``
 
-        @param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
                 only support HTTPS, and it is on by default.
-        @type     secure: C{bool}
+        :type     secure: ``bool``
 
-        @param    host: Override hostname used for connections.
-        @type     host: C{str}
+        :param    host: Override hostname used for connections.
+        :type     host: ``str``
 
-        @param    port: Override port used for connections.
-        @type     port: C{int}
+        :param    port: Override port used for connections.
+        :type     port: ``int``
 
-        @rtype: C{None}
+        :return: ``None``
         """
         super(DNSDriver, self).__init__(key=key, secret=secret, secure=secure,
                                         host=host, port=port, **kwargs)
@@ -160,7 +162,7 @@ class DNSDriver(BaseDriver):
         """
         Return a list of RecordType objects supported by the provider.
 
-        @rtype: C{list} of L{RecordType}
+        :return: ``list`` of :class:`RecordType`
         """
         return list(self.RECORD_TYPE_MAP.keys())
 
@@ -168,7 +170,7 @@ class DNSDriver(BaseDriver):
         """
         Return a generator to iterate over available zones.
 
-        @rtype: C{generator} of L{Zone}
+        :rtype: ``generator`` of :class:`Zone`
         """
         raise NotImplementedError(
             'iterate_zones not implemented for this driver')
@@ -177,7 +179,7 @@ class DNSDriver(BaseDriver):
         """
         Return a list of zones.
 
-        @rtype: C{list} of L{Zone}
+        :return: ``list`` of :class:`Zone`
         """
         return list(self.iterate_zones())
 
@@ -185,10 +187,10 @@ class DNSDriver(BaseDriver):
         """
         Return a generator to iterate over records for the provided zone.
 
-        @param zone: Zone to list records for.
-        @type zone: L{Zone}
+        :param zone: Zone to list records for.
+        :type zone: :class:`Zone`
 
-        @rtype: C{generator} of L{Record}
+        :rtype: ``generator`` of :class:`Record`
         """
         raise NotImplementedError(
             'iterate_records not implemented for this driver')
@@ -197,10 +199,10 @@ class DNSDriver(BaseDriver):
         """
         Return a list of records for the provided zone.
 
-        @param zone: Zone to list records for.
-        @type zone: L{Zone}
+        :param zone: Zone to list records for.
+        :type zone: L{Zone}
 
-        @rtype: C{list} of L{Record}
+        :return: ``list`` of :class:`Record`
         """
         return list(self.iterate_records(zone))
 
@@ -208,10 +210,10 @@ class DNSDriver(BaseDriver):
         """
         Return a Zone instance.
 
-        @param zone_id: ID of the required zone
-        @type  zone_id: C{str}
+        :param zone_id: ID of the required zone
+        :type  zone_id: ``str``
 
-        @rtype: L{Zone}
+        :rtype: :class:`Zone`
         """
         raise NotImplementedError(
             'get_zone not implemented for this driver')
@@ -220,13 +222,13 @@ class DNSDriver(BaseDriver):
         """
         Return a Record instance.
 
-        @param zone_id: ID of the required zone
-        @type  zone_id: C{str}
+        :param zone_id: ID of the required zone
+        :type  zone_id: ``str``
 
-        @param record_id: ID of the required record
-        @type  record_id: C{str}
+        :param record_id: ID of the required record
+        :type  record_id: ``str``
 
-        @rtype: L{Record}
+        :rtype: :class:`Record`
         """
         raise NotImplementedError(
             'get_record not implemented for this driver')
@@ -235,19 +237,19 @@ class DNSDriver(BaseDriver):
         """
         Create a new zone.
 
-        @param domain: Zone domain name.
-        @type domain: C{str}
+        :param domain: Zone domain name (e.g. example.com)
+        :type domain: ``str``
 
-        @param type: Zone type (master / slave).
-        @type  type: C{str}
+        :param type: Zone type (master / slave).
+        :type  type: ``str``
 
-        @param ttl: (optional) TTL for new records.
-        @type  ttl: C{int}
+        :param ttl: TTL for new records. (optional)
+        :type  ttl: ``int``
 
-        @param extra: (optional) Extra attributes (driver specific).
-        @type extra: C{dict}
+        :param extra: Extra attributes (driver specific). (optional)
+        :type extra: ``dict``
 
-        @rtype: L{Zone}
+        :rtype: :class:`Zone`
         """
         raise NotImplementedError(
             'create_zone not implemented for this driver')
@@ -256,22 +258,22 @@ class DNSDriver(BaseDriver):
         """
         Update en existing zone.
 
-        @param zone: Zone to update.
-        @type  zone: L{Zone}
+        :param zone: Zone to update.
+        :type  zone: :class:`Zone`
 
-        @param domain: Zone domain name.
-        @type  domain: C{str}
+        :param domain: Zone domain name (e.g. example.com)
+        :type  domain: ``str``
 
-        @param type: Zone type (master / slave).
-        @type  type: C{str}
+        :param type: Zone type (master / slave).
+        :type  type: ``str``
 
-        @param ttl: (optional) TTL for new records.
-        @type  ttl: C{int}
+        :param ttl: TTL for new records. (optional)
+        :type  ttl: ``int``
 
-        @param extra: (optional) Extra attributes (driver specific).
-        @type  extra: C{dict}
+        :param extra: Extra attributes (driver specific). (optional)
+        :type  extra: ``dict``
 
-        @rtype: L{Zone}
+        :rtype: :class:`Zone`
         """
         raise NotImplementedError(
             'update_zone not implemented for this driver')
@@ -280,22 +282,25 @@ class DNSDriver(BaseDriver):
         """
         Create a new record.
 
-        @param name: Hostname or FQDN.
-        @type  name: C{str}
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
+        :type  name: ``str``
 
-        @param zone: Zone where the requested record is created.
-        @type  zone: L{Zone}
+        :param zone: Zone where the requested record is created.
+        :type  zone: :class:`Zone`
 
-        @param type: DNS record type (A, AAAA, ...).
-        @type  type: L{RecordType}
+        :param type: DNS record type (A, AAAA, ...).
+        :type  type: :class:`RecordType`
 
-        @param data: Data for the record (depends on the record type).
-        @type  data: C{str}
+        :param data: Data for the record (depends on the record type).
+        :type  data: ``str``
 
-        @param extra: (optional) Extra attributes (driver specific).
-        @type extra: C{dict}
+        :param extra: Extra attributes (driver specific). (optional)
+        :type extra: ``dict``
 
-        @rtype: L{Record}
+        :rtype: :class:`Record`
         """
         raise NotImplementedError(
             'create_record not implemented for this driver')
@@ -304,22 +309,25 @@ class DNSDriver(BaseDriver):
         """
         Update an existing record.
 
-        @param record: Record to update.
-        @type  record: L{Record}
+        :param record: Record to update.
+        :type  record: :class:`Record`
 
-        @param name: Hostname or FQDN.
-        @type  name: C{str}
+        :param name: Record name without the domain name (e.g. www).
+                     Note: If you want to create a record for a base domain
+                     name, you should specify empty string ('') for this
+                     argument.
+        :type  name: ``str``
 
-        @param type: DNS record type (A, AAAA, ...).
-        @type  type: L{RecordType}
+        :param type: DNS record type (A, AAAA, ...).
+        :type  type: :class:`RecordType`
 
-        @param data: Data for the record (depends on the record type).
-        @type  data: C{str}
+        :param data: Data for the record (depends on the record type).
+        :type  data: ``str``
 
-        @param extra: (optional) Extra attributes (driver specific).
-        @type  extra: C{dict}
+        :param extra: (optional) Extra attributes (driver specific).
+        :type  extra: ``dict``
 
-        @rtype: L{Record}
+        :rtype: :class:`Record`
         """
         raise NotImplementedError(
             'update_record not implemented for this driver')
@@ -330,10 +338,10 @@ class DNSDriver(BaseDriver):
 
         Note: This will delete all the records belonging to this zone.
 
-        @param zone: Zone to delete.
-        @type  zone: L{Zone}
+        :param zone: Zone to delete.
+        :type  zone: :class:`Zone`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'delete_zone not implemented for this driver')
@@ -342,10 +350,10 @@ class DNSDriver(BaseDriver):
         """
         Delete a record.
 
-        @param record: Record to delete.
-        @type  record: L{Record}
+        :param record: Record to delete.
+        :type  record: :class:`Record`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'delete_record not implemented for this driver')

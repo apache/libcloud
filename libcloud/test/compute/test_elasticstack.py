@@ -105,6 +105,7 @@ class ElasticStackTestCase(object):
         self.assertEqual(node.public_ips[0], "1.2.3.4")
         self.assertEqual(node.public_ips[1], "1.2.3.5")
         self.assertEqual(node.extra['smp'], 1)
+        self.assertEqual(node.extra['ide:0:0'], "b6049e7a-aa1b-47f9-b21d-cdf2354e28d3")
 
     def test_list_sizes(self):
         images = self.driver.list_sizes()
@@ -194,20 +195,20 @@ class ElasticStackMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('elastichosts')
 
     def _servers_info_UNAUTHORIZED(self, method, url, body, headers):
-         return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _servers_info_MALFORMED(self, method, url, body, headers):
-         body = "{malformed: '"
-         return (httplib.OK, body, {}, httplib.responses[httplib.NO_CONTENT])
+        body = "{malformed: '"
+        return (httplib.OK, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _servers_info_PARSE_ERROR(self, method, url, body, headers):
-         return (505, body, {}, httplib.responses[httplib.NO_CONTENT])
+        return (505, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _servers_b605ca90_c3e6_4cee_85f8_a8ebdf8f9903_reset(self, method, url, body, headers):
-         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _servers_b605ca90_c3e6_4cee_85f8_a8ebdf8f9903_destroy(self, method, url, body, headers):
-         return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _drives_create(self, method, url, body, headers):
         body = self.fixtures.load('drives_create.json')
@@ -215,7 +216,7 @@ class ElasticStackMockHttp(MockHttp):
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_38df0986_4d85_4b76_b502_3878ffc80161_gunzip(self, method, url, body, headers):
         # ElasticHosts image
-        return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _drives_0012e24a_6eae_4279_9912_3432f698cec8_image_90aa51f2_15c0_4cff_81ee_e93aa20b9468_gunzip(self, method, url, body, headers):
         # Skalikloud image

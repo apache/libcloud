@@ -30,6 +30,8 @@ from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import b
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
+from libcloud.utils.publickey import get_pubkey_comment
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
@@ -336,8 +338,8 @@ REGION_DETAILS = {
     }
 }
 
-VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
-VALID_EC2_DATACENTERS = [d for d in VALID_EC2_DATACENTERS if d != 'nimbus']
+VALID_EC2_REGIONS = REGION_DETAILS.keys()
+VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -423,8 +425,8 @@ class BaseEC2NodeDriver(NodeDriver):
     """
 
     connectionCls = EC2Connection
-    path = '/'
     features = {'create_node': ['ssh_key']}
+    path = '/'
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -838,9 +840,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
-    def ex_import_keypair(self, name, keyfile):
+    def ex_import_keypair_from_string(self, name, key_material):
         """
-        imports a new public key
+        imports a new public key where the public key is passed in as a string
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -848,15 +850,12 @@ class BaseEC2NodeDriver(NodeDriver):
          unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
         @type       name: C{str}
 
-        @param     keyfile: The filename with path of the public key to import.
-        @type      keyfile: C{str}
+        @param     key_material: The contents of a public key file.
+        @type      key_material: C{str}
 
         @rtype: C{dict}
         """
-        with open(os.path.expanduser(keyfile)) as fh:
-            content = fh.read()
-
-        base64key = base64.b64encode(content)
+        base64key = base64.b64encode(b(key_material))
 
         params = {
             'Action': 'ImportKeyPair',
@@ -874,30 +873,86 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
-    def ex_describe_all_keypairs(self):
+    def ex_import_keypair(self, name, keyfile):
         """
-        Describes all keypairs.
+        imports a new public key where the public key is passed via a filename
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list} of C{str}
-        """
+        @param      name: The name of the public key to import. This must be
+         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        @type       name: C{str}
 
+        @param     keyfile: The filename with path of the public key to import.
+        @type      keyfile: C{str}
+
+        @rtype: C{dict}
+        """
+        with open(os.path.expanduser(keyfile)) as fh:
+            content = fh.read()
+        return self.ex_import_keypair_from_string(name, content)
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default='unnamed')
+        key_name = "%s-%s" % (key_comment, key_fingerprint)
+
+        for keypair in self.ex_list_keypairs():
+            if keypair['keyFingerprint'] == key_fingerprint:
+                return keypair
+
+        return self.ex_import_keypair_from_string(key_name, pubkey)
+
+    def ex_list_keypairs(self):
+        """
+        Lists all the keypair names and fingerprints.
+
+        @rtype: C{list} of C{dict}
+        """
         params = {
             'Action': 'DescribeKeyPairs'
         }
 
         response = self.connection.request(self.path, params=params).object
-        names = []
+        keypairs = []
         for elem in findall(element=response, xpath='keySet/item',
                             namespace=NAMESPACE):
-            name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
-            names.append(name)
+            keypair = {
+                'keyName': findtext(element=elem, xpath='keyName',
+                                    namespace=NAMESPACE),
+                'keyFingerprint': findtext(element=elem,
+                                           xpath='keyFingerprint',
+                                           namespace=NAMESPACE).strip(),
+            }
+            keypairs.append(keypair)
 
-        return names
+        return keypairs
+
+    def ex_describe_all_keypairs(self):
+        """
+        Describes all keypairs. This is here for backward compatibilty.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        @rtype: C{list} of C{str}
+        """
+        return [k['keyName'] for k in self.ex_list_keypairs()]
 
     def ex_describe_keypairs(self, name):
-        """Describes a keypair by name
+        """
+        Here for backward compatibility.
+        """
+        return self.ex_describe_keypair(name=name)
+
+    def ex_describe_keypair(self, name):
+        """
+        Describes a keypair by name.
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -915,8 +970,12 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         key_name = findattr(element=response, xpath='keySet/item/keyName',
                             namespace=NAMESPACE)
+        fingerprint = findattr(element=response,
+                               xpath='keySet/item/keyFingerprint',
+                               namespace=NAMESPACE).strip()
         return {
-            'keyName': key_name
+            'keyName': key_name,
+            'keyFingerprint': fingerprint
         }
 
     def ex_delete_keypair(self, name):
@@ -1383,8 +1442,9 @@ class BaseEC2NodeDriver(NodeDriver):
         @keyword    ex_maxcount: Maximum number of instances to launch
         @type       ex_maxcount: C{int}
 
-        @keyword    ex_securitygroup: Name of security group
-        @type       ex_securitygroup: C{str}
+        @keyword    ex_security_groups: A list of namees of security groups to
+                                        assign to the node.
+        @type       ex_security_groups:   C{list}
 
         @keyword    ex_keyname: The name of the key pair
         @type       ex_keyname: C{str}
@@ -1397,7 +1457,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
                     mappings. Example:
-                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+                    [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
+                     {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
         @type       ex_blockdevicemappings: C{list} of C{dict}
         """
         image = kwargs["image"]
@@ -1410,12 +1471,22 @@ class BaseEC2NodeDriver(NodeDriver):
             'InstanceType': size.id
         }
 
-        if 'ex_securitygroup' in kwargs:
-            if not isinstance(kwargs['ex_securitygroup'], list):
-                kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
-            for sig in range(len(kwargs['ex_securitygroup'])):
+        if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
+            raise ValueError('You can only supply ex_security_groups or'
+                             ' ex_securitygroup')
+
+        # ex_securitygroup is here for backward compatibility
+        ex_security_groups = kwargs.get('ex_security_groups', None)
+        ex_securitygroup = kwargs.get('ex_securitygroup', None)
+        security_groups = ex_security_groups or ex_securitygroup
+
+        if security_groups:
+            if not isinstance(security_groups, (tuple, list)):
+                security_groups = [security_groups]
+
+            for sig in range(len(security_groups)):
                 params['SecurityGroup.%d' % (sig + 1,)] =\
-                    kwargs['ex_securitygroup'][sig]
+                    security_groups[sig]
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
@@ -1425,6 +1496,14 @@ class BaseEC2NodeDriver(NodeDriver):
                     raise AttributeError('Invalid availability zone: %s'
                                          % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
+
+        if 'auth' in kwargs and 'ex_keyname' in kwargs:
+            raise AttributeError('Cannot specify auth and ex_keyname together')
+
+        if 'auth' in kwargs:
+            auth = self._get_and_check_auth(kwargs['auth'])
+            params['KeyName'] = \
+                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
@@ -1437,11 +1516,18 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
-            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
-                    mapping['DeviceName']
-                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
-                    mapping['VirtualName']
+            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
+                raise AttributeError(
+                    'ex_blockdevicemappings not list or tuple')
+
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                idx += 1  # we want 1-based indexes
+                if not isinstance(mapping, dict):
+                    raise AttributeError(
+                        'mapping %s in ex_blockdevicemappings '
+                        'not a dict' % mapping)
+                for k, v in mapping.items():
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
@@ -1516,8 +1602,6 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     website = 'http://aws.amazon.com/ec2/'
     path = '/'
 
-    features = {'create_node': ['ssh_key']}
-
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
@@ -1526,15 +1610,15 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     }
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 datacenter='us-east-1', **kwargs):
-        if hasattr(self, '_datacenter'):
-            datacenter = self._datacenter
+                 region='us-east-1', **kwargs):
+        if hasattr(self, '_region'):
+            region = self._region
 
-        if datacenter not in VALID_EC2_DATACENTERS:
-            raise ValueError('Invalid datacenter: %s' % (datacenter))
+        if region not in VALID_EC2_REGIONS:
+            raise ValueError('Invalid region: %s' % (region))
 
-        details = REGION_DETAILS[datacenter]
-        self.region_name = datacenter
+        details = REGION_DETAILS[region]
+        self.region_name = region
         self.api_name = details['api_name']
         self.country = details['country']
 
@@ -1559,49 +1643,49 @@ class EC2EUNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
-    _datacenter = 'eu-west-1'
+    _region = 'eu-west-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
-    _datacenter = 'us-west-1'
+    _region = 'us-west-1'
 
 
 class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
-    _datacenter = 'us-west-2'
+    _region = 'us-west-2'
 
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific Region.
     """
-    _datacenter = 'ap-southeast-1'
+    _region = 'ap-southeast-1'
 
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Northeast Asia Pacific Region.
     """
-    _datacenter = 'ap-northeast-1'
+    _region = 'ap-northeast-1'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the South America (Sao Paulo) Region.
     """
-    _datacenter = 'sa-east-1'
+    _region = 'sa-east-1'
 
 
 class EC2APSESydneyNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
     """
-    _datacenter = 'ap-southeast-2'
+    _region = 'ap-southeast-2'
 
 
 class EucConnection(EC2Connection):

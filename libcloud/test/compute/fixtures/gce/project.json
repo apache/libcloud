@@ -1,0 +1,74 @@
+{
+  "commonInstanceMetadata": {
+    "items": [
+      {
+        "key": "sshKeys",
+        "value": "ASDFASDF"
+      }
+    ],
+    "kind": "compute#metadata"
+  },
+  "creationTimestamp": "2013-02-05T16:19:20.516-08:00",
+  "description": "",
+  "id": "2193465259114366848",
+  "kind": "compute#project",
+  "name": "project_name",
+  "quotas": [
+    {
+      "limit": 8.0,
+      "metric": "INSTANCES",
+      "usage": 7.0
+    },
+    {
+      "limit": 8.0,
+      "metric": "CPUS",
+      "usage": 7.0
+    },
+    {
+      "limit": 8.0,
+      "metric": "EPHEMERAL_ADDRESSES",
+      "usage": 7.0
+    },
+    {
+      "limit": 8.0,
+      "metric": "DISKS",
+      "usage": 3.0
+    },
+    {
+      "limit": 1024.0,
+      "metric": "DISKS_TOTAL_GB",
+      "usage": 30.0
+    },
+    {
+      "limit": 1000.0,
+      "metric": "SNAPSHOTS",
+      "usage": 0.0
+    },
+    {
+      "limit": 5.0,
+      "metric": "NETWORKS",
+      "usage": 3.0
+    },
+    {
+      "limit": 100.0,
+      "metric": "FIREWALLS",
+      "usage": 4.0
+    },
+    {
+      "limit": 100.0,
+      "metric": "IMAGES",
+      "usage": 0.0
+    },
+    {
+      "limit": 7.0,
+      "metric": "STATIC_ADDRESSES",
+      "usage": 3.0
+    },
+    {
+      "limit": 100.0,
+      "metric": "ROUTES",
+      "usage": 6.0
+    }
+  ],
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name"
+}

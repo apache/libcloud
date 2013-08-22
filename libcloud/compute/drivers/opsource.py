@@ -241,7 +241,7 @@ class OpsourceNodeDriver(NodeDriver):
     name = 'Opsource'
     website = 'http://www.opsource.net/'
     type = Provider.OPSOURCE
-    features = {"create_node": ["password"]}
+    features = {'create_node': ['password']}
 
     def create_node(self, **kwargs):
         """
@@ -281,12 +281,8 @@ class OpsourceNodeDriver(NodeDriver):
         #       cannot be set at create time because size is part of the
         #       image definition.
         password = None
-        if 'auth' in kwargs:
-            auth = kwargs.get('auth')
-            if isinstance(auth, NodeAuthPassword):
-                password = auth.password
-            else:
-                raise ValueError('auth must be of NodeAuthPassword type')
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+        password = auth.password
 
         ex_description = kwargs.get('ex_description', '')
         ex_isStarted = kwargs.get('ex_isStarted', True)
@@ -319,7 +315,12 @@ class OpsourceNodeDriver(NodeDriver):
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
         #      because opsource allows multiple nodes to have the same name
-        return list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
+        node = list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
+
+        if getattr(auth, "generated", False):
+            node.extra['password'] = auth.password
+
+        return node
 
     def destroy_node(self, node):
         body = self.connection.request_with_orgId(
