@@ -37,7 +37,9 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
-    OpenStack_1_1_NodeDriver, OpenStackSecurityGroup, OpenStackSecurityGroupRule
+    OpenStack_1_1_NodeDriver, OpenStackSecurityGroup,
+    OpenStackSecurityGroupRule, OpenStack_1_1_FloatingIpPool,
+    OpenStack_1_1_FloatingIpAddress
 )
 from libcloud.compute.base import Node, NodeImage, NodeSize, StorageVolume
 from libcloud.pricing import set_pricing, clear_pricing_data
@@ -1140,6 +1142,75 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_delete_security_group_rule(security_group_rule)
         self.assertTrue(result)
 
+    def test_ex_list_floating_ip_pools(self):
+        ret = self.driver.ex_list_floating_ip_pools()
+        self.assertEqual(ret[0].name, 'public')
+        self.assertEqual(ret[1].name, 'foobar')
+
+    def test_ex_attach_floating_ip_to_node(self):
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size)
+        node.id = 4242
+        ip = '42.42.42.42'
+
+        self.assertTrue(self.driver.ex_attach_floating_ip_to_node(node, ip))
+
+    def test_detach_floating_ip_from_node(self):
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size)
+        node.id = 4242
+        ip = '42.42.42.42'
+
+        self.assertTrue(self.driver.ex_detach_floating_ip_from_node(node, ip))
+
+    def test_OpenStack_1_1_FloatingIpPool_list_floating_ips(self):
+        pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
+        ret = pool.list_floating_ips()
+
+        self.assertEqual(ret[0].id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
+        self.assertEqual(ret[0].pool, pool)
+        self.assertEqual(ret[0].ip_address, '10.3.1.42')
+        self.assertEqual(ret[0].node_id, None)
+        self.assertEqual(ret[1].id, '04c5336a-0629-4694-ba30-04b0bdfa88a4')
+        self.assertEqual(ret[1].pool, pool)
+        self.assertEqual(ret[1].ip_address, '10.3.1.1')
+        self.assertEqual(ret[1].node_id, 'fcfc96da-19e2-40fd-8497-f29da1b21143')
+
+    def test_OpenStack_1_1_FloatingIpPool_get_floating_ip(self):
+        pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
+        ret = pool.get_floating_ip('10.3.1.42')
+
+        self.assertEqual(ret.id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
+        self.assertEqual(ret.pool, pool)
+        self.assertEqual(ret.ip_address, '10.3.1.42')
+        self.assertEqual(ret.node_id, None)
+
+    def test_OpenStack_1_1_FloatingIpPool_create_floating_ip(self):
+        pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
+        ret = pool.create_floating_ip()
+
+        self.assertEqual(ret.id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
+        self.assertEqual(ret.pool, pool)
+        self.assertEqual(ret.ip_address, '10.3.1.42')
+        self.assertEqual(ret.node_id, None)
+
+    def test_OpenStack_1_1_FloatingIpPool_delete_floating_ip(self):
+        pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
+        ip = OpenStack_1_1_FloatingIpAddress('foo-bar-id', '42.42.42.42', pool)
+
+        self.assertTrue(pool.delete_floating_ip(ip))
+
+    def test_OpenStack_1_1_FloatingIpAddress_delete(self):
+        pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
+        pool.delete_floating_ip = Mock()
+        ip = OpenStack_1_1_FloatingIpAddress('foo-bar-id', '42.42.42.42', pool)
+
+        ip.pool.delete_floating_ip()
+
+        self.assertEqual(pool.delete_floating_ip.call_count, 1)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1364,6 +1435,39 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
     def _v1_1_slug_servers_12065_os_volume_attachments_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
         if method == "DELETE":
             body = ''
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_floating_ip_pools(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_floating_ip_pools.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_os_floating_ips_foo_bar_id(self, method, url, body, headers):
+        if method == "DELETE":
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_os_floating_ips(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_floating_ips.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "POST":
+            body = self.fixtures.load('_floating_ip.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v1_1_slug_servers_4242_action(self, method, url, body, headers):
+        if method == "POST":
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
