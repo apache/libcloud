@@ -69,15 +69,19 @@ class CloudStackAddress(object):
 
 
 class CloudStackForwardingRule(object):
-    "A NAT/firewall forwarding rule."
+    """A NAT/firewall forwarding rule."""
 
-    def __init__(self, node, id, address, protocol, start_port, end_port=None):
+    def __init__(self, node, id, address, protocol, public_port, private_port,
+                 public_end_port=None, private_end_port=None, state=None):
         self.node = node
         self.id = id
         self.address = address
         self.protocol = protocol
-        self.start_port = start_port
-        self.end_port = end_port
+        self.public_port = public_port
+        self.public_end_port = public_end_port
+        self.private_port = private_port
+        self.private_end_port = private_end_port
+        self.state = state
 
     def delete(self):
         self.node.ex_delete_ip_forwarding_rule(self)
@@ -249,6 +253,28 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             node.extra['ip_forwarding_rules'] = rules
 
             nodes.append(node)
+
+            rules = self._sync_request('listPortForwardingRules')
+            adresses = self.ex_describe_public_ip()
+            port_rules = []
+            public_rules_ip = set()
+            for rule in rules.get('portforwardingrule', []):
+                if str(rule['virtualmachineid']) == node.id:
+                    address=filter(lambda addr: addr.address == rule['ipaddress'], adresses)[0]
+                    public_rules_ip.add(address.address)
+                    port_rules.append(CloudStackForwardingRule(node=node,
+                            id=rule['id'],
+                            address=address,
+                            protocol=rule['protocol'],
+                            public_port=rule['publicport'],
+                            private_port=rule['privateport'],
+                            public_end_port=rule.get('publicendport', None),
+                            private_end_port=rule.get('privateendport', None),
+                            state=rule['state']))
+            node.extra['port_forwarding_rules'] = port_rules
+            if public_rules_ip:
+                node.public_ips = list(public_rules_ip)
+                node.public_ip = [list(public_rules_ip)[0],]
 
         return nodes
 
