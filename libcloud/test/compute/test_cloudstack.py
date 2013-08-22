@@ -61,7 +61,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         try:
             cls('key', 'secret', True, 'localhost', '/path')
         except Exception:
-             self.fail('host and path provided but driver raised an exception')
+            self.fail('host and path provided but driver raised an exception')
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
@@ -189,6 +189,25 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         self.assertTrue(attachReturnVal)
 
+    def test_detach_volume(self):
+        volumeName = 'gre-test-volume'
+        location = self.driver.list_locations()[0]
+        volume = self.driver.create_volume(10, volumeName, location)
+        res = self.driver.detach_volume(volume)
+        self.assertTrue(res)
+
+    def test_destroy_volume(self):
+        volumeName = 'gre-test-volume'
+        location = self.driver.list_locations()[0]
+        volume = self.driver.create_volume(10, volumeName, location)
+        res = self.driver.destroy_volume(volume)
+        self.assertTrue(res)
+
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEquals(1, len(volumes))
+        self.assertEquals('ROOT-69942', volumes[0].name)
+
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
         self.assertEquals('test', node.name)
@@ -196,6 +215,15 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
     def test_list_locations(self):
         location = self.driver.list_locations()[0]
         self.assertEquals('Sydney', location.name)
+
+    def test_list_sizes(self):
+        sizes = self.driver.list_sizes()
+        self.assertEquals('Compute Micro PRD', sizes[0].name)
+        self.assertEquals('105', sizes[0].id)
+        self.assertEquals(384, sizes[0].ram)
+        self.assertEquals('Compute Large PRD', sizes[2].name)
+        self.assertEquals('69', sizes[2].id)
+        self.assertEquals(6964, sizes[2].ram)
 
     def test_ex_start_node(self):
         node = self.driver.list_nodes()[0]
@@ -206,6 +234,16 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         node = self.driver.list_nodes()[0]
         res = node.ex_stop()
         self.assertEquals('Stopped', res)
+
+    def test_destroy_node(self):
+        node = self.driver.list_nodes()[0]
+        res = node.destroy()
+        self.assertTrue(res)
+
+    def test_reboot_node(self):
+        node = self.driver.list_nodes()[0]
+        res = node.reboot()
+        self.assertTrue(res)
 
     def test_ex_list_keypairs(self):
         keypairs = self.driver.ex_list_keypairs()
@@ -227,7 +265,9 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
     def test_ex_import_keypair(self):
         fingerprint = 'c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15'
-        path = os.path.join(os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub")
+        path = os.path.join(os.path.dirname(__file__), "fixtures",
+                            "cloudstack",
+                            "dummy_rsa.pub")
 
         res = self.driver.ex_import_keypair('foobar', path)
         self.assertEqual(res['keyName'], 'foobar')
@@ -235,9 +275,12 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
     def test_ex_import_keypair_from_string(self):
         fingerprint = 'c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15'
-        path = os.path.join(os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub")
+        path = os.path.join(os.path.dirname(__file__), "fixtures",
+                            "cloudstack",
+                            "dummy_rsa.pub")
 
-        res = self.driver.ex_import_keypair_from_string('foobar', open(path).read())
+        res = self.driver.ex_import_keypair_from_string('foobar',
+                                                        open(path).read())
         self.assertEqual(res['keyName'], 'foobar')
         self.assertEqual(res['keyFingerprint'], fingerprint)
 
@@ -260,6 +303,10 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
                                                               '22',
                                                               '0.0.0.0/0')
         self.assertTrue(res)
+
+    def test_ex_list_public_ips(self):
+        ips = self.driver.ex_list_public_ips()
+        self.assertEqual(ips[0].address, '1.1.1.49')
 
 
 class CloudStackMockHttp(MockHttpTestCase):
