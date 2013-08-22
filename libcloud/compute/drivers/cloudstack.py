@@ -19,6 +19,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
     NodeSize, StorageVolume
 from libcloud.compute.types import NodeState, LibcloudError
 
+import os
 
 class CloudStackNode(Node):
     "Subclass of Node so we can expose our extension methods."
@@ -657,6 +658,41 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         res = self._sync_request('deleteSSHKeyPair', name=name, **extra_args)
         return res['success']
+
+    def ex_import_keypair_from_string(self, name, key_material):
+        """
+        Imports a new public key where the public key is passed in as a string
+
+        @param     name: The name of the public key to import.
+        @type      name: C{str}
+
+        @param     key_material: The contents of a public key file.
+        @type      key_material: C{str}
+
+        @rtype: C{dict}
+        """
+
+        res = self._sync_request('registerSSHKeyPair', name=name, publickey=key_material)
+        return {
+            'keyName': res['keypair']['name'],
+            'keyFingerprint': res['keypair']['fingerprint']
+        }
+
+    def ex_import_keypair(self, name, keyfile):
+        """
+        Imports a new public key where the public key is passed via a filename
+
+        @param     name: The name of the public key to import.
+        @type      name: C{str}
+
+        @param     keyfile: The filename with path of the public key to import.
+        @type      keyfile: C{str}
+
+        @rtype: C{dict}
+        """
+        with open(os.path.expanduser(keyfile)) as fh:
+            content = fh.read()
+        return self.ex_import_keypair_from_string(name, content)
 
     def ex_list_security_groups(self, **kwargs):
         """

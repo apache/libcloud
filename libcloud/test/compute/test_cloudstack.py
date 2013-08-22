@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import sys
+import os
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
@@ -196,17 +197,17 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
         self.assertEquals('Sydney', location.name)
 
-    def test_start_node(self):
+    def test_ex_start_node(self):
         node = self.driver.list_nodes()[0]
         res = node.ex_start()
         self.assertEquals('Starting', res)
 
-    def test_stop_node(self):
+    def test_ex_stop_node(self):
         node = self.driver.list_nodes()[0]
         res = node.ex_stop()
         self.assertEquals('Stopped', res)
 
-    def test_list_keypairs(self):
+    def test_ex_list_keypairs(self):
         keypairs = self.driver.ex_list_keypairs()
         fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
                       '00:00:00:00:00'
@@ -214,29 +215,45 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(keypairs[0]['name'], 'cs-keypair')
         self.assertEqual(keypairs[0]['fingerprint'], fingerprint)
 
-    def test_create_keypair(self):
+    def test_ex_create_keypair(self):
         self.assertRaises(
             LibcloudError,
             self.driver.ex_create_keypair,
             'cs-keypair')
 
-    def test_delete_keypair(self):
+    def test_ex_delete_keypair(self):
         res = self.driver.ex_delete_keypair('cs-keypair')
         self.assertTrue(res)
 
-    def test_list_security_groups(self):
+    def test_ex_import_keypair(self):
+        fingerprint = 'c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15'
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub")
+
+        res = self.driver.ex_import_keypair('foobar', path)
+        self.assertEqual(res['keyName'], 'foobar')
+        self.assertEqual(res['keyFingerprint'], fingerprint)
+
+    def test_ex_import_keypair_from_string(self):
+        fingerprint = 'c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15'
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "cloudstack", "dummy_rsa.pub")
+
+        res = self.driver.ex_import_keypair_from_string('foobar', open(path).read())
+        self.assertEqual(res['keyName'], 'foobar')
+        self.assertEqual(res['keyFingerprint'], fingerprint)
+
+    def test_ex_list_security_groups(self):
         groups = self.driver.ex_list_security_groups()
         self.assertEqual(groups[0]['name'], 'default')
 
-    def test_create_security_group(self):
+    def test_ex_create_security_group(self):
         group = self.driver.ex_create_security_group(name='MySG')
         self.assertEqual(group['name'], 'MySG')
 
-    def test_delete_security_group(self):
+    def test_ex_delete_security_group(self):
         res = self.driver.ex_delete_security_group(name='MySG')
         self.assertTrue(res)
 
-    def test_authorize_security_group_ingress(self):
+    def test_ex_authorize_security_group_ingress(self):
         res = self.driver.ex_authorize_security_group_ingress('MySG',
                                                               'TCP',
                                                               '22',
