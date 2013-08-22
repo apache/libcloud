@@ -38,7 +38,7 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume, StorageSnapshot
+from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -619,7 +619,7 @@ class BaseEC2NodeDriver(NodeDriver):
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
         time = findtext(element=element, xpath='startTime', namespace=NAMESPACE)
         description = findtext(element=element, xpath='description', namespace=NAMESPACE)
-        return StorageSnapshot(snapId, size, description, self,
+        return VolumeSnapshot(self, snapId, size, description,
                                extra={'volume_id': volId,
                                         'state': state,
                                         'start-time': datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.000Z')})
@@ -763,7 +763,7 @@ class BaseEC2NodeDriver(NodeDriver):
         @param volume: Create snapshot from this volume
         @type volume: C{StorageVolume}
         @param description: Description for new snapshot
-        @return: C{StorageSnapshot}
+        @return: C{VolumeSnapshot}
         """
         params = {
             'Action': 'CreateSnapshot',
@@ -782,7 +782,7 @@ class BaseEC2NodeDriver(NodeDriver):
         Describe all snapshots
         @param snapshot: If this setted, describe only this snapshot id
         @param owner: Owner for snapshot: self|amazon|ID
-        @return: C{list(StorageSnapshots)}
+        @return: C{list(VolumeSnapshots)}
         """
         params = {
             'Action': 'DescribeSnapshots',

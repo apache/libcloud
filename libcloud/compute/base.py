@@ -433,8 +433,12 @@ class StorageVolume(UuidMixin):
 
 
 class VolumeSnapshot(object):
-    def __init__(self, driver):
+    def __init__(self, driver, snapId, size, description=None, extra=None):
         self.driver = driver
+        self.id = snapId
+        self.size = size
+        self.description = description
+        self.extra = extra
 
     def destroy(self):
         """
