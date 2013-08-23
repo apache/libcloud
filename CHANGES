@@ -70,6 +70,10 @@ Changes with Apache Libcloud in development
       CloudStack driver. (LIBCLOUD-380)
       [Sebastien Goasguen]
 
+    - Add support for managing floating IP addresses to the OpenStack driver.
+      (LIBCLOUD-382)
+      [Ivan Kusalic]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
