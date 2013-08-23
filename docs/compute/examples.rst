@@ -111,3 +111,11 @@ Created node also gets added to the provided security groups.
 As noted in the example, you use `extra_args` argument to provide a dictionary that
 contains the keypair and list of securitygroups. Note that the list of securitygroups
 is passed as a string not as a python list.
+
+Create flaoting IP and attach it to a node using a local OpenStack provider
+---------------------------------------------------------------------------
+
+This example demonstrates how to use OpenStack's floating IPs.
+
+.. literalinclude:: /examples/compute/openstack_floating_ips.py
+   :language: python
