@@ -253,10 +253,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         failed_nodes = []
         for attachment in volume.extra['attachments']:
             if not ex_node or ex_node.id == attachment['serverId']:
-                if not self.connection.request(
+                response = self.connection.request(
                     '/servers/%s/os-volume_attachments/%s' %
                     (attachment['serverId'], attachment['id']),
-                    method='DELETE').success():
+                    method='DELETE')
+
+                if not response.success():
                     failed_nodes.append(attachment['serverId'])
         if failed_nodes:
             raise OpenStackException(
@@ -1838,10 +1840,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         address = ip.ip_address if hasattr(ip, 'ip_address') else ip
         data = {
-            'addFloatingIp': { 'address': address }
+            'addFloatingIp': {'address': address}
         }
         resp = self.connection.request('/servers/%s/action' % node.id,
-            method='POST', data=data)
+                                       method='POST', data=data)
         return resp.status == httplib.ACCEPTED
 
     def ex_detach_floating_ip_from_node(self, node, ip):
@@ -1858,10 +1860,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         address = ip.ip_address if hasattr(ip, 'ip_address') else ip
         data = {
-            'removeFloatingIp': { 'address': address }
+            'removeFloatingIp': {'address': address}
         }
         resp = self.connection.request('/servers/%s/action' % node.id,
-            method='POST', data=data)
+                                       method='POST', data=data)
         return resp.status == httplib.ACCEPTED
 
 
@@ -1889,7 +1891,7 @@ class OpenStack_1_1_FloatingIpPool(object):
 
     def _to_floating_ip(self, obj):
         return OpenStack_1_1_FloatingIpAddress(obj['id'], obj['ip'], self,
-            obj['instance_id'])
+                                               obj['instance_id'])
 
     def get_floating_ip(self, ip):
         """
@@ -1910,7 +1912,8 @@ class OpenStack_1_1_FloatingIpPool(object):
         @rtype: L{OpenStack_1_1_FloatingIpAddress}
         """
         resp = self.connection.request('/os-floating-ips',
-            method='POST', data={ 'pool': self.name })
+                                       method='POST',
+                                       data={'pool': self.name})
         data = resp.object['floating_ip']
         id = data['id']
         ip_address = data['ip']
@@ -1926,7 +1929,7 @@ class OpenStack_1_1_FloatingIpPool(object):
         @rtype: C{bool}
         """
         resp = self.connection.request('/os-floating-ips/%s' % ip.id,
-            method='DELETE')
+                                       method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def __repr__(self):
@@ -1954,4 +1957,4 @@ class OpenStack_1_1_FloatingIpAddress(object):
 
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s, pool=%s>'
-            % (self.id, self.ip_address, self.pool))
+                % (self.id, self.ip_address, self.pool))
