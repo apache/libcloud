@@ -32,6 +32,7 @@ except ImportError:
 
 from libcloud.utils.files import read_in_chunks
 from libcloud.utils.py3 import relpath
+from libcloud.utils.py3 import u
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.common.types import LibcloudError
@@ -175,7 +176,7 @@ class LocalStorageDriver(StorageDriver):
         # use only the mtime attribute here. If the file contents change,
         # the underlying file-system will change mtime
         data_hash = self._get_hash_function()
-        data_hash.update(str(stat.st_mtime))
+        data_hash.update(u(stat.st_mtime).encode('ascii'))
         data_hash = data_hash.hexdigest()
 
         extra = {}
