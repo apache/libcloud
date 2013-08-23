@@ -16,7 +16,7 @@ driver = OpenStack('your_auth_username', 'your_auth_password',
                    ex_tenant_name='your_tenant')
 
 # get the first pool - public by default
-pool, = driver.ex_list_floating_ip_pools()
+pool = driver.ex_list_floating_ip_pools()[0]
 
 # create an ip in the pool
 floating_ip = pool.create_floating_ip()
