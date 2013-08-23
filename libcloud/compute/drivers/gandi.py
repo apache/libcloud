@@ -64,7 +64,7 @@ INSTANCE_TYPES = {
         'disk': 50,
         'bandwidth': 100,
     },
-    'extra-large': {
+    'x-large': {
         'id': 'x-large',
         'name': 'Extra Large instance',
         'cpu': 4,
