@@ -17,6 +17,7 @@
         <sourceImageId>44ed8b72-ebea-11df-bdc1-001517c46384</sourceImageId>
         <networkId>53b4c05b-341e-4ac3-b688-bdd78e43ca9e</networkId>
         <privateIpAddress>10.162.1.1</privateIpAddress>
+        <publicIpAddress>200.16.132.7</publicIpAddress>
         <machineName>10-162-1-1</machineName>
         <isStarted>true</isStarted>
         <deployedTime>2011-03-02T17:16:09.882Z</deployedTime>
