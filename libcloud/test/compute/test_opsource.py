@@ -146,11 +146,9 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
 
     def test_node_public_ip(self):
         nodes = self.driver.list_nodes()
-        for node in nodes:
-            if node.id == "abadbc7e-9e10-46ca-9d4a-194bcc6b6c16":
-                self.assertEqual(node.public_ips[0], '200.16.132.7')
-            else:
-                self.assertEqual(len(node.public_ips), 0)
+        node = [n for n in nodes if n.id ==
+                'abadbc7e-9e10-46ca-9d4a-194bcc6b6c16'][0]
+        self.assertEqual(node.public_ips[0], '200.16.132.7')
 
 
 class OpsourceMockHttp(MockHttp):
