@@ -19,7 +19,6 @@ ElasticHosts Driver
 
 from libcloud.compute.types import Provider
 from libcloud.compute.drivers.elasticstack import ElasticStackBaseNodeDriver
-from libcloud.compute.drivers.elasticstack import ElasticStackBaseConnection
 
 
 # API end-points
@@ -128,91 +127,36 @@ STANDARD_DRIVES = {
 }
 
 
-class ElasticHostsBaseConnection(ElasticStackBaseConnection):
-    host = API_ENDPOINTS[DEFAULT_ENDPOINT]['host']
+class ElasticHostsException(Exception):
+    def __str__(self):
+        return self.args[0]
+
+    def __repr__(self):
+        return "<ElasticHostsException '%s'>" % (self.args[0])
 
 
-class ElasticHostsBaseNodeDriver(ElasticStackBaseNodeDriver):
+class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
+    """
+    Node Driver class for ElasticHosts
+    """
     type = Provider.ELASTICHOSTS
     api_name = 'elastichosts'
     name = 'ElasticHosts'
     website = 'http://www.elastichosts.com/'
-    connectionCls = ElasticHostsBaseConnection
     features = {"create_node": ["generates_password"]}
     _standard_drives = STANDARD_DRIVES
 
+    def __init__(self, *args, **kwargs):
+        if 'region' in kwargs:
+            self.region = kwargs['region']
+            if self.region not in API_ENDPOINTS:
+                raise ElasticHostsException("Invalid region specified")
+        else:
+            raise ElasticHostsException("ElasticHosts Driver requires a region to be specified")
+        super(ElasticHostsNodeDriver, self).__init__(*args, **kwargs)
 
-class ElasticHostsUK1Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the London Peer 1 end-point
-    """
-
-    host = API_ENDPOINTS['uk-1']['host']
-
-
-class ElasticHostsUK1NodeDriver(ElasticHostsBaseNodeDriver):
-    """
-    ElasticHosts node driver for the London Peer 1 end-point
-    """
-    connectionCls = ElasticHostsUK1Connection
-
-
-class ElasticHostsUK2Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the London Bluesquare end-point
-    """
-    host = API_ENDPOINTS['uk-2']['host']
-
-
-class ElasticHostsUK2NodeDriver(ElasticHostsBaseNodeDriver):
-    """
-    ElasticHosts node driver for the London Bluesquare end-point
-    """
-    connectionCls = ElasticHostsUK2Connection
-
-
-class ElasticHostsUS1Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the San Antonio Peer 1 end-point
-    """
-    host = API_ENDPOINTS['us-1']['host']
-
-
-class ElasticHostsUS1NodeDriver(ElasticHostsBaseNodeDriver):
-    """
-    ElasticHosts node driver for the San Antonio Peer 1 end-point
-    """
-    connectionCls = ElasticHostsUS1Connection
-
-
-class ElasticHostsUS2Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the Los Angeles Peer 1 end-point
-    """
-    host = API_ENDPOINTS['us-2']['host']
-
-
-class ElasticHostsUS2NodeDriver(ElasticHostsBaseNodeDriver):
-    """
-    ElasticHosts node driver for the Los Angeles Peer 1 end-point
-    """
-    connectionCls = ElasticHostsUS2Connection
-
-
-class ElasticHostsCA1Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the Toronto Peer 1 end-point
-    """
-    host = API_ENDPOINTS['ca-1']['host']
-
-
-class ElasticHostsCA1NodeDriver(ElasticHostsBaseNodeDriver):
-    """
-    ElasticHosts node driver for the Toronto Peer 1 end-point
-    """
-    connectionCls = ElasticHostsCA1Connection
+    def _ex_connection_class_kwargs(self):
+        """
+        Return the host value based the user supplied region
+        """
+        return {'host': API_ENDPOINTS[self.region]['host']}

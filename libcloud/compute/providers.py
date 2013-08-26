@@ -47,16 +47,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.ec2', 'EC2APSESydneyNodeDriver'),
     Provider.ECP:
         ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
-    Provider.ELASTICHOSTS_UK1:
-        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
-    Provider.ELASTICHOSTS_UK2:
-        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK2NodeDriver'),
-    Provider.ELASTICHOSTS_US1:
-        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
-    Provider.ELASTICHOSTS_US2:
-        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS2NodeDriver'),
-    Provider.ELASTICHOSTS_CA1:
-        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsCA1NodeDriver'),
+    Provider.ELASTICHOSTS:
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsNodeDriver'),
     Provider.SKALICLOUD:
         ('libcloud.compute.drivers.skalicloud', 'SkaliCloudNodeDriver'),
     Provider.SERVERLOVE:
