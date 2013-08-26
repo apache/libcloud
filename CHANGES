@@ -74,6 +74,10 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-382)
       [Ivan Kusalic]
 
+    - Update Opsource driver to include node public ip address (if available).
+      (LIBCLOUD-384)
+      [Michael Bennett]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
