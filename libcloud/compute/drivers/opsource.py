@@ -579,7 +579,7 @@ class OpsourceNodeDriver(NodeDriver):
             'status': status,
         }
 
-	public_ip = findtext(element, 'publicIpAddress', SERVER_NS)
+        public_ip = findtext(element, 'publicIpAddress', SERVER_NS)
 
         n = Node(id=findtext(element, 'id', SERVER_NS),
                  name=findtext(element, 'name', SERVER_NS),
