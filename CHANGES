@@ -78,6 +78,11 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-384)
       [Michael Bennett]
 
+    - Add extension methods for handling port forwarding to the CloudStack
+      driver, rename CloudStackForwardingRule class to
+      CloudStackIPForwardingRule. (LIBCLOUD-383)
+      [sebastien goasguen]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
