@@ -32,6 +32,9 @@ ENDPOINT_ARGS_MAP = {
     'ord': {'service_type': 'compute',
             'name': 'cloudServersOpenStack',
             'region': 'ORD'},
+    'iad': {'service_type': 'compute',
+            'name': 'cloudServersOpenStack',
+            'region': 'IAD'},
     'lon': {'service_type': 'compute',
             'name': 'cloudServersOpenStack',
             'region': 'LON'},
@@ -152,10 +155,10 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         @param region: ID of the region which should be used.
         @type region: C{str}
         """
-        if region not in ['dfw', 'ord', 'lon', 'syd']:
+        if region not in ['dfw', 'ord', 'iad', 'lon', 'syd']:
             raise ValueError('Invalid region: %s' % (region))
 
-        if region in ['dfw', 'ord', 'syd']:
+        if region in ['dfw', 'ord', 'iad', 'syd']:
             self.connectionCls.auth_url = AUTH_URL_US
             self.api_name = 'rackspacenovaus'
         elif region == 'lon':
