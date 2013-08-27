@@ -824,7 +824,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def _ex_connection_class_kwargs(self):
         kwargs = {'ex_force_service_region': self.region}
 
-        if self.region in ['dfw', 'ord', 'syd']:
+        if self.region in ['dfw', 'ord', 'iad', 'syd']:
             kwargs['auth_url'] = AUTH_URL_US
         elif self.region == 'lon':
             kwargs['auth_url'] = AUTH_URL_UK
