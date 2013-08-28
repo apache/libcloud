@@ -16,11 +16,14 @@
 from __future__ import with_statement
 
 import os
+import base64
+
+from libcloud.utils.py3 import b
 
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
-    NodeSize, StorageVolume
+    NodeSize, StorageVolume, is_private_subnet
 from libcloud.compute.types import NodeState, LibcloudError
 
 
@@ -155,6 +158,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     website = 'http://cloudstack.org/'
     type = Provider.CLOUDSTACK
 
+    features = {"create_node": ["ssh_key", "generates_password"]}
+
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
         'Starting': NodeState.REBOOTING,
@@ -251,6 +256,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                     private_ips.append(nic['ipaddress'])
 
             public_ips = public_ips_map.get(vm['id'], {}).keys()
+            public_ips.extend([ip for ip in private_ips
+                              if not is_private_subnet(ip)])
+
+            keypair, password = None, None
+            if 'keypair' in vm.keys():
+                keypair = vm['keypair']
+            if 'password' in vm.keys():
+                password = vm['password']
 
             node = CloudStackNode(
                 id=vm['id'],
@@ -259,7 +272,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 public_ips=public_ips,
                 private_ips=private_ips,
                 driver=self,
-                extra={'zoneid': vm['zoneid'], }
+                extra={'zoneid': vm['zoneid'],
+                       'password': password,
+                       'key_name': keypair,
+                       'created': vm['created']
+                       }
             )
 
             addresses = public_ips_map.get(vm['id'], {}).items()
@@ -281,7 +298,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             node.extra['ip_forwarding_rules'] = rules
 
             rules = []
-
             for addr in addrs:
                 result = self._sync_request('listPortForwardingRules')
                 for r in result.get('portforwardingrule', []):
@@ -310,56 +326,102 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   0, self))
         return sizes
 
-    def create_node(self, name, size, image, location=None, extra_args=None,
-                    **kwargs):
+    def create_node(self, **kwargs):
         """
+        Create a new node
+
         @inherits: L{NodeDriver.create_node}
 
-        @keyword  extra_args: Extra argument passed to the
-        "deployVirtualMachine" call. A list of available arguments can be found
-        at http://cloudstack.apache.org/docs/api/apidocs-4.0.0/root_admin/ \
-           deployVirtualMachine.html
-        @type     extra_args:   C{dict}
+        @keyword    ex_keyname:  Name of existing keypair
+        @type       ex_keyname:  C{str}
+
+        @keyword    ex_userdata: String containing user data
+        @type       ex_userdata: C{str}
+
+        @keyword    networks: The server is launched into a set of Networks.
+        @type       networks: L{CloudStackNetwork}
+
+        @keyword    ex_security_groups: List of security groups to assign to
+                                        the node
+        @type       ex_security_groups: C{list} of C{str}
 
         @rtype: L{CloudStackNode}
         """
 
-        if extra_args:
-            request_args = extra_args.copy()
-        else:
-            request_args = {}
+        server_params = self._create_args_to_params(None, **kwargs)
 
-        if location is None:
-            location = self.list_locations()[0]
-
-        if 'network_id' in kwargs:
-            request_args['networkids'] = kwargs['network_id']
-
-        result = self._async_request(
-            'deployVirtualMachine', name=name, displayname=name,
-            serviceofferingid=size.id, templateid=image.id,
-            zoneid=location.id, **request_args
-        )
-
-        node = result['virtualmachine']
-        state = self.NODE_STATE_MAP[node['state']]
+        node = self._async_request('deployVirtualMachine',
+                                   **server_params)['virtualmachine']
 
         public_ips = []
-        private_ips = [nic['ipaddress'] for nic in node['nic']]
+        private_ips = []
+        for nic in node['nic']:
+            if is_private_subnet(nic['ipaddress']):
+                private_ips.append(nic['ipaddress'])
+            else:
+                public_ips.append(nic['ipaddress'])
+
+        keypair, password = None, None
+        if keypair in node.keys():
+            keypair = node['keypair']
+        if password in node.keys():
+            password = node['password']
 
         return CloudStackNode(
             id=node['id'],
             name=node['displayname'],
-            state=state,
+            state=self.NODE_STATE_MAP[node['state']],
             public_ips=public_ips,
             private_ips=private_ips,
             driver=self,
-            extra={'zoneid': location.id,
+            extra={'zoneid': server_params['zoneid'],
                    'ip_addresses': [],
                    'ip_forwarding_rules': [],
-                   'port_forwarding_rules': []
+                   'port_forwarding_rules': [],
+                   'password': password,
+                   'key_name': keypair,
+                   'created': node['created']
                    }
+
         )
+
+    def _create_args_to_params(self, node, **kwargs):
+        server_params = {
+            'name': kwargs.get('name'),
+        }
+
+        if 'name' in kwargs:
+            server_params['displayname'] = kwargs.get('name')
+
+        if 'size' in kwargs:
+            server_params['serviceofferingid'] = kwargs.get('size').id
+
+        if 'image' in kwargs:
+            server_params['templateid'] = kwargs.get('image').id
+
+        if 'location' in kwargs:
+            server_params['zoneid'] = kwargs.get('location').id
+        else:
+            server_params['zoneid'] = self.list_locations()[0].id
+
+        if 'ex_keyname' in kwargs:
+            server_params['keypair'] = kwargs['ex_keyname']
+
+        if 'ex_userdata' in kwargs:
+            server_params['userdata'] = base64.b64encode(
+                b(kwargs['ex_userdata'])).decode('ascii')
+
+        if 'networks' in kwargs:
+            networks = kwargs['networks']
+            networks = ','.join([network.id for network in networks])
+            server_params['networkids'] = networks
+
+        if 'ex_security_groups' in kwargs:
+            security_groups = kwargs['ex_security_groups']
+            security_groups = ','.join(security_groups)
+            server_params['securitygroupnames'] = security_groups
+
+        return server_params
 
     def destroy_node(self, node):
         """
@@ -642,6 +704,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                             public_port,
                                             private_port)
         node.extra['port_forwarding_rules'].append(rule)
+        node.public_ips.append(address)
         return rule
 
     def ex_delete_port_forwarding_rule(self, node, rule):
@@ -658,6 +721,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         node.extra['port_forwarding_rules'].remove(rule)
+        node.public_ips.remove(rule.address)
         res = self._async_request('deletePortForwardingRule', id=rule.id)
         return res['success']
 

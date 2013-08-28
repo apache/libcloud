@@ -13,11 +13,7 @@ TEMPLATE_ID = 'id of the template you want to use'
 KEYPAIR_NAME = 'keypairname'
 
 # The security groups you want this node to be added to
-SECURITY_GROUP_NAMES = 'secgroup1, secgroup2'
-
-# Extra arguments to pass to node creation
-EXTRA_ARGS = {"keypair": KEYPAIR_NAME,
-              "securitygroupnames": SECURITY_GROUP_NAMES}
+SECURITY_GROUP_NAMES = ['secgroup1', 'secgroup2']
 
 cls = get_driver(Provider.CLOUDSTACK)
 driver = cls(key=ACCESS_ID, secret=SECRET_KEY, secure=True,
@@ -29,4 +25,5 @@ size = [s for s in sizes if s.id == SIZE_ID][0]
 image = [i for i in images if i.id == IMAGE_ID][0]
 
 node = driver.create_node(name='test-node-1', image=image, size=size,
-                          extra_args=EXTRA_ARGS)
+                          ex_security_groups=SECURITY_GROUP_NAMES,
+                          ex_keyname=KEYPAIR_NAME)

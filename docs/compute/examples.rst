@@ -100,7 +100,8 @@ Create a node on a CloudStack provider using a provided key pair and security gr
 
     This example assumes the provided key pair already exists. If the key pair
     doesn't exist yet, you can create it using the provider's own UI, or
-    :func:`ex_create_keypair` driver method.
+    :func:`ex_create_keypair` driver method. This functionality is only available
+    in trunk.
 
 This example demonstrates how to create a node using an existing key pair.
 Created node also gets added to the provided security groups.

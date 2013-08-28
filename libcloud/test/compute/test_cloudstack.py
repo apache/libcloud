@@ -98,7 +98,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(node.name, 'fred')
         self.assertEqual(node.public_ips, [])
-        self.assertEqual(node.private_ips, ['1.1.1.2'])
+        self.assertEqual(node.private_ips, ['192.168.1.2'])
         self.assertEqual(node.extra['zoneid'], default_location.id)
 
     def test_list_images_no_images_available(self):
