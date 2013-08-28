@@ -155,15 +155,16 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         @param region: ID of the region which should be used.
         @type region: C{str}
         """
-        if region not in ['dfw', 'ord', 'iad', 'lon', 'syd']:
+        valid_regions = ENDPOINT_ARGS_MAP.keys()
+        if region not in valid_regions:
             raise ValueError('Invalid region: %s' % (region))
 
-        if region in ['dfw', 'ord', 'iad', 'syd']:
-            self.connectionCls.auth_url = AUTH_URL_US
-            self.api_name = 'rackspacenovaus'
-        elif region == 'lon':
+        if region == 'lon':
             self.connectionCls.auth_url = AUTH_URL_UK
             self.api_name = 'rackspacenovalon'
+        else:
+            self.connectionCls.auth_url = AUTH_URL_US
+            self.api_name = 'rackspacenovaus'
 
         self.connectionCls._auth_version = '2.0'
         self.connectionCls.get_endpoint_args = \
