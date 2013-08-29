@@ -260,6 +260,12 @@ class GCELBDriver(Driver):
         return [self._node_to_member(n, balancer) for n in
                 balancer.extra['targetpool'].nodes]
 
+    def ex_create_healthcheck(self, *args, **kwargs):
+        return self.gce.ex_create_healthcheck(*args, **kwargs)
+
+    def ex_list_healthchecks(self):
+        return self.gce.ex_list_healthchecks()
+
     def ex_balancer_attach_healthcheck(self, balancer, healthcheck):
         """
         Attach a healthcheck to balancer

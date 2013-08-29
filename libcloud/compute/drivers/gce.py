@@ -26,6 +26,7 @@ import getpass
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 
+from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
 from libcloud.compute.providers import Provider
@@ -1084,7 +1085,8 @@ class GCENodeDriver(NodeDriver):
         @type     network: C{str} or L{GCENetwork}
 
         @keyword  source_ranges: A list of IP ranges in CIDR format that the
-                                 firewall should apply to.
+                                 firewall should apply to. Defaults to
+                                 ['0.0.0.0/0']
         @type     source_ranges: C{list} of C{str}
 
         @keyword  source_tags: A list of instance tags which the rules apply
@@ -1102,8 +1104,7 @@ class GCENodeDriver(NodeDriver):
         firewall_data['name'] = name
         firewall_data['allowed'] = allowed
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is not None:
-            firewall_data['sourceRanges'] = source_ranges
+        firewall_data['sourceRanges'] = source_ranges or ['0.0.0.0/0']
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
 
@@ -1199,7 +1200,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_network(name)
 
     def _create_node_req(self, name, size, image, location, network,
-                         tags=None, metadata=None, boot_disk=None):
+                         tags=None, metadata=None, boot_disk=None,
+                         persistent_disk=False):
         """
         Returns a request and body to create a new node.  This is a helper
         method to suppor both L{create_node} and L{ex_create_multiple_nodes}.
@@ -1226,10 +1228,13 @@ class GCENodeDriver(NodeDriver):
         @keyword  metadata: Metadata dictionary for instance.
         @type     metadata: C{dict}
 
-        @keyword  boot_disk:  Persistent boot disk to attach.  If set to 'new',
-                              will create a new persistant disk with the same
-                              name as the node.
+        @keyword  boot_disk:  Persistent boot disk to attach.
         @type     L{StorageVolume}
+
+        @keyword  persistent_disk: If True, create a persistent disk instead of
+                                   an ephemeral one.  Has no effect if
+                                   boot_disk is specified.
+        @type     persistent_disk: C{bool}
 
         @return:  A tuple containing a request string and a node_data dict.
         @rtype:   C{tuple} of C{str} and C{dict}
@@ -1241,10 +1246,10 @@ class GCENodeDriver(NodeDriver):
             node_data['tags'] = {'items': tags}
         if metadata:
             node_data['metadata'] = metadata
+        if (not boot_disk) and persistent_disk:
+            boot_disk = self.create_volume(None, name, location=location,
+                                           image=image)
         if boot_disk:
-            if boot_disk == 'new':
-                boot_disk = self.create_volume(None, name, location=location,
-                                               image=image)
             disks = [{'kind': 'compute#attachedDisk',
                       'boot': True,
                       'type': 'PERSISTENT',
@@ -1269,7 +1274,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
-                    ex_boot_disk=None):
+                    ex_boot_disk=None, ex_persistent_disk=False):
         """
         Create a new node and return a node object for the node.
 
@@ -1295,10 +1300,13 @@ class GCENodeDriver(NodeDriver):
         @keyword  ex_metadata: Metadata dictionary for instance.
         @type     ex_metadata: C{dict} or C{None}
 
-        @keyword  ex_boot_disk: The boot disk to attach to the instance.  If
-                                set to 'new' a new persistant disk will be
-                                created with the same name as the node.
+        @keyword  ex_boot_disk: The boot disk to attach to the instance.
         @type     ex_boot_disk: L{StorageVolume} or C{str}
+
+        @keyword  ex_persistent_disk: If True, create a persistent_disk instead
+                                      of a ephemeral one.  Has no effect if
+                                      ex_boot_disk is specified.
+        @type     ex_persistent_disk: C{bool}
 
         @return:  A Node object for the new node.
         @rtype:   L{Node}
@@ -1316,7 +1324,8 @@ class GCENodeDriver(NodeDriver):
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
-                                                   ex_boot_disk)
+                                                   ex_boot_disk,
+                                                   ex_persistent_disk)
         response = self.connection.async_request(request, method='POST',
                                                  data=node_data).object
         if 'error' in response:
@@ -1327,7 +1336,7 @@ class GCENodeDriver(NodeDriver):
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
-                                 ignore_errors=True,
+                                 ignore_errors=True, ex_persistent_disk=False,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1367,6 +1376,10 @@ class GCENodeDriver(NodeDriver):
                                  more nodes fails.
         @type     ignore_errors: C{bool}
 
+        @keyword  persistent_disk: If True, create persistent boot disks instead
+                                   of ephemeral ones.
+        @type     persistent_disk: C{bool}
+
         @keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
 
@@ -1388,9 +1401,9 @@ class GCENodeDriver(NodeDriver):
         responses = []
         for i in range(number):
             name = '%s-%03d' % (base_name, i)
-            request, node_data = self._create_node_req(name, size, image,
-                                                       location, ex_network,
-                                                       ex_tags, ex_metadata)
+            request, node_data = self._create_node_req(
+                name, size, image, location, ex_network, ex_tags, ex_metadata,
+                persistent_disk=ex_persistent_disk)
             response = self.connection.request(request, method='POST',
                                                data=node_data)
             responses.append(response.object)
@@ -1619,6 +1632,7 @@ class GCENodeDriver(NodeDriver):
         if 'error' in response:
             self._categorize_error(response['error'])
         else:
+            targetpool.nodes.append(node)
             return True
 
     def ex_targetpool_add_healthcheck(self, targetpool, healthcheck):
@@ -1648,8 +1662,8 @@ class GCENodeDriver(NodeDriver):
         if 'error' in response:
             self._categorize_error(response['error'])
         else:
+            targetpool.healthchecks.append(healthcheck)
             return True
-        pass
 
     def ex_targetpool_remove_node(self, targetpool, node):
         """
@@ -1678,8 +1692,14 @@ class GCENodeDriver(NodeDriver):
         if 'error' in response:
             self._categorize_error(response['error'])
         else:
+            # Remove node object from node list
+            index = None
+            for i, nd in enumerate(targetpool.nodes):
+                if nd.name == node.name:
+                    index = i
+            if index is not None:
+                targetpool.nodes.pop(index)
             return True
-        pass
 
     def ex_targetpool_remove_healthcheck(self, targetpool, healthcheck):
         """
@@ -1708,6 +1728,13 @@ class GCENodeDriver(NodeDriver):
         if 'error' in response:
             self._categorize_error(response['error'])
         else:
+            # Remove healthcheck object from healthchecks list
+            index = None
+            for i, hc in enumerate(targetpool.healthchecks):
+                if hc.name == healthcheck.name:
+                    index = i
+            if index is not None:
+                targetpool.healthchecks.pop(index)
             return True
 
     def reboot_node(self, node):
@@ -2314,8 +2341,8 @@ class GCENodeDriver(NodeDriver):
         @param  name: The name of the zone.
         @type   name: C{str}
 
-        @return:  A GCEZone object for the zone
-        @rtype:   L{GCEZone}
+        @return:  A GCEZone object for the zone or None if not found
+        @rtype:   L{GCEZone} or C{None}
         """
         if name.startswith('https://'):
             short_name = name.split('/')[-1]
@@ -2327,7 +2354,12 @@ class GCENodeDriver(NodeDriver):
         if short_name in self.zone_dict:
             return self.zone_dict[short_name]
         # Otherwise, look up zone information
-        response = self.connection.request(request, method='GET').object
+        try:
+            response = self.connection.request(request, method='GET').object
+        # If zone is not found, the response is html and not json, so it fails
+        # parsing
+        except MalformedResponseError:
+            return None
         return self._to_zone(response)
 
     def _to_address(self, address):
@@ -2597,6 +2629,9 @@ class GCENodeDriver(NodeDriver):
 
         quotas = region.get('quotas')
         zones = [self.ex_get_zone(z) for z in region['zones']]
+        # Work around a bug that will occasionally list missing zones in the
+        # region output
+        zones = [z for z in zones if z is not None]
         deprecated = region.get('deprecated')
 
         return GCERegion(id=region['id'], name=region['name'],
@@ -2619,7 +2654,7 @@ class GCENodeDriver(NodeDriver):
         extra['zone'] = self.ex_get_zone(volume['zone'])
         extra['status'] = volume['status']
         extra['creationTimestamp'] = volume['creationTimestamp']
-        extra['description'] = volume['description']
+        extra['description'] = volume.get('description')
 
         return StorageVolume(id=volume['id'], name=volume['name'],
                              size=volume['sizeGb'], driver=self, extra=extra)

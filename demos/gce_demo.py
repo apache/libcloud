@@ -58,7 +58,7 @@ MAX_NODES = 5
 DEMO_BASE_NAME = 'libcloud-demo'
 
 # Datacenter to create resources in
-DATACENTER = 'us-central1-a'
+DATACENTER = 'us-central2-a'
 
 # Clean up resources at the end (can be set to false in order to
 # inspect resources at the end of the run). Resources will be cleaned
