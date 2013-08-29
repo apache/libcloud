@@ -7,7 +7,7 @@ HOST = 'hostname or ip address of your management server'
 PATH = 'path to the api endpoint, e.g: /client/api'
 
 SIZE_ID = 'id of the computer offering you want to use'
-TEMPLATE_ID = 'id of the template you want to use'
+IMAGE_ID = 'id of the template you want to use'
 
 # Name of the existing keypair you want to use
 KEYPAIR_NAME = 'keypairname'
@@ -17,7 +17,7 @@ SECURITY_GROUP_NAMES = ['secgroup1', 'secgroup2']
 
 cls = get_driver(Provider.CLOUDSTACK)
 driver = cls(key=ACCESS_ID, secret=SECRET_KEY, secure=True,
-             host=HOST, path=PATH, extra_args=EXTRA_ARGS)
+             host=HOST, path=PATH)
 
 sizes = driver.list_sizes()
 images = driver.list_images()
