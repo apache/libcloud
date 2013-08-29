@@ -83,6 +83,10 @@ Changes with Apache Libcloud in development
       CloudStackIPForwardingRule. (LIBCLOUD-383)
       [sebastien goasguen]
 
+    - Hook up deploy_node functionality in the CloudStack driver and unify
+      extension arguments for handling security groups. (LIBCLOUD-388)
+      [sebastien goasguen]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
