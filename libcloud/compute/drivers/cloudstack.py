@@ -158,7 +158,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     website = 'http://cloudstack.org/'
     type = Provider.CLOUDSTACK
 
-    features = {"create_node": ["ssh_key", "generates_password"]}
+    features = {"create_node": ["generates_password", ]}
 
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
