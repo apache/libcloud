@@ -256,6 +256,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                     private_ips.append(nic['ipaddress'])
 
             public_ips = public_ips_map.get(vm['id'], {}).keys()
+            public_ips = list(public_ips)
             public_ips.extend([ip for ip in private_ips
                               if not is_private_subnet(ip)])
 
