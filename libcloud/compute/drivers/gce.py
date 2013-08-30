@@ -1376,8 +1376,8 @@ class GCENodeDriver(NodeDriver):
                                  more nodes fails.
         @type     ignore_errors: C{bool}
 
-        @keyword  persistent_disk: If True, create persistent boot disks instead
-                                   of ephemeral ones.
+        @keyword  persistent_disk: If True, create persistent boot disks
+                                   instead of ephemeral ones.
         @type     persistent_disk: C{bool}
 
         @keyword  timeout: The number of seconds to wait for all nodes to be
@@ -2680,7 +2680,18 @@ class GCENodeDriver(NodeDriver):
             node_path = n.split('/')
             name = node_path[-1]
             zone = node_path[-3]
-            node = self.ex_get_node(name, zone)
+            # Nodes that do not exist can be part of a target pool.  If the
+            # node does not exist, use the URL of the node instead of the node
+            # object.
+            try:
+                node = self.ex_get_node(name, zone)
+            except Exception:
+                e = sys.exc_info()[1]
+                if (('error' in e[0]) and ('code' in e[0]['error']) and
+                        (e[0]['error']['code'] == 404)):
+                    node = n
+                else:
+                    raise e
             node_list.append(node)
 
         return GCETargetPool(id=targetpool['id'], name=targetpool['name'],

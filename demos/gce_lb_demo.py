@@ -78,6 +78,7 @@ def get_gce_driver():
     driver = get_driver(Provider.GCE)(*args, datacenter=DATACENTER, **kwargs)
     return driver
 
+
 def get_gcelb_driver(gce_driver=None):
     # The GCE Load Balancer driver uses the GCE Compute driver for all of its
     # API calls.  You can either provide the driver directly, or provide the
@@ -148,8 +149,7 @@ def clean_up(base_name, node_list=None, resource_list=None):
 
 # ==== DEMO CODE STARTS HERE ====
 def main():
-    global gce
-    global gcelb
+    global gce  # Used by the clean_up function
     gce = get_gce_driver()
     gcelb = get_gcelb_driver(gce)
 
@@ -175,7 +175,6 @@ def main():
     firewalls = gce.ex_list_firewalls()
     print('Cleaning up any "%s" resources:' % DEMO_BASE_NAME)
     clean_up(DEMO_BASE_NAME, all_nodes, balancers + healthchecks + firewalls)
-
 
     # == Create 3 nodes to balance between ==
     startup_script = ('apt-get -y update && '
@@ -219,7 +218,7 @@ def main():
     port = 80
     protocol = 'tcp'
     algorithm = None
-    members = lb_nodes[:2] # Only attach the first two initially
+    members = lb_nodes[:2]  # Only attach the first two initially
     healthchecks = [hc]
     balancer = gcelb.create_balancer(name, port, protocol, algorithm, members,
                                      ex_healthchecks=healthchecks)
@@ -255,6 +254,8 @@ def main():
     print('   Member %s attached to %s' % (member.id, balancer.name))
 
     # == Test Load Balancer by connecting to it multiple times ==
+    print('Sleeping for 10 seconds to stabilize the balancer...')
+    time.sleep(10)
     rounds = 200
     url = 'http://%s/' % balancer.ip
     line_length = 75
@@ -275,7 +276,7 @@ def main():
     if CLEANUP:
         balancers = gcelb.list_balancers()
         healthchecks = gcelb.ex_list_healthchecks()
-        nodes = gce.list_nodes()
+        nodes = gce.list_nodes(ex_zone='all')
         firewalls = gce.ex_list_firewalls()
 
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
