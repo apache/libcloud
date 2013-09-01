@@ -1716,6 +1716,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             driver=self,
             extra=dict(
                 hostId=api_node['hostId'],
+                access_ip=api_node.get('accessIPv4'),
                 # Docs says "tenantId", but actual is "tenant_id". *sigh*
                 # Best handle both.
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
