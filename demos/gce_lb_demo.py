@@ -49,7 +49,11 @@ except ImportError:
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
                                  os.path.pardir)))
 
-from libcloud.utils.py3 import urllib2
+from libcloud.utils.py3 import PY3
+if PY3:
+    import urllib.request as url_req
+else:
+    import urllib2 as url_req
 
 # This demo uses both the Compute driver and the LoadBalancer driver
 from libcloud.compute.types import Provider
@@ -261,8 +265,11 @@ def main():
     line_length = 75
     print('Connecting to %s %s times:' % (url, rounds))
     for x in range(rounds):
-        response = urllib2.urlopen(url)
-        output = response.read().strip()
+        response = url_req.urlopen(url)
+        if PY3:
+            output = str(response.read(), encoding='utf-8').strip()
+        else:
+            output = response.read().strip()
         if 'www-001' in output:
             padded_output = output.center(line_length)
         elif 'www-002' in output:

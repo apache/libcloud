@@ -2697,9 +2697,11 @@ class GCENodeDriver(NodeDriver):
             try:
                 node = self.ex_get_node(name, zone)
             except Exception:
+                # There is likely a better way to do this, but this seems to
+                # work in Python 2 and Python 3
                 e = sys.exc_info()[1]
-                if (('error' in e[0]) and ('code' in e[0]['error']) and
-                        (e[0]['error']['code'] == 404)):
+                str_e = str(e)
+                if '\'code\': 404' in str_e:
                     node = n
                 else:
                     raise e
