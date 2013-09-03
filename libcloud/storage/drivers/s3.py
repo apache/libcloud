@@ -491,7 +491,8 @@ class S3StorageDriver(StorageDriver):
         params = {'uploadId': upload_id}
 
         # Read the input data in chunk sizes suitable for AWS
-        for data in read_in_chunks(iterator, chunk_size=CHUNK_SIZE):
+        for data in read_in_chunks(iterator, chunk_size=CHUNK_SIZE,
+                                   fill_size=True):
             bytes_transferred += len(data)
 
             if calculate_hash:

@@ -25,6 +25,10 @@ Changes with Apache Libcloud in development
       Reported by Ben Meng (LIBCLOUD-366)
       [Tomaz Muraus]
 
+    - Ensure that AWS S3 multipart upload works for small iterators.
+      (LIBCLOUD-378)
+      [Mahendra M]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
