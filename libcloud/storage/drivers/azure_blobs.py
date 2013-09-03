@@ -493,8 +493,9 @@ class AzureBlobsStorageDriver(StorageDriver):
         params = {'restype': 'container'}
 
         container_path = '/%s' % (container_name)
+        headers = {'Content-Length': 0}
         response = self.connection.request(container_path, params=params,
-                                           method='PUT')
+                                           method='PUT', headers=headers)
 
         if response.status == httplib.CREATED:
             return self._response_to_container(container_name, response)

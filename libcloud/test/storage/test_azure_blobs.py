@@ -198,23 +198,28 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
     def _new_container(self, method, url, body, headers):
         # test_create_container, test_delete_container
 
-        headers = {}
+        response_headers = {}
 
         if method == 'PUT':
-            status = httplib.CREATED
+            if not 'Content-Length' in headers:
+                status = httplib.LENGTH_REQUIRED
+                body = ''
+            else:
+                status = httplib.CREATED
 
-            headers['etag'] = '0x8CFB877BB56A6FB'
-            headers['last-modified'] = 'Fri, 04 Jan 2013 09:48:06 GMT'
-            headers['x-ms-lease-status'] = 'unlocked'
-            headers['x-ms-lease-state'] = 'available'
-            headers['x-ms-meta-meta1'] = 'value1'
+                response_headers['etag'] = '0x8CFB877BB56A6FB'
+                response_headers['last-modified'] = ('Fri, 04 Jan 2013'
+                                                     ' 09:48:06 GMT')
+                response_headers['x-ms-lease-status'] = 'unlocked'
+                response_headers['x-ms-lease-state'] = 'available'
+                response_headers['x-ms-meta-meta1'] = 'value1'
 
         elif method == 'DELETE':
             status = httplib.NO_CONTENT
 
         return (status,
                 body,
-                headers,
+                response_headers,
                 httplib.responses[status])
 
     def _new_container_DOESNT_EXIST(self, method, url, body, headers):
