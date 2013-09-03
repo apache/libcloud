@@ -103,6 +103,10 @@ Changes with Apache Libcloud in development
       driver. (LIBCLOUD-373)
       [Stefan Friesel]
 
+    - Ensure that AWS S3 multipart upload works for small iterators.
+      (LIBCLOUD-378)
+      [Mahendra M]
+
   *) Load Balancer
 
    - Expose CloudStack driver directly through the Provider.CLOUDSTACK
