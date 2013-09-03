@@ -1,0 +1,52 @@
+{
+  "canIpForward": false,
+  "creationTimestamp": "2013-09-02T22:25:15.878-07:00",
+  "disks": [
+    {
+      "index": 0,
+      "kind": "compute#attachedDisk",
+      "mode": "READ_WRITE",
+      "type": "SCRATCH"
+    }
+  ],
+  "id": "16051209904934263688",
+  "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130723",
+  "kernel": "https://www.googleapis.com/compute/v1beta15/projects/google/global/kernels/gce-v20130603",
+  "kind": "compute#instance",
+  "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b/machineTypes/n1-standard-1",
+  "metadata": {
+    "fingerprint": "n9EGknQZPSA=",
+    "items": [
+      {
+        "key": "startup-script",
+        "value": "apt-get -y update && apt-get -y install apache2 && hostname > /var/www/index.html"
+      }
+    ],
+    "kind": "compute#metadata"
+  },
+  "name": "libcloud-lb-demo-www-000",
+  "networkInterfaces": [
+    {
+      "accessConfigs": [
+        {
+          "kind": "compute#accessConfig",
+          "name": "External NAT",
+          "natIP": "173.255.113.234",
+          "type": "ONE_TO_ONE_NAT"
+        }
+      ],
+      "name": "nic0",
+      "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+      "networkIP": "10.240.138.154"
+    }
+  ],
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b/instances/libcloud-lb-demo-www-000",
+  "status": "RUNNING",
+  "tags": {
+    "fingerprint": "XI0he92M8l8=",
+    "items": [
+      "libcloud-lb-demo-www"
+    ]
+  },
+  "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b"
+}

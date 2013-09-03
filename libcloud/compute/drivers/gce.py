@@ -740,8 +740,18 @@ class GCENodeDriver(NodeDriver):
         else:
             request = '/regions/%s/forwardingRules' % region
         response = self.connection.request(request, method='GET').object
-        list_forwarding_rules = [self._to_forwarding_rule(f) for f in
-                                 response.get('items', [])]
+
+        if 'items' in response:
+            # The aggregated result returns dictionaries for each region
+            if region is None:
+                for v in response['items'].values():
+                    region_forwarding_rules = [self._to_forwarding_rule(f) for
+                                               f in v.get('forwardingRules',
+                                                          [])]
+                    list_forwarding_rules.extend(region_forwarding_rules)
+            else:
+                list_forwarding_rules = [self._to_forwarding_rule(f) for f in
+                                         response['items']]
         return list_forwarding_rules
 
     def list_images(self, ex_project=None):
@@ -975,7 +985,7 @@ class GCENodeDriver(NodeDriver):
         @param  name: Name of static address
         @type   name: C{str}
 
-        @keyword  region: Name of region for the addres (e.g. 'us-central1')
+        @keyword  region: Name of region for the address (e.g. 'us-central1')
         @type     region: C{str} or L{GCERegion}
 
         @return:  Static Address object
@@ -2446,7 +2456,8 @@ class GCENodeDriver(NodeDriver):
         @rtype: L{GCEForwardingRule}
         """
         extra = {}
-        extra['selfLink'] = forwarding_rule['selfLink']
+        # Use .get to work around a current API bug.
+        extra['selfLink'] = forwarding_rule.get('selfLink')
         extra['portRange'] = forwarding_rule['portRange']
         extra['creationTimestamp'] = forwarding_rule['creationTimestamp']
         extra['description'] = forwarding_rule.get('description')
@@ -2716,6 +2727,6 @@ class GCENodeDriver(NodeDriver):
         deprecated = zone.get('deprecated')
 
         return GCEZone(id=zone['id'], name=zone['name'], status=zone['status'],
-                       maintenance_windows=zone['maintenanceWindows'],
+                       maintenance_windows=zone.get('maintenanceWindows'),
                        quotas=zone['quotas'], deprecated=deprecated,
                        driver=self, extra=extra)

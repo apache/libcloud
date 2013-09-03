@@ -22,8 +22,10 @@ import datetime
 from libcloud.utils.py3 import httplib
 from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           timestamp_to_datetime,
-                                          GCEAddress, GCEFirewall, GCENetwork,
-                                          GCENodeSize, GCEProject, GCEZone,
+                                          GCEAddress, GCEHealthCheck,
+                                          GCEFirewall, GCEForwardingRule,
+                                          GCENetwork, GCENodeSize, GCEProject,
+                                          GCERegion, GCETargetPool, GCEZone,
                                           GCEError, ResourceExistsError,
                                           QuotaExceededError)
 from libcloud.common.google import (GoogleBaseAuthConnection,
@@ -71,6 +73,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         datetime2 = datetime.datetime(2013, 6, 26, 17, 43, 15)
         self.assertEqual(timestamp_to_datetime(timestamp2), datetime2)
 
+    def test_get_region_from_zone(self):
+        zone1 = self.driver.ex_get_zone('us-central1-a')
+        expected_region1 = 'us-central1'
+        region1 = self.driver._get_region_from_zone(zone1)
+        self.assertEqual(region1.name, expected_region1)
+        zone2 = self.driver.ex_get_zone('europe-west1-b')
+        expected_region2 = 'europe-west1'
+        region2 = self.driver._get_region_from_zone(zone2)
+        self.assertEqual(region2.name, expected_region2)
+
     def test_find_zone(self):
         zone1 = self.driver._find_zone('libcloud-demo-np-node', 'instances')
         self.assertEqual(zone1, 'us-central1-a')
@@ -96,12 +108,26 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(address_list_all), 4)
         self.assertEqual(address_list[0].name, 'libcloud-demo-address')
         self.assertEqual(address_list_uc1[0].name, 'libcloud-demo-address')
-        #self.assertEqual(address_list_all[0].name, 'lcaddress')
+
+    def test_ex_list_healthchecks(self):
+        healthchecks = self.driver.ex_list_healthchecks()
+        self.assertEqual(len(healthchecks), 2)
+        self.assertEqual(healthchecks[0].name, 'basic-check')
 
     def test_ex_list_firewalls(self):
         firewalls = self.driver.ex_list_firewalls()
         self.assertEqual(len(firewalls), 4)
         self.assertEqual(firewalls[0].name, 'default-allow-internal')
+
+    def test_ex_list_forwarding_rules(self):
+        forwarding_rules = self.driver.ex_list_forwarding_rules()
+        forwarding_rules_all = self.driver.ex_list_forwarding_rules('all')
+        forwarding_rules_uc1 = self.driver.ex_list_forwarding_rules(
+            'us-central1')
+        self.assertEqual(len(forwarding_rules), 2)
+        self.assertEqual(len(forwarding_rules_all), 2)
+        self.assertEqual(forwarding_rules[0].name, 'lcforwardingrule')
+        self.assertEqual(forwarding_rules_uc1[0].name, 'lcforwardingrule')
 
     def test_list_images(self):
         local_images = self.driver.list_images()
@@ -129,7 +155,21 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 5)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
-        #self.assertEqual(nodes_all[0].name, 'libcloud-demo-persist-node')
+
+    def test_ex_list_regions(self):
+        regions = self.driver.ex_list_regions()
+        self.assertEqual(len(regions), 3)
+        self.assertEqual(regions[0].name, 'europe-west1')
+
+    def ex_list_targetpools(self):
+        target_pools = self.driver.ex_list_targetpools()
+        target_pools_all = self.driver.ex_list_targetpools('all')
+        target_pools_uc1 = self.driver.ex_list_targetpools('us-central1')
+        self.assertEqual(len(target_pools), 3)
+        self.assertEqual(len(target_pools_all), 4)
+        self.assertEqual(len(target_pools_uc1), 3)
+        self.assertEqual(target_pools[0].name, 'www-pool')
+        self.assertEqual(target_pools_uc1[0].name, 'www-pool')
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -138,8 +178,6 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(sizes_all), 100)
         self.assertEqual(sizes[0].name, 'f1-micro')
         self.assertEqual(sizes[0].extra['zone'].name, 'us-central1-a')
-        #self.assertEqual(sizes_all[0].name, 'n1-highmem-8')
-        #self.assertEqual(sizes_all[0].extra['zone'].name, 'us-central1-a')
 
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
@@ -149,7 +187,6 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(volumes_all), 3)
         self.assertEqual(len(volumes_uc1a), 3)
         self.assertEqual(volumes[0].name, 'lcdisk')
-        #self.assertEqual(volumes_all[0].name, 'test-disk')
         self.assertEqual(volumes_uc1a[0].name, 'lcdisk')
 
     def test_ex_list_zones(self):
@@ -163,6 +200,22 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(isinstance(address, GCEAddress))
         self.assertEqual(address.name, address_name)
 
+    def test_ex_create_healthcheck(self):
+        healthcheck_name = 'lchealthcheck'
+        kwargs = {'host': 'lchost',
+                  'path': '/lc',
+                  'port': 8000,
+                  'interval': 10,
+                  'timeout': 10,
+                  'unhealthy_threshold': 4,
+                  'healthy_threshold': 3}
+        hc = self.driver.ex_create_healthcheck(healthcheck_name, **kwargs)
+        self.assertTrue(isinstance(hc, GCEHealthCheck))
+        self.assertEqual(hc.name, healthcheck_name)
+        self.assertEqual(hc.path, '/lc')
+        self.assertEqual(hc.port, 8000)
+        self.assertEqual(hc.interval, 10)
+
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
         allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
@@ -171,6 +224,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
                                                   source_tags=source_tags)
         self.assertTrue(isinstance(firewall, GCEFirewall))
         self.assertEqual(firewall.name, firewall_name)
+
+    def test_ex_create_forwarding_rule(self):
+        fwr_name = 'lcforwardingrule'
+        targetpool = 'libcloud-lb-demo-lb-tp'
+        region = 'us-central1'
+        fwr = self.driver.ex_create_forwarding_rule(fwr_name, targetpool,
+                                                    region=region,
+                                                    port_range='8000-8500')
+        self.assertTrue(isinstance(fwr, GCEForwardingRule))
+        self.assertEqual(fwr.name, fwr_name)
 
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
@@ -227,12 +290,35 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(nodes[0].name, '%s-000' % base_name)
         self.assertEqual(nodes[1].name, '%s-001' % base_name)
 
+    def test_ex_create_targetpool(self):
+        targetpool_name = 'lctargetpool'
+        region = 'us-central1'
+        healthchecks = ['libcloud-lb-demo-healthcheck']
+        node1 = self.driver.ex_get_node('libcloud-lb-demo-www-000',
+                                        'us-central1-b')
+        node2 = self.driver.ex_get_node('libcloud-lb-demo-www-001',
+                                        'us-central1-b')
+        nodes = [node1, node2]
+        targetpool = self.driver.ex_create_targetpool(
+            targetpool_name, region=region, healthchecks=healthchecks,
+            nodes=nodes)
+        self.assertEqual(targetpool.name, targetpool_name)
+        self.assertEqual(len(targetpool.nodes), len(nodes))
+        self.assertEqual(targetpool.region.name, region)
+
     def test_create_volume(self):
         volume_name = 'lcdisk'
         size = 1
         volume = self.driver.create_volume(size, volume_name)
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
+
+    def test_ex_update_healthcheck(self):
+        healthcheck_name = 'lchealthcheck'
+        healthcheck = self.driver.ex_get_healthcheck(healthcheck_name)
+        healthcheck.port = 9000
+        healthcheck2 = self.driver.ex_update_healthcheck(healthcheck)
+        self.assertTrue(isinstance(healthcheck2, GCEHealthCheck))
 
     def test_ex_update_firewall(self):
         firewall_name = 'lcfirewall'
@@ -241,6 +327,32 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         firewall.source_tags = ['libcloud', 'test']
         firewall2 = self.driver.ex_update_firewall(firewall)
         self.assertTrue(isinstance(firewall2, GCEFirewall))
+
+    def test_ex_targetpool_remove_add_node(self):
+        targetpool = self.driver.ex_get_targetpool('lctargetpool')
+        node = self.driver.ex_get_node('libcloud-lb-demo-www-001',
+                                       'us-central1-b')
+        remove_node = self.driver.ex_targetpool_remove_node(targetpool, node)
+        self.assertTrue(remove_node)
+        self.assertEqual(len(targetpool.nodes), 1)
+
+        add_node = self.driver.ex_targetpool_add_node(targetpool, node)
+        self.assertTrue(add_node)
+        self.assertEqual(len(targetpool.nodes), 2)
+
+    def test_ex_targetpool_remove_add_healthcheck(self):
+        targetpool = self.driver.ex_get_targetpool('lctargetpool')
+        healthcheck = self.driver.ex_get_healthcheck(
+            'libcloud-lb-demo-healthcheck')
+        remove_healthcheck = self.driver.ex_targetpool_remove_healthcheck(
+            targetpool, healthcheck)
+        self.assertTrue(remove_healthcheck)
+        self.assertEqual(len(targetpool.healthchecks), 0)
+
+        add_healthcheck = self.driver.ex_targetpool_add_healthcheck(
+            targetpool, healthcheck)
+        self.assertTrue(add_healthcheck)
+        self.assertEqual(len(targetpool.healthchecks), 1)
 
     def test_reboot_node(self):
         node = self.driver.ex_get_node('node-name')
@@ -274,9 +386,19 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         destroyed = address.destroy()
         self.assertTrue(destroyed)
 
+    def test_ex_destroy_healthcheck(self):
+        hc = self.driver.ex_get_healthcheck('lchealthcheck')
+        destroyed = hc.destroy()
+        self.assertTrue(destroyed)
+
     def test_ex_destroy_firewall(self):
         firewall = self.driver.ex_get_firewall('lcfirewall')
         destroyed = firewall.destroy()
+        self.assertTrue(destroyed)
+
+    def test_ex_destroy_forwarding_rule(self):
+        fwr = self.driver.ex_get_forwarding_rule('lcforwardingrule')
+        destroyed = fwr.destroy()
         self.assertTrue(destroyed)
 
     def test_ex_destroy_network(self):
@@ -297,9 +419,14 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         for d in destroyed:
             self.assertTrue(d)
 
+    def test_destroy_targetpool(self):
+        targetpool = self.driver.ex_get_targetpool('lctargetpool')
+        destroyed = targetpool.destroy()
+        self.assertTrue(destroyed)
+
     def test_destroy_volume(self):
-        address = self.driver.ex_get_address('lcaddress')
-        destroyed = address.destroy()
+        disk = self.driver.ex_get_volume('lcdisk')
+        destroyed = disk.destroy()
         self.assertTrue(destroyed)
 
     def test_ex_get_address(self):
@@ -307,8 +434,15 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         address = self.driver.ex_get_address(address_name)
         self.assertEqual(address.name, address_name)
         self.assertEqual(address.address, '173.255.113.20')
-        self.assertEqual(address.region, 'us-central1')
+        self.assertEqual(address.region.name, 'us-central1')
         self.assertEqual(address.extra['status'], 'RESERVED')
+
+    def test_ex_get_healthcheck(self):
+        healthcheck_name = 'lchealthcheck'
+        healthcheck = self.driver.ex_get_healthcheck(healthcheck_name)
+        self.assertEqual(healthcheck.name, healthcheck_name)
+        self.assertEqual(healthcheck.port, 8000)
+        self.assertEqual(healthcheck.path, '/lc')
 
     def test_ex_get_firewall(self):
         firewall_name = 'lcfirewall'
@@ -316,6 +450,14 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(firewall.name, firewall_name)
         self.assertEqual(firewall.network.name, 'default')
         self.assertEqual(firewall.source_tags, ['libcloud'])
+
+    def test_ex_get_forwarding_rule(self):
+        fwr_name = 'lcforwardingrule'
+        fwr = self.driver.ex_get_forwarding_rule(fwr_name)
+        self.assertEqual(fwr.name, fwr_name)
+        self.assertEqual(fwr.extra['portRange'], '8000-8500')
+        self.assertEqual(fwr.targetpool.name, 'libcloud-lb-demo-lb-tp')
+        self.assertEqual(fwr.protocol, 'TCP')
 
     def test_ex_get_image(self):
         partial_name = 'debian-7'
@@ -343,6 +485,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(instances_quota['usage'], 7.0)
         self.assertEqual(instances_quota['limit'], 8.0)
 
+    def test_ex_get_region(self):
+        region_name = 'us-central1'
+        region = self.driver.ex_get_region(region_name)
+        self.assertEqual(region.name, region_name)
+        self.assertEqual(region.status, 'UP')
+        self.assertEqual(region.zones[0].name, 'us-central1-a')
+
     def test_ex_get_size(self):
         size_name = 'n1-standard-1'
         size = self.driver.ex_get_size(size_name)
@@ -351,6 +500,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(size.disk, 10)
         self.assertEqual(size.ram, 3840)
         self.assertEqual(size.extra['guestCpus'], 1)
+
+    def test_ex_get_targetpool(self):
+        targetpool_name = 'lctargetpool'
+        targetpool = self.driver.ex_get_targetpool(targetpool_name)
+        self.assertEqual(targetpool.name, targetpool_name)
+        self.assertEqual(len(targetpool.nodes), 2)
+        self.assertEqual(targetpool.region.name, 'us-central1')
 
     def test_ex_get_volume(self):
         volume_name = 'lcdisk'
@@ -397,12 +553,46 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('aggregated_disks.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _aggregated_forwardingRules(self, method, url, body, headers):
+        body = self.fixtures.load('aggregated_forwardingRules.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _aggregated_instances(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_instances.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_machineTypes(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_machineTypes.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_httpHealthChecks(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('global_httpHealthChecks_post.json')
+        else:
+            body = self.fixtures.load('global_httpHealthChecks.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_httpHealthChecks_basic_check(self, method, url, body, headers):
+        body = self.fixtures.load('global_httpHealthChecks_basic-check.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_httpHealthChecks_libcloud_lb_demo_healthcheck(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'global_httpHealthChecks_libcloud-lb-demo-healthcheck.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_httpHealthChecks_lchealthcheck(self, method, url, body,
+                                               headers):
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'global_httpHealthChecks_lchealthcheck_delete.json')
+        elif method == 'PUT':
+            body = self.fixtures.load(
+                'global_httpHealthChecks_lchealthcheck_put.json')
+        else:
+            body = self.fixtures.load(
+                'global_httpHealthChecks_lchealthcheck.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_firewalls(self, method, url, body, headers):
@@ -455,6 +645,24 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('global_networks_lcnetwork.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_operations_operation_global_httpHealthChecks_lchealthcheck_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_httpHealthChecks_lchealthcheck_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_httpHealthChecks_lchealthcheck_put(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_httpHealthChecks_lchealthcheck_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_httpHealthChecks_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_httpHealthChecks_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_operations_operation_global_firewalls_lcfirewall_delete(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -495,6 +703,54 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_regions_us-central1_addresses_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_forwardingRules_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_forwardingRules_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_forwardingRules_lcforwardingrule_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_forwardingRules_lcforwardingrule_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_lctargetpool_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_removeHealthCheck_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_lctargetpool_removeHealthCheck_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_addHealthCheck_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_lctargetpool_addHealthCheck_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_removeInstance_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_lctargetpool_removeInstance_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_operations_operation_regions_us_central1_targetPools_lctargetpool_addInstance_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_regions_us-central1_targetPools_lctargetpool_addInstance_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_delete(
@@ -571,6 +827,11 @@ class GCEMockHttp(MockHttpTestCase):
         body = self.fixtures.load('projects_debian-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _regions(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_addresses(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load(
@@ -587,6 +848,73 @@ class GCEMockHttp(MockHttpTestCase):
         else:
             body = self.fixtures.load(
                 'regions_us-central1_addresses_lcaddress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_forwardingRules(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load(
+                'regions_us-central1_forwardingRules_post.json')
+        else:
+            body = self.fixtures.load(
+                'regions_us-central1_forwardingRules.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_forwardingRules_lcforwardingrule(
+            self, method, url, body, headers):
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'regions_us-central1_forwardingRules_lcforwardingrule_delete.json')
+        else:
+            body = self.fixtures.load(
+                'regions_us-central1_forwardingRules_lcforwardingrule.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load(
+                'regions_us-central1_targetPools_post.json')
+        else:
+            body = self.fixtures.load('regions_us-central1_targetPools.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lctargetpool(self, method, url,
+                                                      body, headers):
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'regions_us-central1_targetPools_lctargetpool_delete.json')
+        else:
+            body = self.fixtures.load(
+                'regions_us-central1_targetPools_lctargetpool.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_libcloud_lb_demo_lb_tp(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_libcloud-lb-demo-lb-tp.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lctargetpool_removeHealthCheck(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lctargetpool_removeHealthCheck_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lctargetpool_addHealthCheck(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lctargetpool_addHealthCheck_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lctargetpool_removeInstance(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lctargetpool_removeInstance_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_targetPools_lctargetpool_addInstance(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_targetPools_lctargetpool_addInstance_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones(self, method, url, body, headers):
@@ -677,6 +1005,25 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load(
                 'zones_us-central1-a_instances_lcnode-001.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_instances_libcloud_lb_demo_www_000(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-b_instances_libcloud-lb-demo-www-000.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_instances_libcloud_lb_demo_www_001(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-b_instances_libcloud-lb-demo-www-001.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_instances_libcloud_lb_demo_www_002(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-b_instances_libcloud-lb-demo-www-002.json')
+        return (httplib.NOT_FOUND, body, self.json_hdr,
+                httplib.responses[httplib.NOT_FOUND])
 
     def _zones_us_central1_a(self, method, url, body, headers):
         body = self.fixtures.load('zones_us-central1-a.json')
