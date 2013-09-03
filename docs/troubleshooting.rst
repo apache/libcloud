@@ -7,6 +7,12 @@ code with interfaces with libcloud.
 Debugging
 ---------
 
+.. note::
+
+    If you are sharing debug output on our IRC channel or issue tracker using
+    Pastebin, Github Gists or a similar service, make sure to remove your
+    credentials and any other data you consider private from the output.
+
 Libcloud has a special debug mode which when enabled outputs all the outgoing
 HTTP requests and all the incoming HTTP responses. Output also includes cURL
 commands which can be used to re-produce the requests.
