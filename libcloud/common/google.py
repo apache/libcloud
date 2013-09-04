@@ -456,7 +456,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             except Exception:
                 e = sys.exc_info()[1]
                 if (('error' in e.args[0]) and ('code' in e.args[0]['error'])
-                    and (e.args[0]['error']['code'] == 404)):
+                        and (e.args[0]['error']['code'] == 404)):
                     raise ResourceNotFoundError(e.args[0], 404)
                 else:
                     raise e

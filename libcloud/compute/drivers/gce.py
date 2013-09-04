@@ -84,6 +84,10 @@ class ResourceExistsError(GCEKnownError):
     pass
 
 
+class ResourceInUseError(GCEKnownError):
+    pass
+
+
 class GCEResponse(GoogleResponse):
     pass
 
@@ -568,6 +572,8 @@ class GCENodeDriver(NodeDriver):
             raise QuotaExceededError(message)
         elif code == 'RESOURCE_ALREADY_EXISTS':
             raise ResourceExistsError(message)
+        elif code == 'RESOURCE_IN_USE':
+            raise ResourceInUseError(message)
         else:
             raise GCEError(code, message)
 
