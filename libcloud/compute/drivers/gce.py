@@ -25,6 +25,7 @@ import getpass
 
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
+from libcloud.common.google import ResourceNotFoundError
 
 from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
@@ -1046,18 +1047,14 @@ class GCENodeDriver(NodeDriver):
         hc_data['name'] = name
         if host:
             hc_data['host'] = host
-        if path:
-            hc_data['requestPath'] = path
-        if port:
-            hc_data['port'] = port
-        if interval:
-            hc_data['checkIntervalSec'] = interval
-        if timeout:
-            hc_data['timeoutSec'] = timeout
-        if unhealthy_threshold:
-            hc_data['unhealthyThreshold'] = unhealthy_threshold
-        if unhealthy_threshold:
-            hc_data['healthyThreshold'] = healthy_threshold
+        # As of right now, the 'default' values aren't getting set when called
+        # through the API, so set them explicitly
+        hc_data['requestPath'] = path or '/'
+        hc_data['port'] = port or 80
+        hc_data['checkIntervalSec'] = interval or 5
+        hc_data['timeoutSec'] = timeout or 5
+        hc_data['unhealthyThreshold'] = unhealthy_threshold or 2
+        hc_data['healthyThreshold'] = healthy_threshold or 2
 
         request = '/global/httpHealthChecks'
 
@@ -2133,6 +2130,9 @@ class GCENodeDriver(NodeDriver):
         """
         region = region or self.region or self._find_zone(name, 'addresses',
                                                           region=True)
+        if not region:
+            raise ResourceNotFoundError(
+                'Address %s not found in any region.' % name, 404)
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         request = '/regions/%s/addresses/%s' % (region.name, name)
@@ -2169,7 +2169,7 @@ class GCENodeDriver(NodeDriver):
 
     def ex_get_forwarding_rule(self, name, region=None):
         """
-        Return a Firewall object based on the forwarding rule name.
+        Return a Forwarding Rule object based on the forwarding rule name.
 
         @param  name: The name of the forwarding rule
         @type   name: C{str}
@@ -2183,6 +2183,9 @@ class GCENodeDriver(NodeDriver):
         region = region or self.region or self._find_zone(name,
                                                           'forwardingRules',
                                                           region=True)
+        if not region:
+            raise ResourceNotFoundError(
+                'Forwarding Rule %s not found in any region.' % name, 404)
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         request = '/regions/%s/forwardingRules/%s' % (region.name, name)
@@ -2244,6 +2247,9 @@ class GCENodeDriver(NodeDriver):
         zone = zone or self.zone or self._find_zone(name, 'instances')
         if zone == 'all':
             zone = self._find_zone(name, 'instances')
+        if not zone:
+            raise ResourceNotFoundError('Node %s not found in any zone'
+                                        % name, 404)
         if not hasattr(zone, 'name'):
             zone = self.ex_get_zone(zone)
         request = '/zones/%s/instances/%s' % (zone.name, name)
@@ -2294,6 +2300,9 @@ class GCENodeDriver(NodeDriver):
         @rtype:   L{StorageVolume}
         """
         zone = zone or self.zone or self._find_zone(name, 'disks')
+        if not zone:
+            raise ResourceNotFoundError('Volume %s not found in any zone'
+                                        % name, 404)
         if not hasattr(zone, 'name'):
             zone = self.ex_get_zone(zone)
         request = '/zones/%s/disks/%s' % (zone.name, name)
@@ -2338,6 +2347,9 @@ class GCENodeDriver(NodeDriver):
         """
         region = region or self.region or self._find_zone(name, 'targetPools',
                                                           region=True)
+        if not region:
+            raise ResourceNotFoundError(
+                'Targetpool %s not found in any region.' % name, 404)
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         request = '/regions/%s/targetPools/%s' % (region.name, name)
@@ -2696,15 +2708,8 @@ class GCENodeDriver(NodeDriver):
             # object.
             try:
                 node = self.ex_get_node(name, zone)
-            except Exception:
-                # There is likely a better way to do this, but this seems to
-                # work in Python 2 and Python 3
-                e = sys.exc_info()[1]
-                str_e = str(e)
-                if '\'code\': 404' in str_e:
-                    node = n
-                else:
-                    raise e
+            except ResourceNotFoundError:
+                node = n
             node_list.append(node)
 
         return GCETargetPool(id=targetpool['id'], name=targetpool['name'],

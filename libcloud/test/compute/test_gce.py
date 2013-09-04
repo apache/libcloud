@@ -30,7 +30,8 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           QuotaExceededError)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
-                                    GoogleBaseConnection)
+                                    GoogleBaseConnection,
+                                    ResourceNotFoundError)
 from libcloud.test.common.test_google import GoogleAuthMockHttp
 from libcloud.compute.base import (Node, NodeImage, NodeSize, NodeLocation,
                                    StorageVolume)
@@ -477,6 +478,19 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, '10.11.0.0/16')
         self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
+
+    def test_ex_get_node(self):
+        node_name = 'node-name'
+        zone = 'us-central1-a'
+        node = self.driver.ex_get_node(node_name, zone)
+        self.assertEqual(node.name, node_name)
+        self.assertEqual(node.size, 'n1-standard-1')
+        removed_node = 'libcloud-lb-demo-www-002'
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_node,
+                          removed_node, 'us-central1-b')
+        missing_node = 'dummy-node'
+        self.assertRaises(ResourceNotFoundError, self.driver.ex_get_node,
+                          missing_node, 'all')
 
     def test_ex_get_project(self):
         project = self.driver.ex_get_project()

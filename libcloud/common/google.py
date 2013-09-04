@@ -71,13 +71,15 @@ import time
 import datetime
 import os
 import socket
+import sys
 
 from libcloud.utils.py3 import urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
-from libcloud.compute.types import (InvalidCredsError,
-                                    MalformedResponseError,
-                                    LibcloudError)
+from libcloud.common.types import (InvalidCredsError,
+                                   MalformedResponseError,
+                                   ProviderError,
+                                   LibcloudError)
 
 try:
     from Crypto.Hash import SHA256
@@ -99,6 +101,10 @@ class GoogleAuthError(LibcloudError):
 
     def __repr__(self):
         return repr(self.value)
+
+
+class ResourceNotFoundError(ProviderError):
+    pass
 
 
 class GoogleResponse(JsonResponse):
@@ -444,6 +450,14 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
                 e = sys.exc_info()[1]
                 if e.errno == errno.ECONNRESET:
                     tries = tries + 1
+                else:
+                    raise e
+            # Also, catch 404 errors and raise a ResourceNotFoundError
+            except Exception:
+                e = sys.exc_info()[1]
+                if (('error' in e.args[0]) and ('code' in e.args[0]['error'])
+                    and (e.args[0]['error']['code'] == 404)):
+                    raise ResourceNotFoundError(e.args[0], 404)
                 else:
                     raise e
         # One more time, then give up.
