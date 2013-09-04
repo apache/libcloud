@@ -49,39 +49,30 @@ class ConnectionClassTestCase(unittest.TestCase):
         call_kwargs = con.connection.request.call_args[1]
         self.assertTrue('Content-Length' not in call_kwargs['headers'])
 
-        # 'a' as data, content length should be present (data is GET is not
+        # 'a' as data, content length should be present (data in GET is not
         # corect, but anyways)
         con.request('/test', method='GET', data='a')
         call_kwargs = con.connection.request.call_args[1]
         self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
 
         ## POST, PUT method
-        # No data, no content length should be present
-        con.request('/test', method='POST', data=None)
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertTrue('Content-Length' not in call_kwargs['headers'])
-
-        con.request('/test', method='PUT', data=None)
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertTrue('Content-Length' not in call_kwargs['headers'])
+        # No data, content length should be present
+        for method in ['POST', 'PUT', 'post', 'put']:
+            con.request('/test', method=method, data=None)
+            call_kwargs = con.connection.request.call_args[1]
+            self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
 
         # '' as data, content length should be present
-        con.request('/test', method='POST', data='')
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
-
-        con.request('/test', method='PUT', data='')
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
+        for method in ['POST', 'PUT', 'post', 'put']:
+            con.request('/test', method=method, data='')
+            call_kwargs = con.connection.request.call_args[1]
+            self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
 
         # 'a' as data, content length should be present
-        con.request('/test', method='POST', data='a')
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
-
-        con.request('/test', method='PUT', data='a')
-        call_kwargs = con.connection.request.call_args[1]
-        self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
+        for method in ['POST', 'PUT', 'post', 'put']:
+            con.request('/test', method=method, data='a')
+            call_kwargs = con.connection.request.call_args[1]
+            self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
 
 
 if __name__ == '__main__':

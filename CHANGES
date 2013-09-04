@@ -14,7 +14,7 @@ Changes with Apache Libcloud in development
       [Tomaz Muraus]
 
     - Fix a regression introduced in 0.13.0 and make sure to include
-      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362)
+      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362, LIBCLOUD-390)
       [Tomaz Muraus]
 
  *) Compute
