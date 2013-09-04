@@ -8,6 +8,12 @@ Changes with Apache Libcloud in development
       Content-Length 0 with PUT and POST requests. (LIBCLOUD-362, LIBCLOUD-390)
       [Tomaz Muraus]
 
+ *) Compute
+
+    - Fix a bug in the ElasticHosts driver and check for right HTTP status
+      code when determining drive imaging success. (LIBCLOUD-363)
+      [Bob Thompson]
+
 Changes with Apache Libcloud 0.13.0:
 
  *) General
