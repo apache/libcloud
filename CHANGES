@@ -14,6 +14,10 @@ Changes with Apache Libcloud in development
       code when determining drive imaging success. (LIBCLOUD-363)
       [Bob Thompson]
 
+    - Update Opsource driver to include node public ip address (if available).
+      (LIBCLOUD-384)
+      [Michael Bennett]
+
   *) Storage
 
     - Fix a regression with calling encode_container_name instead of
