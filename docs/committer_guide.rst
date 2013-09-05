@@ -63,7 +63,7 @@ Making a release (for release managers)
 1. Pre-release check list
 
 - Make sure tests pass on all the supported Python versions (``tox``)
-- Make sure `CHANGES`` file is up to date
+- Make sure ``CHANGES`` file is up to date
 - Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 
 2. Creating release artifacts
@@ -83,7 +83,7 @@ This should result in a set of
 ``apache-libcloud-${VERSION}.{tar.bz2,tar.gz,zip}{,asc,md5,sha1}`` files that
 are suitable to be uploaded for a release.
 
-3. Uploading release artifacts
+3. Uploading release artifacts to Apache servers
 
 * Add release artifacts to the dist SVN repository at
   https://dist.apache.org/repos/dist/release/libcloud/
@@ -102,16 +102,45 @@ are suitable to be uploaded for a release.
 
     git tag <tag> <commit hash>
 
+For example:
+
+.. sourcecode:: bash
+
+    git tag v0.13.0 105b9610835f99704996d861d613c5a9a8b3f8b1
+
 5. Publishing package to PyPi
 
-  TBW
+For consistency and security reasons packages are always uploaded to PyPi
+manually using the web interface and not using the ``setup.py upload`` command.
 
-8. Updating a website and doap_libcloud.rdf file
+* Run ``python setup.py register upload`` command. This will register a new
+  version on PyPi, but it won't upload the actual release artifacts.
 
-* Update "News" page
-* Update "Downloads" page
-* Update "Get it" section in the sidebar
-* Update doap_libcloud.rdf and add info about the new version
+* Go to the `PyPi release management page`_, find a new release and click on
+  "files" link.
+
+* Once you are there, upload all the release artifacts (.tar.bz2, .tar.gz and
+  .zip). For ``File Type`` select ``Source`` and for ``Python Version`` select
+  ``Any (ie. pure Python)``. Make sure to also select and upload a PGP
+  signature for each file (``PGP signature (.asc)`` field).
+
+Once all the files have been uploaded, the page should look similar to the
+screenshot bellow.
+
+.. image:: _static/images/pypi_files_page.png
+   :width: 700px
+   :align: center
+
+7. Updating doap_libcloud.rdf file
+
+Add information about the new release to the ``doap_libcloud.rdf`` file in the
+root of the main code repository.
+
+8. Updating website
+
+* Update "News" page (``content/news.mdtext`` file)
+* Update "Downloads" page (``content/downloads.mdtext`` file)
+* Update "Get it" section in the sidebar (``templates/blocks/other.html`` file)
 
 9. Sending announcements
 
@@ -120,3 +149,5 @@ are suitable to be uploaded for a release.
 * Send a release announcement to Twitter and Google+
 
 If needed, use Apache URL shortening service - http://s.apache.org/
+
+.. _`PyPi release management page`: https://pypi.python.org/pypi?%3Aaction=pkg_edit&name=apache-libcloud
