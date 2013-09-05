@@ -13,10 +13,6 @@ Changes with Apache Libcloud in development
       updating the pricing file.
       [Tomaz Muraus]
 
-    - Fix a regression introduced in 0.13.0 and make sure to include
-      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362, LIBCLOUD-390)
-      [Tomaz Muraus]
-
  *) Compute
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
@@ -55,10 +51,6 @@ Changes with Apache Libcloud in development
       uploaded to the EC2 keyring). (Follow on from LIBCLOUD-367).
       [John Carr]
 
-    - Fix a bug in the ElasticHosts driver and check for right HTTP status
-      code when determining drive imaging success. (LIBCLOUD-363)
-      [Bob Thompson]
-
     - Unify extension argument names for assigning a node to security groups
       in EC2 ad OpenStack driver.
       Argument in the EC2 driver has been renamed from ex_securitygroup to
@@ -74,10 +66,6 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-382)
       [Ivan Kusalic]
 
-    - Update Opsource driver to include node public ip address (if available).
-      (LIBCLOUD-384)
-      [Michael Bennett]
-
     - Add extension methods for handling port forwarding to the CloudStack
       driver, rename CloudStackForwardingRule class to
       CloudStackIPForwardingRule. (LIBCLOUD-383)
@@ -89,11 +77,6 @@ Changes with Apache Libcloud in development
 
   *) Storage
 
-    - Fix a regression with calling encode_container_name instead of
-      encode_object_name on object name in get_object method.
-      Reported by Ben Meng (LIBCLOUD-366)
-      [Tomaz Muraus]
-
     - Allow users to filter objects starting with a prefix by passing ex_prefix
       argument to the list_container_objects method in the S3, Google Storage
       and CloudFiles driver. (LIBCLOUD-369)
@@ -103,15 +86,40 @@ Changes with Apache Libcloud in development
       driver. (LIBCLOUD-373)
       [Stefan Friesel]
 
-    - Ensure that AWS S3 multipart upload works for small iterators.
-      (LIBCLOUD-378)
-      [Mahendra M]
-
   *) Load Balancer
 
    - Expose CloudStack driver directly through the Provider.CLOUDSTACK
      constant.
      [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.1
+
+ *) General
+
+    - Fix a regression introduced in 0.13.0 and make sure to include
+      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362, LIBCLOUD-390)
+      [Tomaz Muraus]
+
+ *) Compute
+
+    - Fix a bug in the ElasticHosts driver and check for right HTTP status
+      code when determining drive imaging success. (LIBCLOUD-363)
+      [Bob Thompson]
+
+    - Update Opsource driver to include node public ip address (if available).
+      (LIBCLOUD-384)
+      [Michael Bennett]
+
+  *) Storage
+
+    - Fix a regression with calling encode_container_name instead of
+      encode_object_name on object name in get_object method.
+      Reported by Ben Meng (LIBCLOUD-366)
+      [Tomaz Muraus]
+
+    - Ensure that AWS S3 multipart upload works for small iterators.
+      (LIBCLOUD-378)
+      [Mahendra M]
 
 Changes with Apache Libcloud 0.13.0:
 
