@@ -67,24 +67,15 @@ class GCEError(LibcloudError):
         return repr(self.code) + ": " + repr(self.value)
 
 
-class GCEKnownError(GCEError):
-    """Base class for GCE Errors that can be classified"""
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return repr(self.value)
-
-
-class QuotaExceededError(GCEKnownError):
+class QuotaExceededError(GCEError):
     pass
 
 
-class ResourceExistsError(GCEKnownError):
+class ResourceExistsError(GCEError):
     pass
 
 
-class ResourceInUseError(GCEKnownError):
+class ResourceInUseError(GCEError):
     pass
 
 
@@ -569,11 +560,11 @@ class GCENodeDriver(NodeDriver):
         message = err['message']
         code = err['code']
         if code == 'QUOTA_EXCEEDED':
-            raise QuotaExceededError(message)
+            raise QuotaExceededError(code, message)
         elif code == 'RESOURCE_ALREADY_EXISTS':
-            raise ResourceExistsError(message)
+            raise ResourceExistsError(code, message)
         elif code.startswith('RESOURCE_IN_USE'):
-            raise ResourceInUseError(message)
+            raise ResourceInUseError(code, message)
         else:
             raise GCEError(code, message)
 
