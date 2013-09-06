@@ -423,9 +423,13 @@ class ZerigoDNSDriver(DNSDriver):
         state = findtext(element=elem, xpath='state')
         fqdn = findtext(element=elem, xpath='fqdn')
         priority = findtext(element=elem, xpath='priority')
+        ttl = findtext(element=elem, xpath='ttl')
+
+        if ttl:
+            ttl = int(ttl)
 
         extra = {'notes': notes, 'state': state, 'fqdn': fqdn,
-                 'priority': priority}
+                 'priority': priority, 'ttl': ttl}
 
         record = Record(id=id, name=name, type=type, data=data,
                         zone=zone, driver=self, extra=extra)
