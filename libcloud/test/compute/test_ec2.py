@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import with_statement
+
 import os
 import sys
 import unittest
@@ -337,9 +339,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_import_keypair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
-        fh = open(path)
-        key = self.driver.ex_import_keypair_from_string('keypair', fh.read())
-        fh.close()
+        with open(path,'r') as fh:
+            key = self.driver.ex_import_keypair_from_string('keypair', fh.read())
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
