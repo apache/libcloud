@@ -191,10 +191,10 @@ class ShellOutSSHClientTests(unittest.TestCase):
         cmd2 = client2._get_base_ssh_command()
         cmd3 = client3._get_base_ssh_command()
 
-        self.assertEquals(cmd1, ['ssh', 'root@localhost'])
-        self.assertEquals(cmd2, ['ssh', '-i', '/home/my.key',
+        self.assertEqual(cmd1, ['ssh', 'root@localhost'])
+        self.assertEqual(cmd2, ['ssh', '-i', '/home/my.key',
                                  'root@localhost'])
-        self.assertEquals(cmd3, ['ssh', '-i', '/home/my.key',
+        self.assertEqual(cmd3, ['ssh', '-i', '/home/my.key',
                                  '-oConnectTimeout=5', 'root@localhost'])
 
 
