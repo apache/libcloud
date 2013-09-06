@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud 0.13.2
+
+ *) DNS
+
+   - Modify Zerigo driver to include record TTL in the record 'extra' attribute
+     if a record has a TTL set.
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.1
 
  *) General
