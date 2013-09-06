@@ -260,11 +260,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             public_ips.extend([ip for ip in private_ips
                               if not is_private_subnet(ip)])
 
-            keypair, password = None, None
+            keypair, password, securitygroup = None, None, None
             if 'keypair' in vm.keys():
                 keypair = vm['keypair']
             if 'password' in vm.keys():
                 password = vm['password']
+            if 'securitygroup' in vm.keys():
+                securitygroup = [sg['name'] for sg in vm['securitygroup']]
 
             node = CloudStackNode(
                 id=vm['id'],
@@ -276,6 +278,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 extra={'zoneid': vm['zoneid'],
                        'password': password,
                        'key_name': keypair,
+                       'securitygroup': securitygroup,
                        'created': vm['created']
                        }
             )
@@ -346,14 +349,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                         the node
         @type       ex_security_groups: C{list} of C{str}
 
-        @rtype: L{CloudStackNode}
+        @rtype:     L{CloudStackNode}
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
 
         node = self._async_request('deployVirtualMachine',
                                    **server_params)['virtualmachine']
-
         public_ips = []
         private_ips = []
         for nic in node['nic']:
@@ -362,11 +364,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             else:
                 public_ips.append(nic['ipaddress'])
 
-        keypair, password = None, None
-        if keypair in node.keys():
+        keypair, password, securitygroup = None, None, None
+        if 'keypair' in node.keys():
             keypair = node['keypair']
-        if password in node.keys():
+        if 'password' in node.keys():
             password = node['password']
+        if 'securitygroup' in node.keys():
+            securitygroup = [sg['name'] for sg in node['securitygroup']]
 
         return CloudStackNode(
             id=node['id'],
@@ -381,6 +385,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                    'port_forwarding_rules': [],
                    'password': password,
                    'key_name': keypair,
+                   'securitygroup': securitygroup,
                    'created': node['created']
                    }
 
@@ -635,8 +640,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         @rtype: C{bool}
         """
-        self._async_request('disassociateIpAddress', id=address.id)
-        return True
+        res = self._async_request('disassociateIpAddress', id=address.id)
+        return res['success']
 
     def ex_list_port_forwarding_rules(self):
         """
@@ -657,11 +662,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                         if a.address == rule['ipaddress']]
                 rules.append(CloudStackPortForwardingRule
                              (node[0],
-                             rule['id'],
-                             addr[0],
-                             rule['protocol'],
-                             rule['publicport'],
-                             rule['privateport']))
+                              rule['id'],
+                              addr[0],
+                              rule['protocol'],
+                              rule['publicport'],
+                              rule['privateport']))
 
         return rules
 
@@ -722,7 +727,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         node.extra['port_forwarding_rules'].remove(rule)
-        node.public_ips.remove(rule.address)
+        node.public_ips.remove(rule.address.address)
         res = self._async_request('deletePortForwardingRule', id=rule.id)
         return res['success']
 

@@ -101,11 +101,39 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.private_ips, ['192.168.1.2'])
         self.assertEqual(node.extra['zoneid'], default_location.id)
 
+    def test_create_node_ex_security_groups(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+        sg = [sg['name'] for sg in self.driver.ex_list_security_groups()]
+        CloudStackMockHttp.fixture_tag = 'deploysecuritygroup'
+        node = self.driver.create_node(name='test',
+                                       location=location,
+                                       image=image,
+                                       size=size,
+                                       ex_security_groups=sg)
+        self.assertEqual(node.name, 'test')
+        self.assertEqual(node.extra['securitygroup'], sg)
+        self.assertEqual(node.id, 'fc4fd31a-16d3-49db-814a-56b39b9ef986')
+
+    def test_create_node_ex_keyname(self):
+        size = self.driver.list_sizes()[0]
+        image = self.driver.list_images()[0]
+        location = self.driver.list_locations()[0]
+        CloudStackMockHttp.fixture_tag = 'deploykeyname'
+        node = self.driver.create_node(name='test',
+                                       location=location,
+                                       image=image,
+                                       size=size,
+                                       ex_keyname='foobar')
+        self.assertEqual(node.name, 'test')
+        self.assertEqual(node.extra['key_name'], 'foobar')
+
     def test_list_images_no_images_available(self):
         CloudStackMockHttp.fixture_tag = 'notemplates'
 
         images = self.driver.list_images()
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
     def test_list_images(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
@@ -119,17 +147,17 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
             tid = str(templates[i]['id'])
             tname = templates[i]['name']
             self.assertIsInstance(image.driver, CloudStackNodeDriver)
-            self.assertEquals(image.id, tid)
-            self.assertEquals(image.name, tname)
+            self.assertEqual(image.id, tid)
+            self.assertEqual(image.name, tname)
 
     def test_ex_list_disk_offerings(self):
         diskOfferings = self.driver.ex_list_disk_offerings()
-        self.assertEquals(1, len(diskOfferings))
+        self.assertEqual(1, len(diskOfferings))
 
         diskOffering, = diskOfferings
 
-        self.assertEquals('Disk offer 1', diskOffering.name)
-        self.assertEquals(10, diskOffering.size)
+        self.assertEqual('Disk offer 1', diskOffering.name)
+        self.assertEqual(10, diskOffering.size)
 
     def test_ex_list_networks(self):
         _, fixture = CloudStackMockHttp()._load_fixture(
@@ -139,14 +167,14 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         networks = self.driver.ex_list_networks()
 
         for i, network in enumerate(networks):
-            self.assertEquals(network.id, fixture_networks[i]['id'])
-            self.assertEquals(
+            self.assertEqual(network.id, fixture_networks[i]['id'])
+            self.assertEqual(
                 network.displaytext, fixture_networks[i]['displaytext'])
-            self.assertEquals(network.name, fixture_networks[i]['name'])
-            self.assertEquals(
+            self.assertEqual(network.name, fixture_networks[i]['name'])
+            self.assertEqual(
                 network.networkofferingid,
                 fixture_networks[i]['networkofferingid'])
-            self.assertEquals(network.zoneid, fixture_networks[i]['zoneid'])
+            self.assertEqual(network.zoneid, fixture_networks[i]['zoneid'])
 
     def test_create_volume(self):
         volumeName = 'vol-0'
@@ -154,8 +182,8 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         volume = self.driver.create_volume(10, volumeName, location)
 
-        self.assertEquals(volumeName, volume.name)
-        self.assertEquals(10, volume.size)
+        self.assertEqual(volumeName, volume.name)
+        self.assertEqual(10, volume.size)
 
     def test_create_volume_no_noncustomized_offering_with_size(self):
         """If the sizes of disk offerings are not configurable and there
@@ -177,7 +205,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
         volume = self.driver.create_volume(10, volumeName, location)
 
-        self.assertEquals(volumeName, volume.name)
+        self.assertEqual(volumeName, volume.name)
 
     def test_attach_volume(self):
         node = self.driver.list_nodes()[0]
@@ -205,35 +233,40 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
-        self.assertEquals(1, len(volumes))
-        self.assertEquals('ROOT-69942', volumes[0].name)
+        self.assertEqual(1, len(volumes))
+        self.assertEqual('ROOT-69942', volumes[0].name)
 
     def test_list_nodes(self):
-        node = self.driver.list_nodes()[0]
-        self.assertEquals('test', node.name)
+        nodes = self.driver.list_nodes()
+        self.assertEqual(2, len(nodes))
+        self.assertEqual('test', nodes[0].name)
+        self.assertEqual('2600', nodes[0].id)
+        self.assertEqual([], nodes[0].extra['securitygroup'])
+        self.assertEqual(None, nodes[0].extra['key_name'])
 
     def test_list_locations(self):
         location = self.driver.list_locations()[0]
-        self.assertEquals('Sydney', location.name)
+        self.assertEqual('1', location.id)
+        self.assertEqual('Sydney', location.name)
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEquals('Compute Micro PRD', sizes[0].name)
-        self.assertEquals('105', sizes[0].id)
-        self.assertEquals(384, sizes[0].ram)
-        self.assertEquals('Compute Large PRD', sizes[2].name)
-        self.assertEquals('69', sizes[2].id)
-        self.assertEquals(6964, sizes[2].ram)
+        self.assertEqual('Compute Micro PRD', sizes[0].name)
+        self.assertEqual('105', sizes[0].id)
+        self.assertEqual(384, sizes[0].ram)
+        self.assertEqual('Compute Large PRD', sizes[2].name)
+        self.assertEqual('69', sizes[2].id)
+        self.assertEqual(6964, sizes[2].ram)
 
     def test_ex_start_node(self):
         node = self.driver.list_nodes()[0]
         res = node.ex_start()
-        self.assertEquals('Starting', res)
+        self.assertEqual('Starting', res)
 
     def test_ex_stop_node(self):
         node = self.driver.list_nodes()[0]
         res = node.ex_stop()
-        self.assertEquals('Stopped', res)
+        self.assertEqual('Stopped', res)
 
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
@@ -278,15 +311,18 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         path = os.path.join(os.path.dirname(__file__), "fixtures",
                             "cloudstack",
                             "dummy_rsa.pub")
-
+        fh = open(path)
         res = self.driver.ex_import_keypair_from_string('foobar',
-                                                        open(path).read())
+                                                        fh.read())
+        fh.close()
         self.assertEqual(res['keyName'], 'foobar')
         self.assertEqual(res['keyFingerprint'], fingerprint)
 
     def test_ex_list_security_groups(self):
         groups = self.driver.ex_list_security_groups()
+        self.assertEqual(2, len(groups))
         self.assertEqual(groups[0]['name'], 'default')
+        self.assertEqual(groups[1]['name'], 'mongodb')
 
     def test_ex_create_security_group(self):
         group = self.driver.ex_create_security_group(name='MySG')
@@ -306,7 +342,48 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
     def test_ex_list_public_ips(self):
         ips = self.driver.ex_list_public_ips()
-        self.assertEqual(ips[0].address, '1.1.1.49')
+        self.assertEqual(ips[0].address, '1.1.1.116')
+
+    def test_ex_allocate_public_ip(self):
+        addr = self.driver.ex_allocate_public_ip()
+        self.assertEqual(addr.address, '7.5.6.1')
+        self.assertEqual(addr.id, '10987171-8cc9-4d0a-b98f-1698c09ddd2d')
+
+    def test_ex_release_public_ip(self):
+        addresses = self.driver.ex_list_public_ips()
+        res = self.driver.ex_release_public_ip(addresses[0])
+        self.assertTrue(res)
+
+    def test_ex_create_port_forwarding_rule(self):
+        node = self.driver.list_nodes()[0]
+        address = self.driver.ex_list_public_ips()[0]
+        private_port = 33
+        public_port = 33
+        protocol = 'TCP'
+        rule = self.driver.ex_create_port_forwarding_rule(address,
+                                                          private_port,
+                                                          public_port,
+                                                          protocol,
+                                                          node)
+        self.assertEqual(rule.address, address)
+        self.assertEqual(rule.protocol, protocol)
+        self.assertEqual(rule.public_port, public_port)
+        self.assertEqual(rule.private_port, private_port)
+
+    def test_ex_list_port_forwarding_rules(self):
+        rules = self.driver.ex_list_port_forwarding_rules()
+        self.assertEqual(len(rules), 1)
+        rule = rules[0]
+        self.assertEqual(rule.protocol, 'tcp')
+        self.assertEqual(rule.public_port, '33')
+        self.assertEqual(rule.private_port, '33')
+        self.assertEqual(rule.address.address, '1.1.1.116')
+
+    def test_ex_delete_port_forwarding_rule(self):
+        node = self.driver.list_nodes()[0]
+        rule = self.driver.ex_list_port_forwarding_rules()[0]
+        res = self.driver.ex_delete_port_forwarding_rule(node, rule)
+        self.assertTrue(res)
 
 
 class CloudStackMockHttp(MockHttpTestCase):
