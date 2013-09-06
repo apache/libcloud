@@ -671,7 +671,7 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual(func_args[0], "/" + container.name + "/" + object_name)
         self.assertEqual(func_kwargs["headers"]["X-Object-Manifest"],
                 container.name + "/" + object_name + "/")
-        self.assertEqualEqual(func_kwargs["method"], "PUT")
+        self.assertEqual(func_kwargs["method"], "PUT")
 
     def test__upload_object_manifest_wrong_hash(self):
         fake_response = type('CloudFilesResponse', (), {'headers':
