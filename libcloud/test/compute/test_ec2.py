@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import with_statement
+
 import os
 import sys
 
@@ -339,7 +341,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_import_keypair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
-        key = self.driver.ex_import_keypair_from_string('keypair', open(path).read())
+        with open(path,'r') as fh:
+            key = self.driver.ex_import_keypair_from_string('keypair', fh.read())
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
@@ -428,8 +431,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
 
-        self.assertEquals(10, vol.size)
-        self.assertEquals('vol', vol.name)
+        self.assertEqual(10, vol.size)
+        self.assertEqual('vol', vol.name)
 
     def test_destroy_volume(self):
         vol = StorageVolume(

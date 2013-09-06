@@ -35,7 +35,7 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
 
     def test_base_connection_timeout(self):
         self.connection.connect()
-        self.assertEquals(self.connection.timeout, self.timeout)
+        self.assertEqual(self.connection.timeout, self.timeout)
         if PY25:
             self.connection.conn_classes[1].assert_called_with(host='127.0.0.1',
                                                                port=443)

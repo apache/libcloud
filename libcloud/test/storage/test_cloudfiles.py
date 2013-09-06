@@ -83,7 +83,7 @@ class CloudFilesTests(unittest.TestCase):
             driver.list_containers()
         except:
             e = sys.exc_info()[1]
-            self.assertEquals(e.value, 'Could not find specified endpoint')
+            self.assertEqual(e.value, 'Could not find specified endpoint')
         else:
             self.fail('Exception was not thrown')
 
@@ -101,11 +101,11 @@ class CloudFilesTests(unittest.TestCase):
         driver = CloudFilesStorageDriver('driver', 'dummy', **kwargs)
         driver.list_containers()
 
-        self.assertEquals(kwargs['ex_force_auth_token'],
+        self.assertEqual(kwargs['ex_force_auth_token'],
             driver.connection.auth_token)
-        self.assertEquals('cdn2.clouddrive.com',
+        self.assertEqual('cdn2.clouddrive.com',
             driver.connection.host)
-        self.assertEquals('/v1/MossoCloudFS',
+        self.assertEqual('/v1/MossoCloudFS',
             driver.connection.request_path)
 
     def test_invalid_ex_force_service_region(self):
@@ -116,7 +116,7 @@ class CloudFilesTests(unittest.TestCase):
             driver.list_containers()
         except:
             e = sys.exc_info()[1]
-            self.assertEquals(e.value, 'Could not find specified endpoint')
+            self.assertEqual(e.value, 'Could not find specified endpoint')
         else:
             self.fail('Exception was not thrown')
 
@@ -132,9 +132,9 @@ class CloudFilesTests(unittest.TestCase):
         }
         driver = CloudFilesStorageDriver('driver', 'dummy', **kwargs)
 
-        self.assertEquals(kwargs['ex_force_auth_url'],
+        self.assertEqual(kwargs['ex_force_auth_url'],
             driver.connection._ex_force_auth_url)
-        self.assertEquals(kwargs['ex_force_auth_version'],
+        self.assertEqual(kwargs['ex_force_auth_version'],
             driver.connection._auth_version)
 
     def test_invalid_json_throws_exception(self):
@@ -643,8 +643,8 @@ class CloudFilesTests(unittest.TestCase):
         CloudFilesStorageDriver._put_object = _put_object
 
         func_kwargs = tuple(mocked__put_object.call_args)[1]
-        self.assertEquals(func_kwargs['object_name'], expected_name)
-        self.assertEquals(func_kwargs['container'], container)
+        self.assertEqual(func_kwargs['object_name'], expected_name)
+        self.assertEqual(func_kwargs['container'], container)
 
     def test__upload_object_manifest(self):
         hash_function = self.driver._get_hash_function()
@@ -668,10 +668,10 @@ class CloudFilesTests(unittest.TestCase):
 
         self.driver.connection.request = _request
 
-        self.assertEquals(func_args[0], "/" + container.name + "/" + object_name)
-        self.assertEquals(func_kwargs["headers"]["X-Object-Manifest"],
+        self.assertEqual(func_args[0], "/" + container.name + "/" + object_name)
+        self.assertEqual(func_kwargs["headers"]["X-Object-Manifest"],
                 container.name + "/" + object_name + "/")
-        self.assertEquals(func_kwargs["method"], "PUT")
+        self.assertEqual(func_kwargs["method"], "PUT")
 
     def test__upload_object_manifest_wrong_hash(self):
         fake_response = type('CloudFilesResponse', (), {'headers':
@@ -748,7 +748,7 @@ class CloudFilesTests(unittest.TestCase):
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
         temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.region, sig)
 
-        self.assertEquals(''.join(sorted(ret)), ''.join(sorted(temp_url)))
+        self.assertEqual(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
     def test_ex_get_object_temp_url_no_key_raises_key_error(self):
         self.driver.ex_get_meta_data = mock.Mock()
