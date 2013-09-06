@@ -256,13 +256,13 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_auth_token_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
-        self.assertEquals(self.driver.connection.auth_token, "603d2bd9-f45c-4583-b91c-2c8eac0b5654")
+        self.assertEqual(self.driver.connection.auth_token, "603d2bd9-f45c-4583-b91c-2c8eac0b5654")
 
     def test_auth_token_expires_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEquals(expires.isoformat(), "2011-09-18T02:44:17-05:00")
+        self.assertEqual(expires.isoformat(), "2011-09-18T02:44:17-05:00")
 
     def test_auth(self):
         OpenStackMockHttp.type = 'UNAUTHORIZED'
@@ -429,57 +429,57 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_list_ip_addresses(self):
         ret = self.driver.ex_list_ip_addresses(node_id=72258)
-        self.assertEquals(2, len(ret.public_addresses))
+        self.assertEqual(2, len(ret.public_addresses))
         self.assertTrue('67.23.10.131' in ret.public_addresses)
         self.assertTrue('67.23.10.132' in ret.public_addresses)
-        self.assertEquals(1, len(ret.private_addresses))
+        self.assertEqual(1, len(ret.private_addresses))
         self.assertTrue('10.176.42.16' in ret.private_addresses)
 
     def test_ex_list_ip_groups(self):
         ret = self.driver.ex_list_ip_groups()
-        self.assertEquals(2, len(ret))
-        self.assertEquals('1234', ret[0].id)
-        self.assertEquals('Shared IP Group 1', ret[0].name)
-        self.assertEquals('5678', ret[1].id)
-        self.assertEquals('Shared IP Group 2', ret[1].name)
+        self.assertEqual(2, len(ret))
+        self.assertEqual('1234', ret[0].id)
+        self.assertEqual('Shared IP Group 1', ret[0].name)
+        self.assertEqual('5678', ret[1].id)
+        self.assertEqual('Shared IP Group 2', ret[1].name)
         self.assertTrue(ret[0].servers is None)
 
     def test_ex_list_ip_groups_detail(self):
         ret = self.driver.ex_list_ip_groups(details=True)
 
-        self.assertEquals(2, len(ret))
+        self.assertEqual(2, len(ret))
 
-        self.assertEquals('1234', ret[0].id)
-        self.assertEquals('Shared IP Group 1', ret[0].name)
-        self.assertEquals(2, len(ret[0].servers))
-        self.assertEquals('422', ret[0].servers[0])
-        self.assertEquals('3445', ret[0].servers[1])
+        self.assertEqual('1234', ret[0].id)
+        self.assertEqual('Shared IP Group 1', ret[0].name)
+        self.assertEqual(2, len(ret[0].servers))
+        self.assertEqual('422', ret[0].servers[0])
+        self.assertEqual('3445', ret[0].servers[1])
 
-        self.assertEquals('5678', ret[1].id)
-        self.assertEquals('Shared IP Group 2', ret[1].name)
-        self.assertEquals(3, len(ret[1].servers))
-        self.assertEquals('23203', ret[1].servers[0])
-        self.assertEquals('2456', ret[1].servers[1])
-        self.assertEquals('9891', ret[1].servers[2])
+        self.assertEqual('5678', ret[1].id)
+        self.assertEqual('Shared IP Group 2', ret[1].name)
+        self.assertEqual(3, len(ret[1].servers))
+        self.assertEqual('23203', ret[1].servers[0])
+        self.assertEqual('2456', ret[1].servers[1])
+        self.assertEqual('9891', ret[1].servers[2])
 
     def test_ex_create_ip_group(self):
         ret = self.driver.ex_create_ip_group('Shared IP Group 1', '5467')
-        self.assertEquals('1234', ret.id)
-        self.assertEquals('Shared IP Group 1', ret.name)
-        self.assertEquals(1, len(ret.servers))
-        self.assertEquals('422', ret.servers[0])
+        self.assertEqual('1234', ret.id)
+        self.assertEqual('Shared IP Group 1', ret.name)
+        self.assertEqual(1, len(ret.servers))
+        self.assertEqual('422', ret.servers[0])
 
     def test_ex_delete_ip_group(self):
         ret = self.driver.ex_delete_ip_group('5467')
-        self.assertEquals(True, ret)
+        self.assertEqual(True, ret)
 
     def test_ex_share_ip(self):
         ret = self.driver.ex_share_ip('1234', '3445', '67.23.21.133')
-        self.assertEquals(True, ret)
+        self.assertEqual(True, ret)
 
     def test_ex_unshare_ip(self):
         ret = self.driver.ex_unshare_ip('3445', '67.23.21.133')
-        self.assertEquals(True, ret)
+        self.assertEqual(True, ret)
 
     def test_ex_resize(self):
         node = Node(id=444222, name=None, state=None, public_ips=None,
@@ -731,7 +731,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection.auth_token_expires = None
         self.driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals(self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
+        self.assertEqual(self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
 
     def test_auth_token_expires_is_set(self):
         # change base url and trash the current auth token so we can re-authenticate
@@ -741,7 +741,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEquals(expires.isoformat(), "2011-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2011-11-23T21:00:14-06:00")
 
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can re-authenticate
@@ -801,12 +801,12 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         driver = self.driver_type(*self.driver_args, **kwargs)
         driver.list_nodes()
 
-        self.assertEquals(kwargs['ex_force_auth_token'],
+        self.assertEqual(kwargs['ex_force_auth_token'],
                           driver.connection.auth_token)
-        self.assertEquals('servers.api.rackspacecloud.com',
+        self.assertEqual('servers.api.rackspacecloud.com',
                           driver.connection.host)
-        self.assertEquals('/v1.1/slug', driver.connection.request_path)
-        self.assertEquals(443, driver.connection.port)
+        self.assertEqual('/v1.1/slug', driver.connection.request_path)
+        self.assertEqual(443, driver.connection.port)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -1404,7 +1404,7 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
 
     def test_auth_user_info_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
-        self.assertEquals(self.driver.connection.auth_user_info, {
+        self.assertEqual(self.driver.connection.auth_user_info, {
             'id': '7',
             'name': 'testuser',
             'roles': [{'description': 'Default Role.',

@@ -48,9 +48,9 @@ class RackspaceUSTests(unittest.TestCase):
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.list_zones()
 
-        self.assertEquals(kwargs['ex_force_auth_token'],
+        self.assertEqual(kwargs['ex_force_auth_token'],
             driver.connection.auth_token)
-        self.assertEquals('/v1.0/11111',
+        self.assertEqual('/v1.0/11111',
             driver.connection.request_path)
 
     def test_force_auth_url_kwargs(self):
@@ -60,9 +60,9 @@ class RackspaceUSTests(unittest.TestCase):
         }
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
 
-        self.assertEquals(kwargs['ex_force_auth_url'],
+        self.assertEqual(kwargs['ex_force_auth_url'],
             driver.connection._ex_force_auth_url)
-        self.assertEquals(kwargs['ex_force_auth_version'],
+        self.assertEqual(kwargs['ex_force_auth_version'],
             driver.connection._auth_version)
 
     def test_gets_auth_2_0_endpoint(self):
@@ -70,7 +70,7 @@ class RackspaceUSTests(unittest.TestCase):
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals('https://dns.api.rackspacecloud.com/v1.0/11111',
+        self.assertEqual('https://dns.api.rackspacecloud.com/v1.0/11111',
             driver.connection.get_endpoint())
 
     def test_list_record_types(self):
@@ -300,13 +300,13 @@ class RackspaceUSTests(unittest.TestCase):
     def test_to_full_record_name_name_provided(self):
         domain = 'foo.bar'
         name = 'test'
-        self.assertEquals(self.driver._to_full_record_name(domain, name),
+        self.assertEqual(self.driver._to_full_record_name(domain, name),
                           'test.foo.bar')
 
     def test_to_full_record_name_name_not_provided(self):
         domain = 'foo.bar'
         name = None
-        self.assertEquals(self.driver._to_full_record_name(domain, name),
+        self.assertEqual(self.driver._to_full_record_name(domain, name),
                           'foo.bar')
 
 

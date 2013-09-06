@@ -337,7 +337,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_import_keypair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
-        key = self.driver.ex_import_keypair_from_string('keypair', open(path).read())
+        fh = open(path)
+        key = self.driver.ex_import_keypair_from_string('keypair', fh.read())
+        fh.close()
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
@@ -426,8 +428,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
 
-        self.assertEquals(10, vol.size)
-        self.assertEquals('vol', vol.name)
+        self.assertEqual(10, vol.size)
+        self.assertEqual('vol', vol.name)
 
     def test_destroy_volume(self):
         vol = StorageVolume(

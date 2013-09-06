@@ -56,9 +56,9 @@ class RackspaceLBTests(unittest.TestCase):
         driver = RackspaceLBDriver('user', 'key', **kwargs)
         driver.list_balancers()
 
-        self.assertEquals(kwargs['ex_force_auth_token'],
+        self.assertEqual(kwargs['ex_force_auth_token'],
             driver.connection.auth_token)
-        self.assertEquals('/v1.0/slug',
+        self.assertEqual('/v1.0/slug',
             driver.connection.request_path)
 
     def test_force_auth_url_kwargs(self):
@@ -68,9 +68,9 @@ class RackspaceLBTests(unittest.TestCase):
         }
         driver = RackspaceLBDriver('user', 'key', **kwargs)
 
-        self.assertEquals(kwargs['ex_force_auth_url'],
+        self.assertEqual(kwargs['ex_force_auth_url'],
             driver.connection._ex_force_auth_url)
-        self.assertEquals(kwargs['ex_force_auth_version'],
+        self.assertEqual(kwargs['ex_force_auth_version'],
             driver.connection._auth_version)
 
     def test_gets_auth_2_0_endpoint_defaults_to_ord_region(self):
@@ -79,7 +79,7 @@ class RackspaceLBTests(unittest.TestCase):
         )
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals('https://ord.loadbalancers.api.rackspacecloud.com/v1.0/11111',
+        self.assertEqual('https://ord.loadbalancers.api.rackspacecloud.com/v1.0/11111',
             driver.connection.get_endpoint())
 
     def test_gets_auth_2_0_endpoint_for_dfw(self):
@@ -89,7 +89,7 @@ class RackspaceLBTests(unittest.TestCase):
         )
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEquals('https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/11111',
+        self.assertEqual('https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/11111',
             driver.connection.get_endpoint())
 
     def test_list_protocols(self):
@@ -125,25 +125,25 @@ class RackspaceLBTests(unittest.TestCase):
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
 
-        self.assertEquals(len(balancers), 2)
-        self.assertEquals(balancers[0].name, "test0")
-        self.assertEquals(balancers[0].id, "8155")
-        self.assertEquals(balancers[0].port, 80)
-        self.assertEquals(balancers[0].ip, "1.1.1.25")
-        self.assertEquals(balancers[1].name, "test1")
-        self.assertEquals(balancers[1].id, "8156")
+        self.assertEqual(len(balancers), 2)
+        self.assertEqual(balancers[0].name, "test0")
+        self.assertEqual(balancers[0].id, "8155")
+        self.assertEqual(balancers[0].port, 80)
+        self.assertEqual(balancers[0].ip, "1.1.1.25")
+        self.assertEqual(balancers[1].name, "test1")
+        self.assertEqual(balancers[1].id, "8156")
 
     def test_list_balancers_ex_member_address(self):
         RackspaceLBMockHttp.type = 'EX_MEMBER_ADDRESS'
         balancers = self.driver.list_balancers(ex_member_address='127.0.0.1')
 
-        self.assertEquals(len(balancers), 3)
-        self.assertEquals(balancers[0].name, "First Loadbalancer")
-        self.assertEquals(balancers[0].id, "1")
-        self.assertEquals(balancers[1].name, "Second Loadbalancer")
-        self.assertEquals(balancers[1].id, "2")
-        self.assertEquals(balancers[2].name, "Third Loadbalancer")
-        self.assertEquals(balancers[2].id, "8")
+        self.assertEqual(len(balancers), 3)
+        self.assertEqual(balancers[0].name, "First Loadbalancer")
+        self.assertEqual(balancers[0].id, "1")
+        self.assertEqual(balancers[1].name, "Second Loadbalancer")
+        self.assertEqual(balancers[1].id, "2")
+        self.assertEqual(balancers[2].name, "Third Loadbalancer")
+        self.assertEqual(balancers[2].id, "8")
 
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
@@ -154,8 +154,8 @@ class RackspaceLBTests(unittest.TestCase):
                          Member(None, '10.1.0.11', 80))
                 )
 
-        self.assertEquals(balancer.name, 'test2')
-        self.assertEquals(balancer.id, '8290')
+        self.assertEqual(balancer.name, 'test2')
+        self.assertEqual(balancer.id, '8290')
 
     def test_ex_create_balancer(self):
         RackspaceLBDriver.connectionCls.conn_classes = (None,
@@ -169,8 +169,8 @@ class RackspaceLBTests(unittest.TestCase):
                 vip='12af'
         )
 
-        self.assertEquals(balancer.name, 'test2')
-        self.assertEquals(balancer.id, '8290')
+        self.assertEqual(balancer.name, 'test2')
+        self.assertEqual(balancer.id, '8290')
 
     def test_destroy_balancer(self):
         balancer = self.driver.list_balancers()[0]
@@ -186,12 +186,12 @@ class RackspaceLBTests(unittest.TestCase):
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
 
-        self.assertEquals(balancer.name, 'test2')
-        self.assertEquals(balancer.id, '8290')
+        self.assertEqual(balancer.name, 'test2')
+        self.assertEqual(balancer.id, '8290')
 
     def test_get_balancer_extra_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.extra["virtualIps"],
+        self.assertEqual(balancer.extra["virtualIps"],
             [{"address":"50.56.49.149",
               "id":2359,
               "type":"PUBLIC",
@@ -199,75 +199,75 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_get_balancer_extra_public_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.extra["ipv4PublicSource"], '184.106.100.25')
+        self.assertEqual(balancer.extra["ipv4PublicSource"], '184.106.100.25')
 
     def test_get_balancer_extra_public_source_ipv6(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.extra["ipv6PublicSource"],
+        self.assertEqual(balancer.extra["ipv6PublicSource"],
                           '2001:4801:7901::6/64')
 
     def test_get_balancer_extra_private_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
-        self.assertEquals(balancer.extra["ipv4PrivateSource"], '10.183.252.25')
+        self.assertEqual(balancer.extra["ipv4PrivateSource"], '10.183.252.25')
 
     def test_get_balancer_extra_members(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.extra['members']
-        self.assertEquals(3, len(members))
-        self.assertEquals('10.1.0.11', members[0].ip)
-        self.assertEquals('10.1.0.10', members[1].ip)
-        self.assertEquals('10.1.0.9', members[2].ip)
+        self.assertEqual(3, len(members))
+        self.assertEqual('10.1.0.11', members[0].ip)
+        self.assertEqual('10.1.0.10', members[1].ip)
+        self.assertEqual('10.1.0.9', members[2].ip)
 
     def test_get_balancer_extra_created(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
 
         created_8290 = datetime.datetime(2011, 4, 7, 16, 27, 50)
-        self.assertEquals(created_8290, balancer.extra['created'])
+        self.assertEqual(created_8290, balancer.extra['created'])
 
     def test_get_balancer_extra_updated(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
 
         updated_8290 = datetime.datetime(2011, 4, 7, 16, 28, 12)
-        self.assertEquals(updated_8290, balancer.extra['updated'])
+        self.assertEqual(updated_8290, balancer.extra['updated'])
 
     def test_get_balancer_extra_access_list(self):
         balancer = self.driver.get_balancer(balancer_id='94698')
 
         access_list = balancer.extra['accessList']
 
-        self.assertEquals(3, len(access_list))
-        self.assertEquals(2883, access_list[0].id)
-        self.assertEquals("0.0.0.0/0", access_list[0].address)
-        self.assertEquals(RackspaceAccessRuleType.DENY,
+        self.assertEqual(3, len(access_list))
+        self.assertEqual(2883, access_list[0].id)
+        self.assertEqual("0.0.0.0/0", access_list[0].address)
+        self.assertEqual(RackspaceAccessRuleType.DENY,
             access_list[0].rule_type)
 
-        self.assertEquals(2884, access_list[1].id)
-        self.assertEquals("2001:4801:7901::6/64",
+        self.assertEqual(2884, access_list[1].id)
+        self.assertEqual("2001:4801:7901::6/64",
             access_list[1].address)
-        self.assertEquals(RackspaceAccessRuleType.ALLOW,
+        self.assertEqual(RackspaceAccessRuleType.ALLOW,
             access_list[1].rule_type)
 
-        self.assertEquals(3006, access_list[2].id)
-        self.assertEquals("8.8.8.8/0", access_list[2].address)
-        self.assertEquals(RackspaceAccessRuleType.DENY,
+        self.assertEqual(3006, access_list[2].id)
+        self.assertEqual("8.8.8.8/0", access_list[2].address)
+        self.assertEqual(RackspaceAccessRuleType.DENY,
             access_list[2].rule_type)
 
     def test_get_balancer_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
-        self.assertEquals(balancer.extra["algorithm"], Algorithm.RANDOM)
+        self.assertEqual(balancer.extra["algorithm"], Algorithm.RANDOM)
 
     def test_get_balancer_protocol(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
-        self.assertEquals(balancer.extra['protocol'], 'HTTP')
+        self.assertEqual(balancer.extra['protocol'], 'HTTP')
 
     def test_get_balancer_weighted_round_robin_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='94692')
-        self.assertEquals(balancer.extra["algorithm"],
+        self.assertEqual(balancer.extra["algorithm"],
                            Algorithm.WEIGHTED_ROUND_ROBIN)
 
     def test_get_balancer_weighted_least_connections_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='94693')
-        self.assertEquals(balancer.extra["algorithm"],
+        self.assertEqual(balancer.extra["algorithm"],
                            Algorithm.WEIGHTED_LEAST_CONNECTIONS)
 
     def test_get_balancer_unknown_algorithm(self):
@@ -278,59 +278,59 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='94695')
         balancer_health_monitor = balancer.extra["healthMonitor"]
 
-        self.assertEquals(balancer_health_monitor.type, "CONNECT")
-        self.assertEquals(balancer_health_monitor.delay, 10)
-        self.assertEquals(balancer_health_monitor.timeout, 5)
-        self.assertEquals(balancer_health_monitor.attempts_before_deactivation,
+        self.assertEqual(balancer_health_monitor.type, "CONNECT")
+        self.assertEqual(balancer_health_monitor.delay, 10)
+        self.assertEqual(balancer_health_monitor.timeout, 5)
+        self.assertEqual(balancer_health_monitor.attempts_before_deactivation,
                           2)
 
     def test_get_balancer_http_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94696')
         balancer_health_monitor = balancer.extra["healthMonitor"]
 
-        self.assertEquals(balancer_health_monitor.type, "HTTP")
-        self.assertEquals(balancer_health_monitor.delay, 10)
-        self.assertEquals(balancer_health_monitor.timeout, 5)
-        self.assertEquals(balancer_health_monitor.attempts_before_deactivation,
+        self.assertEqual(balancer_health_monitor.type, "HTTP")
+        self.assertEqual(balancer_health_monitor.delay, 10)
+        self.assertEqual(balancer_health_monitor.timeout, 5)
+        self.assertEqual(balancer_health_monitor.attempts_before_deactivation,
                           2)
-        self.assertEquals(balancer_health_monitor.path, "/")
-        self.assertEquals(balancer_health_monitor.status_regex,
+        self.assertEqual(balancer_health_monitor.path, "/")
+        self.assertEqual(balancer_health_monitor.status_regex,
                            "^[234][0-9][0-9]$")
-        self.assertEquals(balancer_health_monitor.body_regex,
+        self.assertEqual(balancer_health_monitor.body_regex,
                            "Hello World!")
 
     def test_get_balancer_https_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94697')
         balancer_health_monitor = balancer.extra["healthMonitor"]
 
-        self.assertEquals(balancer_health_monitor.type, "HTTPS")
-        self.assertEquals(balancer_health_monitor.delay, 15)
-        self.assertEquals(balancer_health_monitor.timeout, 12)
-        self.assertEquals(balancer_health_monitor.attempts_before_deactivation,
+        self.assertEqual(balancer_health_monitor.type, "HTTPS")
+        self.assertEqual(balancer_health_monitor.delay, 15)
+        self.assertEqual(balancer_health_monitor.timeout, 12)
+        self.assertEqual(balancer_health_monitor.attempts_before_deactivation,
                           5)
-        self.assertEquals(balancer_health_monitor.path, "/test")
-        self.assertEquals(balancer_health_monitor.status_regex,
+        self.assertEqual(balancer_health_monitor.path, "/test")
+        self.assertEqual(balancer_health_monitor.status_regex,
                            "^[234][0-9][0-9]$")
-        self.assertEquals(balancer_health_monitor.body_regex, "abcdef")
+        self.assertEqual(balancer_health_monitor.body_regex, "abcdef")
 
     def test_get_balancer_connection_throttle(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
         balancer_connection_throttle = balancer.extra["connectionThrottle"]
 
-        self.assertEquals(balancer_connection_throttle.min_connections, 50)
-        self.assertEquals(balancer_connection_throttle.max_connections, 200)
-        self.assertEquals(balancer_connection_throttle.max_connection_rate, 50)
-        self.assertEquals(balancer_connection_throttle.rate_interval_seconds,
+        self.assertEqual(balancer_connection_throttle.min_connections, 50)
+        self.assertEqual(balancer_connection_throttle.max_connections, 200)
+        self.assertEqual(balancer_connection_throttle.max_connection_rate, 50)
+        self.assertEqual(balancer_connection_throttle.rate_interval_seconds,
                            10)
 
     def test_get_session_persistence(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
-        self.assertEquals(balancer.extra["sessionPersistenceType"],
+        self.assertEqual(balancer.extra["sessionPersistenceType"],
                            "HTTP_COOKIE")
 
     def test_get_connection_logging(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
-        self.assertEquals(balancer.extra["connectionLoggingEnabled"], True)
+        self.assertEqual(balancer.extra["connectionLoggingEnabled"], True)
 
     def test_get_error_page(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
@@ -341,13 +341,13 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='18940')
         deny_rule, allow_rule = self.driver.ex_balancer_access_list(balancer)
 
-        self.assertEquals(deny_rule.id, 2883)
-        self.assertEquals(deny_rule.rule_type, RackspaceAccessRuleType.DENY)
-        self.assertEquals(deny_rule.address, "0.0.0.0/0")
+        self.assertEqual(deny_rule.id, 2883)
+        self.assertEqual(deny_rule.rule_type, RackspaceAccessRuleType.DENY)
+        self.assertEqual(deny_rule.address, "0.0.0.0/0")
 
-        self.assertEquals(allow_rule.id, 2884)
-        self.assertEquals(allow_rule.address, "2001:4801:7901::6/64")
-        self.assertEquals(allow_rule.rule_type, RackspaceAccessRuleType.ALLOW)
+        self.assertEqual(allow_rule.id, 2884)
+        self.assertEqual(allow_rule.address, "2001:4801:7901::6/64")
+        self.assertEqual(allow_rule.rule_type, RackspaceAccessRuleType.ALLOW)
 
     def test_ex_create_balancer_access_rule(self):
         balancer = self.driver.get_balancer(balancer_id='94698')
@@ -357,7 +357,7 @@ class RackspaceLBTests(unittest.TestCase):
 
         rule = self.driver.ex_create_balancer_access_rule(balancer, rule)
 
-        self.assertEquals(2883, rule.id)
+        self.assertEqual(2883, rule.id)
 
     def test_ex_create_balancer_access_rule_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94698')
@@ -380,9 +380,9 @@ class RackspaceLBTests(unittest.TestCase):
 
         rules = self.driver.ex_create_balancer_access_rules(balancer, rules)
 
-        self.assertEquals(2, len(rules))
-        self.assertEquals(2884, rules[0].id)
-        self.assertEquals(3006, rules[1].id)
+        self.assertEqual(2, len(rules))
+        self.assertEqual(2884, rules[0].id)
+        self.assertEqual(3006, rules[1].id)
 
     def test_ex_create_balancer_access_rules_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94699')
@@ -429,7 +429,7 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.ex_destroy_balancer_access_rules(balancer,
             balancer.extra['accessList'])
 
-        self.assertEquals('94699', balancer.id)
+        self.assertEqual('94699', balancer.id)
 
     def test_ex_destroy_balancer_access_rules_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94699')
@@ -447,10 +447,10 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
         updated_monitor = balancer.extra['healthMonitor']
 
-        self.assertEquals('CONNECT', updated_monitor.type)
-        self.assertEquals(10, updated_monitor.delay)
-        self.assertEquals(5, updated_monitor.timeout)
-        self.assertEquals(2, updated_monitor.attempts_before_deactivation)
+        self.assertEqual('CONNECT', updated_monitor.type)
+        self.assertEqual(10, updated_monitor.delay)
+        self.assertEqual(5, updated_monitor.timeout)
+        self.assertEqual(2, updated_monitor.attempts_before_deactivation)
 
     def test_ex_update_balancer_http_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94696')
@@ -463,13 +463,13 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
         updated_monitor = balancer.extra['healthMonitor']
 
-        self.assertEquals('HTTP', updated_monitor.type)
-        self.assertEquals(10, updated_monitor.delay)
-        self.assertEquals(5, updated_monitor.timeout)
-        self.assertEquals(2, updated_monitor.attempts_before_deactivation)
-        self.assertEquals('/', updated_monitor.path)
-        self.assertEquals('^[234][0-9][0-9]$', updated_monitor.status_regex)
-        self.assertEquals('Hello World!', updated_monitor.body_regex)
+        self.assertEqual('HTTP', updated_monitor.type)
+        self.assertEqual(10, updated_monitor.delay)
+        self.assertEqual(5, updated_monitor.timeout)
+        self.assertEqual(2, updated_monitor.attempts_before_deactivation)
+        self.assertEqual('/', updated_monitor.path)
+        self.assertEqual('^[234][0-9][0-9]$', updated_monitor.status_regex)
+        self.assertEqual('Hello World!', updated_monitor.body_regex)
 
     def test_ex_update_balancer_health_monitor_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
@@ -505,13 +505,13 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
         updated_monitor = balancer.extra['healthMonitor']
 
-        self.assertEquals('HTTP', updated_monitor.type)
-        self.assertEquals(10, updated_monitor.delay)
-        self.assertEquals(5, updated_monitor.timeout)
-        self.assertEquals(2, updated_monitor.attempts_before_deactivation)
-        self.assertEquals('/', updated_monitor.path)
-        self.assertEquals('^[234][0-9][0-9]$', updated_monitor.status_regex)
-        self.assertEquals('', updated_monitor.body_regex)
+        self.assertEqual('HTTP', updated_monitor.type)
+        self.assertEqual(10, updated_monitor.delay)
+        self.assertEqual(5, updated_monitor.timeout)
+        self.assertEqual(2, updated_monitor.attempts_before_deactivation)
+        self.assertEqual('/', updated_monitor.path)
+        self.assertEqual('^[234][0-9][0-9]$', updated_monitor.status_regex)
+        self.assertEqual('', updated_monitor.body_regex)
 
     def test_ex_disable_balancer_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -536,10 +536,10 @@ class RackspaceLBTests(unittest.TestCase):
             connection_throttle)
         updated_throttle = balancer.extra['connectionThrottle']
 
-        self.assertEquals(200, updated_throttle.max_connections)
-        self.assertEquals(50, updated_throttle.min_connections)
-        self.assertEquals(50, updated_throttle.max_connection_rate)
-        self.assertEquals(10, updated_throttle.rate_interval_seconds)
+        self.assertEqual(200, updated_throttle.max_connections)
+        self.assertEqual(50, updated_throttle.min_connections)
+        self.assertEqual(50, updated_throttle.max_connection_rate)
+        self.assertEqual(10, updated_throttle.rate_interval_seconds)
 
     def test_ex_update_balancer_connection_throttle_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
@@ -602,7 +602,7 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.ex_enable_balancer_session_persistence(balancer)
 
         persistence_type = balancer.extra['sessionPersistenceType']
-        self.assertEquals('HTTP_COOKIE', persistence_type)
+        self.assertEqual('HTTP_COOKIE', persistence_type)
 
     def test_ex_enable_balancer_session_persistence_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
@@ -632,7 +632,7 @@ class RackspaceLBTests(unittest.TestCase):
             balancer, content)
 
         error_page_content = self.driver.ex_get_balancer_error_page(balancer)
-        self.assertEquals(content, error_page_content)
+        self.assertEqual(content, error_page_content)
 
     def test_ex_update_balancer_error_page_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -659,43 +659,43 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.ex_disable_balancer_custom_error_page(balancer)
 
         error_page_content = self.driver.ex_get_balancer_error_page(balancer)
-        self.assertEquals(default_error_page, error_page_content)
+        self.assertEqual(default_error_page, error_page_content)
 
     def test_balancer_list_members(self):
         expected = set(['10.1.0.10:80', '10.1.0.11:80', '10.1.0.9:8080'])
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.list_members()
 
-        self.assertEquals(len(members), 3)
-        self.assertEquals(members[0].balancer, balancer)
-        self.assertEquals(expected, set(["%s:%s" % (member.ip, member.port) for
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members[0].balancer, balancer)
+        self.assertEqual(expected, set(["%s:%s" % (member.ip, member.port) for
                                          member in members]))
 
     def test_balancer_members_extra_weight(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.list_members()
 
-        self.assertEquals(12, members[0].extra['weight'])
-        self.assertEquals(8, members[1].extra['weight'])
+        self.assertEqual(12, members[0].extra['weight'])
+        self.assertEqual(8, members[1].extra['weight'])
 
     def test_balancer_members_extra_condition(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.list_members()
 
-        self.assertEquals(MemberCondition.ENABLED,
+        self.assertEqual(MemberCondition.ENABLED,
                           members[0].extra['condition'])
-        self.assertEquals(MemberCondition.DISABLED,
+        self.assertEqual(MemberCondition.DISABLED,
                           members[1].extra['condition'])
-        self.assertEquals(MemberCondition.DRAINING,
+        self.assertEqual(MemberCondition.DRAINING,
                           members[2].extra['condition'])
 
     def test_balancer_members_extra_status(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.list_members()
 
-        self.assertEquals('ONLINE', members[0].extra['status'])
-        self.assertEquals('OFFLINE', members[1].extra['status'])
-        self.assertEquals('DRAINING', members[2].extra['status'])
+        self.assertEqual('ONLINE', members[0].extra['status'])
+        self.assertEqual('OFFLINE', members[1].extra['status'])
+        self.assertEqual('DRAINING', members[2].extra['status'])
 
     def test_balancer_attach_member(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -704,16 +704,16 @@ class RackspaceLBTests(unittest.TestCase):
         member = balancer.attach_member(Member(None, ip='10.1.0.12',
                                                port='80', extra=extra))
 
-        self.assertEquals(member.ip, '10.1.0.12')
-        self.assertEquals(member.port, 80)
+        self.assertEqual(member.ip, '10.1.0.12')
+        self.assertEqual(member.port, 80)
 
     def test_balancer_attach_member_with_no_condition_specified(self):
         balancer = self.driver.get_balancer(balancer_id='8291')
         member = balancer.attach_member(Member(None, ip='10.1.0.12',
                                                port='80'))
 
-        self.assertEquals(member.ip, '10.1.0.12')
-        self.assertEquals(member.port, 80)
+        self.assertEqual(member.ip, '10.1.0.12')
+        self.assertEqual(member.port, 80)
 
     def test_balancer_attach_members(self):
         balancer = self.driver.get_balancer(balancer_id='8292')
@@ -725,10 +725,10 @@ class RackspaceLBTests(unittest.TestCase):
 
         first_member = attached_members[0]
         second_member = attached_members[1]
-        self.assertEquals(first_member.ip, '10.1.0.12')
-        self.assertEquals(first_member.port, 80)
-        self.assertEquals(second_member.ip, '10.1.0.13')
-        self.assertEquals(second_member.port, 80)
+        self.assertEqual(first_member.ip, '10.1.0.12')
+        self.assertEqual(first_member.port, 80)
+        self.assertEqual(second_member.ip, '10.1.0.13')
+        self.assertEqual(second_member.port, 80)
 
     def test_balancer_detach_member(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -743,7 +743,7 @@ class RackspaceLBTests(unittest.TestCase):
 
         balancer = self.driver.ex_balancer_detach_members(balancer, members)
 
-        self.assertEquals('8290', balancer.id)
+        self.assertEqual('8290', balancer.id)
 
     def test_ex_detach_members_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -871,8 +871,8 @@ class RackspaceLBTests(unittest.TestCase):
         member = self.driver.ex_balancer_update_member(balancer, first_member,
             condition=MemberCondition.ENABLED, weight=12)
 
-        self.assertEquals(MemberCondition.ENABLED, member.extra['condition'])
-        self.assertEquals(12, member.extra['weight'])
+        self.assertEqual(MemberCondition.ENABLED, member.extra['condition'])
+        self.assertEqual(12, member.extra['weight'])
 
     def test_ex_update_balancer_member_no_poll_extra_attributes(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -1087,7 +1087,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         elif method == 'PUT':
             json_body = json.loads(body)
 
-            self.assertEquals('<html>Generic Error Page</html>',
+            self.assertEqual('<html>Generic Error Page</html>',
                 json_body['errorpage']['content'])
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1160,10 +1160,10 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         if method == 'PUT':
             json_body = json.loads(body)
 
-            self.assertEquals('CONNECT', json_body['type'])
-            self.assertEquals(10, json_body['delay'])
-            self.assertEquals(5, json_body['timeout'])
-            self.assertEquals(2, json_body['attemptsBeforeDeactivation'])
+            self.assertEqual('CONNECT', json_body['type'])
+            self.assertEqual(10, json_body['delay'])
+            self.assertEqual(5, json_body['timeout'])
+            self.assertEqual(2, json_body['attemptsBeforeDeactivation'])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1173,10 +1173,10 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         if method == 'PUT':
             json_body = json.loads(body)
 
-            self.assertEquals(50, json_body['minConnections'])
-            self.assertEquals(200, json_body['maxConnections'])
-            self.assertEquals(50, json_body['maxConnectionRate'])
-            self.assertEquals(10, json_body['rateInterval'])
+            self.assertEqual(50, json_body['minConnections'])
+            self.assertEqual(200, json_body['maxConnections'])
+            self.assertEqual(50, json_body['maxConnectionRate'])
+            self.assertEqual(10, json_body['rateInterval'])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1197,7 +1197,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             json_body = json.loads(body)
 
             persistence_type = json_body['sessionPersistence']['persistenceType']
-            self.assertEquals('HTTP_COOKIE', persistence_type)
+            self.assertEqual('HTTP_COOKIE', persistence_type)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1223,13 +1223,13 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         if method == 'PUT':
             json_body = json.loads(body)
 
-            self.assertEquals('HTTP', json_body['type'])
-            self.assertEquals(10, json_body['delay'])
-            self.assertEquals(5, json_body['timeout'])
-            self.assertEquals(2, json_body['attemptsBeforeDeactivation'])
-            self.assertEquals('/', json_body['path'])
-            self.assertEquals('^[234][0-9][0-9]$', json_body['statusRegex'])
-            self.assertEquals('Hello World!', json_body['bodyRegex'])
+            self.assertEqual('HTTP', json_body['type'])
+            self.assertEqual(10, json_body['delay'])
+            self.assertEqual(5, json_body['timeout'])
+            self.assertEqual(2, json_body['attemptsBeforeDeactivation'])
+            self.assertEqual('/', json_body['path'])
+            self.assertEqual('^[234][0-9][0-9]$', json_body['statusRegex'])
+            self.assertEqual('Hello World!', json_body['bodyRegex'])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1256,8 +1256,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         elif method == 'POST':
             json_body = json.loads(body)
 
-            self.assertEquals('0.0.0.0/0', json_body['networkItem']['address'])
-            self.assertEquals('DENY', json_body['networkItem']['type'])
+            self.assertEqual('0.0.0.0/0', json_body['networkItem']['address'])
+            self.assertEqual('DENY', json_body['networkItem']['type'])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1291,10 +1291,10 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
             json_body = json.loads(body)
             access_list = json_body['accessList']
-            self.assertEquals('ALLOW', access_list[0]['type'])
-            self.assertEquals('2001:4801:7901::6/64', access_list[0]['address'])
-            self.assertEquals('DENY', access_list[1]['type'])
-            self.assertEquals('8.8.8.8/0', access_list[1]['address'])
+            self.assertEqual('ALLOW', access_list[0]['type'])
+            self.assertEqual('2001:4801:7901::6/64', access_list[0]['address'])
+            self.assertEqual('DENY', access_list[1]['type'])
+            self.assertEqual('8.8.8.8/0', access_list[1]['address'])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1317,12 +1317,12 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         if method == 'PUT':
             json_body = json.loads(body)
 
-            self.assertEquals('HTTP', json_body['type'])
-            self.assertEquals(10, json_body['delay'])
-            self.assertEquals(5, json_body['timeout'])
-            self.assertEquals(2, json_body['attemptsBeforeDeactivation'])
-            self.assertEquals('/', json_body['path'])
-            self.assertEquals('^[234][0-9][0-9]$', json_body['statusRegex'])
+            self.assertEqual('HTTP', json_body['type'])
+            self.assertEqual(10, json_body['delay'])
+            self.assertEqual(5, json_body['timeout'])
+            self.assertEqual(2, json_body['attemptsBeforeDeactivation'])
+            self.assertEqual('/', json_body['path'])
+            self.assertEqual('^[234][0-9][0-9]$', json_body['statusRegex'])
             self.assertFalse('bodyRegex' in json_body)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])

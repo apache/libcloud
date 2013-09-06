@@ -647,9 +647,9 @@ class OpenNebula_3_6_Tests(unittest.TestCase, OpenNebulaCaseMixin):
     def test_create_volume(self):
         new_volume = self.driver.create_volume(1000, 'test-volume')
 
-        self.assertEquals(new_volume.id, '5')
-        self.assertEquals(new_volume.size, 1000)
-        self.assertEquals(new_volume.name, 'test-volume')
+        self.assertEqual(new_volume.id, '5')
+        self.assertEqual(new_volume.size, 1000)
+        self.assertEqual(new_volume.name, 'test-volume')
 
     def test_destroy_volume(self):
         images = self.driver.list_images()
