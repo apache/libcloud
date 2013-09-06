@@ -8,6 +8,11 @@ Changes with Apache Libcloud 0.13.2
      if a record has a TTL set.
      [Tomaz Muraus]
 
+   - Modify values in the Record 'extra' dictionary attribute in the Zerigo DNS
+     driver to be set to None instead of an empty string ('') if a value for
+     the provided key is not set.
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.1
 
  *) General

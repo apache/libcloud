@@ -419,11 +419,11 @@ class ZerigoDNSDriver(DNSDriver):
         type = self._string_to_record_type(type)
         data = findtext(element=elem, xpath='data')
 
-        notes = findtext(element=elem, xpath='notes')
-        state = findtext(element=elem, xpath='state')
-        fqdn = findtext(element=elem, xpath='fqdn')
-        priority = findtext(element=elem, xpath='priority')
-        ttl = findtext(element=elem, xpath='ttl')
+        notes = findtext(element=elem, xpath='notes', no_text_value=None)
+        state = findtext(element=elem, xpath='state', no_text_value=None)
+        fqdn = findtext(element=elem, xpath='fqdn', no_text_value=None)
+        priority = findtext(element=elem, xpath='priority', no_text_value=None)
+        ttl = findtext(element=elem, xpath='ttl', no_text_value=None)
 
         if ttl:
             ttl = int(ttl)

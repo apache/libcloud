@@ -70,6 +70,8 @@ class ZerigoTests(unittest.TestCase):
         self.assertEqual(records[0].type, RecordType.A)
         self.assertEqual(records[0].data, '172.16.16.1')
         self.assertEqual(records[0].extra['fqdn'], 'www.example.com')
+        self.assertEqual(records[0].extra['notes'], None)
+        self.assertEqual(records[0].extra['priority'], None)
 
         self.assertEqual(records[1].name, 'test')
         self.assertEqual(records[1].extra['ttl'], 3600)
