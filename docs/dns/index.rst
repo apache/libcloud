@@ -11,10 +11,19 @@ Rackspace Cloud DNS and others.
 Terminology
 -----------
 
-* **Zone** - represents a DNS zone or so called domain.
-* **Record** - represents a DNS record. Each record belongs to a Zone and has 
-  a record type and data attribute. Data depends on the record type.
-* **RecordType** - represents a DNS record type (A, AAAA, MX, TXT, etc.)
+* **Zone** - Represents a DNS zone or so called domain.
+* **Record** - Represents a DNS record. Each record belongs to a Zone and has
+  a ``type`` and ``data`` attribute. Value of the ``data`` attribute depends on
+  the record type.
+  Some record types also require user to associate additional attributes with
+  them. Those additional attributes are stored in the ``extra`` attribute
+  (dictionary) on the record object. An example include ``MX`` and ``SRV``
+  record type which also contains a priority.
+* **RecordType** - Represents a DNS record type (``A``, ``AAAA``, ``MX``,
+  ``TXT``, ``SRV``, ``PTR``, ``NS``, etc.)
+* **Zone Type** - Each zone has a ``type`` attribute. This attribute represents
+  a zone type. Type can either be ``master`` (also called primary) or ``slave``
+  (also called secondary).
 
 Supported Providers
 -------------------
