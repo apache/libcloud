@@ -57,28 +57,6 @@ def timestamp_to_datetime(timestamp):
     return ts + tz_delta
 
 
-class GCEError(LibcloudError):
-    """Base class for general GCE Errors"""
-    def __init__(self, code, value):
-        self.code = code
-        self.value = value
-
-    def __repr__(self):
-        return repr(self.code) + ": " + repr(self.value)
-
-
-class QuotaExceededError(GCEError):
-    pass
-
-
-class ResourceExistsError(GCEError):
-    pass
-
-
-class ResourceInUseError(GCEError):
-    pass
-
-
 class GCEResponse(GoogleResponse):
     pass
 
@@ -126,13 +104,14 @@ class GCEAddress(UuidMixin):
 
 class GCEFailedNode(object):
     """Dummy Node object for nodes that are not created."""
-    def __init__(self, name, error):
+    def __init__(self, name, error, code):
         self.name = name
         self.error = error
+        self.code = code
 
     def __repr__(self):
         return '<GCEFailedNode name="%s" error_code="%s">' % (
-            self.name, self.error['code'])
+            self.name, self.code)
 
 
 class GCEHealthCheck(UuidMixin):
@@ -547,26 +526,6 @@ class GCENodeDriver(NodeDriver):
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
                 'project': self.project}
-
-    def _categorize_error(self, error):
-        """
-        Parse error message returned from GCE operation and raise the
-        appropriate Exception.
-
-        @param  error: Error dictionary from a GCE Operations response
-        @type   error: C{dict}
-        """
-        err = error['errors'][0]
-        message = err['message']
-        code = err['code']
-        if code == 'QUOTA_EXCEEDED':
-            raise QuotaExceededError(code, message)
-        elif code == 'RESOURCE_ALREADY_EXISTS':
-            raise ResourceExistsError(code, message)
-        elif code.startswith('RESOURCE_IN_USE'):
-            raise ResourceInUseError(code, message)
-        else:
-            raise GCEError(code, message)
 
     def _get_region_from_zone(self, zone):
         """
@@ -999,8 +958,6 @@ class GCENodeDriver(NodeDriver):
         request = '/regions/%s/addresses' % region.name
         response = self.connection.async_request(request, method='POST',
                                                  data=address_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
         return self.ex_get_address(name, region=region)
 
     def ex_create_healthcheck(self, name, host=None, path=None, port=None,
@@ -1057,8 +1014,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=hc_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
         return self.ex_get_healthcheck(name)
 
     def ex_create_firewall(self, name, allowed, network='default',
@@ -1116,8 +1071,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=firewall_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
         return self.ex_get_firewall(name)
 
     def ex_create_forwarding_rule(self, name, targetpool, region=None,
@@ -1172,8 +1125,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(
             request, method='POST', data=forwarding_rule_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_forwarding_rule(name)
 
@@ -1198,8 +1149,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=network_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_network(name)
 
@@ -1332,8 +1281,6 @@ class GCENodeDriver(NodeDriver):
                                                    ex_persistent_disk)
         response = self.connection.async_request(request, method='POST',
                                                  data=node_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_node(name, location.name)
 
@@ -1422,17 +1369,21 @@ class GCENodeDriver(NodeDriver):
             for i, operation in enumerate(responses):
                 if operation is None:
                     continue
-                response = self.connection.request(
-                    operation['selfLink']).object
+                error = None
+                try:
+                    response = self.connection.request(
+                        operation['selfLink']).object
+                except:
+                    e = sys.exc_info()[1]
+                    error = e.value
+                    code = e.code
+                    if not ignore_errors:
+                        raise e
                 if response['status'] == 'DONE':
                     responses[i] = None
                     name = '%s-%03d' % (base_name, i)
-                    if 'error' in response:
-                        if ignore_errors:
-                            error = response['error']['errors'][0]
-                            node_list[i] = GCEFailedNode(name, error)
-                        else:
-                            self._categorize_error(response['error'])
+                    if error:
+                        node_list[i] = GCEFailedNode(name, error, code)
                     else:
                         node_list[i] = self.ex_get_node(name, location.name)
                 else:
@@ -1487,8 +1438,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=targetpool_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_targetpool(name, region)
 
@@ -1536,8 +1485,6 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.async_request(request, method='POST',
                                                  data=volume_data,
                                                  params=params).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_volume(name, location)
 
@@ -1571,8 +1518,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='PUT',
                                                  data=hc_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_healthcheck(healthcheck.name)
 
@@ -1604,8 +1549,6 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='PUT',
                                                  data=firewall_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_firewall(firewall.name)
 
@@ -1633,11 +1576,8 @@ class GCENodeDriver(NodeDriver):
             targetpool.region.name, targetpool.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=targetpool_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            targetpool.nodes.append(node)
-            return True
+        targetpool.nodes.append(node)
+        return True
 
     def ex_targetpool_add_healthcheck(self, targetpool, healthcheck):
         """
@@ -1663,11 +1603,8 @@ class GCENodeDriver(NodeDriver):
             targetpool.region.name, targetpool.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=targetpool_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            targetpool.healthchecks.append(healthcheck)
-            return True
+        targetpool.healthchecks.append(healthcheck)
+        return True
 
     def ex_targetpool_remove_node(self, targetpool, node):
         """
@@ -1693,17 +1630,14 @@ class GCENodeDriver(NodeDriver):
             targetpool.region.name, targetpool.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=targetpool_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            # Remove node object from node list
-            index = None
-            for i, nd in enumerate(targetpool.nodes):
-                if nd.name == node.name:
-                    index = i
-            if index is not None:
-                targetpool.nodes.pop(index)
-            return True
+        # Remove node object from node list
+        index = None
+        for i, nd in enumerate(targetpool.nodes):
+            if nd.name == node.name:
+                index = i
+        if index is not None:
+            targetpool.nodes.pop(index)
+        return True
 
     def ex_targetpool_remove_healthcheck(self, targetpool, healthcheck):
         """
@@ -1729,17 +1663,14 @@ class GCENodeDriver(NodeDriver):
             targetpool.region.name, targetpool.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=targetpool_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            # Remove healthcheck object from healthchecks list
-            index = None
-            for i, hc in enumerate(targetpool.healthchecks):
-                if hc.name == healthcheck.name:
-                    index = i
-            if index is not None:
-                targetpool.healthchecks.pop(index)
-            return True
+        # Remove healthcheck object from healthchecks list
+        index = None
+        for i, hc in enumerate(targetpool.healthchecks):
+            if hc.name == healthcheck.name:
+                index = i
+        if index is not None:
+            targetpool.healthchecks.pop(index)
+        return True
 
     def reboot_node(self, node):
         """
@@ -1755,10 +1686,7 @@ class GCENodeDriver(NodeDriver):
                                                     node.name)
         response = self.connection.async_request(request, method='POST',
                                                  data='ignored').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_set_node_tags(self, node, tags):
         """
@@ -1784,13 +1712,10 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=tags_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            new_node = self.ex_get_node(node.name, node.extra['zone'])
-            node.extra['tags'] = new_node.extra['tags']
-            node.extra['tags_fingerprint'] = new_node.extra['tags_fingerprint']
-            return True
+        new_node = self.ex_get_node(node.name, node.extra['zone'])
+        node.extra['tags'] = new_node.extra['tags']
+        node.extra['tags_fingerprint'] = new_node.extra['tags_fingerprint']
+        return True
 
     def deploy_node(self, name, size, image, script, location=None,
                     ex_network='default', ex_tags=None):
@@ -1877,10 +1802,7 @@ class GCENodeDriver(NodeDriver):
             node.extra['zone'].name, node.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=volume_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def detach_volume(self, volume, ex_node=None):
         """
@@ -1902,10 +1824,7 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data='ignored').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_address(self, address):
         """
@@ -1922,10 +1841,7 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_healthcheck(self, healthcheck):
         """
@@ -1940,10 +1856,7 @@ class GCENodeDriver(NodeDriver):
         request = '/global/httpHealthChecks/%s' % healthcheck.name
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_firewall(self, firewall):
         """
@@ -1958,10 +1871,7 @@ class GCENodeDriver(NodeDriver):
         request = '/global/firewalls/%s' % firewall.name
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_forwarding_rule(self, forwarding_rule):
         """
@@ -1977,10 +1887,7 @@ class GCENodeDriver(NodeDriver):
             forwarding_rule.region.name, forwarding_rule.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_network(self, network):
         """
@@ -1995,10 +1902,7 @@ class GCENodeDriver(NodeDriver):
         request = '/global/networks/%s' % network.name
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def destroy_node(self, node):
         """
@@ -2014,10 +1918,7 @@ class GCENodeDriver(NodeDriver):
                                               node.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_multiple_nodes(self, nodelist, ignore_errors=True,
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
@@ -2046,7 +1947,14 @@ class GCENodeDriver(NodeDriver):
         for node in nodelist:
             request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                                   node.name)
-            response = self.connection.request(request, method='DELETE').object
+            try:
+                response = self.connection.request(request,
+                                                   method='DELETE').object
+            except:
+                e = sys.exc_info()[1]
+                response = None
+                if not ignore_errors:
+                    raise e
             responses.append(response)
 
         while not complete:
@@ -2057,17 +1965,18 @@ class GCENodeDriver(NodeDriver):
             for i, operation in enumerate(responses):
                 if operation is None:
                     continue
-                response = self.connection.request(
-                    operation['selfLink']).object
+                no_errors = True
+                try:
+                    response = self.connection.request(
+                        operation['selfLink']).object
+                except:
+                    e = sys.exc_info()[1]
+                    no_errors = False
+                    if not ignore_errors:
+                        raise e
                 if response['status'] == 'DONE':
                     responses[i] = None
-                    if 'error' in response:
-                        if ignore_errors:
-                            success[i] = False
-                        else:
-                            self._categorize_error(response['error'])
-                    else:
-                        success[i] = True
+                    success[i] = no_errors
                 else:
                     complete = False
                     time.sleep(2)
@@ -2088,10 +1997,7 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def destroy_volume(self, volume):
         """
@@ -2107,10 +2013,7 @@ class GCENodeDriver(NodeDriver):
                                           volume.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_get_address(self, name, region=None):
         """
@@ -2129,7 +2032,7 @@ class GCENodeDriver(NodeDriver):
                                                           region=True)
         if not region:
             raise ResourceNotFoundError(
-                'Address %s not found in any region.' % name, 404)
+                'Address %s not found in any region.' % name, None, None)
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         request = '/regions/%s/addresses/%s' % (region.name, name)
@@ -2182,7 +2085,8 @@ class GCENodeDriver(NodeDriver):
                                                           region=True)
         if not region:
             raise ResourceNotFoundError(
-                'Forwarding Rule %s not found in any region.' % name, 404)
+                'Forwarding Rule %s not found in any region.' % name,
+                None, None)
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         request = '/regions/%s/forwardingRules/%s' % (region.name, name)
@@ -2246,7 +2150,7 @@ class GCENodeDriver(NodeDriver):
             zone = self._find_zone(name, 'instances')
         if not zone:
             raise ResourceNotFoundError('Node %s not found in any zone'
-                                        % name, 404)
+                                        % name, None, None)
         if not hasattr(zone, 'name'):
             zone = self.ex_get_zone(zone)
         request = '/zones/%s/instances/%s' % (zone.name, name)
@@ -2299,7 +2203,7 @@ class GCENodeDriver(NodeDriver):
         zone = zone or self.zone or self._find_zone(name, 'disks')
         if not zone:
             raise ResourceNotFoundError('Volume %s not found in any zone'
-                                        % name, 404)
+                                        % name, None, None)
         if not hasattr(zone, 'name'):
             zone = self.ex_get_zone(zone)
         request = '/zones/%s/disks/%s' % (zone.name, name)
@@ -2346,7 +2250,7 @@ class GCENodeDriver(NodeDriver):
                                                           region=True)
         if not region:
             raise ResourceNotFoundError(
-                'Targetpool %s not found in any region.' % name, 404)
+                'Targetpool %s not found in any region.' % name, None, None)
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         request = '/regions/%s/targetPools/%s' % (region.name, name)
@@ -2375,9 +2279,7 @@ class GCENodeDriver(NodeDriver):
         # Otherwise, look up zone information
         try:
             response = self.connection.request(request, method='GET').object
-        # If zone is not found, the response is html and not json, so it fails
-        # parsing
-        except MalformedResponseError:
+        except ResourceNotFoundError:
             return None
         return self._to_zone(response)
 
