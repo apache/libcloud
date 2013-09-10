@@ -105,6 +105,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['tags']['Name'], 'foo')
         self.assertEqual(len(node.extra['tags']), 1)
 
+    def test_create_node_with_metadata(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='foo',
+                                       image=image,
+                                       size=size,
+                                       ex_metadata={'Bar': 'baz', 'Num': '42'})
+        self.assertEqual(node.name, 'foo')
+        self.assertEqual(node.extra['tags']['Name'], 'foo')
+        self.assertEqual(node.extra['tags']['Bar'], 'baz')
+        self.assertEqual(node.extra['tags']['Num'], '42')
+        self.assertEqual(len(node.extra['tags']), 3)
+
     def test_create_node_idempotent(self):
         EC2MockHttp.type = 'idempotent'
         image = NodeImage(id='ami-be3adfd7',

@@ -1566,6 +1566,9 @@ class BaseEC2NodeDriver(NodeDriver):
                                         assign to the node.
         :type       ex_security_groups:   ``list``
 
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
+
         :keyword    ex_mincount: Minimum number of instances to launch
         :type       ex_mincount: ``int``
 
@@ -1666,6 +1669,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
         for node in nodes:
             tags = {'Name': kwargs['name']}
+            if 'ex_metadata' in kwargs:
+                tags.update(kwargs['ex_metadata'])
 
             try:
                 self.ex_create_tags(resource=node, tags=tags)
