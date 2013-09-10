@@ -146,17 +146,86 @@ class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
     features = {"create_node": ["generates_password"]}
     _standard_drives = STANDARD_DRIVES
 
-    def __init__(self, *args, **kwargs):
-        if 'region' in kwargs:
-            self.region = kwargs['region']
-            if self.region not in API_ENDPOINTS:
-                raise ElasticHostsException("Invalid region specified")
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region=None, **kwargs):
+
+        if hasattr(self, '_region'):
+            region = self._region
+
+        if region is not None:
+
+            if region not in API_ENDPOINTS:
+                raise ValueError('Invalid region: %s' % (region))
+
+            self.region = region
+            self.host_set = host is not None
         else:
-            raise ElasticHostsException("ElasticHosts Driver requires a region to be specified")
-        super(ElasticHostsNodeDriver, self).__init__(*args, **kwargs)
+            raise ValueError("ElasticHosts Driver requires a region to be specified")
+        super(ElasticHostsNodeDriver, self).__init__(key=key, secret=secret,
+                                                     secure=secure, host=host,
+                                                     port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         """
         Return the host value based the user supplied region
         """
-        return {'host': API_ENDPOINTS[self.region]['host']}
+        if self.host_set:
+            return {}
+        else:
+            return {'host': API_ENDPOINTS[self.region]['host']}
+
+
+class ElasticHostsUK1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the London Peer 1 end-point
+    """
+    _region = 'uk-1'
+
+
+class ElasticHostsUK2NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the London Bluesquare end-point
+    """
+    _region = 'uk-2'
+
+
+class ElasticHostsUS1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the San Antonio Peer 1 end-point
+    """
+    _region = 'us-1'
+
+
+class ElasticHostsUS2NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the Los Angeles Peer 1 end-point
+    """
+    _region = 'us-2'
+
+
+class ElasticHostsUS3NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the San Jose (Silicon Valley) end-point
+    """
+    _region = 'us-3'
+
+
+class ElasticHostsCA1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the Toronto Peer 1 end-point
+    """
+    _region = 'ca-1'
+
+
+class ElasticHostsAU1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the Sydney end-point
+    """
+    _region = 'au-1'
+
+
+class ElasticHostsCN1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the Hong Kong end-point
+    """
+    _region = 'cn-1'
