@@ -1313,6 +1313,12 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
 
         return resp.object
 
+    def ex_list_current_stats(self, balancer):
+        uri = '/loadbalancers/%s/stats' % (balancer.id)
+        resp = self.connection.request(uri, method='GET')
+
+        return resp.object
+
     def _to_protocols(self, object):
         protocols = []
         for item in object["protocols"]:
