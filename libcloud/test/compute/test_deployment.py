@@ -145,6 +145,29 @@ class DeploymentTests(unittest.TestCase):
 
         client.run.assert_called_once_with('/root/relative.sh')
 
+    def test_script_deployment_with_arguments(self):
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        args = ['arg1', 'arg2', '--option1=test']
+        sd = ScriptDeployment(script='echo "foo"', args=args,
+                              name='/root/relative.sh')
+        sd.run(self.node, client)
+
+        expected = '/root/relative.sh arg1 arg2 --option1=test'
+        client.run.assert_called_once_with(expected)
+
+        client.reset_mock()
+
+        args = []
+        sd = ScriptDeployment(script='echo "foo"', args=args,
+                              name='/root/relative.sh')
+        sd.run(self.node, client)
+
+        expected = '/root/relative.sh'
+        client.run.assert_called_once_with(expected)
+
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
             def __init__(self, name):

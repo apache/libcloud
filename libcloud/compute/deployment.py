@@ -117,10 +117,14 @@ class ScriptDeployment(Deployment):
     Runs an arbitrary Shell Script task.
     """
 
-    def __init__(self, script, name=None, delete=False):
+    def __init__(self, script, args=None, name=None, delete=False):
         """
         @type script: C{str}
         @keyword script: Contents of the script to run
+
+        @type args: C{list}
+        @keyword args: Optional arguments which get passed to the deployment
+                       script file.
 
         @type name: C{str}
         @keyword name: Name of the script to upload it as, if not specified,
@@ -133,6 +137,7 @@ class ScriptDeployment(Deployment):
                                         argument_value=script)
 
         self.script = script
+        self.args = args or []
         self.stdout = None
         self.stderr = None
         self.exit_status = None
@@ -162,7 +167,15 @@ class ScriptDeployment(Deployment):
         else:
             name = self.name
 
-        self.stdout, self.stderr, self.exit_status = client.run(name)
+        cmd = name
+
+        if self.args:
+            # Append arguments to the command
+            cmd = '%s %s' % (name, ' '.join(self.args))
+        else:
+            cmd = name
+
+        self.stdout, self.stderr, self.exit_status = client.run(cmd)
 
         if self.delete:
             client.delete(self.name)
