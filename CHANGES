@@ -76,8 +76,8 @@ Changes with Apache Libcloud in development
       [sebastien goasguen]
 
     - Allow user to pass "args" argument to the ScriptDeployment class. This
-      argument tells which arguments get passed to the ScriptDeployment
-      script. (LIBCLOUD-394)
+      argument tells which command line arguments get passed to the 
+      ScriptDeployment script. (LIBCLOUD-394)
       [Tomaz Muraus]
 
   *) Storage
