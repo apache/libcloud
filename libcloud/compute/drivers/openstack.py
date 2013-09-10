@@ -28,6 +28,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
 
+import os
 import base64
 
 from xml.etree import ElementTree as ET
@@ -1121,6 +1122,43 @@ class OpenStackSecurityGroupRule(object):
                 self.to_port))
 
 
+class OpenStackKeyPair(object):
+    """
+    A KeyPair.
+    """
+
+    def __init__(self, name, fingerprint, public_key, driver, private_key=None,
+                 extra=None):
+        """
+        Constructor.
+
+        @keyword    name: Name of the KeyPair.
+        @type       name: C{str}
+
+        @keyword    fingerprint: Fingerprint of the KeyPair
+        @type       fingerprint: C{str}
+
+        @keyword    public_key: Public key in OpenSSH format.
+        @type       public_key: C{str}
+
+        @keyword    private_key: Private key in PEM format.
+        @type       private_key: C{str}
+
+        @keyword    extra: Extra attributes associated with this KeyPair.
+        @type       extra: C{dict}
+        """
+        self.name = name
+        self.fingerprint = fingerprint
+        self.public_key = public_key
+        self.private_key = private_key
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<OpenStackKeyPair name=%s fingerprint=%s public_key=%s ...>'
+                % (self.name, self.fingerprint, self.public_key))
+
+
 class OpenStack_1_1_Connection(OpenStackComputeConnection):
     responseCls = OpenStack_1_1_Response
     accept_format = 'application/json'
@@ -1635,6 +1673,85 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request('/os-security-group-rules/%s' %
                                        (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
+
+    def _to_keypairs(self, obj):
+        keypairs = obj['keypairs']
+        return [self._to_keypair(keypair['keypair']) for keypair in keypairs]
+
+    def _to_keypair(self, obj):
+        return OpenStackKeyPair(name=obj['name'],
+                                fingerprint=obj['fingerprint'],
+                                public_key=obj['public_key'],
+                                private_key=obj.get('private_key', None),
+                                driver=self)
+
+    def ex_list_keypairs(self):
+        """
+        Get a list of KeyPairs that are available.
+
+        @rtype: C{list} of L{OpenStackKeyPair}
+        """
+        return self._to_keypairs(
+            self.connection.request('/os-keypairs').object)
+
+    def ex_create_keypair(self, name):
+        """
+        Create a new KeyPair
+
+        @param name: Name of the new KeyPair
+        @type  name: C{str}
+
+        @rtype: L{OpenStackKeyPair}
+        """
+        return self._to_keypair(self.connection.request(
+            '/os-keypairs', method='POST',
+            data={'keypair': {'name': name}}
+        ).object['keypair'])
+
+    def ex_import_keypair(self, name, public_key_file):
+        """
+        Import a KeyPair from a file
+
+        @param name: Name of the new KeyPair
+        @type  name: C{str}
+
+        @param public_key_file: Path to the public key file (in OpenSSH format)
+        @type  public_key_file: C{str}
+
+        @rtype: L{OpenStackKeyPair}
+        """
+        public_key = open(os.path.expanduser(public_key_file), 'r').read()
+        return self.ex_import_keypair_from_string(name, public_key)
+
+    def ex_import_keypair_from_string(self, name, public_key):
+        """
+        Import a KeyPair from a string
+
+        @param name: Name of the new KeyPair
+        @type  name: C{str}
+
+        @param public_key: Public key (in OpenSSH format)
+        @type  public_key: C{str}
+
+        @rtype: L{OpenStackKeyPair}
+        """
+        return self._to_keypair(self.connection.request(
+            '/os-keypairs', method='POST',
+            data={'keypair': {'name': name, 'public_key': public_key}}
+        ).object['keypair'])
+
+    def ex_delete_keypair(self, keypair):
+        """
+        Delete a KeyPair.
+
+        @param keypair: KeyPair to delete
+        @type  keypair: L{OpenStackKeyPair}
+
+        @rtype: C{bool}
+        """
+        resp = self.connection.request('/os-keypairs/%s' % (keypair.name),
+                                       method='DELETE')
+        return resp.status == httplib.ACCEPTED
 
     def ex_get_size(self, size_id):
         """
