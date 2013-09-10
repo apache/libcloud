@@ -1556,21 +1556,21 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.create_node`
 
-        :keyword    ex_mincount: Minimum number of instances to launch
-        :type       ex_mincount: ``int``
-
-        :keyword    ex_maxcount: Maximum number of instances to launch
-        :type       ex_maxcount: ``int``
-
-        :keyword    ex_security_groups: A list of names of security groups to
-                                        assign to the node.
-        :type       ex_security_groups:   ``list``
-
         :keyword    ex_keyname: The name of the key pair
         :type       ex_keyname: ``str``
 
         :keyword    ex_userdata: User data
         :type       ex_userdata: ``str``
+
+        :keyword    ex_security_groups: A list of names of security groups to
+                                        assign to the node.
+        :type       ex_security_groups:   ``list``
+
+        :keyword    ex_mincount: Minimum number of instances to launch
+        :type       ex_mincount: ``int``
+
+        :keyword    ex_maxcount: Maximum number of instances to launch
+        :type       ex_maxcount: ``int``
 
         :keyword    ex_clienttoken: Unique identifier to ensure idempotency
         :type       ex_clienttoken: ``str``

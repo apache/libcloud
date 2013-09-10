@@ -1188,15 +1188,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         @inherits:  :class:`NodeDriver.create_node`
 
-        :keyword    ex_metadata: Key/Value metadata to associate with a node
-        :type       ex_metadata: ``dict``
-
-        :keyword    ex_files:   File Path => File contents to create on
-                                the no  de
-        :type       ex_files:   ``dict``
-
-        :keyword    ex_keyname:  Name of existing public key to inject into
-                                 instance
+        :keyword    ex_keyname:  The name of the key pair
         :type       ex_keyname:  ``str``
 
         :keyword    ex_userdata: String containing user data
@@ -1204,13 +1196,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                  https://help.ubuntu.com/community/CloudInit
         :type       ex_userdata: ``str``
 
-        :keyword    networks: The server is launched into a set of Networks.
-        :type       networks: :class:`OpenStackNetwork`
-
         :keyword    ex_security_groups: List of security groups to assign to
                                         the node
         :type       ex_security_groups: ``list`` of
                                        :class:`OpenStackSecurityGroup`
+
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
+
+        :keyword    ex_files:   File Path => File contents to create on
+                                the no  de
+        :type       ex_files:   ``dict``
+
+
+        :keyword    networks: The server is launched into a set of Networks.
+        :type       networks: :class:`OpenStackNetwork`
 
         :keyword    ex_disk_config: Name of the disk configuration.
                                     Can be either ``AUTO`` or ``MANUAL``.
