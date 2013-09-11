@@ -1,11 +1,15 @@
 Troubleshooting
 ===============
 
+.. _troubleshooting:
+
 This page contains various tips which can help you troubleshoot and debug
 code with interfaces with libcloud.
 
 Debugging
 ---------
+
+.. _debugging:
 
 .. note::
 
