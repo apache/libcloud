@@ -116,6 +116,12 @@ class FileDeployment(Deployment):
 class ScriptDeployment(Deployment):
     """
     Runs an arbitrary shell script on the server.
+
+    This step works by first writting the content of the shell script (script
+    argument) in a *.sh file on a remote server and then running that file.
+
+    If you are running a non-shell script, make sure to the the appropriate
+    shebang to the top of the script.
     """
 
     def __init__(self, script, args=None, name=None, delete=False):
@@ -186,7 +192,9 @@ class ScriptDeployment(Deployment):
 
 class ScriptFileDeployment(ScriptDeployment):
     """
-    Runs an arbitrary shell script from a local file on the server.
+    Runs an arbitrary shell script from a local file on the server. Same as
+    ScriptDeployment, except that you can pass in a path to the file instead of
+    the script content.
     """
 
     def __init__(self, script_file, args=None, name=None, delete=False):
