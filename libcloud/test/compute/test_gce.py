@@ -83,15 +83,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         region2 = self.driver._get_region_from_zone(zone2)
         self.assertEqual(region2.name, expected_region2)
 
-    def test_find_zone(self):
-        zone1 = self.driver._find_zone('libcloud-demo-np-node', 'instances')
-        self.assertEqual(zone1, 'us-central1-a')
-        zone2 = self.driver._find_zone('libcloud-demo-europe-np-node',
-                                       'instances')
-        self.assertEqual(zone2, 'europe-west1-a')
-        region = self.driver._find_zone('libcloud-demo-address', 'addresses',
-                                        region=True)
-        self.assertEqual(region, 'us-central1')
+    def test_find_zone_or_region(self):
+        zone1 = self.driver._find_zone_or_region('libcloud-demo-np-node',
+                                                 'instances')
+        self.assertEqual(zone1.name, 'us-central1-a')
+        zone2 = self.driver._find_zone_or_region(
+            'libcloud-demo-europe-np-node', 'instances')
+        self.assertEqual(zone2.name, 'europe-west1-a')
+        region = self.driver._find_zone_or_region('libcloud-demo-address',
+                                                  'addresses', region=True)
+        self.assertEqual(region.name, 'us-central1')
 
     def test_match_images(self):
         project = 'debian-cloud'
@@ -108,6 +109,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(address_list_all), 4)
         self.assertEqual(address_list[0].name, 'libcloud-demo-address')
         self.assertEqual(address_list_uc1[0].name, 'libcloud-demo-address')
+        names = [a.name for a in address_list_all]
+        self.assertTrue('libcloud-demo-address' in names)
 
     def test_ex_list_healthchecks(self):
         healthchecks = self.driver.ex_list_healthchecks()
@@ -128,6 +131,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(forwarding_rules_all), 2)
         self.assertEqual(forwarding_rules[0].name, 'lcforwardingrule')
         self.assertEqual(forwarding_rules_uc1[0].name, 'lcforwardingrule')
+        names = [f.name for f in forwarding_rules_all]
+        self.assertTrue('lcforwardingrule' in names)
 
     def test_list_images(self):
         local_images = self.driver.list_images()
@@ -155,6 +160,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 5)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
+        names = [n.name for n in nodes_all]
+        self.assertTrue('node-name' in names)
 
     def test_ex_list_regions(self):
         regions = self.driver.ex_list_regions()
@@ -170,6 +177,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(target_pools_uc1), 3)
         self.assertEqual(target_pools[0].name, 'www-pool')
         self.assertEqual(target_pools_uc1[0].name, 'www-pool')
+        names = [t.name for t in target_pools_all]
+        self.assertTrue('www-pool' in names)
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -178,6 +187,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(sizes_all), 100)
         self.assertEqual(sizes[0].name, 'f1-micro')
         self.assertEqual(sizes[0].extra['zone'].name, 'us-central1-a')
+        names = [s.name for s in sizes_all]
+        self.assertEqual(names.count('n1-standard-1'), 5)
 
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
@@ -188,6 +199,8 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(volumes_uc1a), 3)
         self.assertEqual(volumes[0].name, 'lcdisk')
         self.assertEqual(volumes_uc1a[0].name, 'lcdisk')
+        names = [v.name for v in volumes_all]
+        self.assertTrue('test-disk' in names)
 
     def test_ex_list_zones(self):
         zones = self.driver.ex_list_zones()
