@@ -26,7 +26,7 @@
 #      libcloud/common/google.py docstring)
 #    - Run 'python' in this directory, then:
 #        import gce_lb_demo
-#        gcelb = gce_lb_demo.get_gce_lb_driver()
+#        gcelb = gce_lb_demo.get_gcelb_driver()
 #        gcelb.list_balancers()
 #        etc.
 #    - Or, to run the full demo from the interactive python shell:
@@ -43,7 +43,13 @@ import time
 try:
     import secrets
 except ImportError:
-    secrets = None
+    print('"demos/secrets.py" not found.\n\n'
+          'Please copy secrets.py-dist to secrets.py and update the GCE* '
+          'values with appropriate authentication information.\n'
+          'Additional information about setting these values can be found '
+          'in the docstring for:\n'
+          'libcloud/common/google.py\n')
+    sys.exit()
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),

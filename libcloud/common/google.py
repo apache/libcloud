@@ -508,6 +508,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
 
+        python_ver = '%s.%s.%s' % (sys.version_info[0], sys.version_info[1],
+                                   sys.version_info[2])
+        ver_platform = 'Python %s/%s' % (python_ver, sys.platform)
+        self.user_agent_append(ver_platform)
+
     def _now(self):
         return datetime.datetime.utcnow()
 

@@ -44,6 +44,8 @@ class GCELBDriver(Driver):
         else:
             self.gce = GCENodeDriver(*args, **kwargs)
 
+        self.connection = self.gce.connection
+
     def _get_node_from_ip(self, ip):
         """
         Return the node object that matches a given public IP address.

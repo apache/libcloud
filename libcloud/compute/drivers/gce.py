@@ -451,7 +451,15 @@ class GCEZone(NodeLocation):
 
 class GCENodeDriver(NodeDriver):
     """
-    Base class for GCE Node Driver.
+    GCE Node Driver class.
+
+    This is the primary driver for interacting with Google Compute Engine.  It
+    contains all of the standard libcloud methods, plus additional ex_* methods
+    for more features.
+
+    Note that many methods allow either objects or strings (or lists of
+    objects/strings).  In most cases, passing strings instead of objects will
+    result in additional GCE API calls.
     """
     connectionCls = GCEConnection
     api_name = 'googleapis'
@@ -527,6 +535,31 @@ class GCENodeDriver(NodeDriver):
         return {'auth_type': self.auth_type,
                 'project': self.project}
 
+    def _get_components_from_path(self, path):
+        """
+        Return a dictionary containing name & zone/region from a request path.
+
+        @param  path: HTTP request path (e.g.
+                      '/project/pjt-name/zones/us-central1-a/instances/mynode')
+        @type   path: C{str}
+
+        @return:  Dictionary containing name and zone/region of resource
+        @rtype    C{dict}
+        """
+        region = None
+        zone = None
+        glob = False
+        components = path.split('/')
+        name = components[-1]
+        if components[-4] == 'regions':
+            region = components[-3]
+        elif components[-4] == 'zones':
+            zone = components[-3]
+        elif components[-3] == 'global':
+            glob = True
+
+        return {'name': name, 'region': region, 'zone': zone, 'global': glob}
+
     def _get_region_from_zone(self, zone):
         """
         Return the Region object that contains the given Zone object.
@@ -542,9 +575,10 @@ class GCENodeDriver(NodeDriver):
             if zone.name in zones:
                 return region
 
-    def _find_zone(self, name, res_type, region=False):
+    def _find_zone_or_region(self, name, res_type, region=False,
+                             res_name=None):
         """
-        Find the zone for a named resource.
+        Find the zone or region for a named resource.
 
         @param  name: Name of resource to find
         @type   name: C{str}
@@ -553,21 +587,36 @@ class GCENodeDriver(NodeDriver):
                           Examples include: 'disks', 'instances' or 'addresses'
         @type   res_type: C{str}
 
-        @keyword  region: If True, find a region instead of a zone.
-        @keyword  region: C{bool}
+        @keyword  region: If True, search regions instead of zones
+        @type     region: C{bool}
 
-        @return:  Name of zone (or region) that the resource is in.
-        @rtype:   C{str}
+        @keyword  res_name: The name of the resource type for error messages.
+                            Examples: 'Volume', 'Node', 'Address'
+        @keyword  res_name: C{str}
+
+        @return:  Zone/Region object for the zone/region for the resource.
+        @rtype:   L{GCEZone} or L{GCERegion}
         """
-        request = '/aggregated/%s' % res_type
+        if region:
+            rz = 'region'
+        else:
+            rz = 'zone'
+        rz_name = None
+        res_name = res_name or res_type
+        request = '/aggregated/%s' % (res_type)
         res_list = self.connection.request(request).object
         for k, v in res_list['items'].items():
             for res in v.get(res_type, []):
                 if res['name'] == name:
-                    if region:
-                        return k.replace('regions/', '')
-                    else:
-                        return k.replace('zones/', '')
+                    rz_name = k.replace('%ss/' % (rz), '')
+                    break
+        if not rz_name:
+            raise ResourceNotFoundError(
+                '%s \'%s\' not found in any %s.' % (res_name, name, rz),
+                None, None)
+        else:
+            getrz = getattr(self, 'ex_get_%s' % (rz))
+            return getrz(rz_name)
 
     def _match_images(self, project, partial_name):
         """
@@ -603,6 +652,42 @@ class GCENodeDriver(NodeDriver):
         if partial_match:
             return partial_match[1]
 
+    def _set_region(self, region):
+        """
+        Return the region to use for listing resources.
+
+        @param  region: A name, region object, None, or 'all'
+        @type   region: C{str} or L{GCERegion} or C{None}
+
+        @return:  A region object or None if all regions should be considered
+        @rtype:   L{GCERegion} or C{None}
+        """
+        if region == 'all':
+            return None
+
+        region = region or self.region
+        if not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
+        return region
+
+    def _set_zone(self, zone):
+        """
+        Return the zone to use for listing resources.
+
+        @param  zone: A name, zone object, None, or 'all'
+        @type   region: C{str} or L{GCEZone} or C{None}
+
+        @return:  A zone object or None if all zones should be considered
+        @rtype:   L{GCEZone} or C{None}
+        """
+        if zone == 'all':
+            return None
+
+        zone = zone or self.zone
+        if not hasattr(zone, 'name'):
+            zone = self.ex_get_zone(zone)
+        return zone
+
     def ex_list_addresses(self, region=None):
         """
         Return a list of static addreses for a region or all.
@@ -617,17 +702,11 @@ class GCENodeDriver(NodeDriver):
         @rtype: C{list} of L{GCEAddress}
         """
         list_addresses = []
-        # Use provided region or default region
-        region = region or self.region
-        # Setting region to 'all' overrides the default region
-        if region == 'all':
-            region = None
+        region = self._set_region(region)
         if region is None:
             request = '/aggregated/addresses'
-        elif hasattr(region, 'name'):
-            request = '/regions/%s/addresses' % region.name
         else:
-            request = '/regions/%s/addresses' % region
+            request = '/regions/%s/addresses' % (region.name)
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
@@ -685,17 +764,11 @@ class GCENodeDriver(NodeDriver):
         @rtype: C{list} of L{GCEForwardingRule}
         """
         list_forwarding_rules = []
-        # Use provided region or default region
-        region = region or self.region
-        # Setting region to 'all' overrides the default region
-        if region == 'all':
-            region = None
+        region = self._set_region(region)
         if region is None:
             request = '/aggregated/forwardingRules'
-        elif hasattr(region, 'name'):
-            request = '/regions/%s/forwardingRules' % region.name
         else:
-            request = '/regions/%s/forwardingRules' % region
+            request = '/regions/%s/forwardingRules' % (region.name)
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
@@ -780,17 +853,11 @@ class GCENodeDriver(NodeDriver):
         @rtype:   C{list} of L{Node}
         """
         list_nodes = []
-        # Use provided zone or default zone
-        zone = ex_zone or self.zone
-        # Setting ex_zone to 'all' overrides the default zone
-        if zone == 'all':
-            zone = None
+        zone = self._set_zone(ex_zone)
         if zone is None:
             request = '/aggregated/instances'
-        elif hasattr(zone, 'name'):
-            request = '/zones/%s/instances' % zone.name
         else:
-            request = '/zones/%s/instances' % zone
+            request = '/zones/%s/instances' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
 
@@ -829,21 +896,17 @@ class GCENodeDriver(NodeDriver):
         @rtype:   C{list} of L{GCENodeSize}
         """
         list_sizes = []
-        location = location or self.zone
-        if location == 'all':
-            location = None
-        if location is None:
+        zone = self._set_zone(location)
+        if zone is None:
             request = '/aggregated/machineTypes'
-        elif hasattr(location, 'name'):
-            request = '/zones/%s/machineTypes' % location.name
         else:
-            request = '/zones/%s/machineTypes' % location
+            request = '/zones/%s/machineTypes' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
             # The aggregated response returns a dict for each zone
-            if location is None:
+            if zone is None:
                 for v in response['items'].values():
                     zone_sizes = [self._to_node_size(s) for s in
                                   v.get('machineTypes', [])]
@@ -860,17 +923,11 @@ class GCENodeDriver(NodeDriver):
         @rtype:   C{list} of L{GCETargetPool}
         """
         list_targetpools = []
-        # Use provided region or default region
-        region = region or self.region
-        # Setting region to 'all' overrides the default region
-        if region == 'all':
-            region = None
+        region = self._set_region(region)
         if region is None:
             request = '/aggregated/targetPools'
-        elif hasattr(region, 'name'):
-            request = '/regions/%s/targetPools' % region.name
         else:
-            request = '/regions/%s/targetPools' % region
+            request = '/regions/%s/targetPools' % (region.name)
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
@@ -899,15 +956,11 @@ class GCENodeDriver(NodeDriver):
         @rtype: C{list} of L{StorageVolume}
         """
         list_volumes = []
-        zone = ex_zone or self.zone
-        if zone == 'all':
-            zone = None
+        zone = self._set_zone(ex_zone)
         if zone is None:
             request = '/aggregated/disks'
-        elif hasattr(zone, 'name'):
-            request = '/zones/%s/disks' % zone.name
         else:
-            request = '/zones/%s/disks' % zone
+            request = '/zones/%s/disks' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
         if 'items' in response:
@@ -955,7 +1008,7 @@ class GCENodeDriver(NodeDriver):
             raise GCEError('REGION_NOT_SPECIFIED',
                            'Region must be provided for an address')
         address_data = {'name': name}
-        request = '/regions/%s/addresses' % region.name
+        request = '/regions/%s/addresses' % (region.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=address_data).object
         return self.ex_get_address(name, region=region)
@@ -1121,7 +1174,7 @@ class GCENodeDriver(NodeDriver):
         if port_range:
             forwarding_rule_data['portRange'] = port_range
 
-        request = '/regions/%s/forwardingRules' % region.name
+        request = '/regions/%s/forwardingRules' % (region.name)
 
         response = self.connection.async_request(
             request, method='POST', data=forwarding_rule_data).object
@@ -1221,7 +1274,7 @@ class GCENodeDriver(NodeDriver):
                'network': network.extra['selfLink']}]
         node_data['networkInterfaces'] = ni
 
-        request = '/zones/%s/instances' % location.name
+        request = '/zones/%s/instances' % (location.name)
 
         return request, node_data
 
@@ -1434,7 +1487,7 @@ class GCENodeDriver(NodeDriver):
                 node_list = [n.extra['selfLink'] for n in nodes]
             targetpool_data['instances'] = node_list
 
-        request = '/regions/%s/targetPools' % region.name
+        request = '/regions/%s/targetPools' % (region.name)
 
         response = self.connection.async_request(request, method='POST',
                                                  data=targetpool_data).object
@@ -1474,14 +1527,15 @@ class GCENodeDriver(NodeDriver):
             if not hasattr(image, 'name'):
                 image = self.ex_get_image(image)
             params = {'sourceImage': image.extra['selfLink']}
-            volume_data['description'] = 'Image: %s' % image.extra['selfLink']
+            volume_data['description'] = 'Image: %s' % (
+                image.extra['selfLink'])
         if snapshot:
             volume_data['sourceSnapshot'] = snapshot
-            volume_data['description'] = 'Snapshot: %s' % snapshot
+            volume_data['description'] = 'Snapshot: %s' % (snapshot)
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
-        request = '/zones/%s/disks' % location.name
+        request = '/zones/%s/disks' % (location.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=volume_data,
                                                  params=params).object
@@ -1514,7 +1568,7 @@ class GCENodeDriver(NodeDriver):
         if healthcheck.extra['description']:
             hc_data['description'] = healthcheck.extra['description']
 
-        request = '/global/httpHealthChecks/%s' % healthcheck.name
+        request = '/global/httpHealthChecks/%s' % (healthcheck.name)
 
         response = self.connection.async_request(request, method='PUT',
                                                  data=hc_data).object
@@ -1545,7 +1599,7 @@ class GCENodeDriver(NodeDriver):
         if firewall.extra['description']:
             firewall_data['description'] = firewall.extra['description']
 
-        request = '/global/firewalls/%s' % firewall.name
+        request = '/global/firewalls/%s' % (firewall.name)
 
         response = self.connection.async_request(request, method='PUT',
                                                  data=firewall_data).object
@@ -1635,6 +1689,7 @@ class GCENodeDriver(NodeDriver):
         for i, nd in enumerate(targetpool.nodes):
             if nd.name == node.name:
                 index = i
+                break
         if index is not None:
             targetpool.nodes.pop(index)
         return True
@@ -1853,7 +1908,7 @@ class GCENodeDriver(NodeDriver):
         @return:  True if successful
         @rtype:   C{bool}
         """
-        request = '/global/httpHealthChecks/%s' % healthcheck.name
+        request = '/global/httpHealthChecks/%s' % (healthcheck.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
         return True
@@ -1868,7 +1923,7 @@ class GCENodeDriver(NodeDriver):
         @return:  True if successful
         @rtype:   C{bool}
         """
-        request = '/global/firewalls/%s' % firewall.name
+        request = '/global/firewalls/%s' % (firewall.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
         return True
@@ -1899,7 +1954,7 @@ class GCENodeDriver(NodeDriver):
         @return:  True if successful
         @rtype:   C{bool}
         """
-        request = '/global/networks/%s' % network.name
+        request = '/global/networks/%s' % (network.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
         return True
@@ -2022,19 +2077,15 @@ class GCENodeDriver(NodeDriver):
         @param  name: The name of the address
         @type   name: C{str}
 
-        @keyword  region: The region to search for the address in
+        @keyword  region: The region to search for the address in (set to
+                          'all' to search all regions)
         @type     region: C{str} L{GCERegion} or C{None}
 
         @return:  An Address object for the address
         @rtype:   L{GCEAddress}
         """
-        region = region or self.region or self._find_zone(name, 'addresses',
-                                                          region=True)
-        if not region:
-            raise ResourceNotFoundError(
-                'Address %s not found in any region.' % name, None, None)
-        if not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
+        region = self._set_region(region) or self._find_zone_or_region(
+            name, 'addresses', region=True, res_name='Address')
         request = '/regions/%s/addresses/%s' % (region.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_address(response)
@@ -2049,7 +2100,7 @@ class GCENodeDriver(NodeDriver):
         @return:  A GCEHealthCheck object
         @rtype:   L{GCEHealthCheck}
         """
-        request = '/global/httpHealthChecks/%s' % name
+        request = '/global/httpHealthChecks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_healthcheck(response)
 
@@ -2063,7 +2114,7 @@ class GCENodeDriver(NodeDriver):
         @return:  A GCEFirewall object
         @rtype:   L{GCEFirewall}
         """
-        request = '/global/firewalls/%s' % name
+        request = '/global/firewalls/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_firewall(response)
 
@@ -2074,21 +2125,15 @@ class GCENodeDriver(NodeDriver):
         @param  name: The name of the forwarding rule
         @type   name: C{str}
 
-        @keyword  region: The region to search for the rule in
+        @keyword  region: The region to search for the rule in (set to 'all'
+                          to search all regions).
         @type     region: C{str} or C{None}
 
         @return:  A GCEForwardingRule object
         @rtype:   L{GCEForwardingRule}
         """
-        region = region or self.region or self._find_zone(name,
-                                                          'forwardingRules',
-                                                          region=True)
-        if not region:
-            raise ResourceNotFoundError(
-                'Forwarding Rule %s not found in any region.' % name,
-                None, None)
-        if not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
+        region = self._set_region(region) or self._find_zone_or_region(
+            name, 'forwardingRules', region=True, res_name='ForwardingRule')
         request = '/regions/%s/forwardingRules/%s' % (region.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_forwarding_rule(response)
@@ -2127,7 +2172,7 @@ class GCENodeDriver(NodeDriver):
         @return:  A Network object for the network
         @rtype:   L{GCENetwork}
         """
-        request = '/global/networks/%s' % name
+        request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
@@ -2145,14 +2190,8 @@ class GCENodeDriver(NodeDriver):
         @return:  A Node object for the node
         @rtype:   L{Node}
         """
-        zone = zone or self.zone or self._find_zone(name, 'instances')
-        if zone == 'all':
-            zone = self._find_zone(name, 'instances')
-        if not zone:
-            raise ResourceNotFoundError('Node %s not found in any zone'
-                                        % name, None, None)
-        if not hasattr(zone, 'name'):
-            zone = self.ex_get_zone(zone)
+        zone = self._set_zone(zone) or self._find_zone_or_region(
+            name, 'instances', res_name='Node')
         request = '/zones/%s/instances/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_node(response)
@@ -2194,18 +2233,15 @@ class GCENodeDriver(NodeDriver):
         @param  name: The name of the volume
         @type   name: C{str}
 
-        @keyword  zone: The zone to search for the volume in
+        @keyword  zone: The zone to search for the volume in (set to 'all' to
+                        search all zones)
         @type     zone: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
 
         @return:  A StorageVolume object for the volume
         @rtype:   L{StorageVolume}
         """
-        zone = zone or self.zone or self._find_zone(name, 'disks')
-        if not zone:
-            raise ResourceNotFoundError('Volume %s not found in any zone'
-                                        % name, None, None)
-        if not hasattr(zone, 'name'):
-            zone = self.ex_get_zone(zone)
+        zone = self._set_zone(zone) or self._find_zone_or_region(
+            name, 'disks', res_name='Volume')
         request = '/zones/%s/disks/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_storage_volume(response)
@@ -2221,11 +2257,11 @@ class GCENodeDriver(NodeDriver):
         @rtype:   L{GCERegion}
         """
         if name.startswith('https://'):
-            short_name = name.split('/')[-1]
+            short_name = self._get_components_from_path(name)['name']
             request = name
         else:
             short_name = name
-            request = '/regions/%s' % name
+            request = '/regions/%s' % (name)
         # Check region cache first
         if short_name in self.region_dict:
             return self.region_dict[short_name]
@@ -2240,19 +2276,15 @@ class GCENodeDriver(NodeDriver):
         @param  name: The name of the target pool
         @type   name: C{str}
 
-        @keyword  region: The region to search for the target pool in
+        @keyword  region: The region to search for the target pool in (set to
+                          'all' to search all regions).
         @type     region: C{str} or L{GCERegion} or C{None}
 
         @return:  A TargetPool object for the pool
         @rtype:   L{GCETargetPool}
         """
-        region = region or self.region or self._find_zone(name, 'targetPools',
-                                                          region=True)
-        if not region:
-            raise ResourceNotFoundError(
-                'Targetpool %s not found in any region.' % name, None, None)
-        if not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
+        region = self._set_region(region) or self._find_zone_or_region(
+            name, 'targetPools', region=True, res_name='TargetPool')
         request = '/regions/%s/targetPools/%s' % (region.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_targetpool(response)
@@ -2268,11 +2300,11 @@ class GCENodeDriver(NodeDriver):
         @rtype:   L{GCEZone} or C{None}
         """
         if name.startswith('https://'):
-            short_name = name.split('/')[-1]
+            short_name = self._get_components_from_path(name)['name']
             request = name
         else:
             short_name = name
-            request = '/zones/%s' % name
+            request = '/zones/%s' % (name)
         # Check zone cache first
         if short_name in self.zone_dict:
             return self.zone_dict[short_name]
@@ -2344,7 +2376,8 @@ class GCENodeDriver(NodeDriver):
         extra['selfLink'] = firewall['selfLink']
         extra['creationTimestamp'] = firewall['creationTimestamp']
         extra['description'] = firewall.get('description')
-        extra['network_name'] = firewall['network'].split('/')[-1]
+        extra['network_name'] = self._get_components_from_path(
+            firewall['network'])['name']
 
         network = self.ex_get_network(extra['network_name'])
         source_ranges = firewall.get('sourceRanges')
@@ -2375,7 +2408,7 @@ class GCENodeDriver(NodeDriver):
 
         region = self.ex_get_region(forwarding_rule['region'])
         targetpool = self.ex_get_targetpool(
-            forwarding_rule['target'].split('/')[-1])
+            self._get_components_from_path(forwarding_rule['target'])['name'])
 
         return GCEForwardingRule(id=forwarding_rule['id'],
                                  name=forwarding_rule['name'], region=region,
@@ -2478,10 +2511,10 @@ class GCENodeDriver(NodeDriver):
         # For the node attributes, use just machine and image names, not full
         # paths.  Full paths are available in the "extra" dict.
         if extra['image']:
-            image = extra['image'].split('/')[-1]
+            image = self._get_components_from_path(extra['image'])['name']
         else:
             image = None
-        size = node['machineType'].split('/')[-1]
+        size = self._get_components_from_path(node['machineType'])['name']
 
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
@@ -2599,14 +2632,12 @@ class GCENodeDriver(NodeDriver):
                             in targetpool.get('healthChecks', [])]
         node_list = []
         for n in targetpool.get('instances', []):
-            node_path = n.split('/')
-            name = node_path[-1]
-            zone = node_path[-3]
             # Nodes that do not exist can be part of a target pool.  If the
             # node does not exist, use the URL of the node instead of the node
             # object.
+            comp = self._get_components_from_path(n)
             try:
-                node = self.ex_get_node(name, zone)
+                node = self.ex_get_node(comp['name'], comp['zone'])
             except ResourceNotFoundError:
                 node = n
             node_list.append(node)
