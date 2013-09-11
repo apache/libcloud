@@ -10,6 +10,11 @@ from libcloud.compute.deployment import ScriptDeployment, SSHKeyDeployment
 # Path to the public key you would like to install
 KEY_PATH = os.path.expanduser('~/.ssh/id_rsa.pub')
 
+# Shell script to run on the remote server
+SCRIPT = '''#!/usr/bin/env bash
+apt-get -y update && apt-get -y install puppet
+'''
+
 RACKSPACE_USER = 'your username'
 RACKSPACE_KEY = 'your key'
 
@@ -24,7 +29,7 @@ with open(KEY_PATH) as fp:
 step_1 = SSHKeyDeployment(content)
 
 # A simple script to install puppet post boot, can be much more complicated.
-step_2 = ScriptDeployment('apt-get -y install puppet')
+step_2 = ScriptDeployment(SCRIPT)
 
 msd = MultiStepDeployment([step_1, step_2])
 

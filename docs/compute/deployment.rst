@@ -88,7 +88,6 @@ shell script.
 .. literalinclude:: /examples/compute/bootstrapping_puppet_on_node.py
    :language: python
 
-
 .. _`Chef`: http://www.opscode.com/chef/
 .. _`Puppet`: http://puppetlabs.com/
 .. _`Salt`: http://docs.saltstack.com/topics/
