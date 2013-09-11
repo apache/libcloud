@@ -59,13 +59,14 @@ class Deployment(object):
 
 class SSHKeyDeployment(Deployment):
     """
-    Installs a public SSH Key onto a host.
+    Installs a public SSH Key onto a server.
     """
 
     def __init__(self, key):
         """
-        @type key: C{str}
-        @keyword key: Contents of the public key write
+        @type key: C{str} or C{File} object
+        @keyword key: Contents of the public key write or a file object which
+                      can be read.
         """
         self.key = self._get_string_value(argument_name='key',
                                           argument_value=key)
@@ -82,7 +83,7 @@ class SSHKeyDeployment(Deployment):
 
 class FileDeployment(Deployment):
     """
-    Installs a file.
+    Installs a file on the server.
     """
 
     def __init__(self, source, target):
@@ -98,7 +99,7 @@ class FileDeployment(Deployment):
 
     def run(self, node, client):
         """
-        Upload the file, retaining permissions
+        Upload the file, retaining permissions.
 
         See also L{Deployment.run}
         """
@@ -114,17 +115,17 @@ class FileDeployment(Deployment):
 
 class ScriptDeployment(Deployment):
     """
-    Runs an arbitrary Shell Script task.
+    Runs an arbitrary shell script on the server.
     """
 
     def __init__(self, script, args=None, name=None, delete=False):
         """
         @type script: C{str}
-        @keyword script: Contents of the script to run
+        @keyword script: Contents of the script to run.
 
         @type args: C{list}
-        @keyword args: Optional arguments which get passed to the deployment
-                       script file.
+        @keyword args: Optional command line arguments which get passed to the
+                       deployment script file.
 
         @type name: C{str}
         @keyword name: Name of the script to upload it as, if not specified,
@@ -185,13 +186,13 @@ class ScriptDeployment(Deployment):
 
 class ScriptFileDeployment(ScriptDeployment):
     """
-    Runs an arbitrary Shell Script task from a file.
+    Runs an arbitrary shell script from a local file on the server.
     """
 
     def __init__(self, script_file, name=None, delete=False):
         """
         @type script_file: C{str}
-        @keyword script_file: Path to a file containing the script to run
+        @keyword script_file: Path to a file containing the script to run.
 
         @type name: C{str}
         @keyword name: Name of the script to upload it as, if not specified,
