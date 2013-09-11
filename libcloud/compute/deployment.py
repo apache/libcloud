@@ -189,10 +189,15 @@ class ScriptFileDeployment(ScriptDeployment):
     Runs an arbitrary shell script from a local file on the server.
     """
 
-    def __init__(self, script_file, name=None, delete=False):
+    def __init__(self, script_file, args=None, name=None, delete=False):
         """
         @type script_file: C{str}
         @keyword script_file: Path to a file containing the script to run.
+
+        @type args: C{list}
+        @keyword args: Optional command line arguments which get passed to the
+                       deployment script file.
+
 
         @type name: C{str}
         @keyword name: Name of the script to upload it as, if not specified,
@@ -208,8 +213,9 @@ class ScriptFileDeployment(ScriptDeployment):
             content = content.decode('utf-8')
 
         super(ScriptFileDeployment, self).__init__(script=content,
-                                               name=name,
-                                               delete=delete)
+                                                   args=args,
+                                                   name=name,
+                                                   delete=delete)
 
 
 class MultiStepDeployment(Deployment):
@@ -225,10 +231,12 @@ class MultiStepDeployment(Deployment):
         self.add(add)
 
     def add(self, add):
-        """Add a deployment to this chain.
+        """
+        Add a deployment to this chain.
 
         @type add: Single L{Deployment} or a C{list} of L{Deployment}
-        @keyword add: Adds this deployment to the others already in this object.
+        @keyword add: Adds this deployment to the others already in this
+        object.
         """
         if add is not None:
             add = add if isinstance(add, (list, tuple)) else [add]

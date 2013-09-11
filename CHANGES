@@ -75,9 +75,9 @@ Changes with Apache Libcloud in development
       extension arguments for handling security groups. (LIBCLOUD-388)
       [sebastien goasguen]
 
-    - Allow user to pass "args" argument to the ScriptDeployment class. This
-      argument tells which command line arguments get passed to the 
-      ScriptDeployment script. (LIBCLOUD-394)
+    - Allow user to pass "args" argument to the ScriptDeployment and
+      ScriptFileDeployment class. This argument tells which command line
+      arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
       [Tomaz Muraus]
 
   *) Storage

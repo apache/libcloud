@@ -168,6 +168,21 @@ class DeploymentTests(unittest.TestCase):
         expected = '/root/relative.sh'
         client.run.assert_called_once_with(expected)
 
+    def test_script_file_deployment_with_arguments(self):
+        file_path = os.path.abspath(__file__)
+        client = Mock()
+        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.run.return_value = ('', '', 0)
+
+        args = ['arg1', 'arg2', '--option1=test', 'option2']
+        sfd = ScriptFileDeployment(script_file=file_path, args=args,
+                                   name='/root/relative.sh')
+
+        sfd.run(self.node, client)
+
+        expected = '/root/relative.sh arg1 arg2 --option1=test option2'
+        client.run.assert_called_once_with(expected)
+
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
             def __init__(self, name):
