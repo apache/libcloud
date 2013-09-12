@@ -61,10 +61,28 @@ class RecordType(object):
     WKS = 16
     LOC = 17
 
-    @classmethod
-    def __repr__(self, value):
-        reverse = dict((v, k) for k, v in list(RecordType.__dict__.items()))
-        return reverse[value]
+class RecordType(object):
+    """
+    DNS record type.
+    """
+    A = 'A'
+    AAAA = 'AAAA'
+    MX = 'MX'
+    NS = 'NS'
+    CNAME = 'CNAME'
+    DNAME = 'DNAME'
+    TXT = 'TXT'
+    PTR = 'PTR'
+    SOA = 'SOA'
+    SPF = 'SPF'
+    SRV = 'SRV'
+    PTR = 'PTR'
+    NAPTR = 'NAPTR'
+    REDIRECT = 'REDIRECT'
+    GEO = 'GEO'
+    URL = 'URL'
+    WKS = 'WKS'
+    LOC = 'LOC'
 
 
 class ZoneError(LibcloudError):

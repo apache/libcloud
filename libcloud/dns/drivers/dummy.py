@@ -49,7 +49,7 @@ class DummyDNSDriver(DNSDriver):
         """
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> driver.list_record_types()
-        [0]
+        ['A']
 
         @inherits: L{DNSDriver.list_record_types}
         """
