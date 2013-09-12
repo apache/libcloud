@@ -83,7 +83,7 @@ FRIENDLY_METHODS_NAMES = {
         'attach_volume': 'attach volume',
         'detach_volume': 'detach volume',
         'list_volume_snapshots': 'list snapshots',
-        'create_volume_snapshot': 'create snapshop'
+        'create_volume_snapshot': 'create snapshot'
     },
     'loadbalancer': {
         'create_balancer': 'create balancer',
