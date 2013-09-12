@@ -15,10 +15,10 @@
 # limitations under the License.
 
 import sys
-import unittest
 
 from mock import Mock, call
 
+from libcloud.test import unittest
 from libcloud.common.base import Connection
 
 
