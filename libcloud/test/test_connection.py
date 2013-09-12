@@ -17,7 +17,7 @@
 import sys
 import unittest
 
-from mock import Mock
+from mock import Mock, call
 
 from libcloud.common.base import Connection
 
@@ -67,6 +67,20 @@ class ConnectionClassTestCase(unittest.TestCase):
             con.request('/test', method=method, data='')
             call_kwargs = con.connection.request.call_args[1]
             self.assertEqual(call_kwargs['headers']['Content-Length'], '0')
+
+        # No data, raw request, do not touch Content-Length if present
+        for method in ['POST', 'PUT', 'post', 'put']:
+            con.request('/test', method=method, data=None,
+                        headers={'Content-Length': '42'}, raw=True)
+            putheader_call_list = con.connection.putheader.call_args_list
+            self.assertIn(call('Content-Length', '42'), putheader_call_list)
+
+        # '' as data, raw request, do not touch Content-Length if present
+        for method in ['POST', 'PUT', 'post', 'put']:
+            con.request('/test', method=method, data=None,
+                        headers={'Content-Length': '42'}, raw=True)
+            putheader_call_list = con.connection.putheader.call_args_list
+            self.assertIn(call('Content-Length', '42'), putheader_call_list)
 
         # 'a' as data, content length should be present
         for method in ['POST', 'PUT', 'post', 'put']:
