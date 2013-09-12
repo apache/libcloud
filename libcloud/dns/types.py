@@ -42,29 +42,6 @@ class RecordType(object):
     """
     DNS record type.
     """
-    A = 0
-    AAAA = 1
-    MX = 2
-    NS = 3
-    CNAME = 4
-    DNAME = 5
-    TXT = 6
-    PTR = 7
-    SOA = 8
-    SPF = 9
-    SRV = 10
-    PTR = 11
-    NAPTR = 12
-    REDIRECT = 13
-    GEO = 14
-    URL = 15
-    WKS = 16
-    LOC = 17
-
-class RecordType(object):
-    """
-    DNS record type.
-    """
     A = 'A'
     AAAA = 'AAAA'
     MX = 'MX'
