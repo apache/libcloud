@@ -13,6 +13,12 @@ Changes with Apache Libcloud in development
       updating the pricing file.
       [Tomaz Muraus]
 
+    - Don't sent Content-Length: 0 header with POST and PUT request if "raw"
+      mode is used. This fixes a regression which could cause broken behavior
+      in some storage driver when uploading a file from disk.
+      (LIBCLOUD-396)
+      [Ivan Kusalic]
+
  *) Compute
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
