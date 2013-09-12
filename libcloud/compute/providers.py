@@ -47,6 +47,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.ec2', 'EC2APSESydneyNodeDriver'),
     Provider.ECP:
         ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
+    Provider.ELASTICHOSTS:
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsNodeDriver'),
     Provider.ELASTICHOSTS_UK1:
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
     Provider.ELASTICHOSTS_UK2:
