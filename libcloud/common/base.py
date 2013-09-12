@@ -595,6 +595,12 @@ class Connection(object):
             data = self.encode_data(data)
             headers['Content-Length'] = str(len(data))
         elif method.upper() in ['POST', 'PUT'] and not raw:
+            # Only send Content-Length 0 with POST and PUT request.
+            #
+            # Note: Content-Length is not added when using "raw" mode means
+            # means that headers are upfront and the body is sent at some point
+            # later on. With raw mode user can specify Content-Length with
+            # "data" not being set.
             headers['Content-Length'] = '0'
 
         params, headers = self.pre_connect_hook(params, headers)
