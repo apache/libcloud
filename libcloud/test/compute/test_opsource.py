@@ -144,6 +144,13 @@ class OpsourceTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nets[0].name, 'test-net1')
         self.assertTrue(isinstance(nets[0].location, NodeLocation))
 
+    def test_node_public_ip(self):
+        nodes = self.driver.list_nodes()
+        node = [n for n in nodes if n.id ==
+                'abadbc7e-9e10-46ca-9d4a-194bcc6b6c16'][0]
+        self.assertEqual(node.public_ips[0], '200.16.132.7')
+
+
 class OpsourceMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('opsource')

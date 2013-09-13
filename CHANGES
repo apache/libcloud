@@ -13,9 +13,11 @@ Changes with Apache Libcloud in development
       updating the pricing file.
       [Tomaz Muraus]
 
-    - Fix a regression introduced in 0.13.0 and make sure to include
-      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362)
-      [Tomaz Muraus]
+    - Don't sent Content-Length: 0 header with POST and PUT request if "raw"
+      mode is used. This fixes a regression which could cause broken behavior
+      in some storage driver when uploading a file from disk.
+      (LIBCLOUD-396)
+      [Ivan Kusalic]
 
  *) Compute
 
@@ -55,10 +57,6 @@ Changes with Apache Libcloud in development
       uploaded to the EC2 keyring). (Follow on from LIBCLOUD-367).
       [John Carr]
 
-    - Fix a bug in the ElasticHosts driver and check for right HTTP status
-      code when determining drive imaging success. (LIBCLOUD-363)
-      [Bob Thompson]
-
     - Unify extension argument names for assigning a node to security groups
       in EC2 ad OpenStack driver.
       Argument in the EC2 driver has been renamed from ex_securitygroup to
@@ -66,12 +64,29 @@ Changes with Apache Libcloud in development
       will continue to work for the unforeseeable future. (LIBCLOUD-375)
       [Tomaz Muraus]
 
-  *) Storage
+    - Add ex_import_keypair_from_string and ex_import_keypair method to the
+      CloudStack driver. (LIBCLOUD-380)
+      [Sebastien Goasguen]
 
-    - Fix a regression with calling encode_container_name instead of
-      encode_object_name on object name in get_object method.
-      Reported by Ben Meng (LIBCLOUD-366)
+    - Add support for managing floating IP addresses to the OpenStack driver.
+      (LIBCLOUD-382)
+      [Ivan Kusalic]
+
+    - Add extension methods for handling port forwarding to the CloudStack
+      driver, rename CloudStackForwardingRule class to
+      CloudStackIPForwardingRule. (LIBCLOUD-383)
+      [sebastien goasguen]
+
+    - Hook up deploy_node functionality in the CloudStack driver and unify
+      extension arguments for handling security groups. (LIBCLOUD-388)
+      [sebastien goasguen]
+
+    - Allow user to pass "args" argument to the ScriptDeployment and
+      ScriptFileDeployment class. This argument tells which command line
+      arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
       [Tomaz Muraus]
+
+  *) Storage
 
     - Allow users to filter objects starting with a prefix by passing ex_prefix
       argument to the list_container_objects method in the S3, Google Storage
@@ -87,6 +102,46 @@ Changes with Apache Libcloud in development
    - Expose CloudStack driver directly through the Provider.CLOUDSTACK
      constant.
      [Tomaz Muraus]
+
+ *) DNS
+
+   - Modify Zerigo driver to include record TTL in the record 'extra' attribute
+     if a record has a TTL set.
+     [Tomaz Muraus]
+
+   - Modify values in the Record 'extra' dictionary attribute in the Zerigo DNS
+     driver to be set to None instead of an empty string ('') if a value for
+     the provided key is not set.
+     [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.1
+
+ *) General
+
+    - Fix a regression introduced in 0.13.0 and make sure to include
+      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362, LIBCLOUD-390)
+      [Tomaz Muraus]
+
+ *) Compute
+
+    - Fix a bug in the ElasticHosts driver and check for right HTTP status
+      code when determining drive imaging success. (LIBCLOUD-363)
+      [Bob Thompson]
+
+    - Update Opsource driver to include node public ip address (if available).
+      (LIBCLOUD-384)
+      [Michael Bennett]
+
+  *) Storage
+
+    - Fix a regression with calling encode_container_name instead of
+      encode_object_name on object name in get_object method.
+      Reported by Ben Meng (LIBCLOUD-366)
+      [Tomaz Muraus]
+
+    - Ensure that AWS S3 multipart upload works for small iterators.
+      (LIBCLOUD-378)
+      [Mahendra M]
 
 Changes with Apache Libcloud 0.13.0:
 

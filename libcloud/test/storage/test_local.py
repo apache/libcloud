@@ -310,7 +310,7 @@ class LocalTests(unittest.TestCase):
 
         data = ''
         for buff in stream:
-            data += buff
+            data += buff.decode('utf-8')
 
         self.assertTrue(len(data), 4096)
 

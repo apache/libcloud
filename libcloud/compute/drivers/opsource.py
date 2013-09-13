@@ -579,10 +579,12 @@ class OpsourceNodeDriver(NodeDriver):
             'status': status,
         }
 
+        public_ip = findtext(element, 'publicIpAddress', SERVER_NS)
+
         n = Node(id=findtext(element, 'id', SERVER_NS),
                  name=findtext(element, 'name', SERVER_NS),
                  state=state,
-                 public_ips=[],
+                 public_ips=[public_ip] if public_ip is not None else [],
                  private_ips=findtext(element, 'privateIpAddress', SERVER_NS),
                  driver=self.connection.driver,
                  extra=extra)

@@ -82,7 +82,7 @@ class CloudStackLBTests(unittest.TestCase):
         members = balancer.list_members()
         for member in members:
             self.assertTrue(isinstance(member, Member))
-            self.assertEquals(member.balancer, balancer)
+            self.assertEqual(member.balancer, balancer)
 
 class CloudStackMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('cloudstack')

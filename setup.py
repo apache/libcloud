@@ -66,6 +66,17 @@ def read_version_string():
     return version
 
 
+def forbid_publish():
+    argv = sys.argv
+    if 'upload'in argv:
+        print('You shouldn\'t use upload command to upload a release to PyPi. '
+              'You need to manually upload files generated using release.sh '
+              'script.\n'
+              'For more information, see "Making a release section" in the '
+              'documentation')
+        sys.exit(1)
+
+
 class TestCommand(Command):
     description = "run test suite"
     user_options = []
@@ -96,8 +107,8 @@ class TestCommand(Command):
                 unittest2
             except ImportError:
                 print('Python version: %s' % (sys.version))
-                print('Missing "unittest2" library. unittest2 is library is needed '
-                      'to run the tests. You can install it using pip: '
+                print('Missing "unittest2" library. unittest2 is library is '
+                      'needed to run the tests. You can install it using pip: '
                       'pip install unittest2')
                 sys.exit(1)
 
@@ -229,6 +240,7 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
+forbid_publish()
 
 setup(
     name='apache-libcloud',

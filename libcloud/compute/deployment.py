@@ -59,13 +59,14 @@ class Deployment(object):
 
 class SSHKeyDeployment(Deployment):
     """
-    Installs a public SSH Key onto a host.
+    Installs a public SSH Key onto a server.
     """
 
     def __init__(self, key):
         """
-        @type key: C{str}
-        @keyword key: Contents of the public key write
+        @type key: C{str} or C{File} object
+        @keyword key: Contents of the public key write or a file object which
+                      can be read.
         """
         self.key = self._get_string_value(argument_name='key',
                                           argument_value=key)
@@ -82,7 +83,7 @@ class SSHKeyDeployment(Deployment):
 
 class FileDeployment(Deployment):
     """
-    Installs a file.
+    Installs a file on the server.
     """
 
     def __init__(self, source, target):
@@ -98,7 +99,7 @@ class FileDeployment(Deployment):
 
     def run(self, node, client):
         """
-        Upload the file, retaining permissions
+        Upload the file, retaining permissions.
 
         See also L{Deployment.run}
         """
@@ -114,13 +115,24 @@ class FileDeployment(Deployment):
 
 class ScriptDeployment(Deployment):
     """
-    Runs an arbitrary Shell Script task.
+    Runs an arbitrary shell script on the server.
+
+    This step works by first writing the content of the shell script (script
+    argument) in a *.sh file on a remote server and then running that file.
+
+    If you are running a non-shell script, make sure to put the appropriate
+    shebang to the top of the script. You are also advised to do that even if
+    you are running a plan shell script.
     """
 
-    def __init__(self, script, name=None, delete=False):
+    def __init__(self, script, args=None, name=None, delete=False):
         """
         @type script: C{str}
-        @keyword script: Contents of the script to run
+        @keyword script: Contents of the script to run.
+
+        @type args: C{list}
+        @keyword args: Optional command line arguments which get passed to the
+                       deployment script file.
 
         @type name: C{str}
         @keyword name: Name of the script to upload it as, if not specified,
@@ -133,6 +145,7 @@ class ScriptDeployment(Deployment):
                                         argument_value=script)
 
         self.script = script
+        self.args = args or []
         self.stdout = None
         self.stderr = None
         self.exit_status = None
@@ -162,7 +175,15 @@ class ScriptDeployment(Deployment):
         else:
             name = self.name
 
-        self.stdout, self.stderr, self.exit_status = client.run(name)
+        cmd = name
+
+        if self.args:
+            # Append arguments to the command
+            cmd = '%s %s' % (name, ' '.join(self.args))
+        else:
+            cmd = name
+
+        self.stdout, self.stderr, self.exit_status = client.run(cmd)
 
         if self.delete:
             client.delete(self.name)
@@ -172,13 +193,20 @@ class ScriptDeployment(Deployment):
 
 class ScriptFileDeployment(ScriptDeployment):
     """
-    Runs an arbitrary Shell Script task from a file.
+    Runs an arbitrary shell script from a local file on the server. Same as
+    ScriptDeployment, except that you can pass in a path to the file instead of
+    the script content.
     """
 
-    def __init__(self, script_file, name=None, delete=False):
+    def __init__(self, script_file, args=None, name=None, delete=False):
         """
         @type script_file: C{str}
-        @keyword script_file: Path to a file containing the script to run
+        @keyword script_file: Path to a file containing the script to run.
+
+        @type args: C{list}
+        @keyword args: Optional command line arguments which get passed to the
+                       deployment script file.
+
 
         @type name: C{str}
         @keyword name: Name of the script to upload it as, if not specified,
@@ -194,8 +222,9 @@ class ScriptFileDeployment(ScriptDeployment):
             content = content.decode('utf-8')
 
         super(ScriptFileDeployment, self).__init__(script=content,
-                                               name=name,
-                                               delete=delete)
+                                                   args=args,
+                                                   name=name,
+                                                   delete=delete)
 
 
 class MultiStepDeployment(Deployment):
@@ -211,10 +240,12 @@ class MultiStepDeployment(Deployment):
         self.add(add)
 
     def add(self, add):
-        """Add a deployment to this chain.
+        """
+        Add a deployment to this chain.
 
         @type add: Single L{Deployment} or a C{list} of L{Deployment}
-        @keyword add: Adds this deployment to the others already in this object.
+        @keyword add: Adds this deployment to the others already in this
+        object.
         """
         if add is not None:
             add = add if isinstance(add, (list, tuple)) else [add]

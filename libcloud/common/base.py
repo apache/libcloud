@@ -571,14 +571,17 @@ class Connection(object):
         else:
             headers.update({'Host': self.host})
 
-        # Encode data if provided
         if data:
             data = self.encode_data(data)
-
-        # Only send Content-Length 0 with POST and PUT request
-        if data is not None:
-            if len(data) > 0 or (len(data) == 0 and method in ['POST', 'PUT']):
-                headers.update({'Content-Length': str(len(data))})
+            headers['Content-Length'] = str(len(data))
+        elif method.upper() in ['POST', 'PUT'] and not raw:
+            # Only send Content-Length 0 with POST and PUT request.
+            #
+            # Note: Content-Length is not added when using "raw" mode means
+            # means that headers are upfront and the body is sent at some point
+            # later on. With raw mode user can specify Content-Length with
+            # "data" not being set.
+            headers['Content-Length'] = '0'
 
         params, headers = self.pre_connect_hook(params, headers)
 

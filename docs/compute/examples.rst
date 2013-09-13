@@ -92,3 +92,27 @@ supported providers and provider constants, see
 
 .. literalinclude:: /examples/compute/create_ec2_node_custom_ami.py
    :language: python
+
+Create a node on a CloudStack provider using a provided key pair and security groups
+------------------------------------------------------------------------------------
+
+.. note::
+
+    This example assumes the provided key pair already exists. If the key pair
+    doesn't exist yet, you can create it using the provider's own UI, or
+    :func:`ex_create_keypair` driver method.
+    This functionality is currently only available in trunk.
+
+This example demonstrates how to create a node using an existing key pair.
+Created node also gets added to the provided security groups.
+
+.. literalinclude:: /examples/compute/create_cloudstack_node_keypair_secgroup.py
+   :language: python
+
+Create flaoting IP and attach it to a node using a local OpenStack provider
+---------------------------------------------------------------------------
+
+This example demonstrates how to use OpenStack's floating IPs.
+
+.. literalinclude:: /examples/compute/openstack_floating_ips.py
+   :language: python

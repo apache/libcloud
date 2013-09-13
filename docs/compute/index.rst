@@ -52,6 +52,16 @@ with a specific :class:`NodeSize`.
 
 For more information, please see the :doc:`pricing page </compute/pricing>`.
 
+Deployment
+----------
+
+Libcloud provides deployment functionality which makes bootstrapping a server
+easier. It allows you to create a server and runn shell commands on it once the
+server has been created.
+
+For more information and exaples, please see the :doc:`deployment page
+</compute/deployment>`.
+
 Examples
 --------
 

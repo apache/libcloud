@@ -69,7 +69,7 @@ class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
         KTUCloudStackMockHttp.fixture_tag = 'notemplates'
 
         images = self.driver.list_images()
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
 
 class KTUCloudStackMockHttp(MockHttpTestCase):
