@@ -39,6 +39,7 @@ class Provider(object):
     BRIGHTBOX = 'brightbox'
     ELB = 'elb'
     CLOUDSTACK = 'cloudstack'
+    GCE = 'gce'
 
 
 class State(object):

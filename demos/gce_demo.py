@@ -41,7 +41,13 @@ import sys
 try:
     import secrets
 except ImportError:
-    secrets = None
+    print('"demos/secrets.py" not found.\n\n'
+          'Please copy secrets.py-dist to secrets.py and update the GCE* '
+          'values with appropriate authentication information.\n'
+          'Additional information about setting these values can be found '
+          'in the docstring for:\n'
+          'libcloud/common/google.py\n')
+    sys.exit()
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
@@ -58,7 +64,7 @@ MAX_NODES = 5
 DEMO_BASE_NAME = 'libcloud-demo'
 
 # Datacenter to create resources in
-DATACENTER = 'us-central1-a'
+DATACENTER = 'us-central2-a'
 
 # Clean up resources at the end (can be set to false in order to
 # inspect resources at the end of the run). Resources will be cleaned
