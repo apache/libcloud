@@ -114,6 +114,12 @@ Changes with Apache Libcloud in development
      the provided key is not set.
      [Tomaz Muraus]
 
+   - Use string instead of integer for RecordType ENUM value.
+     Note: If you directly use an integer instead of RecordType ENUM class you
+     need to update your code to use the RecordType ENUM otherwise the code
+     won't work.
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.1
 
  *) General

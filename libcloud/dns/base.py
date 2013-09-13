@@ -120,8 +120,8 @@ class Record(object):
     def __repr__(self):
         return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s '
                 '...>' %
-                (self.zone.id, self.name, RecordType.__repr__(self.type),
-                 self.data, self.driver.name))
+                (self.zone.id, self.name, self.type, self.data,
+                 self.driver.name))
 
 
 class DNSDriver(BaseDriver):
