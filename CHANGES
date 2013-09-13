@@ -10,6 +10,28 @@ Changes with Apache Libcloud 0.13.2
       (LIBCLOUD-396)
       [Ivan Kusalic]
 
+  *) Compute
+
+    - Added Ubuntu Linux 12.04 image to ElasticHost driver image list.
+      (LIBCLOUD-364)
+      [Bob Thompson]
+
+    - Update ElasticHosts driver to store drive UUID in the node 'extra' field.
+      (LIBCLOUD-357)
+      [Bob Thompson]
+
+  *) Storage
+
+    - Store last_modified timestamp in the Object extra dictionary in the S3
+      driver. (LIBCLOUD-373)
+      [Stefan Friesel]
+
+  *) Load Balancer
+
+   - Expose CloudStack driver directly through the Provider.CLOUDSTACK
+     constant.
+     [Tomaz Muraus]
+
  *) DNS
 
    - Modify Zerigo driver to include record TTL in the record 'extra' attribute
@@ -49,16 +71,6 @@ Changes with Apache Libcloud 0.13.1
     - Ensure that AWS S3 multipart upload works for small iterators.
       (LIBCLOUD-378)
       [Mahendra M]
-
-    - Store last_modified timestamp in the Object extra dictionary in the S3
-      driver. (LIBCLOUD-373)
-      [Stefan Friesel]
-
-  *) Load Balancer
-
-   - Expose CloudStack driver directly through the Provider.CLOUDSTACK
-     constant.
-     [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.13.0:
 
