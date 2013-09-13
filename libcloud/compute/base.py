@@ -431,7 +431,6 @@ class StorageVolume(UuidMixin):
                self.id, self.size, self.driver.name)
 
 
-<<<<<<< HEAD
 class StorageSnapshot(UuidMixin):
     """
     A base StorageSnapshot class
@@ -455,7 +454,8 @@ class StorageSnapshot(UuidMixin):
     def __repr__(self):
         return '<StorageSnapshot id=%s size=%s driver=%s>' % (
             self.id, self.size, self.driver.name)
-=======
+
+
 class VolumeSnapshot(object):
     def __init__(self, driver):
         self.driver = driver
@@ -467,7 +467,6 @@ class VolumeSnapshot(object):
         @returns C{bool}
         """
         return self.driver.destroy_volume_snapshot(snapshot=self)
->>>>>>> a3218e80108f91f42577968191ecd8de2016c377
 
 
 class NodeDriver(BaseDriver):
