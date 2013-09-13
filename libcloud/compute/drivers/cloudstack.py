@@ -115,9 +115,9 @@ class CloudStackNetwork(object):
 
     def __repr__(self):
         return (('<CloudStackNetwork: id=%s, displaytext=%s, name=%s, '
-                 'networkofferingid=%s, zoneid=%s, dirver=%s>')
+                 'networkofferingid=%s, zoneid=%s>')
                 % (self.id, self.displaytext, self.name,
-                   self.networkofferingid, self.zoneid, self.driver.name))
+                   self.networkofferingid, self.zoneid))
 
 
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
