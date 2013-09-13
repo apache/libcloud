@@ -662,10 +662,11 @@ class GCENodeDriver(NodeDriver):
         @return:  A region object or None if all regions should be considered
         @rtype:   L{GCERegion} or C{None}
         """
-        if region == 'all':
+        region = region or self.region
+
+        if region == 'all' or region is None:
             return None
 
-        region = region or self.region
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         return region
@@ -680,10 +681,11 @@ class GCENodeDriver(NodeDriver):
         @return:  A zone object or None if all zones should be considered
         @rtype:   L{GCEZone} or C{None}
         """
-        if zone == 'all':
+        zone = zone or self.zone
+
+        if zone == 'all' or zone is None:
             return None
 
-        zone = zone or self.zone
         if not hasattr(zone, 'name'):
             zone = self.ex_get_zone(zone)
         return zone
