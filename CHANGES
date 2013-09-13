@@ -2,6 +2,14 @@
 
 Changes with Apache Libcloud 0.13.2
 
+  *) General
+
+    - Don't sent Content-Length: 0 header with POST and PUT request if "raw"
+      mode is used. This fixes a regression which could cause broken behavior
+      in some storage driver when uploading a file from disk.
+      (LIBCLOUD-396)
+      [Ivan Kusalic]
+
  *) DNS
 
    - Modify Zerigo driver to include record TTL in the record 'extra' attribute
@@ -136,11 +144,11 @@ Changes with Apache Libcloud 0.13.0:
       (LIBCLOUD-333)
       [sebastien goasguen]
 
-    - Add extension methods for managing security groups to the CloudStack 
+    - Add extension methods for managing security groups to the CloudStack
       driver. (LIBCLOUD-332)
       [sebastien goasguen]
 
-    - Add extension methods for starting and stoping the node to the 
+    - Add extension methods for starting and stoping the node to the
       CloudStack driver. (LIBCLOUD-338)
       [sebastien goasguen]
 
