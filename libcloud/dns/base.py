@@ -77,9 +77,9 @@ class Zone(object):
     def export_to_bind_format(self):
         return self.driver.export_zone_to_bind_format(zone=self)
 
-    def export_to_bind_format_file(self, file_path):
-        self.driver.export_zone_to_bind_format_file(zone=self,
-                                                    file_path=file_path)
+    def export_to_bind_zone_file(self, file_path):
+        self.driver.export_zone_to_bind_zone_file(zone=self,
+                                                  file_path=file_path)
 
     def __repr__(self):
         return ('<Zone: domain=%s, ttl=%s, provider=%s ...>' %
@@ -412,7 +412,7 @@ class DNSDriver(BaseDriver):
         output = '\n'.join(lines)
         return output
 
-    def export_zone_to_bind_format_file(self, zone, file_path):
+    def export_zone_to_bind_zone_file(self, zone, file_path):
         """
         Export Zone object to the BIND compatible format and write result to a
         file.

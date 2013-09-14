@@ -80,8 +80,8 @@ class BaseTestCase(unittest.TestCase):
         self.driver.list_records.return_value = mock_records
 
         result = self.driver.export_zone_to_bind_format(zone=zone)
-        self.driver.export_zone_to_bind_format_file(zone=zone,
-                                                    file_path=self.tmp_path)
+        self.driver.export_zone_to_bind_zone_file(zone=zone,
+                                                  file_path=self.tmp_path)
 
         with open(self.tmp_path, 'r') as fp:
             content = fp.read()

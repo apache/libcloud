@@ -8,4 +8,4 @@ Cls = get_driver(Provider.ZERIGO)
 driver = Cls(*CREDENTIALS_ZERIGO)
 
 zone = driver.get_zone(zone_id=ZONE_ID)
-zone.export_to_bind_format_file(file_path='/home/user/example.com')
+zone.export_to_bind_zone_file(file_path='/home/user/example.com')
