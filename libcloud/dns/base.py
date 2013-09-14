@@ -77,7 +77,7 @@ class Zone(object):
     def export_to_bind_format(self):
         return self.driver.export_zone_to_bind_format(zone=self)
 
-    def export_zone_to_bind_format_file(self, file_path):
+    def export_to_bind_format_file(self, file_path):
         self.driver.export_zone_to_bind_format_file(zone=self,
                                                     file_path=file_path)
 
