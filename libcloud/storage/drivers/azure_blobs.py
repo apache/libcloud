@@ -176,6 +176,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
+        self._host_argument_set = bool(host)
 
         # B64decode() this key and keep it, so that we don't have to do
         # so for every request. Minor performance improvement
@@ -187,9 +188,13 @@ class AzureBlobsStorageDriver(StorageDriver):
                                         port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
-        return {
-            'host': '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX),
-        }
+        result = {}
+
+        # host argument has precedence
+        if not self._host_argument_set:
+            result['host'] = '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX)
+
+        return result
 
     def _xml_to_container(self, node):
         """
