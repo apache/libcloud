@@ -116,3 +116,15 @@ This example demonstrates how to use OpenStack's floating IPs.
 
 .. literalinclude:: /examples/compute/openstack_floating_ips.py
    :language: python
+
+Create an IBM SCE Windows node using generic provider
+-----------------------------------------------------
+
+.. note::
+
+    ex_configurationData is the key component of this example.
+
+This example shows how to create a Windows node using IBM SmartCloud Enterpiese.
+
+.. literalinclude:: /examples/compute/create_ibm_sce_windows_node.py
+   :language: python
