@@ -99,7 +99,7 @@ Changes with Apache Libcloud in development
 
     - Fix an issue with mutating connectionCls.host attribute in the Azure
       driver. This bug prevented user from having multiple Azure drivers with
-      different keys instantiated at the same time. (IBCLOUD-399)
+      different keys instantiated at the same time. (LIBCLOUD-399)
       [Olivier Grisel]
 
   *) Load Balancer
