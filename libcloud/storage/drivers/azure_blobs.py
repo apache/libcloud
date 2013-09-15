@@ -75,6 +75,8 @@ AZURE_PAGE_CHUNK_SIZE = 512
 # released using the lease_id (which is not exposed to the user)
 AZURE_LEASE_PERIOD = 60
 
+AZURE_STORAGE_HOST_SUFFIX = 'blob.core.windows.net'
+
 
 class AzureBlobLease(object):
     """
@@ -162,7 +164,6 @@ class AzureBlobsConnection(AzureConnection):
     """
     Represents a single connection to Azure Blobs
     """
-    host = 'blob.core.windows.net'
 
 
 class AzureBlobsStorageDriver(StorageDriver):
@@ -176,9 +177,6 @@ class AzureBlobsStorageDriver(StorageDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
 
-        # The hostname must be 'account.blobs.core.windows.net'
-        self.connectionCls.host = '%s.%s' % (key, self.connectionCls.host)
-
         # B64decode() this key and keep it, so that we don't have to do
         # so for every request. Minor performance improvement
         secret = base64.b64decode(b(secret))
@@ -187,6 +185,11 @@ class AzureBlobsStorageDriver(StorageDriver):
                                         key=key, secret=secret,
                                         secure=secure, host=host,
                                         port=port, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        return {
+            'host': '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX),
+        }
 
     def _xml_to_container(self, node):
         """
