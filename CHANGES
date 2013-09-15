@@ -97,6 +97,11 @@ Changes with Apache Libcloud in development
       driver. (LIBCLOUD-373)
       [Stefan Friesel]
 
+    - Fix an issue with mutating connectionCls.host attribute in the Azure
+      driver. This bug prevented user from having multiple Azure drivers with
+      different keys instantiated at the same time. (IBCLOUD-399)
+      [Olivier Grisel]
+
   *) Load Balancer
 
    - Expose CloudStack driver directly through the Provider.CLOUDSTACK
