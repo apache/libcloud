@@ -47,6 +47,8 @@ DRIVERS = {
         ('libcloud.compute.drivers.ec2', 'EC2APSESydneyNodeDriver'),
     Provider.ECP:
         ('libcloud.compute.drivers.ecp', 'ECPNodeDriver'),
+    Provider.ELASTICHOSTS:
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsNodeDriver'),
     Provider.ELASTICHOSTS_UK1:
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUK1NodeDriver'),
     Provider.ELASTICHOSTS_UK2:
@@ -55,8 +57,14 @@ DRIVERS = {
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS1NodeDriver'),
     Provider.ELASTICHOSTS_US2:
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS2NodeDriver'),
+    Provider.ELASTICHOSTS_US3:
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsUS3NodeDriver'),
     Provider.ELASTICHOSTS_CA1:
         ('libcloud.compute.drivers.elastichosts', 'ElasticHostsCA1NodeDriver'),
+    Provider.ELASTICHOSTS_AU1:
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsAU1NodeDriver'),
+    Provider.ELASTICHOSTS_CN1:
+        ('libcloud.compute.drivers.elastichosts', 'ElasticHostsCN1NodeDriver'),
     Provider.SKALICLOUD:
         ('libcloud.compute.drivers.skalicloud', 'SkaliCloudNodeDriver'),
     Provider.SERVERLOVE:
@@ -143,6 +151,7 @@ def get_driver(provider):
         raise Exception(msg)
 
     return _get_provider_driver(DRIVERS, provider)
+
 
 def set_driver(provider, module, klass):
     return _set_provider_driver(DRIVERS, provider, module, klass)

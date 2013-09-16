@@ -32,7 +32,7 @@ __all__ = [
     "InvalidCredsException",
     "DEPRECATED_RACKSPACE_PROVIDERS",
     "OLD_CONSTANT_TO_NEW_MAPPING"
-    ]
+]
 
 
 class Provider(object):
@@ -56,6 +56,7 @@ class Provider(object):
     @cvar IBM: IBM Developer Cloud
     @cvar OPENNEBULA: OpenNebula.org
     @cvar DREAMHOST: DreamHost Private Server
+    @cvar ELASTICHOSTS: ElasticHosts.com
     @cvar CLOUDSIGMA: CloudSigma
     @cvar NIMBUS: Nimbus
     @cvar BLUEBOX: Bluebox
@@ -93,6 +94,11 @@ class Provider(object):
     ELASTICHOSTS_UK1 = 'elastichosts_uk1'
     ELASTICHOSTS_UK2 = 'elastichosts_uk2'
     ELASTICHOSTS_US1 = 'elastichosts_us1'
+    ELASTICHOSTS_US2 = 'elastichosts_us2'
+    ELASTICHOSTS_US3 = 'elastichosts_us3'
+    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
+    ELASTICHOSTS_AU1 = 'elastichosts_au1'
+    ELASTICHOSTS_CN1 = 'elastichosts_cn1'
     BRIGHTBOX = 'brightbox'
     CLOUDSIGMA = 'cloudsigma'
     NIMBUS = 'nimbus'
@@ -107,8 +113,6 @@ class Provider(object):
     CLOUDSTACK = 'cloudstack'
     CLOUDSIGMA_US = 'cloudsigma_us'
     LIBVIRT = 'libvirt'
-    ELASTICHOSTS_US2 = 'elastichosts_us2'
-    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
     JOYENT = 'joyent'
     VCL = 'vcl'
     KTUCLOUD = 'ktucloud'
