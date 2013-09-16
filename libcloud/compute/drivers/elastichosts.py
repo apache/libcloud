@@ -158,9 +158,10 @@ class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
                 raise ValueError('Invalid region: %s' % (region))
 
             self.region = region
-            self.host_set = host is not None
-        else:
-            raise ValueError("ElasticHosts Driver requires a region to be specified")
+            self._host_argument_set = host is not None
+        elif region is None and host is None:
+            raise ValueError("ElasticHosts Driver requires at least a region or a host argument to be specified")
+
         super(ElasticHostsNodeDriver, self).__init__(key=key, secret=secret,
                                                      secure=secure, host=host,
                                                      port=port, **kwargs)
@@ -169,7 +170,7 @@ class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
         """
         Return the host value based the user supplied region
         """
-        if self.host_set:
+        if self._host_argument_set:
             return {}
         else:
             return {'host': API_ENDPOINTS[self.region]['host']}
