@@ -13,12 +13,6 @@ Changes with Apache Libcloud in development
       updating the pricing file.
       [Tomaz Muraus]
 
-    - Don't sent Content-Length: 0 header with POST and PUT request if "raw"
-      mode is used. This fixes a regression which could cause broken behavior
-      in some storage driver when uploading a file from disk.
-      (LIBCLOUD-396)
-      [Ivan Kusalic]
-
  *) Compute
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
@@ -30,10 +24,6 @@ Changes with Apache Libcloud in development
       future.
       [Tomaz Muraus]
 
-    - Modify ElasticHosts drive to store drive UUID in 'extra' field.
-      (LIBCLOUD-357)
-      [Bob Thompson]
-
     - Add support for volume related functions to OpenNebula driver.
       (LIBCLOUD-354)
       [Emanuele Rocca]
@@ -44,9 +34,6 @@ Changes with Apache Libcloud in development
 
     - Add new driver for Google Compute Engine (LIBCLOUD-266)
       [Rick Wright]
-
-    - Add Ubuntu Linux 12.04 image to ElasticHosts driver. (LIBCLOUD-364)
-      [Bob Thompson]
 
     - Fix create_node "features" metadata and update affected drivers.
       (LIBCLOUD-367)
@@ -93,14 +80,48 @@ Changes with Apache Libcloud in development
       and CloudFiles driver. (LIBCLOUD-369)
       [Stefan Friesel]
 
-    - Store last_modified timestamp in the Object extra dictionary in the S3
-      driver. (LIBCLOUD-373)
-      [Stefan Friesel]
-
     - Fix an issue with mutating connectionCls.host attribute in the Azure
       driver. This bug prevented user from having multiple Azure drivers with
       different keys instantiated at the same time. (LIBCLOUD-399)
       [Olivier Grisel]
+
+ *) DNS
+
+   - Use string instead of integer for RecordType ENUM value.
+     Note: If you directly use an integer instead of RecordType ENUM class you
+     need to update your code to use the RecordType ENUM otherwise the code
+     won't work.
+     [Tomaz Muraus]
+
+   - Add method "export_zone_to_bind_format" which allows users to export
+     Libcloud Zone to BIND zone format. (LIBCLOUD-398)
+     [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.2
+
+  *) General
+
+    - Don't sent Content-Length: 0 header with POST and PUT request if "raw"
+      mode is used. This fixes a regression which could cause broken behavior
+      in some storage driver when uploading a file from disk.
+      (LIBCLOUD-396)
+      [Ivan Kusalic]
+
+  *) Compute
+
+    - Added Ubuntu Linux 12.04 image to ElasticHost driver image list.
+      (LIBCLOUD-364)
+      [Bob Thompson]
+
+    - Update ElasticHosts driver to store drive UUID in the node 'extra' field.
+      (LIBCLOUD-357)
+      [Bob Thompson]
+
+  *) Storage
+
+    - Store last_modified timestamp in the Object extra dictionary in the S3
+      driver. (LIBCLOUD-373)
+      [Stefan Friesel]
 
   *) Load Balancer
 
@@ -117,16 +138,6 @@ Changes with Apache Libcloud in development
    - Modify values in the Record 'extra' dictionary attribute in the Zerigo DNS
      driver to be set to None instead of an empty string ('') if a value for
      the provided key is not set.
-     [Tomaz Muraus]
-
-   - Use string instead of integer for RecordType ENUM value.
-     Note: If you directly use an integer instead of RecordType ENUM class you
-     need to update your code to use the RecordType ENUM otherwise the code
-     won't work.
-     [Tomaz Muraus]
-
-   - Add method "export_zone_to_bind_format" which allows users to export
-     Libcloud Zone to BIND zone format. (LIBCLOUD-398)
      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.13.1
