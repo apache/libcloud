@@ -125,6 +125,10 @@ Changes with Apache Libcloud in development
      won't work.
      [Tomaz Muraus]
 
+   - Add method "export_zone_to_bind_format" which allows users to export
+     Libcloud Zone to BIND zone format. (LIBCLOUD-398)
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.13.1
 
  *) General
