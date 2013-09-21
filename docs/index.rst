@@ -60,4 +60,13 @@ Developer Information
     developer_information
     development
 
+Committer Guide
+---------------
+
+.. toctree::
+    :glob:
+    :maxdepth: 3
+
+    committer_guide
+
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html
