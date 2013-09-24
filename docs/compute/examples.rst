@@ -93,6 +93,17 @@ supported providers and provider constants, see
 .. literalinclude:: /examples/compute/create_ec2_node_custom_ami.py
    :language: python
 
+Create EC2 node using an IAM Profile
+------------------------------------
+
+.. note::
+
+    This example assumes the IAM profile already exists. If the key pair
+    doesn't exist yet, you must create it manually.
+
+.. literalinclude:: /examples/compute/create_ec2_node_iam.py
+   :language: python
+
 Create a node on a CloudStack provider using a provided key pair and security groups
 ------------------------------------------------------------------------------------
 
