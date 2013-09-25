@@ -16,6 +16,8 @@
 OpenStack driver
 """
 
+from __future__ import with_statement
+
 try:
     import simplejson as json
 except ImportError:
@@ -1720,7 +1722,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         @rtype: L{OpenStackKeyPair}
         """
-        public_key = open(os.path.expanduser(keyfile), 'r').read()
+        with open(os.path.expanduser(keyfile), 'r') as fp:
+            public_key = fp.read()
+
         return self.ex_import_keypair_from_string(name, public_key)
 
     def ex_import_keypair_from_string(self, name, key_material):
