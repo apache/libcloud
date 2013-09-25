@@ -848,6 +848,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(volume.extra['description'], 'some description')
         self.assertEqual(volume.extra['attachments'], [])
 
+    def test_list_nodes_with_progress(self):
+        node_id = '12064_with_progress'
+        node = self.driver.ex_get_node_details(node_id)
+        self.assertEqual(node.id, '12064')
+        self.assertEqual(node.name, 'lc-test')
+        self.assertEqual(node.extra['progress'], 42)
+
+    def test_list_nodes_without_progress(self):
+        node_id = '12064_without_progress'
+        node = self.driver.ex_get_node_details(node_id)
+        self.assertEqual(node.id, '12064')
+        self.assertEqual(node.name, 'lc-test')
+        self.assertNotIn('progress', node.extra)
+
+
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 8, 'Wrong sizes count')
@@ -1337,6 +1352,16 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         elif method == "PUT":
             body = self.fixtures.load('_servers_12063_metadata_two_keys.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12064_with_progress(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_12064_with_progress.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_12064_without_progress(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_servers_12064_without_progress.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_flavors_7(self, method, url, body, headers):
