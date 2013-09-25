@@ -287,6 +287,31 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.driver.region_name = region_old
 
+    def test_ex_create_node_with_ex_iam_profile(self):
+        iamProfile = {
+            'id': 'AIDGPMS9RO4H3FEXAMPLE',
+            'name': 'Foo',
+            'arn': 'arn:aws:iam:...'
+        }
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        EC2MockHttp.type = None
+        node1 = self.driver.create_node(name='foo', image=image, size=size)
+        EC2MockHttp.type = 'ex_iam_profile'
+        node2 = self.driver.create_node(name='bar', image=image, size=size,
+                                        ex_iam_profile=iamProfile['name'])
+        node3 = self.driver.create_node(name='bar', image=image, size=size,
+                                        ex_iam_profile=iamProfile['arn'])
+
+        self.assertFalse(node1.extra['iam_profile'])
+        self.assertEqual(node2.extra['iam_profile'], iamProfile['id'])
+        self.assertEqual(node3.extra['iam_profile'], iamProfile['id'])
+
     def test_list_images(self):
         images = self.driver.list_images()
         image = images[0]
@@ -639,6 +664,10 @@ class EC2MockHttp(MockHttpTestCase):
     def _idempotent_mismatch_RunInstances(self, method, url, body, headers):
         body = self.fixtures.load('run_instances_idem_mismatch.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
+
+    def _ex_iam_profile_RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances_iam_profile.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _TerminateInstances(self, method, url, body, headers):
         body = self.fixtures.load('terminate_instances.xml')

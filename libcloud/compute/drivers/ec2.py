@@ -26,7 +26,7 @@ import copy
 
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, basestring
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
@@ -1418,14 +1418,13 @@ class BaseEC2NodeDriver(NodeDriver):
                     params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
         if 'ex_iamprofile' in kwargs:
-            try:
-                if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
-                    params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
-                else:
-                    params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
-            except AttributeError as exception:
-                raise AttributeError(
-                    'ex_iamprofile not string')
+            if not isinstance(kwargs['ex_iamprofile'], basestring):
+                raise AttributeError('ex_iamprofile not string')
+
+            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
+                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
+            else:
+                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
