@@ -26,7 +26,7 @@ import copy
 
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, basestring
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
@@ -543,7 +543,9 @@ class BaseEC2NodeDriver(NodeDriver):
                 'clienttoken': findattr(element=element, xpath="clientToken",
                                         namespace=NAMESPACE),
                 'groups': groups,
-                'tags': tags
+                'tags': tags,
+                'iam_profile': findattr(element, xpath="iamInstanceProfile/id",
+                                        namespace=NAMESPACE)
             }
         )
         return n
@@ -1325,7 +1327,7 @@ class BaseEC2NodeDriver(NodeDriver):
         @keyword    ex_maxcount: Maximum number of instances to launch
         @type       ex_maxcount: C{int}
 
-        @keyword    ex_security_groups: A list of namees of security groups to
+        @keyword    ex_security_groups: A list of names of security groups to
                                         assign to the node.
         @type       ex_security_groups:   C{list}
 
@@ -1343,6 +1345,9 @@ class BaseEC2NodeDriver(NodeDriver):
                     [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
                      {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
         @type       ex_blockdevicemappings: C{list} of C{dict}
+
+        @keyword    ex_iamprofile: Name or ARN of IAM profile
+        @type       ex_iamprofile: C{str}
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1411,6 +1416,15 @@ class BaseEC2NodeDriver(NodeDriver):
                         'not a dict' % mapping)
                 for k, v in mapping.items():
                     params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+
+        if 'ex_iamprofile' in kwargs:
+            if not isinstance(kwargs['ex_iamprofile'], basestring):
+                raise AttributeError('ex_iamprofile not string')
+
+            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
+                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
+            else:
+                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')

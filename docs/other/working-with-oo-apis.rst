@@ -59,3 +59,9 @@ Example 2 - creating an EC2 instance with a known ``NodeSize`` and ``NodeImage``
 
 .. literalinclude:: /examples/compute/create_ec2_node_manual_instantiation.py
    :language: python
+
+Example 3 - creating an EC2 instance with an IAM profile
+--------------------------------------------------------
+
+.. literalinclude:: /examples/compute/create_ec2_node_iam.py
+   :language: python
