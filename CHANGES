@@ -73,6 +73,10 @@ Changes with Apache Libcloud in development
       arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
       [Tomaz Muraus]
 
+    - Allow user to specify IAM profile to use when creating an EC2 node.
+      (LIBCLOUD-335)
+      [Xavier Barbosa]
+
   *) Storage
 
     - Allow users to filter objects starting with a prefix by passing ex_prefix
