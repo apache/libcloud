@@ -1708,36 +1708,36 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             data={'keypair': {'name': name}}
         ).object['keypair'])
 
-    def ex_import_keypair(self, name, public_key_file):
+    def ex_import_keypair(self, name, keyfile):
         """
         Import a KeyPair from a file
 
         @param name: Name of the new KeyPair
         @type  name: C{str}
 
-        @param public_key_file: Path to the public key file (in OpenSSH format)
-        @type  public_key_file: C{str}
+        @param keyfile: Path to the public key file (in OpenSSH format)
+        @type  keyfile: C{str}
 
         @rtype: L{OpenStackKeyPair}
         """
-        public_key = open(os.path.expanduser(public_key_file), 'r').read()
+        public_key = open(os.path.expanduser(keyfile), 'r').read()
         return self.ex_import_keypair_from_string(name, public_key)
 
-    def ex_import_keypair_from_string(self, name, public_key):
+    def ex_import_keypair_from_string(self, name, key_material):
         """
         Import a KeyPair from a string
 
         @param name: Name of the new KeyPair
         @type  name: C{str}
 
-        @param public_key: Public key (in OpenSSH format)
-        @type  public_key: C{str}
+        @param key_material: Public key (in OpenSSH format)
+        @type  key_material: C{str}
 
         @rtype: L{OpenStackKeyPair}
         """
         return self._to_keypair(self.connection.request(
             '/os-keypairs', method='POST',
-            data={'keypair': {'name': name, 'public_key': public_key}}
+            data={'keypair': {'name': name, 'public_key': key_material}}
         ).object['keypair'])
 
     def ex_delete_keypair(self, keypair):
