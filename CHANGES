@@ -74,7 +74,7 @@ Changes with Apache Libcloud in development
       [Tomaz Muraus]
 
     - Allow user to specify IAM profile to use when creating an EC2 node.
-      (LIBCLOUD-335)
+      (LIBCLOUD-403)
       [Xavier Barbosa]
 
   *) Storage
