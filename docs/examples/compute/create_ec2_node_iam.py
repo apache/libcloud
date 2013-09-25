@@ -17,4 +17,5 @@ images = driver.list_images()
 size = [s for s in sizes if s.id == SIZE_ID][0]
 image = [i for i in images if i.id == IMAGE_ID][0]
 
-node = driver.create_node(name='test-node', image=image, size=size, ex_iamprofile=IAM_PROFILE)
+node = driver.create_node(name='test-node', image=image, size=size,
+                          ex_iamprofile=IAM_PROFILE)
