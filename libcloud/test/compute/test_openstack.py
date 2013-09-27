@@ -911,6 +911,16 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
         self.assertEqual(node.extra['key_name'], 'devstack')
 
+    def test_create_node_with_ex_disk_config(self):
+        OpenStackMockHttp.type = 'EX_DISK_CONFIG'
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='racktest', image=image, size=size,
+                                       ex_disk_config='AUTO')
+        self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra['disk_config'], 'AUTO')
+
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
 
@@ -1381,6 +1391,13 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         elif method == "PUT":
             body = self.fixtures.load('_servers_12063_metadata_two_keys.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_EX_DISK_CONFIG(self, method, url, body, headers):
+        if method == "POST":
+            body = u(body)
+            self.assertTrue(body.find('\"OS-DCF:diskConfig\": \"AUTO\"'))
+            body = self.fixtures.load('_servers_create_disk_config.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_flavors_7(self, method, url, body, headers):

@@ -1211,6 +1211,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         @keyword    ex_security_groups: List of security groups to assign to
                                         the node
         @type       ex_security_groups: C{list} of L{OpenStackSecurityGroup}
+
+        @keyword    ex_disk_config: Name of the disk configuration.
+                                    Can be either AUTO or MANUAL.
+        @type       ex_disk_config: C{str}
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -1284,6 +1288,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'ex_userdata' in kwargs:
             server_params['user_data'] = base64.b64encode(
                 b(kwargs['ex_userdata'])).decode('ascii')
+
+        if 'ex_disk_config' in kwargs:
+            server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
 
         if 'networks' in kwargs:
             networks = kwargs['networks']
@@ -1850,6 +1857,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 created=api_node['created'],
                 updated=api_node['updated'],
                 key_name=api_node.get('key_name', None),
+                disk_config=api_node.get('OS-DCF:diskConfig', None),
             ),
         )
 
