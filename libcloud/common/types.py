@@ -97,7 +97,7 @@ class InvalidCredsError(ProviderError):
                                                 driver=driver)
 
 
-# Deprecated alias of L{InvalidCredsError}
+# Deprecated alias of :class:`InvalidCredsError`
 InvalidCredsException = InvalidCredsError
 
 

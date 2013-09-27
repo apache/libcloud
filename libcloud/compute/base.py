@@ -481,13 +481,13 @@ class NodeDriver(BaseDriver):
 
     def _get_and_check_auth(self, auth):
         """
-        Helper function for providers supporting L{NodeAuthPassword} or
-        L{NodeAuthSSHKey}
+        Helper function for providers supporting :class:`NodeAuthPassword` or
+        :class:`NodeAuthSSHKey`
 
         Validates that only a supported object type is passed to the auth
         parameter and raises an exception if it is not.
 
-        If no L{NodeAuthPassword} object is provided but one is expected then a
+        If no :class:`NodeAuthPassword` object is provided but one is expected then a
         password is automatically generated.
         """
 

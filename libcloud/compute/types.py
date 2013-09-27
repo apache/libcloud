@@ -39,38 +39,38 @@ class Provider(object):
     """
     Defines for each of the supported providers
 
-    @cvar DUMMY: Example provider
-    @cvar EC2_US_EAST: Amazon AWS US N. Virgina
-    @cvar EC2_US_WEST: Amazon AWS US N. California
-    @cvar EC2_EU_WEST: Amazon AWS EU Ireland
-    @cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
-    @cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
-    @cvar SLICEHOST: Slicehost.com
-    @cvar GCE: Google Compute Engine
-    @cvar GOGRID: GoGrid
-    @cvar VPSNET: VPS.net
-    @cvar LINODE: Linode.com
-    @cvar VCLOUD: vmware vCloud
-    @cvar RIMUHOSTING: RimuHosting.com
-    @cvar ECP: Enomaly
-    @cvar IBM: IBM Developer Cloud
-    @cvar OPENNEBULA: OpenNebula.org
-    @cvar DREAMHOST: DreamHost Private Server
-    @cvar CLOUDSIGMA: CloudSigma
-    @cvar NIMBUS: Nimbus
-    @cvar BLUEBOX: Bluebox
-    @cvar OPSOURCE: Opsource Cloud
-    @cvar NINEFOLD: Ninefold
-    @cvar TERREMARK: Terremark
-    @cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
-    @cvar CLOUDSTACK: CloudStack
-    @cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
-    @cvar LIBVIRT: Libvirt driver
-    @cvar JOYENT: Joyent driver
-    @cvar VCL: VCL driver
-    @cvar KTUCLOUD: kt ucloud driver
-    @cvar GRIDSPOT: Gridspot driver
-    @cvar ABIQUO: Abiquo driver
+    :cvar DUMMY: Example provider
+    :cvar EC2_US_EAST: Amazon AWS US N. Virgina
+    :cvar EC2_US_WEST: Amazon AWS US N. California
+    :cvar EC2_EU_WEST: Amazon AWS EU Ireland
+    :cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
+    :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
+    :cvar SLICEHOST: Slicehost.com
+    :cvar GCE: Google Compute Engine
+    :cvar GOGRID: GoGrid
+    :cvar VPSNET: VPS.net
+    :cvar LINODE: Linode.com
+    :cvar VCLOUD: vmware vCloud
+    :cvar RIMUHOSTING: RimuHosting.com
+    :cvar ECP: Enomaly
+    :cvar IBM: IBM Developer Cloud
+    :cvar OPENNEBULA: OpenNebula.org
+    :cvar DREAMHOST: DreamHost Private Server
+    :cvar CLOUDSIGMA: CloudSigma
+    :cvar NIMBUS: Nimbus
+    :cvar BLUEBOX: Bluebox
+    :cvar OPSOURCE: Opsource Cloud
+    :cvar NINEFOLD: Ninefold
+    :cvar TERREMARK: Terremark
+    :cvar EC2_US_WEST_OREGON: Amazon AWS US West 2 (Oregon)
+    :cvar CLOUDSTACK: CloudStack
+    :cvar CLOUDSIGMA_US: CloudSigma US Las Vegas
+    :cvar LIBVIRT: Libvirt driver
+    :cvar JOYENT: Joyent driver
+    :cvar VCL: VCL driver
+    :cvar KTUCLOUD: kt ucloud driver
+    :cvar GRIDSPOT: Gridspot driver
+    :cvar ABIQUO: Abiquo driver
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
@@ -157,11 +157,11 @@ class NodeState(object):
     """
     Standard states for a node
 
-    @cvar RUNNING: Node is running
-    @cvar REBOOTING: Node is rebooting
-    @cvar TERMINATED: Node is terminated
-    @cvar PENDING: Node is pending
-    @cvar UNKNOWN: Node state is unknown
+    :cvar RUNNING: Node is running
+    :cvar REBOOTING: Node is rebooting
+    :cvar TERMINATED: Node is terminated
+    :cvar PENDING: Node is pending
+    :cvar UNKNOWN: Node state is unknown
     """
     RUNNING = 0
     REBOOTING = 1
@@ -174,8 +174,8 @@ class Architecture(object):
     """
     Image and size architectures.
 
-    @cvar I386: i386 (32 bt)
-    @cvar X86_64: x86_64 (64 bit)
+    :cvar I386: i386 (32 bt)
+    :cvar X86_64: x86_64 (64 bit)
     """
     I386 = 0
     X86_X64 = 1
@@ -185,7 +185,7 @@ class DeploymentError(LibcloudError):
     """
     Exception used when a Deployment Task failed.
 
-    @ivar node: L{Node} on which this exception happened, you might want to call L{Node.destroy}
+    :ivar node: :class:`Node` on which this exception happened, you might want to call :class:`Node.destroy`
     """
     def __init__(self, node, original_exception=None, driver=None):
         self.node = node
@@ -200,5 +200,5 @@ class DeploymentError(LibcloudError):
                 % (self.node.id, str(self.value), str(self.driver))))
 
 
-"""Deprecated alias of L{DeploymentException}"""
+"""Deprecated alias of :class:`DeploymentException`"""
 DeploymentException = DeploymentError

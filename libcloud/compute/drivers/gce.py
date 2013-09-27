@@ -40,11 +40,11 @@ def timestamp_to_datetime(timestamp):
     Return a datetime object that corresponds to the time in an RFC3339
     timestamp.
 
-    @param  timestamp: RFC3339 timestamp string
-    @type   timestamp: C{str}
+    :param  timestamp: RFC3339 timestamp string
+    :type   timestamp: ``str``
 
-    @return:  Datetime object corresponding to timestamp
-    @rtype:   C{datetime}
+    :return:  Datetime object corresponding to timestamp
+    :rtype:   :class:`datetime.datetime`
     """
     # We remove timezone offset and microseconds (Python 2.5 strptime doesn't
     # support %f)
@@ -121,8 +121,8 @@ class GCEAddress(UuidMixin):
         """
         Destroy this address.
 
-        @return: True if successful
-        @rtype:  C{bool}
+        :return: True if successful
+        :rtype:  ``bool``
         """
         return self.driver.ex_destroy_address(address=self)
 
@@ -160,8 +160,8 @@ class GCEFirewall(UuidMixin):
         """
         Destroy this firewall.
 
-        @return: True if successful
-        @rtype:  C{bool}
+        :return: True if successful
+        :rtype:  ``bool``
         """
         return self.driver.ex_destroy_firewall(firewall=self)
 
@@ -184,8 +184,8 @@ class GCENetwork(UuidMixin):
         """
         Destroy this newtwork
 
-        @return: True if successful
-        @rtype:  C{bool}
+        :return: True if successful
+        :rtype:  ``bool``
         """
         return self.driver.ex_destroy_network(network=self)
 
@@ -239,13 +239,13 @@ class GCEZone(NodeLocation):
         """
         Returns the next Maintenance Window.
 
-        @return:  A dictionary containing maintenance window info
-                  The dictionary contains 4 keys with values of type C{str}
-                      - C{name}: The name of the maintence window
-                      - C{description}: Description of the maintenance window
-                      - C{beginTime}: RFC3339 Timestamp
-                      - C{endTime}: RFC3339 Timestamp
-        @rtype:   C{dict}
+        :return:  A dictionary containing maintenance window info
+                  The dictionary contains 4 keys with values of type ``str``
+                      - name: The name of the maintence window
+                      - description: Description of the maintenance window
+                      - beginTime: RFC3339 Timestamp
+                      - endTime: RFC3339 Timestamp
+        :rtype:   ``dict``
         """
         begin = None
         next_window = None
@@ -262,8 +262,8 @@ class GCEZone(NodeLocation):
         """
         Returns time until next maintenance window.
 
-        @return:  Time until next maintenance window
-        @rtype:   C{datetime.timedelta}
+        :return:  Time until next maintenance window
+        :rtype:   :class:`datetime.timedelta`
         """
         next_window = self._get_next_maint()
         now = self._now()
@@ -274,8 +274,8 @@ class GCEZone(NodeLocation):
         """
         Returns the duration of the next maintenance window.
 
-        @return:  Duration of next maintenance window
-        @rtype:   C{datetime.timedelta}
+        :return:  Duration of next maintenance window
+        :rtype:   :class:`datetime.timedelta`
         """
         next_window = self._get_next_maint()
         next_begin = timestamp_to_datetime(next_window['beginTime'])
@@ -324,27 +324,27 @@ class GCENodeDriver(NodeDriver):
     def __init__(self, user_id, key, datacenter=None, project=None,
                  auth_type=None, **kwargs):
         """
-        @param  user_id: The email address (for service accounts) or Client ID
+        :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
-        @type   user_id: C{str}
+        :type   user_id: ``str``
 
-        @param  key: The RSA Key (for service accounts) or file path containing
+        :param  key: The RSA Key (for service accounts) or file path containing
                      key or Client Secret (for installed apps) to be used for
                      authentication.
-        @type   key: C{str}
+        :type   key: ``str``
 
-        @keyword  datacenter: The name of the datacenter (zone) used for
+        :keyword  datacenter: The name of the datacenter (zone) used for
                               operations.
-        @type     datacenter: C{str}
+        :type     datacenter: ``str``
 
-        @keyword  project: Your GCE project name. (required)
-        @type     project: C{str}
+        :keyword  project: Your GCE project name. (required)
+        :type     project: ``str``
 
-        @keyword  auth_type: Accepted values are "SA" or "IA"
+        :keyword  auth_type: Accepted values are "SA" or "IA"
                              ("Service Account" or "Installed Application").
                              If not supplied, auth_type will be guessed based
                              on value of user_id.
-        @type     auth_type: C{str}
+        :type     auth_type: ``str``
         """
         self.auth_type = auth_type
         self.project = project
@@ -374,8 +374,8 @@ class GCENodeDriver(NodeDriver):
         Parse error message returned from GCE operation and raise the
         appropriate Exception.
 
-        @param  error: Error dictionary from a GCE Operations response
-        @type   error: C{dict}
+        :param  error: Error dictionary from a GCE Operations response
+        :type   error: ``dict``
         """
         err = error['errors'][0]
         message = err['message']
@@ -391,18 +391,18 @@ class GCENodeDriver(NodeDriver):
         """
         Find the zone for a named resource.
 
-        @param  name: Name of resource to find
-        @type   name: C{str}
+        :param  name: Name of resource to find
+        :type   name: ``str``
 
-        @param  res_type: Type of resource to find.
+        :param  res_type: Type of resource to find.
                           Examples include: 'disks', 'instances' or 'addresses'
-        @type   res_type: C{str}
+        :type   res_type: ``str``
 
-        @keyword  region: If True, find a region instead of a zone.
-        @keyword  region: C{bool}
+        :keyword  region: If True, find a region instead of a zone.
+        :keyword  region: ``bool``
 
-        @return:  Name of zone (or region) that the resource is in.
-        @rtype:   C{str}
+        :return:  Name of zone (or region) that the resource is in.
+        :rtype:   ``str``
         """
         request = '/aggregated/%s' % res_type
         res_list = self.connection.request(request).object
@@ -423,16 +423,16 @@ class GCENodeDriver(NodeDriver):
         supplied project.  If no project is given, it will search your own
         project.
 
-        @param  project:  The name of the project to search for images.
+        :param  project:  The name of the project to search for images.
                           Examples include: 'debian-cloud' and 'centos-cloud'.
-        @type   project:  C{str} or C{None}
+        :type   project:  ``str`` or ``None``
 
-        @param  partial_name: The full name or beginning of a name for an
+        :param  partial_name: The full name or beginning of a name for an
                               image.
-        @type   partial_name: C{str}
+        :type   partial_name: ``str``
 
-        @return:  The latest image object that maches the partial name.
-        @rtype:   L{NodeImage}
+        :return:  The latest image object that maches the partial name.
+        :rtype:   :class:`NodeImage`
         """
         project_images = self.list_images(project)
         partial_match = []
@@ -451,14 +451,14 @@ class GCENodeDriver(NodeDriver):
         """
         Return a list of static addreses for a region or all.
 
-        @keyword  region: The region to return addresses from. For example:
+        :keyword  region: The region to return addresses from. For example:
                           'us-central1'.  If None, will return addresses from
                           region of self.zone.  If 'all', will return all
                           addresses.
-        @type     region: C{str} or C{None}
+        :type     region: ``str`` or ``None``
 
-        @return: A list of static address objects.
-        @rtype: C{list} of L{GCEAddress}
+        :return: A list of static address objects.
+        :rtype: ``list`` of :class:`GCEAddress`
         """
         list_addresses = []
         if region is None and self.zone:
@@ -489,8 +489,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return the list of firewalls.
 
-        @return: A list of firewall objects.
-        @rtype: C{list} of L{GCEFirewall}
+        :return: A list of firewall objects.
+        :rtype: ``list`` of :class:`GCEFirewall`
         """
         list_firewalls = []
         request = '/global/firewalls'
@@ -503,11 +503,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a list of image objects for a project.
 
-        @keyword  ex_project: Optional alternate project name.
-        @type     ex_project: C{str} or C{None}
+        :keyword  ex_project: Optional alternate project name.
+        :type     ex_project: ``str`` or ``None``
 
-        @return:  List of NodeImage objects
-        @rtype:   C{list} of L{NodeImage}
+        :return:  List of NodeImage objects
+        :rtype:   ``list`` of :class:`NodeImage`
         """
         list_images = []
         request = '/global/images'
@@ -531,11 +531,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a list of locations (zones).
 
-        The L{ex_list_zones} method returns more comprehensive results, but
+        The :class:`ex_list_zones` method returns more comprehensive results, but
         this is here for compatibility.
 
-        @return: List of NodeLocation objects
-        @rtype: C{list} of L{NodeLocation}
+        :return: List of NodeLocation objects
+        :rtype: ``list`` of :class:`NodeLocation`
         """
         list_locations = []
         request = '/zones'
@@ -547,8 +547,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return the list of networks.
 
-        @return: A list of network objects.
-        @rtype: C{list} of L{GCENetwork}
+        :return: A list of network objects.
+        :rtype: ``list`` of :class:`GCENetwork`
         """
         list_networks = []
         request = '/global/networks'
@@ -561,11 +561,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a list of nodes in the current zone or all zones.
 
-        @keyword  ex_zone:  Optional zone name or 'all'
-        @type     ex_zone:  C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  ex_zone:  Optional zone name or 'all'
+        :type     ex_zone:  ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @return:  List of Node objects
-        @rtype:   C{list} of L{Node}
+        :return:  List of Node objects
+        :rtype:   ``list`` of :class:`Node`
         """
         list_nodes = []
         # Use provided zone or default zone
@@ -597,11 +597,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a list of sizes (machineTypes) in a zone.
 
-        @keyword  location: Location or Zone for sizes
-        @type     location: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  location: Location or Zone for sizes
+        :type     location: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @return:  List of GCENodeSize objects
-        @rtype:   C{list} of L{GCENodeSize}
+        :return:  List of GCENodeSize objects
+        :rtype:   ``list`` of :class:`GCENodeSize`
         """
         list_sizes = []
         location = location or self.zone
@@ -634,11 +634,11 @@ class GCENodeDriver(NodeDriver):
         Will return list from provided zone, or from the default zone unless
         given the value of 'all'.
 
-        @keyword  region: The zone to return volumes from.
-        @type     region: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  region: The zone to return volumes from.
+        :type     region: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @return: A list of volume objects.
-        @rtype: C{list} of L{StorageVolume}
+        :return: A list of volume objects.
+        :rtype: ``list`` of :class:`StorageVolume`
         """
         list_volumes = []
         zone = ex_zone or self.zone
@@ -668,8 +668,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return the list of zones.
 
-        @return: A list of zone objects.
-        @rtype: C{list} of L{GCEZone}
+        :return: A list of zone objects.
+        :rtype: ``list`` of :class:`GCEZone`
         """
         list_zones = []
         request = '/zones'
@@ -681,14 +681,14 @@ class GCENodeDriver(NodeDriver):
         """
         Create a static address in a region.
 
-        @param  name: Name of static address
-        @type   name: C{str}
+        :param  name: Name of static address
+        :type   name: ``str``
 
-        @param  region: Name of region for the addres (e.g. 'us-central1')
-        @type   region: C{str}
+        :param  region: Name of region for the addres (e.g. 'us-central1')
+        :type   region: ``str``
 
-        @return:  Static Address object
-        @rtype:   L{GCEAddress}
+        :return:  Static Address object
+        :rtype:   :class:`GCEAddress`
         """
         if region is None and self.zone:
             region = '-'.join(self.zone.name.split('-')[:-1])
@@ -721,24 +721,24 @@ class GCENodeDriver(NodeDriver):
         See U{Firewall Reference<https://developers.google.com/compute/docs/
         reference/latest/firewalls/insert>} for more information.
 
-        @param  name: Name of the firewall to be created
-        @type   name: C{str}
+        :param  name: Name of the firewall to be created
+        :type   name: ``str``
 
-        @param  allowed: List of dictionaries with rules
-        @type   allowed: C{list} of C{dict}
+        :param  allowed: List of dictionaries with rules
+        :type   allowed: ``list`` of ``dict``
 
-        @keyword  network: The network that the firewall applies to.
-        @type     network: C{str} or L{GCENetwork}
+        :keyword  network: The network that the firewall applies to.
+        :type     network: ``str`` or :class:`GCENetwork`
 
-        @keyword  source_ranges: A list of IP ranges in CIDR format that the
+        :keyword  source_ranges: A list of IP ranges in CIDR format that the
                                  firewall should apply to.
-        @type     source_ranges: C{list} of C{str}
+        :type     source_ranges: ``list`` of ``str``
 
-        @keyword  source_tags: A list of instance tags which the rules apply
-        @type     source_tags: C{list} of C{str}
+        :keyword  source_tags: A list of instance tags which the rules apply
+        :type     source_tags: ``list`` of ``str``
 
-        @return:  Firewall object
-        @rtype:   L{GCEFirewall}
+        :return:  Firewall object
+        :rtype:   :class:`GCEFirewall`
         """
         firewall_data = {}
         if not hasattr(network, 'name'):
@@ -766,14 +766,14 @@ class GCENodeDriver(NodeDriver):
         """
         Create a network.
 
-        @param  name: Name of network to be created
-        @type   name: C{str}
+        :param  name: Name of network to be created
+        :type   name: ``str``
 
-        @param  cidr: Address range of network in CIDR format.
-        @type  cidr: C{str}
+        :param  cidr: Address range of network in CIDR format.
+        :type  cidr: ``str``
 
-        @return:  Network object
-        @rtype:   L{GCENetwork}
+        :return:  Network object
+        :rtype:   :class:`GCENetwork`
         """
         network_data = {}
         network_data['name'] = name
@@ -792,35 +792,35 @@ class GCENodeDriver(NodeDriver):
                          tags=None, metadata=None, boot_disk=None):
         """
         Returns a request and body to create a new node.  This is a helper
-        method to suppor both L{create_node} and L{ex_create_multiple_nodes}.
+        method to suppor both :class:`create_node` and :class:`ex_create_multiple_nodes`.
 
-        @param  name: The name of the node to create.
-        @type   name: C{str}
+        :param  name: The name of the node to create.
+        :type   name: ``str``
 
-        @param  size: The machine type to use.
-        @type   size: L{GCENodeSize}
+        :param  size: The machine type to use.
+        :type   size: :class:`GCENodeSize`
 
-        @param  image: The image to use to create the node (or, if using a
+        :param  image: The image to use to create the node (or, if using a
                        persistent disk, the image the disk was created from).
-        @type   image: L{NodeImage}
+        :type   image: :class:`NodeImage`
 
-        @param  location: The location (zone) to create the node in.
-        @type   location: L{NodeLocation} or L{GCEZone}
+        :param  location: The location (zone) to create the node in.
+        :type   location: :class:`NodeLocation` or :class:`GCEZone`
 
-        @param  network: The network to associate with the node.
-        @type   network: L{GCENetwork}
+        :param  network: The network to associate with the node.
+        :type   network: :class:`GCENetwork`
 
-        @keyword  tags: A list of tags to assiciate with the node.
-        @type     tags: C{list} of C{str}
+        :keyword  tags: A list of tags to assiciate with the node.
+        :type     tags: ``list`` of ``str``
 
-        @keyword  metadata: Metadata dictionary for instance.
-        @type     metadata: C{dict}
+        :keyword  metadata: Metadata dictionary for instance.
+        :type     metadata: ``dict``
 
-        @keyword  boot_disk:  Persistent boot disk to attach
-        @type     L{StorageVolume}
+        :keyword  boot_disk:  Persistent boot disk to attach
+        :type     :class:`StorageVolume`
 
-        @return:  A tuple containing a request string and a node_data dict.
-        @rtype:   C{tuple} of C{str} and C{dict}
+        :return:  A tuple containing a request string and a node_data dict.
+        :rtype:   ``tuple`` of ``str`` and ``dict``
         """
         node_data = {}
         node_data['machineType'] = size.extra['selfLink']
@@ -858,33 +858,33 @@ class GCENodeDriver(NodeDriver):
         """
         Create a new node and return a node object for the node.
 
-        @param  name: The name of the node to create.
-        @type   name: C{str}
+        :param  name: The name of the node to create.
+        :type   name: ``str``
 
-        @param  size: The machine type to use.
-        @type   size: C{str} or L{GCENodeSize}
+        :param  size: The machine type to use.
+        :type   size: ``str`` or :class:`GCENodeSize`
 
-        @param  image: The image to use to create the node (or, if attaching
+        :param  image: The image to use to create the node (or, if attaching
                        a persistent disk, the image used to create the disk)
-        @type   image: C{str} or L{NodeImage}
+        :type   image: ``str`` or :class:`NodeImage`
 
-        @keyword  location: The location (zone) to create the node in.
-        @type     location: C{str} or L{NodeLocation} or L{GCEZone} or C{None}
+        :keyword  location: The location (zone) to create the node in.
+        :type     location: ``str`` or :class:`NodeLocation` or :class:`GCEZone` or ``None``
 
-        @keyword  ex_network: The network to associate with the node.
-        @type     ex_network: C{str} or L{GCENetwork}
+        :keyword  ex_network: The network to associate with the node.
+        :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        @keyword  ex_tags: A list of tags to assiciate with the node.
-        @type     ex_tags: C{list} of C{str} or C{None}
+        :keyword  ex_tags: A list of tags to assiciate with the node.
+        :type     ex_tags: ``list`` of ``str`` or ``None``
 
-        @keyword  ex_metadata: Metadata dictionary for instance.
-        @type     ex_metadata: C{dict} or C{None}
+        :keyword  ex_metadata: Metadata dictionary for instance.
+        :type     ex_metadata: ``dict`` or ``None``
 
-        @keyword  ex_boot_disk: The boot disk to attach to the instance.
-        @type     ex_boot_disk: L{StorageVolume}
+        :keyword  ex_boot_disk: The boot disk to attach to the instance.
+        :type     ex_boot_disk: :class:`StorageVolume`
 
-        @return:  A Node object for the new node.
-        @rtype:   L{Node}
+        :return:  A Node object for the new node.
+        :rtype:   :class:`Node`
         """
         location = location or self.zone
         if not hasattr(location, 'name'):
@@ -922,39 +922,39 @@ class GCENodeDriver(NodeDriver):
             libcloud-001
             libcloud-002
 
-        @param  base_name: The base name of the nodes to create.
-        @type   base_name: C{str}
+        :param  base_name: The base name of the nodes to create.
+        :type   base_name: ``str``
 
-        @param  size: The machine type to use.
-        @type   size: C{str} or L{GCENodeSize}
+        :param  size: The machine type to use.
+        :type   size: ``str`` or :class:`GCENodeSize`
 
-        @param  image: The image to use to create the nodes.
-        @type   image: C{str} or L{NodeImage}
+        :param  image: The image to use to create the nodes.
+        :type   image: ``str`` or :class:`NodeImage`
 
-        @param  number: The number of nodes to create.
-        @type   number: C{int}
+        :param  number: The number of nodes to create.
+        :type   number: ``int``
 
-        @keyword  location: The location (zone) to create the nodes in.
-        @type     location: C{str} or L{NodeLocation} or L{GCEZone} or C{None}
+        :keyword  location: The location (zone) to create the nodes in.
+        :type     location: ``str`` or :class:`NodeLocation` or :class:`GCEZone` or ``None``
 
-        @keyword  ex_network: The network to associate with the nodes.
-        @type     ex_network: C{str} or L{GCENetwork}
+        :keyword  ex_network: The network to associate with the nodes.
+        :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        @keyword  ex_tags: A list of tags to assiciate with the nodes.
-        @type     ex_tags: C{list} of C{str} or C{None}
+        :keyword  ex_tags: A list of tags to assiciate with the nodes.
+        :type     ex_tags: ``list`` of ``str`` or ``None``
 
-        @keyword  ex_metadata: Metadata dictionary for instances.
-        @type     ex_metadata: C{dict} or C{None}
+        :keyword  ex_metadata: Metadata dictionary for instances.
+        :type     ex_metadata: ``dict`` or ``None``
 
-        @keyword  ignore_errors: If True, don't raise Exceptions if one or
+        :keyword  ignore_errors: If True, don't raise Exceptions if one or
                                  more nodes fails.
-        @type     ignore_errors: C{bool}
+        :type     ignore_errors: ``bool``
 
-        @keyword  timeout: The number of seconds to wait for all nodes to be
+        :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
 
-        @return:  A list of Node objects for the new nodes.
-        @rtype:   C{list} of L{Node}
+        :return:  A list of Node objects for the new nodes.
+        :rtype:   ``list`` of :class:`Node`
         """
         node_data = {}
         location = location or self.zone
@@ -1011,24 +1011,24 @@ class GCENodeDriver(NodeDriver):
         """
         Create a volume (disk).
 
-        @param  size: Size of volume to create (in GB). Can be None if image
+        :param  size: Size of volume to create (in GB). Can be None if image
                       or snapshot is supplied.
-        @type   size: C{int} or C{str} or C{None}
+        :type   size: ``int`` or ``str`` or ``None``
 
-        @param  name: Name of volume to create
-        @type   name: C{str}
+        :param  name: Name of volume to create
+        :type   name: ``str``
 
-        @keyword  location: Location (zone) to create the volume in
-        @type     location: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  location: Location (zone) to create the volume in
+        :type     location: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @keyword  image: Image to create disk from.
-        @type     image: L{NodeImage} or C{str} or C{None}
+        :keyword  image: Image to create disk from.
+        :type     image: :class:`NodeImage` or ``str`` or ``None``
 
-        @keyword  snapshot: Snapshot to create image from
-        @type     snapshot: C{str}
+        :keyword  snapshot: Snapshot to create image from
+        :type     snapshot: ``str``
 
-        @return:  Storage Volume object
-        @rtype:   L{StorageVolume}
+        :return:  Storage Volume object
+        :rtype:   :class:`StorageVolume`
         """
         volume_data = {}
         params = None
@@ -1060,11 +1060,11 @@ class GCENodeDriver(NodeDriver):
         To update, change the attributes of the firewall object and pass the
         updated object to the method.
 
-        @param  firewall: A firewall object with updated values.
-        @type   firewall: L{GCEFirewall}
+        :param  firewall: A firewall object with updated values.
+        :type   firewall: :class:`GCEFirewall`
 
-        @return:  An object representing the new state of the firewall.
-        @rtype:   L{GCEFirewall}
+        :return:  An object representing the new state of the firewall.
+        :rtype:   :class:`GCEFirewall`
         """
         firewall_data = {}
         firewall_data['name'] = firewall.name
@@ -1090,11 +1090,11 @@ class GCENodeDriver(NodeDriver):
         """
         Reboot a node.
 
-        @param  node: Node to be rebooted
-        @type   node: L{Node}
+        :param  node: Node to be rebooted
+        :type   node: :class:`Node`
 
-        @return:  True if successful, False if not
-        @rtype:   C{bool}
+        :return:  True if successful, False if not
+        :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/reset' % (node.extra['zone'].name,
                                                     node.name)
@@ -1111,14 +1111,14 @@ class GCENodeDriver(NodeDriver):
 
         Note that this updates the node object directly.
 
-        @param  node: Node object
-        @type   node: L{Node}
+        :param  node: Node object
+        :type   node: :class:`Node`
 
-        @param  tags: List of tags to apply to the object
-        @type   tags: C{list} of C{str}
+        :param  tags: List of tags to apply to the object
+        :type   tags: ``list`` of ``str``
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/setTags' % (node.extra['zone'].name,
                                                       node.name)
@@ -1142,29 +1142,29 @@ class GCENodeDriver(NodeDriver):
         """
         Create a new node and run a script on start-up.
 
-        @param  name: The name of the node to create.
-        @type   name: C{str}
+        :param  name: The name of the node to create.
+        :type   name: ``str``
 
-        @param  size: The machine type to use.
-        @type   size: C{str} or L{GCENodeSize}
+        :param  size: The machine type to use.
+        :type   size: ``str`` or :class:`GCENodeSize`
 
-        @param  image: The image to use to create the node.
-        @type   image: C{str} or L{NodeImage}
+        :param  image: The image to use to create the node.
+        :type   image: ``str`` or :class:`NodeImage`
 
-        @param  script: File path to start-up script
-        @type   script: C{str}
+        :param  script: File path to start-up script
+        :type   script: ``str``
 
-        @keyword  location: The location (zone) to create the node in.
-        @type     location: C{str} or L{NodeLocation} or L{GCEZone} or C{None}
+        :keyword  location: The location (zone) to create the node in.
+        :type     location: ``str`` or :class:`NodeLocation` or :class:`GCEZone` or ``None``
 
-        @keyword  ex_network: The network to associate with the node.
-        @type     ex_network: C{str} or L{GCENetwork}
+        :keyword  ex_network: The network to associate with the node.
+        :type     ex_network: ``str`` or :class:`GCENetwork`
 
-        @keyword  ex_tags: A list of tags to assiciate with the node.
-        @type     ex_tags: C{list} of C{str} or C{None}
+        :keyword  ex_tags: A list of tags to assiciate with the node.
+        :type     ex_tags: ``list`` of ``str`` or ``None``
 
-        @return:  A Node object for the new node.
-        @rtype:   L{Node}
+        :return:  A Node object for the new node.
+        :rtype:   :class:`Node`
         """
         with open(script, 'r') as f:
             script_data = f.read()
@@ -1182,25 +1182,25 @@ class GCENodeDriver(NodeDriver):
 
         If volume is None, a scratch disk will be created and attached.
 
-        @param  node: The node to attach the volume to
-        @type   node: L{Node}
+        :param  node: The node to attach the volume to
+        :type   node: :class:`Node`
 
-        @param  volume: The volume to attach. If none, a scratch disk will be
+        :param  volume: The volume to attach. If none, a scratch disk will be
                         attached.
-        @type   volume: L{StorageVolume} or C{None}
+        :type   volume: :class:`StorageVolume` or ``None``
 
-        @keyword  device: The device name to attach the volume as. Defaults to
+        :keyword  device: The device name to attach the volume as. Defaults to
                           volume name.
-        @type     device: C{str}
+        :type     device: ``str``
 
-        @keyword  ex_mode: Either 'READ_WRITE' or 'READ_ONLY'
-        @type     ex_mode: C{str}
+        :keyword  ex_mode: Either 'READ_WRITE' or 'READ_ONLY'
+        :type     ex_mode: ``str``
 
-        @keyword  ex_boot: If true, disk will be attached as a boot disk
-        @type     ex_boot: C{bool}
+        :keyword  ex_boot: If true, disk will be attached as a boot disk
+        :type     ex_boot: ``bool``
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         volume_data = {}
         if volume is None:
@@ -1231,14 +1231,14 @@ class GCENodeDriver(NodeDriver):
         """
         Detach a volume from a node.
 
-        @param  volume: Volume object to detach
-        @type   volume: L{StorageVolume}
+        :param  volume: Volume object to detach
+        :type   volume: :class:`StorageVolume`
 
-        @keyword  ex_node: Node object to detach volume from (required)
-        @type     ex_node: L{Node}
+        :keyword  ex_node: Node object to detach volume from (required)
+        :type     ex_node: :class:`Node`
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         if not ex_node:
             return False
@@ -1256,11 +1256,11 @@ class GCENodeDriver(NodeDriver):
         """
         Destroy a static address.
 
-        @param  address: Address object to destroy
-        @type   address: L{GCEAddress}
+        :param  address: Address object to destroy
+        :type   address: :class:`GCEAddress`
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         request = '/regions/%s/addresses/%s' % (address.region, address.name)
 
@@ -1275,11 +1275,11 @@ class GCENodeDriver(NodeDriver):
         """
         Destroy a firewall.
 
-        @param  firewall: Firewall object to destroy
-        @type   firewall: L{GCEFirewall}
+        :param  firewall: Firewall object to destroy
+        :type   firewall: :class:`GCEFirewall`
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         request = '/global/firewalls/%s' % firewall.name
         response = self.connection.async_request(request,
@@ -1293,11 +1293,11 @@ class GCENodeDriver(NodeDriver):
         """
         Destroy a network.
 
-        @param  network: Network object to destroy
-        @type   network: L{GCENetwork}
+        :param  network: Network object to destroy
+        :type   network: :class:`GCENetwork`
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         request = '/global/networks/%s' % network.name
         response = self.connection.async_request(request,
@@ -1311,11 +1311,11 @@ class GCENodeDriver(NodeDriver):
         """
         Destroy a node.
 
-        @param  node: Node object to destroy
-        @type   node: L{Node}
+        :param  node: Node object to destroy
+        :type   node: :class:`Node`
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                               node.name)
@@ -1331,20 +1331,20 @@ class GCENodeDriver(NodeDriver):
         """
         Destroy multiple nodes at once.
 
-        @param  nodelist: List of nodes to destroy
-        @type   nodelist: C{list} of L{Node}
+        :param  nodelist: List of nodes to destroy
+        :type   nodelist: ``list`` of :class:`Node`
 
-        @keyword  ignore_errors: If true, don't raise an exception if one or
+        :keyword  ignore_errors: If true, don't raise an exception if one or
                                  more nodes fails to be destroyed.
-        @type     ignore_errors: C{bool}
+        :type     ignore_errors: ``bool``
 
-        @keyword  timeout: Number of seconds to wait for all nodes to be
+        :keyword  timeout: Number of seconds to wait for all nodes to be
                            destroyed.
-        @type     timeout: C{int}
+        :type     timeout: ``int``
 
-        @return:  A list of boolean values.  One for each node.  True means
+        :return:  A list of boolean values.  One for each node.  True means
                   that the node was successfully destroyed.
-        @rtype:   C{list} of C{bool}
+        :rtype:   ``list`` of ``bool``
         """
         responses = []
         success = [False] * len(nodelist)
@@ -1384,11 +1384,11 @@ class GCENodeDriver(NodeDriver):
         """
         Destroy a volume.
 
-        @param  volume: Volume object to destroy
-        @type   volume: L{StorageVolume}
+        :param  volume: Volume object to destroy
+        :type   volume: :class:`StorageVolume`
 
-        @return:  True if successful
-        @rtype:   C{bool}
+        :return:  True if successful
+        :rtype:   ``bool``
         """
         request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
                                           volume.name)
@@ -1403,14 +1403,14 @@ class GCENodeDriver(NodeDriver):
         """
         Return an Address object based on an address name and optional region.
 
-        @param  name: The name of the address
-        @type   name: C{str}
+        :param  name: The name of the address
+        :type   name: ``str``
 
-        @keyword  region: The region to search for the address in
-        @type     region: C{str} or C{None}
+        :keyword  region: The region to search for the address in
+        :type     region: ``str`` or ``None``
 
-        @return:  An Address object for the address
-        @rtype:   L{GCEAddress}
+        :return:  An Address object for the address
+        :rtype:   :class:`GCEAddress`
         """
         address_region = region or self._find_zone(name, 'addresses',
                                                    region=True)
@@ -1422,11 +1422,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Firewall object based on the firewall name.
 
-        @param  name: The name of the firewall
-        @type   name: C{str}
+        :param  name: The name of the firewall
+        :type   name: ``str``
 
-        @return:  A GCEFirewall object
-        @rtype:   L{GCEFirewall}
+        :return:  A GCEFirewall object
+        :rtype:   :class:`GCEFirewall`
         """
         request = '/global/firewalls/%s' % name
         response = self.connection.request(request, method='GET').object
@@ -1436,12 +1436,12 @@ class GCENodeDriver(NodeDriver):
         """
         Return an NodeImage object based on the name or link provided.
 
-        @param  partial_name: The name, partial name, or full path of a GCE
+        :param  partial_name: The name, partial name, or full path of a GCE
                               image.
-        @type   partial_name: C{str}
+        :type   partial_name: ``str``
 
-        @return:  NodeImage object based on provided information
-        @rtype:   L{NodeImage}
+        :return:  NodeImage object based on provided information
+        :rtype:   :class:`NodeImage`
         """
         if partial_name.startswith('https://'):
             response = self.connection.request(partial_name, method='GET')
@@ -1459,11 +1459,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Network object based on a network name.
 
-        @param  name: The name of the network
-        @type   name: C{str}
+        :param  name: The name of the network
+        :type   name: ``str``
 
-        @return:  A Network object for the network
-        @rtype:   L{GCENetwork}
+        :return:  A Network object for the network
+        :rtype:   :class:`GCENetwork`
         """
         request = '/global/networks/%s' % name
         response = self.connection.request(request, method='GET').object
@@ -1473,14 +1473,14 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Node object based on a node name and optional zone.
 
-        @param  name: The name of the node
-        @type   name: C{str}
+        :param  name: The name of the node
+        :type   name: ``str``
 
-        @keyword  zone: The zone to search for the node in
-        @type     zone: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  zone: The zone to search for the node in
+        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @return:  A Node object for the node
-        @rtype:   L{Node}
+        :return:  A Node object for the node
+        :rtype:   :class:`Node`
         """
         zone = zone or self.zone or self._find_zone(name, 'instances')
         if not hasattr(zone, 'name'):
@@ -1493,8 +1493,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Project object with project-wide information.
 
-        @return:  A GCEProject object
-        @rtype:   L{GCEProject}
+        :return:  A GCEProject object
+        :rtype:   :class:`GCEProject`
         """
         response = self.connection.request('', method='GET').object
         return self._to_project(response)
@@ -1503,14 +1503,14 @@ class GCENodeDriver(NodeDriver):
         """
         Return a size object based on a machine type name and zone.
 
-        @param  name: The name of the node
-        @type   name: C{str}
+        :param  name: The name of the node
+        :type   name: ``str``
 
-        @keyword  zone: The zone to search for the machine type in
-        @type     zone: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  zone: The zone to search for the machine type in
+        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @return:  A GCENodeSize object for the machine type
-        @rtype:   L{GCENodeSize}
+        :return:  A GCENodeSize object for the machine type
+        :rtype:   :class:`GCENodeSize`
         """
         zone = zone or self.zone
         if not hasattr(zone, 'name'):
@@ -1523,14 +1523,14 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Volume object based on a volume name and optional zone.
 
-        @param  name: The name of the volume
-        @type   name: C{str}
+        :param  name: The name of the volume
+        :type   name: ``str``
 
-        @keyword  zone: The zone to search for the volume in
-        @type     zone: C{str} or L{GCEZone} or L{NodeLocation} or C{None}
+        :keyword  zone: The zone to search for the volume in
+        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
-        @return:  A StorageVolume object for the volume
-        @rtype:   L{StorageVolume}
+        :return:  A StorageVolume object for the volume
+        :rtype:   :class:`StorageVolume`
         """
         zone = zone or self.zone or self.find_zone(name, 'disks')
         if not hasattr(zone, 'name'):
@@ -1543,11 +1543,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Zone object based on the zone name.
 
-        @param  name: The name of the zone.
-        @type   name: C{str}
+        :param  name: The name of the zone.
+        :type   name: ``str``
 
-        @return:  A GCEZone object for the zone
-        @rtype:   L{GCEZone}
+        :return:  A GCEZone object for the zone
+        :rtype:   :class:`GCEZone`
         """
         if name.startswith('https://'):
             short_name = name.split('/')[-1]
@@ -1566,11 +1566,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return an Address object from the json-response dictionary.
 
-        @param  address: The dictionary describing the address.
-        @type   address: C{dict}
+        :param  address: The dictionary describing the address.
+        :type   address: ``dict``
 
-        @return: Address object
-        @rtype: L{GCEAddress}
+        :return: Address object
+        :rtype: :class:`GCEAddress`
         """
         extra = {}
 
@@ -1588,11 +1588,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Firewall object from the json-response dictionary.
 
-        @param  firewall: The dictionary describing the firewall.
-        @type   firewall: C{dict}
+        :param  firewall: The dictionary describing the firewall.
+        :type   firewall: ``dict``
 
-        @return: Firewall object
-        @rtype: L{GCEFirewall}
+        :return: Firewall object
+        :rtype: :class:`GCEFirewall`
         """
         extra = {}
         extra['selfLink'] = firewall['selfLink']
@@ -1614,11 +1614,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Network object from the json-response dictionary.
 
-        @param  network: The dictionary describing the network.
-        @type   network: C{dict}
+        :param  network: The dictionary describing the network.
+        :type   network: ``dict``
 
-        @return: Network object
-        @rtype: L{GCENetwork}
+        :return: Network object
+        :rtype: :class:`GCENetwork`
         """
         extra = {}
 
@@ -1635,11 +1635,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return an Image object from the json-response dictionary.
 
-        @param  image: The dictionary describing the image.
-        @type   image: C{dict}
+        :param  image: The dictionary describing the image.
+        :type   image: ``dict``
 
-        @return: Image object
-        @rtype: L{NodeImage}
+        :return: Image object
+        :rtype: :class:`NodeImage`
         """
         extra = {}
         extra['preferredKernel'] = image['preferredKernel']
@@ -1653,11 +1653,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Location object from the json-response dictionary.
 
-        @param  location: The dictionary describing the location.
-        @type   location: C{dict}
+        :param  location: The dictionary describing the location.
+        :type   location: ``dict``
 
-        @return: Location object
-        @rtype: L{NodeLocation}
+        :return: Location object
+        :rtype: :class:`NodeLocation`
         """
         return NodeLocation(id=location['id'], name=location['name'],
                             country=location['name'].split('-')[0],
@@ -1667,11 +1667,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Node object from the json-response dictionary.
 
-        @param  node: The dictionary describing the node.
-        @type   node: C{dict}
+        :param  node: The dictionary describing the node.
+        :type   node: ``dict``
 
-        @return: Node object
-        @rtype: L{Node}
+        :return: Node object
+        :rtype: :class:`Node`
         """
         public_ips = []
         private_ips = []
@@ -1710,11 +1710,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Size object from the json-response dictionary.
 
-        @param  machine_type: The dictionary describing the machine.
-        @type   machine_type: C{dict}
+        :param  machine_type: The dictionary describing the machine.
+        :type   machine_type: ``dict``
 
-        @return: Size object
-        @rtype: L{GCENodeSize}
+        :return: Size object
+        :rtype: :class:`GCENodeSize`
         """
         extra = {}
         extra['selfLink'] = machine_type['selfLink']
@@ -1736,11 +1736,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Project object from the json-response dictionary.
 
-        @param  project: The dictionary describing the project.
-        @type   project: C{dict}
+        :param  project: The dictionary describing the project.
+        :type   project: ``dict``
 
-        @return: Project object
-        @rtype: L{GCEProject}
+        :return: Project object
+        :rtype: :class:`GCEProject`
         """
         extra = {}
         extra['selfLink'] = project['selfLink']
@@ -1756,11 +1756,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Volume object from the json-response dictionary.
 
-        @param  volume: The dictionary describing the volume.
-        @type   volume: C{dict}
+        :param  volume: The dictionary describing the volume.
+        :type   volume: ``dict``
 
-        @return: Volume object
-        @rtype: L{StorageVolume}
+        :return: Volume object
+        :rtype: :class:`StorageVolume`
         """
         extra = {}
         extra['selfLink'] = volume['selfLink']
@@ -1775,11 +1775,11 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Zone object from the json-response dictionary.
 
-        @param  zone: The dictionary describing the zone.
-        @type   zone: C{dict}
+        :param  zone: The dictionary describing the zone.
+        :type   zone: ``dict``
 
-        @return: Zone object
-        @rtype: L{GCEZone}
+        :return: Zone object
+        :rtype: :class:`GCEZone`
         """
         extra = {}
         extra['selfLink'] = zone['selfLink']

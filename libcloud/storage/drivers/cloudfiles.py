@@ -206,10 +206,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='ord', **kwargs):
         """
-        @inherits:  L{StorageDriver.__init__}
+        @inherits:  :class:`StorageDriver.__init__`
 
-        @param region: ID of the region which should be used.
-        @type region: C{str}
+        :param region: ID of the region which should be used.
+        :type region: ``str``
         """
         if hasattr(self, '_region'):
             region = self._region
@@ -288,10 +288,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def enable_container_cdn(self, container, ex_ttl=None):
         """
-        @inherits: L{StorageDriver.enable_container_cdn}
+        @inherits: :class:`StorageDriver.enable_container_cdn`
 
-        @param ex_ttl: cache time to live
-        @type ex_ttl: C{int}
+        :param ex_ttl: cache time to live
+        :type ex_ttl: ``int``
         """
         container_name = container.name
         headers = {'X-CDN-Enabled': 'True'}
@@ -419,9 +419,9 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         Purge edge cache for the specified object.
 
-        @param email: Email where a notification will be sent when the job
+        :param email: Email where a notification will be sent when the job
         completes. (optional)
-        @type email: C{str}
+        :type email: ``str``
         """
         container_name = self._encode_container_name(obj.container.name)
         object_name = self._encode_object_name(obj.name)
@@ -439,7 +439,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         Get meta data
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         response = self.connection.request('', method='HEAD')
 
@@ -486,14 +486,14 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         Enable serving a static website.
 
-        @param container: Container instance
-        @type container: L{Container}
+        :param container: Container instance
+        :type container: :class:`Container`
 
-        @param index_file: Name of the object which becomes an index page for
+        :param index_file: Name of the object which becomes an index page for
         every sub-directory in this container.
-        @type index_file: C{str}
+        :type index_file: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         container_name = container.name
         headers = {'X-Container-Meta-Web-Index': index_file}
@@ -510,13 +510,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         Set a custom error page which is displayed if file is not found and
         serving of a static website is enabled.
 
-        @param container: Container instance
-        @type container: L{Container}
+        :param container: Container instance
+        :type container: :class:`Container`
 
-        @param file_name: Name of the object which becomes the error page.
-        @type file_name: C{str}
+        :param file_name: Name of the object which becomes the error page.
+        :type file_name: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         container_name = container.name
         headers = {'X-Container-Meta-Web-Error': file_name}
@@ -533,10 +533,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         Set the metadata header X-Account-Meta-Temp-URL-Key on your Cloud
         Files account.
 
-        @param key: X-Account-Meta-Temp-URL-Key
-        @type key: C{str}
+        :param key: X-Account-Meta-Temp-URL-Key
+        :type key: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         headers = {'X-Account-Meta-Temp-URL-Key': key}
 
@@ -555,17 +555,17 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         wish.  This method is specifically for allowing users to retrieve
         or update an object.
 
-        @param obj: The object that you wish to make temporarily public
-        @type obj: L{Object}
+        :param obj: The object that you wish to make temporarily public
+        :type obj: :class:`Object`
 
-        @param method: Which method you would like to allow, 'PUT' or 'GET'
-        @type method: C{str}
+        :param method: Which method you would like to allow, 'PUT' or 'GET'
+        :type method: ``str``
 
-        @param timeout: Time (in seconds) after which you want the TempURL
+        :param timeout: Time (in seconds) after which you want the TempURL
         to expire.
-        @type timeout: C{int}
+        :type timeout: ``int``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         self.connection._populate_hosts_and_request_paths()
         expires = int(time() + timeout)

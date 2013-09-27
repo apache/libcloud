@@ -100,7 +100,7 @@ class Response(object):
 
         Override in a provider's subclass.
 
-        @return: Parsed body.
+        :return: Parsed body.
         """
         return self.body
 
@@ -110,7 +110,7 @@ class Response(object):
 
         Override in a provider's subclass.
 
-        @return: Parsed error.
+        :return: Parsed error.
         """
         return self.body
 
@@ -121,7 +121,8 @@ class Response(object):
         The meaning of this can be arbitrary; did we receive OK status? Did
         the node get created? Were we authenticated?
 
-        @return: C{True} or C{False}
+        :rtype: ``bool``
+        :return: ``True`` or ``False``
         """
         return self.status == httplib.OK or self.status == httplib.CREATED
 
@@ -129,7 +130,7 @@ class Response(object):
         """
         Decompress a response body if it is using deflate or gzip encoding.
 
-        @return: Decompressed response
+        :return: Decompressed response
         """
         headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
@@ -234,9 +235,9 @@ class RawResponse(Response):
 class LoggingConnection():
     """
     Debug class to log all HTTP(s) requests as they could be made
-    with the C{curl} command.
+    with the curl command.
 
-    @cvar log: file-like object that logs entries are written to.
+    :cvar log: file-like object that logs entries are written to.
     """
     log = None
 
@@ -445,13 +446,13 @@ class Connection(object):
         """
         Establish a connection with the API server.
 
-        @type host: C{str}
-        @param host: Optional host to override our default
+        :type host: ``str``
+        :param host: Optional host to override our default
 
-        @type port: C{int}
-        @param port: Optional port to override our default
+        :type port: ``int``
+        :param port: Optional port to override our default
 
-        @returns: A connection
+        :returns: A connection
         """
         # prefer the attribute base_url if its set or sent
         connection = None
@@ -503,8 +504,8 @@ class Connection(object):
         Users of the library should call this to uniquely identify thier
         requests to a provider.
 
-        @type token: C{str}
-        @param token: Token to add to the user agent.
+        :type token: ``str``
+        :param token: Token to add to the user agent.
         """
         self.ua.append(token)
 
@@ -516,30 +517,32 @@ class Connection(object):
         Basically a wrapper around the connection
         object's `request` that does some helpful pre-processing.
 
-        @type action: C{str}
-        @param action: A path. This can include arguments. If included,
+        :type action: ``str``
+        :param action: A path. This can include arguments. If included,
             any extra parameters are appended to the existing ones.
 
-        @type params: C{dict}
-        @param params: Optional mapping of additional parameters to send. If
-            None, leave as an empty C{dict}.
+        :type params: ``dict``
+        :param params: Optional mapping of additional parameters to send. If
+            None, leave as an empty ``dict``.
 
-        @type data: C{unicode}
-        @param data: A body of data to send with the request.
+        :type data: ``unicode``
+        :param data: A body of data to send with the request.
 
-        @type headers: C{dict}
-        @param headers: Extra headers to add to the request
-            None, leave as an empty C{dict}.
+        :type headers: ``dict``
+        :param headers: Extra headers to add to the request
+            None, leave as an empty ``dict``.
 
-        @type method: C{str}
-        @param method: An HTTP method such as "GET" or "POST".
+        :type method: ``str``
+        :param method: An HTTP method such as "GET" or "POST".
 
-        @type raw: C{bool}
-        @param raw: True to perform a "raw" request aka only send the headers
+        :type raw: ``bool``
+        :param raw: True to perform a "raw" request aka only send the headers
                      and use the rawResponseCls class. This is used with
                      storage API when uploading a file.
 
-        @return: An instance of type I{responseCls}
+        :return: An :class:`Response` instance.
+        :rtype: :class:`Response` instance
+
         """
         if params is None:
             params = {}
@@ -647,11 +650,11 @@ class Connection(object):
         This hook can perform a final manipulation on the params, headers and
         url parameters.
 
-        @type params: C{dict}
-        @param params: Request parameters.
+        :type params: ``dict``
+        :param params: Request parameters.
 
-        @type headers: C{dict}
-        @param headers: Request headers.
+        :type headers: ``dict``
+        :param headers: Request headers.
         """
         return params, headers
 
@@ -694,28 +697,29 @@ class PollingConnection(Connection):
           until the response indicates that the job has completed or the
           timeout of 'self.timeout' seconds has been reached.
 
-        @type action: C{str}
-        @param action: A path
+        :type action: ``str``
+        :param action: A path
 
-        @type params: C{dict}
-        @param params: Optional mapping of additional parameters to send. If
-            None, leave as an empty C{dict}.
+        :type params: ``dict``
+        :param params: Optional mapping of additional parameters to send. If
+            None, leave as an empty ``dict``.
 
-        @type data: C{unicode}
-        @param data: A body of data to send with the request.
+        :type data: ``unicode``
+        :param data: A body of data to send with the request.
 
-        @type headers: C{dict}
-        @param headers: Extra headers to add to the request
-            None, leave as an empty C{dict}.
+        :type headers: ``dict``
+        :param headers: Extra headers to add to the request
+            None, leave as an empty ``dict``.
 
-        @type method: C{str}
-        @param method: An HTTP method such as "GET" or "POST".
+        :type method: ``str``
+        :param method: An HTTP method such as "GET" or "POST".
 
-        @type context: C{dict}
-        @param context: Context dictionary which is passed to the functions
+        :type context: ``dict``
+        :param context: Context dictionary which is passed to the functions
         which construct initial and poll URL.
 
-        @return: An instance of type I{responseCls}
+        :return: An :class:`Response` instance.
+        :rtype: :class:`Response` instance
         """
 
         request = getattr(self, self.request_method)
@@ -757,14 +761,14 @@ class PollingConnection(Connection):
         Return keyword arguments which are passed to the request() method when
         polling for the job status.
 
-        @param response: Response object returned by poll request.
-        @type response: C{HTTPResponse}
+        :param response: Response object returned by poll request.
+        :type response: :class:`HTTPResponse`
 
-        @param request_kwargs: Kwargs previously used to initiate the
+        :param request_kwargs: Kwargs previously used to initiate the
                                   poll request.
-        @type response: C{dict}
+        :type response: ``dict``
 
-        @return C{dict} Keyword arguments
+        :return ``dict`` Keyword arguments
         """
         raise NotImplementedError('get_poll_request_kwargs not implemented')
 
@@ -772,10 +776,10 @@ class PollingConnection(Connection):
         """
         Return job completion status.
 
-        @param response: Response object returned by poll request.
-        @type response: C{HTTPResponse}
+        :param response: Response object returned by poll request.
+        :type response: :class:`HTTPResponse`
 
-        @return C{bool} True if the job has completed, False otherwise.
+        :return ``bool`` True if the job has completed, False otherwise.
         """
         raise NotImplementedError('has_completed not implemented')
 
@@ -787,7 +791,7 @@ class ConnectionKey(Connection):
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None):
         """
-        Initialize `user_id` and `key`; set `secure` to an C{int} based on
+        Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
         """
         super(ConnectionKey, self).__init__(secure=secure, host=host,
@@ -821,27 +825,27 @@ class BaseDriver(object):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, **kwargs):
         """
-        @param    key:    API key or username to be used (required)
-        @type     key:    C{str}
+        :param    key:    API key or username to be used (required)
+        :type     key:    ``str``
 
-        @param    secret: Secret password to be used (required)
-        @type     secret: C{str}
+        :param    secret: Secret password to be used (required)
+        :type     secret: ``str``
 
-        @param    secure: Weither to use HTTPS or HTTP. Note: Some providers
+        :param    secure: Weither to use HTTPS or HTTP. Note: Some providers
                             only support HTTPS, and it is on by default.
-        @type     secure: C{bool}
+        :type     secure: ``bool``
 
-        @param    host: Override hostname used for connections.
-        @type     host: C{str}
+        :param    host: Override hostname used for connections.
+        :type     host: ``str``
 
-        @param    port: Override port used for connections.
-        @type     port: C{int}
+        :param    port: Override port used for connections.
+        :type     port: ``int``
 
-        @param    api_version: Optional API version. Only used by drivers
+        :param    api_version: Optional API version. Only used by drivers
                                  which support multiple API versions.
-        @type     api_version: C{str}
+        :type     api_version: ``str``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
 
         self.key = key

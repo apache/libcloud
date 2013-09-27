@@ -402,7 +402,7 @@ class StorageDriver(BaseDriver):
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
 
-        :rtype: C{object}
+        :rtype: ``object``
         """
         raise NotImplementedError(
             'upload_object_via_stream not implemented for this driver')

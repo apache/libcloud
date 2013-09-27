@@ -45,8 +45,8 @@ class State(object):
     """
     Standard states for a loadbalancer
 
-    @cvar RUNNING: loadbalancer is running and ready to use
-    @cvar UNKNOWN: loabalancer state is unknown
+    :cvar RUNNING: loadbalancer is running and ready to use
+    :cvar UNKNOWN: loabalancer state is unknown
     """
 
     RUNNING = 0

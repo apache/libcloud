@@ -280,10 +280,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
     def list_images(self, location=None, ex_only_active=True):
         """
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
 
-        @param ex_only_active: True if list only active
-        @type ex_only_active: C{bool}
+        :param ex_only_active: True if list only active
+        :type ex_only_active: ``bool``
 
         """
         return self._to_images(
@@ -303,10 +303,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         """
         Lists details of the specified server.
 
-        @param       node_id: ID of the node which should be used
-        @type        node_id: C{str}
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         # @TODO: Remove this if in 0.6
         if isinstance(node_id, Node):
@@ -323,10 +323,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         """
         Soft reboots the specified server
 
-        @param      node:  node
-        @type       node: L{Node}
+        :param      node:  node
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         return self._reboot_node(node, reboot_type='SOFT')
 
@@ -334,10 +334,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         """
         Hard reboots the specified server
 
-        @param      node:  node
-        @type       node: L{Node}
+        :param      node:  node
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         return self._reboot_node(node, reboot_type='HARD')
 
@@ -451,18 +451,18 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Create a new node
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_metadata: Key/Value metadata to associate with a node
-        @type       ex_metadata: C{dict}
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
 
-        @keyword    ex_files:   File Path => File contents to create on
+        :keyword    ex_files:   File Path => File contents to create on
                                 the node
-        @type       ex_files:   C{dict}
+        :type       ex_files:   ``dict``
 
-        @keyword    ex_shared_ip_group_id: The server is launched into
+        :keyword    ex_shared_ip_group_id: The server is launched into
             that shared IP group
-        @type       ex_shared_ip_group_id: C{str}
+        :type       ex_shared_ip_group_id: ``str``
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -505,16 +505,16 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         This will reboot the instance to complete the operation.
 
-        L{Node.extra['password']} will be set to the new value if the
+        :class:`Node.extra['password']` will be set to the new value if the
         operation was successful.
 
-        @param      node: node to set password
-        @type       node: L{Node}
+        :param      node: node to set password
+        :type       node: :class:`Node`
 
-        @param      password: new password.
-        @type       password: C{str}
+        :param      password: new password.
+        :type       password: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         return self._change_password_or_name(node, password=password)
 
@@ -524,13 +524,13 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         This will reboot the instance to complete the operation.
 
-        @param      node: node to set name
-        @type       node: L{Node}
+        :param      node: node to set name
+        :type       node: :class:`Node`
 
-        @param      name: new name
-        @type       name: C{str}
+        :param      name: new name
+        :type       name: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         return self._change_password_or_name(node, name=name)
 
@@ -538,13 +538,13 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Change an existing server flavor / scale the server up or down.
 
-        @param      node: node to resize.
-        @type       node: L{Node}
+        :param      node: node to resize.
+        :type       node: :class:`Node`
 
-        @param      size: new size.
-        @type       size: L{NodeSize}
+        :param      size: new size.
+        :type       size: :class:`NodeSize`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         elm = ET.Element(
             'resize',
@@ -565,10 +565,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         For more info refer to the API documentation: http://goo.gl/zjFI1
 
-        @param      node: node for which the resize request will be confirmed.
-        @type       node: L{Node}
+        :param      node: node for which the resize request will be confirmed.
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         elm = ET.Element(
             'confirmResize',
@@ -588,10 +588,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         For more info refer to the API documentation: http://goo.gl/AizBu
 
-        @param      node: node for which the resize request will be reverted.
-        @type       node: L{Node}
+        :param      node: node for which the resize request will be reverted.
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         elm = ET.Element(
             'revertResize',
@@ -607,13 +607,13 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Rebuilds the specified server.
 
-        @param       node_id: ID of the node which should be used
-        @type        node_id: C{str}
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
 
-        @param       image_id: ID of the image which should be used
-        @type        image_id: C{str}
+        :param       image_id: ID of the image which should be used
+        :type        image_id: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         # @TODO: Remove those ifs in 0.6
         if isinstance(node_id, Node):
@@ -637,13 +637,13 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Creates a shared IP group.
 
-        @param       group_name:  group name which should be used
-        @type        group_name: C{str}
+        :param       group_name:  group name which should be used
+        :type        group_name: ``str``
 
-        @param       node_id: ID of the node which should be used
-        @type        node_id: C{str}
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         # @TODO: Remove this if in 0.6
         if isinstance(node_id, Node):
@@ -672,10 +672,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         Lists IDs and names for shared IP groups.
         If details lists all details for shared IP groups.
 
-        @param       details: True if details is required
-        @type        details: C{bool}
+        :param       details: True if details is required
+        :type        details: ``bool``
 
-        @rtype: C{list} of L{OpenStack_1_0_SharedIpGroup}
+        :rtype: ``list`` of :class:`OpenStack_1_0_SharedIpGroup`
         """
         uri = '/shared_ip_groups/detail' if details else '/shared_ip_groups'
         resp = self.connection.request(uri,
@@ -688,10 +688,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Deletes the specified shared IP group.
 
-        @param       group_id:  group id which should be used
-        @type        group_id: C{str}
+        :param       group_id:  group id which should be used
+        :type        group_id: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         uri = '/shared_ip_groups/%s' % group_id
         resp = self.connection.request(uri, method='DELETE')
@@ -701,19 +701,19 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Shares an IP address to the specified server.
 
-        @param       group_id:  group id which should be used
-        @type        group_id: C{str}
+        :param       group_id:  group id which should be used
+        :type        group_id: ``str``
 
-        @param       node_id: ID of the node which should be used
-        @type        node_id: C{str}
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
 
-        @param       ip: ip which should be used
-        @type        ip: C{str}
+        :param       ip: ip which should be used
+        :type        ip: ``str``
 
-        @param       configure_node: configure node
-        @type        configure_node: C{bool}
+        :param       configure_node: configure node
+        :type        configure_node: ``bool``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         # @TODO: Remove this if in 0.6
         if isinstance(node_id, Node):
@@ -742,13 +742,13 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         Removes a shared IP address from the specified server.
 
-        @param       node_id: ID of the node which should be used
-        @type        node_id: C{str}
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
 
-        @param       ip: ip which should be used
-        @type        ip: C{str}
+        :param       ip: ip which should be used
+        :type        ip: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         # @TODO: Remove this if in 0.6
         if isinstance(node_id, Node):
@@ -764,10 +764,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         List all server addresses.
 
-        @param       node_id: ID of the node which should be used
-        @type        node_id: C{str}
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
 
-        @rtype: C{OpenStack_1_0_NodeIpAddresses}
+        :rtype: :class:`OpenStack_1_0_NodeIpAddresses`
         """
         # @TODO: Remove this if in 0.6
         if isinstance(node_id, Node):
@@ -882,8 +882,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         and absolute limits like total amount of available
         RAM to be used by servers.
 
-        @return: dict with keys 'rate' and 'absolute'
-        @rtype: C{dict}
+        :return: dict with keys 'rate' and 'absolute'
+        :rtype: ``dict``
         """
 
         def _to_rate(el):
@@ -909,13 +909,13 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     def ex_save_image(self, node, name):
         """Create an image for node.
 
-        @param      node: node to use as a base for image
-        @type       node: L{Node}
+        :param      node: node to use as a base for image
+        :type       node: :class:`Node`
 
-        @param      name: name for new image
-        @type       name: C{str}
+        :param      name: name for new image
+        :type       name: ``str``
 
-        @rtype: L{NodeImage}
+        :rtype: :class:`NodeImage`
         """
 
         image_elm = ET.Element(
@@ -932,10 +932,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
     def ex_delete_image(self, image):
         """Delete an image for node.
 
-        @param      image: the image to be deleted
-        @type       image: L{NodeImage}
+        :param      image: the image to be deleted
+        :type       image: :class:`NodeImage`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         uri = '/images/%s' % image.id
         resp = self.connection.request(uri, method='DELETE')
@@ -1028,25 +1028,25 @@ class OpenStackSecurityGroup(object):
         """
         Constructor.
 
-        @keyword    id: Group id.
-        @type       id: C{str}
+        :keyword    id: Group id.
+        :type       id: ``str``
 
-        @keyword    tenant_id: Owner of the security group.
-        @type       tenant_id: C{str}
+        :keyword    tenant_id: Owner of the security group.
+        :type       tenant_id: ``str``
 
-        @keyword    name: Human-readable name for the security group. Might
+        :keyword    name: Human-readable name for the security group. Might
                           not be unique.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @keyword    description: Human-readable description of a security
+        :keyword    description: Human-readable description of a security
                                  group.
-        @type       description: C{str}
+        :type       description: ``str``
 
-        @keyword    rules: Rules associated with this group.
-        @type       description: C{list} of L{OpenStackSecurityGroupRule}
+        :keyword    rules: Rules associated with this group.
+        :type       description: ``list`` of :class:`OpenStackSecurityGroupRule`
 
-        @keyword    extra: Extra attributes associated with this group.
-        @type       extra: C{dict}
+        :keyword    extra: Extra attributes associated with this group.
+        :type       extra: ``dict``
         """
         self.id = id
         self.tenant_id = tenant_id
@@ -1073,32 +1073,32 @@ class OpenStackSecurityGroupRule(object):
         """
         Constructor.
 
-        @keyword    id: Rule id.
-        @type       id: C{str}
+        :keyword    id: Rule id.
+        :type       id: ``str``
 
-        @keyword    parent_group_id: ID of the parent security group.
-        @type       parent_group_id: C{str}
+        :keyword    parent_group_id: ID of the parent security group.
+        :type       parent_group_id: ``str``
 
-        @keyword    ip_protocol: IP Protocol (icmp, tcp, udp, etc).
-        @type       ip_protocol: C{str}
+        :keyword    ip_protocol: IP Protocol (icmp, tcp, udp, etc).
+        :type       ip_protocol: ``str``
 
-        @keyword    from_port: Port at start of range.
-        @type       from_port: C{int}
+        :keyword    from_port: Port at start of range.
+        :type       from_port: ``int``
 
-        @keyword    to_port: Port at end of range.
-        @type       to_port: C{int}
+        :keyword    to_port: Port at end of range.
+        :type       to_port: ``int``
 
-        @keyword    ip_range: CIDR for address range.
-        @type       ip_range: C{str}
+        :keyword    ip_range: CIDR for address range.
+        :type       ip_range: ``str``
 
-        @keyword    group: Name of a source security group to apply to rule.
-        @type       group: C{str}
+        :keyword    group: Name of a source security group to apply to rule.
+        :type       group: ``str``
 
-        @keyword    tenant_id: Owner of the security group.
-        @type       tenant_id: C{str}
+        :keyword    tenant_id: Owner of the security group.
+        :type       tenant_id: ``str``
 
-        @keyword    extra: Extra attributes associated with this rule.
-        @type       extra: C{dict}
+        :keyword    extra: Extra attributes associated with this rule.
+        :type       extra: ``dict``
         """
         self.id = id
         self.parent_group_id = parent_group_id
@@ -1134,20 +1134,20 @@ class OpenStackKeyPair(object):
         """
         Constructor.
 
-        @keyword    name: Name of the KeyPair.
-        @type       name: C{str}
+        :keyword    name: Name of the KeyPair.
+        :type       name: ``str``
 
-        @keyword    fingerprint: Fingerprint of the KeyPair
-        @type       fingerprint: C{str}
+        :keyword    fingerprint: Fingerprint of the KeyPair
+        :type       fingerprint: ``str``
 
-        @keyword    public_key: Public key in OpenSSH format.
-        @type       public_key: C{str}
+        :keyword    public_key: Public key in OpenSSH format.
+        :type       public_key: ``str``
 
-        @keyword    private_key: Private key in PEM format.
-        @type       private_key: C{str}
+        :keyword    private_key: Private key in PEM format.
+        :type       private_key: ``str``
 
-        @keyword    extra: Extra attributes associated with this KeyPair.
-        @type       extra: C{dict}
+        :keyword    extra: Extra attributes associated with this KeyPair.
+        :type       extra: ``dict``
         """
         self.name = name
         self.fingerprint = fingerprint
@@ -1187,30 +1187,30 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def create_node(self, **kwargs):
         """Create a new node
 
-        @inherits:  L{NodeDriver.create_node}
+        @inherits:  :class:`NodeDriver.create_node`
 
-        @keyword    ex_metadata: Key/Value metadata to associate with a node
-        @type       ex_metadata: C{dict}
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
 
-        @keyword    ex_files:   File Path => File contents to create on
+        :keyword    ex_files:   File Path => File contents to create on
                                 the no  de
-        @type       ex_files:   C{dict}
+        :type       ex_files:   ``dict``
 
-        @keyword    ex_keyname:  Name of existing public key to inject into
+        :keyword    ex_keyname:  Name of existing public key to inject into
                                  instance
-        @type       ex_keyname:  C{str}
+        :type       ex_keyname:  ``str``
 
-        @keyword    ex_userdata: String containing user data
+        :keyword    ex_userdata: String containing user data
                                  see
                                  https://help.ubuntu.com/community/CloudInit
-        @type       ex_userdata: C{str}
+        :type       ex_userdata: ``str``
 
-        @keyword    networks: The server is launched into a set of Networks.
-        @type       networks: L{OpenStackNetwork}
+        :keyword    networks: The server is launched into a set of Networks.
+        :type       networks: :class:`OpenStackNetwork`
 
-        @keyword    ex_security_groups: List of security groups to assign to
+        :keyword    ex_security_groups: List of security groups to assign to
                                         the node
-        @type       ex_security_groups: C{list} of L{OpenStackSecurityGroup}
+        :type       ex_security_groups: ``list`` of :class:`OpenStackSecurityGroup`
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -1329,13 +1329,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Changes the administrator password for a specified server.
 
-        @param      node: Node to rebuild.
-        @type       node: L{Node}
+        :param      node: Node to rebuild.
+        :type       node: :class:`Node`
 
-        @param      password: The administrator password.
-        @type       password: C{str}
+        :param      password: The administrator password.
+        :type       password: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self._node_action(node, 'changePassword', adminPass=password)
         node.extra['password'] = password
@@ -1345,13 +1345,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Rebuild a Node.
 
-        @param      node: Node to rebuild.
-        @type       node: L{Node}
+        :param      node: Node to rebuild.
+        :type       node: :class:`Node`
 
-        @param      image: New image to use.
-        @type       image: L{NodeImage}
+        :param      image: New image to use.
+        :type       image: :class:`NodeImage`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         server_params = self._create_args_to_params(node, image=image)
         resp = self._node_action(node, 'rebuild', **server_params)
@@ -1361,13 +1361,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Change a node size.
 
-        @param      node: Node to resize.
-        @type       node: L{Node}
+        :param      node: Node to resize.
+        :type       node: :class:`Node`
 
-        @type       size: L{NodeSize}
-        @param      size: New size to use.
+        :type       size: :class:`NodeSize`
+        :param      size: New size to use.
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         server_params = self._create_args_to_params(node, size=size)
         resp = self._node_action(node, 'resize', **server_params)
@@ -1377,10 +1377,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Confirms a pending resize action.
 
-        @param      node: Node to resize.
-        @type       node: L{Node}
+        :param      node: Node to resize.
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self._node_action(node, 'confirmResize')
         return resp.status == httplib.NO_CONTENT
@@ -1389,10 +1389,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Cancels and reverts a pending resize action.
 
-        @param      node: Node to resize.
-        @type       node: L{Node}
+        :param      node: Node to resize.
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self._node_action(node, 'revertResize')
         return resp.status == httplib.ACCEPTED
@@ -1401,16 +1401,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Creates a new image.
 
-        @param      node: Node
-        @type       node: L{Node}
+        :param      node: Node
+        :type       node: :class:`Node`
 
-        @param      name: The name for the new image.
-        @type       name: C{str}
+        :param      name: The name for the new image.
+        :type       name: ``str``
 
-        @param      metadata: Key and value pairs for metadata.
-        @type       metadata: C{dict}
+        :param      metadata: Key and value pairs for metadata.
+        :type       metadata: ``dict``
 
-        @rtype: L{NodeImage}
+        :rtype: :class:`NodeImage`
         """
         optional_params = {}
         if metadata:
@@ -1424,13 +1424,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Sets the Node's name.
 
-        @param      node: Node
-        @type       node: L{Node}
+        :param      node: Node
+        :type       node: :class:`Node`
 
-        @param      name: The name of the server.
-        @type       name: C{str}
+        :param      name: The name of the server.
+        :type       name: ``str``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         return self._update_node(node, name=name)
 
@@ -1438,11 +1438,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a Node's metadata.
 
-        @param      node: Node
-        @type       node: L{Node}
+        :param      node: Node
+        :type       node: :class:`Node`
 
-        @return: Key/Value metadata associated with node.
-        @rtype: C{dict}
+        :return: Key/Value metadata associated with node.
+        :rtype: ``dict``
         """
         return self.connection.request(
             '/servers/%s/metadata' % (node.id,),
@@ -1452,13 +1452,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Sets the Node's metadata.
 
-        @param      node: Node
-        @type       node: L{Node}
+        :param      node: Node
+        :type       node: :class:`Node`
 
-        @param      metadata: Key/Value metadata to associate with a node
-        @type       metadata: C{dict}
+        :param      metadata: Key/Value metadata to associate with a node
+        :type       metadata: ``dict``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         return self.connection.request(
             '/servers/%s/metadata' % (node.id,), method='PUT',
@@ -1472,13 +1472,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         The driver currently only supports updating the node name.
 
-        @param      node: Node
-        @type       node: L{Node}
+        :param      node: Node
+        :type       node: :class:`Node`
 
-        @keyword    name:   New name for the server
-        @type       name:   C{str}
+        :keyword    name:   New name for the server
+        :type       name:   ``str``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         potential_data = self._create_args_to_params(node, **node_updates)
         updates = {'name': potential_data['name']}
@@ -1498,7 +1498,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a list of Networks that are available.
 
-        @rtype: C{list} of L{OpenStackNetwork}
+        :rtype: ``list`` of :class:`OpenStackNetwork`
         """
         return self._to_networks(
             self.connection.request('/os-networksv2').object)
@@ -1507,13 +1507,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a new Network
 
-        @param name: Name of network which should be used
-        @type name: C{str}
+        :param name: Name of network which should be used
+        :type name: ``str``
 
-        @param cidr: cidr of network which should be used
-        @type cidr: C{str}
+        :param cidr: cidr of network which should be used
+        :type cidr: ``str``
 
-        @rtype: L{OpenStackNetwork}
+        :rtype: :class:`OpenStackNetwork`
         """
         return self._to_network(self.connection.request(
             '/os-networksv2', method='POST',
@@ -1524,10 +1524,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a list of NodeNetorks that are available.
 
-        @param network: Network which should be used
-        @type network: L{OpenStackNetwork}
+        :param network: Network which should be used
+        :type network: :class:`OpenStackNetwork`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self.connection.request('/os-networksv2/%s' % (network.id),
                                        method='DELETE')
@@ -1574,7 +1574,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a list of Security Groups that are available.
 
-        @rtype: C{list} of L{OpenStackSecurityGroup}
+        :rtype: ``list`` of :class:`OpenStackSecurityGroup`
         """
         return self._to_security_groups(
             self.connection.request('/os-security-groups').object)
@@ -1583,7 +1583,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get Security Groups of the specified server.
 
-        @rtype: C{list} of L{OpenStackSecurityGroup}
+        :rtype: ``list`` of :class:`OpenStackSecurityGroup`
         """
         return self._to_security_groups(
             self.connection.request('/servers/%s/os-security-groups' %
@@ -1593,13 +1593,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a new Security Group
 
-        @param name: Name of the new Security Group
-        @type  name: C{str}
+        :param name: Name of the new Security Group
+        :type  name: ``str``
 
-        @param description: Description of the new Security Group
-        @type  description: C{str}
+        :param description: Description of the new Security Group
+        :type  description: ``str``
 
-        @rtype: L{OpenStackSecurityGroup}
+        :rtype: :class:`OpenStackSecurityGroup`
         """
         return self._to_security_group(self.connection.request(
             '/os-security-groups', method='POST',
@@ -1610,10 +1610,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Delete a Security Group.
 
-        @param security_group: Security Group should be deleted
-        @type  security_group: L{OpenStackSecurityGroup}
+        :param security_group: Security Group should be deleted
+        :type  security_group: :class:`OpenStackSecurityGroup`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self.connection.request('/os-security-groups/%s' %
                                        (security_group.id),
@@ -1626,27 +1626,27 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a new Rule in a Security Group
 
-        @param security_group: Security Group in which to add the rule
-        @type  security_group: L{OpenStackSecurityGroup}
+        :param security_group: Security Group in which to add the rule
+        :type  security_group: :class:`OpenStackSecurityGroup`
 
-        @param ip_protocol: Protocol to which this rule applies
+        :param ip_protocol: Protocol to which this rule applies
                             Examples: tcp, udp, ...
-        @type  ip_protocol: C{str}
+        :type  ip_protocol: ``str``
 
-        @param from_port: First port of the port range
-        @type  from_port: C{int}
+        :param from_port: First port of the port range
+        :type  from_port: ``int``
 
-        @param to_port: Last port of the port range
-        @type  to_port: C{int}
+        :param to_port: Last port of the port range
+        :type  to_port: ``int``
 
-        @param cidr: CIDR notation of the source IP range for this rule
-        @type  cidr: C{str}
+        :param cidr: CIDR notation of the source IP range for this rule
+        :type  cidr: ``str``
 
-        @param source_security_group: Existing Security Group to use as the
+        :param source_security_group: Existing Security Group to use as the
                                       source (instead of CIDR)
-        @type  source_security_group: L{OpenStackSecurityGroup
+        :type  source_security_group: L{OpenStackSecurityGroup
 
-        @rtype: L{OpenStackSecurityGroupRule}
+        :rtype: :class:`OpenStackSecurityGroupRule`
         """
         source_security_group_id = None
         if type(source_security_group) == OpenStackSecurityGroup:
@@ -1667,10 +1667,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Delete a Rule from a Security Group.
 
-        @param rule: Rule should be deleted
-        @type  rule: L{OpenStackSecurityGroupRule}
+        :param rule: Rule should be deleted
+        :type  rule: :class:`OpenStackSecurityGroupRule`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self.connection.request('/os-security-group-rules/%s' %
                                        (rule.id), method='DELETE')
@@ -1691,7 +1691,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a list of KeyPairs that are available.
 
-        @rtype: C{list} of L{OpenStackKeyPair}
+        :rtype: ``list`` of :class:`OpenStackKeyPair`
         """
         return self._to_keypairs(
             self.connection.request('/os-keypairs').object)
@@ -1700,10 +1700,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Create a new KeyPair
 
-        @param name: Name of the new KeyPair
-        @type  name: C{str}
+        :param name: Name of the new KeyPair
+        :type  name: ``str``
 
-        @rtype: L{OpenStackKeyPair}
+        :rtype: :class:`OpenStackKeyPair`
         """
         return self._to_keypair(self.connection.request(
             '/os-keypairs', method='POST',
@@ -1714,13 +1714,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Import a KeyPair from a file
 
-        @param name: Name of the new KeyPair
-        @type  name: C{str}
+        :param name: Name of the new KeyPair
+        :type  name: ``str``
 
-        @param keyfile: Path to the public key file (in OpenSSH format)
-        @type  keyfile: C{str}
+        :param keyfile: Path to the public key file (in OpenSSH format)
+        :type  keyfile: ``str``
 
-        @rtype: L{OpenStackKeyPair}
+        :rtype: :class:`OpenStackKeyPair`
         """
         with open(os.path.expanduser(keyfile), 'r') as fp:
             public_key = fp.read()
@@ -1731,13 +1731,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Import a KeyPair from a string
 
-        @param name: Name of the new KeyPair
-        @type  name: C{str}
+        :param name: Name of the new KeyPair
+        :type  name: ``str``
 
-        @param key_material: Public key (in OpenSSH format)
-        @type  key_material: C{str}
+        :param key_material: Public key (in OpenSSH format)
+        :type  key_material: ``str``
 
-        @rtype: L{OpenStackKeyPair}
+        :rtype: :class:`OpenStackKeyPair`
         """
         return self._to_keypair(self.connection.request(
             '/os-keypairs', method='POST',
@@ -1748,10 +1748,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Delete a KeyPair.
 
-        @param keypair: KeyPair to delete
-        @type  keypair: L{OpenStackKeyPair}
+        :param keypair: KeyPair to delete
+        :type  keypair: :class:`OpenStackKeyPair`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self.connection.request('/os-keypairs/%s' % (keypair.name),
                                        method='DELETE')
@@ -1761,10 +1761,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a NodeSize
 
-        @param      size_id: ID of the size which should be used
-        @type       size_id: C{str}
+        :param      size_id: ID of the size which should be used
+        :type       size_id: ``str``
 
-        @rtype: L{NodeSize}
+        :rtype: :class:`NodeSize`
         """
         return self._to_size(self.connection.request(
             '/flavors/%s' % (size_id,)) .object['flavor'])
@@ -1773,10 +1773,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Get a NodeImage
 
-        @param      image_id: ID of the image which should be used
-        @type       image_id: C{str}
+        :param      image_id: ID of the image which should be used
+        :type       image_id: ``str``
 
-        @rtype: L{NodeImage}
+        :rtype: :class:`NodeImage`
         """
         return self._to_image(self.connection.request(
             '/images/%s' % (image_id,)).object['image'])
@@ -1785,10 +1785,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Delete a NodeImage
 
-        @param      image: image witch should be used
-        @type       image: L{NodeImage}
+        :param      image: image witch should be used
+        :type       image: :class:`NodeImage`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self.connection.request('/images/%s' % (image.id,),
                                        method='DELETE')
@@ -1904,13 +1904,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Rescue a node
 
-        @param      node: node
-        @type       node: L{Node}
+        :param      node: node
+        :type       node: :class:`Node`
 
-        @param      password: password
-        @type       password: C{str}
+        :param      password: password
+        :type       password: ``str``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         if password:
             resp = self._node_action(node, 'rescue', adminPass=password)
@@ -1924,10 +1924,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Unrescue a node
 
-        @param      node: node
-        @type       node: L{Node}
+        :param      node: node
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self._node_action(node, 'unrescue')
         return resp.status == httplib.ACCEPTED
@@ -1943,7 +1943,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         List available floating IP pools
 
-        @rtype: C{list} of L{OpenStack_1_1_FloatingIpPool}
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpPool`
         """
         return self._to_floating_ip_pools(
             self.connection.request('/os-floating-ip-pools').object)
@@ -1952,13 +1952,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Attach the floating IP to the node
 
-        @param      node: node
-        @type       node: L{Node}
+        :param      node: node
+        :type       node: :class:`Node`
 
-        @param      ip: floating IP to attach
-        @type       ip: C{str} or L{OpenStack_1_1_FloatingIpAddress}
+        :param      ip: floating IP to attach
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         address = ip.ip_address if hasattr(ip, 'ip_address') else ip
         data = {
@@ -1972,13 +1972,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         """
         Detach the floating IP from the node
 
-        @param      node: node
-        @type       node: L{Node}
+        :param      node: node
+        :type       node: :class:`Node`
 
-        @param      ip: floating IP to remove
-        @type       ip: C{str} or L{OpenStack_1_1_FloatingIpAddress}
+        :param      ip: floating IP to remove
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         address = ip.ip_address if hasattr(ip, 'ip_address') else ip
         data = {
@@ -2002,7 +2002,7 @@ class OpenStack_1_1_FloatingIpPool(object):
         """
         List floating IPs in the pool
 
-        @rtype: C{list} of L{OpenStack_1_1_FloatingIpAddress}
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
         """
         return self._to_floating_ips(
             self.connection.request('/os-floating-ips').object)
@@ -2019,10 +2019,10 @@ class OpenStack_1_1_FloatingIpPool(object):
         """
         Get specified floating IP from the pool
 
-        @param      ip: floating IP to remove
-        @type       ip: C{str}
+        :param      ip: floating IP to remove
+        :type       ip: ``str``
 
-        @rtype: L{OpenStack_1_1_FloatingIpAddress}
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
         ip_obj, = [x for x in self.list_floating_ips() if x.ip_address == ip]
         return ip_obj
@@ -2031,7 +2031,7 @@ class OpenStack_1_1_FloatingIpPool(object):
         """
         Create new floating IP in the pool
 
-        @rtype: L{OpenStack_1_1_FloatingIpAddress}
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
         resp = self.connection.request('/os-floating-ips',
                                        method='POST',
@@ -2045,10 +2045,10 @@ class OpenStack_1_1_FloatingIpPool(object):
         """
         Delete specified floating IP from the pool
 
-        @param      ip: floating IP to remove
-        @type       ip:L{OpenStack_1_1_FloatingIpAddress}
+        :param      ip: floating IP to remove
+        :type       ip::class:`OpenStack_1_1_FloatingIpAddress`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         resp = self.connection.request('/os-floating-ips/%s' % ip.id,
                                        method='DELETE')
@@ -2073,7 +2073,7 @@ class OpenStack_1_1_FloatingIpAddress(object):
         """
         Delete this floating IP
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         return self.pool.delete_floating_ip(self)
 

@@ -162,12 +162,12 @@ class Driver(BaseDriver):
 
     def get_balancer(self, balancer_id):
         """
-        Return a L{LoadBalancer} object.
+        Return a :class:`LoadBalancer` object.
 
         :param balancer_id: id of a load balancer you want to fetch
         :type  balancer_id: ``str``
 
-        :rtype: L{LoadBalancer}
+        :rtype: :class:`LoadBalancer`
         """
 
         raise NotImplementedError(

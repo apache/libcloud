@@ -42,7 +42,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, *args, **kwargs):
         """
-        @inherits: L{Driver.__init__}
+        @inherits: :class:`Driver.__init__`
         """
         host = host if host else self.host
         path = path if path else self.path
@@ -65,7 +65,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         """
         We don't actually have any protocol awareness beyond TCP.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         return ['tcp']
 
@@ -85,13 +85,13 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
                         algorithm=DEFAULT_ALGORITHM, location=None,
                         private_port=None):
         """
-        @inherits: L{Driver.create_balancer}
+        @inherits: :class:`Driver.create_balancer`
 
-        @param location: Location
-        @type  location: L{NodeLocation}
+        :param location: Location
+        :type  location: :class:`NodeLocation`
 
-        @param private_port: Private port
-        @type  private_port: C{int}
+        :param private_port: Private port
+        :type  private_port: ``int``
         """
         if location is None:
             locations = self._sync_request('listZones')

@@ -171,7 +171,7 @@ class ZerigoDNSDriver(DNSDriver):
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/zones/create
 
-        @inherits: L{DNSDriver.create_zone}
+        @inherits: :class:`DNSDriver.create_zone`
         """
         path = API_ROOT + 'zones.xml'
         zone_elem = self._to_zone_elem(domain=domain, type=type, ttl=ttl,
@@ -189,7 +189,7 @@ class ZerigoDNSDriver(DNSDriver):
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/zones/update
 
-        @inherits: L{DNSDriver.update_zone}
+        @inherits: :class:`DNSDriver.update_zone`
         """
         if domain:
             raise LibcloudError('Domain cannot be changed', driver=self)
@@ -218,7 +218,7 @@ class ZerigoDNSDriver(DNSDriver):
         Provider API docs:
         https://www.zerigo.com/docs/apis/dns/1.1/hosts/create
 
-        @inherits: L{DNSDriver.create_record}
+        @inherits: :class:`DNSDriver.create_record`
         """
         path = API_ROOT + 'zones/%s/hosts.xml' % (zone.id)
         record_elem = self._to_record_elem(name=name, type=type, data=data,
@@ -265,10 +265,10 @@ class ZerigoDNSDriver(DNSDriver):
         """
         Retrieve a zone object by the domain name.
 
-        @param domain: The domain which should be used
-        @type  domain: C{str}
+        :param domain: The domain which should be used
+        :type  domain: ``str``
 
-        @rtype: L{Zone}
+        :rtype: :class:`Zone`
         """
         path = API_ROOT + 'zones/%s.xml' % (domain)
         self.connection.set_context({'resource': 'zone', 'id': domain})
@@ -280,10 +280,10 @@ class ZerigoDNSDriver(DNSDriver):
         """
         Force a zone transfer.
 
-        @param zone: Zone which should be used.
-        @type  zone: L{Zone}
+        :param zone: Zone which should be used.
+        :type  zone: :class:`Zone`
 
-        @rtype: L{Zone}
+        :rtype: :class:`Zone`
         """
         path = API_ROOT + 'zones/%s/force_slave_axfr.xml' % (zone.id)
         self.connection.set_context({'resource': 'zone', 'id': zone.id})

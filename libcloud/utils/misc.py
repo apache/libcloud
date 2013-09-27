@@ -31,9 +31,9 @@ def get_driver(drivers, provider):
     """
     Get a driver.
 
-    @param drivers: Dictionary containing valid providers.
-    @param provider: Id of provider to get driver
-    @type provider: L{libcloud.types.Provider}
+    :param drivers: Dictionary containing valid providers.
+    :param provider: Id of provider to get driver
+    :type provider: :class:`libcloud.types.Provider`
     """
     if provider in drivers:
         mod_name, driver_name = drivers[provider]
@@ -47,13 +47,13 @@ def set_driver(drivers, provider, module, klass):
     """
     Sets a driver.
 
-    @param drivers: Dictionary to store providers.
-    @param provider: Id of provider to set driver for
-    @type provider: L{libcloud.types.Provider}
-    @param module: The module which contains the driver
-    @type module: L
-    @param klass: The driver class name
-    @type klass:
+    :param drivers: Dictionary to store providers.
+    :param provider: Id of provider to set driver for
+    :type provider: :class:`libcloud.types.Provider`
+    :param module: The module which contains the driver
+    :type module: L
+    :param klass: The driver class name
+    :type klass:
     """
 
     if provider in drivers:

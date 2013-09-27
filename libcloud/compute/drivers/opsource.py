@@ -247,32 +247,32 @@ class OpsourceNodeDriver(NodeDriver):
         """
         Create a new opsource node
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        :keyword    name:   String with a name for this new node (required)
+        :type       name:   ``str``
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage`
 
-        @keyword    auth:   Initial authentication information for the
+        :keyword    auth:   Initial authentication information for the
                             node (required)
-        @type       auth:   L{NodeAuthPassword}
+        :type       auth:   :class:`NodeAuthPassword`
 
-        @keyword    ex_description:  description for this node (required)
-        @type       ex_description:  C{str}
+        :keyword    ex_description:  description for this node (required)
+        :type       ex_description:  ``str``
 
-        @keyword    ex_network:  Network to create the node within (required)
-        @type       ex_network: L{OpsourceNetwork}
+        :keyword    ex_network:  Network to create the node within (required)
+        :type       ex_network: :class:`OpsourceNetwork`
 
-        @keyword    ex_isStarted:  Start server after creation? default
+        :keyword    ex_isStarted:  Start server after creation? default
                                    true (required)
-        @type       ex_isStarted:  C{bool}
+        :type       ex_isStarted:  ``bool``
 
-        @return: The newly created L{Node}. NOTE: Opsource does not provide a
+        :return: The newly created :class:`Node`. NOTE: Opsource does not provide a
                  way to determine the ID of the server that was just created,
-                 so the returned L{Node} is not guaranteed to be the same one
+                 so the returned :class:`Node` is not guaranteed to be the same one
                  that was created.  This is only the case when multiple nodes
                  with the same name exist.
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -348,7 +348,7 @@ class OpsourceNodeDriver(NodeDriver):
             Currently only returns the default 'base OS images' provided by
             opsource. Customer images (snapshots) are not yet supported.
 
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
         """
         return self._to_base_images(self.connection.request('base/image')
                    .object)
@@ -369,7 +369,7 @@ class OpsourceNodeDriver(NodeDriver):
         list locations (datacenters) available for instantiating servers and
         networks.
 
-        @inherits: L{NodeDriver.list_locations}
+        @inherits: :class:`NodeDriver.list_locations`
         """
         return self._to_locations(
             self.connection.request_with_orgId('datacenter').object)
@@ -380,11 +380,11 @@ class OpsourceNodeDriver(NodeDriver):
         organization.  The response includes the location of each network.
 
 
-        @keyword location: The location
-        @type    location: L{NodeLocation}
+        :keyword location: The location
+        :type    location: :class:`NodeLocation`
 
-        @return: a list of OpsourceNetwork objects
-        @rtype: C{list} of L{OpsourceNetwork}
+        :return: a list of OpsourceNetwork objects
+        :rtype: ``list`` of :class:`OpsourceNetwork`
         """
         return self._to_networks(
             self.connection.request_with_orgId('networkWithLocation').object)
@@ -428,10 +428,10 @@ class OpsourceNodeDriver(NodeDriver):
         """
         Powers on an existing deployed server
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         body = self.connection.request_with_orgId(
             'server/%s?start' % node.id).object
@@ -445,10 +445,10 @@ class OpsourceNodeDriver(NodeDriver):
         A successful response on this function means the system has
         successfully passed the request into the operating system.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         body = self.connection.request_with_orgId(
             'server/%s?shutdown' % (node.id)).object
@@ -462,10 +462,10 @@ class OpsourceNodeDriver(NodeDriver):
         and application configurations may be adversely affected by the
         equivalent of pulling the power plug out of the machine.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         body = self.connection.request_with_orgId(
             'server/%s?poweroff' % node.id).object
@@ -477,8 +477,8 @@ class OpsourceNodeDriver(NodeDriver):
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
 
-        @return: a list of OpsourceNetwork objects
-        @rtype: C{list} of L{OpsourceNetwork}
+        :return: a list of OpsourceNetwork objects
+        :rtype: ``list`` of :class:`OpsourceNetwork`
         """
         response = self.connection.request_with_orgId('networkWithLocation') \
                                   .object
@@ -488,10 +488,10 @@ class OpsourceNodeDriver(NodeDriver):
         """
         Get location by ID.
 
-        @param  id: ID of the node location which should be used
-        @type   id: C{str}
+        :param  id: ID of the node location which should be used
+        :type   id: ``str``
 
-        @rtype: L{NodeLocation}
+        :rtype: :class:`NodeLocation`
         """
         location = None
         if id is not None:

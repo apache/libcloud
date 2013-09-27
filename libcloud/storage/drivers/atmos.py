@@ -389,16 +389,16 @@ class AtmosDriver(StorageDriver):
         """
         Return a object CDN URL.
 
-        @param obj: Object instance
-        @type  obj: L{Object}
+        :param obj: Object instance
+        :type  obj: :class:`Object`
 
-        @param expiry: Expiry
-        @type expiry: C{str}
+        :param expiry: Expiry
+        :type expiry: ``str``
 
-        @param use_object: Use object
-        @type use_object: C{bool}
+        :param use_object: Use object
+        :type use_object: ``bool``
 
-        @rtype: C{str}
+        :rtype: ``str``
         """
         if use_object:
             path = '/rest/objects' + obj.meta_data['object_id']

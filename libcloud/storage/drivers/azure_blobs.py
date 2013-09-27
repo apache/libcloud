@@ -84,14 +84,14 @@ class AzureBlobLease(object):
     """
     def __init__(self, driver, object_path, use_lease):
         """
-        @param driver: The Azure storage driver that is being used
-        @type driver: L{AzureStorageDriver}
+        :param driver: The Azure storage driver that is being used
+        :type driver: :class:`AzureStorageDriver`
 
-        @param object_path: The path of the object we need to lease
-        @type object_path: C{str}
+        :param object_path: The path of the object we need to lease
+        :type object_path: ``str``
 
-        @param use_lease: Indicates if we must take a lease or not
-        @type use_lease: C{bool}
+        :param use_lease: Indicates if we must take a lease or not
+        :type use_lease: ``bool``
         """
         self.object_path = object_path
         self.driver = driver
@@ -200,11 +200,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Converts a container XML node to a container instance
 
-        @param node: XML info of the container
-        @type node: L{xml.etree.ElementTree.Element}
+        :param node: XML info of the container
+        :type node: :class:`xml.etree.ElementTree.Element`
 
-        @return: A container instance
-        @rtype: L{Container}
+        :return: A container instance
+        :rtype: :class:`Container`
         """
 
         name = node.findtext(fixxpath(xpath='Name'))
@@ -232,14 +232,14 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Converts a HTTP response to a container instance
 
-        @param container_name: Name of the container
-        @type container_name: C{str}
+        :param container_name: Name of the container
+        :type container_name: ``str``
 
-        @param response: HTTP Response
-        @type node: L{}
+        :param response: HTTP Response
+        :type node: L{}
 
-        @return: A container instance
-        @rtype: L{Container}
+        :return: A container instance
+        :rtype: :class:`Container`
         """
 
         headers = response.headers
@@ -267,14 +267,14 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Converts a BLOB XML node to an object instance
 
-        @param container: Instance of the container holding the blob
-        @type: L{Container}
+        :param container: Instance of the container holding the blob
+        :type: :class:`Container`
 
-        @param blob: XML info of the blob
-        @type blob: L{}
+        :param blob: XML info of the blob
+        :type blob: L{}
 
-        @return: An object instance
-        @rtype: L{Object}
+        :return: An object instance
+        :rtype: :class:`Object`
         """
 
         name = blob.findtext(fixxpath(xpath='Name'))
@@ -318,17 +318,17 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Converts a HTTP response to an object (from headers)
 
-        @param object_name: Name of the object
-        @type object_name: C{str}
+        :param object_name: Name of the object
+        :type object_name: ``str``
 
-        @param container: Instance of the container holding the blob
-        @type: L{Container}
+        :param container: Instance of the container holding the blob
+        :type: :class:`Container`
 
-        @param response: HTTP Response
-        @type node: L{}
+        :param response: HTTP Response
+        :type node: L{}
 
-        @return: An object instance
-        @rtype: L{Object}
+        :return: An object instance
+        :rtype: :class:`Object`
         """
 
         headers = response.headers
@@ -368,7 +368,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def iterate_containers(self):
         """
-        @inherits: L{StorageDriver.iterate_containers}
+        @inherits: :class:`StorageDriver.iterate_containers`
         """
         params = {'comp': 'list',
                   'maxresults': RESPONSES_PER_REQUEST,
@@ -393,7 +393,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def iterate_container_objects(self, container):
         """
-        @inherits: L{StorageDriver.iterate_container_objects}
+        @inherits: :class:`StorageDriver.iterate_container_objects`
         """
         params = {'restype': 'container',
                   'comp': 'list',
@@ -428,7 +428,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def get_container(self, container_name):
         """
-        @inherits: L{StorageDriver.get_container}
+        @inherits: :class:`StorageDriver.get_container`
         """
         params = {'restype': 'container'}
 
@@ -449,7 +449,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def get_object(self, container_name, object_name):
         """
-        @inherits: L{StorageDriver.get_object}
+        @inherits: :class:`StorageDriver.get_object`
         """
 
         container = self.get_container(container_name=container_name)
@@ -468,11 +468,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Return a container path
 
-        @param container: Container instance
-        @type  container: L{Container}
+        :param container: Container instance
+        :type  container: :class:`Container`
 
-        @return: A path for this container.
-        @rtype: C{str}
+        :return: A path for this container.
+        :rtype: ``str``
         """
         return '/%s' % (container.name)
 
@@ -480,14 +480,14 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Return an object's CDN path.
 
-        @param container: Container instance
-        @type  container: L{Container}
+        :param container: Container instance
+        :type  container: :class:`Container`
 
-        @param object_name: Object name
-        @type  object_name: L{str}
+        :param object_name: Object name
+        :type  object_name: :class:`str`
 
-        @return: A  path for this object.
-        @rtype: C{str}
+        :return: A  path for this object.
+        :rtype: ``str``
         """
         container_url = self._get_container_path(container)
         object_name_cleaned = urlquote(object_name)
@@ -496,7 +496,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def create_container(self, container_name):
         """
-        @inherits: L{StorageDriver.create_container}
+        @inherits: :class:`StorageDriver.create_container`
         """
         params = {'restype': 'container'}
 
@@ -522,7 +522,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def delete_container(self, container):
         """
-        @inherits: L{StorageDriver.delete_container}
+        @inherits: :class:`StorageDriver.delete_container`
         """
         # Azure does not check if the container is empty. So, we will do
         # a check to ensure that the behaviour is similar to other drivers
@@ -550,7 +550,7 @@ class AzureBlobsStorageDriver(StorageDriver):
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
         """
-        @inherits: L{StorageDriver.download_object}
+        @inherits: :class:`StorageDriver.download_object`
         """
         obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, raw=True, data=None)
@@ -567,7 +567,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def download_object_as_stream(self, obj, chunk_size=None):
         """
-        @inherits: L{StorageDriver.download_object_as_stream}
+        @inherits: :class:`StorageDriver.download_object_as_stream`
         """
         obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, raw=True, data=None)
@@ -583,29 +583,29 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Uploads data from an interator in fixed sized chunks to S3
 
-        @param response: Response object from the initial POST request
-        @type response: L{RawResponse}
+        :param response: Response object from the initial POST request
+        :type response: :class:`RawResponse`
 
-        @param data: Any data from the initial POST request
-        @type data: C{str}
+        :param data: Any data from the initial POST request
+        :type data: ``str``
 
-        @param iterator: The generator for fetching the upload data
-        @type iterator: C{generator}
+        :param iterator: The generator for fetching the upload data
+        :type iterator: ``generator``
 
-        @param object_path: The path of the object to which we are uploading
-        @type object_name: C{str}
+        :param object_path: The path of the object to which we are uploading
+        :type object_name: ``str``
 
-        @param blob_type: The blob type being uploaded
-        @type blob_type: C{str}
+        :param blob_type: The blob type being uploaded
+        :type blob_type: ``str``
 
-        @param lease: The lease object to be used for renewal
-        @type lease: L{AzureBlobLease}
+        :param lease: The lease object to be used for renewal
+        :type lease: :class:`AzureBlobLease`
 
-        @keyword calculate_hash: Indicates if we must calculate the data hash
-        @type calculate_hash: C{bool}
+        :keyword calculate_hash: Indicates if we must calculate the data hash
+        :type calculate_hash: ``bool``
 
-        @return: A tuple of (status, checksum, bytes transferred)
-        @rtype: C{tuple}
+        :return: A tuple of (status, checksum, bytes transferred)
+        :rtype: ``tuple``
         """
 
         # Get the upload id from the response xml
@@ -691,11 +691,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Makes a final commit of the data.
 
-        @param object_path: Server side object path.
-        @type object_path: C{str}
+        :param object_path: Server side object path.
+        :type object_path: ``str``
 
-        @param upload_id: A list of (chunk_number, chunk_hash) tuples.
-        @type upload_id: C{list}
+        :param upload_id: A list of (chunk_number, chunk_hash) tuples.
+        :type upload_id: ``list``
         """
 
         root = Element('BlockList')
@@ -722,11 +722,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Checks if extension arguments are valid
 
-        @param blob_type: The blob type that is being uploaded
-        @type blob_type: C{str}
+        :param blob_type: The blob type that is being uploaded
+        :type blob_type: ``str``
 
-        @param object_size: The (max) size of the object being uploaded
-        @type object_size: C{int}
+        :param object_size: The (max) size of the object being uploaded
+        :type object_size: ``int``
         """
 
         if blob_type not in ['BlockBlob', 'PageBlob']:
@@ -746,13 +746,13 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Upload an object currently located on a disk.
 
-        @inherits: L{StorageDriver.upload_object}
+        @inherits: :class:`StorageDriver.upload_object`
 
-        @param ex_blob_type: Storage class
-        @type ex_blob_type: C{str}
+        :param ex_blob_type: Storage class
+        :type ex_blob_type: ``str``
 
-        @param ex_use_lease: Indicates if we must take a lease before upload
-        @type ex_use_lease: C{bool}
+        :param ex_use_lease: Indicates if we must take a lease before upload
+        :type ex_use_lease: ``bool``
         """
 
         if ex_blob_type is None:
@@ -804,17 +804,17 @@ class AzureBlobsStorageDriver(StorageDriver):
                                  ex_use_lease=False, ex_blob_type=None,
                                  ex_page_blob_size=None):
         """
-        @inherits: L{StorageDriver.upload_object_via_stream}
+        @inherits: :class:`StorageDriver.upload_object_via_stream`
 
-        @param ex_blob_type: Storage class
-        @type ex_blob_type: C{str}
+        :param ex_blob_type: Storage class
+        :type ex_blob_type: ``str``
 
-        @param ex_page_blob_size: The maximum size to which the
+        :param ex_page_blob_size: The maximum size to which the
             page blob can grow to
-        @type ex_page_blob_size: C{int}
+        :type ex_page_blob_size: ``int``
 
-        @param ex_use_lease: Indicates if we must take a lease before upload
-        @type ex_use_lease: C{bool}
+        :param ex_use_lease: Indicates if we must take a lease before upload
+        :type ex_use_lease: ``bool``
         """
 
         if ex_blob_type is None:
@@ -841,7 +841,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def delete_object(self, obj):
         """
-        @inherits: L{StorageDriver.delete_object}
+        @inherits: :class:`StorageDriver.delete_object`
         """
         object_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(object_path, method='DELETE')
@@ -858,11 +858,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Update the given metadata in the headers
 
-        @param headers: The headers dictionary to be updated
-        @type headers: C{dict}
+        :param headers: The headers dictionary to be updated
+        :type headers: ``dict``
 
-        @param meta_data: Metadata key value pairs
-        @type meta_data: C{dict}
+        :param meta_data: Metadata key value pairs
+        :type meta_data: ``dict``
         """
         for key, value in list(meta_data.items()):
             key = 'x-ms-meta-%s' % (key)
@@ -873,21 +873,21 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Prepare headers for uploading an object
 
-        @param object_name: The full name of the object being updated
-        @type object_name: C{str}
+        :param object_name: The full name of the object being updated
+        :type object_name: ``str``
 
-        @param object_size: The size of the object. In case of PageBlobs,
+        :param object_size: The size of the object. In case of PageBlobs,
             this indicates the maximum size the blob can grow to
-        @type object_size: C{int}
+        :type object_size: ``int``
 
-        @param extra: Extra control data for the upload
-        @type extra: C{dict}
+        :param extra: Extra control data for the upload
+        :type extra: ``dict``
 
-        @param meta_data: Metadata key value pairs
-        @type meta_data: C{dict}
+        :param meta_data: Metadata key value pairs
+        :type meta_data: ``dict``
 
-        @param blob_type: Page or Block blob type
-        @type blob_type: C{str}
+        :param blob_type: Page or Block blob type
+        :type blob_type: ``str``
         """
         headers = {}
 
@@ -971,11 +971,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         Set metadata for an object
 
-        @param obj: The blob object
-        @type obj: L{Object}
+        :param obj: The blob object
+        :type obj: :class:`Object`
 
-        @param meta_data: Metadata key value pairs
-        @type meta_data: C{dict}
+        :param meta_data: Metadata key value pairs
+        :type meta_data: ``dict``
         """
         object_path = self._get_object_path(obj.container, obj.name)
         params = {'comp': 'metadata'}

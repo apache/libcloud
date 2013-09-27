@@ -79,11 +79,11 @@ def display(title, resource_list):
     """
     Display a list of resources.
 
-    @param  title: String to be printed at the heading of the list.
-    @type   title: C{str}
+    :param  title: String to be printed at the heading of the list.
+    :type   title: ``str``
 
-    @param  resource_list: List of resources to display
-    @type   resource_list: Any C{object} with a C{name} attribute
+    :param  resource_list: List of resources to display
+    :type   resource_list: Any ``object`` with a C{name} attribute
     """
     print('%s:' % title)
     for item in resource_list[:10]:
@@ -94,15 +94,15 @@ def clean_up(base_name, node_list=None, resource_list=None):
     """
     Destroy all resources that have a name beginning with 'base_name'.
 
-    @param  base_name: String with the first part of the name of resources
+    :param  base_name: String with the first part of the name of resources
                        to destroy
-    @type   base_name: C{str}
+    :type   base_name: ``str``
 
-    @keyword  node_list: List of nodes to consider for deletion
-    @type     node_list: C{list} of L{Node}
+    :keyword  node_list: List of nodes to consider for deletion
+    :type     node_list: ``list`` of :class:`Node`
 
-    @keyword  resource_list: List of resources to consider for deletion
-    @type     resource_list: C{list} of I{Resource Objects}
+    :keyword  resource_list: List of resources to consider for deletion
+    :type     resource_list: ``list`` of I{Resource Objects}
     """
     if node_list is None:
         node_list = []

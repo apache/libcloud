@@ -140,14 +140,14 @@ class HostVirtualNodeDriver(NodeDriver):
 
     def _wait_for_node(self, node_id, timeout=30, interval=5.0):
         """
-        @param node_id: ID of the node to wait for.
-        @type node_id: C{int}
+        :param node_id: ID of the node to wait for.
+        :type node_id: ``int``
 
-        @param timeout: Timeout (in seconds).
-        @type timeout: C{int}
+        :param timeout: Timeout (in seconds).
+        :type timeout: ``int``
 
-        @param interval: How long to wait (in seconds) between each attempt.
-        @type interval: C{float}
+        :param interval: How long to wait (in seconds) between each attempt.
+        :type interval: ``float``
         """
         # poll until we get a node
         for i in range(0, timeout, int(interval)):
@@ -222,10 +222,10 @@ class HostVirtualNodeDriver(NodeDriver):
         """
         Get a single node.
 
-        @param      node_id: id of the node that we need the node object for
-        @type       node_id: C{str}
+        :param      node_id: id of the node that we need the node object for
+        :type       node_id: ``str``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
 
         params = {'mbpkgid': node_id}
@@ -238,10 +238,10 @@ class HostVirtualNodeDriver(NodeDriver):
         """
         Stop a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'force': 0, 'mbpkgid': node.id}
         result = self.connection.request(
@@ -255,10 +255,10 @@ class HostVirtualNodeDriver(NodeDriver):
         """
         Start a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'mbpkgid': node.id}
         result = self.connection.request(
@@ -272,20 +272,20 @@ class HostVirtualNodeDriver(NodeDriver):
         """
         Provision a server on a VR package and get it booted
 
-        @keyword node: node which should be used
-        @type    node: L{Node}
+        :keyword node: node which should be used
+        :type    node: :class:`Node`
 
-        @keyword image: The distribution to deploy on your server (mandatory)
-        @type    image: L{NodeImage}
+        :keyword image: The distribution to deploy on your server (mandatory)
+        :type    image: :class:`NodeImage`
 
-        @keyword auth: an SSH key or root password (mandatory)
-        @type    auth: L{NodeAuthSSHKey} or L{NodeAuthPassword}
+        :keyword auth: an SSH key or root password (mandatory)
+        :type    auth: :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
-        @keyword location: which datacenter to create the server in
-        @type    location: L{NodeLocation}
+        :keyword location: which datacenter to create the server in
+        :type    location: :class:`NodeLocation`
 
-        @return: Node representing the newly built server
-        @rtype: L{Node}
+        :return: Node representing the newly built server
+        :rtype: :class:`Node`
         """
 
         node = kwargs['node']
@@ -325,10 +325,10 @@ class HostVirtualNodeDriver(NodeDriver):
         """
         Delete a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         params = {'mbpkgid': node.id}

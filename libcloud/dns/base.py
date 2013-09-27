@@ -220,7 +220,7 @@ class DNSDriver(BaseDriver):
         Return a list of records for the provided zone.
 
         :param zone: Zone to list records for.
-        :type zone: L{Zone}
+        :type zone: :class:`Zone`
 
         :return: ``list`` of :class:`Record`
         """

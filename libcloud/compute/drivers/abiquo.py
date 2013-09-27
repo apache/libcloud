@@ -33,7 +33,7 @@ from libcloud.utils.py3 import tostring
 
 class AbiquoNodeDriver(NodeDriver):
     """
-    Implements the L{NodeDriver}'s for the Abiquo Compute Provider
+    Implements the :class:`NodeDriver`'s for the Abiquo Compute Provider
     """
 
     type = Provider.ABIQUO
@@ -55,15 +55,15 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Initializes Abiquo Driver
 
-        Initializes the L{NodeDriver} object. After that, it generates the
+        Initializes the :class:`NodeDriver` object. After that, it generates the
         context
 
-        @param       user_id: identifier of Abiquo user (required)
-        @type        user_id: C{str}
-        @param       secret: password of the Abiquo user (required)
-        @type        secret: C{str}
-        @param       endpoint: Abiquo API endpoint (required)
-        @type        endpoint: C{str} that can be parsed as URL
+        :param       user_id: identifier of Abiquo user (required)
+        :type        user_id: ``str``
+        :param       secret: password of the Abiquo user (required)
+        :type        secret: ``str``
+        :param       endpoint: Abiquo API endpoint (required)
+        :type        endpoint: ``str`` that can be parsed as URL
         """
         self.endpoint = endpoint
         super(AbiquoNodeDriver, self).__init__(key=user_id, secret=secret,
@@ -75,8 +75,8 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Create a new node instance in Abiquo
 
-        All the L{Node}s need to be defined inside a VirtualAppliance
-        (called L{NodeGroup} here). If there is no group name defined,
+        All the :class:`Node`s need to be defined inside a VirtualAppliance
+        (called :class:`NodeGroup` here). If there is no group name defined,
         'libcloud' name will be used instead.
 
         This method wraps these Abiquo actions:
@@ -90,34 +90,34 @@ class AbiquoNodeDriver(NodeDriver):
         The rest of the driver methods has been created in a way that, if any
         of these actions fail, the user can not reach an inconsistent state
 
-        @keyword    name:   The name for this new node (required)
-        @type       name:   C{str}
+        :keyword    name:   The name for this new node (required)
+        :type       name:   ``str``
 
-        @keyword    size:   The size of resources allocated to this node.
-        @type       size:   L{NodeSize}
+        :keyword    size:   The size of resources allocated to this node.
+        :type       size:   :class:`NodeSize`
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage`
 
-        @keyword    location: Which data center to create a node in. If empty,
+        :keyword    location: Which data center to create a node in. If empty,
                               undefined behavoir will be selected. (optional)
-        @type       location: L{NodeLocation}
+        :type       location: :class:`NodeLocation`
 
-        @keyword   group_name:  Which group this node belongs to. If empty,
+        :keyword   group_name:  Which group this node belongs to. If empty,
                                  it will be created into 'libcloud' group. If
                                  it does not found any group in the target
                                  location (random location if you have not set
                                  the parameter), then it will create a new
                                  group with this name.
-        @type     group_name:  c{str}
+        :type     group_name:  c{str}
 
-        @return:               The newly created node.
-        @rtype:                L{Node}
+        :return:               The newly created node.
+        :rtype:                :class:`Node`
         """
         # Define the location
         # To be clear:
         #     'xml_loc' is the xml element we navigate into (we need links)
-        #     'loc' is the L{NodeLocation} entity
+        #     'loc' is the :class:`NodeLocation` entity
         xml_loc, loc = self._define_create_node_location(**kwargs)
 
         # Define the Group
@@ -142,11 +142,11 @@ class AbiquoNodeDriver(NodeDriver):
         Depending on the provider, this may destroy all data associated with
         the node, including backups.
 
-        @param node: The node to be destroyed
-        @type node: L{Node}
+        :param node: The node to be destroyed
+        :type node: :class:`Node`
 
-        @return: True if the destroy was successful, otherwise False
-        @rtype: C{bool}
+        :return: True if the destroy was successful, otherwise False
+        :rtype: ``bool``
         """
 
         # Refresh node state
@@ -187,17 +187,17 @@ class AbiquoNodeDriver(NodeDriver):
         UNKNOWN and temporal states). In Abiquo, you can define a node, and
         then deploy it.
 
-        If the node is in L{NodeState.TERMINATED} libcloud's state and in
+        If the node is in :class:`NodeState.TERMINATED` libcloud's state and in
         'NOT_DEPLOYED' Abiquo state, there is a way to run and recover it
         for libcloud using this method. There is no way to reach this state
         if you are using only libcloud, but you may have used another Abiquo
         client and now you want to recover your node to be used by libcloud.
 
-        @param node: The node to run
-        @type node: L{Node}
+        :param node: The node to run
+        :type node: :class:`Node`
 
-        @return: The node itself, but with the new state
-        @rtype: L{Node}
+        :return: The node itself, but with the new state
+        :rtype: :class:`Node`
         """
         # Refresh node state
         e_vm = self.connection.request(node.extra['uri_id']).object
@@ -264,8 +264,8 @@ class AbiquoNodeDriver(NodeDriver):
 
             # Save into context the link to the itself because we will need
             # it in the future, but we save here to don't extend the class
-            # L{NodeLocation}.
-            # So here we have the dict: L{NodeLocation} -> link_datacenter
+            # :class:`NodeLocation`.
+            # So here we have the dict: :class:`NodeLocation` -> link_datacenter
             self.connection.context['locations'][loc] = get_href(e_vdc, 'edit')
 
     def ex_create_group(self, name, location=None):
@@ -274,14 +274,14 @@ class AbiquoNodeDriver(NodeDriver):
 
         You can specify the location as well.
 
-        @param     name:     name of the group (required)
-        @type      name:     C{str}
+        :param     name:     name of the group (required)
+        :type      name:     ``str``
 
-        @param     location: location were to create the group
-        @type      location: L{NodeLocation}
+        :param     location: location were to create the group
+        :type      location: :class:`NodeLocation`
 
-        @returns:            the created group
-        @rtype:              L{NodeGroup}
+        :returns:            the created group
+        :rtype:              :class:`NodeGroup`
         """
         # prepare the element
         vapp = ET.Element('virtualAppliance')
@@ -310,17 +310,17 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Destroy a group.
 
-        Be careful! Destroying a group means destroying all the L{Node}s there
+        Be careful! Destroying a group means destroying all the :class:`Node`s there
         and the group itself!
 
-        If there is currently any action over any L{Node} of the L{NodeGroup},
+        If there is currently any action over any :class:`Node` of the :class:`NodeGroup`,
         then the method will raise an exception.
 
-        @param     name: The group (required)
-        @type      name: L{NodeGroup}
+        :param     name: The group (required)
+        :type      name: :class:`NodeGroup`
 
-        @return:         If the group was destroyed successfully
-        @rtype:          C{bool}
+        :return:         If the group was destroyed successfully
+        :rtype:          ``bool``
         """
         # Refresh group state
         e_group = self.connection.request(group.uri).object
@@ -358,10 +358,10 @@ class AbiquoNodeDriver(NodeDriver):
         """
         List all groups.
 
-        @param location: filter the groups by location (optional)
-        @type  location: a L{NodeLocation} instance.
+        :param location: filter the groups by location (optional)
+        :type  location: a :class:`NodeLocation` instance.
 
-        @return:         the list of L{NodeGroup}
+        :return:         the list of :class:`NodeGroup`
         """
         groups = []
         for vdc in self._get_locations(location):
@@ -387,11 +387,11 @@ class AbiquoNodeDriver(NodeDriver):
         """
         List images on Abiquo Repositories
 
-        @keyword location: The location to list images for.
-        @type    location: L{NodeLocation}
+        :keyword location: The location to list images for.
+        :type    location: :class:`NodeLocation`
 
-        @return:           list of node image objects
-        @rtype:            C{list} of L{NodeImage}
+        :return:           list of node image objects
+        :rtype:            ``list`` of :class:`NodeImage`
         """
         enterprise_id = self._get_enterprise_id()
         uri = '/admin/enterprises/%s/datacenterrepositories/' % (enterprise_id)
@@ -430,8 +430,8 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Return list of locations where the user has access to.
 
-        @return: the list of L{NodeLocation} available for the current user
-        @rtype:  C{list} of L{NodeLocation}
+        :return: the list of :class:`NodeLocation` available for the current user
+        :rtype:  ``list`` of :class:`NodeLocation`
         """
         return list(self.connection.context['locations'].keys())
 
@@ -439,11 +439,11 @@ class AbiquoNodeDriver(NodeDriver):
         """
         List all nodes.
 
-        @param location: Filter the groups by location (optional)
-        @type  location: a L{NodeLocation} instance.
+        :param location: Filter the groups by location (optional)
+        :type  location: a :class:`NodeLocation` instance.
 
-        @return:  List of node objects
-        @rtype: C{list} of L{Node}
+        :return:  List of node objects
+        :rtype: ``list`` of :class:`Node`
         """
         nodes = []
 
@@ -457,15 +457,15 @@ class AbiquoNodeDriver(NodeDriver):
         List sizes on a provider.
 
         Abiquo does not work with sizes. However, this method
-        returns a list of predefined ones (copied from L{DummyNodeDriver} but
+        returns a list of predefined ones (copied from :class:`DummyNodeDriver` but
         without price neither bandwidth) to help the users to create their own.
 
-        If you call the method L{AbiquoNodeDriver.create_node} with the size
+        If you call the method :class:`AbiquoNodeDriver.create_node` with the size
         informed, it will just override the 'ram' value of the 'image'
         template. So it is no too much usefull work with sizes...
 
-        @return: The list of sizes
-        @rtype:  C{list} of L{NodeSizes}
+        :return: The list of sizes
+        :rtype:  ``list`` of :class:`NodeSizes`
         """
         return [
             NodeSize(id=1,
@@ -502,11 +502,11 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Reboot a node.
 
-        @param node: The node to be rebooted
-        @type node: L{Node}
+        :param node: The node to be rebooted
+        :type node: :class:`Node`
 
-        @return: True if the reboot was successful, otherwise False
-        @rtype: C{bool}
+        :return: True if the reboot was successful, otherwise False
+        :rtype: ``bool``
         """
         reboot_uri = node.extra['uri_id'] + '/action/reset'
         res = self.connection.async_request(action=reboot_uri, method='POST')
@@ -518,12 +518,12 @@ class AbiquoNodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         """
-        Set the endpoint as an extra L{AbiquoConnection} argument.
+        Set the endpoint as an extra :class:`AbiquoConnection` argument.
 
         According to Connection code, the "url" argument should be
         parsed properly to connection.
 
-        @return: C{dict} of L{AbiquoConnection} input arguments
+        :return: ``dict`` of :class:`AbiquoConnection` input arguments
         """
 
         return {'url': self.endpoint}
@@ -551,7 +551,7 @@ class AbiquoNodeDriver(NodeDriver):
 
     def _to_location(self, vdc, dc, driver):
         """
-        Generates the L{NodeLocation} class.
+        Generates the :class:`NodeLocation` class.
         """
         identifier = vdc.findtext('id')
         name = vdc.findtext('name')
@@ -560,7 +560,7 @@ class AbiquoNodeDriver(NodeDriver):
 
     def _to_node(self, vm, driver):
         """
-        Generates the L{Node} class.
+        Generates the :class:`Node` class.
         """
         identifier = vm.findtext('id')
         name = vm.findtext('nodeName')
@@ -596,7 +596,7 @@ class AbiquoNodeDriver(NodeDriver):
 
     def _to_nodeimage(self, template, driver, repo):
         """
-        Generates the L{NodeImage} class.
+        Generates the :class:`NodeImage` class.
         """
         identifier = template.findtext('id')
         name = template.findtext('name')
@@ -725,9 +725,9 @@ class NodeGroup(object):
     """
     Group of virtual machines that can be managed together
 
-    All L{Node}s in Abiquo must be defined inside a Virtual Appliance.
+    All :class:`Node`s in Abiquo must be defined inside a Virtual Appliance.
     We offer a way to handle virtual appliances (called NodeGroup to
-    maintain some kind of name conventions here) inside the L{AbiquoNodeDriver}
+    maintain some kind of name conventions here) inside the :class:`AbiquoNodeDriver`
     without breaking compatibility of the rest of libcloud API.
 
     If the user does not want to handle groups, all the virtual machines
@@ -750,6 +750,6 @@ class NodeGroup(object):
 
     def destroy(self):
         """
-        Destroys the group delegating the execution to L{AbiquoNodeDriver}.
+        Destroys the group delegating the execution to :class:`AbiquoNodeDriver`.
         """
         return self.driver.ex_destroy_group(self)

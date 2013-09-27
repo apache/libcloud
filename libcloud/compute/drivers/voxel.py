@@ -161,47 +161,47 @@ class VoxelNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create Voxel Node
 
-        @keyword name: the name to assign the node (mandatory)
-        @type    name: C{str}
+        :keyword name: the name to assign the node (mandatory)
+        :type    name: ``str``
 
-        @keyword image: distribution to deploy
-        @type    image: L{NodeImage}
+        :keyword image: distribution to deploy
+        :type    image: :class:`NodeImage`
 
-        @keyword size: the plan size to create (mandatory)
+        :keyword size: the plan size to create (mandatory)
                        Requires size.disk (GB) to be set manually
-        @type    size: L{NodeSize}
+        :type    size: :class:`NodeSize`
 
-        @keyword location: which datacenter to create the node in
-        @type    location: L{NodeLocation}
+        :keyword location: which datacenter to create the node in
+        :type    location: :class:`NodeLocation`
 
-        @keyword ex_privateip: Backend IP address to assign to node;
+        :keyword ex_privateip: Backend IP address to assign to node;
                                must be chosen from the customer's
                                private VLAN assignment.
-        @type    ex_privateip: C{str}
+        :type    ex_privateip: ``str``
 
-        @keyword ex_publicip: Public-facing IP address to assign to node;
+        :keyword ex_publicip: Public-facing IP address to assign to node;
                               must be chosen from the customer's
                               public VLAN assignment.
-        @type    ex_publicip: C{str}
+        :type    ex_publicip: ``str``
 
-        @keyword ex_rootpass: Password for root access; generated if unset.
-        @type    ex_rootpass: C{str}
+        :keyword ex_rootpass: Password for root access; generated if unset.
+        :type    ex_rootpass: ``str``
 
-        @keyword ex_consolepass: Password for remote console;
+        :keyword ex_consolepass: Password for remote console;
                                  generated if unset.
-        @type    ex_consolepass: C{str}
+        :type    ex_consolepass: ``str``
 
-        @keyword ex_sshuser: Username for SSH access
-        @type    ex_sshuser: C{str}
+        :keyword ex_sshuser: Username for SSH access
+        :type    ex_sshuser: ``str``
 
-        @keyword ex_sshpass: Password for SSH access; generated if unset.
-        @type    ex_sshpass: C{str}
+        :keyword ex_sshpass: Password for SSH access; generated if unset.
+        :type    ex_sshpass: ``str``
 
-        @keyword ex_voxel_access: Allow access Voxel administrative access.
+        :keyword ex_voxel_access: Allow access Voxel administrative access.
                                   Defaults to False.
-        @type    ex_voxel_access: C{bool}
+        :type    ex_voxel_access: ``bool``
 
-        @rtype: L{Node} or C{None}
+        :rtype: :class:`Node` or ``None``
         """
 
         # assert that disk > 0
