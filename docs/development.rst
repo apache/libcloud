@@ -73,6 +73,7 @@ request, create a patch and attach it to the original JIRA ticket.
 
 Contributing Bigger Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 If you are contributing a bigger change (e.g. large new feature or a new
 provider driver) you need to have have signed Apache Individual Contributor
 License Agreement (ICLA) in order to have your patch accepted.
@@ -80,19 +81,22 @@ License Agreement (ICLA) in order to have your patch accepted.
 You can find more information on how to sign and file an ICLA on the
 `Apache website`_.
 
+When filling the form, leave the field `preferred Apache id(s)` empty and in
+the `notify project` field enter `Libcloud`.
+
 Supporting Multiple Python Versions
 -----------------------------------
 
 Libcloud supports a variety of Python versions so your code also needs to work
 with all the supported versions. This means that in some cases you will need to
-include extra code to make sure it works in all the supported versions. Some 
+include extra code to make sure it works in all the supported versions. Some
 examples are included bellow.
 
 Context Managers
 ~~~~~~~~~~~~~~~~
 
 Context managers aren't available in Python 2.5 by default. If you want to use
-them make sure to put from ``__future__ import with_statement`` on top of the 
+them make sure to put from ``__future__ import with_statement`` on top of the
 file where you use them.
 
 Exception Handling
