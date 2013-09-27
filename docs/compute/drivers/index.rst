@@ -1,7 +1,7 @@
-Provider Documentation
-======================
+Compute Drivers Documentation
+=============================
 
-This chapter includes links to provider specific documentation pages.
+This chapter includes links to driver (provider) specific documentation pages.
 
 .. toctree::
     :glob:
