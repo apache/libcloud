@@ -81,8 +81,8 @@ License Agreement (ICLA) in order to have your patch accepted.
 You can find more information on how to sign and file an ICLA on the
 `Apache website`_.
 
-When filling the form, leave the field `preferred Apache id(s)` empty and in
-the `notify project` field enter `Libcloud`.
+When filling the form, leave field ``preferred Apache id(s)`` empty and in
+the ``notify project`` field, enter ``Libcloud``.
 
 Supporting Multiple Python Versions
 -----------------------------------
