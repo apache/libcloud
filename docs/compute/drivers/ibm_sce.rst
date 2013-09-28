@@ -5,3 +5,4 @@ API Docs
 --------
 
 .. autoclass:: libcloud.compute.drivers.ibm_sce.IBMNodeDriver
+    :members:

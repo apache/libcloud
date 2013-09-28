@@ -5,3 +5,4 @@ API Docs
 --------
 
 .. autoclass:: libcloud.compute.drivers.openstack.OpenStackNodeDriver
+    :members:
