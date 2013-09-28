@@ -138,7 +138,7 @@ class LazyList(object):
     def _load_all(self):
         while not self._exhausted:
             newdata, self._last_key, self._exhausted = \
-                     self._get_more(last_key=self._last_key,
-                                    value_dict=self._value_dict)
+                self._get_more(last_key=self._last_key,
+                               value_dict=self._value_dict)
             self._data.extend(newdata)
         self._all_loaded = True

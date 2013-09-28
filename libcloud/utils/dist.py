@@ -40,6 +40,7 @@ def _filter_names(names):
                  and (not n.endswith('.py'))]
     return names
 
+
 def relative_to(base, relativee):
     """
     Gets 'relativee' relative to 'basepath'.
@@ -48,7 +49,7 @@ def relative_to(base, relativee):
 
     >>> relative_to('/home/', '/home/radix/')
     'radix'
-    >>> relative_to('.', '/home/radix/Projects/Twisted') # curdir is /home/radix
+    >>> relative_to('.', '/home/radix/Projects/Twisted')
     'Projects/Twisted'
 
     The 'relativee' must be a child of 'basepath'.
@@ -61,6 +62,7 @@ def relative_to(base, relativee):
             relative = relative[1:]
         return os.path.join(base, relative)
     raise ValueError("%s is not a subpath of %s" % (relativee, basepath))
+
 
 def get_packages(dname, pkgname=None, results=None, ignore=None, parent=None):
     """
@@ -87,8 +89,8 @@ def get_packages(dname, pkgname=None, results=None, ignore=None, parent=None):
         results.append(prefix + pkgname + [bname])
         for subdir in filter(os.path.isdir, abssubfiles):
             get_packages(subdir, pkgname=pkgname + [bname],
-                        results=results, ignore=ignore,
-                        parent=parent)
+                         results=results, ignore=ignore,
+                         parent=parent)
     res = ['.'.join(result) for result in results]
     return res
 
