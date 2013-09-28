@@ -184,9 +184,9 @@ class XmlResponse(Response):
         try:
             body = ET.XML(self.body)
         except:
-            raise MalformedResponseError("Failed to parse XML",
-                                       body=self.body,
-                                       driver=self.connection.driver)
+            raise MalformedResponseError('Failed to parse XML',
+                                         body=self.body,
+                                         driver=self.connection.driver)
         return body
 
     parse_error = parse_body
@@ -268,7 +268,6 @@ class LoggingConnection():
 
                 return cls(b(self.s))
         rr = r
-        original_data = body
         headers = lowercase_keys(dict(r.getheaders()))
 
         encoding = headers.get('content-encoding', None)
@@ -362,12 +361,12 @@ class LoggingHTTPConnection(LoggingConnection, LibcloudHTTPConnection):
     def request(self, method, url, body=None, headers=None):
         headers.update({'X-LC-Request-ID': str(id(self))})
         if self.log is not None:
-            pre = "# -------- begin %d request ----------\n" % id(self)
+            pre = '# -------- begin %d request ----------\n' % id(self)
             self.log.write(pre +
                            self._log_curl(method, url, body, headers) + "\n")
             self.log.flush()
         return LibcloudHTTPConnection.request(self, method, url,
-                                               body, headers)
+                                              body, headers)
 
 
 class Connection(object):
@@ -398,7 +397,7 @@ class Connection(object):
         if host:
             self.host = host
 
-        if port != None:
+        if port is not None:
             self.port = port
         else:
             if self.secure == 1:
@@ -458,10 +457,10 @@ class Connection(object):
         connection = None
         secure = self.secure
 
-        if getattr(self, 'base_url', None) and base_url == None:
+        if getattr(self, 'base_url', None) and base_url is None:
             (host, port,
              secure, request_path) = self._tuple_from_url(self.base_url)
-        elif base_url != None:
+        elif base_url is not None:
             (host, port,
              secure, request_path) = self._tuple_from_url(base_url)
         else:
@@ -489,11 +488,11 @@ class Connection(object):
 
         if self.driver:
             user_agent = 'libcloud/%s (%s) %s' % (
-                  libcloud.__version__,
-                  self.driver.name, user_agent_suffix)
+                libcloud.__version__,
+                self.driver.name, user_agent_suffix)
         else:
             user_agent = 'libcloud/%s %s' % (
-                  libcloud.__version__, user_agent_suffix)
+                libcloud.__version__, user_agent_suffix)
 
         return user_agent
 
@@ -863,8 +862,8 @@ class BaseDriver(object):
 
         self.api_version = api_version
 
-        self.connection = self.connectionCls(*args,
-            **self._ex_connection_class_kwargs())
+        conn_kwargs = self._ex_connection_class_kwargs()
+        self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self
         self.connection.connect()
