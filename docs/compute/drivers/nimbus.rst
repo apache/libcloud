@@ -9,3 +9,4 @@ API Docs
 
 .. autoclass:: libcloud.compute.drivers.ec2.NimbusNodeDriver
     :members:
+    :inherited-members:

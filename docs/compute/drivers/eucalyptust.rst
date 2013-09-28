@@ -9,3 +9,4 @@ API Docs
 
 .. autoclass:: libcloud.compute.drivers.ec2.EucNodeDriver
     :members:
+    :inherited-members:
