@@ -49,7 +49,7 @@ except ImportError:
           'Additional information about setting these values can be found '
           'in the docstring for:\n'
           'libcloud/common/google.py\n')
-    sys.exit()
+    sys.exit(1)
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
@@ -82,10 +82,14 @@ CLEANUP = True
 args = getattr(secrets, 'GCE_PARAMS', ())
 kwargs = getattr(secrets, 'GCE_KEYWORD_PARAMS', {})
 
+# Add datacenter to kwargs for Python 2.5 compatibility
+kwargs = kwargs.copy()
+kwargs['datacenter'] = DATACENTER
+
 
 # ==== HELPER FUNCTIONS ====
 def get_gce_driver():
-    driver = get_driver(Provider.GCE)(*args, datacenter=DATACENTER, **kwargs)
+    driver = get_driver(Provider.GCE)(*args, **kwargs)
     return driver
 
 

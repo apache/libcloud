@@ -240,7 +240,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_create_forwarding_rule(self):
         fwr_name = 'lcforwardingrule'
-        targetpool = 'libcloud-lb-demo-lb-tp'
+        targetpool = 'lctargetpool'
         region = 'us-central1'
         fwr = self.driver.ex_create_forwarding_rule(fwr_name, targetpool,
                                                     region=region,
@@ -469,7 +469,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         fwr = self.driver.ex_get_forwarding_rule(fwr_name)
         self.assertEqual(fwr.name, fwr_name)
         self.assertEqual(fwr.extra['portRange'], '8000-8500')
-        self.assertEqual(fwr.targetpool.name, 'libcloud-lb-demo-lb-tp')
+        self.assertEqual(fwr.targetpool.name, 'lctargetpool')
         self.assertEqual(fwr.protocol, 'TCP')
 
     def test_ex_get_image(self):
@@ -883,6 +883,12 @@ class GCEMockHttp(MockHttpTestCase):
         else:
             body = self.fixtures.load(
                 'regions_us-central1_forwardingRules.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_forwardingRules_libcloud_lb_demo_lb(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'regions_us-central1_forwardingRules_libcloud-lb-demo-lb.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_forwardingRules_lcforwardingrule(

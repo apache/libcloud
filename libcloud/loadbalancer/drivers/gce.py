@@ -72,14 +72,19 @@ class GCELBDriver(Driver):
         """
         return ['TCP', 'UDP']
 
-    def list_balancers(self):
+    def list_balancers(self, ex_region=None):
         """
         List all loadbalancers
+
+        @keyword  ex_region: The region to return balancers from.  If None,
+                             will default to self.region.  If 'all', will
+                             return all balancers.
+        @type     ex_region: C{str} or L{GCERegion} or C{None}
 
         @rtype: C{list} of L{LoadBalancer}
         """
         balancers = []
-        for fwr in self.gce.ex_list_forwarding_rules():
+        for fwr in self.gce.ex_list_forwarding_rules(region=ex_region):
             balancers.append(self._forwarding_rule_to_loadbalancer(fwr))
         return balancers
 
@@ -283,7 +288,7 @@ class GCELBDriver(Driver):
         """
         return balancer.extra['targetpool'].add_healthcheck(healthcheck)
 
-    def ex_balancer_detach_healtcheck(self, balancer, healthcheck):
+    def ex_balancer_detach_healthcheck(self, balancer, healthcheck):
         """
         Detach healtcheck from balancer
 
@@ -322,8 +327,18 @@ class GCELBDriver(Driver):
         @return:  Member object
         @rtype:   L{Member}
         """
+        # A balancer can have a node as a member, even if the node doesn't
+        # exist.  In this case, 'node' is simply a string to where the resource
+        # would be found if it was there.
+        if hasattr(node, 'name'):
+            member_id = node.name
+            member_ip = node.public_ips[0]
+        else:
+            member_id = node
+            member_ip = None
+
         extra = {'node': node}
-        return Member(id=node.name, ip=node.public_ips[0], port=balancer.port,
+        return Member(id=member_id, ip=member_ip, port=balancer.port,
                       balancer=balancer, extra=extra)
 
     def _forwarding_rule_to_loadbalancer(self, forwarding_rule):

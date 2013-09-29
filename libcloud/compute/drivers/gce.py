@@ -535,6 +535,23 @@ class GCENodeDriver(NodeDriver):
         return {'auth_type': self.auth_type,
                 'project': self.project}
 
+    def _catch_error(self, ignore_errors=False):
+        """
+        Catch an exception and raise it unless asked to ignore it.
+
+        @keyword  ignore_errors: If true, just return the error.  Otherwise,
+                                 raise the error.
+        @type     ignore_errors: C{bool}
+
+        @return:  The exception that was raised.
+        @rtype:   L{Exception}
+        """
+        e = sys.exc_info()[1]
+        if ignore_errors:
+            return e
+        else:
+            raise e
+
     def _get_components_from_path(self, path):
         """
         Return a dictionary containing name & zone/region from a request path.
@@ -1429,11 +1446,9 @@ class GCENodeDriver(NodeDriver):
                     response = self.connection.request(
                         operation['selfLink']).object
                 except:
-                    e = sys.exc_info()[1]
+                    e = self._catch_error(ignore_errors=ignore_errors)
                     error = e.value
                     code = e.code
-                    if not ignore_errors:
-                        raise e
                 if response['status'] == 'DONE':
                     responses[i] = None
                     name = '%s-%03d' % (base_name, i)
@@ -2008,10 +2023,8 @@ class GCENodeDriver(NodeDriver):
                 response = self.connection.request(request,
                                                    method='DELETE').object
             except:
-                e = sys.exc_info()[1]
+                e = self._catch_error(ignore_errors=ignore_errors)
                 response = None
-                if not ignore_errors:
-                    raise e
             responses.append(response)
 
         while not complete:
@@ -2027,10 +2040,8 @@ class GCENodeDriver(NodeDriver):
                     response = self.connection.request(
                         operation['selfLink']).object
                 except:
-                    e = sys.exc_info()[1]
+                    e = self._catch_error(ignore_errors=ignore_errors)
                     no_errors = False
-                    if not ignore_errors:
-                        raise e
                 if response['status'] == 'DONE':
                     responses[i] = None
                     success[i] = no_errors
