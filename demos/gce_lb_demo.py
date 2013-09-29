@@ -101,8 +101,7 @@ def get_gcelb_driver(gce_driver=None):
     if gce_driver:
         driver = get_driver_lb(Provider_lb.GCE)(gce_driver=gce_driver)
     else:
-        driver = get_driver_lb(Provider_lb.GCE)(*args, datacenter=DATACENTER,
-                                                **kwargs)
+        driver = get_driver_lb(Provider_lb.GCE)(*args, **kwargs)
     return driver
 
 
