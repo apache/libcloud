@@ -152,7 +152,7 @@ class NephoscaleNodeDriver(NodeDriver):
             location = NodeLocation(id=value.get('id'),
                                     name=value.get('name'),
                                     country='US',
-                                    driver=self.connection.driver)
+                                    driver=self)
             locations.append(location)
         return locations
 
@@ -175,7 +175,7 @@ class NephoscaleNodeDriver(NodeDriver):
             }
             image = NodeImage(id=value.get('id'),
                               name=value.get('friendly_name'),
-                              driver=self.connection.driver,
+                              driver=self,
                               extra=extra)
             images.append(image)
         return images
@@ -196,7 +196,7 @@ class NephoscaleNodeDriver(NodeDriver):
                             disk=value.get('storage'),
                             bandwidth=None,
                             price=self._get_size_price(size_id=str(value_id)),
-                            driver=self.connection.driver)
+                            driver=self)
             sizes.append(size)
 
         return sorted(sizes, key=lambda k: k.price)
@@ -409,7 +409,7 @@ class NephoscaleNodeDriver(NodeDriver):
             e = sys.exc_info()[1]
             raise Exception("Failed to create node %s" % e)
         node = Node(id='', name=name, state='', public_ips='', private_ips='',
-                    driver=self.connection.driver)
+                    driver=self)
 
         nowait = kwargs.get('ex_wait', False)
         if not nowait:
@@ -459,7 +459,7 @@ class NephoscaleNodeDriver(NodeDriver):
 
         node = Node(id=data.get('id'), name=data.get('name'), state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self.connection.driver, extra=extra)
+                    driver=self, extra=extra)
         return node
 
     def _to_key(self, data):
