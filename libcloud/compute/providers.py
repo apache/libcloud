@@ -126,7 +126,9 @@ DRIVERS = {
     Provider.ABIQUO:
         ('libcloud.compute.drivers.abiquo', 'AbiquoNodeDriver'),
     Provider.DIGITAL_OCEAN:
-        ('libcloud.compute.drivers.digitalocean', 'DigitalOceanNodeDriver')
+        ('libcloud.compute.drivers.digitalocean', 'DigitalOceanNodeDriver'),
+    Provider.NEPHOSCALE:
+        ('libcloud.compute.drivers.nephoscale', 'NephoscaleNodeDriver')
 }
 
 
