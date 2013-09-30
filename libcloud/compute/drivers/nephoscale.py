@@ -24,6 +24,8 @@ import sys
 import string
 import random
 import time
+import os
+import binascii
 
 try:
     import simplejson as json
@@ -452,6 +454,8 @@ class NephoscaleNodeDriver(NodeDriver):
                       key_group=data.get('key_group'),
                       public_key=data.get('public_key'))
 
-    def random_password(self, size=8,
-                        chars=string.ascii_lowercase + string.digits):
-        return ''.join(random.choice(chars) for x in range(size))
+    def random_password(self, size=8):
+        value = os.urandom(size)
+        password = binascii.hexlify(value).decode('ascii')
+        return password[:size]
+        
