@@ -126,20 +126,6 @@ class NephoscaleNodeDriver(NodeDriver):
     connectionCls = NephoscaleConnection
     features = {'create_node': ['ssh_key']}
 
-    def __init__(self, *args, **kwargs):
-        """
-        Instantiate the driver with nephoscale's user and password
-
-        :keyword   key: user name (required)
-        :type    key: ``str``
-
-        :keyword   secret: password (required)
-        :type    secret: ``str``
-
-        :rtype: ``None``
-        """
-        super(NephoscaleNodeDriver, self).__init__(*args, **kwargs)
-
     def list_locations(self):
         """
         List available zones for deployment
@@ -245,7 +231,7 @@ class NephoscaleNodeDriver(NodeDriver):
                                          method='DELETE').object
         return result.get('response') in VALID_RESPONSE_CODES
 
-    def list_keypairs(self, ssh=False, password=False, key_group=None):
+    def ex_list_keypairs(self, ssh=False, password=False, key_group=None):
         """
         List available console and server keys
 
@@ -274,43 +260,40 @@ class NephoscaleNodeDriver(NodeDriver):
                     key.key_group == key_group]
         return keys
 
-    def create_ssh_key(self, name, public_key, key_group=1):
-        """Add an ssh key, given the public key and name
-           Returns the id of the created ssh key
+    def ex_create_keypair(self, name, public_key=None, password=None,
+                       key_group=None):
+        """Creates a key, ssh or password, for server or console
+           The group for the key (key_group) is 1 for Server and 4 for Console
+           Returns the id of the created key
         """
-        data = {
-            'name': name,
-            'public_key': public_key,
-            'key_group': key_group
-            #key_group: The group for the key where Server=1 and Console=4
-        }
-        params = urlencode(data)
+        if public_key:
+            if not key_group:
+                key_group = 1
+            data = {
+                'name': name,
+                'public_key': public_key,
+                'key_group': key_group
 
-        result = self.connection.request('/key/sshrsa/', data=params,
+            }
+            params = urlencode(data)
+            result = self.connection.request('/key/sshrsa/', data=params,
+                                         method='POST').object
+        else:
+            if not key_group:
+                key_group = 4
+            if not password:
+                password = self.random_password()
+                data = {
+                    'name': name,
+                    'password': password,
+                    'key_group': key_group
+                }
+            params = urlencode(data)
+            result = self.connection.request('/key/password/', data=params,
                                          method='POST').object
         return result.get('data', {}).get('id', '')
 
-    def create_password_key(self, name, password=None, key_group=4):
-        """Add a password key, given the name and password
-           If password not specified, create a random password with
-           lowercase strings and numbers
-
-           Returns the id of the created ssh key
-        """
-        if not password:
-            password = self.random_password()
-        data = {
-            'name': name,
-            'password': password,
-            'key_group': key_group
-             #key_group: The group for the key, where Server=1 and Console=4
-        }
-        params = urlencode(data)
-        result = self.connection.request('/key/password/', data=params,
-                                         method='POST').object
-        return result.get('data', {}).get('id', '')
-
-    def delete_keypair(self, key_id, ssh=False):
+    def ex_delete_keypair(self, key_id, ssh=False):
         """Delete an ssh key or password given it's id
         """
         if ssh:
@@ -338,22 +321,22 @@ class NephoscaleNodeDriver(NodeDriver):
         <NodeSize: id=27, ...name=CS025 - 0.25GB, 10GB, ...>
         >>> image = conn.list_images()[9]
         <NodeImage: id=49, name=Linux Ubuntu Server 10.04 LTS 64-bit, ...>
-        >>> server_keys = conn.list_keypairs(key_group=1)[0]
+        >>> server_keys = conn.ex_list_keypairs(key_group=1)[0]
         <NodeKey: id=71211, name=markos>
-        >>> server_key = conn.list_keypairs(key_group=1)[0].id
+        >>> server_key = conn.ex_list_keypairs(key_group=1)[0].id
         70867
-        >>> console_keys = conn.list_keypairs(key_group=4)[0]
+        >>> console_keys = conn.ex_list_keypairs(key_group=4)[0]
         <NodeKey: id=71213, name=mistio28434>
-        >>> console_key = conn.list_keypairs(key_group=4)[0].id
+        >>> console_key = conn.ex_list_keypairs(key_group=4)[0].id
         70907
         >>> node = conn.create_node(name=name, size=size, image=image, \
                 console_key=console_key, server_key=server_key)
 
         We can also create an ssh key, plus a console key and
         deploy node with them
-        >>> server_key = conn.create_ssh_key(name, key)
+        >>> server_key = conn.ex_create_keypair(name, public_key=key)
         71211
-        >>> console_key = conn.create_password_key(name)
+        >>> console_key = conn.ex_create_keypair(name, key_group=4)
         71213
 
         We can increase the number of connect attempts to wait until
