@@ -35,12 +35,13 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlencode
 
 from libcloud.compute.providers import Provider
+from libcloud.compute.base import is_private_subnet
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.types import NodeState, InvalidCredsError
 from libcloud.compute.base import (Node, NodeDriver, NodeImage, NodeSize,
                                     NodeLocation)
 
-API_HOST = "api.nephoscale.com"
+API_HOST = 'api.nephoscale.com'
 
 NODE_STATE_MAP = {
     'on': NodeState.RUNNING,
@@ -78,9 +79,9 @@ class NephoscaleResponse(JsonResponse):
     """
 
     def parse_error(self):
-        if self.status == 401:
+        if self.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError('Authorization Failed')
-        if self.status == 404:
+        if self.status == httplib.NOT_FOUND:
             raise Exception("The resource you are looking for is not found.")
 
         return self.body
@@ -126,11 +127,25 @@ class NephoscaleNodeDriver(NodeDriver):
     features = {'create_node': ['ssh_key']}
 
     def __init__(self, *args, **kwargs):
-        """Instantiate the driver with nephoscale's user and password
+        """
+        Instantiate the driver with nephoscale's user and password
+
+        :keyword   key: user name (required)
+        :type    key: ``str``
+
+        :keyword   secret: password (required)
+        :type    secret: ``str``
+
+        :rtype: ``None``
         """
         super(NephoscaleNodeDriver, self).__init__(*args, **kwargs)
 
     def list_locations(self):
+        """
+        List available zones for deployment
+
+        :rtype: ``list`` of :class:`NodeLocation`
+        """
         result = self.connection.request('/datacenter/zone/').object
         locations = []
         for value in result.get('data', []):
@@ -143,7 +158,9 @@ class NephoscaleNodeDriver(NodeDriver):
 
     def list_images(self):
         """
-        List available Images
+        List available images for deployment
+
+        :rtype: ``list`` of :class:`NodeImage`
         """
         result = self.connection.request('/image/server/').object
         images = []
@@ -165,7 +182,9 @@ class NephoscaleNodeDriver(NodeDriver):
 
     def list_sizes(self):
         """
-        List available Sizes
+        List available sizes containing prices
+
+        :rtype: ``list`` of :class:`NodeSize`
         """
         result = self.connection.request('/server/type/cloud/').object
         sizes = []
@@ -184,14 +203,16 @@ class NephoscaleNodeDriver(NodeDriver):
 
     def list_nodes(self):
         """
-        List available Nodes
+        List available nodes
+
+        :rtype: ``list`` of :class:`Node`
         """
         result = self.connection.request('/server/cloud/').object
         nodes = [self._to_node(value) for value in result.get('data', [])]
         return nodes
 
     def rename_node(self, node, name, hostname=None):
-        "rename a cloud server, optionally specify hostname too"
+        """rename a cloud server, optionally specify hostname too"""
         data = {'name': name}
         if hostname:
             data['hostname'] = hostname
@@ -201,54 +222,59 @@ class NephoscaleNodeDriver(NodeDriver):
         return result.get('response') in VALID_RESPONSE_CODES
 
     def reboot_node(self, node):
-        "reboot a running node"
+        """reboot a running node"""
         result = self.connection.request('/server/cloud/%s/initiator/restart/'
                                          % node.id, method='POST').object
         return result.get('response') in VALID_RESPONSE_CODES
 
     def ex_start_node(self, node):
-        "start a stopped node"
+        """start a stopped node"""
         result = self.connection.request('/server/cloud/%s/initiator/start/'
                                          % node.id, method='POST').object
         return result.get('response') in VALID_RESPONSE_CODES
 
     def ex_stop_node(self, node):
-        "stop a running node"
+        """stop a running node"""
         result = self.connection.request('/server/cloud/%s/initiator/stop/'
                                          % node.id, method='POST').object
         return result.get('response') in VALID_RESPONSE_CODES
 
     def destroy_node(self, node):
-        "destroy a node"
+        """destroy a node"""
         result = self.connection.request('/server/cloud/%s/' % node.id,
                                          method='DELETE').object
         return result.get('response') in VALID_RESPONSE_CODES
 
-    def list_all_keys(self, key_group=None):
-        """list console and server keys
-           if key_group is specified, show keys with this key_group only
-           eg key_group=4 for console password keys
+    def list_keypairs(self, ssh=False, password=False, key_group=None):
         """
-        result = self.connection.request('/key/').object
-        keys = [self._to_ssh_key(value) for value in result.get('data', [])]
+        List available console and server keys
+
+        :keyword ssh: if specified, show ssh keys only
+        :type    ssh: ``bool``
+
+        :keyword password: if specified, show password keys only
+        :type    password: ``bool``
+
+        :keyword key_group: if specified, show keys with this key_group only
+                            eg key_group=4 for console password keys
+        :type    key_group: ``int``
+
+        :rtype: ``list`` of :class:`NodeKey`
+        """
+        if ssh:
+            result = self.connection.request('/key/sshrsa/').object
+        if password:
+            result = self.connection.request('/key/password/').object
+        if not (ssh or password):
+            result = self.connection.request('/key/').object
+        keys = [self._to_key(value) for value in result.get('data', [])]
+
         if key_group:
             keys = [key for key in keys if
                     key.key_group == key_group]
         return keys
 
-    def list_ssh_keys(self):
-        "list ssh keys keys"
-        result = self.connection.request('/key/sshrsa/').object
-        keys = [self._to_ssh_key(value) for value in result.get('data', [])]
-        return keys
-
-    def list_password_keys(self):
-        "list password console and password server keys"
-        result = self.connection.request('/key/password/').object
-        keys = [self._to_ssh_key(value) for value in result.get('data', [])]
-        return keys
-
-    def add_ssh_key(self, name, public_key, key_group=1):
+    def create_ssh_key(self, name, public_key, key_group=1):
         """Add an ssh key, given the public key and name
            Returns the id of the created ssh key
         """
@@ -259,15 +285,12 @@ class NephoscaleNodeDriver(NodeDriver):
             #key_group: The group for the key where Server=1 and Console=4
         }
         params = urlencode(data)
-        try:
-            result = self.connection.request('/key/sshrsa/', data=params,
-                                             method='POST').object
-        except Exception:
-            e = sys.exc_info()[1]
-            raise e
+
+        result = self.connection.request('/key/sshrsa/', data=params,
+                                         method='POST').object
         return result.get('data', {}).get('id', '')
 
-    def add_password_key(self, name, password=None, key_group=4):
+    def create_password_key(self, name, password=None, key_group=4):
         """Add a password key, given the name and password
            If password not specified, create a random password with
            lowercase strings and numbers
@@ -283,41 +306,27 @@ class NephoscaleNodeDriver(NodeDriver):
              #key_group: The group for the key, where Server=1 and Console=4
         }
         params = urlencode(data)
-        try:
-            result = self.connection.request('/key/password/', data=params,
-                                             method='POST').object
-        except Exception:
-            e = sys.exc_info()[1]
-            raise e
+        result = self.connection.request('/key/password/', data=params,
+                                         method='POST').object
         return result.get('data', {}).get('id', '')
 
-    def delete_ssh_key(self, key_id):
-        """Delete an ssh key, given it's id
+    def delete_keypair(self, key_id, ssh=False):
+        """Delete an ssh key or password given it's id
         """
-        try:
+        if ssh:
             result = self.connection.request('/key/sshrsa/%s/' % key_id,
                                              method='DELETE').object
-        except Exception:
-            e = sys.exc_info()[1]
-            raise e
-        return result.get('response') in VALID_RESPONSE_CODES
-
-    def delete_password_key(self, key_id):
-        """Delete a password, given it's id
-        """
-        try:
+        else:
             result = self.connection.request('/key/password/%s/' % key_id,
-                                             method='DELETE').object
-        except Exception:
-            e = sys.exc_info()[1]
-            raise e
+                                         method='DELETE').object
         return result.get('response') in VALID_RESPONSE_CODES
 
     def create_node(self, **kwargs):
         """Creates the node, and sets the ssh key, console key
         NephoScale will respond with a 200-200 response after sending a valid
-        request. We then ask a few times until the server is created and
-        assigned a public IP address, so that deploy_node can be run
+        request. If nowait=True is specified in the args, we then ask a few
+        times until the server is created and assigned a public IP address,
+        so that deploy_node can be run
 
         >>> from libcloud.compute.types import Provider
         >>> from libcloud.compute.providers import get_driver
@@ -329,22 +338,22 @@ class NephoscaleNodeDriver(NodeDriver):
         <NodeSize: id=27, ...name=CS025 - 0.25GB, 10GB, ...>
         >>> image = conn.list_images()[9]
         <NodeImage: id=49, name=Linux Ubuntu Server 10.04 LTS 64-bit, ...>
-        >>> server_keys = conn.list_all_keys(1)[0]
+        >>> server_keys = conn.list_keypairs(key_group=1)[0]
         <NodeKey: id=71211, name=markos>
-        >>> server_key = conn.list_all_keys(1)[0].id
+        >>> server_key = conn.list_keypairs(key_group=1)[0].id
         70867
-        >>> console_keys = conn.list_all_keys(4)[0]
+        >>> console_keys = conn.list_keypairs(key_group=4)[0]
         <NodeKey: id=71213, name=mistio28434>
-        >>> console_key = conn.list_all_keys(4)[0].id
+        >>> console_key = conn.list_keypairs(key_group=4)[0].id
         70907
         >>> node = conn.create_node(name=name, size=size, image=image, \
                 console_key=console_key, server_key=server_key)
 
         We can also create an ssh key, plus a console key and
         deploy node with them
-        >>> server_key = conn.add_ssh_key(name, key)
+        >>> server_key = conn.create_ssh_key(name, key)
         71211
-        >>> console_key = conn.add_password_key(name)
+        >>> console_key = conn.create_password_key(name)
         71213
 
         We can increase the number of connect attempts to wait until
@@ -358,6 +367,7 @@ class NephoscaleNodeDriver(NodeDriver):
                                     console_key=console_key,
                                     server_key=server_key,
                                     connect_attempts=10,
+                                    nowait=True,
                                     location=location.id)
         """
         try:
@@ -400,20 +410,25 @@ class NephoscaleNodeDriver(NodeDriver):
             raise Exception("Failed to create node %s" % e)
         node = Node(id='', name=name, state='', public_ips='', private_ips='',
                     driver=self.connection.driver)
-        #try to get the created node public ips, for use in deploy_node
-        #At this point we don't have the id of the newly created Node,
-        #so search name in nodes
 
-        created_node = False
-        while connect_attempts > 0:
-            nodes = self.list_nodes()
-            created_node = [c_node for c_node in nodes if c_node.name == name]
-            if created_node:
-                return created_node[0]
-            else:
-                time.sleep(60)
-                connect_attempts = connect_attempts - 1
-        return node
+        nowait = kwargs.get('ex_wait', False)
+        if not nowait:
+            return node
+        else:
+            #try to get the created node public ips, for use in deploy_node
+            #At this point we don't have the id of the newly created Node,
+            #so search name in nodes
+            created_node = False
+            while connect_attempts > 0:
+                nodes = self.list_nodes()
+                created_node = [c_node for c_node in nodes if
+                                         c_node.name == name]
+                if created_node:
+                    return created_node[0]
+                else:
+                    time.sleep(60)
+                    connect_attempts = connect_attempts - 1
+            return node
 
     def _to_node(self, data):
         """Convert node in Node instances
@@ -425,10 +440,9 @@ class NephoscaleNodeDriver(NodeDriver):
         ip_addresses = data.get('ipaddresses', '')
         #E.g. "ipaddresses": "198.120.14.6, 10.132.60.1"
         if ip_addresses:
-            ip_addresses_list = ip_addresses.split(',')
-            for ip in ip_addresses_list:
+            for ip in ip_addresses.split(','):
                 ip = ip.replace(' ', '')
-                if ip.startswith('10.') or ip.startswith('192.168'):
+                if is_private_subnet(ip):
                     private_ips.append(ip)
                 else:
                     public_ips.append(ip)
@@ -448,7 +462,7 @@ class NephoscaleNodeDriver(NodeDriver):
                     driver=self.connection.driver, extra=extra)
         return node
 
-    def _to_ssh_key(self, data):
+    def _to_key(self, data):
         return NodeKey(id=data.get('id'),
                       name=data.get('name'),
                       password=data.get('password'),
