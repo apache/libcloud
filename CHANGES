@@ -81,6 +81,10 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-392)
       [L. Schaub]
 
+    - Allow user to specify disk partitioning mode using ex_disk_config argument
+      in the OpenStack based drivers. (LIBCLOUD-402)
+      [Brian Curtin]
+
   *) Storage
 
     - Allow users to filter objects starting with a prefix by passing ex_prefix
