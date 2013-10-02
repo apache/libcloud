@@ -912,7 +912,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['key_name'], 'devstack')
 
     def test_create_node_with_ex_disk_config(self):
-        OpenStackMockHttp.type = 'EX_DISK_CONFIG'
+        OpenStack_1_1_MockHttp.type = 'EX_DISK_CONFIG'
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size,
@@ -1579,7 +1579,9 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
         self.driver_klass.connectionCls.conn_classes = \
                 (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None
+        OpenStack_2_0_MockHttp.type = None
         self.driver = self.create_driver()
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
