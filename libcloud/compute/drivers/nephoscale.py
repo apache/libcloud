@@ -306,7 +306,9 @@ class NephoscaleNodeDriver(NodeDriver):
                                          method='DELETE').object
         return result.get('response') in VALID_RESPONSE_CODES
 
-    def create_node(self, **kwargs):
+
+    def create_node(self, name, size, image, server_key=None,
+                    console_key=None, zone=None, **kwargs):
         """Creates the node, and sets the ssh key, console key
         NephoScale will respond with a 200-200 response after sending a valid
         request. If nowait=True is specified in the args, we then ask a few
@@ -353,26 +355,14 @@ class NephoscaleNodeDriver(NodeDriver):
                                     server_key=server_key,
                                     connect_attempts=10,
                                     nowait=True,
-                                    location=location.id)
+                                    zone=location.id)
         """
         try:
-            name = kwargs.get('name')
-            if not name:
-                raise Exception("Name cannot be blank")
             hostname = kwargs.get('hostname', name)
-            service_type = kwargs.get('size')
-            if not service_type:
-                raise Exception("Service type cannot be blank")
-            service_type = service_type.id
-            image = kwargs.get('image')
-            if not image:
-                raise Exception("Image cannot be blank")
+            service_type = size.id
             image = image.id
-            server_key = kwargs.get('server_key', '')
-            console_key = kwargs.get('console_key', '')
-            zone = kwargs.get('location', '')
             connect_attempts = int(kwargs.get('connect_attempts',
-                                              CONNECT_ATTEMPTS))
+                                   CONNECT_ATTEMPTS))
         except Exception:
             e = sys.exc_info()[1]
             raise Exception("Error on create node: %s" % e)
@@ -458,4 +448,3 @@ class NephoscaleNodeDriver(NodeDriver):
         value = os.urandom(size)
         password = binascii.hexlify(value).decode('ascii')
         return password[:size]
-        
