@@ -60,7 +60,7 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(nodes[0].extra.get('zone'), 'RIC-1')
         self.assertEqual(nodes[0].name, 'mongodb-staging')
         self.assertEqual(nodes[0].extra.get('service_type'),
-                         u'CS05 - 0.5GB, 1Core, 25GB')
+                         'CS05 - 0.5GB, 1Core, 25GB')
 
     def test_list_keys(self):
         keys = self.driver.ex_list_keypairs()
