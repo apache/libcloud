@@ -37,8 +37,9 @@ DRIVERS = {
         Provider.ELB:
             ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver'),
         Provider.CLOUDSTACK:
-            ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver')
-
+            ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver'),
+        Provider.GCE:
+            ('libcloud.loadbalancer.drivers.gce', 'GCELBDriver')
 }
 
 

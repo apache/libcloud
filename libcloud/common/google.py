@@ -71,13 +71,15 @@ import time
 import datetime
 import os
 import socket
+import sys
 
-from libcloud.utils.py3 import urlencode, urlparse, PY3
+from libcloud.utils.py3 import httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
-from libcloud.compute.types import (InvalidCredsError,
-                                    MalformedResponseError,
-                                    LibcloudError)
+from libcloud.common.types import (InvalidCredsError,
+                                   MalformedResponseError,
+                                   ProviderError,
+                                   LibcloudError)
 
 try:
     from Crypto.Hash import SHA256
@@ -101,8 +103,119 @@ class GoogleAuthError(LibcloudError):
         return repr(self.value)
 
 
-class GoogleResponse(JsonResponse):
+class GoogleBaseError(ProviderError):
+    def __init__(self, value, http_code, code, driver=None):
+        self.code = code
+        super(GoogleBaseError, self).__init__(value, http_code, driver)
+
+
+class JsonParseError(GoogleBaseError):
     pass
+
+
+class ResourceNotFoundError(GoogleBaseError):
+    pass
+
+
+class QuotaExceededError(GoogleBaseError):
+    pass
+
+
+class ResourceExistsError(GoogleBaseError):
+    pass
+
+
+class ResourceInUseError(GoogleBaseError):
+    pass
+
+
+class GoogleResponse(JsonResponse):
+    """
+    Google Base Response class.
+    """
+    def success(self):
+        """
+        Determine if the request was successful.
+
+        For the Google response class, tag all responses as successful and
+        raise appropriate Exceptions from parse_body.
+
+        :return: C{True}
+        """
+        return True
+
+    def _get_error(self, body):
+        """
+        Get the error code and message from a JSON response.
+
+        Return just the first error if there are multiple errors.
+
+        :param  body: The body of the JSON response dictionary
+        :type   body: ``dict``
+
+        :return:  Tuple containing error code and message
+        :rtype:   ``tuple`` of ``str`` or ``int``
+        """
+        if 'errors' in body['error']:
+            err = body['error']['errors'][0]
+        else:
+            err = body['error']
+
+        code = err.get('code')
+        message = err.get('message')
+        return (code, message)
+
+    def parse_body(self):
+        """
+        Parse the JSON response body, or raise exceptions as appropriate.
+
+        :return:  JSON dictionary
+        :rtype:   ``dict``
+        """
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
+
+        json_error = False
+        try:
+            body = json.loads(self.body)
+        except:
+            # If there is both a JSON parsing error and an unsuccessful http
+            # response (like a 404), we want to raise the http error and not
+            # the JSON one, so don't raise JsonParseError here.
+            body = self.body
+            json_error = True
+
+        if self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]:
+            if json_error:
+                raise JsonParseError(body, self.status, None)
+            elif 'error' in body:
+                (code, message) = self._get_error(body)
+                if code == 'QUOTA_EXCEEDED':
+                    raise QuotaExceededError(message, self.status, code)
+                elif code == 'RESOURCE_ALREADY_EXISTS':
+                    raise ResourceExistsError(message, self.status, code)
+                elif code.startswith('RESOURCE_IN_USE'):
+                    raise ResourceInUseError(message, self.status, code)
+                else:
+                    raise GoogleBaseError(message, self.status, code)
+            else:
+                return body
+
+        elif self.status == httplib.NOT_FOUND:
+            if (not json_error) and ('error' in body):
+                (code, message) = self._get_error(body)
+            else:
+                message = body
+                code = None
+            raise ResourceNotFoundError(message, self.status, code)
+
+        else:
+            if (not json_error) and ('error' in body):
+                (code, message) = self._get_error(body)
+            else:
+                message = body
+                code = None
+            raise GoogleBaseError(message, self.status, code)
 
 
 class GoogleBaseDriver(object):
@@ -394,6 +507,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             self.token_info['expire_time'], TIMESTAMP_FORMAT)
 
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
+
+        python_ver = '%s.%s.%s' % (sys.version_info[0], sys.version_info[1],
+                                   sys.version_info[2])
+        ver_platform = 'Python %s/%s' % (python_ver, sys.platform)
+        self.user_agent_append(ver_platform)
 
     def _now(self):
         return datetime.datetime.utcnow()

@@ -25,7 +25,9 @@ import getpass
 
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
+from libcloud.common.google import ResourceNotFoundError
 
+from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
 from libcloud.compute.providers import Provider
@@ -53,33 +55,6 @@ def timestamp_to_datetime(timestamp):
     tz_mins = int(timestamp[-2:]) * int(timestamp[-6:-5] + '1')
     tz_delta = datetime.timedelta(hours=tz_hours, minutes=tz_mins)
     return ts + tz_delta
-
-
-class GCEError(LibcloudError):
-    """Base class for general GCE Errors"""
-    def __init__(self, code, value):
-        self.code = code
-        self.value = value
-
-    def __repr__(self):
-        return repr(self.code) + ": " + repr(self.value)
-
-
-class GCEKnownError(GCEError):
-    """Base class for GCE Errors that can be classified"""
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return repr(self.value)
-
-
-class QuotaExceededError(GCEKnownError):
-    pass
-
-
-class ResourceExistsError(GCEKnownError):
-    pass
 
 
 class GCEResponse(GoogleResponse):
@@ -129,13 +104,53 @@ class GCEAddress(UuidMixin):
 
 class GCEFailedNode(object):
     """Dummy Node object for nodes that are not created."""
-    def __init__(self, name, error):
+    def __init__(self, name, error, code):
         self.name = name
         self.error = error
+        self.code = code
 
     def __repr__(self):
         return '<GCEFailedNode name="%s" error_code="%s">' % (
-            self.name, self.error['code'])
+            self.name, self.code)
+
+
+class GCEHealthCheck(UuidMixin):
+    """A GCE Http Health Check class."""
+    def __init__(self, id, name, path, port, interval, timeout,
+                 unhealthy_threshold, healthy_threshold, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.path = path
+        self.port = port
+        self.interval = interval
+        self.timeout = timeout
+        self.unhealthy_threshold = unhealthy_threshold
+        self.healthy_threshold = healthy_threshold
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCEHealthCheck id="%s" name="%s" path="%s" port="%s">' % (
+            self.id, self.name, self.path, self.port)
+
+    def destroy(self):
+        """
+        Destroy this Health Check.
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_destroy_healthcheck(healthcheck=self)
+
+    def update(self):
+        """
+        Commit updated healthcheck values.
+
+        :return:  Updated Healthcheck object
+        :rtype:   :class:`GCEHealthcheck`
+        """
+        return self.driver.ex_update_healthcheck(healthcheck=self)
 
 
 class GCEFirewall(UuidMixin):
@@ -164,6 +179,42 @@ class GCEFirewall(UuidMixin):
         :rtype:  ``bool``
         """
         return self.driver.ex_destroy_firewall(firewall=self)
+
+    def update(self):
+        """
+        Commit updated firewall values.
+
+        :return:  Updated Firewall object
+        :rtype:   :class:`GCEFirewall`
+        """
+        return self.driver.ex_update_firewall(firewall=self)
+
+
+class GCEForwardingRule(UuidMixin):
+    def __init__(self, id, name, region, address, protocol, targetpool, driver,
+                 extra=None):
+        self.id = str(id)
+        self.name = name
+        self.region = region
+        self.address = address
+        self.protocol = protocol
+        self.targetpool = targetpool
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCEForwardingRule id="%s" name="%s" address="%s">' % (
+            self.id, self.name, self.address)
+
+    def destroy(self):
+        """
+        Destroy this Forwarding Rule
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_destroy_forwarding_rule(forwarding_rule=self)
 
 
 class GCENetwork(UuidMixin):
@@ -210,8 +261,103 @@ class GCEProject(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
-    def _repr__(self):
+    def __repr__(self):
         return '<GCEProject id="%s" name="%s">' % (self.id, self.name)
+
+
+class GCERegion(UuidMixin):
+    def __init__(self, id, name, status, zones, quotas, deprecated, driver,
+                 extra=None):
+        self.id = str(id)
+        self.name = name
+        self.status = status
+        self.zones = zones
+        self.quotas = quotas
+        self.deprecated = deprecated
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCERegion id="%s" name="%s", status="%s">' % (
+            self.id, self.name, self.status)
+
+
+class GCETargetPool(UuidMixin):
+    def __init__(self, id, name, region, healthchecks, nodes, driver,
+                 extra=None):
+        self.id = str(id)
+        self.name = name
+        self.region = region
+        self.healthchecks = healthchecks
+        self.nodes = nodes
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def __repr__(self):
+        return '<GCETargetPool id="%s" name="%s" region="%s">' % (
+            self.id, self.name, self.region.name)
+
+    def add_node(self, node):
+        """
+        Add a node to this target pool.
+
+        :param  node: Node to add
+        :type   node: ``str`` or :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_targetpool_add_node(targetpool=self, node=node)
+
+    def remove_node(self, node):
+        """
+        Remove a node from this target pool.
+
+        :param  node: Node to remove
+        :type   node: ``str`` or :class:`Node`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_targetpool_remove_node(targetpool=self,
+                                                     node=node)
+
+    def add_healthcheck(self, healthcheck):
+        """
+        Add a healthcheck to this target pool.
+
+        :param  healthcheck: Healthcheck to add
+        :type   healthcheck: ``str`` or :class:`GCEHealthCheck`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_targetpool_add_healthcheck(
+            targetpool=self, healthcheck=healthcheck)
+
+    def remove_healthcheck(self, healthcheck):
+        """
+        Remove a healthcheck from this target pool.
+
+        :param  healthcheck: Healthcheck to remove
+        :type   healthcheck: ``str`` or :class:`GCEHealthCheck`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_targetpool_remove_healthcheck(
+            targetpool=self, healthcheck=healthcheck)
+
+    def destroy(self):
+        """
+        Destroy this Target Pool
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        return self.driver.ex_destroy_targetpool(targetpool=self)
 
 
 class GCEZone(NodeLocation):
@@ -305,7 +451,15 @@ class GCEZone(NodeLocation):
 
 class GCENodeDriver(NodeDriver):
     """
-    Base class for GCE Node Driver.
+    GCE Node Driver class.
+
+    This is the primary driver for interacting with Google Compute Engine.  It
+    contains all of the standard libcloud methods, plus additional ex_* methods
+    for more features.
+
+    Note that many methods allow either objects or strings (or lists of
+    objects/strings).  In most cases, passing strings instead of objects will
+    result in additional GCE API calls.
     """
     connectionCls = GCEConnection
     api_name = 'googleapis'
@@ -318,6 +472,7 @@ class GCENodeDriver(NodeDriver):
         "STAGING": NodeState.PENDING,
         "RUNNING": NodeState.RUNNING,
         "STOPPED": NodeState.TERMINATED,
+        "STOPPING": NodeState.TERMINATED,
         "TERMINATED": NodeState.TERMINATED
     }
 
@@ -353,7 +508,8 @@ class GCENodeDriver(NodeDriver):
                              '"project" keyword.')
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
-        # Cache Zone information to reduce API calls and increase speed
+        # Cache Zone and Region information to reduce API calls and
+        # increase speed
         self.base_path = '/compute/%s/projects/%s' % (API_VERSION,
                                                       self.project)
         self.zone_list = self.ex_list_zones()
@@ -365,31 +521,81 @@ class GCENodeDriver(NodeDriver):
         else:
             self.zone = None
 
+        self.region_list = self.ex_list_regions()
+        self.region_dict = {}
+        for region in self.region_list:
+            self.region_dict[region.name] = region
+
+        if self.zone:
+            self.region = self._get_region_from_zone(self.zone)
+        else:
+            self.region = None
+
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
                 'project': self.project}
 
-    def _categorize_error(self, error):
+    def _catch_error(self, ignore_errors=False):
         """
-        Parse error message returned from GCE operation and raise the
-        appropriate Exception.
+        Catch an exception and raise it unless asked to ignore it.
 
-        :param  error: Error dictionary from a GCE Operations response
-        :type   error: ``dict``
+        :keyword  ignore_errors: If true, just return the error.  Otherwise,
+                                 raise the error.
+        :type     ignore_errors: ``bool``
+
+        :return:  The exception that was raised.
+        :rtype:   :class:`Exception`
         """
-        err = error['errors'][0]
-        message = err['message']
-        code = err['code']
-        if code == 'QUOTA_EXCEEDED':
-            raise QuotaExceededError(message)
-        elif code == 'RESOURCE_ALREADY_EXISTS':
-            raise ResourceExistsError(message)
+        e = sys.exc_info()[1]
+        if ignore_errors:
+            return e
         else:
-            raise GCEError(code, message)
+            raise e
 
-    def _find_zone(self, name, res_type, region=False):
+    def _get_components_from_path(self, path):
         """
-        Find the zone for a named resource.
+        Return a dictionary containing name & zone/region from a request path.
+
+        :param  path: HTTP request path (e.g.
+                      '/project/pjt-name/zones/us-central1-a/instances/mynode')
+        :type   path: ``str``
+
+        :return:  Dictionary containing name and zone/region of resource
+        :rtype    ``dict``
+        """
+        region = None
+        zone = None
+        glob = False
+        components = path.split('/')
+        name = components[-1]
+        if components[-4] == 'regions':
+            region = components[-3]
+        elif components[-4] == 'zones':
+            zone = components[-3]
+        elif components[-3] == 'global':
+            glob = True
+
+        return {'name': name, 'region': region, 'zone': zone, 'global': glob}
+
+    def _get_region_from_zone(self, zone):
+        """
+        Return the Region object that contains the given Zone object.
+
+        :param  zone: Zone object
+        :type   zone: :class:`GCEZone`
+
+        :return:  Region object that contains the zone
+        :rtype:   :class:`GCERegion`
+        """
+        for region in self.region_list:
+            zones = [z.name for z in region.zones]
+            if zone.name in zones:
+                return region
+
+    def _find_zone_or_region(self, name, res_type, region=False,
+                             res_name=None):
+        """
+        Find the zone or region for a named resource.
 
         :param  name: Name of resource to find
         :type   name: ``str``
@@ -398,21 +604,36 @@ class GCENodeDriver(NodeDriver):
                           Examples include: 'disks', 'instances' or 'addresses'
         :type   res_type: ``str``
 
-        :keyword  region: If True, find a region instead of a zone.
-        :keyword  region: ``bool``
+        :keyword  region: If True, search regions instead of zones
+        :type     region: ``bool``
 
-        :return:  Name of zone (or region) that the resource is in.
-        :rtype:   ``str``
+        :keyword  res_name: The name of the resource type for error messages.
+                            Examples: 'Volume', 'Node', 'Address'
+        :keyword  res_name: ``str``
+
+        :return:  Zone/Region object for the zone/region for the resource.
+        :rtype:   :class:`GCEZone` or :class:`GCERegion`
         """
-        request = '/aggregated/%s' % res_type
+        if region:
+            rz = 'region'
+        else:
+            rz = 'zone'
+        rz_name = None
+        res_name = res_name or res_type
+        request = '/aggregated/%s' % (res_type)
         res_list = self.connection.request(request).object
         for k, v in res_list['items'].items():
             for res in v.get(res_type, []):
                 if res['name'] == name:
-                    if region:
-                        return k.replace('regions/', '')
-                    else:
-                        return k.replace('zones/', '')
+                    rz_name = k.replace('%ss/' % (rz), '')
+                    break
+        if not rz_name:
+            raise ResourceNotFoundError(
+                '%s \'%s\' not found in any %s.' % (res_name, name, rz),
+                None, None)
+        else:
+            getrz = getattr(self, 'ex_get_%s' % (rz))
+            return getrz(rz_name)
 
     def _match_images(self, project, partial_name):
         """
@@ -431,8 +652,9 @@ class GCENodeDriver(NodeDriver):
                               image.
         :type   partial_name: ``str``
 
-        :return:  The latest image object that maches the partial name.
-        :rtype:   :class:`NodeImage`
+        :return:  The latest image object that maches the partial name or None
+                  if no matching image is found.
+        :rtype:   :class:`NodeImage` or ``None``
         """
         project_images = self.list_images(project)
         partial_match = []
@@ -446,6 +668,44 @@ class GCENodeDriver(NodeDriver):
 
         if partial_match:
             return partial_match[1]
+
+    def _set_region(self, region):
+        """
+        Return the region to use for listing resources.
+
+        :param  region: A name, region object, None, or 'all'
+        :type   region: ``str`` or :class:`GCERegion` or ``None``
+
+        :return:  A region object or None if all regions should be considered
+        :rtype:   :class:`GCERegion` or ``None``
+        """
+        region = region or self.region
+
+        if region == 'all' or region is None:
+            return None
+
+        if not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
+        return region
+
+    def _set_zone(self, zone):
+        """
+        Return the zone to use for listing resources.
+
+        :param  zone: A name, zone object, None, or 'all'
+        :type   region: ``str`` or :class:`GCEZone` or ``None``
+
+        :return:  A zone object or None if all zones should be considered
+        :rtype:   :class:`GCEZone` or ``None``
+        """
+        zone = zone or self.zone
+
+        if zone == 'all' or zone is None:
+            return None
+
+        if not hasattr(zone, 'name'):
+            zone = self.ex_get_zone(zone)
+        return zone
 
     def ex_list_addresses(self, region=None):
         """
@@ -461,16 +721,11 @@ class GCENodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`GCEAddress`
         """
         list_addresses = []
-        if region is None and self.zone:
-            region = '-'.join(self.zone.name.split('-')[:-1])
-        elif region == 'all':
-            region = None
-
+        region = self._set_region(region)
         if region is None:
             request = '/aggregated/addresses'
         else:
-            request = '/regions/%s/addresses' % region
-
+            request = '/regions/%s/addresses' % (region.name)
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
@@ -485,6 +740,20 @@ class GCENodeDriver(NodeDriver):
                                   response['items']]
         return list_addresses
 
+    def ex_list_healthchecks(self):
+        """
+        Return the list of health checks.
+
+        :return: A list of health check objects.
+        :rtype: ``list`` of :class:`GCEHealthCheck`
+        """
+        list_healthchecks = []
+        request = '/global/httpHealthChecks'
+        response = self.connection.request(request, method='GET').object
+        list_healthchecks = [self._to_healthcheck(h) for h in
+                             response.get('items', [])]
+        return list_healthchecks
+
     def ex_list_firewalls(self):
         """
         Return the list of firewalls.
@@ -498,6 +767,41 @@ class GCENodeDriver(NodeDriver):
         list_firewalls = [self._to_firewall(f) for f in
                           response.get('items', [])]
         return list_firewalls
+
+    def ex_list_forwarding_rules(self, region=None):
+        """
+        Return the list of forwarding rules for a region or all.
+
+        :keyword  region: The region to return forwarding rules from.  For
+                          example: 'us-central1'.  If None, will return
+                          forwarding rules from the region of self.region
+                          (which is based on self.zone).  If 'all', will
+                          return all forwarding rules.
+        :type     region: ``str`` or :class:`GCERegion` or ``None``
+
+        :return: A list of forwarding rule objects.
+        :rtype: ``list`` of :class:`GCEForwardingRule`
+        """
+        list_forwarding_rules = []
+        region = self._set_region(region)
+        if region is None:
+            request = '/aggregated/forwardingRules'
+        else:
+            request = '/regions/%s/forwardingRules' % (region.name)
+        response = self.connection.request(request, method='GET').object
+
+        if 'items' in response:
+            # The aggregated result returns dictionaries for each region
+            if region is None:
+                for v in response['items'].values():
+                    region_forwarding_rules = [self._to_forwarding_rule(f) for
+                                               f in v.get('forwardingRules',
+                                                          [])]
+                    list_forwarding_rules.extend(region_forwarding_rules)
+            else:
+                list_forwarding_rules = [self._to_forwarding_rule(f) for f in
+                                         response['items']]
+        return list_forwarding_rules
 
     def list_images(self, ex_project=None):
         """
@@ -568,17 +872,11 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``list`` of :class:`Node`
         """
         list_nodes = []
-        # Use provided zone or default zone
-        zone = ex_zone or self.zone
-        # Setting ex_zone to 'all' overrides the default zone
-        if zone == 'all':
-            zone = None
+        zone = self._set_zone(ex_zone)
         if zone is None:
             request = '/aggregated/instances'
-        elif hasattr(zone, 'name'):
-            request = '/zones/%s/instances' % zone.name
         else:
-            request = '/zones/%s/instances' % zone
+            request = '/zones/%s/instances' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
 
@@ -593,6 +891,19 @@ class GCENodeDriver(NodeDriver):
                 list_nodes = [self._to_node(i) for i in response['items']]
         return list_nodes
 
+    def ex_list_regions(self):
+        """
+        Return the list of regions.
+
+        :return: A list of region objects.
+        :rtype: ``list`` of :class:`GCERegion`
+        """
+        list_regions = []
+        request = '/regions'
+        response = self.connection.request(request, method='GET').object
+        list_regions = [self._to_region(r) for r in response['items']]
+        return list_regions
+
     def list_sizes(self, location=None):
         """
         Return a list of sizes (machineTypes) in a zone.
@@ -604,21 +915,17 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``list`` of :class:`GCENodeSize`
         """
         list_sizes = []
-        location = location or self.zone
-        if location == 'all':
-            location = None
-        if location is None:
+        zone = self._set_zone(location)
+        if zone is None:
             request = '/aggregated/machineTypes'
-        elif hasattr(location, 'name'):
-            request = '/zones/%s/machineTypes' % location.name
         else:
-            request = '/zones/%s/machineTypes' % location
+            request = '/zones/%s/machineTypes' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
             # The aggregated response returns a dict for each zone
-            if location is None:
+            if zone is None:
                 for v in response['items'].values():
                     zone_sizes = [self._to_node_size(s) for s in
                                   v.get('machineTypes', [])]
@@ -627,6 +934,33 @@ class GCENodeDriver(NodeDriver):
                 list_sizes = [self._to_node_size(s) for s in response['items']]
         return list_sizes
 
+    def ex_list_targetpools(self, region=None):
+        """
+        Return the list of target pools.
+
+        :return:  A list of target pool objects
+        :rtype:   ``list`` of :class:`GCETargetPool`
+        """
+        list_targetpools = []
+        region = self._set_region(region)
+        if region is None:
+            request = '/aggregated/targetPools'
+        else:
+            request = '/regions/%s/targetPools' % (region.name)
+        response = self.connection.request(request, method='GET').object
+
+        if 'items' in response:
+            # The aggregated result returns dictionaries for each region
+            if region is None:
+                for v in response['items'].values():
+                    region_targetpools = [self._to_targetpool(t) for t in
+                                          v.get('targetPools', [])]
+                    list_targetpools.extend(region_targetpools)
+            else:
+                list_targetpools = [self._to_targetpool(t) for t in
+                                    response['items']]
+        return list_targetpools
+
     def list_volumes(self, ex_zone=None):
         """
         Return a list of volumes for a zone or all.
@@ -634,22 +968,18 @@ class GCENodeDriver(NodeDriver):
         Will return list from provided zone, or from the default zone unless
         given the value of 'all'.
 
-        :keyword  region: The zone to return volumes from.
-        :type     region: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :keyword  ex_zone: The zone to return volumes from.
+        :type     ex_zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
         list_volumes = []
-        zone = ex_zone or self.zone
-        if zone == 'all':
-            zone = None
+        zone = self._set_zone(ex_zone)
         if zone is None:
             request = '/aggregated/disks'
-        elif hasattr(zone, 'name'):
-            request = '/zones/%s/disks' % zone.name
         else:
-            request = '/zones/%s/disks' % zone
+            request = '/zones/%s/disks' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
         if 'items' in response:
@@ -684,24 +1014,79 @@ class GCENodeDriver(NodeDriver):
         :param  name: Name of static address
         :type   name: ``str``
 
-        :param  region: Name of region for the addres (e.g. 'us-central1')
-        :type   region: ``str``
+        :keyword  region: Name of region for the address (e.g. 'us-central1')
+        :type     region: ``str`` or :class:`GCERegion`
 
         :return:  Static Address object
         :rtype:   :class:`GCEAddress`
         """
-        if region is None and self.zone:
-            region = '-'.join(self.zone.name.split('-')[:-1])
+        region = region or self.region
+        if not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
         elif region is None:
             raise GCEError('REGION_NOT_SPECIFIED',
                            'Region must be provided for an address')
         address_data = {'name': name}
-        request = '/regions/%s/addresses' % region
+        request = '/regions/%s/addresses' % (region.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=address_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
         return self.ex_get_address(name, region=region)
+
+    def ex_create_healthcheck(self, name, host=None, path=None, port=None,
+                              interval=None, timeout=None,
+                              unhealthy_threshold=None,
+                              healthy_threshold=None):
+        """
+        Create an Http Health Check.
+
+        :param  name: Name of health check
+        :type   name: ``str``
+
+        :keyword  host: Hostname of health check requst.  Defaults to empty and
+                        public IP is used instead.
+        :type     host: ``str``
+
+        :keyword  path: The request path for the check.  Defaults to /.
+        :type     path: ``str``
+
+        :keyword  port: The TCP port number for the check.  Defaults to 80.
+        :type     port: ``int``
+
+        :keyword  interval: How often (in seconds) to check.  Defaults to 5.
+        :type     interval: ``int``
+
+        :keyword  timeout: How long to wait before failing. Defaults to 5.
+        :type     timeout: ``int``
+
+        :keyword  unhealthy_threshold: How many failures before marking
+                                       unhealthy.  Defaults to 2.
+        :type     unhealthy_threshold: ``int``
+
+        :keyword  healthy_threshold: How many successes before marking as
+                                     healthy.  Defaults to 2.
+        :type     healthy_threshold: ``int``
+
+        :return:  Health Check object
+        :rtype:   :class:`GCEHealthCheck`
+        """
+        hc_data = {}
+        hc_data['name'] = name
+        if host:
+            hc_data['host'] = host
+        # As of right now, the 'default' values aren't getting set when called
+        # through the API, so set them explicitly
+        hc_data['requestPath'] = path or '/'
+        hc_data['port'] = port or 80
+        hc_data['checkIntervalSec'] = interval or 5
+        hc_data['timeoutSec'] = timeout or 5
+        hc_data['unhealthyThreshold'] = unhealthy_threshold or 2
+        hc_data['healthyThreshold'] = healthy_threshold or 2
+
+        request = '/global/httpHealthChecks'
+
+        response = self.connection.async_request(request, method='POST',
+                                                 data=hc_data).object
+        return self.ex_get_healthcheck(name)
 
     def ex_create_firewall(self, name, allowed, network='default',
                            source_ranges=None, source_tags=None):
@@ -731,7 +1116,8 @@ class GCENodeDriver(NodeDriver):
         :type     network: ``str`` or :class:`GCENetwork`
 
         :keyword  source_ranges: A list of IP ranges in CIDR format that the
-                                 firewall should apply to.
+                                 firewall should apply to. Defaults to
+                                 ['0.0.0.0/0']
         :type     source_ranges: ``list`` of ``str``
 
         :keyword  source_tags: A list of instance tags which the rules apply
@@ -749,8 +1135,7 @@ class GCENodeDriver(NodeDriver):
         firewall_data['name'] = name
         firewall_data['allowed'] = allowed
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is not None:
-            firewall_data['sourceRanges'] = source_ranges
+        firewall_data['sourceRanges'] = source_ranges or ['0.0.0.0/0']
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
 
@@ -758,9 +1143,62 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=firewall_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
         return self.ex_get_firewall(name)
+
+    def ex_create_forwarding_rule(self, name, targetpool, region=None,
+                                  protocol='tcp', port_range=None,
+                                  address=None):
+        """
+        Create a forwarding rule.
+
+        :param  name: Name of forwarding rule to be created
+        :type   name: ``str``
+
+        :param  targetpool: Target pool to apply the rule to
+        :param  targetpool: ``str`` or :class:`GCETargetPool`
+
+        :keyword  region: Region to create the forwarding rule in.  Defaults to
+                          self.region
+        :type     region: ``str`` or :class:`GCERegion`
+
+        :keyword  protocol: Should be 'tcp' or 'udp'
+        :type     protocol: ``str``
+
+        :keyword  port_range: Optional single port number or range separated
+                              by a dash.  Examples: '80', '5000-5999'.
+        :type     port_range: ``str``
+
+        :keyword  address: Optional static address for forwarding rule. Must be
+                           in same region.
+        :type     address: ``str`` or :class:`GCEAddress`
+
+        :return:  Forwarding Rule object
+        :rtype:   :class:`GCEForwardingRule`
+        """
+        forwarding_rule_data = {}
+        region = region or self.region
+        if not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
+        if not hasattr(targetpool, 'name'):
+            targetpool = self.ex_get_targetpool(targetpool, region)
+
+        forwarding_rule_data['name'] = name
+        forwarding_rule_data['region'] = region.extra['selfLink']
+        forwarding_rule_data['target'] = targetpool.extra['selfLink']
+        forwarding_rule_data['protocol'] = protocol.upper()
+        if address:
+            if not hasattr(address, 'name'):
+                address = self.ex_get_address(address, region)
+            forwarding_rule_data['IPAddress'] = address.extra['selfLink']
+        if port_range:
+            forwarding_rule_data['portRange'] = port_range
+
+        request = '/regions/%s/forwardingRules' % (region.name)
+
+        response = self.connection.async_request(
+            request, method='POST', data=forwarding_rule_data).object
+
+        return self.ex_get_forwarding_rule(name)
 
     def ex_create_network(self, name, cidr):
         """
@@ -783,13 +1221,12 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=network_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_network(name)
 
     def _create_node_req(self, name, size, image, location, network,
-                         tags=None, metadata=None, boot_disk=None):
+                         tags=None, metadata=None, boot_disk=None,
+                         persistent_disk=False):
         """
         Returns a request and body to create a new node.  This is a helper
         method to suppor both :class:`create_node` and :class:`ex_create_multiple_nodes`.
@@ -816,8 +1253,13 @@ class GCENodeDriver(NodeDriver):
         :keyword  metadata: Metadata dictionary for instance.
         :type     metadata: ``dict``
 
-        :keyword  boot_disk:  Persistent boot disk to attach
+        :keyword  boot_disk:  Persistent boot disk to attach.
         :type     :class:`StorageVolume`
+
+        :keyword  persistent_disk: If True, create a persistent disk instead of
+                                   an ephemeral one.  Has no effect if
+                                   boot_disk is specified.
+        :type     persistent_disk: ``bool``
 
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
@@ -829,6 +1271,9 @@ class GCENodeDriver(NodeDriver):
             node_data['tags'] = {'items': tags}
         if metadata:
             node_data['metadata'] = metadata
+        if (not boot_disk) and persistent_disk:
+            boot_disk = self.create_volume(None, name, location=location,
+                                           image=image)
         if boot_disk:
             disks = [{'kind': 'compute#attachedDisk',
                       'boot': True,
@@ -848,13 +1293,13 @@ class GCENodeDriver(NodeDriver):
                'network': network.extra['selfLink']}]
         node_data['networkInterfaces'] = ni
 
-        request = '/zones/%s/instances' % location.name
+        request = '/zones/%s/instances' % (location.name)
 
         return request, node_data
 
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
-                    ex_boot_disk=None):
+                    ex_boot_disk=None, ex_persistent_disk=False):
         """
         Create a new node and return a node object for the node.
 
@@ -881,7 +1326,12 @@ class GCENodeDriver(NodeDriver):
         :type     ex_metadata: ``dict`` or ``None``
 
         :keyword  ex_boot_disk: The boot disk to attach to the instance.
-        :type     ex_boot_disk: :class:`StorageVolume`
+        :type     ex_boot_disk: :class:`StorageVolume` or ``str``
+
+        :keyword  ex_persistent_disk: If True, create a persistent_disk instead
+                                      of a ephemeral one.  Has no effect if
+                                      ex_boot_disk is specified.
+        :type     ex_persistent_disk: ``bool``
 
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
@@ -899,18 +1349,17 @@ class GCENodeDriver(NodeDriver):
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
-                                                   ex_boot_disk)
+                                                   ex_boot_disk,
+                                                   ex_persistent_disk)
         response = self.connection.async_request(request, method='POST',
                                                  data=node_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_node(name, location.name)
 
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
-                                 ignore_errors=True,
+                                 ignore_errors=True, ex_persistent_disk=False,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -950,6 +1399,10 @@ class GCENodeDriver(NodeDriver):
                                  more nodes fails.
         :type     ignore_errors: ``bool``
 
+        :keyword  persistent_disk: If True, create persistent boot disks
+                                   instead of ephemeral ones.
+        :type     persistent_disk: ``bool``
+
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
 
@@ -971,9 +1424,9 @@ class GCENodeDriver(NodeDriver):
         responses = []
         for i in range(number):
             name = '%s-%03d' % (base_name, i)
-            request, node_data = self._create_node_req(name, size, image,
-                                                       location, ex_network,
-                                                       ex_tags, ex_metadata)
+            request, node_data = self._create_node_req(
+                name, size, image, location, ex_network, ex_tags, ex_metadata,
+                persistent_disk=ex_persistent_disk)
             response = self.connection.request(request, method='POST',
                                                data=node_data)
             responses.append(response.object)
@@ -988,23 +1441,75 @@ class GCENodeDriver(NodeDriver):
             for i, operation in enumerate(responses):
                 if operation is None:
                     continue
-                response = self.connection.request(
-                    operation['selfLink']).object
+                error = None
+                try:
+                    response = self.connection.request(
+                        operation['selfLink']).object
+                except:
+                    e = self._catch_error(ignore_errors=ignore_errors)
+                    error = e.value
+                    code = e.code
                 if response['status'] == 'DONE':
                     responses[i] = None
                     name = '%s-%03d' % (base_name, i)
-                    if 'error' in response:
-                        if ignore_errors:
-                            error = response['error']['errors'][0]
-                            node_list[i] = GCEFailedNode(name, error)
-                        else:
-                            self._categorize_error(response['error'])
+                    if error:
+                        node_list[i] = GCEFailedNode(name, error, code)
                     else:
                         node_list[i] = self.ex_get_node(name, location.name)
                 else:
                     complete = False
                     time.sleep(2)
         return node_list
+
+    def ex_create_targetpool(self, name, region=None, healthchecks=None,
+                             nodes=None):
+        """
+        Create a target pool.
+
+        :param  name: Name of target pool
+        :type   name: ``str``
+
+        :keyword  region: Region to create the target pool in. Defaults to
+                          self.region
+        :type     region: ``str`` or :class:`GCERegion` or ``None``
+
+        :keyword  healthchecks: Optional list of health checks to attach
+        :type     healthchecks: ``list`` of ``str`` or :class:`GCEHealthCheck`
+
+        :keyword  nodes:  Optional list of nodes to attach to the pool
+        :type     nodes:  ``list`` of ``str`` or :class:`Node`
+
+        :return:  Target Pool object
+        :rtype:   :class:`GCETargetPool`
+        """
+        region = region or self.region
+        targetpool_data = {}
+        targetpool_data['name'] = name
+        if not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
+        targetpool_data['region'] = region.extra['selfLink']
+
+        if healthchecks:
+            if not hasattr(healthchecks[0], 'name'):
+                hc_list = [self.ex_get_healthcheck(h).extra['selfLink'] for h
+                           in healthchecks]
+            else:
+                hc_list = [h.extra['selfLink'] for h in healthchecks]
+            targetpool_data['healthChecks'] = hc_list
+        if nodes:
+            if not hasattr(nodes[0], 'name'):
+                node_list = [self.ex_get_node(n, 'all').extra['selfLink'] for n
+                             in nodes]
+            else:
+                node_list = [n.extra['selfLink'] for n in nodes]
+            targetpool_data['instances'] = node_list
+
+        request = '/regions/%s/targetPools' % (region.name)
+
+        response = self.connection.async_request(request, method='POST',
+                                                 data=targetpool_data).object
+
+        return self.ex_get_targetpool(name, region)
 
     def create_volume(self, size, name, location=None, image=None,
                       snapshot=None):
@@ -1024,7 +1529,7 @@ class GCENodeDriver(NodeDriver):
         :keyword  image: Image to create disk from.
         :type     image: :class:`NodeImage` or ``str`` or ``None``
 
-        :keyword  snapshot: Snapshot to create image from
+        :keyword  snapshot: Snapshot to create image from (needs full URI)
         :type     snapshot: ``str``
 
         :return:  Storage Volume object
@@ -1039,19 +1544,53 @@ class GCENodeDriver(NodeDriver):
             if not hasattr(image, 'name'):
                 image = self.ex_get_image(image)
             params = {'sourceImage': image.extra['selfLink']}
+            volume_data['description'] = 'Image: %s' % (
+                image.extra['selfLink'])
         if snapshot:
             volume_data['sourceSnapshot'] = snapshot
+            volume_data['description'] = 'Snapshot: %s' % (snapshot)
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
-        request = '/zones/%s/disks' % location.name
+        request = '/zones/%s/disks' % (location.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=volume_data,
                                                  params=params).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
-        return self.ex_get_volume(name)
+        return self.ex_get_volume(name, location)
+
+    def ex_update_healthcheck(self, healthcheck):
+        """
+        Update a health check with new values.
+
+        To update, change the attributes of the health check object and pass
+        the updated object to the method.
+
+        :param  healthcheck: A healthcheck object with updated values.
+        :type   healthcheck: :class:`GCEHealthCheck`
+
+        :return:  An object representing the new state of the health check.
+        :rtype:   :class:`GCEHealthCheck`
+        """
+        hc_data = {}
+        hc_data['name'] = healthcheck.name
+        hc_data['requestPath'] = healthcheck.path
+        hc_data['port'] = healthcheck.port
+        hc_data['checkIntervalSec'] = healthcheck.interval
+        hc_data['timeoutSec'] = healthcheck.timeout
+        hc_data['unhealthyThreshold'] = healthcheck.unhealthy_threshold
+        hc_data['healthyThreshold'] = healthcheck.healthy_threshold
+        if healthcheck.extra['host']:
+            hc_data['host'] = healthcheck.extra['host']
+        if healthcheck.extra['description']:
+            hc_data['description'] = healthcheck.extra['description']
+
+        request = '/global/httpHealthChecks/%s' % (healthcheck.name)
+
+        response = self.connection.async_request(request, method='PUT',
+                                                 data=hc_data).object
+
+        return self.ex_get_healthcheck(healthcheck.name)
 
     def ex_update_firewall(self, firewall):
         """
@@ -1077,14 +1616,133 @@ class GCENodeDriver(NodeDriver):
         if firewall.extra['description']:
             firewall_data['description'] = firewall.extra['description']
 
-        request = '/global/firewalls/%s' % firewall.name
+        request = '/global/firewalls/%s' % (firewall.name)
 
         response = self.connection.async_request(request, method='PUT',
                                                  data=firewall_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
 
         return self.ex_get_firewall(firewall.name)
+
+    def ex_targetpool_add_node(self, targetpool, node):
+        """
+        Add a node to a target pool.
+
+        :param  targetpool: The targetpool to add node to
+        :type   targetpool: ``str`` or :class:`GCETargetPool`
+
+        :param  node: The node to add
+        :type   node: ``str`` or :class:`Node`
+
+        :returns: True if successful
+        :rtype:   ``bool``
+        """
+        if not hasattr(targetpool, 'name'):
+            targetpool = self.ex_get_targetpool(targetpool)
+        if not hasattr(node, 'name'):
+            node = self.ex_get_node(node, 'all')
+
+        targetpool_data = {'instance': node.extra['selfLink']}
+
+        request = '/regions/%s/targetPools/%s/addInstance' % (
+            targetpool.region.name, targetpool.name)
+        response = self.connection.async_request(request, method='POST',
+                                                 data=targetpool_data).object
+        targetpool.nodes.append(node)
+        return True
+
+    def ex_targetpool_add_healthcheck(self, targetpool, healthcheck):
+        """
+        Add a health check to a target pool.
+
+        :param  targetpool: The targetpool to add health check to
+        :type   targetpool: ``str`` or :class:`GCETargetPool`
+
+        :param  healthcheck: The healthcheck to add
+        :type   healthcheck: ``str`` or :class:`GCEHealthCheck`
+
+        :returns: True if successful
+        :rtype:   ``bool``
+        """
+        if not hasattr(targetpool, 'name'):
+            targetpool = self.ex_get_targetpool(targetpool)
+        if not hasattr(healthcheck, 'name'):
+            healthcheck = self.ex_get_healthcheck(healthcheck)
+
+        targetpool_data = {'healthCheck': healthcheck.extra['selfLink']}
+
+        request = '/regions/%s/targetPools/%s/addHealthCheck' % (
+            targetpool.region.name, targetpool.name)
+        response = self.connection.async_request(request, method='POST',
+                                                 data=targetpool_data).object
+        targetpool.healthchecks.append(healthcheck)
+        return True
+
+    def ex_targetpool_remove_node(self, targetpool, node):
+        """
+        Remove a node from a target pool.
+
+        :param  targetpool: The targetpool to remove node from
+        :type   targetpool: ``str`` or :class:`GCETargetPool`
+
+        :param  node: The node to remove
+        :type   node: ``str`` or :class:`Node`
+
+        :returns: True if successful
+        :rtype:   ``bool``
+        """
+        if not hasattr(targetpool, 'name'):
+            targetpool = self.ex_get_targetpool(targetpool)
+        if not hasattr(node, 'name'):
+            node = self.ex_get_node(node, 'all')
+
+        targetpool_data = {'instance': node.extra['selfLink']}
+
+        request = '/regions/%s/targetPools/%s/removeInstance' % (
+            targetpool.region.name, targetpool.name)
+        response = self.connection.async_request(request, method='POST',
+                                                 data=targetpool_data).object
+        # Remove node object from node list
+        index = None
+        for i, nd in enumerate(targetpool.nodes):
+            if nd.name == node.name:
+                index = i
+                break
+        if index is not None:
+            targetpool.nodes.pop(index)
+        return True
+
+    def ex_targetpool_remove_healthcheck(self, targetpool, healthcheck):
+        """
+        Remove a health check from a target pool.
+
+        :param  targetpool: The targetpool to remove health check from
+        :type   targetpool: ``str`` or :class:`GCETargetPool`
+
+        :param  healthcheck: The healthcheck to remove
+        :type   healthcheck: ``str`` or :class:`GCEHealthCheck`
+
+        :returns: True if successful
+        :rtype:   ``bool``
+        """
+        if not hasattr(targetpool, 'name'):
+            targetpool = self.ex_get_targetpool(targetpool)
+        if not hasattr(healthcheck, 'name'):
+            healthcheck = self.ex_get_healthcheck(healthcheck)
+
+        targetpool_data = {'healthCheck': healthcheck.extra['selfLink']}
+
+        request = '/regions/%s/targetPools/%s/removeHealthCheck' % (
+            targetpool.region.name, targetpool.name)
+        response = self.connection.async_request(request, method='POST',
+                                                 data=targetpool_data).object
+        # Remove healthcheck object from healthchecks list
+        index = None
+        for i, hc in enumerate(targetpool.healthchecks):
+            if hc.name == healthcheck.name:
+                index = i
+        if index is not None:
+            targetpool.healthchecks.pop(index)
+        return True
 
     def reboot_node(self, node):
         """
@@ -1100,10 +1758,7 @@ class GCENodeDriver(NodeDriver):
                                                     node.name)
         response = self.connection.async_request(request, method='POST',
                                                  data='ignored').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_set_node_tags(self, node, tags):
         """
@@ -1129,13 +1784,10 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data=tags_data).object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            new_node = self.ex_get_node(node.name)
-            node.extra['tags'] = new_node.extra['tags']
-            node.extra['tags_fingerprint'] = new_node.extra['tags_fingerprint']
-            return True
+        new_node = self.ex_get_node(node.name, node.extra['zone'])
+        node.extra['tags'] = new_node.extra['tags']
+        node.extra['tags_fingerprint'] = new_node.extra['tags_fingerprint']
+        return True
 
     def deploy_node(self, name, size, image, script, location=None,
                     ex_network='default', ex_tags=None):
@@ -1222,10 +1874,7 @@ class GCENodeDriver(NodeDriver):
             node.extra['zone'].name, node.name)
         response = self.connection.async_request(request, method='POST',
                                                  data=volume_data).object
-        if 'error' in response:
-            self._cateforize_error(response['error'])
-        else:
-            return True
+        return True
 
     def detach_volume(self, volume, ex_node=None):
         """
@@ -1247,10 +1896,7 @@ class GCENodeDriver(NodeDriver):
 
         response = self.connection.async_request(request, method='POST',
                                                  data='ignored').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_address(self, address):
         """
@@ -1262,14 +1908,27 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/regions/%s/addresses/%s' % (address.region, address.name)
+        request = '/regions/%s/addresses/%s' % (address.region.name,
+                                                address.name)
 
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
+
+    def ex_destroy_healthcheck(self, healthcheck):
+        """
+        Destroy a healthcheck.
+
+        :param  healthcheck: Health check object to destroy
+        :type   healthcheck: :class:`GCEHealthCheck`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/global/httpHealthChecks/%s' % (healthcheck.name)
+        response = self.connection.async_request(request,
+                                                 method='DELETE').object
+        return True
 
     def ex_destroy_firewall(self, firewall):
         """
@@ -1281,13 +1940,26 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/global/firewalls/%s' % firewall.name
+        request = '/global/firewalls/%s' % (firewall.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
+
+    def ex_destroy_forwarding_rule(self, forwarding_rule):
+        """
+        Destroy a forwarding rule.
+
+        :param  forwarding_rule: Forwarding Rule object to destroy
+        :type   forwarding_rule: :class:`GCEForwardingRule`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/regions/%s/forwardingRules/%s' % (
+            forwarding_rule.region.name, forwarding_rule.name)
+        response = self.connection.async_request(request,
+                                                 method='DELETE').object
+        return True
 
     def ex_destroy_network(self, network):
         """
@@ -1299,13 +1971,10 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/global/networks/%s' % network.name
+        request = '/global/networks/%s' % (network.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def destroy_node(self, node):
         """
@@ -1321,10 +1990,7 @@ class GCENodeDriver(NodeDriver):
                                               node.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_destroy_multiple_nodes(self, nodelist, ignore_errors=True,
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
@@ -1353,7 +2019,12 @@ class GCENodeDriver(NodeDriver):
         for node in nodelist:
             request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                                   node.name)
-            response = self.connection.request(request, method='DELETE').object
+            try:
+                response = self.connection.request(request,
+                                                   method='DELETE').object
+            except:
+                e = self._catch_error(ignore_errors=ignore_errors)
+                response = None
             responses.append(response)
 
         while not complete:
@@ -1364,21 +2035,37 @@ class GCENodeDriver(NodeDriver):
             for i, operation in enumerate(responses):
                 if operation is None:
                     continue
-                response = self.connection.request(
-                    operation['selfLink']).object
+                no_errors = True
+                try:
+                    response = self.connection.request(
+                        operation['selfLink']).object
+                except:
+                    e = self._catch_error(ignore_errors=ignore_errors)
+                    no_errors = False
                 if response['status'] == 'DONE':
                     responses[i] = None
-                    if 'error' in response:
-                        if ignore_errors:
-                            success[i] = False
-                        else:
-                            self._categorize_error(response['error'])
-                    else:
-                        success[i] = True
+                    success[i] = no_errors
                 else:
                     complete = False
                     time.sleep(2)
         return success
+
+    def ex_destroy_targetpool(self, targetpool):
+        """
+        Destroy a target pool.
+
+        :param  targetpool: TargetPool object to destroy
+        :type   targetpool: :class:`GCETargetPool`
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/regions/%s/targetPools/%s' % (targetpool.region.name,
+                                                  targetpool.name)
+
+        response = self.connection.async_request(request,
+                                                 method='DELETE').object
+        return True
 
     def destroy_volume(self, volume):
         """
@@ -1394,10 +2081,7 @@ class GCENodeDriver(NodeDriver):
                                           volume.name)
         response = self.connection.async_request(request,
                                                  method='DELETE').object
-        if 'error' in response:
-            self._categorize_error(response['error'])
-        else:
-            return True
+        return True
 
     def ex_get_address(self, name, region=None):
         """
@@ -1406,17 +2090,32 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name of the address
         :type   name: ``str``
 
-        :keyword  region: The region to search for the address in
-        :type     region: ``str`` or ``None``
+        :keyword  region: The region to search for the address in (set to
+                          'all' to search all regions)
+        :type     region: ``str`` :class:`GCERegion` or ``None``
 
         :return:  An Address object for the address
         :rtype:   :class:`GCEAddress`
         """
-        address_region = region or self._find_zone(name, 'addresses',
-                                                   region=True)
-        request = '/regions/%s/addresses/%s' % (address_region, name)
+        region = self._set_region(region) or self._find_zone_or_region(
+            name, 'addresses', region=True, res_name='Address')
+        request = '/regions/%s/addresses/%s' % (region.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_address(response)
+
+    def ex_get_healthcheck(self, name):
+        """
+        Return a HealthCheck object based on the healthcheck name.
+
+        :param  name: The name of the healthcheck
+        :type   name: ``str``
+
+        :return:  A GCEHealthCheck object
+        :rtype:   :class:`GCEHealthCheck`
+        """
+        request = '/global/httpHealthChecks/%s' % (name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_healthcheck(response)
 
     def ex_get_firewall(self, name):
         """
@@ -1428,9 +2127,29 @@ class GCENodeDriver(NodeDriver):
         :return:  A GCEFirewall object
         :rtype:   :class:`GCEFirewall`
         """
-        request = '/global/firewalls/%s' % name
+        request = '/global/firewalls/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_firewall(response)
+
+    def ex_get_forwarding_rule(self, name, region=None):
+        """
+        Return a Forwarding Rule object based on the forwarding rule name.
+
+        :param  name: The name of the forwarding rule
+        :type   name: ``str``
+
+        :keyword  region: The region to search for the rule in (set to 'all'
+                          to search all regions).
+        :type     region: ``str`` or ``None``
+
+        :return:  A GCEForwardingRule object
+        :rtype:   :class:`GCEForwardingRule`
+        """
+        region = self._set_region(region) or self._find_zone_or_region(
+            name, 'forwardingRules', region=True, res_name='ForwardingRule')
+        request = '/regions/%s/forwardingRules/%s' % (region.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_forwarding_rule(response)
 
     def ex_get_image(self, partial_name):
         """
@@ -1440,8 +2159,9 @@ class GCENodeDriver(NodeDriver):
                               image.
         :type   partial_name: ``str``
 
-        :return:  NodeImage object based on provided information
-        :rtype:   :class:`NodeImage`
+        :return:  NodeImage object based on provided information or None if an
+                  image with that name is not found.
+        :rtype:   :class:`NodeImage` or ``None``
         """
         if partial_name.startswith('https://'):
             response = self.connection.request(partial_name, method='GET')
@@ -1465,7 +2185,7 @@ class GCENodeDriver(NodeDriver):
         :return:  A Network object for the network
         :rtype:   :class:`GCENetwork`
         """
-        request = '/global/networks/%s' % name
+        request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
@@ -1476,15 +2196,15 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name of the node
         :type   name: ``str``
 
-        :keyword  zone: The zone to search for the node in
+        :keyword  zone: The zone to search for the node in.  If set to 'all',
+                        search all zones for the instance.
         :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
         :return:  A Node object for the node
         :rtype:   :class:`Node`
         """
-        zone = zone or self.zone or self._find_zone(name, 'instances')
-        if not hasattr(zone, 'name'):
-            zone = self.ex_get_zone(zone)
+        zone = self._set_zone(zone) or self._find_zone_or_region(
+            name, 'instances', res_name='Node')
         request = '/zones/%s/instances/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_node(response)
@@ -1526,18 +2246,61 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name of the volume
         :type   name: ``str``
 
-        :keyword  zone: The zone to search for the volume in
+        :keyword  zone: The zone to search for the volume in (set to 'all' to
+                        search all zones)
         :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
 
         :return:  A StorageVolume object for the volume
         :rtype:   :class:`StorageVolume`
         """
-        zone = zone or self.zone or self.find_zone(name, 'disks')
-        if not hasattr(zone, 'name'):
-            zone = self.ex_get_zone(zone)
+        zone = self._set_zone(zone) or self._find_zone_or_region(
+            name, 'disks', res_name='Volume')
         request = '/zones/%s/disks/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_storage_volume(response)
+
+    def ex_get_region(self, name):
+        """
+        Return a Region object based on the region name.
+
+        :param  name: The name of the region.
+        :type   name: ``str``
+
+        :return:  A GCERegion object for the region
+        :rtype:   :class:`GCERegion`
+        """
+        if name.startswith('https://'):
+            short_name = self._get_components_from_path(name)['name']
+            request = name
+        else:
+            short_name = name
+            request = '/regions/%s' % (name)
+        # Check region cache first
+        if short_name in self.region_dict:
+            return self.region_dict[short_name]
+        # Otherwise, look up region information
+        response = self.connection.request(request, method='GET').object
+        return self._to_region(response)
+
+    def ex_get_targetpool(self, name, region=None):
+        """
+        Return a TargetPool object based on a name and optional region.
+
+        :param  name: The name of the target pool
+        :type   name: ``str``
+
+        :keyword  region: The region to search for the target pool in (set to
+                          'all' to search all regions).
+        :type     region: ``str`` or :class:`GCERegion` or ``None``
+
+        :return:  A TargetPool object for the pool
+        :rtype:   :class:`GCETargetPool`
+        """
+        region = self._set_region(region) or self._find_zone_or_region(
+            name, 'targetPools', region=True, res_name='TargetPool')
+        request = '/regions/%s/targetPools/%s' % (region.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_targetpool(response)
 
     def ex_get_zone(self, name):
         """
@@ -1546,20 +2309,23 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name of the zone.
         :type   name: ``str``
 
-        :return:  A GCEZone object for the zone
-        :rtype:   :class:`GCEZone`
+        :return:  A GCEZone object for the zone or None if not found
+        :rtype:   :class:`GCEZone` or ``None``
         """
         if name.startswith('https://'):
-            short_name = name.split('/')[-1]
+            short_name = self._get_components_from_path(name)['name']
             request = name
         else:
             short_name = name
-            request = '/zones/%s' % name
+            request = '/zones/%s' % (name)
         # Check zone cache first
         if short_name in self.zone_dict:
             return self.zone_dict[short_name]
         # Otherwise, look up zone information
-        response = self.connection.request(request, method='GET').object
+        try:
+            response = self.connection.request(request, method='GET').object
+        except ResourceNotFoundError:
+            return None
         return self._to_zone(response)
 
     def _to_address(self, address):
@@ -1574,15 +2340,40 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
 
+        region = self.ex_get_region(address['region'])
+
         extra['selfLink'] = address['selfLink']
         extra['status'] = address['status']
-        extra['region'] = address['region']
         extra['creationTimestamp'] = address['creationTimestamp']
-        region = address['region'].split('/')[-1]
 
         return GCEAddress(id=address['id'], name=address['name'],
                           address=address['address'],
                           region=region, driver=self, extra=extra)
+
+    def _to_healthcheck(self, healthcheck):
+        """
+        Return a HealthCheck object from the json-response dictionary.
+
+        :param  healthcheck: The dictionary describing the healthcheck.
+        :type   healthcheck: ``dict``
+
+        :return: HealthCheck object
+        :rtype: :class:`GCEHealthCheck`
+        """
+        extra = {}
+        extra['selfLink'] = healthcheck['selfLink']
+        extra['creationTimestamp'] = healthcheck['creationTimestamp']
+        extra['description'] = healthcheck.get('description')
+        extra['host'] = healthcheck.get('host')
+
+        return GCEHealthCheck(
+            id=healthcheck['id'], name=healthcheck['name'],
+            path=healthcheck['requestPath'], port=healthcheck['port'],
+            interval=healthcheck['checkIntervalSec'],
+            timeout=healthcheck['timeoutSec'],
+            unhealthy_threshold=healthcheck['unhealthyThreshold'],
+            healthy_threshold=healthcheck['healthyThreshold'],
+            driver=self, extra=extra)
 
     def _to_firewall(self, firewall):
         """
@@ -1598,7 +2389,8 @@ class GCENodeDriver(NodeDriver):
         extra['selfLink'] = firewall['selfLink']
         extra['creationTimestamp'] = firewall['creationTimestamp']
         extra['description'] = firewall.get('description')
-        extra['network_name'] = firewall['network'].split('/')[-1]
+        extra['network_name'] = self._get_components_from_path(
+            firewall['network'])['name']
 
         network = self.ex_get_network(extra['network_name'])
         source_ranges = firewall.get('sourceRanges')
@@ -1609,6 +2401,34 @@ class GCENodeDriver(NodeDriver):
                            source_ranges=source_ranges,
                            source_tags=source_tags,
                            driver=self, extra=extra)
+
+    def _to_forwarding_rule(self, forwarding_rule):
+        """
+        Return a Forwarding Rule object from the json-response dictionary.
+
+        :param  forwarding_rule: The dictionary describing the rule.
+        :type   forwarding_rule: ``dict``
+
+        :return: ForwardingRule object
+        :rtype: :class:`GCEForwardingRule`
+        """
+        extra = {}
+        # Use .get to work around a current API bug.
+        extra['selfLink'] = forwarding_rule.get('selfLink')
+        extra['portRange'] = forwarding_rule['portRange']
+        extra['creationTimestamp'] = forwarding_rule['creationTimestamp']
+        extra['description'] = forwarding_rule.get('description')
+
+        region = self.ex_get_region(forwarding_rule['region'])
+        targetpool = self.ex_get_targetpool(
+            self._get_components_from_path(forwarding_rule['target'])['name'])
+
+        return GCEForwardingRule(id=forwarding_rule['id'],
+                                 name=forwarding_rule['name'], region=region,
+                                 address=forwarding_rule['IPAddress'],
+                                 protocol=forwarding_rule['IPProtocol'],
+                                 targetpool=targetpool,
+                                 driver=self, extra=extra)
 
     def _to_network(self, network):
         """
@@ -1681,6 +2501,7 @@ class GCENodeDriver(NodeDriver):
         extra['description'] = node.get('description')
         extra['zone'] = self.ex_get_zone(node['zone'])
         extra['image'] = node.get('image')
+        extra['machineType'] = node['machineType']
         extra['disks'] = node['disks']
         extra['networkInterfaces'] = node['networkInterfaces']
         extra['id'] = node['id']
@@ -1700,11 +2521,18 @@ class GCENodeDriver(NodeDriver):
             for access_config in network_interface['accessConfigs']:
                 public_ips.append(access_config['natIP'])
 
+        # For the node attributes, use just machine and image names, not full
+        # paths.  Full paths are available in the "extra" dict.
+        if extra['image']:
+            image = self._get_components_from_path(extra['image'])['name']
+        else:
+            image = None
+        size = self._get_components_from_path(node['machineType'])['name']
+
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self, size=node['machineType'],
-                    image=node.get('image'), extra=extra)
+                    driver=self, size=size, image=image, extra=extra)
 
     def _to_node_size(self, machine_type):
         """
@@ -1752,6 +2580,33 @@ class GCENodeDriver(NodeDriver):
                           metadata=metadata, quotas=project['quotas'],
                           driver=self, extra=extra)
 
+    def _to_region(self, region):
+        """
+        Return a Region object from the json-response dictionary.
+
+        :param  region: The dictionary describing the region.
+        :type   region: ``dict``
+
+        :return: Region object
+        :rtype: :class:`GCERegion`
+        """
+        extra = {}
+        extra['selfLink'] = region['selfLink']
+        extra['creationTimestamp'] = region['creationTimestamp']
+        extra['description'] = region['description']
+
+        quotas = region.get('quotas')
+        zones = [self.ex_get_zone(z) for z in region['zones']]
+        # Work around a bug that will occasionally list missing zones in the
+        # region output
+        zones = [z for z in zones if z is not None]
+        deprecated = region.get('deprecated')
+
+        return GCERegion(id=region['id'], name=region['name'],
+                         status=region['status'], zones=zones,
+                         quotas=quotas, deprecated=deprecated,
+                         driver=self, extra=extra)
+
     def _to_storage_volume(self, volume):
         """
         Return a Volume object from the json-response dictionary.
@@ -1767,9 +2622,42 @@ class GCENodeDriver(NodeDriver):
         extra['zone'] = self.ex_get_zone(volume['zone'])
         extra['status'] = volume['status']
         extra['creationTimestamp'] = volume['creationTimestamp']
+        extra['description'] = volume.get('description')
 
         return StorageVolume(id=volume['id'], name=volume['name'],
                              size=volume['sizeGb'], driver=self, extra=extra)
+
+    def _to_targetpool(self, targetpool):
+        """
+        Return a Target Pool object from the json-response dictionary.
+
+        :param  targetpool: The dictionary describing the volume.
+        :type   targetpool: ``dict``
+
+        :return: Target Pool object
+        :rtype:  :class:`GCETargetPool`
+        """
+        extra = {}
+        extra['selfLink'] = targetpool['selfLink']
+        extra['description'] = targetpool.get('description')
+        region = self.ex_get_region(targetpool['region'])
+        healthcheck_list = [self.ex_get_healthcheck(h.split('/')[-1]) for h
+                            in targetpool.get('healthChecks', [])]
+        node_list = []
+        for n in targetpool.get('instances', []):
+            # Nodes that do not exist can be part of a target pool.  If the
+            # node does not exist, use the URL of the node instead of the node
+            # object.
+            comp = self._get_components_from_path(n)
+            try:
+                node = self.ex_get_node(comp['name'], comp['zone'])
+            except ResourceNotFoundError:
+                node = n
+            node_list.append(node)
+
+        return GCETargetPool(id=targetpool['id'], name=targetpool['name'],
+                             region=region, healthchecks=healthcheck_list,
+                             nodes=node_list, driver=self, extra=extra)
 
     def _to_zone(self, zone):
         """
@@ -1789,6 +2677,6 @@ class GCENodeDriver(NodeDriver):
         deprecated = zone.get('deprecated')
 
         return GCEZone(id=zone['id'], name=zone['name'], status=zone['status'],
-                       maintenance_windows=zone['maintenanceWindows'],
+                       maintenance_windows=zone.get('maintenanceWindows'),
                        quotas=zone['quotas'], deprecated=deprecated,
                        driver=self, extra=extra)
