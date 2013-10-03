@@ -719,6 +719,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         self.driver_klass.connectionCls.conn_classes = (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        OpenStackMockHttp.type = None
+        OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None
         self.driver = self.create_driver()
 
