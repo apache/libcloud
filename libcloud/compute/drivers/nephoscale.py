@@ -236,15 +236,21 @@ class NephoscaleNodeDriver(NodeDriver):
     def ex_list_keypairs(self, ssh=False, password=False, key_group=None):
         """
         List available console and server keys
+        There are two types of keys for NephoScale, ssh and password keys.
+        If run without arguments, lists all keys. Otherwise list only
+        ssh keys, or only password keys.
+        Password keys with key_group 4 are console keys. When a server
+        is created, it has two keys, one password or ssh key, and
+        one password console key.
 
-        :keyword ssh: if specified, show ssh keys only
+        :keyword ssh: if specified, show ssh keys only (optional)
         :type    ssh: ``bool``
 
-        :keyword password: if specified, show password keys only
+        :keyword password: if specified, show password keys only (optional)
         :type    password: ``bool``
 
         :keyword key_group: if specified, show keys with this key_group only
-                            eg key_group=4 for console password keys
+                            eg key_group=4 for console password keys (optional)
         :type    key_group: ``int``
 
         :rtype: ``list`` of :class:`NodeKey`
@@ -305,7 +311,6 @@ class NephoscaleNodeDriver(NodeDriver):
             result = self.connection.request('/key/password/%s/' % key_id,
                                          method='DELETE').object
         return result.get('response') in VALID_RESPONSE_CODES
-
 
     def create_node(self, name, size, image, server_key=None,
                     console_key=None, zone=None, **kwargs):
