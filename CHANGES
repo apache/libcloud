@@ -32,7 +32,7 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-353)
       [Bernard Kerckenaere]
 
-    - Add new driver for Google Compute Engine (LIBCLOUD-266)
+    - Add new driver for Google Compute Engine (LIBCLOUD-266, LIBCLOUD-386)
       [Rick Wright]
 
     - Fix create_node "features" metadata and update affected drivers.
@@ -96,6 +96,11 @@ Changes with Apache Libcloud in development
       driver. This bug prevented user from having multiple Azure drivers with
       different keys instantiated at the same time. (LIBCLOUD-399)
       [Olivier Grisel]
+
+ *) Load Balancer
+
+    - Add new driver for Google Compute Engine (LIBCLOUD-386)
+      [Rick Wright]
 
  *) DNS
 
