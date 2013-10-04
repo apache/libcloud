@@ -39,7 +39,8 @@ from libcloud.utils.py3 import urlencode
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import is_private_subnet
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.compute.types import NodeState, InvalidCredsError
+from libcloud.compute.types import (NodeState, InvalidCredsError,
+                                   LibcloudError)
 from libcloud.compute.base import (Node, NodeDriver, NodeImage, NodeSize,
                                     NodeLocation)
 
@@ -255,12 +256,15 @@ class NephoscaleNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeKey`
         """
-        if (ssh and password) or not (ssh or password):
-            result = self.connection.request('/key/').object
-        elif ssh:
+        if (ssh and password):
+            raise LibcloudError('You can only supply ssh or password. To \
+get all keys call with no arguments')
+        if ssh:
             result = self.connection.request('/key/sshrsa/').object
         elif password:
             result = self.connection.request('/key/password/').object
+        else:
+            result = self.connection.request('/key/').object
         keys = [self._to_key(value) for value in result.get('data', [])]
 
         if key_group:
