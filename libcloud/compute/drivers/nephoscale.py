@@ -255,12 +255,12 @@ class NephoscaleNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeKey`
         """
-        if ssh:
-            result = self.connection.request('/key/sshrsa/').object
-        if password:
-            result = self.connection.request('/key/password/').object
-        if not (ssh or password):
+        if (ssh and password) or not (ssh or password):
             result = self.connection.request('/key/').object
+        elif ssh:
+            result = self.connection.request('/key/sshrsa/').object
+        elif password:
+            result = self.connection.request('/key/password/').object
         keys = [self._to_key(value) for value in result.get('data', [])]
 
         if key_group:
@@ -388,8 +388,8 @@ class NephoscaleNodeDriver(NodeDriver):
         except Exception:
             e = sys.exc_info()[1]
             raise Exception("Failed to create node %s" % e)
-        node = Node(id='', name=name, state='', public_ips='', private_ips='',
-                    driver=self)
+        node = Node(id='', name=name, state=NodeState.UNKNOWN, public_ips=[],
+                    private_ips=[], driver=self)
 
         nowait = kwargs.get('ex_wait', False)
         if not nowait:
