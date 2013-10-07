@@ -67,7 +67,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
 
 
 class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
-    name = 'Rackspace Cloud'
+    name = 'Rackspace Cloud (First Gen)'
     website = 'http://www.rackspace.com'
     connectionCls = RackspaceFirstGenConnection
     type = Provider.RACKSPACE_FIRST_GEN
@@ -141,7 +141,7 @@ class RackspaceConnection(OpenStack_1_1_Connection):
 
 
 class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
-    name = 'Rackspace Cloud'
+    name = 'Rackspace Cloud (Next Gen)'
     website = 'http://www.rackspace.com'
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE

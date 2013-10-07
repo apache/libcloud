@@ -156,6 +156,7 @@ class ElasticHostsUK1NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the London Peer 1 end-point
     """
     connectionCls = ElasticHostsUK1Connection
+    name = 'ElasticHosts (uk-1)'
 
 
 class ElasticHostsUK2Connection(ElasticStackBaseConnection):
@@ -171,6 +172,7 @@ class ElasticHostsUK2NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the London Bluesquare end-point
     """
     connectionCls = ElasticHostsUK2Connection
+    name = 'ElasticHosts (uk-2)'
 
 
 class ElasticHostsUS1Connection(ElasticStackBaseConnection):
@@ -186,6 +188,7 @@ class ElasticHostsUS1NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the San Antonio Peer 1 end-point
     """
     connectionCls = ElasticHostsUS1Connection
+    name = 'ElasticHosts (us-1)'
 
 
 class ElasticHostsUS2Connection(ElasticStackBaseConnection):
@@ -201,6 +204,7 @@ class ElasticHostsUS2NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the Los Angeles Peer 1 end-point
     """
     connectionCls = ElasticHostsUS2Connection
+    name = 'ElasticHosts (us-2)'
 
 
 class ElasticHostsCA1Connection(ElasticStackBaseConnection):
@@ -216,3 +220,4 @@ class ElasticHostsCA1NodeDriver(ElasticHostsBaseNodeDriver):
     ElasticHosts node driver for the Toronto Peer 1 end-point
     """
     connectionCls = ElasticHostsCA1Connection
+    name = 'ElasticHosts (ca-1)'
