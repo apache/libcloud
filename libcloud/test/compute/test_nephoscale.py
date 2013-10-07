@@ -21,18 +21,16 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.nephoscale import NephoscaleNodeDriver
-from libcloud.compute.base import Node
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
-from libcloud.common.types import InvalidCredsError, LibcloudError
 
 
 class NephoScaleTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         NephoscaleNodeDriver.connectionCls.conn_classes = (
-                                  None, NephoscaleMockHttp)
+            NephoscaleMockHttp, NephoscaleMockHttp)
         self.driver = NephoscaleNodeDriver('user', 'password')
 
     def test_list_sizes(self):
@@ -119,10 +117,10 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
                           image=image)
 
     def test_delete_ssh_keys(self):
-        key = self.driver.ex_delete_keypair(key_id=72209, ssh=True)
+        self.assertTrue(self.driver.ex_delete_keypair(key_id=72209, ssh=True))
 
     def test_delete_password_keys(self):
-        key = self.driver.ex_delete_keypair(key_id=72211)
+        self.assertTrue(self.driver.ex_delete_keypair(key_id=72211))
 
 
 class NephoscaleMockHttp(MockHttp):
