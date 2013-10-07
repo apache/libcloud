@@ -133,7 +133,7 @@ def get_size_price(driver_type, driver_name, size_id):
     :param size_id: Unique size ID (can be an integer or a string - depends on
                     the driver)
 
-    :rtype: ``int``
+    :rtype: ``float``
     :return: Size price.
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
