@@ -357,15 +357,11 @@ get all keys call with no arguments')
             ...                     nowait=True,
             ...                     zone=location.id)
         """
-        try:
-            hostname = kwargs.get('hostname', name)
-            service_type = size.id
-            image = image.id
-            connect_attempts = int(kwargs.get('connect_attempts',
-                                   CONNECT_ATTEMPTS))
-        except Exception:
-            e = sys.exc_info()[1]
-            raise Exception("Error on create node: %s" % e)
+        hostname = kwargs.get('hostname', name)
+        service_type = size.id
+        image = image.id
+        connect_attempts = int(kwargs.get('connect_attempts',
+                               CONNECT_ATTEMPTS))
 
         data = {'name': name,
                 'hostname': hostname,
