@@ -85,6 +85,10 @@ Changes with Apache Libcloud in development
       in the OpenStack based drivers. (LIBCLOUD-402)
       [Brian Curtin]
 
+    - Add new driver for NephoScale provider (http://nephoscale.com/).
+      (LIBCLOUD-404)
+      [Markos Gogoulos]
+
   *) Storage
 
     - Allow users to filter objects starting with a prefix by passing ex_prefix
