@@ -98,10 +98,10 @@ class JoyentNodeDriver(NodeDriver):
 
     def __init__(self, *args, **kwargs):
         """
-        @inherits: L{NodeDriver.__init__}
+        @inherits: :class:`NodeDriver.__init__`
 
-        @keyword    location: Location which should be used
-        @type       location: C{str}
+        :keyword    location: Location which should be used
+        :type       location: ``str``
         """
         if 'location' in kwargs:
             if kwargs['location'] not in LOCATIONS:
@@ -176,10 +176,10 @@ class JoyentNodeDriver(NodeDriver):
         """
         Stop node
 
-        @param  node: The node to be stopped
-        @type   node: L{Node}
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         data = json.dumps({'action': 'stop'})
         result = self.connection.request('/my/machines/%s' % (node.id),
@@ -190,10 +190,10 @@ class JoyentNodeDriver(NodeDriver):
         """
         Start node
 
-        @param  node: The node to be stopped
-        @type   node: L{Node}
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         data = json.dumps({'action': 'start'})
         result = self.connection.request('/my/machines/%s' % (node.id),

@@ -393,8 +393,8 @@ class VCloudNodeDriver(NodeDriver):
         """
         vCloud virtual data centers (vDCs).
 
-        @return: list of vDC objects
-        @rtype: C{list} of L{Vdc}
+        :return: list of vDC objects
+        :rtype: ``list`` of :class:`Vdc`
         """
         if not self._vdcs:
             self.connection.check_org()  # make sure the org is set.  # pylint: disable-msg=E1101
@@ -556,11 +556,11 @@ class VCloudNodeDriver(NodeDriver):
         List all nodes across all vDCs. Using 'vdcs' you can specify which vDCs
         should be queried.
 
-        @param vdcs: None, vDC or a list of vDCs to query. If None all vDCs
+        :param vdcs: None, vDC or a list of vDCs to query. If None all vDCs
                      will be queried.
-        @type vdcs: L{Vdc}
+        :type vdcs: :class:`Vdc`
 
-        @rtype: C{list} of L{Node}
+        :rtype: ``list`` of :class:`Node`
         """
         if not vdcs:
             vdcs = self.vdcs
@@ -689,24 +689,24 @@ class VCloudNodeDriver(NodeDriver):
         """Creates and returns node.
 
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_network: link to a "Network" e.g.,
+        :keyword    ex_network: link to a "Network" e.g.,
           "https://services.vcloudexpress.terremark.com/api/v0.8/network/7"
-        @type       ex_network: C{str}
+        :type       ex_network: ``str``
 
-        @keyword    ex_vdc: Name of organisation's virtual data
+        :keyword    ex_vdc: Name of organisation's virtual data
             center where vApp VMs will be deployed.
-        @type       ex_vdc: C{str}
+        :type       ex_vdc: ``str``
 
-        @keyword    ex_cpus: number of virtual cpus (limit depends on provider)
-        @type       ex_cpus: C{int}
+        :keyword    ex_cpus: number of virtual cpus (limit depends on provider)
+        :type       ex_cpus: ``int``
 
-        @keyword    ex_row: ????
-        @type       ex_row: C{str}
+        :keyword    ex_row: ????
+        :type       ex_row: ``str``
 
-        @keyword    ex_group: ????
-        @type       ex_group: C{str}
+        :keyword    ex_group: ????
+        :type       ex_group: ``str``
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -947,14 +947,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Searches for node across specified vDCs. This is more effective than querying all nodes to get a single
         instance.
 
-        @param node_name: The name of the node to search for
-        @type node_name: C{str}
+        :param node_name: The name of the node to search for
+        :type node_name: ``str``
 
-        @param vdcs: None, vDC or a list of vDCs to search in. If None all vDCs will be searched.
-        @type vdcs: L{Vdc}
+        :param vdcs: None, vDC or a list of vDCs to search in. If None all vDCs will be searched.
+        :type vdcs: :class:`Vdc`
 
-        @return: node instance or None if not found
-        @rtype: L{Node} or C{None}
+        :return: node instance or None if not found
+        :rtype: :class:`Node` or ``None``
         """
         if not vdcs:
             vdcs = self.vdcs
@@ -995,10 +995,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         """
         Deploys existing node. Equal to vApp "start" operation.
 
-        @param  node: The node to be deployed
-        @type   node: L{Node}
+        :param  node: The node to be deployed
+        :type   node: :class:`Node`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         deploy_xml = ET.Element('DeployVAppParams', {'powerOn': 'true',
                                                      'xmlns': 'http://www.vmware.com/vcloud/v1.5'})
@@ -1016,10 +1016,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         """
         Undeploys existing node. Equal to vApp "stop" operation.
 
-        @param  node: The node to be deployed
-        @type   node: L{Node}
+        :param  node: The node to be deployed
+        :type   node: :class:`Node`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         undeploy_xml = ET.Element('UndeployVAppParams', {'xmlns': 'http://www.vmware.com/vcloud/v1.5'})
         undeploy_power_action_xml = ET.SubElement(undeploy_xml, 'UndeployPowerAction')
@@ -1053,10 +1053,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Powers on all VMs under specified node. VMs need to be This operation
         is allowed only when the vApp/VM is powered on.
 
-        @param  node: The node to be powered off
-        @type   node: L{Node}
+        :param  node: The node to be powered off
+        :type   node: :class:`Node`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         return self._perform_power_operation(node, 'powerOff')
 
@@ -1065,10 +1065,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Powers on all VMs under specified node. This operation is allowed
         only when the vApp/VM is powered off or suspended.
 
-        @param  node: The node to be powered on
-        @type   node: L{Node}
+        :param  node: The node to be powered on
+        :type   node: :class:`Node`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         return self._perform_power_operation(node, 'powerOn')
 
@@ -1077,10 +1077,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Shutdowns all VMs under specified node. This operation is allowed only
         when the vApp/VM is powered on.
 
-        @param  node: The node to be shut down
-        @type   node: L{Node}
+        :param  node: The node to be shut down
+        :type   node: :class:`Node`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         return self._perform_power_operation(node, 'shutdown')
 
@@ -1089,10 +1089,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Suspends all VMs under specified node. This operation is allowed only
         when the vApp/VM is powered on.
 
-        @param  node: The node to be suspended
-        @type   node: L{Node}
+        :param  node: The node to be suspended
+        :type   node: :class:`Node`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         return self._perform_power_operation(node, 'suspend')
 
@@ -1108,10 +1108,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         """
         Returns the control access settings for specified node.
 
-        @param  node: node to get the control access for
-        @type   node: L{Node}
+        :param  node: node to get the control access for
+        :type   node: :class:`Node`
 
-        @rtype: L{ControlAccess}
+        :rtype: :class:`ControlAccess`
         """
         res = self.connection.request(
             '%s/controlAccess' % get_url_path(node.id))
@@ -1146,13 +1146,13 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         """
         Sets control access for the specified node.
 
-        @param  node: node
-        @type   node: L{Node}
+        :param  node: node
+        :type   node: :class:`Node`
 
-        @param  control_access: control access settings
-        @type   control_access: L{ControlAccess}
+        :param  control_access: control access settings
+        :type   control_access: :class:`ControlAccess`
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         xml = ET.Element('ControlAccessParams',
                 {'xmlns': 'http://www.vmware.com/vcloud/v1.5'})
@@ -1190,11 +1190,11 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
     def ex_get_metadata(self, node):
         """
-        @param  node: node
-        @type   node: L{Node}
+        :param  node: node
+        :type   node: :class:`Node`
 
-        @return: dictionary mapping metadata keys to metadata values
-        @rtype: dictionary mapping C{str} to C{str}
+        :return: dictionary mapping metadata keys to metadata values
+        :rtype: dictionary mapping ``str`` to ``str``
         """
         res = self.connection.request('%s/metadata' % (get_url_path(node.id)))
         metadata_entries = res.object.findall(fixxpath(res.object, 'MetadataEntry'))
@@ -1209,16 +1209,16 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
     def ex_set_metadata_entry(self, node, key, value):
         """
-        @param  node: node
-        @type   node: L{Node}
+        :param  node: node
+        :type   node: :class:`Node`
 
-        @param key: metadata key to be set
-        @type key: C{str}
+        :param key: metadata key to be set
+        :type key: ``str``
 
-        @param value: metadata value to be set
-        @type value: C{str}
+        :param value: metadata value to be set
+        :type value: ``str``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         metadata_elem = ET.Element(
             'Metadata',
@@ -1248,25 +1248,25 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         for details. Each element of the returned list is a dictionary with all
         attributes from the record.
 
-        @param type: type to query (r.g. user, group, vApp etc.)
-        @type  type: C{str}
+        :param type: type to query (r.g. user, group, vApp etc.)
+        :type  type: ``str``
 
-        @param filter: filter expression (see documentation for syntax)
-        @type  filter: C{str}
+        :param filter: filter expression (see documentation for syntax)
+        :type  filter: ``str``
 
-        @param page: page number
-        @type  page: C{int}
+        :param page: page number
+        :type  page: ``int``
 
-        @param page_size: page size
-        @type  page_size: C{int}
+        :param page_size: page size
+        :type  page_size: ``int``
 
-        @param sort_asc: sort in ascending order by specified field
-        @type  sort_asc: C{str}
+        :param sort_asc: sort in ascending order by specified field
+        :type  sort_asc: ``str``
 
-        @param sort_desc: sort in descending order by specified field
-        @type  sort_desc: C{str}
+        :param sort_desc: sort in descending order by specified field
+        :type  sort_desc: ``str``
 
-        @rtype: C{list} of dict
+        :rtype: ``list`` of dict
         """
         # This is a workaround for filter parameter encoding
         # the urllib encodes (name==Developers%20Only) into
@@ -1303,52 +1303,52 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                              resource busy error is raised.
 
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    image:  OS Image to boot on node. (required). Can be a NodeImage or existing Node that will be
+        :keyword    image:  OS Image to boot on node. (required). Can be a NodeImage or existing Node that will be
                             cloned.
-        @type       image:  L{NodeImage} or L{Node}
+        :type       image:  :class:`NodeImage` or :class:`Node`
 
-        @keyword    ex_network: Organisation's network name for attaching vApp VMs to.
-        @type       ex_network: C{str}
+        :keyword    ex_network: Organisation's network name for attaching vApp VMs to.
+        :type       ex_network: ``str``
 
-        @keyword    ex_vdc: Name of organisation's virtual data center where vApp VMs will be deployed.
-        @type       ex_vdc: C{str}
+        :keyword    ex_vdc: Name of organisation's virtual data center where vApp VMs will be deployed.
+        :type       ex_vdc: ``str``
 
-        @keyword    ex_vm_names: list of names to be used as a VM and computer name. The name must be max. 15 characters
+        :keyword    ex_vm_names: list of names to be used as a VM and computer name. The name must be max. 15 characters
                                  long and follow the host name requirements.
-        @type       ex_vm_names: C{list} of C{str}
+        :type       ex_vm_names: ``list`` of ``str``
 
-        @keyword    ex_vm_cpu: number of virtual CPUs/cores to allocate for each vApp VM.
-        @type       ex_vm_cpu: C{int}
+        :keyword    ex_vm_cpu: number of virtual CPUs/cores to allocate for each vApp VM.
+        :type       ex_vm_cpu: ``int``
 
-        @keyword    ex_vm_memory: amount of memory in MB to allocate for each vApp VM.
-        @type       ex_vm_memory: C{int}
+        :keyword    ex_vm_memory: amount of memory in MB to allocate for each vApp VM.
+        :type       ex_vm_memory: ``int``
 
-        @keyword    ex_vm_script: full path to file containing guest customisation script for each vApp VM.
+        :keyword    ex_vm_script: full path to file containing guest customisation script for each vApp VM.
                                   Useful for creating users & pushing out public SSH keys etc.
-        @type       ex_vm_script: C{str}
+        :type       ex_vm_script: ``str``
 
-        @keyword    ex_vm_network: Override default vApp VM network name. Useful for when you've imported an OVF
+        :keyword    ex_vm_network: Override default vApp VM network name. Useful for when you've imported an OVF
                                    originating from outside of the vCloud.
-        @type       ex_vm_network: C{str}
+        :type       ex_vm_network: ``str``
 
-        @keyword    ex_vm_fence: Fence mode for connecting the vApp VM network (ex_vm_network) to the parent
+        :keyword    ex_vm_fence: Fence mode for connecting the vApp VM network (ex_vm_network) to the parent
                                  organisation network (ex_network).
-        @type       ex_vm_fence: C{str}
+        :type       ex_vm_fence: ``str``
 
-        @keyword    ex_vm_ipmode: IP address allocation mode for all vApp VM network connections.
-        @type       ex_vm_ipmode: C{str}
+        :keyword    ex_vm_ipmode: IP address allocation mode for all vApp VM network connections.
+        :type       ex_vm_ipmode: ``str``
 
-        @keyword    ex_deploy: set to False if the node shouldn't be deployed (started) after creation
-        @type       ex_deploy: C{bool}
+        :keyword    ex_deploy: set to False if the node shouldn't be deployed (started) after creation
+        :type       ex_deploy: ``bool``
 
-        @keyword    ex_clone_timeout: timeout in seconds for clone/instantiate VM operation.
+        :keyword    ex_clone_timeout: timeout in seconds for clone/instantiate VM operation.
                                       Cloning might be a time consuming operation especially
                                       when linked clones are disabled or VMs are created
                                       on different datastores.
                                       Overrides the default task completion value.
-        @type       ex_clone_timeout: C{int}
+        :type       ex_clone_timeout: ``int``
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -1518,14 +1518,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Please ensure that hot-adding a virtual CPU is enabled for the powered on virtual machines.
         Otherwise use this method on undeployed vApp.
 
-        @keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a vApp ID is used here all attached VMs
+        :keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a vApp ID is used here all attached VMs
                                    will be modified
-        @type       vapp_or_vm_id: C{str}
+        :type       vapp_or_vm_id: ``str``
 
-        @keyword    vm_cpu: number of virtual CPUs/cores to allocate for specified VMs
-        @type       vm_cpu: C{int}
+        :keyword    vm_cpu: number of virtual CPUs/cores to allocate for specified VMs
+        :type       vm_cpu: ``int``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         self._validate_vm_cpu(vm_cpu)
         self._change_vm_cpu(vapp_or_vm_id, vm_cpu)
@@ -1539,14 +1539,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Please ensure that hot-change of virtual memory is enabled for the powered on virtual machines.
         Otherwise use this method on undeployed vApp.
 
-        @keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a vApp ID is used here all attached VMs
+        :keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a vApp ID is used here all attached VMs
                                    will be modified
-        @type       vapp_or_vm_id: C{str}
+        :type       vapp_or_vm_id: ``str``
 
-        @keyword    vm_memory: virtual memory in MB to allocate for the specified VM or VMs
-        @type       vm_memory: C{int}
+        :keyword    vm_memory: virtual memory in MB to allocate for the specified VM or VMs
+        :type       vm_memory: ``int``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         self._validate_vm_memory(vm_memory)
         self._change_vm_memory(vapp_or_vm_id, vm_memory)
@@ -1556,14 +1556,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         Adds a virtual disk to the specified VM or VMs under the vApp. If the vapp_or_vm_id param
         represents a link to an vApp all VMs that are attached to this vApp will be modified.
 
-        @keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a vApp ID is used here all attached VMs
+        :keyword    vapp_or_vm_id: vApp or VM ID that will be modified. If a vApp ID is used here all attached VMs
                                    will be modified
-        @type       vapp_or_vm_id: C{str}
+        :type       vapp_or_vm_id: ``str``
 
-        @keyword    vm_disk_size: the disk capacity in GB that will be added to the specified VM or VMs
-        @type       vm_disk_size: C{int}
+        :keyword    vm_disk_size: the disk capacity in GB that will be added to the specified VM or VMs
+        :type       vm_disk_size: ``int``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         self._validate_vm_disk_size(vm_disk_size)
         self._add_vm_disk(vapp_or_vm_id, vm_disk_size)

@@ -44,25 +44,25 @@ class RackspaceResponse(JsonResponse):
 
 class RackspaceHealthMonitor(object):
     """
-    @param type: type of load balancer.  currently CONNECT (connection
+    :param type: type of load balancer.  currently CONNECT (connection
                  monitoring), HTTP, HTTPS (connection and HTTP
                  monitoring) are supported.
-    @type type: C{str}
+    :type type: ``str``
 
-    @param delay: minimum seconds to wait before executing the health
+    :param delay: minimum seconds to wait before executing the health
                       monitor.  (Must be between 1 and 3600)
-    @type delay: C{int}
+    :type delay: ``int``
 
-    @param timeout: maximum seconds to wait when establishing a
+    :param timeout: maximum seconds to wait when establishing a
                     connection before timing out.  (Must be between 1
                     and 3600)
-    @type timeout: C{int}
+    :type timeout: ``int``
 
-    @param attempts_before_deactivation: Number of monitor failures
+    :param attempts_before_deactivation: Number of monitor failures
                                          before removing a node from
                                          rotation. (Must be between 1
                                          and 10)
-    @type attempts_before_deactivation: C{int}
+    :type attempts_before_deactivation: ``int``
     """
 
     def __init__(self, type, delay, timeout, attempts_before_deactivation):
@@ -90,16 +90,16 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
     """
     A HTTP health monitor adds extra features to a Rackspace health monitor.
 
-    @param path: the HTTP path to monitor.
-    @type path: C{str}
+    :param path: the HTTP path to monitor.
+    :type path: ``str``
 
-    @param body_regex: Regular expression used to evaluate the body of
+    :param body_regex: Regular expression used to evaluate the body of
                        the HTTP response.
-    @type body_regex: C{str}
+    :type body_regex: ``str``
 
-    @param status_regex: Regular expression used to evaluate the HTTP
+    :param status_regex: Regular expression used to evaluate the HTTP
                          status code of the response.
-    @type status_regex: C{str}
+    :type status_regex: ``str``
     """
 
     def __init__(self, type, delay, timeout, attempts_before_deactivation,
@@ -131,26 +131,26 @@ class RackspaceHTTPHealthMonitor(RackspaceHealthMonitor):
 
 class RackspaceConnectionThrottle(object):
     """
-    @param min_connections: Minimum number of connections per IP address
+    :param min_connections: Minimum number of connections per IP address
                             before applying throttling.
-    @type min_connections: C{int}
+    :type min_connections: ``int``
 
-    @param max_connections: Maximum number of of connections per IP address.
+    :param max_connections: Maximum number of of connections per IP address.
                             (Must be between 0 and 100000, 0 allows an
                             unlimited number of connections.)
-    @type max_connections: C{int}
+    :type max_connections: ``int``
 
-    @param max_connection_rate: Maximum number of connections allowed
+    :param max_connection_rate: Maximum number of connections allowed
                                 from a single IP address within the
                                 given rate_interval_seconds.  (Must be
                                 between 0 and 100000, 0 allows an
                                 unlimited number of connections.)
-    @type max_connection_rate: C{int}
+    :type max_connection_rate: ``int``
 
-    @param rate_interval_seconds: Interval at which the
+    :param rate_interval_seconds: Interval at which the
                                   max_connection_rate is enforced.
                                   (Must be between 1 and 3600.)
-    @type rate_interval_seconds: C{int}
+    :type rate_interval_seconds: ``int``
     """
 
     def __init__(self, min_connections, max_connections,
@@ -191,15 +191,15 @@ class RackspaceAccessRule(object):
     An access rule allows or denies traffic to a Load Balancer based on the
     incoming IPs.
 
-    @param id: Unique identifier to refer to this rule by.
-    @type id: C{str}
+    :param id: Unique identifier to refer to this rule by.
+    :type id: ``str``
 
-    @param rule_type: RackspaceAccessRuleType.ALLOW or
+    :param rule_type: RackspaceAccessRuleType.ALLOW or
                       RackspaceAccessRuleType.DENY.
-    @type id: C{int}
+    :type id: ``int``
 
-    @param address: IP address or cidr (can be IPv4 or IPv6).
-    @type address: C{str}
+    :param address: IP address or cidr (can be IPv4 or IPv6).
+    :type address: ``str``
     """
 
     def __init__(self, id=None, rule_type=None, address=None):
@@ -352,20 +352,20 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         List protocols with default ports.
 
-        @rtype: C{list} of C{tuple}
-        @return: A list of protocols with default ports included.
+        :rtype: ``list`` of ``tuple``
+        :return: A list of protocols with default ports included.
         """
         return self._to_protocols_with_default_ports(
             self.connection.request('/loadbalancers/protocols').object)
 
     def list_balancers(self, ex_member_address=None):
         """
-        @inherits: L{Driver.list_balancers}
+        @inherits: :class:`Driver.list_balancers`
 
-        @param ex_member_address: Optional IP address of the attachment member.
+        :param ex_member_address: Optional IP address of the attachment member.
                                   If provided, only the load balancers which
                                   have this member attached will be returned.
-        @type ex_member_address: C{str}
+        :type ex_member_address: ``str``
         """
         params = {}
 
@@ -385,27 +385,27 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         Creates a new load balancer instance
 
-        @param name: Name of the new load balancer (required)
-        @type  name: C{str}
+        :param name: Name of the new load balancer (required)
+        :type  name: ``str``
 
-        @param members: C{list} ofL{Member}s to attach to balancer
-        @type  members: C{list} of L{Member}
+        :param members: ``list`` of:class:`Member`s to attach to balancer
+        :type  members: ``list`` of :class:`Member`
 
-        @param protocol: Loadbalancer protocol, defaults to http.
-        @type  protocol: C{str}
+        :param protocol: Loadbalancer protocol, defaults to http.
+        :type  protocol: ``str``
 
-        @param port: Port the load balancer should listen on, defaults to 80
-        @type  port: C{str}
+        :param port: Port the load balancer should listen on, defaults to 80
+        :type  port: ``str``
 
-        @param algorithm: Load balancing algorithm, defaults to
+        :param algorithm: Load balancing algorithm, defaults to
                             LBAlgorithm.ROUND_ROBIN
-        @type  algorithm: L{Algorithm}
+        :type  algorithm: :class:`Algorithm`
 
-        @param vip: Virtual ip type of PUBLIC, SERVICENET, or ID of a virtual
+        :param vip: Virtual ip type of PUBLIC, SERVICENET, or ID of a virtual
                       ip
-        @type  vip: C{str}
+        :type  vip: ``str``
 
-        @rtype: L{LoadBalancer}
+        :rtype: :class:`LoadBalancer`
         """
         balancer_attrs = self._kwargs_to_mutable_attrs(
             name=name,
@@ -449,11 +449,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         Destroys a list of Balancers (the API supports up to 10).
 
-        @param balancers: A list of Balancers to destroy.
-        @type balancers: C{list} of L{LoadBalancer}
+        :param balancers: A list of Balancers to destroy.
+        :type balancers: ``list`` of :class:`LoadBalancer`
 
-        @return: Returns whether the destroy request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the destroy request was accepted.
+        :rtype: ``bool``
         """
         ids = [('id', balancer.id) for balancer in balancers]
         resp = self.connection.request('/loadbalancers',
@@ -480,13 +480,13 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         Attaches a list of members to a load balancer.
 
-        @param balancer: The Balancer to which members will be attached.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: The Balancer to which members will be attached.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param members: A list of Members to attach.
-        @type  members: C{list} of L{Member}
+        :param members: A list of Members to attach.
+        :type  members: ``list`` of :class:`Member`
 
-        @rtype: C{list} of L{Member}
+        :rtype: ``list`` of :class:`Member`
         """
         member_objects = {"nodes": [self._member_attributes(member) for member
                                     in members]}
@@ -511,14 +511,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         This method blocks until the detach request has been processed and the
         balancer is in a RUNNING state again.
 
-        @param balancer: The Balancer to detach members from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: The Balancer to detach members from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param members: A list of Members to detach.
-        @type  members: C{list} of L{Member}
+        :param members: A list of Members to detach.
+        :type  members: ``list`` of :class:`Member`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         accepted = self.ex_balancer_detach_members_no_poll(balancer, members)
 
@@ -533,14 +533,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Detaches a list of members from a balancer (the API supports up to 10).
         This method returns immediately.
 
-        @param balancer: The Balancer to detach members from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: The Balancer to detach members from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param members: A list of Members to detach.
-        @type  members: C{list} of L{Member}
+        :param members: A list of Members to detach.
+        :type  members: ``list`` of :class:`Member`
 
-        @return: Returns whether the detach request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the detach request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/nodes' % (balancer.id)
         ids = [('id', member.id) for member in members]
@@ -565,7 +565,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         Update balancer no poll.
 
-        @inherits: L{Driver.update_balancer}
+        @inherits: :class:`Driver.update_balancer`
         """
         attrs = self._kwargs_to_mutable_attrs(**kwargs)
         resp = self.connection.request(
@@ -581,21 +581,21 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         request has been processed and the balancer is in a RUNNING state
         again.
 
-        @param balancer: Balancer to update the member on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update the member on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param member: Member which should be used
-        @type member: L{Member}
+        :param member: Member which should be used
+        :type member: :class:`Member`
 
-        @keyword **kwargs: New attributes.  Should contain either 'weight'
+        :keyword **kwargs: New attributes.  Should contain either 'weight'
         or 'condition'.  'condition' can be set to 'ENABLED', 'DISABLED'.
         or 'DRAINING'.  'weight' can be set to a positive integer between
         1 and 100, with a higher weight indicating that the node will receive
         more traffic (assuming the Balancer is using a weighted algorithm).
-        @type **kwargs: C{dict}
+        :type **kwargs: ``dict``
 
-        @return: Updated Member.
-        @rtype: L{Member}
+        :return: Updated Member.
+        :rtype: :class:`Member`
         """
         accepted = self.ex_balancer_update_member_no_poll(
             balancer, member, **kwargs)
@@ -619,21 +619,21 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Updates a Member's extra attributes for a Balancer.  The attribute can
         include 'weight' or 'condition'.  This method returns immediately.
 
-        @param balancer: Balancer to update the member on.
-        @type balancer: L{LoadBalancer}
+        :param balancer: Balancer to update the member on.
+        :type balancer: :class:`LoadBalancer`
 
-        @param member: Member which should be used
-        @type member: L{Member}
+        :param member: Member which should be used
+        :type member: :class:`Member`
 
-        @keyword **kwargs: New attributes.  Should contain either 'weight'
+        :keyword **kwargs: New attributes.  Should contain either 'weight'
         or 'condition'.  'condition' can be set to 'ENABLED', 'DISABLED'.
         or 'DRAINING'.  'weight' can be set to a positive integer between
         1 and 100, with a higher weight indicating that the node will receive
         more traffic (assuming the Balancer is using a weighted algorithm).
-        @type **kwargs: C{dict}
+        :type **kwargs: ``dict``
 
-        @return: Returns whether the update request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the update request was accepted.
+        :rtype: ``bool``
         """
         resp = self.connection.request(
             action='/loadbalancers/%s/nodes/%s' % (balancer.id, member.id),
@@ -648,7 +648,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Lists algorithms supported by the API.  Returned as strings because
         this list may change in the future.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         response = self.connection.request('/loadbalancers/algorithms')
         return [a["name"].upper() for a in response.object["algorithms"]]
@@ -657,10 +657,10 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         List error page configured for the specified load balancer.
 
-        @param balancer: Balancer which should be used
-        @type balancer: L{LoadBalancer}
+        :param balancer: Balancer which should be used
+        :type balancer: :class:`LoadBalancer`
 
-        @rtype: C{str}
+        :rtype: ``str``
         """
         uri = '/loadbalancers/%s/errorpage' % (balancer.id)
         resp = self.connection.request(uri)
@@ -671,10 +671,10 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         List the access list.
 
-        @param balancer: Balancer which should be used
-        @type balancer: L{LoadBalancer}
+        :param balancer: Balancer which should be used
+        :type balancer: :class:`LoadBalancer`
 
-        @rtype: C{list} of L{RackspaceAccessRule}
+        :rtype: ``list`` of :class:`RackspaceAccessRule`
         """
         uri = '/loadbalancers/%s/accesslist' % (balancer.id)
         resp = self.connection.request(uri)
@@ -700,14 +700,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         request has been processed and the balancer is in a RUNNING state
         again.
 
-        @param balancer: Balancer to update.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param health_monitor: Health Monitor for the balancer.
-        @type  health_monitor: L{RackspaceHealthMonitor}
+        :param health_monitor: Health Monitor for the balancer.
+        :type  health_monitor: :class:`RackspaceHealthMonitor`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         accepted = self.ex_update_balancer_health_monitor_no_poll(
             balancer, health_monitor)
@@ -722,14 +722,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         Sets a Balancer's health monitor.  This method returns immediately.
 
-        @param balancer: Balancer to update health monitor on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update health monitor on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param health_monitor: Health Monitor for the balancer.
-        @type  health_monitor: L{RackspaceHealthMonitor}
+        :param health_monitor: Health Monitor for the balancer.
+        :type  health_monitor: :class:`RackspaceHealthMonitor`
 
-        @return: Returns whether the update request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the update request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/healthmonitor' % (balancer.id)
 
@@ -744,11 +744,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         disable request has been processed and the balancer is in a RUNNING
         state again.
 
-        @param balancer: Balancer to disable health monitor on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable health monitor on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_disable_balancer_health_monitor_no_poll(balancer):
             msg = 'Disable health monitor request not accepted'
@@ -761,11 +761,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Disables a Balancer's health monitor.  This method returns
         immediately.
 
-        @param balancer: Balancer to disable health monitor on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable health monitor on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the disable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the disable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/healthmonitor' % (balancer.id)
 
@@ -781,14 +781,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         the update request has been processed and the balancer is in a
         RUNNING state again.
 
-        @param balancer: Balancer to update connection throttle on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update connection throttle on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param connection_throttle: Connection Throttle for the balancer.
-        @type  connection_throttle: L{RackspaceConnectionThrottle}
+        :param connection_throttle: Connection Throttle for the balancer.
+        :type  connection_throttle: :class:`RackspaceConnectionThrottle`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         accepted = self.ex_update_balancer_connection_throttle_no_poll(
             balancer, connection_throttle)
@@ -805,14 +805,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Sets a Balancer's connection throttle.  This method returns
         immediately.
 
-        @param balancer: Balancer to update connection throttle on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update connection throttle on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param connection_throttle: Connection Throttle for the balancer.
-        @type  connection_throttle: L{RackspaceConnectionThrottle}
+        :param connection_throttle: Connection Throttle for the balancer.
+        :type  connection_throttle: :class:`RackspaceConnectionThrottle`
 
-        @return: Returns whether the update request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the update request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/connectionthrottle' % (balancer.id)
         resp = self.connection.request(
@@ -827,11 +827,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         the disable request has been processed and the balancer is in a RUNNING
         state again.
 
-        @param balancer: Balancer to disable connection throttle on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable connection throttle on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_disable_balancer_connection_throttle_no_poll(balancer):
             msg = 'Disable connection throttle request not accepted'
@@ -844,11 +844,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Disables a Balancer's connection throttle.  This method returns
         immediately.
 
-        @param balancer: Balancer to disable connection throttle on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable connection throttle on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the disable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the disable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/connectionthrottle' % (balancer.id)
         resp = self.connection.request(uri, method='DELETE')
@@ -861,11 +861,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         the enable request has been processed and the balancer is in a RUNNING
         state again.
 
-        @param balancer: Balancer to enable connection logging on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to enable connection logging on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_enable_balancer_connection_logging_no_poll(balancer):
             msg = 'Enable connection logging request not accepted'
@@ -878,11 +878,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Enables connection logging for a Balancer.  This method returns
         immediately.
 
-        @param balancer: Balancer to enable connection logging on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to enable connection logging on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the enable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the enable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/connectionlogging' % (balancer.id)
 
@@ -899,11 +899,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         the enable request has been processed and the balancer is in a RUNNING
         state again.
 
-        @param balancer: Balancer to disable connection logging on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable connection logging on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_disable_balancer_connection_logging_no_poll(balancer):
             msg = 'Disable connection logging request not accepted'
@@ -916,11 +916,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Disables connection logging for a Balancer.  This method returns
         immediately.
 
-        @param balancer: Balancer to disable connection logging on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable connection logging on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the disable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the disable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/connectionlogging' % (balancer.id)
         resp = self.connection.request(
@@ -936,11 +936,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         type to 'HTTP_COOKIE'.  This method blocks until the enable request
         has been processed and the balancer is in a RUNNING state again.
 
-        @param balancer: Balancer to enable session persistence on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to enable session persistence on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_enable_balancer_session_persistence_no_poll(balancer):
             msg = 'Enable session persistence request not accepted'
@@ -953,11 +953,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Enables session persistence for a Balancer by setting the persistence
         type to 'HTTP_COOKIE'.  This method returns immediately.
 
-        @param balancer: Balancer to enable session persistence on.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to enable session persistence on.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the enable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the enable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/sessionpersistence' % (balancer.id)
         resp = self.connection.request(
@@ -974,11 +974,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         the disable request has been processed and the balancer is in a RUNNING
         state again.
 
-        @param balancer: Balancer to disable session persistence on.
-        @type balancer:  L{LoadBalancer}
+        :param balancer: Balancer to disable session persistence on.
+        :type balancer:  :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_disable_balancer_session_persistence_no_poll(balancer):
             msg = 'Disable session persistence request not accepted'
@@ -991,11 +991,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Disables session persistence for a Balancer.  This method returns
         immediately.
 
-        @param balancer: Balancer to disable session persistence for.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable session persistence for.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the disable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the disable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/sessionpersistence' % (balancer.id)
         resp = self.connection.request(uri, method='DELETE')
@@ -1008,14 +1008,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         the update request has been processed and the balancer is in a
         RUNNING state again.
 
-        @param balancer: Balancer to update the custom error page for.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update the custom error page for.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param page_content: HTML content for the custom error page.
-        @type  page_content: C{str}
+        :param page_content: HTML content for the custom error page.
+        :type  page_content: ``str``
 
-        @return: Updated Balancer.
-        @rtype:  L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype:  :class:`LoadBalancer`
         """
         accepted = self.ex_update_balancer_error_page_no_poll(balancer,
                                                               page_content)
@@ -1030,14 +1030,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Updates a Balancer's custom error page.  This method returns
         immediately.
 
-        @param balancer: Balancer to update the custom error page for.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to update the custom error page for.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param page_content: HTML content for the custom error page.
-        @type  page_content: C{str}
+        :param page_content: HTML content for the custom error page.
+        :type  page_content: ``str``
 
-        @return: Returns whether the update request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the update request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/errorpage' % (balancer.id)
         resp = self.connection.request(
@@ -1054,11 +1054,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         request has been processed and the balancer is in a RUNNING state
         again.
 
-        @param balancer: Balancer to disable the custom error page for.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable the custom error page for.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         if not self.ex_disable_balancer_custom_error_page_no_poll(balancer):
             msg = 'Disable custom error page request not accepted'
@@ -1071,11 +1071,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Disables a Balancer's custom error page, returning its error page to
         the Rackspace-provided default.  This method returns immediately.
 
-        @param balancer: Balancer to disable the custom error page for.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to disable the custom error page for.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Returns whether the disable request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the disable request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/errorpage' % (balancer.id)
         resp = self.connection.request(uri, method='DELETE')
@@ -1090,14 +1090,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         until the update request has been processed and the balancer is in a
         RUNNING state again.
 
-        @param balancer: Balancer to create the access rule for.
-        @type balancer: L{LoadBalancer}
+        :param balancer: Balancer to create the access rule for.
+        :type balancer: :class:`LoadBalancer`
 
-        @param rule: Access Rule to add to the balancer.
-        @type rule: L{RackspaceAccessRule}
+        :param rule: Access Rule to add to the balancer.
+        :type rule: :class:`RackspaceAccessRule`
 
-        @return: The created access rule.
-        @rtype: L{RackspaceAccessRule}
+        :return: The created access rule.
+        :rtype: :class:`RackspaceAccessRule`
         """
         accepted = self.ex_create_balancer_access_rule_no_poll(balancer, rule)
         if not accepted:
@@ -1119,14 +1119,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Adds an access rule to a Balancer's access list.  This method returns
         immediately.
 
-        @param balancer: Balancer to create the access rule for.
-        @type balancer: L{LoadBalancer}
+        :param balancer: Balancer to create the access rule for.
+        :type balancer: :class:`LoadBalancer`
 
-        @param rule: Access Rule to add to the balancer.
-        @type rule: L{RackspaceAccessRule}
+        :param rule: Access Rule to add to the balancer.
+        :type rule: :class:`RackspaceAccessRule`
 
-        @return: Returns whether the create request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the create request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/accesslist' % (balancer.id)
         resp = self.connection.request(
@@ -1142,14 +1142,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         blocks until the update request has been processed and the balancer is
         in a RUNNING state again.
 
-        @param balancer: Balancer to create the access rule for.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to create the access rule for.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param rules: List of L{RackspaceAccessRule} to add to the balancer.
-        @type  rules: C{list} of L{RackspaceAccessRule}
+        :param rules: List of :class:`RackspaceAccessRule` to add to the balancer.
+        :type  rules: ``list`` of :class:`RackspaceAccessRule`
 
-        @return: The created access rules.
-        @rtype: L{RackspaceAccessRule}
+        :return: The created access rules.
+        :rtype: :class:`RackspaceAccessRule`
         """
         accepted = self.ex_create_balancer_access_rules_no_poll(balancer,
                                                                 rules)
@@ -1190,14 +1190,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Adds a list of access rules to a Balancer's access list.  This method
         returns immediately.
 
-        @param balancer: Balancer to create the access rule for.
-        @type balancer: L{LoadBalancer}
+        :param balancer: Balancer to create the access rule for.
+        :type balancer: :class:`LoadBalancer`
 
-        @param rules: List of L{RackspaceAccessRule} to add to the balancer.
-        @type  rules: C{list} of L{RackspaceAccessRule}
+        :param rules: List of :class:`RackspaceAccessRule` to add to the balancer.
+        :type  rules: ``list`` of :class:`RackspaceAccessRule`
 
-        @return: Returns whether the create request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the create request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/accesslist' % (balancer.id)
         resp = self.connection.request(
@@ -1214,14 +1214,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         blocks until the update request has been processed and the balancer
         is in a RUNNING state again.
 
-        @param balancer: Balancer to remove the access rule from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to remove the access rule from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param rule: Access Rule to remove from the balancer.
-        @type  rule: L{RackspaceAccessRule}
+        :param rule: Access Rule to remove from the balancer.
+        :type  rule: :class:`RackspaceAccessRule`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         accepted = self.ex_destroy_balancer_access_rule_no_poll(balancer, rule)
         if not accepted:
@@ -1235,14 +1235,14 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Removes an access rule from a Balancer's access list.  This method
         returns immediately.
 
-        @param balancer: Balancer to remove the access rule from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to remove the access rule from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param rule: Access Rule to remove from the balancer.
-        @type  rule: L{RackspaceAccessRule}
+        :param rule: Access Rule to remove from the balancer.
+        :type  rule: :class:`RackspaceAccessRule`
 
-        @return: Returns whether the destroy request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the destroy request was accepted.
+        :rtype: ``bool``
         """
         uri = '/loadbalancers/%s/accesslist/%s' % (balancer.id, rule.id)
         resp = self.connection.request(uri, method='DELETE')
@@ -1255,15 +1255,15 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         method blocks until the update request has been processed and the
         balancer is in a RUNNING state again.
 
-        @param balancer: Balancer to remove the access rules from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to remove the access rules from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param rules: List of L{RackspaceAccessRule} objects to remove from the
+        :param rules: List of :class:`RackspaceAccessRule` objects to remove from the
                        balancer.
-        @type  rules: C{list} of L{RackspaceAccessRule}
+        :type  rules: ``list`` of :class:`RackspaceAccessRule`
 
-        @return: Updated Balancer.
-        @rtype: L{LoadBalancer}
+        :return: Updated Balancer.
+        :rtype: :class:`LoadBalancer`
         """
         accepted = self.ex_destroy_balancer_access_rules_no_poll(
             balancer, rules)
@@ -1279,15 +1279,15 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         Removes a list of access rules from a Balancer's access list.  This
         method returns immediately.
 
-        @param balancer: Balancer to remove the access rules from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to remove the access rules from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @param rules: List of L{RackspaceAccessRule} objects to remove from the
+        :param rules: List of :class:`RackspaceAccessRule` objects to remove from the
                             balancer.
-        @type  rules: C{list} of L{RackspaceAccessRule}
+        :type  rules: ``list`` of :class:`RackspaceAccessRule`
 
-        @return: Returns whether the destroy request was accepted.
-        @rtype: C{bool}
+        :return: Returns whether the destroy request was accepted.
+        :rtype: ``bool``
         """
         ids = [('id', rule.id) for rule in rules]
         uri = '/loadbalancers/%s/accesslist' % balancer.id
@@ -1302,11 +1302,11 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         """
         Return current load balancer usage report.
 
-        @param balancer: Balancer to remove the access rules from.
-        @type  balancer: L{LoadBalancer}
+        :param balancer: Balancer to remove the access rules from.
+        :type  balancer: :class:`LoadBalancer`
 
-        @return: Raw load balancer usage object.
-        @rtype: C{dict}
+        :return: Raw load balancer usage object.
+        :rtype: ``dict``
         """
         uri = '/loadbalancers/%s/usage/current' % (balancer.id)
         resp = self.connection.request(uri, method='GET')

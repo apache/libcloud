@@ -27,7 +27,7 @@ from datetime import datetime
 
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, basestring
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
@@ -544,7 +544,9 @@ class BaseEC2NodeDriver(NodeDriver):
                 'clienttoken': findattr(element=element, xpath="clientToken",
                                         namespace=NAMESPACE),
                 'groups': groups,
-                'tags': tags
+                'tags': tags,
+                'iam_profile': findattr(element, xpath="iamInstanceProfile/id",
+                                        namespace=NAMESPACE)
             }
         )
         return n
@@ -632,10 +634,10 @@ class BaseEC2NodeDriver(NodeDriver):
         nodes that should be returned. Only the nodes
         with the corresponding node ids will be returned.
 
-        @param      ex_node_ids: List of C{node.id}
-        @type       ex_node_ids: C{list} of C{str}
+        :param      ex_node_ids: List of ``node.id``
+        :type       ex_node_ids: ``list`` of ``str``
 
-        @rtype: C{list} of L{Node}
+        :rtype: ``list`` of :class:`Node`
         """
         params = {'Action': 'DescribeInstances'}
         if ex_node_ids:
@@ -676,10 +678,10 @@ class BaseEC2NodeDriver(NodeDriver):
         images that should be returned. Only the images
         with the corresponding image ids will be returned.
 
-        @param      ex_image_ids: List of C{NodeImage.id}
-        @type       ex_image_ids: C{list} of C{str}
+        :param      ex_image_ids: List of ``NodeImage.id``
+        :type       ex_image_ids: ``list`` of ``str``
 
-        @rtype: C{list} of L{NodeImage}
+        :rtype: ``list`` of :class:`NodeImage`
         """
         params = {'Action': 'DescribeImages'}
         if owner:
@@ -820,11 +822,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the keypair to Create. This must be
+        :param      name: The name of the keypair to Create. This must be
             unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         params = {
             'Action': 'CreateKeyPair',
@@ -846,14 +848,14 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the public key to import. This must be
+        :param      name: The name of the public key to import. This must be
          unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @param     key_material: The contents of a public key file.
-        @type      key_material: C{str}
+        :param     key_material: The contents of a public key file.
+        :type      key_material: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         base64key = base64.b64encode(b(key_material))
 
@@ -879,14 +881,14 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the public key to import. This must be
+        :param      name: The name of the public key to import. This must be
          unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @param     keyfile: The filename with path of the public key to import.
-        @type      keyfile: C{str}
+        :param     keyfile: The filename with path of the public key to import.
+        :type      keyfile: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         with open(os.path.expanduser(keyfile)) as fh:
             content = fh.read()
@@ -913,7 +915,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Lists all the keypair names and fingerprints.
 
-        @rtype: C{list} of C{dict}
+        :rtype: ``list`` of ``dict``
         """
         params = {
             'Action': 'DescribeKeyPairs'
@@ -940,7 +942,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         return [k['keyName'] for k in self.ex_list_keypairs()]
 
@@ -956,10 +958,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the keypair to describe.
-        @type       name: C{str}
+        :param      name: The name of the keypair to describe.
+        :type       name: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
 
         params = {
@@ -994,7 +996,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         params = {'Action': 'DescribeSecurityGroups'}
         response = self.connection.request(self.path, params=params).object
@@ -1014,15 +1016,15 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the security group to Create.
+        :param      name: The name of the security group to Create.
                           This must be unique.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @param      description: Human readable description of a Security
+        :param      description: Human readable description of a Security
         Group.
-        @type       description: C{str}
+        :type       description: ``str``
 
-        @rtype: C{str}
+        :rtype: ``str``
         """
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
@@ -1036,22 +1038,22 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the security group to edit
-        @type       name: C{str}
+        :param      name: The name of the security group to edit
+        :type       name: ``str``
 
-        @param      from_port: The beginning of the port range to open
-        @type       from_port: C{str}
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``str``
 
-        @param      to_port: The end of the port range to open
-        @type       to_port: C{str}
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``str``
 
-        @param      cidr_ip: The ip to allow traffic for.
-        @type       cidr_ip: C{str}
+        :param      cidr_ip: The ip to allow traffic for.
+        :type       cidr_ip: ``str``
 
-        @param      protocol: tcp/udp/icmp
-        @type       protocol: C{str}
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         params = {'Action': 'AuthorizeSecurityGroupIngress',
@@ -1076,10 +1078,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the security group to edit
-        @type       name: C{str}
+        :param      name: The name of the security group to edit
+        :type       name: ``str``
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
 
         results = []
@@ -1123,17 +1125,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_list_availability_zones(self, only_available=True):
         """
-        Return a list of L{ExEC2AvailabilityZone} objects for the
+        Return a list of :class:`ExEC2AvailabilityZone` objects for the
         current region.
 
         Note: This is an extension method and is only available for EC2
         driver.
 
-        @keyword  only_available: If true, return only availability zones
+        :keyword  only_available: If true, return only availability zones
                                   with state 'available'
-        @type     only_available: C{str}
+        :type     only_available: ``str``
 
-        @rtype: C{list} of L{ExEC2AvailabilityZone}
+        :rtype: ``list`` of :class:`ExEC2AvailabilityZone`
         """
         params = {'Action': 'DescribeAvailabilityZones'}
 
@@ -1171,11 +1173,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Return a dictionary of tags for a resource (Node or StorageVolume).
 
-        @param  resource: resource which should be used
-        @type   resource: L{Node} or L{StorageVolume}
+        :param  resource: resource which should be used
+        :type   resource: :class:`Node` or :class:`StorageVolume`
 
-        @return: dict Node tags
-        @rtype: C{dict}
+        :return: dict Node tags
+        :rtype: ``dict``
         """
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
@@ -1199,14 +1201,14 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Create tags for a resource (Node or StorageVolume).
 
-        @param resource: Resource to be tagged
-        @type resource: L{Node} or L{StorageVolume}
+        :param resource: Resource to be tagged
+        :type resource: :class:`Node` or :class:`StorageVolume`
 
-        @param tags: A dictionary or other mapping of strings to strings,
+        :param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
-        @type tags: C{dict}
+        :type tags: ``dict``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         if not tags:
             return
@@ -1227,14 +1229,14 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Delete tags from a resource.
 
-        @param resource: Resource to be tagged
-        @type resource: L{Node} or L{StorageVolume}
+        :param resource: Resource to be tagged
+        :type resource: :class:`Node` or :class:`StorageVolume`
 
-        @param tags: A dictionary or other mapping of strings to strings,
+        :param tags: A dictionary or other mapping of strings to strings,
                      specifying the tag names and tag values to be deleted.
-        @type tags: C{dict}
+        :type tags: ``dict``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         if not tags:
             return
@@ -1265,12 +1267,12 @@ class BaseEC2NodeDriver(NodeDriver):
         Return all the Elastic IP addresses for this account
         optionally, return only the allocated addresses
 
-        @param    only_allocated: If true, return only those addresses
+        :param    only_allocated: If true, return only those addresses
                                   that are associated with an instance
-        @type     only_allocated: C{str}
+        :type     only_allocated: ``str``
 
-        @return:   list list of elastic ips for this particular account.
-        @rtype: C{list} of C{str}
+        :return:   list list of elastic ips for this particular account.
+        :rtype: ``list`` of ``str``
         """
         params = {'Action': 'DescribeAddresses'}
 
@@ -1299,13 +1301,13 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Associate an IP address with a particular node.
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @param      elastic_ip_address: IP address which should be used
-        @type       elastic_ip_address: C{str}
+        :param      elastic_ip_address: IP address which should be used
+        :type       elastic_ip_address: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'Action': 'AssociateAddress'}
 
@@ -1318,12 +1320,12 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Return Elastic IP addresses for all the nodes in the provided list.
 
-        @param      nodes: List of C{Node} instances
-        @type       nodes: C{list} of L{Node}
+        :param      nodes: List of :class:`Node` instances
+        :type       nodes: ``list`` of :class:`Node`
 
-        @return: Dictionary where a key is a node ID and the value is a
+        :return: Dictionary where a key is a node ID and the value is a
             list with the Elastic IP addresses associated with this node.
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         if not nodes:
             return {}
@@ -1358,11 +1360,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Return a list of Elastic IP addresses associated with this node.
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @return: list Elastic IP addresses attached to this node.
-        @rtype: C{list} of C{str}
+        :return: list Elastic IP addresses attached to this node.
+        :rtype: ``list`` of ``str``
         """
         node_elastic_ips = self.ex_describe_addresses([node])
         return node_elastic_ips[node.id]
@@ -1372,14 +1374,14 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify node attributes.
         A list of valid attributes can be found at http://goo.gl/gxcj8
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @param      attributes: Dictionary with node attributes
-        @type       attributes: C{dict}
+        :param      attributes: Dictionary with node attributes
+        :type       attributes: ``dict``
 
-        @return: True on success, False otherwise.
-        @rtype: C{bool}
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
         """
         attributes = attributes or {}
         attributes.update({'InstanceId': node.id})
@@ -1398,14 +1400,14 @@ class BaseEC2NodeDriver(NodeDriver):
         Change the node size.
         Note: Node must be turned of before changing the size.
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @param      new_size: NodeSize intance
-        @type       new_size: L{NodeSize}
+        :param      new_size: NodeSize intance
+        :type       new_size: :class:`NodeSize`
 
-        @return: True on success, False otherwise.
-        @rtype: C{bool}
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
         """
         if 'instancetype' in node.extra:
             current_instance_type = node.extra['instancetype']
@@ -1434,32 +1436,35 @@ class BaseEC2NodeDriver(NodeDriver):
 
         Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_mincount: Minimum number of instances to launch
-        @type       ex_mincount: C{int}
+        :keyword    ex_mincount: Minimum number of instances to launch
+        :type       ex_mincount: ``int``
 
-        @keyword    ex_maxcount: Maximum number of instances to launch
-        @type       ex_maxcount: C{int}
+        :keyword    ex_maxcount: Maximum number of instances to launch
+        :type       ex_maxcount: ``int``
 
-        @keyword    ex_security_groups: A list of namees of security groups to
+        :keyword    ex_security_groups: A list of names of security groups to
                                         assign to the node.
-        @type       ex_security_groups:   C{list}
+        :type       ex_security_groups:   ``list``
 
-        @keyword    ex_keyname: The name of the key pair
-        @type       ex_keyname: C{str}
+        :keyword    ex_keyname: The name of the key pair
+        :type       ex_keyname: ``str``
 
-        @keyword    ex_userdata: User data
-        @type       ex_userdata: C{str}
+        :keyword    ex_userdata: User data
+        :type       ex_userdata: ``str``
 
-        @keyword    ex_clienttoken: Unique identifier to ensure idempotency
-        @type       ex_clienttoken: C{str}
+        :keyword    ex_clienttoken: Unique identifier to ensure idempotency
+        :type       ex_clienttoken: ``str``
 
-        @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
+        :keyword    ex_blockdevicemappings: ``list`` of ``dict`` block device
                     mappings. Example:
                     [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
                      {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
-        @type       ex_blockdevicemappings: C{list} of C{dict}
+        :type       ex_blockdevicemappings: ``list`` of ``dict``
+
+        :keyword    ex_iamprofile: Name or ARN of IAM profile
+        :type       ex_iamprofile: ``str``
         """
         image = kwargs["image"]
         size = kwargs["size"]
@@ -1529,6 +1534,15 @@ class BaseEC2NodeDriver(NodeDriver):
                 for k, v in mapping.items():
                     params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
 
+        if 'ex_iamprofile' in kwargs:
+            if not isinstance(kwargs['ex_iamprofile'], basestring):
+                raise AttributeError('ex_iamprofile not string')
+
+            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
+                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
+            else:
+                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
@@ -1559,10 +1573,10 @@ class BaseEC2NodeDriver(NodeDriver):
         Start the node by passing in the node object, does not work with
         instance store backed instances
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'Action': 'StartInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1574,10 +1588,10 @@ class BaseEC2NodeDriver(NodeDriver):
         Stop the node by passing in the node object, does not work with
         instance store backed instances
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'Action': 'StopInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1710,10 +1724,10 @@ class EucNodeDriver(BaseEC2NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
         """
-        @inherits: L{EC2NodeDriver.__init__}
+        @inherits: :class:`EC2NodeDriver.__init__`
 
-        @param    path: The host where the API can be reached.
-        @type     path: C{str}
+        :param    path: The host where the API can be reached.
+        :type     path: ``str``
         """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
@@ -1758,7 +1772,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
         """
         Nimbus doesn't support elastic IPs, so this is a passthrough.
 
-        @inherits: L{EC2NodeDriver.ex_describe_addresses}
+        @inherits: :class:`EC2NodeDriver.ex_describe_addresses`
         """
         nodes_elastic_ip_mappings = {}
         for node in nodes:
@@ -1770,6 +1784,6 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
         """
         Nimbus doesn't support creating tags, so this is a passthrough.
 
-        @inherits: L{EC2NodeDriver.ex_create_tags}
+        @inherits: :class:`EC2NodeDriver.ex_create_tags`
         """
         pass

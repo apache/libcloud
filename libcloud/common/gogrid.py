@@ -138,22 +138,22 @@ class BaseGoGridDriver(object):
         """Return list of IP addresses assigned to
         the account.
 
-        @keyword    public: set to True to list only
+        :keyword    public: set to True to list only
                     public IPs or False to list only
                     private IPs. Set to None or not specify
                     at all not to filter by type
-        @type       public: C{bool}
+        :type       public: ``bool``
 
-        @keyword    assigned: set to True to list only addresses
+        :keyword    assigned: set to True to list only addresses
                     assigned to servers, False to list unassigned
                     addresses and set to None or don't set at all
                     not no filter by state
-        @type       assigned: C{bool}
+        :type       assigned: ``bool``
 
-        @keyword    location: filter IP addresses by location
-        @type       location: L{NodeLocation}
+        :keyword    location: filter IP addresses by location
+        :type       location: :class:`NodeLocation`
 
-        @rtype: C{list} of L{GoGridIpAddress}
+        :rtype: ``list`` of :class:`GoGridIpAddress`
         """
 
         params = {}

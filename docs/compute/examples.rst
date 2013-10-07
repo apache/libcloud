@@ -93,6 +93,17 @@ supported providers and provider constants, see
 .. literalinclude:: /examples/compute/create_ec2_node_custom_ami.py
    :language: python
 
+Create EC2 node using an IAM Profile
+------------------------------------
+
+.. note::
+
+    This example assumes the IAM profile already exists. If the key pair
+    doesn't exist yet, you must create it manually.
+
+.. literalinclude:: /examples/compute/create_ec2_node_iam.py
+   :language: python
+
 Create a node on a CloudStack provider using a provided key pair and security groups
 ------------------------------------------------------------------------------------
 
@@ -115,4 +126,16 @@ Create flaoting IP and attach it to a node using a local OpenStack provider
 This example demonstrates how to use OpenStack's floating IPs.
 
 .. literalinclude:: /examples/compute/openstack_floating_ips.py
+   :language: python
+
+Create an IBM SCE Windows node using generic provider
+-----------------------------------------------------
+
+.. note::
+
+    ex_configurationData is the key component of this example.
+
+This example shows how to create a Windows node using IBM SmartCloud Enterpiese.
+
+.. literalinclude:: /examples/compute/create_ibm_sce_windows_node.py
    :language: python

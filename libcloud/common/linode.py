@@ -80,8 +80,8 @@ class LinodeResponse(JsonResponse):
     def __init__(self, response, connection):
         """Instantiate a LinodeResponse from the HTTP response
 
-        @keyword response: The raw response returned by urllib
-        @return: parsed L{LinodeResponse}"""
+        :keyword response: The raw response returned by urllib
+        :return: parsed :class:`LinodeResponse`"""
         self.body = self._decompress_response(response=response)
 
         if PY3:
@@ -107,7 +107,7 @@ class LinodeResponse(JsonResponse):
         If the response chokes the parser, action and data will be returned as
         None and errorarray will indicate an invalid JSON exception.
 
-        @return: C{list} of objects and C{list} of errors"""
+        :return: ``list`` of objects and ``list`` of errors"""
         js = super(LinodeResponse, self).parse_body()
 
         try:
@@ -134,14 +134,15 @@ class LinodeResponse(JsonResponse):
         The way we determine success is by the presence of an error in
         ERRORARRAY.  If one is there, we assume the whole request failed.
 
-        @return: C{bool} indicating a successful request"""
+        :return: ``bool`` indicating a successful request"""
         return len(self.errors) == 0
 
     def _make_excp(self, error):
         """Convert an API error to a LinodeException instance
 
-        @keyword error: JSON object containing C{ERRORCODE} and C{ERRORMESSAGE}
-        @type error: dict"""
+        :keyword error: JSON object containing ``ERRORCODE`` and
+        ``ERRORMESSAGE``
+        :type error: dict"""
         if "ERRORCODE" not in error or "ERRORMESSAGE" not in error:
             return None
         if error["ERRORCODE"] == 4:
@@ -163,7 +164,7 @@ class LinodeConnection(ConnectionKey):
         """
         Add parameters that are necessary for every request
 
-        This method adds C{api_key} and C{api_responseFormat} to
+        This method adds ``api_key`` and ``api_responseFormat`` to
         the request.
         """
         params["api_key"] = self.key

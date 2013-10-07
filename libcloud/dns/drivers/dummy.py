@@ -35,13 +35,13 @@ class DummyDNSDriver(DNSDriver):
 
     def __init__(self, api_key, api_secret):
         """
-        @param    api_key:    API key or username to used (required)
-        @type     api_key:    C{str}
+        :param    api_key:    API key or username to used (required)
+        :type     api_key:    ``str``
 
-        @param    api_secret: Secret password to be used (required)
-        @type     api_secret: C{str}
+        :param    api_secret: Secret password to be used (required)
+        :type     api_secret: ``str``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         self._zones = {}
 
@@ -49,9 +49,9 @@ class DummyDNSDriver(DNSDriver):
         """
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> driver.list_record_types()
-        [0]
+        ['A']
 
-        @inherits: L{DNSDriver.list_record_types}
+        @inherits: :class:`DNSDriver.list_record_types`
         """
         return [RecordType.A]
 
@@ -61,7 +61,7 @@ class DummyDNSDriver(DNSDriver):
         >>> driver.list_zones()
         []
 
-        @inherits: L{DNSDriver.list_zones}
+        @inherits: :class:`DNSDriver.list_zones`
         """
 
         return [zone['zone'] for zone in list(self._zones.values())]
@@ -88,7 +88,7 @@ class DummyDNSDriver(DNSDriver):
         Traceback (most recent call last):
         ZoneDoesNotExistError:
 
-        @inherits: L{DNSDriver.get_zone}
+        @inherits: :class:`DNSDriver.get_zone`
         """
 
         if zone_id not in self._zones:
@@ -105,7 +105,7 @@ class DummyDNSDriver(DNSDriver):
         Traceback (most recent call last):
         ZoneDoesNotExistError:
 
-        @inherits: L{DNSDriver.get_record}
+        @inherits: :class:`DNSDriver.get_record`
         """
 
         self.get_zone(zone_id=zone_id)
@@ -130,7 +130,7 @@ class DummyDNSDriver(DNSDriver):
         Traceback (most recent call last):
         ZoneAlreadyExistsError:
 
-        @inherits: L{DNSDriver.create_zone}
+        @inherits: :class:`DNSDriver.create_zone`
         """
 
         id = 'id-%s' % (domain)
@@ -159,7 +159,7 @@ class DummyDNSDriver(DNSDriver):
         Traceback (most recent call last):
         RecordAlreadyExistsError:
 
-        @inherits: L{DNSDriver.create_record}
+        @inherits: :class:`DNSDriver.create_record`
         """
         id = 'id-%s' % (name)
 
@@ -185,7 +185,7 @@ class DummyDNSDriver(DNSDriver):
         Traceback (most recent call last):
         ZoneDoesNotExistError:
 
-        @inherits: L{DNSDriver.delete_zone}
+        @inherits: :class:`DNSDriver.delete_zone`
         """
         self.get_zone(zone_id=zone.id)
 
@@ -205,7 +205,7 @@ class DummyDNSDriver(DNSDriver):
         Traceback (most recent call last):
         RecordDoesNotExistError:
 
-        @inherits: L{DNSDriver.delete_record}
+        @inherits: :class:`DNSDriver.delete_record`
         """
         self.get_record(zone_id=record.zone.id, record_id=record.id)
 

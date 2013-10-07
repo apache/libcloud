@@ -32,15 +32,15 @@ class Deployment(object):
 
     def run(self, node, client):
         """
-        Runs this deployment task on C{node} using the C{client} provided.
+        Runs this deployment task on node using the client provided.
 
-        @type node: L{Node}
-        @keyword node: Node to operate one
+        :type node: :class:`Node`
+        :keyword node: Node to operate one
 
-        @type client: L{BaseSSHClient}
-        @keyword client: Connected SSH client to use.
+        :type client: :class:`BaseSSHClient`
+        :keyword client: Connected SSH client to use.
 
-        @return: L{Node}
+        :return: :class:`Node`
         """
         raise NotImplementedError(
             'run not implemented for this deployment')
@@ -64,8 +64,8 @@ class SSHKeyDeployment(Deployment):
 
     def __init__(self, key):
         """
-        @type key: C{str} or C{File} object
-        @keyword key: Contents of the public key write or a file object which
+        :type key: ``str`` or :class:`File` object
+        :keyword key: Contents of the public key write or a file object which
                       can be read.
         """
         self.key = self._get_string_value(argument_name='key',
@@ -73,9 +73,9 @@ class SSHKeyDeployment(Deployment):
 
     def run(self, node, client):
         """
-        Installs SSH key into C{.ssh/authorized_keys}
+        Installs SSH key into ``.ssh/authorized_keys``
 
-        See also L{Deployment.run}
+        See also :class:`Deployment.run`
         """
         client.put(".ssh/authorized_keys", contents=self.key, mode='a')
         return node
@@ -88,11 +88,11 @@ class FileDeployment(Deployment):
 
     def __init__(self, source, target):
         """
-        @type source: C{str}
-        @keyword source: Local path of file to be installed
+        :type source: ``str``
+        :keyword source: Local path of file to be installed
 
-        @type target: C{str}
-        @keyword target: Path to install file on node
+        :type target: ``str``
+        :keyword target: Path to install file on node
         """
         self.source = source
         self.target = target
@@ -101,7 +101,7 @@ class FileDeployment(Deployment):
         """
         Upload the file, retaining permissions.
 
-        See also L{Deployment.run}
+        See also :class:`Deployment.run`
         """
         perms = int(oct(os.stat(self.source).st_mode)[4:], 8)
 
@@ -127,19 +127,19 @@ class ScriptDeployment(Deployment):
 
     def __init__(self, script, args=None, name=None, delete=False):
         """
-        @type script: C{str}
-        @keyword script: Contents of the script to run.
+        :type script: ``str``
+        :keyword script: Contents of the script to run.
 
-        @type args: C{list}
-        @keyword args: Optional command line arguments which get passed to the
+        :type args: ``list``
+        :keyword args: Optional command line arguments which get passed to the
                        deployment script file.
 
-        @type name: C{str}
-        @keyword name: Name of the script to upload it as, if not specified,
+        :type name: ``str``
+        :keyword name: Name of the script to upload it as, if not specified,
                        a random name will be choosen.
 
-        @type delete: C{bool}
-        @keyword delete: Whether to delete the script on completion.
+        :type delete: ``bool``
+        :keyword delete: Whether to delete the script on completion.
         """
         script = self._get_string_value(argument_name='script',
                                         argument_value=script)
@@ -163,7 +163,7 @@ class ScriptDeployment(Deployment):
         """
         Uploads the shell script and then executes it.
 
-        See also L{Deployment.run}
+        See also :class:`Deployment.run`
         """
         file_path = client.put(path=self.name, chmod=int('755', 8),
                                contents=self.script)
@@ -200,20 +200,20 @@ class ScriptFileDeployment(ScriptDeployment):
 
     def __init__(self, script_file, args=None, name=None, delete=False):
         """
-        @type script_file: C{str}
-        @keyword script_file: Path to a file containing the script to run.
+        :type script_file: ``str``
+        :keyword script_file: Path to a file containing the script to run.
 
-        @type args: C{list}
-        @keyword args: Optional command line arguments which get passed to the
+        :type args: ``list``
+        :keyword args: Optional command line arguments which get passed to the
                        deployment script file.
 
 
-        @type name: C{str}
-        @keyword name: Name of the script to upload it as, if not specified,
+        :type name: ``str``
+        :keyword name: Name of the script to upload it as, if not specified,
                        a random name will be choosen.
 
-        @type delete: C{bool}
-        @keyword delete: Whether to delete the script on completion.
+        :type delete: ``bool``
+        :keyword delete: Whether to delete the script on completion.
         """
         with open(script_file, 'rb') as fp:
             content = fp.read()
@@ -233,8 +233,8 @@ class MultiStepDeployment(Deployment):
     """
     def __init__(self, add=None):
         """
-        @type add: C{list}
-        @keyword add: Deployment steps to add.
+        :type add: ``list``
+        :keyword add: Deployment steps to add.
         """
         self.steps = []
         self.add(add)
@@ -243,8 +243,8 @@ class MultiStepDeployment(Deployment):
         """
         Add a deployment to this chain.
 
-        @type add: Single L{Deployment} or a C{list} of L{Deployment}
-        @keyword add: Adds this deployment to the others already in this
+        :type add: Single :class:`Deployment` or a ``list`` of :class:`Deployment`
+        :keyword add: Adds this deployment to the others already in this
         object.
         """
         if add is not None:
@@ -255,7 +255,7 @@ class MultiStepDeployment(Deployment):
         """
         Run each deployment that has been added.
 
-        See also L{Deployment.run}
+        See also :class:`Deployment.run`
         """
         for s in self.steps:
             node = s.run(node, client)

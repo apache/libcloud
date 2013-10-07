@@ -355,11 +355,11 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         """
         Build a FQDN from a domain and record name.
 
-        @param domain: Domain name.
-        @type domain: C{str}
+        :param domain: Domain name.
+        :type domain: ``str``
 
-        @param name: Record name.
-        @type name: C{str}
+        :param name: Record name.
+        :type name: ``str``
         """
         if name:
             name = '%s.%s' % (name, domain)
@@ -372,11 +372,11 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         """
         Strip domain portion from the record name.
 
-        @param domain: Domain name.
-        @type domain: C{str}
+        :param domain: Domain name.
+        :type domain: ``str``
 
-        @param name: Full record name (fqdn).
-        @type name: C{str}
+        :param name: Full record name (fqdn).
+        :type name: ``str``
         """
         name = name.replace('.%s' % (domain), '')
         return name

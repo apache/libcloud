@@ -126,13 +126,13 @@ class VPSNetNodeDriver(NodeDriver):
     def create_node(self, name, image, size, **kwargs):
         """Create a new VPS.net node
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_backups_enabled: Enable automatic backups
-        @type       ex_backups_enabled: C{bool}
+        :keyword    ex_backups_enabled: Enable automatic backups
+        :type       ex_backups_enabled: ``bool``
 
-        @keyword    ex_fqdn:   Fully Qualified domain of the node
-        @type       ex_fqdn:   C{str}
+        :keyword    ex_fqdn:   Fully Qualified domain of the node
+        :type       ex_fqdn:   ``str``
         """
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':

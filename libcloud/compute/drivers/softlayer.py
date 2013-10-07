@@ -239,24 +239,24 @@ class SoftLayerNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new SoftLayer node
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_domain: e.g. libcloud.org
-        @type       ex_domain: C{str}
-        @keyword    ex_cpus: e.g. 2
-        @type       ex_cpus: C{int}
-        @keyword    ex_disk: e.g. 100
-        @type       ex_disk: C{int}
-        @keyword    ex_ram: e.g. 2048
-        @type       ex_ram: C{int}
-        @keyword    ex_bandwidth: e.g. 100
-        @type       ex_bandwidth: C{int}
-        @keyword    ex_local_disk: e.g. True
-        @type       ex_local_disk: C{bool}
-        @keyword    ex_datacenter: e.g. Dal05
-        @type       ex_datacenter: C{str}
-        @keyword    ex_os: e.g. UBUNTU_LATEST
-        @type       ex_os: C{str}
+        :keyword    ex_domain: e.g. libcloud.org
+        :type       ex_domain: ``str``
+        :keyword    ex_cpus: e.g. 2
+        :type       ex_cpus: ``int``
+        :keyword    ex_disk: e.g. 100
+        :type       ex_disk: ``int``
+        :keyword    ex_ram: e.g. 2048
+        :type       ex_ram: ``int``
+        :keyword    ex_bandwidth: e.g. 100
+        :type       ex_bandwidth: ``int``
+        :keyword    ex_local_disk: e.g. True
+        :type       ex_local_disk: ``bool``
+        :keyword    ex_datacenter: e.g. Dal05
+        :type       ex_datacenter: ``str``
+        :keyword    ex_os: e.g. UBUNTU_LATEST
+        :type       ex_os: ``str``
         """
         name = kwargs['name']
         os = 'DEBIAN_LATEST'

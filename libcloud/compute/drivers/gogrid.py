@@ -105,7 +105,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     def __init__(self, *args, **kwargs):
         """
-        @inherits: L{NodeDriver.__init__}
+        @inherits: :class:`NodeDriver.__init__`
         """
         super(GoGridNodeDriver, self).__init__(*args, **kwargs)
 
@@ -170,8 +170,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     def list_nodes(self):
         """
-        @inherits: L{NodeDriver.list_nodes}
-        @rtype: C{list} of L{GoGridNode}
+        @inherits: :class:`NodeDriver.list_nodes`
+        :rtype: ``list`` of :class:`GoGridNode`
         """
         passwords_map = {}
 
@@ -193,8 +193,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     def reboot_node(self, node):
         """
-        @inherits: L{NodeDriver.reboot_node}
-        @type node: L{GoGridNode}
+        @inherits: :class:`NodeDriver.reboot_node`
+        :type node: :class:`GoGridNode`
         """
         id = node.id
         power = 'restart'
@@ -205,8 +205,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
     def destroy_node(self, node):
         """
-        @inherits: L{NodeDriver.reboot_node}
-        @type node: L{GoGridNode}
+        @inherits: :class:`NodeDriver.reboot_node`
+        :type node: :class:`GoGridNode`
         """
         id = node.id
         res = self._server_delete(id)
@@ -263,24 +263,24 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         creation.
 
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        :keyword    name:   String with a name for this new node (required)
+        :type       name:   ``str``
 
-        @keyword    size:   The size of resources allocated to this node .
+        :keyword    size:   The size of resources allocated to this node .
                             (required)
-        @type       size:   L{NodeSize}
+        :type       size:   :class:`NodeSize`
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage`
 
-        @keyword    ex_description: Description of a Node
-        @type       ex_description: C{str}
+        :keyword    ex_description: Description of a Node
+        :type       ex_description: ``str``
 
-        @keyword    ex_ip: Public IP address to use for a Node. If not
+        :keyword    ex_ip: Public IP address to use for a Node. If not
             specified, first available IP address will be picked
-        @type       ex_ip: C{str}
+        :type       ex_ip: ``str``
 
-        @rtype: L{GoGridNode}
+        :rtype: :class:`GoGridNode`
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -305,16 +305,16 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def create_node(self, **kwargs):
         """Create a new GoGird node
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_description: Description of a Node
-        @type       ex_description: C{str}
+        :keyword    ex_description: Description of a Node
+        :type       ex_description: ``str``
 
-        @keyword    ex_ip: Public IP address to use for a Node. If not
+        :keyword    ex_ip: Public IP address to use for a Node. If not
                     specified, first available IP address will be picked
-        @type       ex_ip: C{str}
+        :type       ex_ip: ``str``
 
-        @rtype: L{GoGridNode}
+        :rtype: :class:`GoGridNode`
         """
         node = self.ex_create_node_nowait(**kwargs)
 
@@ -347,13 +347,13 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         http://wiki.gogrid.com/wiki/index.php/MyGSI
 
-        @keyword    node: node to use as a base for image
-        @type       node: L{GoGridNode}
+        :keyword    node: node to use as a base for image
+        :type       node: :class:`GoGridNode`
 
-        @keyword    name: name for new image
-        @type       name: C{str}
+        :keyword    name: name for new image
+        :type       name: ``str``
 
-        @rtype: L{NodeImage}
+        :rtype: :class:`NodeImage`
         """
         params = {'server': node.id,
                   'friendlyName': name}
@@ -365,16 +365,16 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def ex_edit_node(self, **kwargs):
         """Change attributes of a node.
 
-        @keyword    node: node to be edited (required)
-        @type       node: L{GoGridNode}
+        :keyword    node: node to be edited (required)
+        :type       node: :class:`GoGridNode`
 
-        @keyword    size: new size of a node (required)
-        @type       size: L{NodeSize}
+        :keyword    size: new size of a node (required)
+        :type       size: :class:`NodeSize`
 
-        @keyword    ex_description: new description of a node
-        @type       ex_description: C{str}
+        :keyword    ex_description: new description of a node
+        :type       ex_description: ``str``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
         node = kwargs['node']
         size = kwargs['size']
@@ -393,19 +393,19 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def ex_edit_image(self, **kwargs):
         """Edit metadata of a server image.
 
-        @keyword    image: image to be edited (required)
-        @type       image: L{NodeImage}
+        :keyword    image: image to be edited (required)
+        :type       image: :class:`NodeImage`
 
-        @keyword    public: should be the image public (required)
-        @type       public: C{bool}
+        :keyword    public: should be the image public (required)
+        :type       public: ``bool``
 
-        @keyword    ex_description: description of the image (optional)
-        @type       ex_description: C{str}
+        :keyword    ex_description: description of the image (optional)
+        :type       ex_description: ``str``
 
-        @keyword    name: name of the image
-        @type       name C{str}
+        :keyword    name: name of the image
+        :type       name ``str``
 
-        @rtype: L{NodeImage}
+        :rtype: :class:`NodeImage`
         """
 
         image = kwargs['image']
@@ -429,22 +429,22 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
         """Return list of IP addresses assigned to
         the account.
 
-        @keyword    public: set to True to list only
+        :keyword    public: set to True to list only
                     public IPs or False to list only
                     private IPs. Set to None or not specify
                     at all not to filter by type
-        @type       public: C{bool}
+        :type       public: ``bool``
 
-        @keyword    assigned: set to True to list only addresses
+        :keyword    assigned: set to True to list only addresses
                     assigned to servers, False to list unassigned
                     addresses and set to None or don't set at all
                     not no filter by state
-        @type       assigned: C{bool}
+        :type       assigned: ``bool``
 
-        @keyword    location: filter IP addresses by location
-        @type       location: L{NodeLocation}
+        :keyword    location: filter IP addresses by location
+        :type       location: :class:`NodeLocation`
 
-        @rtype: C{list} of L{GoGridIpAddress}
+        :rtype: ``list`` of :class:`GoGridIpAddress`
         """
 
         params = {}

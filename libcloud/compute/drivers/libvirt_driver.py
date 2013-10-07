@@ -49,10 +49,10 @@ class LibvirtNodeDriver(NodeDriver):
 
     def __init__(self, uri):
         """
-        @param  uri: URI (required)
-        @type   uri: C{str}
+        :param  uri: URI (required)
+        :type   uri: ``str``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
@@ -98,10 +98,10 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Start a stopped node.
 
-        @param  node: Node which should be used
-        @type   node: L{Node}
+        :param  node: Node which should be used
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         domain = self._get_domain_for_node(node=node)
         return domain.create() == 0
@@ -110,10 +110,10 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Shutdown a running node.
 
-        @param  node: Node which should be used
-        @type   node: L{Node}
+        :param  node: Node which should be used
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         domain = self._get_domain_for_node(node=node)
         return domain.shutdown() == 0
@@ -122,10 +122,10 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Suspend a running node.
 
-        @param  node: Node which should be used
-        @type   node: L{Node}
+        :param  node: Node which should be used
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         domain = self._get_domain_for_node(node=node)
         return domain.suspend() == 0
@@ -134,10 +134,10 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Resume a suspended node.
 
-        @param  node: Node which should be used
-        @type   node: L{Node}
+        :param  node: Node which should be used
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0

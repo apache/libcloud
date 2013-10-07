@@ -141,7 +141,7 @@ class SlicehostNodeDriver(NodeDriver):
               <error>Permission denied</error>
             </errors>
 
-        @inherits: L{NodeDriver.destroy_node}
+        @inherits: :class:`NodeDriver.destroy_node`
         """
         uri = '/slices/%s/destroy.xml' % (node.id)
         self.connection.request(uri, method='PUT')

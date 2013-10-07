@@ -934,5 +934,22 @@ class AzureBlobsTests(unittest.TestCase):
         result = self.driver.delete_object(obj=obj)
         self.assertTrue(result)
 
+    def test_storage_driver_host(self):
+        # Non regression tests for issue LIBCLOUD-399 dealing with the bad
+        # management of the connectionCls.host class attribute
+        driver1 = self.driver_type('fakeaccount1', 'deadbeafcafebabe==')
+        driver2 = self.driver_type('fakeaccount2', 'deadbeafcafebabe==')
+        driver3 = self.driver_type('fakeaccount3', 'deadbeafcafebabe==',
+                                   host='test.foo.bar.com')
+
+        host1 = driver1.connection.host
+        host2 = driver2.connection.host
+        host3 = driver3.connection.host
+
+        self.assertEquals(host1, 'fakeaccount1.blob.core.windows.net')
+        self.assertEquals(host2, 'fakeaccount2.blob.core.windows.net')
+        self.assertEquals(host3, 'test.foo.bar.com')
+
+
 if __name__ == '__main__':
     sys.exit(unittest.main())

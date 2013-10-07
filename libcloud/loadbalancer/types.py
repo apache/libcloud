@@ -39,14 +39,15 @@ class Provider(object):
     BRIGHTBOX = 'brightbox'
     ELB = 'elb'
     CLOUDSTACK = 'cloudstack'
+    GCE = 'gce'
 
 
 class State(object):
     """
     Standard states for a loadbalancer
 
-    @cvar RUNNING: loadbalancer is running and ready to use
-    @cvar UNKNOWN: loabalancer state is unknown
+    :cvar RUNNING: loadbalancer is running and ready to use
+    :cvar UNKNOWN: loabalancer state is unknown
     """
 
     RUNNING = 0

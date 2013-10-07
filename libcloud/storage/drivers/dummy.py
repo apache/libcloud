@@ -96,11 +96,11 @@ class DummyStorageDriver(StorageDriver):
 
     def __init__(self, api_key, api_secret):
         """
-        @param    api_key:    API key or username to used (required)
-        @type     api_key:    C{str}
-        @param    api_secret: Secret password to be used (required)
-        @type     api_secret: C{str}
-        @rtype: C{None}
+        :param    api_key:    API key or username to used (required)
+        :type     api_key:    ``str``
+        :param    api_secret: Secret password to be used (required)
+        :type     api_secret: ``str``
+        :rtype: ``None``
         """
         self._containers = {}
 
@@ -124,7 +124,7 @@ class DummyStorageDriver(StorageDriver):
         >>> driver.get_meta_data()['bytes_used']
         50
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
 
         container_count = len(self._containers)
@@ -162,7 +162,7 @@ class DummyStorageDriver(StorageDriver):
         >>> sorted([container.name for container in container_list])
         ['test container 1', 'test container 2']
 
-        @inherits: L{StorageDriver.iterate_containers}
+        @inherits: :class:`StorageDriver.iterate_containers`
         """
 
         for container in list(self._containers.values()):
@@ -187,7 +187,7 @@ class DummyStorageDriver(StorageDriver):
         >>> driver.get_container('test container 1')
         <Container: name=test container 1, provider=Dummy Storage Provider>
 
-        @inherits: L{StorageDriver.get_container}
+        @inherits: :class:`StorageDriver.get_container`
         """
 
         if container_name not in self._containers:
@@ -210,7 +210,7 @@ class DummyStorageDriver(StorageDriver):
         >>> container.get_cdn_url()
         'http://www.test.com/container/test_container_1'
 
-        @inherits: L{StorageDriver.get_container_cdn_url}
+        @inherits: :class:`StorageDriver.get_container_cdn_url`
         """
 
         if container.name not in self._containers:
@@ -237,7 +237,7 @@ class DummyStorageDriver(StorageDriver):
         >>> obj
         <Object: name=test object, size=50, hash=None, provider=Dummy Storage Provider ...>
 
-        @inherits: L{StorageDriver.get_object}
+        @inherits: :class:`StorageDriver.get_object`
         """
 
         self.get_container(container_name)
@@ -261,7 +261,7 @@ class DummyStorageDriver(StorageDriver):
         >>> obj.get_cdn_url()
         'http://www.test.com/object/test_object_5'
 
-        @inherits: L{StorageDriver.get_object_cdn_url}
+        @inherits: :class:`StorageDriver.get_object_cdn_url`
         """
 
         container_name = obj.container.name
@@ -283,7 +283,7 @@ class DummyStorageDriver(StorageDriver):
         Traceback (most recent call last):
         ContainerAlreadyExistsError:
 
-        @inherits: L{StorageDriver.create_container}
+        @inherits: :class:`StorageDriver.create_container`
         """
 
         if container_name in self._containers:
@@ -325,7 +325,7 @@ class DummyStorageDriver(StorageDriver):
         Traceback (most recent call last):
         ContainerIsNotEmptyError:
 
-        @inherits: L{StorageDriver.delete_container}
+        @inherits: :class:`StorageDriver.delete_container`
         """
 
         container_name = container.name
@@ -362,7 +362,7 @@ class DummyStorageDriver(StorageDriver):
         >>> stream #doctest: +ELLIPSIS
         <...closed...>
 
-        @inherits: L{StorageDriver.download_object_as_stream}
+        @inherits: :class:`StorageDriver.download_object_as_stream`
         """
 
         return DummyFileObject()
@@ -384,9 +384,9 @@ class DummyStorageDriver(StorageDriver):
         >>> obj.size == file_size
         True
 
-        @inherits: L{StorageDriver.upload_object}
-        @param file_hash: File hash
-        @type file_hash: C{str}
+        @inherits: :class:`StorageDriver.upload_object`
+        :param file_hash: File hash
+        :type file_hash: ``str``
         """
 
         if not os.path.exists(file_path):
@@ -408,7 +408,7 @@ class DummyStorageDriver(StorageDriver):
         >>> obj #doctest: +ELLIPSIS
         <Object: name=test object, size=50, ...>
 
-        @inherits: L{StorageDriver.upload_object_via_stream}
+        @inherits: :class:`StorageDriver.upload_object_via_stream`
         """
 
         size = len(iterator)
@@ -433,7 +433,7 @@ class DummyStorageDriver(StorageDriver):
         Traceback (most recent call last):
         ObjectDoesNotExistError:
 
-        @inherits: L{StorageDriver.delete_object}
+        @inherits: :class:`StorageDriver.delete_object`
         """
 
         container_name = obj.container.name

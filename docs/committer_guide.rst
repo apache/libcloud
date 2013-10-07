@@ -150,4 +150,195 @@ root of the main code repository.
 
 If needed, use Apache URL shortening service - http://s.apache.org/
 
+Mailing list email templates
+----------------------------
+
+This section includes email templates which can be used when sending out
+official communication to the mailing lists.
+
+Release voting thread template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This template should be used when starting a voting thread for a new release.
+
+Subject::
+
+    [VOTE] Release Apache Libcloud <version>
+
+Body::
+
+    This is a voting thread for Libcloud <version>.
+
+    <short description and highlights of this release>
+
+    Full changelog can be found at <link to the CHANGES file for this release>.
+
+    Release artifacts can be found at <link to your Apache space where a release
+    artifacts can be found>.
+
+    Please test the release and post your votes.
+
+    +/- 1
+    [  ]  Release Apache Libcloud <version>
+
+    Vote will be opened until <date, it should be at minimum today + 3 days> (or longer, if needed).
+
+    Thanks,
+    <name>
+
+For example:
+
+Subject::
+
+    [VOTE] Release Apache Libcloud 0.13.2
+
+Body::
+
+    This is a voting thread for Libcloud 0.13.2.
+
+    This is another primarily a bug-fix release. Previous release included a fix for the Content-Length bug which didn't fully fix the original issue. It missed out "raw" requests which are fixed in this release (LIBCLOUD-396).
+
+    This bug could manifest itself while uploading a file with some of the storage providers.
+
+    Besides this bug fix, it includes a couple of other smaller bug fixes and changes. Full change log
+    can be found at https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=b7747f777afdeb63bcacf496d1d034f1b3287c31;hb=c4b3daae946049652a500a8515929b4cbf14a6b4
+
+    Release artifacts can be found at http://people.apache.org/~tomaz/libcloud/.
+
+    Please test the release and post your votes.
+
+    +/- 1
+    [  ]  Release Apache Libcloud 0.13.2
+
+    Vote will be opened until September 18th, 2013 (or longer, if needed).
+
+    Thanks,
+    Tomaz
+
+Release announcement
+~~~~~~~~~~~~~~~~~~~~
+
+This template should be used when sending out a release announcement.
+
+Subject::
+
+    [ANNOUNCE] Apache Libcloud 0.13.1 release
+
+Body::
+
+    Libcloud is a Python library that abstracts away the differences among
+    multiple cloud provider APIs. It allows users to manage cloud services
+    (servers, storage, loadbalancers, DNS) offered by many different providers
+    through a single, unified and easy to use API.
+
+    We are pleased to announce the release of Libcloud <version>!
+
+    <short description of the release which should include release highlights>
+
+    Full change log can be found at <link to CHANGES file for this release>
+
+    Download
+
+    Libcloud <version> can be downloaded from http://libcloud.apache.org/downloads.html
+    or installed using pip:
+
+    pip install apache-libcloud
+
+    It is possible that the file hasn't been synced to all the mirrors yet. If this
+    is the case, please use the main Apache mirror - http://www.apache.org/dist/libcloud.
+
+    Upgrading
+
+    If you have installed Libcloud using pip you can also use it to upgrade it:
+
+    pip install --upgrade apache-libcloud
+
+    Upgrade notes
+
+    A page which describes backward incompatible or semi-incompatible
+    changes and how to preserve the old behavior when this is possible
+    can be found at http://libcloud.apache.org/upgrade-notes.html.
+
+    Documentation
+
+    API documentation can be found at http://libcloud.apache.org/apidocs/<version>/.
+
+    We also have a new Sphinx documentation which can be found at https://libcloud.apache.org/docs/.
+
+    Bugs / Issues
+
+    If you find any bug or issue, please report it on our issue tracker
+    <https://issues.apache.org/jira/browse/LIBCLOUD>.
+    Don't forget to attach an example and / or test which reproduces your problem.
+
+    Thanks
+
+    Thanks to everyone who contributed and made this release possible! Full list of
+    people who contributed to this release can be found in the CHANGES file
+    <link to the changes file for this release>.
+
+For example:
+
+Subject::
+
+    [ANNOUNCE] Apache Libcloud 0.13.1 release
+
+Body::
+
+    Libcloud is a Python library that abstracts away the differences among
+    multiple cloud provider APIs. It allows users to manage cloud services
+    (servers, storage, loadbalancers, DNS) offered by many different providers
+    through a single, unified and easy to use API.
+
+    We are pleased to announce the release of Libcloud 0.13.1!
+
+    This is a bug-fix only release. Among some smaller bugs it also fixes
+    Content-Length regression which broke create and update operations in
+    the Bluebox Compute and Azure Storage driver (LIBCLOUD-362, LIBCLOUD-3901).
+
+    Full change log can be found at <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=ca90c84e296ca82e2206eb86ed7364c588aad503;hb=602b6a7a27dca6990a38eb887e1d6615826387d5>
+
+    Download
+
+    Libcloud 0.13.1 can be downloaded from http://libcloud.apache.org/downloads.html
+    or installed using pip:
+
+    pip install apache-libcloud
+
+    It is possible that the file hasn't been synced to all the mirrors yet. If this
+    is the case, please use the main Apache mirror - http://www.apache.org/dist/libcloud.
+
+    Upgrading
+
+    If you have installed Libcloud using pip you can also use it to upgrade it:
+
+    pip install --upgrade apache-libcloud
+
+    Upgrade notes
+
+    A page which describes backward incompatible or semi-incompatible
+    changes and how to preserve the old behavior when this is possible
+    can be found at http://libcloud.apache.org/upgrade-notes.html.
+
+    Documentation
+
+    API documentation can be found at http://libcloud.apache.org/apidocs/0.13.1/.
+
+    We also have a new Sphinx documentation which can be found at https://libcloud.apache.org/docs/.
+    Keep in mind though, that this documentation reflects state in trunk which
+    includes some backward incompatible changes which aren't present in 0.13.1.
+    All the examples in the documentation which only work with trunk are clearly marked with a note.
+
+    Bugs / Issues
+
+    If you find any bug or issue, please report it on our issue tracker
+    <https://issues.apache.org/jira/browse/LIBCLOUD>.
+    Don't forget to attach an example and / or test which reproduces your problem.
+
+    Thanks
+
+    Thanks to everyone who contributed and made this release possible! Full list of
+    people who contributed to this release can be found in the CHANGES file
+    <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=ca90c84e296ca82e2206eb86ed7364c588aad503;hb=602b6a7a27dca6990a38eb887e1d6615826387d5>.
+
 .. _`PyPi release management page`: https://pypi.python.org/pypi?%3Aaction=pkg_edit&name=apache-libcloud

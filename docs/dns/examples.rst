@@ -28,3 +28,29 @@ example shows how to do that.
 
 .. literalinclude:: /examples/dns/create_record_with_priority.py
    :language: python
+
+Export Libcloud Zone to BIND zone format
+----------------------------------------
+
+.. note::
+
+    This functionality is only available in trunk.
+
+This example shows how to export Libcloud Zone to bind format.
+
+Keep in mind that generated bind zone file content doesn't contain ``SOA`` and
+``NS`` records. This should work fine if you just want to import this file
+using a DNS provider web interface, but if you want to use it with BIND you
+need to manually add those records.
+
+Printing the output
+~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/dns/export_zone_to_bind_format.py
+   :language: python
+
+Saving output into a file
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/dns/export_zone_to_bind_format_file.py
+   :language: python

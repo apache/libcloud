@@ -76,10 +76,10 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='us', **kwargs):
         """
-        @inherits:  L{NodeDriver.__init__}
+        @inherits:  :class:`NodeDriver.__init__`
 
-        @param region: Region ID which should be used
-        @type region: C{str}
+        :param region: Region ID which should be used
+        :type region: ``str``
         """
         if region not in ['us', 'uk']:
             raise ValueError('Invalid region: %s' % (region))
@@ -104,7 +104,7 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         Locations cannot be set or retrieved via the API, but currently
         there are two locations, DFW and ORD.
 
-        @inherits: L{OpenStack_1_0_NodeDriver.list_locations}
+        @inherits: :class:`OpenStack_1_0_NodeDriver.list_locations`
         """
         if self.region == 'us':
             locations = [NodeLocation(0, "Rackspace DFW1/ORD1", 'US', self)]
@@ -150,10 +150,10 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='dfw', **kwargs):
         """
-        @inherits:  L{NodeDriver.__init__}
+        @inherits:  :class:`NodeDriver.__init__`
 
-        @param region: ID of the region which should be used.
-        @type region: C{str}
+        :param region: ID of the region which should be used.
+        :type region: ``str``
         """
         valid_regions = ENDPOINT_ARGS_MAP.keys()
         if region not in valid_regions:

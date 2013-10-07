@@ -33,8 +33,8 @@ package installed to use this):
     - The key that you download is a PKCS12 key.  It needs to be converted to
       the PEM format.
     - Convert the key using OpenSSL (the default password is 'notasecret'):
-      C{openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
-      | openssl rsa -out PRIV.pem}
+      ``openssl pkcs12 -in YOURPRIVKEY.p12 -nodes -nocerts
+      | openssl rsa -out PRIV.pem``
     - Move the .pem file to a safe location.
     - To Authenticate, you will need to pass the Service Account's "Email
       address" in as the user_id and the path to the .pem file as the key.
@@ -71,13 +71,15 @@ import time
 import datetime
 import os
 import socket
+import sys
 
-from libcloud.utils.py3 import urlencode, urlparse, PY3
+from libcloud.utils.py3 import httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
-from libcloud.compute.types import (InvalidCredsError,
-                                    MalformedResponseError,
-                                    LibcloudError)
+from libcloud.common.types import (InvalidCredsError,
+                                   MalformedResponseError,
+                                   ProviderError,
+                                   LibcloudError)
 
 try:
     from Crypto.Hash import SHA256
@@ -101,8 +103,119 @@ class GoogleAuthError(LibcloudError):
         return repr(self.value)
 
 
-class GoogleResponse(JsonResponse):
+class GoogleBaseError(ProviderError):
+    def __init__(self, value, http_code, code, driver=None):
+        self.code = code
+        super(GoogleBaseError, self).__init__(value, http_code, driver)
+
+
+class JsonParseError(GoogleBaseError):
     pass
+
+
+class ResourceNotFoundError(GoogleBaseError):
+    pass
+
+
+class QuotaExceededError(GoogleBaseError):
+    pass
+
+
+class ResourceExistsError(GoogleBaseError):
+    pass
+
+
+class ResourceInUseError(GoogleBaseError):
+    pass
+
+
+class GoogleResponse(JsonResponse):
+    """
+    Google Base Response class.
+    """
+    def success(self):
+        """
+        Determine if the request was successful.
+
+        For the Google response class, tag all responses as successful and
+        raise appropriate Exceptions from parse_body.
+
+        :return: C{True}
+        """
+        return True
+
+    def _get_error(self, body):
+        """
+        Get the error code and message from a JSON response.
+
+        Return just the first error if there are multiple errors.
+
+        :param  body: The body of the JSON response dictionary
+        :type   body: ``dict``
+
+        :return:  Tuple containing error code and message
+        :rtype:   ``tuple`` of ``str`` or ``int``
+        """
+        if 'errors' in body['error']:
+            err = body['error']['errors'][0]
+        else:
+            err = body['error']
+
+        code = err.get('code')
+        message = err.get('message')
+        return (code, message)
+
+    def parse_body(self):
+        """
+        Parse the JSON response body, or raise exceptions as appropriate.
+
+        :return:  JSON dictionary
+        :rtype:   ``dict``
+        """
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
+
+        json_error = False
+        try:
+            body = json.loads(self.body)
+        except:
+            # If there is both a JSON parsing error and an unsuccessful http
+            # response (like a 404), we want to raise the http error and not
+            # the JSON one, so don't raise JsonParseError here.
+            body = self.body
+            json_error = True
+
+        if self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]:
+            if json_error:
+                raise JsonParseError(body, self.status, None)
+            elif 'error' in body:
+                (code, message) = self._get_error(body)
+                if code == 'QUOTA_EXCEEDED':
+                    raise QuotaExceededError(message, self.status, code)
+                elif code == 'RESOURCE_ALREADY_EXISTS':
+                    raise ResourceExistsError(message, self.status, code)
+                elif code.startswith('RESOURCE_IN_USE'):
+                    raise ResourceInUseError(message, self.status, code)
+                else:
+                    raise GoogleBaseError(message, self.status, code)
+            else:
+                return body
+
+        elif self.status == httplib.NOT_FOUND:
+            if (not json_error) and ('error' in body):
+                (code, message) = self._get_error(body)
+            else:
+                message = body
+                code = None
+            raise ResourceNotFoundError(message, self.status, code)
+
+        else:
+            if (not json_error) and ('error' in body):
+                (code, message) = self._get_error(body)
+            else:
+                message = body
+                code = None
+            raise GoogleBaseError(message, self.status, code)
 
 
 class GoogleBaseDriver(object):
@@ -124,27 +237,27 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
                  redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                  login_hint=None, **kwargs):
         """
-        @param  user_id: The email address (for service accounts) or Client ID
+        :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
-        @type   user_id: C{str}
+        :type   user_id: ``str``
 
-        @param  key: The RSA Key (for service accounts) or file path containing
+        :param  key: The RSA Key (for service accounts) or file path containing
                      key or Client Secret (for installed apps) to be used for
                      authentication.
-        @type   key: C{str}
+        :type   key: ``str``
 
-        @param  scope: A list of urls defining the scope of authentication
+        :param  scope: A list of urls defining the scope of authentication
                        to grant.
-        @type   scope: C{list}
+        :type   scope: ``list``
 
-        @keyword  redirect_uri: The Redirect URI for the authentication
+        :keyword  redirect_uri: The Redirect URI for the authentication
                                 request.  See Google OAUTH2 documentation for
                                 more info.
-        @type     redirect_uri: C{str}
+        :type     redirect_uri: ``str``
 
-        @keyword  login_hint: Login hint for authentication request.  Useful
+        :keyword  login_hint: Login hint for authentication request.  Useful
                               for Installed Application authentication.
-        @type     login_hint: C{str}
+        :type     login_hint: ``str``
         """
 
         self.scope = " ".join(scope)
@@ -165,12 +278,12 @@ class GoogleBaseAuthConnection(ConnectionUserAndKey):
         """
         Return an updated token from a token request body.
 
-        @param  request_body: A dictionary of values to send in the body of the
+        :param  request_body: A dictionary of values to send in the body of the
                               token request.
-        @type   request_body: C{dict}
+        :type   request_body: ``dict``
 
-        @return:  A dictionary with updated token information
-        @rtype:   C{dict}
+        :return:  A dictionary with updated token information
+        :rtype:   ``dict``
         """
         data = urlencode(request_body)
         now = self._now()
@@ -190,8 +303,8 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         Give the user a URL that they can visit to authenticate and obtain a
         code.  This method will ask for that code that the user can paste in.
 
-        @return:  Code supplied by the user after authenticating
-        @rtype:   C{str}
+        :return:  Code supplied by the user after authenticating
+        :rtype:   ``str``
         """
         auth_params = {'response_type': 'code',
                        'client_id': self.user_id,
@@ -217,8 +330,8 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         Get a new token. Generally used when no previous token exists or there
         is no refresh token
 
-        @return:  Dictionary containing token information
-        @rtype:   C{dict}
+        :return:  Dictionary containing token information
+        :rtype:   ``dict``
         """
         # Ask the user for a code
         code = self.get_code()
@@ -235,11 +348,11 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         """
         Use the refresh token supplied in the token info to get a new token.
 
-        @param  token_info: Dictionary containing current token information
-        @type   token_info: C{dict}
+        :param  token_info: Dictionary containing current token information
+        :type   token_info: ``dict``
 
-        @return:  A dictionary containing updated token information.
-        @rtype:   C{dict}
+        :return:  A dictionary containing updated token information.
+        :rtype:   ``dict``
         """
         if 'refresh_token' not in token_info:
             return self.get_new_token()
@@ -261,12 +374,12 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         Check to see if PyCrypto is available, and convert key file path into a
         key string if the key is in a file.
 
-        @param  user_id: Email address to be used for Service Account
+        :param  user_id: Email address to be used for Service Account
                 authentication.
-        @type   user_id: C{str}
+        :type   user_id: ``str``
 
-        @param  key: The RSA Key or path to file containing the key.
-        @type   key: C{str}
+        :param  key: The RSA Key or path to file containing the key.
+        :type   key: ``str``
         """
         if SHA256 is None:
             raise GoogleAuthError('PyCrypto library required for '
@@ -284,8 +397,8 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         """
         Get a new token using the email address and RSA Key.
 
-        @return:  Dictionary containing token information
-        @rtype:   C{dict}
+        :return:  Dictionary containing token information
+        :rtype:   ``dict``
         """
         # The header is always the same
         header = {'alg': 'RS256', 'typ': 'JWT'}
@@ -321,12 +434,12 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         Service Account authentication doesn't supply a "refresh token" so
         this simply gets a new token using the email address/key.
 
-        @param  token_info: Dictionary contining token information.
+        :param  token_info: Dictionary contining token information.
                             (Not used, but here for compatibility)
-        @type   token_info: C{dict}
+        :type   token_info: ``dict``
 
-        @return:  A dictionary containing updated token information.
-        @rtype:   C{dict}
+        :return:  A dictionary containing updated token information.
+        :rtype:   ``dict``
         """
         return self.get_new_token()
 
@@ -345,24 +458,24 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         Determine authentication type, set up appropriate authentication
         connection and get initial authentication information.
 
-        @param  user_id: The email address (for service accounts) or Client ID
+        :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
-        @type   user_id: C{str}
+        :type   user_id: ``str``
 
-        @param  key: The RSA Key (for service accounts) or file path containing
+        :param  key: The RSA Key (for service accounts) or file path containing
                      key or Client Secret (for installed apps) to be used for
                      authentication.
-        @type   key: C{str}
+        :type   key: ``str``
 
-        @keyword  auth_type: Accepted values are "SA" or "IA"
+        :keyword  auth_type: Accepted values are "SA" or "IA"
                              ("Service Account" or "Installed Application").
                              If not supplied, auth_type will be guessed based
                              on value of user_id.
-        @type     auth_type: C{str}
+        :type     auth_type: ``str``
 
-        @keyword  credential_file: Path to file for caching authentication
+        :keyword  credential_file: Path to file for caching authentication
                                    information.
-        @type     credential_file: C{str}
+        :type     credential_file: ``str``
         """
         self.credential_file = credential_file or '~/.gce_libcloud_auth'
 
@@ -395,12 +508,17 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
 
+        python_ver = '%s.%s.%s' % (sys.version_info[0], sys.version_info[1],
+                                   sys.version_info[2])
+        ver_platform = 'Python %s/%s' % (python_ver, sys.platform)
+        self.user_agent_append(ver_platform)
+
     def _now(self):
         return datetime.datetime.utcnow()
 
     def add_default_headers(self, headers):
         """
-        @inherits: L{Connection.add_default_headers}
+        @inherits: :class:`Connection.add_default_headers`
         """
         headers['Content-Type'] = "application/json"
         headers['Host'] = self.host
@@ -411,7 +529,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         Check to make sure that token hasn't expired.  If it has, get an
         updated token.  Also, add the token to the headers.
 
-        @inherits: L{Connection.pre_connect_hook}
+        @inherits: :class:`Connection.pre_connect_hook`
         """
         now = self._now()
         if self.token_expire_time < now:
@@ -430,7 +548,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
     def request(self, *args, **kwargs):
         """
-        @inherits: L{Connection.request}
+        @inherits: :class:`Connection.request`
         """
         # Adds some retry logic for the occasional
         # "Connection Reset by peer" error.
@@ -453,8 +571,8 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         Read credential file and return token information.
 
-        @return:  Token information dictionary, or None
-        @rtype:   C{dict} or C{None}
+        :return:  Token information dictionary, or None
+        :rtype:   ``dict`` or ``None``
         """
         token_info = None
         filename = os.path.realpath(os.path.expanduser(self.credential_file))
@@ -480,11 +598,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         """
         Determine if operation has completed based on response.
 
-        @param  response: JSON response
-        @type   response: I{responseCls}
+        :param  response: JSON response
+        :type   response: I{responseCls}
 
-        @return:  True if complete, False otherwise
-        @rtype:   C{bool}
+        :return:  True if complete, False otherwise
+        :rtype:   ``bool``
         """
         if response.object['status'] == 'DONE':
             return True
@@ -493,7 +611,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         """
-        @inherits: L{PollingConnection.get_poll_request_kwargs}
+        @inherits: :class:`PollingConnection.get_poll_request_kwargs`
         """
         return {'action': response.object['selfLink']}
 
@@ -506,11 +624,11 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
         the request.  Otherwise, it will append the base request_path to
         the action.
 
-        @param  action: The action to be called in the http request
-        @type   action: C{str}
+        :param  action: The action to be called in the http request
+        :type   action: ``str``
 
-        @return:  The modified request based on the action
-        @rtype:   C{str}
+        :return:  The modified request based on the action
+        :rtype:   ``str``
         """
         if action.startswith('https://'):
             u = urlparse.urlsplit(action)

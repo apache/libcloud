@@ -41,7 +41,13 @@ import sys
 try:
     import secrets
 except ImportError:
-    secrets = None
+    print('"demos/secrets.py" not found.\n\n'
+          'Please copy secrets.py-dist to secrets.py and update the GCE* '
+          'values with appropriate authentication information.\n'
+          'Additional information about setting these values can be found '
+          'in the docstring for:\n'
+          'libcloud/common/google.py\n')
+    sys.exit(1)
 
 # Add parent dir of this file's dir to sys.path (OS-agnostically)
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__),
@@ -58,7 +64,7 @@ MAX_NODES = 5
 DEMO_BASE_NAME = 'libcloud-demo'
 
 # Datacenter to create resources in
-DATACENTER = 'us-central1-a'
+DATACENTER = 'us-central2-a'
 
 # Clean up resources at the end (can be set to false in order to
 # inspect resources at the end of the run). Resources will be cleaned
@@ -68,10 +74,14 @@ CLEANUP = True
 args = getattr(secrets, 'GCE_PARAMS', ())
 kwargs = getattr(secrets, 'GCE_KEYWORD_PARAMS', {})
 
+# Add datacenter to kwargs for Python 2.5 compatibility
+kwargs = kwargs.copy()
+kwargs['datacenter'] = DATACENTER
+
 
 # ==== HELPER FUNCTIONS ====
 def get_gce_driver():
-    driver = get_driver(Provider.GCE)(*args, datacenter=DATACENTER, **kwargs)
+    driver = get_driver(Provider.GCE)(*args, **kwargs)
     return driver
 
 
@@ -79,11 +89,11 @@ def display(title, resource_list):
     """
     Display a list of resources.
 
-    @param  title: String to be printed at the heading of the list.
-    @type   title: C{str}
+    :param  title: String to be printed at the heading of the list.
+    :type   title: ``str``
 
-    @param  resource_list: List of resources to display
-    @type   resource_list: Any C{object} with a C{name} attribute
+    :param  resource_list: List of resources to display
+    :type   resource_list: Any ``object`` with a C{name} attribute
     """
     print('%s:' % title)
     for item in resource_list[:10]:
@@ -94,15 +104,15 @@ def clean_up(base_name, node_list=None, resource_list=None):
     """
     Destroy all resources that have a name beginning with 'base_name'.
 
-    @param  base_name: String with the first part of the name of resources
+    :param  base_name: String with the first part of the name of resources
                        to destroy
-    @type   base_name: C{str}
+    :type   base_name: ``str``
 
-    @keyword  node_list: List of nodes to consider for deletion
-    @type     node_list: C{list} of L{Node}
+    :keyword  node_list: List of nodes to consider for deletion
+    :type     node_list: ``list`` of :class:`Node`
 
-    @keyword  resource_list: List of resources to consider for deletion
-    @type     resource_list: C{list} of I{Resource Objects}
+    :keyword  resource_list: List of resources to consider for deletion
+    :type     resource_list: ``list`` of I{Resource Objects}
     """
     if node_list is None:
         node_list = []

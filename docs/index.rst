@@ -20,7 +20,7 @@ Resource you can manage with Libcloud are divided in the following categories:
 
 * :doc:`Cloud Servers and Block Storage </compute/index>` - services such as Amazon EC2 and
   RackSpace CloudServers
-* :doc:`Cloud Object Storage </storage/index>` - services such as Amazon S3 and
+* :doc:`Cloud Object Storage and CDN </storage/index>` - services such as Amazon S3 and
   Rackspace CloudFiles
 * :doc:`Load Balancers as a Service </loadbalancer/index>` - services such as Amazon Elastic Load Balancer and GoGrid LoadBalancers
 * :doc:`DNS as a Service </dns/index>` - services such as Amazon Route 53 and Zerigo
@@ -41,11 +41,13 @@ Main
     :maxdepth: 3
 
     getting_started
+    changelog
     supported_providers
     compute/index
     storage/index
     loadbalancer/index
     dns/index
+    upgrade_notes
     troubleshooting
     faq
     other/*
@@ -59,5 +61,14 @@ Developer Information
 
     developer_information
     development
+
+Committer Guide
+---------------
+
+.. toctree::
+    :glob:
+    :maxdepth: 3
+
+    committer_guide
 
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html

@@ -15,7 +15,6 @@
 
 import base64
 import hashlib
-import struct
 
 __all__ = [
     'get_pubkey_openssh_fingerprint',
@@ -24,7 +23,7 @@ __all__ = [
 ]
 
 try:
-    from Crypto.Util.asn1 import DerSequence, DerObject, DerNull
+    from Crypto.Util.asn1 import DerSequence, DerObject
     from Crypto.PublicKey.RSA import algorithmIdentifier, importKey
     pycrypto_available = True
 except ImportError:

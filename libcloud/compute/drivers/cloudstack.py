@@ -147,11 +147,11 @@ class CloudStackNetwork(object):
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     """Driver for the CloudStack API.
 
-    @cvar host: The host where the API can be reached.
-    @cvar path: The path where the API can be reached.
-    @cvar async_poll_frequency: How often (in seconds) to poll for async
+    :cvar host: The host where the API can be reached.
+    :cvar path: The path where the API can be reached.
+    :cvar async_poll_frequency: How often (in seconds) to poll for async
                                 job completion.
-    @type async_poll_frequency: C{int}"""
+    :type async_poll_frequency: ``int``"""
 
     name = 'CloudStack'
     api_name = 'cloudstack'
@@ -173,13 +173,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None, *args, **kwargs):
         """
-        @inherits: L{NodeDriver.__init__}
+        @inherits: :class:`NodeDriver.__init__`
 
-        @param    host: The host where the API can be reached. (required)
-        @type     host: C{str}
+        :param    host: The host where the API can be reached. (required)
+        :type     host: ``str``
 
-        @param    path: The host where the API can be reached. (required)
-        @type     path: C{str}
+        :param    path: The host where the API can be reached. (required)
+        :type     path: ``str``
         """
         host = host if host else self.host
 
@@ -218,7 +218,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def list_locations(self):
         """
-        @rtype C{list} of L{NodeLocation}
+        :rtype ``list`` of :class:`NodeLocation`
         """
         locs = self._sync_request('listZones')
         locations = []
@@ -228,8 +228,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def list_nodes(self):
         """
-        @inherits: L{NodeDriver.list_nodes}
-        @rtype: C{list} of L{CloudStackNode}
+        @inherits: :class:`NodeDriver.list_nodes`
+        :rtype: ``list`` of :class:`CloudStackNode`
         """
         vms = self._sync_request('listVirtualMachines')
         addrs = self._sync_request('listPublicIpAddresses')
@@ -321,7 +321,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def list_sizes(self, location=None):
         """
-        @rtype C{list} of L{NodeSize}
+        :rtype ``list`` of :class:`NodeSize`
         """
         szs = self._sync_request('listServiceOfferings')
         sizes = []
@@ -334,22 +334,22 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Create a new node
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_keyname:  Name of existing keypair
-        @type       ex_keyname:  C{str}
+        :keyword    ex_keyname:  Name of existing keypair
+        :type       ex_keyname:  ``str``
 
-        @keyword    ex_userdata: String containing user data
-        @type       ex_userdata: C{str}
+        :keyword    ex_userdata: String containing user data
+        :type       ex_userdata: ``str``
 
-        @keyword    networks: The server is launched into a set of Networks.
-        @type       networks: L{CloudStackNetwork}
+        :keyword    networks: The server is launched into a set of Networks.
+        :type       networks: :class:`CloudStackNetwork`
 
-        @keyword    ex_security_groups: List of security groups to assign to
+        :keyword    ex_security_groups: List of security groups to assign to
                                         the node
-        @type       ex_security_groups: C{list} of C{str}
+        :type       ex_security_groups: ``list`` of ``str``
 
-        @rtype:     L{CloudStackNode}
+        :rtype:     :class:`CloudStackNode`
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
@@ -431,20 +431,20 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def destroy_node(self, node):
         """
-        @inherits: L{NodeDriver.reboot_node}
-        @type node: L{CloudStackNode}
+        @inherits: :class:`NodeDriver.reboot_node`
+        :type node: :class:`CloudStackNode`
 
-        @rtype: C{boolean}
+        :rtype: ``bool``
         """
         res = self._async_request('destroyVirtualMachine', id=node.id)
         return True
 
     def reboot_node(self, node):
         """
-        @inherits: L{NodeDriver.reboot_node}
-        @type node: L{CloudStackNode}
+        @inherits: :class:`NodeDriver.reboot_node`
+        :type node: :class:`CloudStackNode`
 
-        @rtype: C{boolean}
+        :rtype: ``bool``
         """
         res = self._async_request('rebootVirtualMachine', id=node.id)
         return True
@@ -453,16 +453,16 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Starts/Resumes a stopped virtual machine
 
-        @type node: L{CloudStackNode}
+        :type node: :class:`CloudStackNode`
 
-        @param id: The ID of the virtual machine (required)
-        @type  id: C{uuid}
+        :param id: The ID of the virtual machine (required)
+        :type  id: ``str``
 
-        @param hostid: destination Host ID to deploy the VM to
+        :param hostid: destination Host ID to deploy the VM to
                        parameter available for root admin only
-        @type  hostid: C{uuid}
+        :type  hostid: ``str``
 
-        @rtype C{str}
+        :rtype ``str``
         """
         res = self._async_request('startVirtualMachine', id=node.id)
         return res['virtualmachine']['state']
@@ -471,18 +471,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Stops/Suspends a running virtual machine
 
-        @type node: L{CloudStackNode}
+        :type node: :class:`CloudStackNode`
 
-        @param id: The ID of the virtual machine
-        @type  id: C{uuid}
+        :param id: The ID of the virtual machine
+        :type  id: ``str``
 
-        @param forced: Force stop the VM
+        :param forced: Force stop the VM
                        (vm is marked as Stopped even when command
                         fails to be send to the backend).
                        The caller knows the VM is stopped.
-        @type  forced: C{bool}
+        :type  forced: ``bool``
 
-        @rtype C{str}
+        :rtype ``str``
         """
         res = self._async_request('stopVirtualMachine', id=node.id)
         return res['virtualmachine']['state']
@@ -491,7 +491,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Fetch a list of all available disk offerings.
 
-        @rtype: C{list} of L{CloudStackDiskOffering}
+        :rtype: ``list`` of :class:`CloudStackDiskOffering`
         """
 
         diskOfferings = []
@@ -511,7 +511,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List the available networks
 
-        @rtype C{list} of L{CloudStackNetwork}
+        :rtype ``list`` of :class:`CloudStackNetwork`
         """
 
         nets = self._sync_request('listNetworks')['network']
@@ -563,17 +563,17 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def destroy_volume(self, volume):
         """
-        @rtype: C{boolean}
+        :rtype: ``bool``
         """
         self._sync_request('deleteVolume', id=volume.id)
         return True
 
     def attach_volume(self, node, volume, device=None):
         """
-        @inherits: L{NodeDriver.attach_volume}
-        @type node: L{CloudStackNode}
+        @inherits: :class:`NodeDriver.attach_volume`
+        :type node: :class:`CloudStackNode`
 
-        @rtype: C{boolean}
+        :rtype: ``bool``
         """
         # TODO Add handling for device name
         self._async_request('attachVolume', id=volume.id,
@@ -582,7 +582,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def detach_volume(self, volume):
         """
-        @rtype: C{boolean}
+        :rtype: ``bool``
         """
         self._async_request('detachVolume', id=volume.id)
         return True
@@ -591,7 +591,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List all volumes
 
-        @rtype: C{list} of L{StorageVolume}
+        :rtype: ``list`` of :class:`StorageVolume`
         """
         list_volumes = []
         volumes = self._sync_request('listVolumes')
@@ -606,7 +606,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Lists all Public IP Addresses.
 
-        @rtype: C{list} of L{CloudStackAddress}
+        :rtype: ``list`` of :class:`CloudStackAddress`
         """
         res = self._sync_request('listPublicIpAddresses')
         ips = []
@@ -618,10 +618,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Allocate a public IP.
 
-        @param location: Zone
-        @type  location: L{NodeLocation}
+        :param location: Zone
+        :type  location: :class:`NodeLocation`
 
-        @rtype: L{CloudStackAddress}
+        :rtype: :class:`CloudStackAddress`
         """
         if location is None:
             location = self.list_locations()[0]
@@ -635,10 +635,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Release a public IP.
 
-        @param address: CloudStackAddress which should be used
-        @type  address: L{CloudStackAddress}
+        :param address: CloudStackAddress which should be used
+        :type  address: :class:`CloudStackAddress`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         res = self._async_request('disassociateIpAddress', id=address.id)
         return res['success']
@@ -647,7 +647,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Lists all Port Forwarding Rules
 
-        @rtype: C{list} of L{CloudStackPortForwardingRule}
+        :rtype: ``list`` of :class:`CloudStackPortForwardingRule`
         """
         rules = []
         result = self._sync_request('listPortForwardingRules')
@@ -675,22 +675,22 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Creates a Port Forwarding Rule, used for Source NAT
 
-        @param  address: IP address of the Source NAT
-        @type   address: L{CloudStackAddress}
+        :param  address: IP address of the Source NAT
+        :type   address: :class:`CloudStackAddress`
 
-        @param  private_port: Port of the virtual machine
-        @type   private_port: C{int}
+        :param  private_port: Port of the virtual machine
+        :type   private_port: ``int``
 
-        @param  protocol: Protocol of the rule
-        @type   protocol: C{str}
+        :param  protocol: Protocol of the rule
+        :type   protocol: ``str``
 
-        @param  public_port: Public port on the Source NAT address
-        @type   public_port: C{int}
+        :param  public_port: Public port on the Source NAT address
+        :type   public_port: ``int``
 
-        @param  node: The virtual machine
-        @type   node: L{CloudStackNode}
+        :param  node: The virtual machine
+        :type   node: :class:`CloudStackNode`
 
-        @rtype: L{CloudStackPortForwardingRule}
+        :rtype: :class:`CloudStackPortForwardingRule`
         """
         args = {
             'ipaddressid': address.id,
@@ -717,13 +717,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Remove a Port forwarding rule.
 
-        @param node: Node used in the rule
-        @type  node: L{CloudStackNode}
+        :param node: Node used in the rule
+        :type  node: :class:`CloudStackNode`
 
-        @param rule: Forwarding rule which should be used
-        @type  rule: L{CloudStackPortForwardingRule}
+        :param rule: Forwarding rule which should be used
+        :type  rule: :class:`CloudStackPortForwardingRule`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         node.extra['port_forwarding_rules'].remove(rule)
@@ -736,22 +736,22 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         "Add a NAT/firewall forwarding rule.
 
-        @param      node: Node which should be used
-        @type       node: L{CloudStackNode}
+        :param      node: Node which should be used
+        :type       node: :class:`CloudStackNode`
 
-        @param      address: CloudStackAddress which should be used
-        @type       address: L{CloudStackAddress}
+        :param      address: CloudStackAddress which should be used
+        :type       address: :class:`CloudStackAddress`
 
-        @param      protocol: Protocol which should be used (TCP or UDP)
-        @type       protocol: C{str}
+        :param      protocol: Protocol which should be used (TCP or UDP)
+        :type       protocol: ``str``
 
-        @param      start_port: Start port which should be used
-        @type       start_port: C{int}
+        :param      start_port: Start port which should be used
+        :type       start_port: ``int``
 
-        @param      end_port: End port which should be used
-        @type       end_port: C{int}
+        :param      end_port: End port which should be used
+        :type       end_port: ``int``
 
-        @rtype:     L{CloudStackForwardingRule}
+        :rtype:     :class:`CloudStackForwardingRule`
         """
 
         protocol = protocol.upper()
@@ -777,13 +777,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Remove a NAT/firewall forwarding rule.
 
-        @param node: Node which should be used
-        @type  node: L{CloudStackNode}
+        :param node: Node which should be used
+        :type  node: :class:`CloudStackNode`
 
-        @param rule: Forwarding rule which should be used
-        @type  rule: L{CloudStackForwardingRule}
+        :param rule: Forwarding rule which should be used
+        :type  rule: :class:`CloudStackForwardingRule`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         node.extra['ip_forwarding_rules'].remove(rule)
@@ -794,48 +794,48 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List Registered SSH Key Pairs
 
-        @param     projectid: list objects by project
-        @type      projectid: C{uuid}
+        :param     projectid: list objects by project
+        :type      projectid: ``str``
 
-        @param     page: The page to list the keypairs from
-        @type      page: C{int}
+        :param     page: The page to list the keypairs from
+        :type      page: ``int``
 
-        @param     keyword: List by keyword
-        @type      keyword: C{str}
+        :param     keyword: List by keyword
+        :type      keyword: ``str``
 
-        @param     listall: If set to false, list only resources
+        :param     listall: If set to false, list only resources
                             belonging to the command's caller;
                             if set to true - list resources that
                             the caller is authorized to see.
                             Default value is false
 
-        @type      listall: C{bool}
+        :type      listall: ``bool``
 
-        @param     pagesize: The number of results per page
-        @type      pagesize: C{int}
+        :param     pagesize: The number of results per page
+        :type      pagesize: ``int``
 
-        @param     account: List resources by account.
+        :param     account: List resources by account.
                             Must be used with the domainId parameter
-        @type      account: C{str}
+        :type      account: ``str``
 
-        @param     isrecursive: Defaults to false, but if true,
+        :param     isrecursive: Defaults to false, but if true,
                                 lists all resources from
                                 the parent specified by the
                                 domainId till leaves.
-        @type      isrecursive: C{bool}
+        :type      isrecursive: ``bool``
 
-        @param     fingerprint: A public key fingerprint to look for
-        @type      fingerprint: C{str}
+        :param     fingerprint: A public key fingerprint to look for
+        :type      fingerprint: ``str``
 
-        @param     name: A key pair name to look for
-        @type      name: C{str}
+        :param     name: A key pair name to look for
+        :type      name: ``str``
 
-        @param     domainid: List only resources belonging to
+        :param     domainid: List only resources belonging to
                                      the domain specified
-        @type      domainid: C{uuid}
+        :type      domainid: ``str``
 
-        @return:   A list of keypair dictionaries
-        @rtype:    L{dict}
+        :return:   A list of keypair dictionaries
+        :rtype:    :class:`dict`
         """
 
         extra_args = kwargs.copy()
@@ -846,23 +846,23 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Creates a SSH KeyPair, returns fingerprint and private key
 
-        @param     name: Name of the keypair (required)
-        @type      name: C{str}
+        :param     name: Name of the keypair (required)
+        :type      name: ``str``
 
-        @param     projectid: An optional project for the ssh key
-        @type      projectid: C{str}
+        :param     projectid: An optional project for the ssh key
+        :type      projectid: ``str``
 
-        @param     domainid: An optional domainId for the ssh key.
+        :param     domainid: An optional domainId for the ssh key.
                              If the account parameter is used,
                              domainId must also be used.
-        @type      domainid: C{str}
+        :type      domainid: ``str``
 
-        @param     account: An optional account for the ssh key.
+        :param     account: An optional account for the ssh key.
                             Must be used with domainId.
-        @type      account: C{str}
+        :type      account: ``str``
 
-        @return:   A keypair dictionary
-        @rtype:    C{dict}
+        :return:   A keypair dictionary
+        :rtype:    ``dict``
         """
         extra_args = kwargs.copy()
 
@@ -878,21 +878,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Deletes an existing SSH KeyPair
 
-        @param     name: Name of the keypair (required)
-        @type      name: C{str}
+        :param     name: Name of the keypair (required)
+        :type      name: ``str``
 
-        @param     projectid: The project associated with keypair
-        @type      projectid: C{uuid}
+        :param     projectid: The project associated with keypair
+        :type      projectid: ``str``
 
-        @param     domainid : The domain ID associated with the keypair
-        @type      domainid: C{uuid}
+        :param     domainid : The domain ID associated with the keypair
+        :type      domainid: ``str``
 
-        @param     account : The account associated with the keypair.
+        :param     account : The account associated with the keypair.
                              Must be used with the domainId parameter.
-        @type      account: C{str}
+        :type      account: ``str``
 
-        @return:   True of False based on success of Keypair deletion
-        @rtype:    C{bool}
+        :return:   True of False based on success of Keypair deletion
+        :rtype:    ``bool``
         """
 
         extra_args = kwargs.copy()
@@ -904,13 +904,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Imports a new public key where the public key is passed in as a string
 
-        @param     name: The name of the public key to import.
-        @type      name: C{str}
+        :param     name: The name of the public key to import.
+        :type      name: ``str``
 
-        @param     key_material: The contents of a public key file.
-        @type      key_material: C{str}
+        :param     key_material: The contents of a public key file.
+        :type      key_material: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         res = self._sync_request('registerSSHKeyPair', name=name,
                                  publickey=key_material)
@@ -923,13 +923,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Imports a new public key where the public key is passed via a filename
 
-        @param     name: The name of the public key to import.
-        @type      name: C{str}
+        :param     name: The name of the public key to import.
+        :type      name: ``str``
 
-        @param     keyfile: The filename with path of the public key to import.
-        @type      keyfile: C{str}
+        :param     keyfile: The filename with path of the public key to import.
+        :type      keyfile: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         with open(os.path.expanduser(keyfile)) as fh:
             content = fh.read()
@@ -939,50 +939,50 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Lists Security Groups
 
-        @param domainid: List only resources belonging to the domain specified
-        @type  domainid: C{uuid}
+        :param domainid: List only resources belonging to the domain specified
+        :type  domainid: ``str``
 
-        @param account: List resources by account. Must be used with
+        :param account: List resources by account. Must be used with
                                                    the domainId parameter.
-        @type  account: C{str}
+        :type  account: ``str``
 
-        @param listall: If set to false, list only resources belonging to
+        :param listall: If set to false, list only resources belonging to
                                          the command's caller; if set to true
                                          list resources that the caller is
                                          authorized to see.
                                          Default value is false
-        @type  listall: C{bool}
+        :type  listall: ``bool``
 
-        @param pagesize: Number of entries per page
-        @type  pagesize: C{int}
+        :param pagesize: Number of entries per page
+        :type  pagesize: ``int``
 
-        @param keyword: List by keyword
-        @type  keyword: C{str}
+        :param keyword: List by keyword
+        :type  keyword: ``str``
 
-        @param tags: List resources by tags (key/value pairs)
-        @type  tags: C{dict}
+        :param tags: List resources by tags (key/value pairs)
+        :type  tags: ``dict``
 
-        @param id: list the security group by the id provided
-        @type  id: C{uuid}
+        :param id: list the security group by the id provided
+        :type  id: ``str``
 
-        @param securitygroupname: lists security groups by name
-        @type  securitygroupname: C{str}
+        :param securitygroupname: lists security groups by name
+        :type  securitygroupname: ``str``
 
-        @param virtualmachineid: lists security groups by virtual machine id
-        @type  virtualmachineid: C{uuid}
+        :param virtualmachineid: lists security groups by virtual machine id
+        :type  virtualmachineid: ``str``
 
-        @param projectid: list objects by project
-        @type  projectid: C{uuid}
+        :param projectid: list objects by project
+        :type  projectid: ``str``
 
-        @param isrecursive: (boolean) defaults to false, but if true,
+        :param isrecursive: (boolean) defaults to false, but if true,
                                       lists all resources from the parent
                                       specified by the domainId till leaves.
-        @type  isrecursive: C{bool}
+        :type  isrecursive: ``bool``
 
-        @param page: (integer)
-        @type  page: C{int}
+        :param page: (integer)
+        :type  page: ``int``
 
-        @rtype C{list}
+        :rtype ``list``
         """
         extra_args = kwargs
         return self._sync_request('listSecurityGroups',
@@ -992,25 +992,25 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Creates a new Security Group
 
-        @param name: name of the security group (required)
-        @type  name: C{str}
+        :param name: name of the security group (required)
+        :type  name: ``str``
 
-        @param account: An optional account for the security group.
+        :param account: An optional account for the security group.
                         Must be used with domainId.
-        @type  account: C{str}
+        :type  account: ``str``
 
-        @param domainid: An optional domainId for the security group.
+        :param domainid: An optional domainId for the security group.
                          If the account parameter is used,
                          domainId must also be used.
-        @type  domainid: C{uuid}
+        :type  domainid: ``str``
 
-        @param description: The description of the security group
-        @type  description: C{str}
+        :param description: The description of the security group
+        :type  description: ``str``
 
-        @param projectid: Deploy vm for the project
-        @type  projectid: C{uuid}
+        :param projectid: Deploy vm for the project
+        :type  projectid: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
 
         extra_args = kwargs.copy()
@@ -1026,26 +1026,26 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Deletes a given Security Group
 
-        @param domainid: The domain ID of account owning
+        :param domainid: The domain ID of account owning
                          the security group
-        @type  domainid: C{uuid}
+        :type  domainid: ``str``
 
-        @param id: The ID of the security group.
+        :param id: The ID of the security group.
                    Mutually exclusive with name parameter
-        @type  id: C{uuid}
+        :type  id: ``str``
 
-        @param name: The ID of the security group.
+        :param name: The ID of the security group.
                      Mutually exclusive with id parameter
-        @type name: C{str}
+        :type name: ``str``
 
-        @param account: The account of the security group.
+        :param account: The account of the security group.
                         Must be specified with domain ID
-        @type  account: C{str}
+        :type  account: ``str``
 
-        @param projectid:  The project of the security group
-        @type  projectid:  C{uuid}
+        :param projectid:  The project of the security group
+        :type  projectid:  ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         return self._sync_request('deleteSecurityGroup', name=name)['success']
@@ -1056,50 +1056,50 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Creates a new Security Group Ingress rule
 
-        @param domainid: An optional domainId for the security group.
+        :param domainid: An optional domainId for the security group.
                          If the account parameter is used,
                          domainId must also be used.
-        @type domainid: C{uuid}
+        :type domainid: ``str``
 
-        @param startport: Start port for this ingress rule
-        @type  startport: C{int}
+        :param startport: Start port for this ingress rule
+        :type  startport: ``int``
 
-        @param securitygroupid: The ID of the security group.
+        :param securitygroupid: The ID of the security group.
                                 Mutually exclusive with securityGroupName
                                 parameter
-        @type  securitygroupid: C{uuid}
+        :type  securitygroupid: ``str``
 
-        @param cidrlist: The cidr list associated
-        @type  cidrlist: C{list}
+        :param cidrlist: The cidr list associated
+        :type  cidrlist: ``list``
 
-        @param usersecuritygrouplist: user to security group mapping
-        @type  usersecuritygrouplist: C{map}
+        :param usersecuritygrouplist: user to security group mapping
+        :type  usersecuritygrouplist: ``dict``
 
-        @param securitygroupname: The name of the security group.
+        :param securitygroupname: The name of the security group.
                                   Mutually exclusive with
                                   securityGroupName parameter
-        @type  securitygroupname: C{str}
+        :type  securitygroupname: ``str``
 
-        @param account: An optional account for the security group.
+        :param account: An optional account for the security group.
                         Must be used with domainId.
-        @type  account: C{str}
+        :type  account: ``str``
 
-        @param icmpcode: Error code for this icmp message
-        @type  icmpcode: C{int}
+        :param icmpcode: Error code for this icmp message
+        :type  icmpcode: ``int``
 
-        @param protocol: TCP is default. UDP is the other supported protocol
-        @type  protocol: C{str}
+        :param protocol: TCP is default. UDP is the other supported protocol
+        :type  protocol: ``str``
 
-        @param icmptype: type of the icmp message being sent
-        @type  icmptype: C{int}
+        :param icmptype: type of the icmp message being sent
+        :type  icmptype: ``int``
 
-        @param projectid: An optional project of the security group
-        @type  projectid: C{uuid}
+        :param projectid: An optional project of the security group
+        :type  projectid: ``str``
 
-        @param endport: end port for this ingress rule
-        @type  endport: C{int}
+        :param endport: end port for this ingress rule
+        :type  endport: ``int``
 
-        @rtype: C{list}
+        :rtype: ``list``
         """
 
         protocol = protocol.upper()
@@ -1122,16 +1122,16 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Registers an existing ISO by URL.
 
-        @param      name: Name which should be used
-        @type       name: C{str}
+        :param      name: Name which should be used
+        :type       name: ``str``
 
-        @param      url: Url should be used
-        @type       url: C{str}
+        :param      url: Url should be used
+        :type       url: ``str``
 
-        @param      location: Location which should be used
-        @type       location: L{NodeLocation}
+        :param      location: Location which should be used
+        :type       location: :class:`NodeLocation`
 
-        @rtype: C{str}
+        :rtype: ``str``
         """
         if location is None:
             location = self.list_locations()[0]
