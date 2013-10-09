@@ -390,7 +390,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                    'ip_forwarding_rules': [],
                    'port_forwarding_rules': [],
                    'password': password,
-                   'key_name': keypair,
+                   'keyname': keypair,
                    'securitygroup': securitygroup,
                    'created': node['created']
                    }
