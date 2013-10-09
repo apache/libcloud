@@ -1657,6 +1657,7 @@ class EC2EUNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
+    name = 'Amazon EC2 (eu-west-1)'
     _region = 'eu-west-1'
 
 
@@ -1664,6 +1665,7 @@ class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
+    name = 'Amazon EC2 (us-west-1)'
     _region = 'us-west-1'
 
 
@@ -1671,6 +1673,7 @@ class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
+    name = 'Amazon EC2 (us-west-2)'
     _region = 'us-west-2'
 
 
@@ -1678,6 +1681,7 @@ class EC2APSENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific Region.
     """
+    name = 'Amazon EC2 (ap-southeast-1)'
     _region = 'ap-southeast-1'
 
 
@@ -1685,6 +1689,7 @@ class EC2APNENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Northeast Asia Pacific Region.
     """
+    name = 'Amazon EC2 (ap-northeast-1)'
     _region = 'ap-northeast-1'
 
 
@@ -1692,6 +1697,7 @@ class EC2SAEastNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the South America (Sao Paulo) Region.
     """
+    name = 'Amazon EC2 (sa-east-1)'
     _region = 'sa-east-1'
 
 
@@ -1699,6 +1705,7 @@ class EC2APSESydneyNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
     """
+    name = 'Amazon EC2 (ap-southeast-1)'
     _region = 'ap-southeast-2'
 
 
