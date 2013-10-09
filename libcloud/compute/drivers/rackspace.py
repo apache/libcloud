@@ -147,6 +147,8 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
     type = Provider.RACKSPACE
     api_name = None
 
+    _networks_url_prefix = '/os-networksv2'
+
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='dfw', **kwargs):
         """

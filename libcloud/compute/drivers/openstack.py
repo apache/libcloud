@@ -1179,6 +1179,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
+    _networks_url_prefix = '/os-networks'
 
     def __init__(self, *args, **kwargs):
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
@@ -1509,8 +1510,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackNetwork`
         """
-        return self._to_networks(
-            self.connection.request('/os-networksv2').object)
+        response = self.connection.request(self._networks_url_prefix).object
+        return self._to_networks(response)
 
     def ex_create_network(self, name, cidr):
         """
@@ -1524,10 +1525,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackNetwork`
         """
-        return self._to_network(self.connection.request(
-            '/os-networksv2', method='POST',
-            data={'network': {'cidr': cidr, 'label': name}}
-        ).object['network'])
+        data = {'network': {'cidr': cidr, 'label': name}}
+        response = self.connection.request(self._networks_url_prefix,
+                                           method='POST', data=data).object
+        return self._to_network(response['network'])
 
     def ex_delete_network(self, network):
         """
@@ -1538,7 +1539,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/os-networksv2/%s' % (network.id),
+        resp = self.connection.request('%s/%s' % (self._networks_url_prefix,
+                                                  network.id),
                                        method='DELETE')
         return resp.status == httplib.ACCEPTED
 
