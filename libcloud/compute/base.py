@@ -433,8 +433,26 @@ class StorageVolume(UuidMixin):
 
 
 class VolumeSnapshot(object):
-    def __init__(self, driver):
+    """
+    A base VolumeSnapshot class to derive from.
+    """
+    def __init__(self, id, driver, size=None, extra=None):
+        """
+        Initialize VolumeSnapshot object
+
+        :param      id: Snapshot ID
+        :type       id: ``str``
+
+        :param      size: A snapshot size in Gb
+        :type       size: ``int``
+
+        :param      extra: Platform depends parameters for snapshot
+        :type       extra: ``dict``
+        """
         self.driver = driver
+        self.id = id
+        self.size = size
+        self.extra = extra or {}
 
     def destroy(self):
         """

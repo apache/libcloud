@@ -97,13 +97,46 @@ class CloudStackPortForwardingRule(object):
     "A Port forwarding rule for Source NAT."
 
     def __init__(self, node, rule_id, address, protocol, public_port,
-                 private_port):
+                 private_port, public_end_port=None, private_end_port=None):
+        """
+        A Port forwarding rule for Source NAT.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      node: Node for rule
+        :type       node: :class:`Node`
+
+        :param      rule_id: Rule ID
+        :type       rule_id: ``int``
+
+        :param      address: External IP address
+        :type       address: :class:`CloudStackAddress`
+
+        :param      protocol: TCP/IP Protocol (TCP, UDP)
+        :type       protocol: ``str``
+
+        :param      public_port: External port for rule (or started port if used port range)
+        :type       public_port: ``int``
+
+        :param      private_port: Internal node port for rule (or started port if used port range)
+        :type       private_port: ``int``
+
+        :param      public_end_port: End of external port range
+        :type       public_end_port: ``int``
+
+        :param      private_end_port: End of internal port range
+        :type       private_end_port: ``int``
+
+        :rtype: :class:`CloudStackPortForwardingRule`
+        """
         self.node = node
         self.id = rule_id
         self.address = address
         self.protocol = protocol
         self.public_port = public_port
+        self.public_end_port = public_end_port
         self.private_port = private_port
+        self.private_end_port = private_end_port
 
     def delete(self):
         self.node.ex_delete_port_forwarding_rule(self)
@@ -238,7 +271,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         for addr in addrs.get('publicipaddress', []):
             if 'virtualmachineid' not in addr:
                 continue
-            vm_id = addr['virtualmachineid']
+            vm_id = str(addr['virtualmachineid'])
             if vm_id not in public_ips_map:
                 public_ips_map[vm_id] = {}
             public_ips_map[vm_id][addr['ipaddress']] = addr['id']
@@ -277,7 +310,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 driver=self,
                 extra={'zoneid': vm['zoneid'],
                        'password': password,
-                       'key_name': keypair,
+                       'keyname': keypair,
                        'securitygroup': securitygroup,
                        'created': vm['created']
                        }
@@ -291,7 +324,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             for addr in addresses:
                 result = self._sync_request('listIpForwardingRules')
                 for r in result.get('ipforwardingrule', []):
-                    if r['virtualmachineid'] == node.id:
+                    if str(r['virtualmachineid']) == node.id:
                         rule = CloudStackIPForwardingRule(node, r['id'],
                                                           addr,
                                                           r['protocol']
@@ -302,17 +335,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             node.extra['ip_forwarding_rules'] = rules
 
             rules = []
-            for addr in addrs:
-                result = self._sync_request('listPortForwardingRules')
-                for r in result.get('portforwardingrule', []):
-                    if r['virtualmachineid'] == node.id:
-                        rule = CloudStackPortForwardingRule(node, r['id'],
-                                                            addr,
-                                                            r['protocol']
-                                                            .upper(),
-                                                            r['publicport'],
-                                                            r['privateport'])
-                        rules.append(rule)
+            public_ips = self.ex_list_public_ips()
+            result = self._sync_request('listPortForwardingRules')
+            for r in result.get('portforwardingrule', []):
+                if str(r['virtualmachineid']) == node.id:
+                    addr = [a for a in public_ips if a.address == r['ipaddress']]
+                    rule = CloudStackPortForwardingRule(node, r['id'],
+                                                        addr[0],
+                                                        r['protocol'].upper(),
+                                                        r['publicport'],
+                                                        r['privateport'],
+                                                        r['publicendport'],
+                                                        r['privateendport'],)
+                    if not addr[0].address in node.public_ips:
+                        node.public_ips.append(addr[0].address)
+                    rules.append(rule)
             node.extra['port_forwarding_rules'] = rules
 
             nodes.append(node)
@@ -384,7 +421,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                    'ip_forwarding_rules': [],
                    'port_forwarding_rules': [],
                    'password': password,
-                   'key_name': keypair,
+                   'keyname': keypair,
                    'securitygroup': securitygroup,
                    'created': node['created']
                    }
@@ -587,14 +624,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         self._async_request('detachVolume', id=volume.id)
         return True
 
-    def list_volumes(self):
+    def list_volumes(self, node=None):
         """
         List all volumes
+
+        :type node: :class:`CloudStackNode`
 
         :rtype: ``list`` of :class:`StorageVolume`
         """
         list_volumes = []
-        volumes = self._sync_request('listVolumes')
+        if node:
+            volumes = self._sync_request('listVolumes', virtualmachineid=node.id)
+        else:
+            volumes = self._sync_request('listVolumes')
         for vol in volumes['volume']:
             list_volumes.append(StorageVolume(id=vol['id'],
                                 name=vol['name'],
@@ -651,27 +693,28 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         rules = []
         result = self._sync_request('listPortForwardingRules')
-        if result == {}:
-            pass
-        else:
+        if not result == {}:
+            public_ips = self.ex_list_public_ips()
             nodes = self.list_nodes()
             for rule in result['portforwardingrule']:
                 node = [n for n in nodes
-                        if n.id == rule['virtualmachineid']]
-                addr = [a for a in self.ex_list_public_ips()
-                        if a.address == rule['ipaddress']]
+                        if n.id == str(rule['virtualmachineid'])]
+                addr = [a for a in public_ips if a.address == rule['ipaddress']]
                 rules.append(CloudStackPortForwardingRule
                              (node[0],
                               rule['id'],
                               addr[0],
                               rule['protocol'],
                               rule['publicport'],
-                              rule['privateport']))
+                              rule['privateport'],
+                              rule['publicendport'],
+                              rule['privateendport']))
 
         return rules
 
     def ex_create_port_forwarding_rule(self, address, private_port,
-                                       public_port, protocol, node):
+                                       public_port, protocol, node,
+                                       public_end_port=None, private_end_port=None, openfirewall=True):
         """
         Creates a Port Forwarding Rule, used for Source NAT
 
@@ -698,8 +741,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             'privateport': int(private_port),
             'publicport': int(public_port),
             'virtualmachineid': node.id,
-            'openfirewall': True
+            'openfirewall': openfirewall
         }
+        if public_end_port:
+            args['publicendport'] = int(public_end_port)
+        if private_end_port:
+            args['privateendport'] = int(private_end_port)
 
         result = self._async_request('createPortForwardingRule', **args)
         rule = CloudStackPortForwardingRule(node,
@@ -708,9 +755,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                             address,
                                             protocol,
                                             public_port,
-                                            private_port)
+                                            private_port,
+                                            public_end_port,
+                                            private_end_port)
         node.extra['port_forwarding_rules'].append(rule)
-        node.public_ips.append(address)
+        node.public_ips.append(address.address)
         return rule
 
     def ex_delete_port_forwarding_rule(self, node, rule):
@@ -874,12 +923,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         res = self._sync_request('createSSHKeyPair', name=name, **extra_args)
         return res['keypair']
 
-    def ex_delete_keypair(self, name, **kwargs):
+    def ex_delete_keypair(self, keypair, **kwargs):
         """
         Deletes an existing SSH KeyPair
 
-        :param     name: Name of the keypair (required)
-        :type      name: ``str``
+        :param     keypair: Name of the keypair (required)
+        :type      keypair: ``str``
 
         :param     projectid: The project associated with keypair
         :type      projectid: ``str``
@@ -897,7 +946,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         extra_args = kwargs.copy()
 
-        res = self._sync_request('deleteSSHKeyPair', name=name, **extra_args)
+        res = self._sync_request('deleteSSHKeyPair', name=keypair, **extra_args)
         return res['success']
 
     def ex_import_keypair_from_string(self, name, key_material):
