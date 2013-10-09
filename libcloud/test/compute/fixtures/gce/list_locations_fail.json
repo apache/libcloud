@@ -1,0 +1,15 @@
+{
+    "error": {
+        "errors": [{
+            "domain": "global",
+            "reason": "notFound",
+            "message": "The resource 'projects/googler' was not found"
+        }, {
+            "domain": "global",
+            "reason": "invalidParameter",
+            "message": "Invalid unsigned integer value: '-1'.",
+            "locationType": "parameter",
+            "location": "maxResults"
+        }]
+    }
+}

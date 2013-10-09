@@ -1,0 +1,79 @@
+[{
+    "kind": "compute#image",
+    "name": "centos-6-2-v20120611",
+    "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+    },
+    "preferredKernel": "https://www.googleapis.com/compute/v1beta12/projects/google/kernels/gce-20120611",
+    "description": "CentOS 6.2; Created Mon, 11 Jun 2012 13:15:44 +0000",
+    "creationTimestamp": "2012-06-18T18:05:30.664",
+    "id": "12917726455664967299",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google/images/centos-6-2-v20120611",
+    "sourceType": "RAW"
+}, {
+    "kind": "compute#image",
+    "name": "centos-6-2-v20120621",
+    "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+    },
+    "preferredKernel": "https://www.googleapis.com/compute/v1beta12/projects/google/kernels/gce-20120621",
+    "description": "CentOS 6.2; Created Thu, 21 Jun 2012 14:22:21 +0000",
+    "creationTimestamp": "2012-06-22T05:59:56.392",
+    "id": "12920641029336858796",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google/images/centos-6-2-v20120621",
+    "sourceType": "RAW"
+}, {
+    "kind": "compute#image",
+    "name": "ubuntu-10-04-v20110728",
+    "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+    },
+    "preferredKernel": "https://www.googleapis.com/compute/v1beta12/projects/google/kernels/gce-20110728",
+    "description": "DEPRECATED. Standard minimal Ubuntu 10.04.01 LTS image; Created Thu, 28 Jul 2011 16:45:51 +0000",
+    "creationTimestamp": "2012-07-16T22:18:50.405",
+    "id": "12941198995845323366",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google/images/ubuntu-10-04-v20110728",
+    "sourceType": "RAW"
+}, {
+    "kind": "compute#image",
+    "name": "ubuntu-10-04-v20110929",
+    "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+    },
+    "preferredKernel": "https://www.googleapis.com/compute/v1beta12/projects/google/kernels/gce-20110929",
+    "description": "DEPRECATED. Standard minimal Ubuntu 10.04.01 LTS image; Created Fri, 30 Sep 2011 23:03:27 +0000",
+    "creationTimestamp": "2012-07-16T22:10:06.063",
+    "id": "12941193941298090457",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google/images/ubuntu-10-04-v20110929",
+    "sourceType": "RAW"
+}, {
+    "kind": "compute#image",
+    "name": "ubuntu-10-04-v20111128",
+    "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+    },
+    "preferredKernel": "https://www.googleapis.com/compute/v1beta12/projects/google/kernels/gce-20111123",
+    "description": "DEPRECATED. Standard minimal Ubuntu 10.04.01 LTS image; Created Mon, 28 Nov 2011 22:26:27 +0000",
+    "creationTimestamp": "2012-07-16T22:12:37.523",
+    "id": "12941195401341520479",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google/images/ubuntu-10-04-v20111128",
+    "sourceType": "RAW"
+}, {
+    "kind": "compute#image",
+    "name": "ubuntu-10-04-v20120106",
+    "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+    },
+    "preferredKernel": "https://www.googleapis.com/compute/v1beta12/projects/google/kernels/gce-20120106",
+    "description": "DEPRECATED. Standard minimal Ubuntu 10.04.01 LTS image; Created Tue, 10 Jan 2012 18:25:24 +0000",
+    "creationTimestamp": "2012-07-16T22:15:18.811",
+    "id": "12941196956151834933",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google/images/ubuntu-10-04-v20120106",
+    "sourceType": "RAW"
+}]

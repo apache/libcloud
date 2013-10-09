@@ -23,6 +23,7 @@ import sys
 import base64
 import os
 import copy
+from datetime import datetime
 
 from xml.etree import ElementTree as ET
 
@@ -37,7 +38,7 @@ from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -598,11 +599,32 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
-
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        create_time = findtext(element=element, xpath='createTime', namespace=NAMESPACE)
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
-                             driver=self)
+                             driver=self,
+                             extra={'state': state,
+                                    'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE),
+                                    'create-time': datetime.strptime(create_time, '%Y-%m-%dT%H:%M:%S.000Z')})
+
+    def _to_snapshots(self, response):
+        return [self._to_snapshot(el) for el in response.findall(
+            fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_snapshot(self, element):
+        snapId = findtext(element=element, xpath='snapshotId', namespace=NAMESPACE)
+        volId = findtext(element=element, xpath='volumeId', namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        time = findtext(element=element, xpath='startTime', namespace=NAMESPACE)
+        description = findtext(element=element, xpath='description', namespace=NAMESPACE)
+        return VolumeSnapshot(self, snapId, size, description,
+                               extra={'volume_id': volId,
+                                        'state': state,
+                                        'start-time': datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.000Z')})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -648,7 +670,7 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None, ex_image_ids=None):
+    def list_images(self, location=None, ex_image_ids=None, owner=None):
         """
         List all images
 
@@ -662,6 +684,8 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`NodeImage`
         """
         params = {'Action': 'DescribeImages'}
+        if owner:
+            params.update({'Owner.1': owner})
 
         if ex_image_ids:
             params.update(self._pathlist('ImageId', ex_image_ids))
@@ -719,6 +743,79 @@ class BaseEC2NodeDriver(NodeDriver):
 
         self.connection.request(self.path, params=params)
         return True
+
+    def ex_describe_volumes(self, node=None):
+        params = {
+            'Action': 'DescribeVolumes',
+        }
+        if node:
+            params.update({
+                'Filter.1.Name': 'attachment.instance-id',
+                'Filter.1.Value': node.id,
+            })
+        response = self.connection.request(self.path, params=params).object
+        volumes = [self._to_volume(el, '') for el in response.findall(
+            fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
+        ]
+        return volumes
+
+    def create_snapshot(self, volume, description=None):
+        """
+        Create snapshot from volume
+        @param volume: Create snapshot from this volume
+        @type volume: C{StorageVolume}
+        @param description: Description for new snapshot
+        @return: C{VolumeSnapshot}
+        """
+        params = {
+            'Action': 'CreateSnapshot',
+            'VolumeId': volume.id,
+        }
+        if description:
+            params.update({
+                'Description': description,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshot = self._to_snapshot(response)
+        return snapshot
+
+    def ex_describe_snapshots(self, snapshot=None, owner=None):
+        """
+        Describe all snapshots
+        @param snapshot: If this setted, describe only this snapshot id
+        @param owner: Owner for snapshot: self|amazon|ID
+        @return: C{list(VolumeSnapshots)}
+        """
+        params = {
+            'Action': 'DescribeSnapshots',
+        }
+        if snapshot:
+            params.update({
+                'SnapshotId.1': snapshot.id,
+            })
+        if owner:
+            params.update({
+                'Owner.1': owner,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshots = self._to_snapshots(response)
+        return snapshots
+
+    def ex_delete_snapshot(self, snapshot):
+        params = {
+            'Action': 'DeleteSnapshot',
+            'SnapshotId': snapshot.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def ex_delete_image(self, image):
+        params = {
+            'Action': 'DeregisterImage',
+            'ImageId': image.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
 
     def ex_create_keypair(self, name):
         """Creates a new keypair
@@ -882,6 +979,16 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyName': key_name,
             'keyFingerprint': fingerprint
         }
+
+    def ex_delete_keypair(self, name):
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName.1': name
+        }
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def ex_list_security_groups(self):
         """
@@ -1075,8 +1182,6 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
                   'Filter.0.Value.0': resource.id,
-                  'Filter.1.Name': 'resource-type',
-                  'Filter.1.Value.0': 'instance',
                   }
 
         result = self.connection.request(self.path,
@@ -1313,6 +1418,18 @@ class BaseEC2NodeDriver(NodeDriver):
 
         attributes = {'InstanceType.Value': new_size.id}
         return self.ex_modify_instance_attribute(node, attributes)
+
+    def ex_modify_image_attribute(self, image, attributes):
+        attributes = attributes or {}
+        attributes.update({'ImageId': image.id})
+        params = {'Action': 'ModifyImageAttribute'}
+        params.update(attributes)
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def create_node(self, **kwargs):
         """Create a new EC2 node

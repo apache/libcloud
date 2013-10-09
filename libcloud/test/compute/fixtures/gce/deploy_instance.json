@@ -1,0 +1,36 @@
+{
+    "status": "RUNNING",
+    "kind": "compute#instance",
+    "machineType": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-1",
+    "description": "",
+    "zone": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/zones/us-central1-a",
+    "image": "https://www.googleapis.com/compute/v1beta12/projects/google/images/centos-6-2-v20120326",
+    "disks": [{
+        "index": 0,
+        "kind": "compute#attachedDisk",
+        "type": "EPHEMERAL",
+        "mode": "READ_WRITE"
+    }],
+    "name": "foonode2",
+    "networkInterfaces": [{
+        "networkIP": "10.240.64.235",
+        "kind": "compute#networkInterface",
+        "accessConfigs": [{
+            "kind": "compute#accessConfig",
+            "type": "ONE_TO_ONE_NAT",
+            "name": "External NAT",
+            "natIP": "8.35.199.60"
+        }],
+        "network": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/networks/default",
+        "name": "nic0"
+    }],
+    "id": "12990402818933463403",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/instances/foonoden",
+    "metadata": {
+        "items": [{
+            "value": "#! /bin/bash\n# Installs apache and a custom homepage\n\napt-get update\napt-get install -y apache2\ncat <<EOF > /var/www/index.html\n<html><body><h1>Hello World</h1>\n<p>This page was created from a simple start up script!</p>\n</body></html>\nEOF\n",
+            "key": "startup-script"
+        }],
+        "kind": "compute#metadata"
+    }
+}

@@ -27,7 +27,7 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
     name = 'KTUCloud'
     website = 'https://ucloudbiz.olleh.com/'
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, owners=None):
         args = {
             'templatefilter': 'executable'
         }
@@ -97,3 +97,14 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
                 'forwarding_rules': [],
             }
         )
+
+    def list_locations(self):
+        locs = self._sync_request('listAvailableProductTypes')['producttypes']
+        locations = []
+        unique_locs = []
+        for loc in locs:
+            l = {'id': loc['zoneid'], 'name': loc['zonedesc'].encode('utf8')}
+            if not l in unique_locs:
+                locations.append(NodeLocation(l['id'], l['name'], 'KR', self))
+                unique_locs.append(l)
+        return locations

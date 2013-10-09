@@ -676,7 +676,7 @@ class PollingConnection(Connection):
     If job doesn't finish in timeout seconds, an Exception thrown.
     """
     poll_interval = 0.5
-    timeout = 200
+    timeout = 6000
     request_method = 'request'
 
     def async_request(self, action, params=None, data=None, headers=None,

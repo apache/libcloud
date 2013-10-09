@@ -264,6 +264,17 @@
 
         "vps_net": {
             "1": 0.416
+        },
+
+        "gce": {
+            "n1-standard-1-d": 0.145,
+            "n1-standard-2-d": 0.290,
+            "n1-standard-4-d": 0.580,
+            "n1-standard-8-d": 1.160,
+            "n1-standard-1": 0.145,
+            "n1-standard-2": 0.290,
+            "n1-standard-4": 0.580,
+            "n1-standard-8": 1.160
         }
     },
 

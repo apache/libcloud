@@ -1,0 +1,106 @@
+[{
+    "guestCpus": 2,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "ephemeralDisks": [{
+        "diskGb": 870
+    }],
+    "maximumPersistentDisksSizeGb": "256",
+    "description": "2 vCPUs, 7.5 GB RAM, a 10 GB ephemeral root disk, and an extra 870 GB ephemeral disk",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-2-d",
+    "memoryMb": 7680,
+    "creationTimestamp": "2012-06-07T20:49:19.448",
+    "id": "12908559582417967837",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-2-d",
+    "hostCpus": 2
+}, {
+    "guestCpus": 4,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "maximumPersistentDisksSizeGb": "512",
+    "description": "4 vCPUs, 15 GB RAM, and a 10 GB ephemeral root disk",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-4",
+    "memoryMb": 15360,
+    "creationTimestamp": "2012-06-07T20:49:40.050",
+    "id": "12908559692070444049",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-4",
+    "hostCpus": 4
+}, {
+    "guestCpus": 4,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "ephemeralDisks": [{
+        "diskGb": 1770
+    }],
+    "maximumPersistentDisksSizeGb": "512",
+    "description": "4 vCPUs, 15 GB RAM, a 10 GB ephemeral root disk, and an extra 1770 GB ephemeral disk",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-4-d",
+    "memoryMb": 15360,
+    "creationTimestamp": "2012-06-07T20:50:05.677",
+    "id": "12908559991903153608",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-4-d",
+    "hostCpus": 4
+}, {
+    "guestCpus": 8,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "maximumPersistentDisksSizeGb": "1024",
+    "description": "8 vCPUs, 30 GB RAM, and a 10 GB ephemeral root disk",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-8",
+    "memoryMb": 30720,
+    "creationTimestamp": "2012-06-07T20:50:42.334",
+    "id": "12908560197989714867",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-8",
+    "hostCpus": 8
+}, {
+    "guestCpus": 8,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "ephemeralDisks": [{
+        "diskGb": 1770
+    }, {
+        "diskGb": 1770
+    }],
+    "maximumPersistentDisksSizeGb": "1024",
+    "description": "8 vCPUs, 30 GB RAM, a 10 GB ephemeral root disk, and 2 extra 1770 GB ephemeral disks",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-8-d",
+    "memoryMb": 30720,
+    "creationTimestamp": "2012-06-07T20:51:19.936",
+    "id": "12908560709887590691",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-8-d",
+    "hostCpus": 8
+}, {
+    "guestCpus": 1,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "maximumPersistentDisksSizeGb": "128",
+    "description": "1 vCPU, 3.75 GB RAM, and a 10 GB ephemeral root disk",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-1",
+    "memoryMb": 3840,
+    "creationTimestamp": "2012-06-07T20:48:14.670",
+    "id": "12907738072351752276",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-1",
+    "hostCpus": 1
+}, {
+    "guestCpus": 1,
+    "imageSpaceGb": 10,
+    "kind": "compute#machineType",
+    "ephemeralDisks": [{
+        "diskGb": 420
+    }],
+    "maximumPersistentDisksSizeGb": "128",
+    "description": "1 vCPU, 3.75 GB RAM, a 10 GB ephemeral root disk, and an extra 420 GB ephemeral disk",
+    "maximumPersistentDisks": 16,
+    "name": "n1-standard-1-d",
+    "memoryMb": 3840,
+    "creationTimestamp": "2012-06-07T20:48:34.258",
+    "id": "12908559201265214706",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-1-d",
+    "hostCpus": 1
+}]

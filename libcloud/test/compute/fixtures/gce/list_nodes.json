@@ -1,0 +1,57 @@
+[{
+    "status": "RUNNING",
+    "kind": "compute#instance",
+    "machineType": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-1",
+    "description": "",
+    "zone": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/zones/us-central1-a",
+    "image": "https://www.googleapis.com/compute/v1beta12/projects/google/images/ubuntu-12-04-v20120621",
+    "disks": [{
+        "index": 0,
+        "kind": "compute#attachedDisk",
+        "type": "EPHEMERAL",
+        "mode": "READ_WRITE"
+    }],
+    "name": "foo",
+    "id": "12987935077537528637",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/instances/goo",
+    "networkInterfaces": [{
+        "networkIP": "10.240.125.236",
+        "kind": "compute#networkInterface",
+        "accessConfigs": [{
+            "kind": "compute#accessConfig",
+            "type": "ONE_TO_ONE_NAT",
+            "name": "External NAT",
+            "natIP": "173.255.124.43"
+        }],
+        "network": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/networks/default",
+        "name": "nic0"
+    }]
+}, {
+    "status": "RUNNING",
+    "kind": "compute#instance",
+    "machineType": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/machine-types/n1-standard-2",
+    "description": "",
+    "zone": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/zones/us-central1-a",
+    "image": "https://www.googleapis.com/compute/v1beta12/projects/google/images/ubuntu-12-04-v20120621",
+    "disks": [{
+        "index": 0,
+        "kind": "compute#attachedDisk",
+        "type": "EPHEMERAL",
+        "mode": "READ_WRITE"
+    }],
+    "name": "bar",
+    "id": "12982866885143643382",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/instances/hello",
+    "networkInterfaces": [{
+        "networkIP": "10.240.235.139",
+        "kind": "compute#networkInterface",
+        "accessConfigs": [{
+            "kind": "compute#accessConfig",
+            "type": "ONE_TO_ONE_NAT",
+            "name": "External NAT",
+            "natIP": "173.255.116.186"
+        }],
+        "network": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/networks/default",
+        "name": "nic0"
+    }]
+}]

@@ -40,4 +40,5 @@ __all__ = [
     'vcloud',
     'voxel',
     'vpsnet',
+    'gce'
 ]

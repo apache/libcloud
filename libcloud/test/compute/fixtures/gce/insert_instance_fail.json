@@ -1,0 +1,9 @@
+{
+    "error": {
+        "errors": [{
+            "domain": "global",
+            "reason": "notFound",
+            "message": "The resource 'projects/googler' was not found"
+        }]
+    }
+}

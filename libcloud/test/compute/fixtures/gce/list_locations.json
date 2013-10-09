@@ -1,0 +1,29 @@
+[{
+    "status": "UP",
+    "kind": "compute#zone",
+    "description": "us-central1-a",
+    "maintenanceWindows": [{
+        "endTime": "2012-10-28T08:00:00.000",
+        "beginTime": "2012-10-14T08:00:00.000",
+        "name": "2012-10-14-planned-outage",
+        "description": "maintenance zone"
+    }],
+    "creationTimestamp": "2012-05-15T22:15:19.012",
+    "id": "12889558432979476247",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/zones/us-central1-a",
+    "name": "us-central1-a"
+}, {
+    "status": "UP",
+    "kind": "compute#zone",
+    "description": "us-central2-a",
+    "maintenanceWindows": [{
+        "endTime": "2012-12-02T08:00:00.000",
+        "beginTime": "2012-11-11T08:00:00.000",
+        "name": "2012-11-11-planned-outage",
+        "description": "maintenance zone"
+    }],
+    "creationTimestamp": "2012-05-15T22:17:05.592",
+    "id": "12889559460378820818",
+    "selfLink": "https://www.googleapis.com/compute/v1beta12/projects/google.com:ziyadm-devconsole/zones/us-central2-a",
+    "name": "us-central2-a"
+}]
