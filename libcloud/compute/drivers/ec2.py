@@ -31,13 +31,14 @@ from libcloud.utils.py3 import b, basestring
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
 from libcloud.utils.publickey import get_pubkey_comment
+from libcloud.utils.iso8601 import parse_date
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -598,11 +599,31 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
-
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        create_time = findtext(element=element, xpath='createTime', namespace=NAMESPACE)
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
-                             driver=self)
+                             driver=self,
+                             extra={'state': state,
+                                    'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE),
+                                    'create-time': parse_date(create_time)})
+
+    def _to_snapshots(self, response):
+        return [self._to_snapshot(el) for el in response.findall(
+            fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_snapshot(self, element):
+        snapId = findtext(element=element, xpath='snapshotId', namespace=NAMESPACE)
+        volId = findtext(element=element, xpath='volumeId', namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        description = findtext(element=element, xpath='description', namespace=NAMESPACE)
+        return VolumeSnapshot(snapId, size=int(size), driver=self,
+                               extra={'volume_id': volId,
+                                        'description': description,
+                                        'state': state})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -648,20 +669,31 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None, ex_image_ids=None):
+    def list_images(self, location=None, ex_image_ids=None, ex_owner=None):
         """
         List all images
 
         Ex_image_ids parameter is used to filter the list of
         images that should be returned. Only the images
         with the corresponding image ids will be returned.
+        
+        Ex_owner parameter is used to filter the list of
+        images that should be returned. Only the images
+        with the corresponding owner will be returned.
+        Valid values: amazon|aws-marketplace|self|all|aws id
 
         :param      ex_image_ids: List of ``NodeImage.id``
         :type       ex_image_ids: ``list`` of ``str``
 
+        :param      ex_owner: Owner name
+        :type       ex_image_ids: ``str``
+
         :rtype: ``list`` of :class:`NodeImage`
         """
         params = {'Action': 'DescribeImages'}
+
+        if ex_owner:
+            params.update({'Owner.1': owner})
 
         if ex_image_ids:
             params.update(self._pathlist('ImageId', ex_image_ids))
@@ -680,6 +712,21 @@ class BaseEC2NodeDriver(NodeDriver):
                         availability_zone)
                     )
         return locations
+
+    def list_volumes(self, node=None):
+        params = {
+            'Action': 'DescribeVolumes',
+        }
+        if node:
+            params.update({
+                'Filter.1.Name': 'attachment.instance-id',
+                'Filter.1.Value': node.id,
+            })
+        response = self.connection.request(self.path, params=params).object
+        volumes = [self._to_volume(el, '') for el in response.findall(
+            fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
+        ]
+        return volumes
 
     def create_volume(self, size, name, location=None, snapshot=None):
         params = {
@@ -720,6 +767,71 @@ class BaseEC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
+    def create_volume_snapshot(self, volume, name=None):
+        """
+        Create snapshot from volume
+
+        :param      volume: Instance of ``StorageVolume``
+        :type       volume: ``StorageVolume``
+        
+        :param      name: Description for snapshot
+        :type       name: ``str``
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        params = {
+            'Action': 'CreateSnapshot',
+            'VolumeId': volume.id,
+        }
+        if name:
+            params.update({
+                'Description': name,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshot = self._to_snapshot(response)
+        return snapshot
+
+    def list_volume_snapshots(self, snapshot):
+        return self.list_snapshots(snapshot)
+
+    def list_snapshots(self, snapshot=None, owner=None):
+        """
+        Describe all snapshots
+        @param snapshot: If this setted, describe only this snapshot id
+        @param owner: Owner for snapshot: self|amazon|ID
+        @return: C{list(VolumeSnapshots)}
+        """
+        params = {
+            'Action': 'DescribeSnapshots',
+        }
+        if snapshot:
+            params.update({
+                'SnapshotId.1': snapshot.id,
+            })
+        if owner:
+            params.update({
+                'Owner.1': owner,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshots = self._to_snapshots(response)
+        return snapshots
+
+    def destroy_volume_snapshot(self, snapshot):
+        params = {
+            'Action': 'DeleteSnapshot',
+            'SnapshotId': snapshot.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def ex_destroy_image(self, image):
+        params = {
+            'Action': 'DeregisterImage',
+            'ImageId': image.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
     def ex_create_keypair(self, name):
         """Creates a new keypair
 
@@ -744,6 +856,25 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyMaterial': key_material,
             'keyFingerprint': key_fingerprint,
         }
+
+    def ex_delete_keypair(self, keypair):
+        """Destroy a keypair by name
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      keypair: The name of the keypair to Delete.
+        :type       keypair: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName.1': keypair
+        }
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def ex_import_keypair_from_string(self, name, key_material):
         """
@@ -1282,6 +1413,31 @@ class BaseEC2NodeDriver(NodeDriver):
         attributes.update({'InstanceId': node.id})
 
         params = {'Action': 'ModifyInstanceAttribute'}
+        params.update(attributes)
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
+    def ex_modify_image_attribute(self, image, attributes):
+        """
+        Modify image attributes.
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :param      attributes: Dictionary with node attributes
+        :type       attributes: ``dict``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        attributes = attributes or {}
+        attributes.update({'ImageId': image.id})
+        
+        params = {'Action': 'ModifyImageAttribute'}
         params.update(attributes)
 
         result = self.connection.request(self.path,
