@@ -242,7 +242,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual('test', nodes[0].name)
         self.assertEqual('2600', nodes[0].id)
         self.assertEqual([], nodes[0].extra['securitygroup'])
-        self.assertEqual(None, nodes[0].extra['key_name'])
+        self.assertEqual(None, nodes[0].extra['keyname'])
 
     def test_list_locations(self):
         location = self.driver.list_locations()[0]
@@ -358,25 +358,36 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         node = self.driver.list_nodes()[0]
         address = self.driver.ex_list_public_ips()[0]
         private_port = 33
+        private_end_port = 34
         public_port = 33
+        public_end_port = 34
+        openfirewall = True
         protocol = 'TCP'
         rule = self.driver.ex_create_port_forwarding_rule(address,
                                                           private_port,
                                                           public_port,
                                                           protocol,
-                                                          node)
+                                                          node,
+                                                          public_end_port,
+                                                          private_end_port,
+                                                          openfirewall)
         self.assertEqual(rule.address, address)
         self.assertEqual(rule.protocol, protocol)
         self.assertEqual(rule.public_port, public_port)
+        self.assertEqual(rule.public_end_port, public_end_port)
         self.assertEqual(rule.private_port, private_port)
+        self.assertEqual(rule.private_end_port, private_end_port)
 
     def test_ex_list_port_forwarding_rules(self):
         rules = self.driver.ex_list_port_forwarding_rules()
         self.assertEqual(len(rules), 1)
         rule = rules[0]
+        self.assertTrue(rule.node)
         self.assertEqual(rule.protocol, 'tcp')
         self.assertEqual(rule.public_port, '33')
+        self.assertEqual(rule.public_end_port, '34')
         self.assertEqual(rule.private_port, '33')
+        self.assertEqual(rule.private_end_port, '34')
         self.assertEqual(rule.address.address, '1.1.1.116')
 
     def test_ex_delete_port_forwarding_rule(self):
@@ -385,24 +396,13 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         res = self.driver.ex_delete_port_forwarding_rule(node, rule)
         self.assertTrue(res)
 
-
     def test_list_keypair(self):
-        keypairs = self.driver.ex_list_keypair()
+        keypairs = self.driver.ex_list_keypairs()
         self.assertEqual(len(keypairs), 8)
 
     def test_list_public_ips(self):
-        ips = self.driver.ex_list_public_ip()
+        ips = self.driver.ex_list_public_ips()
         self.assertEqual(len(ips), 4)
-
-    def test_list_port_forwarding(self):
-        rules = self.driver.ex_list_port_forwarding_rule()
-        self.assertEqual(len(rules), 2)
-
-        self.assertTrue(rules[0].node)
-        self.assertTrue(rules[1].node)
-
-    def test_create_port_forwarding(self):
-        pass
 
 
 class CloudStackMockHttp(MockHttpTestCase):
