@@ -1267,6 +1267,24 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(pool.delete_floating_ip.call_count, 1)
 
+    def test_ex_list_network(self):
+        networks = self.driver.ex_list_networks()
+        network = networks[0]
+
+        self.assertEqual(len(networks), 3)
+        self.assertEqual(network.name, 'test1')
+        self.assertEqual(network.cidr, '127.0.0.0/24')
+
+    def test_ex_create_network(self):
+        network = self.driver.ex_create_network(name='test1',
+                                                cidr='127.0.0.0/24')
+        self.assertEqual(network.name, 'test1')
+        self.assertEqual(network.cidr, '127.0.0.0/24')
+
+    def test_ex_delete_network(self):
+        network = self.driver.ex_list_networks()[0]
+        self.assertTrue(self.driver.ex_delete_network(network=network))
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1555,6 +1573,20 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v1_1_slug_os_networks(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_networks.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'POST':
+            body = self.fixtures.load('_os_networks_POST.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v1_1_slug_os_networks_f13e5051_feea_416b_827a_1a0acc2dad14(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.

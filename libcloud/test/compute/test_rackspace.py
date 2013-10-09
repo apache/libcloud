@@ -85,6 +85,20 @@ class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
                                                 RackspaceNovaMockHttp))
+    def _v2_1337_os_networksv2(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_networks.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'POST':
+            body = self.fixtures.load('_os_networks_POST.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v2_1337_os_networksv2_f13e5051_feea_416b_827a_1a0acc2dad14(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
 
 
 class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
