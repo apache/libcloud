@@ -127,7 +127,7 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
                                        size=size,
                                        ex_keyname='foobar')
         self.assertEqual(node.name, 'test')
-        self.assertEqual(node.extra['key_name'], 'foobar')
+        self.assertEqual(node.extra['keyname'], 'foobar')
 
     def test_list_images_no_images_available(self):
         CloudStackMockHttp.fixture_tag = 'notemplates'
@@ -395,10 +395,6 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_list_port_forwarding_rules()[0]
         res = self.driver.ex_delete_port_forwarding_rule(node, rule)
         self.assertTrue(res)
-
-    def test_list_keypair(self):
-        keypairs = self.driver.ex_list_keypairs()
-        self.assertEqual(len(keypairs), 8)
 
     def test_list_public_ips(self):
         ips = self.driver.ex_list_public_ips()
