@@ -214,7 +214,7 @@ def generate_supported_methods_table(api, provider_matrix):
               base_api_methods]
     data.append(['Provider'] + header)
 
-    for provider, values in provider_matrix.items():
+    for provider, values in sorted(provider_matrix.items()):
         provider_name = '`%s`_' % (values['name'])
         row = [provider_name]
         for _, supported in values['methods'].items():
@@ -227,7 +227,7 @@ def generate_supported_methods_table(api, provider_matrix):
     result = generate_rst_table(data)
 
     result += '\n\n'
-    for provider, values in provider_matrix.items():
+    for provider, values in sorted(provider_matrix.items()):
         result += '.. _`%s`: %s\n' % (values['name'], values['website'])
     return result
 
@@ -238,7 +238,7 @@ def generate_supported_providers_table(api, provider_matrix):
               'Class Name']
 
     data.append(header)
-    for provider, values in provider_matrix.items():
+    for provider, values in sorted(provider_matrix.items()):
 
         name_str = '`%s`_' % (values['name'])
         module_str = ':mod:`%s`' % (values['module'])
@@ -260,7 +260,7 @@ def generate_supported_providers_table(api, provider_matrix):
     result = generate_rst_table(data)
 
     result += '\n\n'
-    for provider, values in provider_matrix.items():
+    for provider, values in sorted(provider_matrix.items()):
         result += '.. _`%s`: %s\n' % (values['name'], values['website'])
     return result
 
