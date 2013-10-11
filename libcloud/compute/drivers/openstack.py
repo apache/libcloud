@@ -1351,7 +1351,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         node.extra['password'] = password
         return resp.status == httplib.ACCEPTED
 
-    def ex_rebuild(self, node, image):
+    def ex_rebuild(self, node, image, **kwargs):
         """
         Rebuild a Node.
 
@@ -1361,9 +1361,34 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :param      image: New image to use.
         :type       image: :class:`NodeImage`
 
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
+
+        :keyword    ex_files:   File Path => File contents to create on
+                                the no  de
+        :type       ex_files:   ``dict``
+
+        :keyword    ex_keyname:  Name of existing public key to inject into
+                                 instance
+        :type       ex_keyname:  ``str``
+
+        :keyword    ex_userdata: String containing user data
+                                 see
+                                 https://help.ubuntu.com/community/CloudInit
+        :type       ex_userdata: ``str``
+
+        :keyword    ex_security_groups: List of security groups to assign to
+                                        the node
+        :type       ex_security_groups: ``list`` of
+                                       :class:`OpenStackSecurityGroup`
+
+        :keyword    ex_disk_config: Name of the disk configuration.
+                                    Can be either ``AUTO`` or ``MANUAL``.
+        :type       ex_disk_config: ``str``
+
         :rtype: ``bool``
         """
-        server_params = self._create_args_to_params(node, image=image)
+        server_params = self._create_args_to_params(node, image=image, **kwargs)
         resp = self._node_action(node, 'rebuild', **server_params)
         return resp.status == httplib.ACCEPTED
 
