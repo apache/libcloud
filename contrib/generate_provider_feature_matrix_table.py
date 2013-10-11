@@ -232,16 +232,29 @@ def generate_supported_methods_table(api, provider_matrix):
     return result
 
 
-def generate_supported_providers_table(provider_matrix):
+def generate_supported_providers_table(api, provider_matrix):
     data = []
-    header = ['Provider', 'Provider constant', 'Module', 'Class Name']
+    header = ['Provider', 'Documentation', 'Provider constant', 'Module',
+              'Class Name']
 
     data.append(header)
     for provider, values in provider_matrix.items():
+
         name_str = '`%s`_' % (values['name'])
         module_str = ':mod:`%s`' % (values['module'])
         class_str = ':class:`%s`' % (values['class'])
-        row = [name_str, values['constant'], module_str, class_str]
+
+        params = {'api': api, 'provider': provider.lower()}
+        driver_docs_path = pjoin(this_dir,
+                                 '../docs/%(api)s/drivers/%(provider)s.rst'
+                                 % params)
+
+        if os.path.exists(driver_docs_path):
+            docs_link = ':doc:`Click </%(api)s/drivers/%(provider)s>`' % params
+        else:
+            docs_link = ''
+
+        row = [name_str, docs_link, values['constant'], module_str, class_str]
         data.append(row)
 
     result = generate_rst_table(data)
@@ -256,8 +269,6 @@ def generate_tables():
     apis = BASE_API_METHODS.keys()
     for api in apis:
         result = generate_providers_table(api)
-        supported_providers = generate_supported_providers_table(result)
-        supported_methods = generate_supported_methods_table(api, result)
 
         docs_dir = api
 
@@ -265,6 +276,10 @@ def generate_tables():
             docs_dir = 'compute'
         elif api.startswith('storage'):
             docs_dir = 'storage'
+
+        supported_providers = generate_supported_providers_table(docs_dir,
+                                                                 result)
+        supported_methods = generate_supported_methods_table(api, result)
 
         current_path = os.path.dirname(__file__)
         target_dir = os.path.abspath(pjoin(current_path,
