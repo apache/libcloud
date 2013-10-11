@@ -948,34 +948,22 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(self.driver.detach_volume(volume), True)
 
     def test_ex_set_password(self):
-        try:
-            self.driver.ex_set_password(self.node, 'New1&53jPass')
-        except Exception:
-            e = sys.exc_info()[1]
-            self.fail('An error was raised: ' + repr(e))
+        self.assertTrue(self.driver.ex_set_password(self.node, 'New1&53jPass'))
 
     def test_ex_rebuild(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
                           driver=self.driver)
-        try:
-            success = self.driver.ex_rebuild(self.node, image=image)
-            self.assertTrue(success)
-        except Exception:
-            e = sys.exc_info()[1]
-            self.fail('An error was raised: ' + repr(e))
+        success = self.driver.ex_rebuild(self.node, image=image)
+        self.assertTrue(success)
 
     def test_ex_rebuild_with_ex_disk_config(self):
         image = NodeImage(id=58, name='Ubuntu 10.10 (intrepid)',
                           driver=self.driver)
         node = Node(id=12066, name=None, state=None, public_ips=None,
                     private_ips=None, driver=self.driver)
-        try:
-            success = self.driver.ex_rebuild(node, image=image,
-                                             ex_disk_config='MANUAL')
-            self.assertTrue(success)
-        except Exception:
-            e = sys.exc_info()[1]
-            self.fail('An error was raised: ' + repr(e))
+        success = self.driver.ex_rebuild(node, image=image,
+                                         ex_disk_config='MANUAL')
+        self.assertTrue(success)
 
     def test_ex_resize(self):
         size = NodeSize(1, '256 slice', None, None, None, None,
