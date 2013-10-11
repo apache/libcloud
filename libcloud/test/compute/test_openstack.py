@@ -955,9 +955,24 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_rebuild(self):
-        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)',
+                          driver=self.driver)
         try:
-            self.driver.ex_rebuild(self.node, image=image)
+            success = self.driver.ex_rebuild(self.node, image=image)
+            self.assertTrue(success)
+        except Exception:
+            e = sys.exc_info()[1]
+            self.fail('An error was raised: ' + repr(e))
+
+    def test_ex_rebuild_with_ex_disk_config(self):
+        image = NodeImage(id=58, name='Ubuntu 10.10 (intrepid)',
+                          driver=self.driver)
+        node = Node(id=12066, name=None, state=None, public_ips=None,
+                    private_ips=None, driver=self.driver)
+        try:
+            success = self.driver.ex_rebuild(node, image=image,
+                                             ex_disk_config='MANUAL')
+            self.assertTrue(success)
         except Exception:
             e = sys.exc_info()[1]
             self.fail('An error was raised: ' + repr(e))
@@ -1358,6 +1373,17 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
         elif "rescue" in json.loads(body):
             return (httplib.OK, '{"adminPass": "foo"}', {},
                     httplib.responses[httplib.OK])
+
+        return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
+
+    def _v1_1_slug_servers_12066_action(self, method, url, body, headers):
+        if method != "POST":
+            self.fail('HTTP method other than POST to action URL')
+        if "rebuild" not in json.loads(body):
+            self.fail("Did not get expected action (rebuild) in action URL")
+
+        self.assertTrue('\"OS-DCF:diskConfig\": \"MANUAL\"' in body,
+                        msg="Manual disk configuration option was not specified in rebuild body: " + body)
 
         return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
