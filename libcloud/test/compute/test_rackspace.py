@@ -24,7 +24,7 @@ from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_0_Tests
 from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests, \
-                                                 OpenStack_1_1_MockHttp
+    OpenStack_1_1_MockHttp
 from libcloud.pricing import clear_pricing_data
 
 from libcloud.test.secrets import RACKSPACE_NOVA_PARAMS
@@ -98,16 +98,22 @@ class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
     def _v2_1337_os_networksv2(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_os_networks.json')
-            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.OK, body, self.json_content_headers,
+                    httplib.responses[httplib.OK])
         elif method == 'POST':
             body = self.fixtures.load('_os_networks_POST.json')
-            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.ACCEPTED, body, self.json_content_headers,
+                    httplib.responses[httplib.OK])
         raise NotImplementedError()
 
-    def _v2_1337_os_networksv2_f13e5051_feea_416b_827a_1a0acc2dad14(self, method, url, body, headers):
+    def _v2_1337_os_networksv2_f13e5051_feea_416b_827a_1a0acc2dad14(self,
+                                                                    method,
+                                                                    url, body,
+                                                                    headers):
         if method == 'DELETE':
             body = ''
-            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.ACCEPTED, body, self.json_content_headers,
+                    httplib.responses[httplib.OK])
         raise NotImplementedError()
 
 
