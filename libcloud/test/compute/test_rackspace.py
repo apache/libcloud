@@ -41,7 +41,8 @@ class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
     driver_kwargs = {'region': 'us'}
 
     def test_auth_url_is_set(self):
-        self.assertEqual(self.driver.connection.auth_url, AUTH_URL_US)
+        self.assertEqual(self.driver.connection._ex_force_auth_url,
+                         AUTH_URL_US)
 
     def test_error_is_thrown_on_accessing_old_constant(self):
         for provider in DEPRECATED_RACKSPACE_PROVIDERS:
@@ -70,7 +71,8 @@ class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
     driver_kwargs = {'region': 'uk'}
 
     def test_auth_url_is_set(self):
-        self.assertEqual(self.driver.connection.auth_url, AUTH_URL_UK)
+        self.assertEqual(self.driver.connection._ex_force_auth_url,
+                         AUTH_URL_UK)
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
@@ -92,6 +94,7 @@ class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
                                                 RackspaceNovaMockHttp))
+
     def _v2_1337_os_networksv2(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_os_networks.json')
@@ -167,6 +170,18 @@ class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase):
                          self.driver.connection.get_endpoint())
 
 
+class RackspaceNovaIadTests(BaseRackspaceNovaTestCase):
+
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'iad'}
+
+    def test_service_catalog(self):
+        self.assertEqual('https://iad.servers.api.rackspacecloud.com/v2/1337',
+                         self.driver.connection.get_endpoint())
+
+
 class RackspaceNovaLonTests(BaseRackspaceNovaTestCase):
 
     driver_klass = RackspaceNodeDriver
@@ -188,6 +203,17 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase):
         self.assertEqual('https://lon.servers.api.rackspacecloud.com/v2/1337',
                          self.driver.connection.get_endpoint())
 
+
+class RackspaceNovaSydTests(BaseRackspaceNovaTestCase):
+
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'syd'}
+
+    def test_service_catalog(self):
+        self.assertEqual('https://syd.servers.api.rackspacecloud.com/v2/1337',
+                         self.driver.connection.get_endpoint())
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
