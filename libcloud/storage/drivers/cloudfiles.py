@@ -218,12 +218,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         if 'ex_force_service_region' in kwargs:
             region = kwargs['ex_force_service_region']
 
-        self.region = region
-
         OpenStackDriverMixin.__init__(self, (), **kwargs)
         super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
                                             secure=secure, host=host,
-                                            port=port, **kwargs)
+                                            port=port, region=region, **kwargs)
 
     def iterate_containers(self):
         response = self.connection.request('')
@@ -824,12 +822,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def _ex_connection_class_kwargs(self):
         kwargs = {'ex_force_service_region': self.region}
 
-        if self.region in ['dfw', 'ord', 'iad', 'syd']:
-            kwargs['auth_url'] = AUTH_URL_US
-        elif self.region == 'lon':
+        if self.region == 'lon':
             kwargs['auth_url'] = AUTH_URL_UK
+        else:
+            kwargs['auth_url'] = AUTH_URL_US
 
-        kwargs.update(self.openstack_connection_kwargs())
+        base_kwargs = self.openstack_connection_kwargs()
+        kwargs.update(base_kwargs)
         return kwargs
 
 
