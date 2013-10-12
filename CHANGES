@@ -18,7 +18,7 @@ Changes with Apache Libcloud in development
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
       add a new CLOUDFILES constant.
       Driver referenced by this constant takes a "region" keyword argument
-      and can be one of 'ord', 'dfw' or 'lon'.
+      which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
 
       Note: Deprecated constants will continue to work for the foreseeable
       future.
