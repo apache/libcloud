@@ -119,7 +119,7 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
                 httplib.responses[httplib.OK])
 
 
-class BaseRackspaceNovaTestCase(OpenStack_1_1_Tests):
+class BaseRackspaceNovaTestCase(object):
     conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
     auth_url = 'https://auth.api.example.com/v2.0/'
 
@@ -137,26 +137,9 @@ class BaseRackspaceNovaTestCase(OpenStack_1_1_Tests):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
-
-class RackspaceNovaDfwTests(BaseRackspaceNovaTestCase):
-
-    driver_klass = RackspaceNodeDriver
-    driver_type = RackspaceNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'dfw'}
-
-    def test_service_catalog(self):
-        self.assertEqual(
-            'https://dfw.servers.api.rackspacecloud.com/v2/1337',
-            self.driver.connection.get_endpoint())
-
-
-class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase):
-
-    driver_klass = RackspaceNodeDriver
-    driver_type = RackspaceNodeDriver
-    driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'ord'}
+    def test_service_catalog_contais_right_endpoint(self):
+        self.assertEqual(self.driver.connection.get_endpoint(),
+                         self.expected_endpoint)
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
@@ -165,24 +148,38 @@ class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase):
             if size.ram > 256:
                 self.assertTrue(size.price > 0)
 
-    def test_service_catalog(self):
-        self.assertEqual('https://ord.servers.api.rackspacecloud.com/v2/1337',
-                         self.driver.connection.get_endpoint())
+
+class RackspaceNovaDfwTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
+
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'dfw'}
+
+    expected_endpoint = 'https://dfw.servers.api.rackspacecloud.com/v2/1337'
 
 
-class RackspaceNovaIadTests(BaseRackspaceNovaTestCase):
+class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
+
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'ord'}
+
+    expected_endpoint = 'https://ord.servers.api.rackspacecloud.com/v2/1337'
+
+
+class RackspaceNovaIadTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
     driver_kwargs = {'region': 'iad'}
 
-    def test_service_catalog(self):
-        self.assertEqual('https://iad.servers.api.rackspacecloud.com/v2/1337',
-                         self.driver.connection.get_endpoint())
+    expected_endpoint = 'https://iad.servers.api.rackspacecloud.com/v2/1337'
 
 
-class RackspaceNovaLonTests(BaseRackspaceNovaTestCase):
+class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
@@ -192,28 +189,17 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase):
     conn_classes = (RackspaceNovaLonMockHttp, RackspaceNovaLonMockHttp)
     auth_url = 'https://lon.auth.api.example.com/v2.0/'
 
-    def test_list_sizes_pricing(self):
-        sizes = self.driver.list_sizes()
-
-        for size in sizes:
-            if size.ram > 256:
-                self.assertTrue(size.price > 0)
-
-    def test_service_catalog(self):
-        self.assertEqual('https://lon.servers.api.rackspacecloud.com/v2/1337',
-                         self.driver.connection.get_endpoint())
+    expected_endpoint = 'https://lon.servers.api.rackspacecloud.com/v2/1337'
 
 
-class RackspaceNovaSydTests(BaseRackspaceNovaTestCase):
+class RackspaceNovaSydTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
     driver_kwargs = {'region': 'syd'}
 
-    def test_service_catalog(self):
-        self.assertEqual('https://syd.servers.api.rackspacecloud.com/v2/1337',
-                         self.driver.connection.get_endpoint())
+    expected_endpoint = 'https://syd.servers.api.rackspacecloud.com/v2/1337'
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
