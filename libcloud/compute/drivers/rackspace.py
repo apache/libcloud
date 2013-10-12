@@ -84,11 +84,6 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         if region not in ['us', 'uk']:
             raise ValueError('Invalid region: %s' % (region))
 
-        if region == 'us':
-            self.connectionCls.auth_url = AUTH_URL_US
-        elif region == 'uk':
-            self.connectionCls.auth_url = AUTH_URL_UK
-
         self.region = region
 
         super(RackspaceFirstGenNodeDriver, self).__init__(key=key,
@@ -113,12 +108,27 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
 
         return locations
 
+    def _ex_connection_class_kwargs(self):
+        kwargs = self.openstack_connection_kwargs()
+
+        if self.region == 'us':
+            auth_url = AUTH_URL_US
+        elif self.region == 'uk':
+            auth_url = AUTH_URL_UK
+
+        # 'ex_force_auth_url' has precedence over 'region' argument
+        ex_force_auth_url = kwargs.get('ex_force_auth_url', auth_url)
+        kwargs['ex_force_auth_url'] = ex_force_auth_url
+        return kwargs
+
 
 class RackspaceConnection(OpenStack_1_1_Connection):
     """
     Connection class for the Rackspace next-gen OpenStack base driver.
     """
-    get_endpoint_args = {}
+    def __init__(self, *args, **kwargs):
+        self.get_endpoint_args = kwargs.pop('get_endpoint_args', None)
+        super(RackspaceConnection, self).__init__(*args, **kwargs)
 
     def get_endpoint(self):
         if not self.get_endpoint_args:
@@ -145,7 +155,6 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
     website = 'http://www.rackspace.com'
     connectionCls = RackspaceConnection
     type = Provider.RACKSPACE
-    api_name = None
 
     _networks_url_prefix = '/os-networksv2'
 
@@ -158,22 +167,36 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         :type region: ``str``
         """
         valid_regions = ENDPOINT_ARGS_MAP.keys()
+
         if region not in valid_regions:
             raise ValueError('Invalid region: %s' % (region))
 
         if region == 'lon':
-            self.connectionCls.auth_url = AUTH_URL_UK
             self.api_name = 'rackspacenovalon'
         else:
-            self.connectionCls.auth_url = AUTH_URL_US
             self.api_name = 'rackspacenovaus'
-
-        self.connectionCls._auth_version = '2.0'
-        self.connectionCls.get_endpoint_args = \
-            ENDPOINT_ARGS_MAP[region]
 
         self.region = region
 
         super(RackspaceNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure, host=host,
                                                   port=port, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = self.openstack_connection_kwargs()
+
+        if self.region == 'lon':
+            auth_url = AUTH_URL_UK
+        else:
+            auth_url = AUTH_URL_US
+
+        # 'ex_force_auth_url' has precedence over 'region' argument
+        ex_force_auth_url = kwargs.get('ex_force_auth_url', auth_url)
+
+        # ex_force_auth_version has precedence is not set
+        ex_force_auth_version = kwargs.get('ex_force_auth_version', '2.0')
+
+        kwargs['ex_force_auth_url'] = ex_force_auth_url
+        kwargs['ex_force_auth_version'] = ex_force_auth_version
+        kwargs['get_endpoint_args'] = ENDPOINT_ARGS_MAP[self.region]
+        return kwargs
