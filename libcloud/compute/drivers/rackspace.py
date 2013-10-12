@@ -173,6 +173,8 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
 
         if region == 'lon':
             self.api_name = 'rackspacenovalon'
+        elif region == 'syd':
+            self.api_name = 'rackspacenovasyd'
         else:
             self.api_name = 'rackspacenovaus'
 
