@@ -154,22 +154,22 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             raise LibcloudError('Unsupported Auth Version requested')
 
     def authenticate_1_0(self):
-        resp = self.request("/v1.0",
-                    headers={
-                        'X-Auth-User': self.user_id,
-                        'X-Auth-Key': self.key,
-                    },
-                    method='GET')
+        headers = {
+            'X-Auth-User': self.user_id,
+            'X-Auth-Key': self.key,
+        }
+
+        resp = self.request('/v1.0', headers=headers, method='GET')
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status != httplib.NO_CONTENT:
-            raise MalformedResponseError('Malformed response',
-                    body='code: %s body:%s headers:%s' % (resp.status,
-                                                          resp.body,
-                                                          resp.headers),
-                    driver=self.driver)
+            body = 'code: %s body:%s headers:%s' % (resp.status,
+                                                    resp.body,
+                                                    resp.headers)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
         else:
             headers = resp.headers
             # emulate the auth 1.1 URL list
@@ -192,18 +192,16 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id,
                                               'key': self.key}})
-        resp = self.request("/v1.1/auth",
-                    data=reqbody,
-                    headers={},
-                    method='POST')
+        resp = self.request('/v1.1/auth', data=reqbody, headers={},
+                            method='POST')
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status != httplib.OK:
-            raise MalformedResponseError('Malformed response',
-                    body='code: %s body:%s' % (resp.status, resp.body),
-                    driver=self.driver)
+            body = 'code: %s body:%s' % (resp.status, resp.body)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
         else:
             try:
                 body = json.loads(resp.body)
@@ -240,8 +238,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         # Password based authentication is the only 'core' authentication
         # method in Keystone at this time.
         # 'keystone' - http://s.apache.org/e8h
-        data = {'auth': \
-                {'passwordCredentials': \
+        data = {'auth':
+                {'passwordCredentials':
                  {'username': self.user_id, 'password': self.key}}}
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
@@ -249,17 +247,16 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
-        resp = self.request('/v2.0/tokens',
-                    data=reqbody,
-                    headers={'Content-Type': 'application/json'},
-                    method='POST')
+        resp = self.request('/v2.0/tokens', data=reqbody,
+                            headers={'Content-Type': 'application/json'},
+                            method='POST')
         if resp.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
         elif resp.status not in [httplib.OK,
                                  httplib.NON_AUTHORITATIVE_INFORMATION]:
-            raise MalformedResponseError('Malformed response',
-                    body='code: %s body: %s' % (resp.status, resp.body),
-                    driver=self.driver)
+            body = 'code: %s body: %s' % (resp.status, resp.body)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
         else:
             try:
                 body = json.loads(resp.body)
@@ -296,7 +293,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return False
 
         expires = self.auth_token_expires - \
-                datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
+            datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
 
         time_tuple_expires = expires.utctimetuple()
         time_tuple_now = datetime.datetime.utcnow().utctimetuple()
@@ -306,6 +303,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return True
 
         return False
+
 
 class OpenStackServiceCatalog(object):
     """
@@ -561,7 +559,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             if self._ex_force_auth_url is not None:
                 aurl = self._ex_force_auth_url
 
-            if aurl == None:
+            if not aurl:
                 raise LibcloudError('OpenStack instance must ' +
                                     'have auth_url set')
 
@@ -578,13 +576,14 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_user_info = osa.auth_user_info
 
             # pull out and parse the service catalog
-            self.service_catalog = OpenStackServiceCatalog(osa.urls,
-                    ex_force_auth_version=self._auth_version)
+            osc = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=
+                                          self._auth_version)
+            self.service_catalog = osc
 
         # Set up connection info
         url = self._ex_force_base_url or self.get_endpoint()
         (self.host, self.port, self.secure, self.request_path) = \
-                self._tuple_from_url(url)
+            self._tuple_from_url(url)
 
     def _add_cache_busting_to_params(self, params):
         cache_busting_number = binascii.hexlify(os.urandom(8)).decode('ascii')
