@@ -84,13 +84,13 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
         if region not in ['us', 'uk']:
             raise ValueError('Invalid region: %s' % (region))
 
-        self.region = region
-
         super(RackspaceFirstGenNodeDriver, self).__init__(key=key,
                                                           secret=secret,
                                                           secure=secure,
                                                           host=host,
-                                                          port=port, **kwargs)
+                                                          port=port,
+                                                          region=region,
+                                                          **kwargs)
 
     def list_locations(self):
         """
@@ -178,11 +178,11 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
         else:
             self.api_name = 'rackspacenovaus'
 
-        self.region = region
-
         super(RackspaceNodeDriver, self).__init__(key=key, secret=secret,
                                                   secure=secure, host=host,
-                                                  port=port, **kwargs)
+                                                  port=port,
+                                                  region=region,
+                                                  **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()

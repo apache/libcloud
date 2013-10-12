@@ -823,7 +823,7 @@ class BaseDriver(object):
     connectionCls = ConnectionKey
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, **kwargs):
+                 api_version=None, region=None, **kwargs):
         """
         :param    key:    API key or username to be used (required)
         :type     key:    ``str``
@@ -845,6 +845,10 @@ class BaseDriver(object):
                                  which support multiple API versions.
         :type     api_version: ``str``
 
+        :param region: Optional driver region. Only used by drivers which
+                       support multiple regions.
+        :type region: ``str``
+
         :rtype: ``None``
         """
 
@@ -865,6 +869,7 @@ class BaseDriver(object):
             args.append(port)
 
         self.api_version = api_version
+        self.region = region
 
         conn_kwargs = self._ex_connection_class_kwargs()
         self.connection = self.connectionCls(*args, **conn_kwargs)
