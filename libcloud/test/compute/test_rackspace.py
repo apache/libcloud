@@ -19,6 +19,7 @@ from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
 from libcloud.compute.providers import DEPRECATED_RACKSPACE_PROVIDERS
 from libcloud.compute.providers import get_driver
+from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_0_Tests
@@ -38,6 +39,9 @@ class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
     driver_type = RackspaceFirstGenNodeDriver
     driver_args = RACKSPACE_PARAMS
     driver_kwargs = {'region': 'us'}
+
+    def test_auth_url_is_set(self):
+        self.assertEqual(self.driver.connection.auth_url, AUTH_URL_US)
 
     def test_error_is_thrown_on_accessing_old_constant(self):
         for provider in DEPRECATED_RACKSPACE_PROVIDERS:
@@ -64,6 +68,9 @@ class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
     driver_type = RackspaceFirstGenNodeDriver
     driver_args = RACKSPACE_PARAMS
     driver_kwargs = {'region': 'uk'}
+
+    def test_auth_url_is_set(self):
+        self.assertEqual(self.driver.connection.auth_url, AUTH_URL_UK)
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
