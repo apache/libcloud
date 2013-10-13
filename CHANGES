@@ -15,13 +15,28 @@ Changes with Apache Libcloud in development
 
  *) Compute
 
-    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
-      add a new CLOUDFILES constant.
-      Driver referenced by this constant takes a "region" keyword argument
-      which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
+    - Refactor Rackspace driver classes and make them easier to use. Now there
+      are two Rackspace provider constants - Provider.RACKSPACE which
+      represents new next-gen OpenStack servers and
+      Provider.RACKSPACE_FIRST_GEN which represents old first-gen cloud
+      servers.
+
+      Note: This change is backward incompatible. For more information on those
+      changes and how to upgrade your code to make it work with it, please visit
+      "upgrade notes" section in the documentation.
+      [Tomaz Muraus]
+
+    - Deprecate the following EC2 provider constants: EC2_US_EAST,
+      EC2_EU, EC2_EU_WEST, EC2_AP_SOUTHEAST, EC2_AP_NORTHEAST,
+      EC2_US_WEST_OREGON, EC2_SA_EAST, EC2_SA_EAST and replace it with a new
+      EC2 constant.
+      Driver referenced by this new constant now takes a "region" argument which
+      dictates to which region to connect.
 
       Note: Deprecated constants will continue to work for the foreseeable
       future.
+      For more information on those changes and how to upgrade your code,
+      please visit "upgrade notes" section in the documentation.
       [Tomaz Muraus]
 
     - Add support for volume related functions to OpenNebula driver.
@@ -105,6 +120,15 @@ Changes with Apache Libcloud in development
       [Tomaz Muraus]
 
   *) Storage
+
+    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constant and
+      add a new CLOUDFILES constant.
+      Driver referenced by this new constant takes a "region" keyword argument
+      which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
+
+      Note: Deprecated constants will continue to work for the foreseeable
+      future.
+      [Tomaz Muraus]
 
     - Allow users to filter objects starting with a prefix by passing ex_prefix
       argument to the list_container_objects method in the S3, Google Storage
@@ -468,16 +492,6 @@ Changes with Apache Libcloud 0.12.1:
       - changes in xml.etree module
       - changes in xmlrpc module
       (LIBCLOUD-245)
-      [Tomaz Muraus]
-
-    - Refactor Rackspace driver classes and make them easier to use. Now there
-      are two rackspace constants - Provider.RACKSPACE which represents new
-      next-gen OpenStack servers and Provider.RACKSPACE_FIRST_GEN which
-      represents old cloud servers.
-
-      Note: This change is backward incompatible. For more information on those
-      changes and how to upgrade your code to make it work with it, please visit
-      TODO.
       [Tomaz Muraus]
 
     - Improvements and additions in vCloud driver:
