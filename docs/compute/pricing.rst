@@ -35,6 +35,8 @@ a JSON file (``data/pricing.json``) which is bundled with each release. This
 pricing data is only updated once you install a new release which means it
 could be out of date.
 
+.. _using-custom-pricing-file:
+
 Using a custom pricing file
 ---------------------------
 

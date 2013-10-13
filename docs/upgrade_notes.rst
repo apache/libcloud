@@ -5,6 +5,220 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 0.14.0
+---------------
+
+To make drivers with multiple regions easier to use, one of the big changes in
+this version is move away from the old "one class per region" model to a new
+single class plus ``region`` argument model.
+
+More information on how this affects existing drivers and your code can be
+found bellow.
+
+Amazon EC2 compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Rackspace compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Rackspace compute driver has moved to single class plus ``region`` argument. As
+such, the following provider constants have been deprecated:
+
+* ``RACKSPACE``
+* ``RACKSPACE_UK``
+* ``RACKSPACE_AU``
+* ``RACKSPACE_NOVA_BETA``
+* ``RACKSPACE_NOVA_DFW``
+* ``RACKSPACE_NOVA_LON``
+* ``RACKSPACE_NOVA_ORD``
+
+And replaced with two new constants:
+
+* ``RACKSPACE``
+* ``RACKSPACE_FIRST_GEN``
+
+Besides that, ``RACKSPACE`` provider constant now defaults to next-generation
+OpenStack based servers. Previously it defaulted to first generation cloud
+servers.
+
+If you want to preserve old behavior and use first-gen drivers you need to use
+``RACKSPACE_FIRST_GEN`` provider constant.
+
+Old code (connecting to a first gen provider in the US):
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE)
+    driver = cls('username', 'api_key')
+
+New code (connecting to a first gen provider in the US):
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE_FIRST_GEN)
+    driver = cls('username', 'api_key', region='us')
+
+Old code (connecting to a first gen provider in the US):
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE_UK)
+    driver = cls('username', 'api_key')
+
+New code (connecting to a first-gen provider in the US):
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE_FIRST_GEN)
+    driver = cls('username', 'api_key', region='uk')
+
+Old code (connection to a next-gen provider using ``ORD`` region)
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE_NOVA_ORD)
+    driver = cls('username', 'api_key')
+
+New code (connection to a next-gen provider using ``ORD`` region)
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.RACKSPACE)
+    driver = cls('username', 'api_key', region='ord')
+
+CloudFiles Storage driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``CLOUDFILES_US`` and ``CLOUDFILES_UK`` provider constants have been deprecated
+and a new ``CLOUDFILES`` constant has been added.
+
+User can now use this single constant and specify which region to use by
+passing ``region`` argument to the driver constructor.
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.storage.types import Provider
+    from libcloud.storage.providers import get_driver
+
+    cls1 = get_driver(Provider.CLOUDFILES_US)
+    cls2 = get_driver(Provider.CLOUDFILES_UK)
+
+    driver1 = cls1('username', 'api_key')
+    driver2 = cls1('username', 'api_key')
+
+New code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.CLOUDFILES)
+
+    driver1 = cls1('username', 'api_key', region='dfw')
+    driver2 = cls1('username', 'api_key', region='lon')
+
+CloudStack Compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CloudStack driver received a lot of changes and additions which will make it
+more pleasant to use. Backward incompatible changes are listed bellow:
+
+* ``CloudStackForwardingRule`` class has been renamed to
+  ``CloudStackIPForwardingRule``
+
+
+ScriptDeployment and ScriptFileDeployment constructor now takes args argument
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:class:`libcloud.compute.deployment.ScriptDeployment` and
+:class:`libcloud.compute.deployment.ScriptFileDeployment` class constructor now
+take ``args`` as a second argument.
+
+Previously this argument was not present and the second argument was ``name``.
+
+If you have a code which instantiate those classes directly and passes two or
+more arguments (not keyword arguments) to the constructor you need to update
+it to preserve the old behavior.
+
+Old code:
+
+.. sourcecode:: python
+
+    sd = ScriptDeployment('#!/usr/bin/env bash echo "ponies!"', 'ponies.sh')
+
+New code:
+
+.. sourcecode:: python
+
+    sd = ScriptDeployment('#!/usr/bin/env bash echo "ponies!"', None,
+                          'ponies.sh')
+
+Even better (using keyword arguments):
+
+.. sourcecode:: python
+
+    sd = ScriptDeployment(script='#!/usr/bin/env bash echo "ponies!"',
+                          name='ponies.sh')
+
+
+Pricing file changes
+~~~~~~~~~~~~~~~~~~~~
+
+By default this version of Libcloud tries to read pricing data from the
+``~/.libcloud/pricing.json`` file. If this file doesn't exist, Libcloud falls
+back to the old behavior and the pricing data is read from the pricing bundle
+which is shipped with each release.
+
+For more information, please see :ref:`using-custom-pricing-file` page.
+
+RecordType ENUM value is now a string
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:class:`libcloud.dns.types.RecordType` ENUM value used be an integer, but from
+this version on, it's now a string. This was done to make it simpler and remove
+unnecessary indirection.
+
+If you use `RecordType` class in your code as recommended no changes are
+required, but if you use integer values directly, you need to update your
+code to use `RecordType` class otherwise it will break.
+
+OK:
+
+.. sourcecode:: python
+
+    # ...
+    record = driver.create_record(name=www, zone=zone, type=RecordType.A,
+                                  data='127.0.0.1')
+
+Not OK:
+
+.. sourcecode:: python
+
+    # ...
+    record = driver.create_record(name=www, zone=zone, type=0,
+                                  data='127.0.0.1')
+
 Libcloud 0.8
 ------------
 
