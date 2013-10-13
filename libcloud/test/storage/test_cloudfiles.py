@@ -108,23 +108,6 @@ class CloudFilesTests(unittest.TestCase):
         self.assertEqual('/v1/MossoCloudFS',
             driver.connection.request_path)
 
-    def test_invalid_ex_force_service_region(self):
-        driver = CloudFilesStorageDriver('driver', 'dummy',
-                ex_force_service_region='invalid')
-
-        try:
-            driver.list_containers()
-        except:
-            e = sys.exc_info()[1]
-            self.assertEqual(e.value, 'Could not find specified endpoint')
-        else:
-            self.fail('Exception was not thrown')
-
-    def test_ex_force_service_region(self):
-        driver = CloudFilesStorageDriver('driver', 'dummy',
-                ex_force_service_region='ORD')
-        driver.list_containers()
-
     def test_force_auth_url_kwargs(self):
         kwargs = {
             'ex_force_auth_version': '2.0',
