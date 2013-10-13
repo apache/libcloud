@@ -16,13 +16,65 @@ More information on how this affects existing drivers and your code can be
 found bellow.
 
 Amazon EC2 compute driver changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Amazon EC2 compute driver has moved to single class plus ``region`` argument
+model. As such, the following provider constants have been deprecated:
+
+* ``EC2_US_EAST``
+* ``EC2_EU``
+* ``EC2_EU_WEST``
+* ``EC2_AP_SOUTHEAST``
+* ``EC2_AP_NORTHEAST``
+* ``EC2_US_WEST_OREGON``
+* ``EC2_SA_EAST``
+* ``EC2_AP_SOUTHEAST2``
+
+And replaced with a single constants:
+
+* ``EC2`` - supported values for the ``region`` argument are: ``us-east-1``,
+  ``us-west-1``, ``us-west-2``, ``eu-west-1``, ``ap-southeast-1``,
+  ``ap-northeast-1``, ``sa-east-1``, ``ap-southeast-2``.
+
+List which shows how old classes map to a new ``region`` argument value:
+
+* ``EC2_US_EAST`` -> ``us-east-1``
+* ``EC2_US_WEST`` -> ``us-west-1``
+* ``EC2_US_WEST_OREGON`` -> ``us-west-2``
+* ``EC2_EU`` -> ``eu-west-1``
+* ``EC2_EU_WEST`` -> ``eu-west-1``
+* ``EC2_AP_SOUTHEAST`` -> ``ap-southeast-1``
+* ``EC2_AP_SOUTHEAST2`` -> ``ap-southeast-2``
+* ``EC2_AP_NORTHEAST`` -> ``ap-northeast-1``
+* ``EC2_SA_EAST`` -> ``sa-east-1``
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.EC2_EU_WEST)
+    driver = cls('username', 'api_key')
+
+New code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.EC2)
+    driver = cls('username', 'api_key', region='eu-west-1')
+
+
 
 Rackspace compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Rackspace compute driver has moved to single class plus ``region`` argument. As
-such, the following provider constants have been deprecated:
+Rackspace compute driver has moved to single class plus ``region`` argument
+model. As such, the following provider constants have been removed:
 
 * ``RACKSPACE``
 * ``RACKSPACE_UK``
@@ -34,8 +86,10 @@ such, the following provider constants have been deprecated:
 
 And replaced with two new constants:
 
-* ``RACKSPACE``
-* ``RACKSPACE_FIRST_GEN``
+* ``RACKSPACE`` - supported values for ``region`` argument are: ``us``, ``uk``.
+  Default value is ``us``.
+* ``RACKSPACE_FIRST_GEN`` - supported values for the ``region`` argument are:
+  ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
 
 Besides that, ``RACKSPACE`` provider constant now defaults to next-generation
 OpenStack based servers. Previously it defaulted to first generation cloud
@@ -44,7 +98,10 @@ servers.
 If you want to preserve old behavior and use first-gen drivers you need to use
 ``RACKSPACE_FIRST_GEN`` provider constant.
 
-Old code (connecting to a first gen provider in the US):
+More examples which show how to update your code to work with a new version can
+be found bellow.
+
+Old code (connecting to a first-gen provider in the US):
 
 .. sourcecode:: python
 
@@ -54,7 +111,7 @@ Old code (connecting to a first gen provider in the US):
     cls = get_driver(Provider.RACKSPACE)
     driver = cls('username', 'api_key')
 
-New code (connecting to a first gen provider in the US):
+New code (connecting to a first-gen provider in the US):
 
 .. sourcecode:: python
 
@@ -64,7 +121,7 @@ New code (connecting to a first gen provider in the US):
     cls = get_driver(Provider.RACKSPACE_FIRST_GEN)
     driver = cls('username', 'api_key', region='us')
 
-Old code (connecting to a first gen provider in the US):
+Old code (connecting to a first gen provider in the UK):
 
 .. sourcecode:: python
 
@@ -74,7 +131,7 @@ Old code (connecting to a first gen provider in the US):
     cls = get_driver(Provider.RACKSPACE_UK)
     driver = cls('username', 'api_key')
 
-New code (connecting to a first-gen provider in the US):
+New code (connecting to a first-gen provider in the UK):
 
 .. sourcecode:: python
 
