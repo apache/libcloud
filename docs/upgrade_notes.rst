@@ -68,8 +68,6 @@ New code:
     cls = get_driver(Provider.EC2)
     driver = cls('username', 'api_key', region='eu-west-1')
 
-
-
 Rackspace compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -161,6 +159,15 @@ New code (connection to a next-gen provider using ``ORD`` region)
     cls = get_driver(Provider.RACKSPACE)
     driver = cls('username', 'api_key', region='ord')
 
+CloudStack Compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CloudStack driver received a lot of changes and additions which will make it
+more pleasant to use. Backward incompatible changes are listed bellow:
+
+* ``CloudStackForwardingRule`` class has been renamed to
+  ``CloudStackIPForwardingRule``
+
 CloudFiles Storage driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -195,16 +202,6 @@ New code:
     driver1 = cls1('username', 'api_key', region='dfw')
     driver2 = cls1('username', 'api_key', region='lon')
 
-CloudStack Compute driver changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-CloudStack driver received a lot of changes and additions which will make it
-more pleasant to use. Backward incompatible changes are listed bellow:
-
-* ``CloudStackForwardingRule`` class has been renamed to
-  ``CloudStackIPForwardingRule``
-
-
 ScriptDeployment and ScriptFileDeployment constructor now takes args argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -238,8 +235,7 @@ Even better (using keyword arguments):
     sd = ScriptDeployment(script='#!/usr/bin/env bash echo "ponies!"',
                           name='ponies.sh')
 
-
-Pricing file changes
+Pricing data changes
 ~~~~~~~~~~~~~~~~~~~~
 
 By default this version of Libcloud tries to read pricing data from the
