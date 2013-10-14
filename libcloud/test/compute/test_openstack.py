@@ -259,15 +259,18 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_auth_token_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
-        self.assertEqual(self.driver.connection.auth_token, "603d2bd9-f45c-4583-b91c-2c8eac0b5654")
+        self.assertEqual(self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
 
     def test_auth_token_expires_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2011-09-18T02:44:17-05:00")
+        self.assertEqual(expires.isoformat(), "2011-11-23T21:00:14-06:00")
 
     def test_auth(self):
+        if self.driver.connection._auth_version == '2.0':
+            return
+
         OpenStackMockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver = self.create_driver()
@@ -279,6 +282,9 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_auth_missing_key(self):
+        if self.driver.connection._auth_version == '2.0':
+            return
+
         OpenStackMockHttp.type = 'UNAUTHORIZED_MISSING_KEY'
         try:
             self.driver = self.create_driver()
@@ -290,6 +296,9 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_auth_server_error(self):
+        if self.driver.connection._auth_version == '2.0':
+            return
+
         OpenStackMockHttp.type = 'INTERNAL_SERVER_ERROR'
         try:
             self.driver = self.create_driver()
@@ -577,6 +586,10 @@ class OpenStackMockHttp(MockHttpTestCase):
                    'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
                    'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
         return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_0_tokens(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v2_0__auth.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_empty.xml')
