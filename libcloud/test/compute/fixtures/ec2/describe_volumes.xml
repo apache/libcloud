@@ -1,0 +1,23 @@
+<DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+    <requestId>766b978a-f574-4c8d-a974-57547a8c304e</requestId>
+    <volumeSet>
+        <item>
+            <volumeId>vol-10ae5e2b</volumeId>
+            <size>1</size>
+            <snapshotId/>
+            <availabilityZone>us-east-1d</availabilityZone>
+            <status>available</status>
+            <createTime>2013-10-09T05:41:37.000Z</createTime>
+            <attachmentSet/>
+        </item>
+        <item>
+            <volumeId>vol-v24bfh75</volumeId>
+            <size>11</size>
+            <snapshotId/>
+            <availabilityZone>us-east-1c</availabilityZone>
+            <status>available</status>
+            <createTime>2013-10-08T19:36:49.000Z</createTime>
+            <attachmentSet/>
+        </item>
+    </volumeSet>
+</DescribeVolumesResponse>

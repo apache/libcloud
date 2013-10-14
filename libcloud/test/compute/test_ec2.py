@@ -17,6 +17,7 @@ from __future__ import with_statement
 
 import os
 import sys
+from datetime import datetime
 
 from mock import Mock
 
@@ -37,7 +38,7 @@ from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.utils.py3 import urlparse
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
-from libcloud.compute.base import StorageVolume
+from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -326,6 +327,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(images[0].name,
                     'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
 
+    def ex_destroy_image(self):
+        images = self.driver.list_images()
+        image = images[0]
+
+        resp = self.driver.ex_destroy_image(image)
+        self.assertTrue(resp)
+
     def test_ex_list_availability_zones(self):
         availability_zones = self.driver.ex_list_availability_zones()
         availability_zone = availability_zones[0]
@@ -355,6 +363,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(keypair1['keyFingerprint'], null_fingerprint)
         self.assertEqual(keypair2['keyName'], 'gsg-keypair')
         self.assertEqual(keypair2['keyFingerprint'], null_fingerprint)
+
+    def ex_delete_keypair(self):
+        resp = self.driver.ex_delete_keypair('testkey')
+        self.assertTrue(resp)
 
     def test_ex_describe_tags(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -455,12 +467,28 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         result = self.driver.ex_change_node_size(node=node, new_size=size)
         self.assertTrue(result)
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+
+        self.assertEqual(len(volumes), 2)
+
+        self.assertEqual('vol-10ae5e2b', volumes[0].id)
+        self.assertEqual(1, volumes[0].size)
+        self.assertEqual('available', volumes[0].extra['state'])
+
+        self.assertEqual('vol-v24bfh75', volumes[1].id)
+        self.assertEqual(11, volumes[1].size)
+        self.assertEqual('available', volumes[1].extra['state'])
+
+
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
 
         self.assertEqual(10, vol.size)
         self.assertEqual('vol', vol.name)
+        self.assertEqual('creating', vol.extra['state'])
+        self.assertTrue(isinstance(vol.extra['create-time'], datetime))
 
     def test_destroy_volume(self):
         vol = StorageVolume(
@@ -487,6 +515,45 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         retValue = self.driver.detach_volume(vol)
         self.assertTrue(retValue)
+
+    def test_create_volume_snapshot(self):
+        vol = StorageVolume(
+                id='vol-4282672b', name='test',
+                size=10, driver=self.driver)
+        snap = self.driver.create_volume_snapshot(vol, 'Test description')
+
+        self.assertEqual('snap-a7cb2hd9', snap.id)
+        self.assertEqual(vol.size, snap.size)
+        self.assertEqual('Test description', snap.extra['description'])
+        self.assertEqual(vol.id, snap.extra['volume_id'])
+        self.assertEqual('pending', snap.extra['state'])
+
+    def test_list_snapshots(self):
+        snaps = self.driver.list_snapshots()
+
+        self.assertEqual(len(snaps), 2)
+
+        self.assertEqual('snap-428abd35', snaps[0].id)
+        self.assertEqual('vol-e020df80', snaps[0].extra['volume_id'])
+        self.assertEqual(30, snaps[0].size)
+        self.assertEqual('Daily Backup', snaps[0].extra['description'])
+
+        self.assertEqual('snap-18349159', snaps[1].id)
+        self.assertEqual('vol-b5a2c1v9', snaps[1].extra['volume_id'])
+        self.assertEqual(15, snaps[1].size)
+        self.assertEqual('Weekly backup', snaps[1].extra['description'])
+
+    def test_destroy_snapshot(self):
+        snap = VolumeSnapshot(id='snap-428abd35', size=10, driver=self.driver)
+        resp = snap.destroy()
+        self.assertTrue(resp)
+
+    def test_ex_modify_image_attribute(self):
+        images = self.driver.list_images()
+        image = images[0]
+
+        resp = self.driver.ex_modify_image_attribute(image, {'LaunchPermission.Add.1.Group': 'all'})
+        self.assertTrue(resp)        
 
     def test_create_node_ex_security_groups(self):
         EC2MockHttp.type = 'ex_security_groups'
@@ -732,6 +799,35 @@ class EC2MockHttp(MockHttpTestCase):
     def _DetachVolume(self, method, url, body, headers):
         body = self.fixtures.load('detach_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeVolumes(self, method, url, body, headers):
+        body = self.fixtures.load('describe_volumes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateSnapshot(self, method, url, body, headers):
+        body = self.fixtures.load('create_snapshot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeSnapshots(self, method, url, body, headers):
+        body = self.fixtures.load('describe_snapshots.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteSnapshot(self, method, url, body, headers):
+        body = self.fixtures.load('delete_snapshot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeregisterImage(self, method, url, body, headers):
+        body = self.fixtures.load('deregister_image.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])    
+
+    def _DeleteKeypair(self, method, url, body, headers):
+        body = self.fixtures.load('delete_keypair.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifyImageAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_image_attribute.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 
 class EucMockHttp(EC2MockHttp):
