@@ -33,7 +33,8 @@ from libcloud.common.types import LibcloudError
 
 from libcloud.test import unittest
 from libcloud.test import MockHttpTestCase
-from libcloud.test.file_fixtures import LoadBalancerFileFixtures, OpenStackFixtures
+from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+from libcloud.test.file_fixtures import OpenStackFixtures
 
 
 class RackspaceLBTests(unittest.TestCase):
@@ -48,7 +49,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.driver.connection._populate_hosts_and_request_paths()
 
     def test_force_auth_token_kwargs(self):
-        base_url = 'https://ord.loadbalancer.api.rackspacecloud.com/v1.0/slug'
+        base_url = 'https://ord.loadbalancer.api.rackspacecloud.com/v1.0/11111'
         kwargs = {
             'ex_force_auth_token': 'some-auth-token',
             'ex_force_base_url': base_url
@@ -58,7 +59,7 @@ class RackspaceLBTests(unittest.TestCase):
 
         self.assertEqual(kwargs['ex_force_auth_token'],
             driver.connection.auth_token)
-        self.assertEqual('/v1.0/slug',
+        self.assertEqual('/v1.0/11111',
             driver.connection.request_path)
 
     def test_force_auth_url_kwargs(self):
@@ -906,20 +907,17 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
     auth_fixtures = OpenStackFixtures()
 
-    def _v1_0(self, method, url, body, headers):
-        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
-                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
-        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+    def _v2_0_tokens(self, method, url, body, headers):
+        body = self.fixtures.load('_v2_0__auth.json')
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
 
-    def _v1_0_slug_loadbalancers_protocols(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_protocols(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_loadbalancers_protocols.json')
         return (httplib.ACCEPTED, body, {},
                 httplib.responses[httplib.ACCEPTED])
 
-    def _v1_0_slug_loadbalancers_algorithms(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_algorithms(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers_algorithms.json')
             return (httplib.ACCEPTED, body, {},
@@ -927,13 +925,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == "POST":
-            body_json = json.loads(body)
-            loadbalancer_json = body_json['loadBalancer']
+            json_body = json.loads(body)
+
+            loadbalancer_json = json_body['loadBalancer']
             member_1_json, member_2_json = loadbalancer_json['nodes']
 
             self.assertEqual(loadbalancer_json['protocol'], 'HTTP')
@@ -960,24 +959,24 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_EX_MEMBER_ADDRESS(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_EX_MEMBER_ADDRESS(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_loadbalancers_nodeaddress.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v1_0_slug_loadbalancers_8155(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8155(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers_8290.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_nodes(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_nodes(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1002,14 +1001,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8291(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8291(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers_8291.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8291_nodes(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8291_nodes(self, method, url, body, headers):
         if method == "POST":
             json_body = json.loads(body)
             json_node = json_body['nodes'][0]
@@ -1020,14 +1019,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8292(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8292(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers_8292.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8292_nodes(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8292_nodes(self, method, url, body, headers):
         if method == "POST":
             json_body = json.loads(body)
             json_node_1 = json_body['nodes'][0]
@@ -1040,7 +1039,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_nodes_30944(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_nodes_30944(self, method, url, body, headers):
         if method == "PUT":
             json_body = json.loads(body)
             self.assertEqual('ENABLED', json_body['condition'])
@@ -1051,36 +1050,35 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_healthmonitor(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_healthmonitor(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_connectionthrottle(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_connectionthrottle(self, method, url, body, headers):
         if method == 'DELETE':
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_connectionlogging(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_connectionlogging(self, method, url, body, headers):
         # Connection Logging uses a PUT to disable connection logging
         if method == 'PUT':
             json_body = json.loads(body)
-
             self.assertFalse(json_body["connectionLogging"]["enabled"])
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_sessionpersistence(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_sessionpersistence(self, method, url, body, headers):
         if method == 'DELETE':
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_errorpage(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_8290_errorpage(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('v1_slug_loadbalancers_8290_errorpage.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1093,70 +1091,70 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_18940(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_18940(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_18940_ex_public_ips.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_18945(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_18945(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_18945_ex_public_ips.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_18940_errorpage(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_18940_errorpage(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_18940_errorpage.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_18940_accesslist(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_18940_accesslist(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('v1_slug_loadbalancers_18940_accesslist.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_18941(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_18941(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_18941_ex_private_ips.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94692(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94692(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94692_weighted_round_robin.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94693(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94693(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94693_weighted_least_connections.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94694(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94694(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94694_unknown_algorithm.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94695(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94695(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94695_full_details.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94695_healthmonitor(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94695_healthmonitor(self, method, url, body, headers):
         if method == 'PUT':
             json_body = json.loads(body)
 
@@ -1169,7 +1167,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94695_connectionthrottle(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94695_connectionthrottle(self, method, url, body, headers):
         if method == 'PUT':
             json_body = json.loads(body)
 
@@ -1182,7 +1180,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94695_connectionlogging(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94695_connectionlogging(self, method, url, body, headers):
         if method == 'PUT':
             json_body = json.loads(body)
 
@@ -1192,7 +1190,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94695_sessionpersistence(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94695_sessionpersistence(self, method, url, body, headers):
         if method == 'PUT':
             json_body = json.loads(body)
 
@@ -1203,7 +1201,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94695_errorpage(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94695_errorpage(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load("error_page_default.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1212,14 +1210,14 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94696(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94696(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94696_http_health_monitor.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94696_healthmonitor(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94696_healthmonitor(self, method, url, body, headers):
         if method == 'PUT':
             json_body = json.loads(body)
 
@@ -1235,21 +1233,21 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94697(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94697(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94697_https_health_monitor.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94698(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94698(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94698_with_access_list.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94698_accesslist(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94698_accesslist(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('v1_slug_loadbalancers_94698_accesslist.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1263,7 +1261,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94699(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94699(self, method, url, body, headers):
         if method == 'GET':
             # Use the same fixture for batch deletes as for single deletes
             body = self.fixtures.load('v1_slug_loadbalancers_94698_with_access_list.json')
@@ -1275,7 +1273,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94699_accesslist(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94699_accesslist(self, method, url, body, headers):
         if method == 'DELETE':
             fixture = 'v1_slug_loadbalancers_94698_with_access_list.json'
             fixture_json = json.loads(self.fixtures.load(fixture))
@@ -1300,20 +1298,20 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94698_accesslist_1007(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94698_accesslist_1007(self, method, url, body, headers):
         if method == 'DELETE':
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94700(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94700(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("v1_slug_loadbalancers_94700_http_health_monitor_no_body_regex.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_94700_healthmonitor(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_94700_healthmonitor(self, method, url, body, headers):
         if method == 'PUT':
             json_body = json.loads(body)
 
@@ -1329,10 +1327,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3130(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3130(self, method, url, body, headers):
         """ update_balancer(b, protocol='HTTPS'), then get_balancer('3130') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'protocol': 'HTTPS'})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'protocol': 'HTTPS'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1341,10 +1340,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3131(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3131(self, method, url, body, headers):
         """ update_balancer(b, port=443), then get_balancer('3131') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'port': 1337})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'port': 1337})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1353,10 +1353,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3132(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3132(self, method, url, body, headers):
         """ update_balancer(b, name='new_lb_name'), then get_balancer('3132') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'name': 'new_lb_name'})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'name': 'new_lb_name'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1365,10 +1366,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3133(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3133(self, method, url, body, headers):
         """ update_balancer(b, algorithm='ROUND_ROBIN'), then get_balancer('3133') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'algorithm': 'ROUND_ROBIN'})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'algorithm': 'ROUND_ROBIN'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1377,16 +1379,17 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3134(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3134(self, method, url, body, headers):
         """ update.balancer(b, algorithm='HAVE_MERCY_ON_OUR_SERVERS') """
         if method == "PUT":
             return (httplib.BAD_REQUEST, "", {}, httplib.responses[httplib.BAD_REQUEST])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3135(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3135(self, method, url, body, headers):
         """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3135') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'protocol': 'IMAPv2'})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'protocol': 'IMAPv2'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1395,10 +1398,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3136(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3136(self, method, url, body, headers):
         """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3136') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'protocol': 'IMAPv3'})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'protocol': 'IMAPv3'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1407,10 +1411,11 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_3137(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers_3137(self, method, url, body, headers):
         """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3137') """
         if method == "PUT":
-            self.assertDictEqual(json.loads(body), {'protocol': 'IMAPv4'})
+            json_body = json.loads(body)
+            self.assertDictEqual(json_body, {'protocol': 'IMAPv4'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
             response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
@@ -1419,46 +1424,30 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_0_slug_loadbalancers_8290_usage_current(self, method, url, body,
+    def _v1_0_11111_loadbalancers_8290_usage_current(self, method, url, body,
                                                     headers):
         if method == 'GET':
             body = self.fixtures.load('v1_0_slug_loadbalancers_8290_usage_current.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
-    def _v1_1_auth(self, method, url, body, headers):
-        headers = {'content-type': 'application/json; charset=UTF-8'}
-        body = self.auth_fixtures.load('_v1_1__auth.json')
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _v2_0_tokens(self, method, url, body, headers):
-        body = self.fixtures.load('auth_2_0.json')
-        headers = {
-            'content-type': 'application/json'
-        }
-        return (httplib.OK, body, headers,
-                httplib.responses[httplib.OK])
-
 
 class RackspaceLBWithVIPMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('rackspace')
     auth_fixtures = OpenStackFixtures()
 
-    def _v1_0(self, method, url, body, headers):
-        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
-                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
-        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+    def _v2_0_tokens(self, method, url, body, headers):
+            body = self.fixtures.load('_v2_0__auth.json')
+            return (httplib.OK, body, headers,
+                    httplib.responses[httplib.OK])
 
-    def _v1_0_slug_loadbalancers(self, method, url, body, headers):
+    def _v1_0_11111_loadbalancers(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == "POST":
-            body_json = json.loads(body)
-            loadbalancer_json = body_json['loadBalancer']
+            json_body = json.loads(body)
+            loadbalancer_json = json_body['loadBalancer']
 
             self.assertEqual(loadbalancer_json['virtualIps'][0]['id'], '12af')
 
@@ -1467,19 +1456,6 @@ class RackspaceLBWithVIPMockHttp(MockHttpTestCase):
                     httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
-
-    def _v1_1_auth(self, method, url, body, headers):
-        headers = {'content-type': 'application/json; charset=UTF-8'}
-        body = self.auth_fixtures.load('_v1_1__auth.json')
-        return (httplib.OK, body, headers, httplib.responses[httplib.OK])
-
-    def _v2_0_tokens(self, method, url, body, headers):
-        body = self.fixtures.load('auth_2_0.json')
-        headers = {
-            'content-type': 'application/json'
-        }
-        return (httplib.OK, body, headers,
-                httplib.responses[httplib.OK])
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

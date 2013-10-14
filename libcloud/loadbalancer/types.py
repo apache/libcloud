@@ -32,14 +32,17 @@ class LibcloudLBImmutableError(LibcloudLBError):
 
 
 class Provider(object):
-    RACKSPACE_US = 'rackspace_us'
+    RACKSPACE = 'rackspace'
     GOGRID = 'gogrid'
     NINEFOLD = 'ninefold'
-    RACKSPACE_UK = 'rackspace_uk'
     BRIGHTBOX = 'brightbox'
     ELB = 'elb'
     CLOUDSTACK = 'cloudstack'
     GCE = 'gce'
+
+    # Deprecated
+    RACKSPACE_US = 'rackspace_us'
+    RACKSPACE_UK = 'rackspace_uk'
 
 
 class State(object):
