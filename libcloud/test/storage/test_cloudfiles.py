@@ -130,7 +130,7 @@ class CloudFilesTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_service_catalog(self):
-        url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS' % \
+        url = 'https://storage4.%s1.clouddrive.com/v1/MossoCloudFS' % \
               (self.region)
         self.assertEqual(
              url,
@@ -138,7 +138,7 @@ class CloudFilesTests(unittest.TestCase):
 
         self.driver.connection.cdn_request = True
         self.assertEqual(
-             'https://cdn2.clouddrive.com/v1/MossoCloudFS',
+             'https://cdn.clouddrive.com/v1/MossoCloudFS',
              self.driver.connection.get_endpoint())
         self.driver.connection.cdn_request = False
 
@@ -729,7 +729,7 @@ class CloudFilesTests(unittest.TestCase):
                                     "/v1/MossoCloudFS/foo_bar_container/foo_bar_object")
         sig = hmac.new(b('foo'), b(hmac_body), sha1).hexdigest()
         ret = self.driver.ex_get_object_temp_url(obj, 'GET')
-        temp_url = 'https://storage101.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.region, sig)
+        temp_url = 'https://storage4.%s1.clouddrive.com/v1/MossoCloudFS/foo_bar_container/foo_bar_object?temp_url_expires=60&temp_url_sig=%s' % (self.region, sig)
 
         self.assertEqual(''.join(sorted(ret)), ''.join(sorted(temp_url)))
 
@@ -767,24 +767,14 @@ class CloudFilesDeprecatedUKTests(CloudFilesTests):
 class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
 
     fixtures = StorageFileFixtures('cloudfiles')
-    auth_fixtures = OpenStackFixtures()
     base_headers = { 'content-type': 'application/json; charset=UTF-8'}
 
     # fake auth token response
-    def _v1_0(self, method, url, body, headers):
+    def _v2_0_tokens(self, method, url, body, headers):
         headers = copy.deepcopy(self.base_headers)
-        headers.update({ 'x-server-management-url':
-                             'https://servers.api.rackspacecloud.com/v1.0/slug',
-                         'x-auth-token': 'FE011C19',
-                         'x-cdn-management-url':
-                             'https://cdn.clouddrive.com/v1/MossoCloudFS',
-                         'x-storage-token': 'FE011C19',
-                         'x-storage-url':
-                            'https://storage4.clouddrive.com/v1/MossoCloudFS'})
-        return (httplib.NO_CONTENT,
-                "",
-                headers,
-                httplib.responses[httplib.NO_CONTENT])
+        body = self.fixtures.load('_v2_0__auth.json')
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
 
     def _v1_MossoCloudFS_MALFORMED_JSON(self, method, url, body, headers):
         # test_invalid_json_throws_exception
@@ -1025,10 +1015,6 @@ class CloudFilesMockHttp(StorageMockHttp, MockHttpTestCase):
             status_code = httplib.NOT_FOUND
 
         return (status_code, body, headers, httplib.responses[httplib.OK])
-
-    def _v1_1_auth(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v1_1__auth.json')
-        return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
 
 
 class CloudFilesMockRawResponse(MockRawResponse):

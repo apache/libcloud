@@ -48,7 +48,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
@@ -103,44 +103,38 @@ class CloudFilesConnection(OpenStackBaseConnection):
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
 
-    def __init__(self, user_id, key, secure=True, auth_url=AUTH_URL_US,
-                 **kwargs):
+    auth_url = AUTH_URL
+    _auth_version = '2.0'
+
+    def __init__(self, user_id, key, secure=True, **kwargs):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
                                                    **kwargs)
-        self.auth_url = auth_url
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
 
-        if self._ex_force_service_region:
-            self.service_region = self._ex_force_service_region
-
     def get_endpoint(self):
-        # First, we parse out both files and cdn endpoints
-        # for each auth version
+        region = self._ex_force_service_region.upper()
+
         if '2.0' in self._auth_version:
-            eps = self.service_catalog.get_endpoints(
+            ep = self.service_catalog.get_endpoint(
                 service_type='object-store',
-                name='cloudFiles')
-            cdn_eps = self.service_catalog.get_endpoints(
+                name='cloudFiles',
+                region=region)
+            cdn_ep = self.service_catalog.get_endpoint(
                 service_type='object-store',
-                name='cloudFilesCDN')
-        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-            eps = self.service_catalog.get_endpoints(name='cloudFiles')
-            cdn_eps = self.service_catalog.get_endpoints(name='cloudFilesCDN')
+                name='cloudFilesCDN',
+                region=region)
+        else:
+            raise LibcloudError(
+                'Auth version "%s" not supported' % (self._auth_version))
 
         # if this is a CDN request, return the cdn url instead
         if self.cdn_request:
-            eps = cdn_eps
+            ep = cdn_ep
 
-        if self._ex_force_service_region:
-            eps = [ep for ep in eps if ep['region'].lower() == self._ex_force_service_region.lower()]
-
-        if len(eps) == 0:
-            # TODO: Better error message
+        if not ep:
             raise LibcloudError('Could not find specified endpoint')
-
-        ep = eps[0]
 
         if 'publicURL' in ep:
             return ep['publicURL']
@@ -211,17 +205,15 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :param region: ID of the region which should be used.
         :type region: ``str``
         """
-        if hasattr(self, '_region'):
-            region = self._region
-
         # This is here for backard compatibility
         if 'ex_force_service_region' in kwargs:
             region = kwargs['ex_force_service_region']
 
         OpenStackDriverMixin.__init__(self, (), **kwargs)
         super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
-                                            secure=secure, host=host,
-                                            port=port, region=region, **kwargs)
+                                                      secure=secure, host=host,
+                                                      port=port, region=region,
+                                                      **kwargs)
 
     def iterate_containers(self):
         response = self.connection.request('')
@@ -656,7 +648,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :rtype: ``list`` of :class:`Object`
         """
         return list(self.iterate_container_objects(container,
-            ex_prefix=ex_prefix))
+                                                   ex_prefix=ex_prefix))
 
     def iterate_container_objects(self, container, ex_prefix=None):
         """
@@ -820,15 +812,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return obj
 
     def _ex_connection_class_kwargs(self):
-        kwargs = {'ex_force_service_region': self.region}
-
-        if self.region == 'lon':
-            kwargs['auth_url'] = AUTH_URL_UK
-        else:
-            kwargs['auth_url'] = AUTH_URL_US
-
-        base_kwargs = self.openstack_connection_kwargs()
-        kwargs.update(base_kwargs)
+        kwargs = self.openstack_connection_kwargs()
+        kwargs['ex_force_service_region'] = self.region
         return kwargs
 
 
@@ -839,7 +824,10 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_US
     name = 'CloudFiles (US)'
-    _region = 'ord'
+
+    def __init__(self, *args, **kwargs):
+        kwargs['region'] = 'ord'
+        super(CloudFilesUSStorageDriver, self).__init__(*args, **kwargs)
 
 
 class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
@@ -868,7 +856,10 @@ class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
 
     type = Provider.CLOUDFILES_UK
     name = 'CloudFiles (UK)'
-    _region = 'lon'
+
+    def __init__(self, *args, **kwargs):
+        kwargs['region'] = 'lon'
+        super(CloudFilesUKStorageDriver, self).__init__(*args, **kwargs)
 
 
 class FileChunkReader(object):

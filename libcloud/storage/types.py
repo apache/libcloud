@@ -31,8 +31,7 @@ class Provider(object):
     Defines for each of the supported providers
 
     :cvar DUMMY: Example provider
-    :cvar CLOUDFILES_US: CloudFiles US
-    :cvar CLOUDFILES_UK: CloudFiles UK
+    :cvar CLOUDFILES: CloudFiles
     :cvar S3: Amazon S3 US
     :cvar S3_US_WEST: Amazon S3 US West (Northern California)
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
