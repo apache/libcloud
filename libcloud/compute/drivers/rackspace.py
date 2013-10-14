@@ -1,4 +1,3 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
 # The ASF licenses this file to You under the Apache License, Version 2.0
@@ -22,7 +21,7 @@ from libcloud.compute.drivers.openstack import OpenStack_1_0_Connection,\
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection,\
     OpenStack_1_1_NodeDriver
 
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL
 
 
 ENDPOINT_ARGS_MAP = {
@@ -49,21 +48,44 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
     Connection class for the Rackspace first-gen driver.
     """
     responseCls = OpenStack_1_0_Response
-    auth_url = AUTH_URL_US
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
+    auth_url = AUTH_URL
+    _auth_version = '2.0'
+
+    def __init__(self, *args, **kwargs):
+        self.region = kwargs.pop('region', None)
+        super(RackspaceFirstGenConnection, self).__init__(*args, **kwargs)
 
     def get_endpoint(self):
         ep = {}
+
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(service_type='compute',
                                                    name='cloudServers')
-        elif ('1.1' in self._auth_version) or ('1.0' in self._auth_version):
-            ep = self.service_catalog.get_endpoint(name='cloudServers')
+        else:
+            raise LibcloudError(
+                'Auth version "%s" not supported' % (self._auth_version))
 
-        if 'publicURL' in ep:
-            return ep['publicURL']
+        public_url = ep.get('publicURL', None)
 
-        raise LibcloudError('Could not find specified endpoint')
+        if not public_url:
+            raise LibcloudError('Could not find specified endpoint')
+
+        # This is a nasty hack, but it's required because of how the
+        # auth system works.
+        # Old US accounts can access UK API endpoint, but they don't
+        # have this endpoint in the service catalog. Same goes for the
+        # old UK accounts and US endpoint.
+        if self.region == 'us':
+            # Old UK account, which only have uk endpoint in the catalog
+            public_url = public_url.replace('https://lon.servers.api',
+                                            'https://servers.api')
+        elif self.region == 'uk':
+            # Old US account, which only has us endpoints in the catalog
+            public_url = public_url.replace('https://servers.api',
+                                            'https://lon.servers.api')
+
+        return public_url
 
 
 class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
@@ -110,15 +132,7 @@ class RackspaceFirstGenNodeDriver(OpenStack_1_0_NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()
-
-        if self.region == 'us':
-            auth_url = AUTH_URL_US
-        elif self.region == 'uk':
-            auth_url = AUTH_URL_UK
-
-        # 'ex_force_auth_url' has precedence over 'region' argument
-        ex_force_auth_url = kwargs.get('ex_force_auth_url', auth_url)
-        kwargs['ex_force_auth_url'] = ex_force_auth_url
+        kwargs['region'] = self.region
         return kwargs
 
 
@@ -126,7 +140,12 @@ class RackspaceConnection(OpenStack_1_1_Connection):
     """
     Connection class for the Rackspace next-gen OpenStack base driver.
     """
+
+    auth_url = AUTH_URL
+    _auth_version = '2.0'
+
     def __init__(self, *args, **kwargs):
+        self.region = kwargs.pop('region', None)
         self.get_endpoint_args = kwargs.pop('get_endpoint_args', None)
         super(RackspaceConnection, self).__init__(*args, **kwargs)
 
@@ -135,19 +154,18 @@ class RackspaceConnection(OpenStack_1_1_Connection):
             raise LibcloudError(
                 'RackspaceConnection must have get_endpoint_args set')
 
-        # Only support auth 2.0_*
         if '2.0' in self._auth_version:
             ep = self.service_catalog.get_endpoint(**self.get_endpoint_args)
         else:
             raise LibcloudError(
                 'Auth version "%s" not supported' % (self._auth_version))
 
-        # It's possible to authenticate but the service catalog not have
-        # the correct endpoint for this driver, so we throw here.
-        if 'publicURL' in ep:
-            return ep['publicURL']
-        else:
+        public_url = ep.get('publicURL', None)
+
+        if not public_url:
             raise LibcloudError('Could not find specified endpoint')
+
+        return public_url
 
 
 class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
@@ -185,20 +203,8 @@ class RackspaceNodeDriver(OpenStack_1_1_NodeDriver):
                                                   **kwargs)
 
     def _ex_connection_class_kwargs(self):
+        endpoint_args = ENDPOINT_ARGS_MAP[self.region]
         kwargs = self.openstack_connection_kwargs()
-
-        if self.region == 'lon':
-            auth_url = AUTH_URL_UK
-        else:
-            auth_url = AUTH_URL_US
-
-        # 'ex_force_auth_url' has precedence over 'region' argument
-        ex_force_auth_url = kwargs.get('ex_force_auth_url', auth_url)
-
-        # ex_force_auth_version has precedence is not set
-        ex_force_auth_version = kwargs.get('ex_force_auth_version', '2.0')
-
-        kwargs['ex_force_auth_url'] = ex_force_auth_url
-        kwargs['ex_force_auth_version'] = ex_force_auth_version
-        kwargs['get_endpoint_args'] = ENDPOINT_ARGS_MAP[self.region]
+        kwargs['region'] = self.region
+        kwargs['get_endpoint_args'] = endpoint_args
         return kwargs
