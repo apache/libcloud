@@ -25,7 +25,7 @@ import copy
 from libcloud.common.base import PollingConnection
 from libcloud.common.types import LibcloudError
 from libcloud.utils.misc import merge_valid_keys, get_new_obj
-from libcloud.common.rackspace import AUTH_URL_US, AUTH_URL_UK
+from libcloud.common.rackspace import AUTH_URL
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Response
 
@@ -77,6 +77,13 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     poll_interval = 2.5
     timeout = 30
 
+    auth_url = AUTH_URL
+    _auth_version = '2.0'
+
+    def __init__(self, *args, **kwargs):
+            self.region = kwargs.pop('region', None)
+            super(RackspaceDNSConnection, self).__init__(*args, **kwargs)
+
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response.object['jobId']
         kwargs = {'action': '/status/%s' % (job_id),
@@ -92,50 +99,45 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
         return status == 'COMPLETED'
 
     def get_endpoint(self):
-        """
-        FIXME:
-        Dirty, dirty hack. DNS doesn't get returned in the auth 1.1 service
-        catalog, so we build it from the servers url.
-        """
-
-        if self._auth_version == "1.1":
-            ep = self.service_catalog.get_endpoint(name="cloudServers")
-
-            return self._construct_dns_endpoint_from_servers_endpoint(ep)
-        elif "2.0" in self._auth_version:
-            ep = self.service_catalog.get_endpoint(name="cloudServers",
-                                                   service_type="compute",
+        if '2.0' in self._auth_version:
+            ep = self.service_catalog.get_endpoint(name='cloudDNS',
+                                                   service_type='rax:dns',
                                                    region=None)
-
-            return self._construct_dns_endpoint_from_servers_endpoint(ep)
         else:
             raise LibcloudError("Auth version %s not supported" %
                                 (self._auth_version))
 
-    def _construct_dns_endpoint_from_servers_endpoint(self, ep):
-        if 'publicURL' in ep:
-            return ep['publicURL'].replace("servers", "dns")
-        else:
-            raise LibcloudError('Could not find specified endpoint')
+        public_url = ep.get('publicURL', None)
 
+        # This is a nasty hack, but because of how global auth and old accounts
+        # work, there is no way around it.
+        if self.region == 'us':
+            # Old UK account, which only has us endpoint in the catalog
+            public_url = public_url.replace('https://lon.dns.api',
+                                            'https://dns.api')
+        if self.region == 'uk':
+            # Old US account, which only has uk endpoint in the catalog
+            public_url = public_url.replace('https://dns.api',
+                                            'https://lon.dns.api')
 
-class RackspaceUSDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_US
-
-
-class RackspaceUKDNSConnection(RackspaceDNSConnection):
-    auth_url = AUTH_URL_UK
+        return public_url
 
 
 class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
+    name = 'Rackspace DNS'
     website = 'http://www.rackspace.com/'
+    type = Provider.RACKSPACE
+    connectionCls = RackspaceDNSConnection
 
-    def __init__(self, *args, **kwargs):
-        OpenStackDriverMixin.__init__(self, *args, **kwargs)
-        super(RackspaceDNSDriver, self).__init__(*args, **kwargs)
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region='us', **kwargs):
+        if region not in ['us', 'uk']:
+            raise ValueError('Invalid region: %s' % (region))
 
-    def _ex_connection_class_kwargs(self):
-        return self.openstack_connection_kwargs()
+        OpenStackDriverMixin.__init__(self, **kwargs)
+        super(RackspaceDNSDriver, self).__init__(key=key, secret=secret,
+                                                 host=host, port=port,
+                                                 region=region)
 
     RECORD_TYPE_MAP = {
         RecordType.A: 'A',
@@ -381,14 +383,25 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         name = name.replace('.%s' % (domain), '')
         return name
 
+    def _ex_connection_class_kwargs(self):
+        kwargs = self.openstack_connection_kwargs()
+        kwargs['region'] = self.region
+        return kwargs
+
 
 class RackspaceUSDNSDriver(RackspaceDNSDriver):
     name = 'Rackspace DNS (US)'
     type = Provider.RACKSPACE_US
-    connectionCls = RackspaceUSDNSConnection
+
+    def __init__(self, *args, **kwargs):
+        kwargs['region'] = 'us'
+        super(RackspaceUSDNSDriver, self).__init__(*args, **kwargs)
 
 
 class RackspaceUKDNSDriver(RackspaceDNSDriver):
     name = 'Rackspace DNS (UK)'
     type = Provider.RACKSPACE_UK
-    connectionCls = RackspaceUKDNSConnection
+
+    def __init__(self, *args, **kwargs):
+        kwargs['region'] = 'uk'
+        super(RackspaceUKDNSDriver, self).__init__(*args, **kwargs)

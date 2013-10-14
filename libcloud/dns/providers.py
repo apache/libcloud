@@ -24,16 +24,20 @@ DRIVERS = {
         ('libcloud.dns.drivers.linode', 'LinodeDNSDriver'),
     Provider.ZERIGO:
         ('libcloud.dns.drivers.zerigo', 'ZerigoDNSDriver'),
-    Provider.RACKSPACE_US:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
-    Provider.RACKSPACE_UK:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver'),
+    Provider.RACKSPACE:
+        ('libcloud.dns.drivers.rackspace', 'RackspaceDNSDriver'),
     Provider.HOSTVIRTUAL:
         ('libcloud.dns.drivers.hostvirtual', 'HostVirtualDNSDriver'),
     Provider.ROUTE53:
         ('libcloud.dns.drivers.route53', 'Route53DNSDriver'),
     Provider.GANDI:
-        ('libcloud.dns.drivers.gandi', 'GandiDNSDriver')
+        ('libcloud.dns.drivers.gandi', 'GandiDNSDriver'),
+
+    # Deprecated
+    Provider.RACKSPACE_US:
+        ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
+    Provider.RACKSPACE_UK:
+        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
 }
 
 

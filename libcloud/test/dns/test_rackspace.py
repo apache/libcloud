@@ -30,6 +30,7 @@ from libcloud.test.secrets import DNS_PARAMS_RACKSPACE
 
 class RackspaceUSTests(unittest.TestCase):
     klass = RackspaceUSDNSDriver
+    endpoint_url = 'https://dns.api.rackspacecloud.com/v1.0/11111'
 
     def setUp(self):
         self.klass.connectionCls.conn_classes = (
@@ -70,8 +71,7 @@ class RackspaceUSTests(unittest.TestCase):
         driver = self.klass(*DNS_PARAMS_RACKSPACE, **kwargs)
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEqual('https://dns.api.rackspacecloud.com/v1.0/11111',
-            driver.connection.get_endpoint())
+        self.assertEquals(self.endpoint_url, driver.connection.get_endpoint())
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
@@ -310,25 +310,13 @@ class RackspaceUSTests(unittest.TestCase):
                           'foo.bar')
 
 
-class RackspaceUK1Tests(RackspaceUSTests):
+class RackspaceUKTests(RackspaceUSTests):
     klass = RackspaceUKDNSDriver
-
+    endpoint_url = 'https://lon.dns.api.rackspacecloud.com/v1.0/11111'
 
 class RackspaceMockHttp(MockHttp):
     fixtures = DNSFileFixtures('rackspace')
     base_headers = {'content-type': 'application/json'}
-
-
-    def _v1_1_auth(self, method, url, body, headers):
-        body = self.fixtures.load('auth_1_1.json')
-        # fake auth token response
-        headers = {'content-length': '657', 'vary': 'Accept,Accept-Encoding',
-                   'server': 'Apache/2.2.13 (Red Hat)',
-                   'connection': 'Keep-Alive',
-                   'date': 'Sat, 29 Oct 2011 19:29:45 GMT',
-                   'content-type': 'application/json'}
-        return (httplib.OK, body, headers,
-                httplib.responses[httplib.OK])
 
     def _v2_0_tokens(self, method, url, body, headers):
         body = self.fixtures.load('auth_2_0.json')
