@@ -115,10 +115,12 @@ class CloudStackPortForwardingRule(object):
         :param      protocol: TCP/IP Protocol (TCP, UDP)
         :type       protocol: ``str``
 
-        :param      public_port: External port for rule (or started port if used port range)
+        :param      public_port: External port for rule (or start port if
+                                 public_end_port is also provided)
         :type       public_port: ``int``
 
-        :param      private_port: Internal node port for rule (or started port if used port range)
+        :param      private_port: Internal node port for rule (or start port if
+                                  public_end_port is also provided)
         :type       private_port: ``int``
 
         :param      public_end_port: End of external port range
@@ -339,14 +341,15 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             result = self._sync_request('listPortForwardingRules')
             for r in result.get('portforwardingrule', []):
                 if str(r['virtualmachineid']) == node.id:
-                    addr = [a for a in public_ips if a.address == r['ipaddress']]
+                    addr = [a for a in public_ips if
+                            a.address == r['ipaddress']]
                     rule = CloudStackPortForwardingRule(node, r['id'],
                                                         addr[0],
                                                         r['protocol'].upper(),
                                                         r['publicport'],
                                                         r['privateport'],
                                                         r['publicendport'],
-                                                        r['privateendport'],)
+                                                        r['privateendport'])
                     if not addr[0].address in node.public_ips:
                         node.public_ips.append(addr[0].address)
                     rules.append(rule)
@@ -473,7 +476,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``bool``
         """
-        res = self._async_request('destroyVirtualMachine', id=node.id)
+        self._async_request('destroyVirtualMachine', id=node.id)
         return True
 
     def reboot_node(self, node):
@@ -483,7 +486,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``bool``
         """
-        res = self._async_request('rebootVirtualMachine', id=node.id)
+        self._async_request('rebootVirtualMachine', id=node.id)
         return True
 
     def ex_start(self, node):
@@ -628,15 +631,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List all volumes
 
+        :param node: Only return volumns for the provided node.
         :type node: :class:`CloudStackNode`
 
         :rtype: ``list`` of :class:`StorageVolume`
         """
-        list_volumes = []
         if node:
-            volumes = self._sync_request('listVolumes', virtualmachineid=node.id)
+            volumes = self._sync_request('listVolumes',
+                                         virtualmachineid=node.id)
         else:
             volumes = self._sync_request('listVolumes')
+
+        list_volumes = []
         for vol in volumes['volume']:
             list_volumes.append(StorageVolume(id=vol['id'],
                                 name=vol['name'],
@@ -693,13 +699,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         rules = []
         result = self._sync_request('listPortForwardingRules')
-        if not result == {}:
+        if result != {}:
             public_ips = self.ex_list_public_ips()
             nodes = self.list_nodes()
             for rule in result['portforwardingrule']:
                 node = [n for n in nodes
                         if n.id == str(rule['virtualmachineid'])]
-                addr = [a for a in public_ips if a.address == rule['ipaddress']]
+                addr = [a for a in public_ips if
+                        a.address == rule['ipaddress']]
                 rules.append(CloudStackPortForwardingRule
                              (node[0],
                               rule['id'],
@@ -714,7 +721,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
     def ex_create_port_forwarding_rule(self, address, private_port,
                                        public_port, protocol, node,
-                                       public_end_port=None, private_end_port=None, openfirewall=True):
+                                       public_end_port=None,
+                                       private_end_port=None,
+                                       openfirewall=True):
         """
         Creates a Port Forwarding Rule, used for Source NAT
 
@@ -946,7 +955,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         extra_args = kwargs.copy()
 
-        res = self._sync_request('deleteSSHKeyPair', name=keypair, **extra_args)
+        res = self._sync_request('deleteSSHKeyPair', name=keypair,
+                                 **extra_args)
         return res['success']
 
     def ex_import_keypair_from_string(self, name, key_material):

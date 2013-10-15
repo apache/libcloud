@@ -438,19 +438,19 @@ class VolumeSnapshot(object):
     """
     def __init__(self, id, driver, size=None, extra=None):
         """
-        Initialize VolumeSnapshot object
+        VolumeSnapshot constructor.
 
-        :param      id: Snapshot ID
+        :param      id: Snapshot ID.
         :type       id: ``str``
 
-        :param      size: A snapshot size in Gb
+        :param      size: A snapshot size in GB.
         :type       size: ``int``
 
-        :param      extra: Platform depends parameters for snapshot
+        :param      extra: Provider depends parameters for snapshot.
         :type       extra: ``dict``
         """
-        self.driver = driver
         self.id = id
+        self.driver = driver
         self.size = size
         self.extra = extra or {}
 

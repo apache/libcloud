@@ -798,10 +798,15 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def list_snapshots(self, snapshot=None, owner=None):
         """
-        Describe all snapshots
-        @param snapshot: If this setted, describe only this snapshot id
-        @param owner: Owner for snapshot: self|amazon|ID
-        @return: C{list(VolumeSnapshots)}
+        Describe all snapshots.
+
+        :param snapshot: If provided, only return snapshot information for the
+                         provided snapshot.
+
+        :param owner: Owner for snapshot: self|amazon|ID
+        :type owner: ``str``
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
         """
         params = {
             'Action': 'DescribeSnapshots',
@@ -860,11 +865,12 @@ class BaseEC2NodeDriver(NodeDriver):
         }
 
     def ex_delete_keypair(self, keypair):
-        """Destroy a keypair by name
+        """
+        Delete a key pair by name.
 
-        @note: This is a non-standard extension API, and only works for EC2.
+        @note: This is a non-standard extension API, and only works with EC2.
 
-        :param      keypair: The name of the keypair to Delete.
+        :param      keypair: The name of the keypair to delete.
         :type       keypair: ``str``
 
         :rtype: ``bool``
