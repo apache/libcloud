@@ -1518,8 +1518,8 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {
             'Action': 'RunInstances',
             'ImageId': image.id,
-            'MinCount': kwargs.get('ex_mincount', '1'),
-            'MaxCount': kwargs.get('ex_maxcount', '1'),
+            'MinCount': str(kwargs.get('ex_mincount', '1')),
+            'MaxCount': str(kwargs.get('ex_maxcount', '1')),
             'InstanceType': size.id
         }
 

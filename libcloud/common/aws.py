@@ -121,8 +121,9 @@ class SignedAWSConnection(ConnectionUserAndKey):
         keys.sort()
         pairs = []
         for key in keys:
+            value = str(params[key])
             pairs.append(urlquote(key, safe='') + '=' +
-                         urlquote(params[key], safe='-_~'))
+                         urlquote(value, safe='-_~'))
 
         qs = '&'.join(pairs)
 
