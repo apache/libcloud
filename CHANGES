@@ -127,6 +127,19 @@ Changes with Apache Libcloud in development
       now also available in Sydney and Singapore region.
       [Tomaz Muraus]
 
+    - Add new methods for managing storage volumes and snapshots to the EC2
+      driver (list_volumes, list_snapshots, destroy_volume_snapshot,
+      create_volume_snapshot) (LIBCLOUD-409)
+      [Oleg Suharev]
+
+    - Add the following new extension methods to EC2 driver: ex_destroy_image,
+      ex_modify_instance_attributes, ex_delete_keypair. (LIBCLOUD-409)
+      [Oleg Suharev]
+
+    - Allow user to specify a port range when creating a port forwarding rule.
+      (LIBCLOUD-409)
+      [Oleg Suharev]
+
   *) Storage
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
