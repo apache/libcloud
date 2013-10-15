@@ -135,7 +135,8 @@
             "m2.2xlarge": 1.14,
             "m2.4xlarge": 2.28,
             "m3.xlarge": 0.70,
-            "m3.2xlarge": 1.40
+            "m3.2xlarge": 1.40,
+            "hs1.8xlarge": 5.570
         },
 
        "ec2_ap_northeast": {
@@ -178,7 +179,8 @@
             "m2.2xlarge": 1.012,
             "m2.4xlarge": 2.024,
             "m3.xlarge": 0.70,
-            "m3.2xlarge": 1.40
+            "m3.2xlarge": 1.40,
+            "hs1.8xlarge": 5.570
         },
 
         "nephoscale" : {

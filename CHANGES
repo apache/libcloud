@@ -119,6 +119,10 @@ Changes with Apache Libcloud in development
     - Add pricing information for Rackspace Cloud Sydney region.
       [Tomaz Muraus]
 
+    - Update EC2 instance type map and pricing data. High Storage instances are
+      now also available in Sydney and Signapore region.
+      [Tomaz Muraus]
+
   *) Storage
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constant and

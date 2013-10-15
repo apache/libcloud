@@ -266,7 +266,8 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
-            'c1.xlarge'
+            'c1.xlarge',
+            'hs1.8xlarge'
         ]
     },
     'ap-northeast-1': {
@@ -322,7 +323,8 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
-            'c1.xlarge'
+            'c1.xlarge',
+            'hs1.8xlarge'
         ]
     },
     'nimbus': {
@@ -1588,7 +1590,7 @@ class EC2APSESydneyNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
     """
-    name = 'Amazon EC2 (ap-southeast-1)'
+    name = 'Amazon EC2 (ap-southeast-2)'
     _region = 'ap-southeast-2'
 
 
