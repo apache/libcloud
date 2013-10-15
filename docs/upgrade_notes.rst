@@ -185,6 +185,16 @@ more pleasant to use. Backward incompatible changes are listed bellow:
 * ``CloudStackForwardingRule`` class has been renamed to
   ``CloudStackIPForwardingRule``
 
+Unification of extension arguments for security group handling in the EC2 driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To unify extension arguments for handling security groups between drivers,
+``ex_securitygroup`` argument in the EC2 ``create_node`` method has been
+renamed to ``ex_security_groups``.
+
+For backward compatibility reasons, old argument will continue to work for
+until a next major release.
+
 CloudFiles Storage driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
