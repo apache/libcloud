@@ -34,7 +34,7 @@ from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
 from libcloud.test import MockHttp, XML_HEADERS
-from libcloud.test.file_fixtures import ComputeFileFixtures, OpenStackFixtures
+from libcloud.test.file_fixtures import ComputeFileFixtures
 from mock import Mock, patch
 
 from libcloud.test.secrets import RACKSPACE_PARAMS
@@ -247,7 +247,7 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.5,
-                                            timeout=1)
+                                           timeout=1)
         except LibcloudError:
             e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Timed out') != -1)
@@ -447,22 +447,15 @@ class DeploymentTests(unittest.TestCase):
 
 
 class RackspaceMockHttp(MockHttp):
-
     fixtures = ComputeFileFixtures('openstack')
-    auth_fixtures = OpenStackFixtures()
 
-    def _v1_1_auth(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v1_1__auth.json')
-        return (httplib.OK, body, {'content-type': 'application/json; charset=UTF-8'}, httplib.responses[httplib.OK])
-
-    # fake auth token response
-    def _v1_0(self, method, url, body, headers):
-        headers = {'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
-                   'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-storage-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
-                   'x-storage-url': 'https://storage4.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
-        return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
+    def _v2_0_tokens(self, method, url, body, headers):
+        body = self.fixtures.load('_v2_0__auth_deployment.json')
+        headers = {
+            'content-type': 'application/json'
+        }
+        return (httplib.OK, body, headers,
+                httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail(self, method, url, body, headers):
         body = self.fixtures.load('v1_slug_servers_detail_deployment_success.xml')
