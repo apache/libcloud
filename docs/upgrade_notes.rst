@@ -30,12 +30,12 @@ model. As such, the following provider constants have been deprecated:
 * ``EC2_AP_NORTHEAST``
 * ``EC2_SA_EAST``
 
-And replaced with a single constants:
+And replaced with a single constant:
 
-* ``EC2`` - Default value for region argument is ``us-east-1``. Supported
-  values for the ``region`` argument are: ``us-east-1``,
+* ``EC2`` - Supported values for the ``region`` argument are: ``us-east-1``,
   ``us-west-1``, ``us-west-2``, ``eu-west-1``, ``ap-southeast-1``,
-  ``ap-northeast-1``, ``sa-east-1``, ``ap-southeast-2``.
+  ``ap-northeast-1``, ``sa-east-1``, ``ap-southeast-2``. Default value is
+  ``us-east-1``.
 
 List which shows how old classes map to a new ``region`` argument value:
 
@@ -78,7 +78,7 @@ Rackspace compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Rackspace compute driver has moved to single class plus ``region`` argument
-model. As such, the following provider constants have been removed:
+model. As such, the following provider constants have been **removed**:
 
 * ``RACKSPACE``
 * ``RACKSPACE_UK``
@@ -90,9 +90,9 @@ model. As such, the following provider constants have been removed:
 
 And replaced with two new constants:
 
-* ``RACKSPACE`` - supported values for ``region`` argument are: ``us``, ``uk``.
+* ``RACKSPACE`` - Supported values for ``region`` argument are: ``us``, ``uk``.
   Default value is ``us``.
-* ``RACKSPACE_FIRST_GEN`` - supported values for the ``region`` argument are:
+* ``RACKSPACE_FIRST_GEN`` - Supported values for the ``region`` argument are:
   ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
 
 Besides that, ``RACKSPACE`` provider constant now defaults to next-generation
@@ -230,8 +230,8 @@ such, the following provider constants have been deprecated:
 
 And replaced with a single constant:
 
-* ``RACKSPACE`` - Default region is ``us``. Supported values for ``region``
-  arguments are ``us``, ``uk``.
+* ``RACKSPACE`` - Supported values for ``region`` arguments are ``us``, ``uk``.
+  Default value is ``us``.
 
 Old code:
 
@@ -269,8 +269,8 @@ model. As such, the following provider constants have been deprecated:
 
 And replaced with a single constant:
 
-* ``RACKSPACE`` - Default region is ``ord``. Supported values for ``region``
-  arguments are ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``.
+* ``RACKSPACE`` - Supported values for ``region`` arguments are ``dfw``,
+  ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
 
 Old code:
 
@@ -335,7 +335,7 @@ Pricing data changes
 
 By default this version of Libcloud tries to read pricing data from the
 ``~/.libcloud/pricing.json`` file. If this file doesn't exist, Libcloud falls
-back to the old behavior and the pricing data is read from the pricing bundle
+back to the old behavior and the pricing data is read from the pricing file
 which is shipped with each release.
 
 For more information, please see :ref:`using-custom-pricing-file` page.
@@ -347,7 +347,7 @@ RecordType ENUM value is now a string
 this version on, it's now a string. This was done to make it simpler and remove
 unnecessary indirection.
 
-If you use `RecordType` class in your code as recommended no changes are
+If you use `RecordType` class in your code as recommended, no changes are
 required, but if you use integer values directly, you need to update your
 code to use `RecordType` class otherwise it will break.
 
