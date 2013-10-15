@@ -1300,6 +1300,36 @@ class BaseEC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
+    def ex_allocate_address(self):
+        """
+        Allocate a new Elastic IP address
+
+        :return: String representation of allocated IP address
+        :rtype: ``str``
+        """
+        params = {'Action': 'AllocateAddress'}
+
+        response = self.connection.request(self.path, params=params).object
+        public_ip = findtext(element=response, xpath='publicIp',
+                                namespace=NAMESPACE)
+        return public_ip
+
+    def ex_release_address(self, elastic_ip_address):
+        """
+        Release an Elastic IP address
+
+        :param      elastic_ip_address: Elastic IP address which should be used
+        :type       elastic_ip_address: ``str``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        params = {'Action': 'ReleaseAddress'}
+
+        params.update({'PublicIp': elastic_ip_address})
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
     def ex_describe_all_addresses(self, only_allocated=False):
         """
         Return all the Elastic IP addresses for this account
@@ -1337,7 +1367,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_associate_addresses(self, node, elastic_ip_address):
         """
-        Associate an IP address with a particular node.
+        Associate an Elastic IP address with a particular node.
 
         :param      node: Node instance
         :type       node: :class:`Node`
@@ -1345,11 +1375,28 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      elastic_ip_address: IP address which should be used
         :type       elastic_ip_address: ``str``
 
+        :return: True on success, False otherwise.
         :rtype: ``bool``
         """
         params = {'Action': 'AssociateAddress'}
 
-        params.update(self._pathlist('InstanceId', [node.id]))
+        params.update({'InstanceId': node.id})
+        params.update({'PublicIp': elastic_ip_address})
+        res = self.connection.request(self.path, params=params).object
+        return self._get_boolean(res)
+
+    def ex_disassociate_address(self, elastic_ip_address):
+        """
+        Disassociate an Elastic IP address
+
+        :param      elastic_ip_address: Elastic IP address which should be used
+        :type       elastic_ip_address: ``str``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DisassociateAddress'}
+
         params.update({'PublicIp': elastic_ip_address})
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
