@@ -120,7 +120,7 @@ Changes with Apache Libcloud in development
       [Tomaz Muraus]
 
     - Update EC2 instance type map and pricing data. High Storage instances are
-      now also available in Sydney and Signapore region.
+      now also available in Sydney and Singapore region.
       [Tomaz Muraus]
 
   *) Storage
