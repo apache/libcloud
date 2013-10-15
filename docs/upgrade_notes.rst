@@ -185,6 +185,17 @@ more pleasant to use. Backward incompatible changes are listed bellow:
 * ``CloudStackForwardingRule`` class has been renamed to
   ``CloudStackIPForwardingRule``
 
+* ``create_node`` method arguments are now more consistent
+  with other drivers. Security groups are now passed as ``ex_security_groups``, SSH keypairs
+  are now passed as ``ex_keyname`` and userdata is now passed as ``ex_userdata``.
+
+* For advanced networking zones, multiple networks can now be passed to the ``create_node``
+  method instead of a single network id. These networks need to be instances of the ``CloudStackNetwork`` class.
+
+* The ``extra_args`` argument of the ``create_node`` method has been removed. 
+  The only arguments accepted are now the defaults ``name``, ``size``, ``image``, ``location`` plus
+  ``ex_keyname``, ``ex_userdata``, ``ex_security_groups`` and ``networks``.
+
 Unification of extension arguments for security group handling in the EC2 driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
