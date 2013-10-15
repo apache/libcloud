@@ -23,7 +23,7 @@ Changes with Apache Libcloud in development
 
       Note: This change is backward incompatible. For more information on those
       changes and how to upgrade your code to make it work with it, please visit
-      "upgrade notes" section in the documentation.
+      "Upgrade Notes" documentation page - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
     - Deprecate the following EC2 provider constants: EC2_US_EAST,
@@ -34,9 +34,9 @@ Changes with Apache Libcloud in development
       dictates to which region to connect.
 
       Note: Deprecated constants will continue to work for the foreseeable
-      future.
-      For more information on those changes and how to upgrade your code,
-      please visit "upgrade notes" section in the documentation.
+      future. For more information on those changes and how to upgrade your
+      code, please visit "Upgrade Noted" documentation page -
+      http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
     - Add support for volume related functions to OpenNebula driver.
@@ -86,6 +86,10 @@ Changes with Apache Libcloud in development
     - Allow user to pass "args" argument to the ScriptDeployment and
       ScriptFileDeployment class. This argument tells which command line
       arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
+
+      Note: This change is backward incompatible. For more information on how
+      this affects your code and how to upgrade, visit "Upgrade Notes"
+      documentation page - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
     - Allow user to specify IAM profile to use when creating an EC2 node.
@@ -125,13 +129,15 @@ Changes with Apache Libcloud in development
 
   *) Storage
 
-    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constant and
-      add a new CLOUDFILES constant.
+    - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
+      it with a new CLOUDFILES constant.
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
 
       Note: Deprecated constants will continue to work for the foreseeable
       future.
+      For more information on this change, please visit "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
     - Allow users to filter objects starting with a prefix by passing ex_prefix
@@ -146,15 +152,39 @@ Changes with Apache Libcloud in development
 
  *) Load Balancer
 
+    - Deprecate RACKSPACE_US and RACKSPACE_UK provider constant and replace it
+      with a new RACKSPACE constant.
+      Driver referenced by this new constant takes a "region" keyword argument
+      which can be one of the following: 'ord', 'dfw', 'iad', 'syd', 'lon'.
+
+      Note: Deprecated constants will continue to work for the foreseeable
+      future.
+      For more information on this change, please visit "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
     - Add new driver for Google Compute Engine (LIBCLOUD-386)
       [Rick Wright]
 
  *) DNS
 
+    - Deprecate RACKSPACE_US and RACKSPACE_UK provider constant and replace it
+      with a new RACKSPACE constant.
+      Driver referenced by this new constant takes a "region" keyword argument
+      which can be one of the following: 'us', 'uk'.
+
+      Note: Deprecated constants will continue to work for the foreseeable
+      future.
+      For more information on this change, please visit "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
    - Use string instead of integer for RecordType ENUM value.
+
      Note: If you directly use an integer instead of RecordType ENUM class you
      need to update your code to use the RecordType ENUM otherwise the code
-     won't work.
+     won't work. For more information on how to do that, see "Upgrade Notes"
+     documentation section - http://s.apache.org/lc0140un
      [Tomaz Muraus]
 
    - Add method "export_zone_to_bind_format" which allows users to export
