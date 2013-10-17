@@ -262,6 +262,13 @@ List which shows how old classes map to a new ``region`` argument value:
 * ``ELASTICHOSTS_AU1`` -> ``syd-y``
 * ``ELASTICHOSTS_CN1`` -> ``cn-1``
 
+Because of this change main driver class has also been renamed from
+:class:`libcloud.compute.drivers.elastichosts.ElasticHostsBaseNodeDriver`
+to :class:`libcloud.compute.drivers.elastichosts.ElasticHostsNodeDriver`.
+
+Only users who directly instantiate a driver and don't use recommended
+``get_driver`` method are affected by this change.
+
 Old code:
 
 .. sourcecode:: python
