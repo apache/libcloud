@@ -707,6 +707,8 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_groups_RunInstances(self, method, url, body, headers):
+        # Need to remove '/?'
+        url = url[2:]
         params = dict(parse_qsl(url))
 
         self.assertEqual(params['SecurityGroup.1'], 'group1')
