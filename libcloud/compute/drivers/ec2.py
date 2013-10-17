@@ -731,6 +731,10 @@ class BaseEC2NodeDriver(NodeDriver):
         return volumes
 
     def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        :param location: Datacenter in which to create a volume in.
+        :type location: :class:`ExEC2AvailabilityZone`
+        """
         params = {
             'Action': 'CreateVolume',
             'Size': str(size)}
