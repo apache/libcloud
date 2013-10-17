@@ -16,7 +16,7 @@ project id header.
 API Docs
 --------
 
-.. autoclass:: libcloud.storage.driver.google_storage.GoogleStorageDriver
+.. autoclass:: libcloud.storage.drivers.google_storage.GoogleStorageDriver
     :members:
     :inherited-members:
 
