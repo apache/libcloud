@@ -199,6 +199,37 @@ more pleasant to use. Backward incompatible changes are listed bellow:
   ``image``, ``location`` plus ``ex_keyname``, ``ex_userdata``,
   ``ex_security_groups`` and ``networks``.
 
+Joyent compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Joyent driver has been aligned with other drivers and now the constructor takes
+``region`` instead of ``location`` argument.
+
+For backward compatibility reasons, old argument will continue to work until the
+next major release.
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.JOYENT)
+
+    driver = cls('username', 'api_key', location='us-east-1')
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.JOYENT)
+
+    driver = cls('username', 'api_key', region='us-east-1')
+
 Unification of extension arguments for security group handling in the EC2 driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
