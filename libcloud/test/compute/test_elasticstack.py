@@ -152,6 +152,25 @@ class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
                       i.id == '38df0986-4d85-4b76-b502-3878ffc80161'][0]
         super(ElasticHostsTestCase, self).setUp()
 
+    def test_multiple_drivers_with_different_regions(self):
+        driver1 = ElasticHosts('foo', 'bar', region='lon-p')
+        driver2 = ElasticHosts('foo', 'bar', region='sat-p')
+
+        self.assertTrue(driver1.connection.host.startswith('api-lon-p'))
+        self.assertTrue(driver2.connection.host.startswith('api-sat-p'))
+
+        driver1.list_nodes()
+        driver2.list_nodes()
+        driver1.list_nodes()
+
+        self.assertTrue(driver1.connection.host.startswith('api-lon-p'))
+        self.assertTrue(driver2.connection.host.startswith('api-sat-p'))
+
+    def test_invalid_region(self):
+        expected_msg = r'Invalid region.+'
+        self.assertRaisesRegexp(ValueError, expected_msg, ElasticHosts,
+                                'foo', 'bar', region='invalid')
+
 
 class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
 
