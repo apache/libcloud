@@ -92,14 +92,6 @@ class Provider(object):
     OPENNEBULA = 'opennebula'
     DREAMHOST = 'dreamhost'
     ELASTICHOSTS = 'elastichosts'
-    ELASTICHOSTS_UK1 = 'elastichosts_uk1'
-    ELASTICHOSTS_UK2 = 'elastichosts_uk2'
-    ELASTICHOSTS_US1 = 'elastichosts_us1'
-    ELASTICHOSTS_US2 = 'elastichosts_us2'
-    ELASTICHOSTS_US3 = 'elastichosts_us3'
-    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
-    ELASTICHOSTS_AU1 = 'elastichosts_au1'
-    ELASTICHOSTS_CN1 = 'elastichosts_cn1'
     BRIGHTBOX = 'brightbox'
     CLOUDSIGMA = 'cloudsigma'
     NIMBUS = 'nimbus'
@@ -134,6 +126,15 @@ class Provider(object):
     EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
     EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
+
+    ELASTICHOSTS_UK1 = 'elastichosts_uk1'
+    ELASTICHOSTS_UK2 = 'elastichosts_uk2'
+    ELASTICHOSTS_US1 = 'elastichosts_us1'
+    ELASTICHOSTS_US2 = 'elastichosts_us2'
+    ELASTICHOSTS_US3 = 'elastichosts_us3'
+    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
+    ELASTICHOSTS_AU1 = 'elastichosts_au1'
+    ELASTICHOSTS_CN1 = 'elastichosts_cn1'
 
     # Deprecated constants which aren't supported anymore
     RACKSPACE_UK = 'rackspace_uk'
@@ -191,7 +192,8 @@ class DeploymentError(LibcloudError):
     """
     Exception used when a Deployment Task failed.
 
-    :ivar node: :class:`Node` on which this exception happened, you might want to call :class:`Node.destroy`
+    :ivar node: :class:`Node` on which this exception happened, you might want
+                to call :func:`Node.destroy`
     """
     def __init__(self, node, original_exception=None, driver=None):
         self.node = node
