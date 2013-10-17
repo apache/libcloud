@@ -147,6 +147,19 @@ Changes with Apache Libcloud in development
       release.
       [Tomaz Muraus]
 
+    - Deprecate the following ElasticHosts provider constants: ELASTICHOSTS_UK1,
+      ELASTICHOSTS_UK2, ELASTICHOSTS_US1, ELASTICHOSTS_US2, ELASTICHOSTS_US3,
+      ELASTICHOSTS_CA1, ELASTICHOSTS_AU1, ELASTICHOSTS_CN1 and replace it with a
+      new ELASTICHOSTS constant.
+      Driver referenced by this new constant now takes a "region" argument which
+      dictates to which region to connect.
+
+      Note: Deprecated constants will continue to work until the next major
+      release. For more information on those changes and how to upgrade your
+      code, please visit "Upgrade Notes" documentation page -
+      http://s.apache.org/lc0140un (LIBCLOUD-383)
+      [Michael Bennett, Tomaz Muraus]
+
   *) Storage
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
