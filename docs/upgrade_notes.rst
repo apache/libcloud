@@ -176,7 +176,7 @@ New code (connecting to a next-gen provider)
     driver2 = cls('username', 'api_key', region='dfw')
     driver3 = cls('username', 'api_key', region='lon')
 
-CloudStack Compute driver changes
+CloudStack compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudStack driver received a lot of changes and additions which will make it
@@ -229,6 +229,63 @@ Old code:
     cls = get_driver(Provider.JOYENT)
 
     driver = cls('username', 'api_key', region='us-east-1')
+
+ElasticHosts compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ElasticHosts compute driver has moved to single class plus ``region`` argument
+model. As such, the following provider constants have been deprecated:
+
+* ``ELASTICHOSTS_UK1``
+* ``ELASTICHOSTS_UK1``
+* ``ELASTICHOSTS_US1``
+* ``ELASTICHOSTS_US2``
+* ``ELASTICHOSTS_US3``
+* ``ELASTICHOSTS_CA1``
+* ``ELASTICHOSTS_AU1``
+* ``ELASTICHOSTS_CN1``
+
+And replaced with a single constant:
+
+* ``ELASTICHOSTS`` - Supported values for the ``region`` argument are:
+  ``lon-p``, ``lon-b``, ``sat-p``, ``lax-p``, ``sjc-c``, ``tor-p``, ``syd-y``,
+  ``cn-1`` Default value is ``sat-p``.
+
+List which shows how old classes map to a new ``region`` argument value:
+
+* ``ELASTICHOSTS_UK1`` -> ``lon-p``
+* ``ELASTICHOSTS_UK1`` -> ``lon-b``
+* ``ELASTICHOSTS_US1`` -> ``sat-p``
+* ``ELASTICHOSTS_US2`` -> ``lax-p``
+* ``ELASTICHOSTS_US3`` -> ``sjc-c``
+* ``ELASTICHOSTS_CA1`` -> ``tor-p``
+* ``ELASTICHOSTS_AU1`` -> ``syd-y``
+* ``ELASTICHOSTS_CN1`` -> ``cn-1``
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls1 = get_driver(Provider.ELASTICHOSTS_UK1)
+    cls2 = get_driver(Provider.ELASTICHOSTS_US2)
+
+    driver1 = cls('username', 'api_key')
+    driver2 = cls('username', 'api_key')
+
+New code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.ELASTICHOSTS)
+
+    driver1 = cls('username', 'api_key', region='lon-p')
+    driver2 = cls('username', 'api_key', region='lax-p')
 
 Unification of extension arguments for security group handling in the EC2 driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
