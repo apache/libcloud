@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.base import Node
@@ -27,7 +26,7 @@ from libcloud.compute.drivers.serverlove import \
     ServerLoveNodeDriver as ServerLove
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
