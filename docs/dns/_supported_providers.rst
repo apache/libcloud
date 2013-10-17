@@ -1,7 +1,6 @@
 ===================== ============= ================= ======================================= =============================
 Provider              Documentation Provider constant Module                                  Class Name                   
 ===================== ============= ================= ======================================= =============================
-`Dummy DNS Provider`_               DUMMY             :mod:`libcloud.dns.drivers.dummy`       :class:`DummyDNSDriver`      
 `Gandi DNS`_                        GANDI             :mod:`libcloud.dns.drivers.gandi`       :class:`GandiDNSDriver`      
 `Host Virtual DNS`_                 HOSTVIRTUAL       :mod:`libcloud.dns.drivers.hostvirtual` :class:`HostVirtualDNSDriver`
 `Linode DNS`_                       LINODE            :mod:`libcloud.dns.drivers.linode`      :class:`LinodeDNSDriver`     

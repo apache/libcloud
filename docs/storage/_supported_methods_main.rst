@@ -6,7 +6,6 @@ Provider                      list containers list objects create container dele
 `CloudFiles (SWIFT)`_         yes             no           yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles (UK)`_            yes             no           yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles (US)`_            yes             no           yes              yes              yes           yes                     yes             yes                       yes          
-`Dummy Storage Provider`_     yes             no           yes              yes              yes           yes                     yes             yes                       yes          
 `Google Storage`_             yes             no           yes              yes              yes           yes                     yes             yes                       yes          
 `Local Storage`_              yes             no           yes              yes              yes           yes                     yes             yes                       no           
 `Nimbus`_                     no              no           no               no               no            no                      yes             no                        no           

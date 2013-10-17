@@ -9,7 +9,6 @@ Provider                              Documentation                             
 `CloudStack`_                                                                   CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`       
 `Digital Ocean`_                                                                DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
 `Dreamhost`_                                                                    DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
-`Dummy Node Provider`_                                                          DUMMY               :mod:`libcloud.compute.drivers.dummy`          :class:`DummyNodeDriver`            
 `Amazon EC2`_                         :doc:`Click </compute/drivers/ec2>`       EC2                 :mod:`libcloud.compute.drivers.ec2`            :class:`EC2NodeDriver`              
 `Amazon EC2 (ap-northeast-1)`_                                                  EC2_AP_NORTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APNENodeDriver`          
 `Amazon EC2 (ap-southeast-1)`_                                                  EC2_AP_SOUTHEAST    :mod:`libcloud.compute.drivers.ec2`            :class:`EC2APSENodeDriver`          

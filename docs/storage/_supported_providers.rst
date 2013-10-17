@@ -6,7 +6,6 @@ Provider                      Documentation                                  Pro
 `CloudFiles (SWIFT)`_                                                        CLOUDFILES_SWIFT  :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesSwiftStorageDriver`
 `CloudFiles (UK)`_                                                           CLOUDFILES_UK     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUKStorageDriver`   
 `CloudFiles (US)`_                                                           CLOUDFILES_US     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUSStorageDriver`   
-`Dummy Storage Provider`_                                                    DUMMY             :mod:`libcloud.storage.drivers.dummy`          :class:`DummyStorageDriver`          
 `Google Storage`_             :doc:`Click </storage/drivers/google_storage>` GOOGLE_STORAGE    :mod:`libcloud.storage.drivers.google_storage` :class:`GoogleStorageDriver`         
 `Local Storage`_                                                             LOCAL             :mod:`libcloud.storage.drivers.local`          :class:`LocalStorageDriver`          
 `Nimbus`_                                                                    NIMBUS            :mod:`libcloud.storage.drivers.nimbus`         :class:`NimbusStorageDriver`         

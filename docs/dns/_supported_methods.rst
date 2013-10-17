@@ -1,7 +1,6 @@
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
 Provider              list zones list records create zone update zone create record update record delete zone delete record
 ===================== ========== ============ =========== =========== ============= ============= =========== =============
-`Dummy DNS Provider`_ yes        yes          yes         no          no            yes           yes         yes          
 `Gandi DNS`_          yes        yes          yes         yes         yes           yes           yes         yes          
 `Host Virtual DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `Linode DNS`_         yes        yes          yes         yes         yes           yes           yes         yes          

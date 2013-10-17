@@ -9,7 +9,6 @@ Provider                              list volumes create volume destroy volume 
 `CloudStack`_                         no           yes           yes            yes           yes           yes            no             
 `Digital Ocean`_                      no           no            no             no            no            no             no             
 `Dreamhost`_                          no           no            no             no            no            no             no             
-`Dummy Node Provider`_                no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-northeast-1)`_        yes          yes           yes            yes           yes           yes            yes            
 `Amazon EC2 (ap-southeast-1)`_        yes          yes           yes            yes           yes           yes            yes            

@@ -6,7 +6,6 @@ Provider                      enable container cdn enable object cdn get contain
 `CloudFiles (SWIFT)`_         no                   yes               yes                   yes               
 `CloudFiles (UK)`_            no                   yes               yes                   yes               
 `CloudFiles (US)`_            no                   yes               yes                   yes               
-`Dummy Storage Provider`_     no                   no                yes                   yes               
 `Google Storage`_             no                   no                no                    no                
 `Local Storage`_              yes                  yes               yes                   yes               
 `Nimbus`_                     no                   no                no                    no                

@@ -9,7 +9,6 @@ Provider                              list nodes create node reboot node destroy
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
 `Digital Ocean`_                      yes        yes         yes         yes          yes         yes        no         
 `Dreamhost`_                          yes        yes         yes         yes          yes         yes        no         
-`Dummy Node Provider`_                yes        yes         yes         yes          yes         yes        no         
 `Amazon EC2`_                         yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-northeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
 `Amazon EC2 (ap-southeast-1)`_        yes        yes         yes         yes          yes         yes        yes        
