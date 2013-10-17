@@ -23,7 +23,7 @@ from libcloud.compute.drivers.elasticstack import (ElasticStackException,
                               ElasticStackBaseConnection,
                               ElasticStackBaseNodeDriver as ElasticStack)
 from libcloud.compute.drivers.elastichosts import \
-                              (ElasticHostsBaseNodeDriver as ElasticHosts)
+                              (ElasticHostsNodeDriver as ElasticHosts)
 from libcloud.compute.drivers.skalicloud import \
                               (SkaliCloudNodeDriver as SkaliCloud)
 from libcloud.compute.drivers.serverlove import \
@@ -153,9 +153,7 @@ class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
         images = self.driver.list_images()
         self.image = [i for i in images if \
                       i.id == '38df0986-4d85-4b76-b502-3878ffc80161'][0]
-
-        ElasticStackTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+        super(ElasticHostsTestCase, self).setUp()
 
 
 class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
@@ -169,9 +167,7 @@ class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
         images = self.driver.list_images()
         self.image = [i for i in images if \
                      i.id == '90aa51f2-15c0-4cff-81ee-e93aa20b9468'][0]
-
-        ElasticStackTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+        super(SkaliCloudTestCase, self).setUp()
 
 
 class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
@@ -185,9 +181,7 @@ class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
         images = self.driver.list_images()
         self.image = [i for i in images if \
                      i.id == '679f5f44-0be7-4745-a658-cccd4334c1aa'][0]
-
-        ElasticStackTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+        super(ServerLoveTestCase, self).setUp()
 
 
 class ElasticStackMockHttp(MockHttp):
