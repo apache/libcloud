@@ -176,6 +176,7 @@ class ElasticHostsUK1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the London Peer 1 end-point
     """
+    name = 'ElasticHosts (lon-p)'
     _region = 'lon-p'
 
 
@@ -183,6 +184,7 @@ class ElasticHostsUK2NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the London Bluesquare end-point
     """
+    name = 'ElasticHosts (lon-b)'
     _region = 'lon-b'
 
 
@@ -190,6 +192,7 @@ class ElasticHostsUS1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the San Antonio Peer 1 end-point
     """
+    name = 'ElasticHosts (sat-p)'
     _region = 'sat-p'
 
 
@@ -197,6 +200,7 @@ class ElasticHostsUS2NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the Los Angeles Peer 1 end-point
     """
+    name = 'ElasticHosts (lax-p)'
     _region = 'lax-p'
 
 
@@ -204,6 +208,7 @@ class ElasticHostsUS3NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the San Jose (Silicon Valley) end-point
     """
+    name = 'ElasticHosts (sjc-c)'
     _region = 'sjc-c'
 
 
@@ -211,6 +216,7 @@ class ElasticHostsCA1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the Toronto Peer 1 end-point
     """
+    name = 'ElasticHosts (tor-p)'
     _region = 'tor-p'
 
 
@@ -218,6 +224,7 @@ class ElasticHostsAU1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the Sydney end-point
     """
+    name = 'ElasticHosts (syd-y)'
     _region = 'syd-y'
 
 
@@ -225,4 +232,5 @@ class ElasticHostsCN1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the Hong Kong end-point
     """
+    name = 'ElasticHosts (cn-1)'
     _region = 'cn-1'

@@ -22,14 +22,14 @@ Provider                              list volumes create volume destroy volume 
 `Amazon EC2 (us-west-2)`_             yes          yes           yes            yes           yes           yes            yes            
 `Enomaly Elastic Computing Platform`_ no           no            no             no            no            no             no             
 `ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
-`ElasticHosts`_                       no           no            no             no            no            no             no             
+`ElasticHosts (syd-y)`_               no           no            no             no            no            no             no             
+`ElasticHosts (tor-p)`_               no           no            no             no            no            no             no             
+`ElasticHosts (cn-1)`_                no           no            no             no            no            no             no             
+`ElasticHosts (lon-p)`_               no           no            no             no            no            no             no             
+`ElasticHosts (lon-b)`_               no           no            no             no            no            no             no             
+`ElasticHosts (sat-p)`_               no           no            no             no            no            no             no             
+`ElasticHosts (lax-p)`_               no           no            no             no            no            no             no             
+`ElasticHosts (sjc-c)`_               no           no            no             no            no            no             no             
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
 `Gandi`_                              no           yes           yes            yes           yes           yes            no             
 `Google Compute Engine`_              no           yes           yes            yes           yes           yes            no             
@@ -81,14 +81,14 @@ Provider                              list volumes create volume destroy volume 
 .. _`Amazon EC2 (us-west-2)`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
+.. _`ElasticHosts (syd-y)`: http://www.elastichosts.com/
+.. _`ElasticHosts (tor-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (cn-1)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lon-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lon-b)`: http://www.elastichosts.com/
+.. _`ElasticHosts (sat-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://www.googleapis.com/

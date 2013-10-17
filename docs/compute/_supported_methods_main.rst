@@ -22,14 +22,14 @@ Provider                              list nodes create node reboot node destroy
 `Amazon EC2 (us-west-2)`_             yes        yes         yes         yes          yes         yes        yes        
 `Enomaly Elastic Computing Platform`_ yes        yes         yes         yes          yes         yes        no         
 `ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
-`ElasticHosts`_                       yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (syd-y)`_               yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (tor-p)`_               yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (cn-1)`_                yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (lon-p)`_               yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (lon-b)`_               yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (sat-p)`_               yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (lax-p)`_               yes        yes         yes         yes          yes         yes        yes        
+`ElasticHosts (sjc-c)`_               yes        yes         yes         yes          yes         yes        yes        
 `Eucalyptus`_                         yes        yes         yes         yes          yes         yes        yes        
 `Gandi`_                              yes        yes         yes         yes          yes         yes        no         
 `Google Compute Engine`_              yes        yes         yes         yes          yes         yes        no         
@@ -81,14 +81,14 @@ Provider                              list nodes create node reboot node destroy
 .. _`Amazon EC2 (us-west-2)`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
+.. _`ElasticHosts (syd-y)`: http://www.elastichosts.com/
+.. _`ElasticHosts (tor-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (cn-1)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lon-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lon-b)`: http://www.elastichosts.com/
+.. _`ElasticHosts (sat-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://www.googleapis.com/

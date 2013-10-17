@@ -22,14 +22,14 @@ Provider                              Documentation                             
 `Amazon EC2 (us-west-2)`_                                                       EC2_US_WEST_OREGON  :mod:`libcloud.compute.drivers.ec2`            :class:`EC2USWestOregonNodeDriver`  
 `Enomaly Elastic Computing Platform`_                                           ECP                 :mod:`libcloud.compute.drivers.ecp`            :class:`ECPNodeDriver`              
 `ElasticHosts`_                                                                 ELASTICHOSTS        :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsNodeDriver`     
-`ElasticHosts`_                                                                 ELASTICHOSTS_AU1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsAU1NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_CA1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsCA1NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_CN1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsCN1NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_UK1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUK1NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_UK2    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUK2NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_US1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS1NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_US2    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS2NodeDriver`  
-`ElasticHosts`_                                                                 ELASTICHOSTS_US3    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS3NodeDriver`  
+`ElasticHosts (syd-y)`_                                                         ELASTICHOSTS_AU1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsAU1NodeDriver`  
+`ElasticHosts (tor-p)`_                                                         ELASTICHOSTS_CA1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsCA1NodeDriver`  
+`ElasticHosts (cn-1)`_                                                          ELASTICHOSTS_CN1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsCN1NodeDriver`  
+`ElasticHosts (lon-p)`_                                                         ELASTICHOSTS_UK1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUK1NodeDriver`  
+`ElasticHosts (lon-b)`_                                                         ELASTICHOSTS_UK2    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUK2NodeDriver`  
+`ElasticHosts (sat-p)`_                                                         ELASTICHOSTS_US1    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS1NodeDriver`  
+`ElasticHosts (lax-p)`_                                                         ELASTICHOSTS_US2    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS2NodeDriver`  
+`ElasticHosts (sjc-c)`_                                                         ELASTICHOSTS_US3    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS3NodeDriver`  
 `Eucalyptus`_                                                                   EUCALYPTUS          :mod:`libcloud.compute.drivers.ec2`            :class:`EucNodeDriver`              
 `Gandi`_                                                                        GANDI               :mod:`libcloud.compute.drivers.gandi`          :class:`GandiNodeDriver`            
 `Google Compute Engine`_                                                        GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
@@ -81,14 +81,14 @@ Provider                              Documentation                             
 .. _`Amazon EC2 (us-west-2)`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
-.. _`ElasticHosts`: http://www.elastichosts.com/
+.. _`ElasticHosts (syd-y)`: http://www.elastichosts.com/
+.. _`ElasticHosts (tor-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (cn-1)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lon-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lon-b)`: http://www.elastichosts.com/
+.. _`ElasticHosts (sat-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
+.. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://www.googleapis.com/
