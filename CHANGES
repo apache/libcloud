@@ -33,9 +33,9 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant now takes a "region" argument which
       dictates to which region to connect.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future. For more information on those changes and how to upgrade your
-      code, please visit "Upgrade Noted" documentation page -
+      Note: Deprecated constants will continue to work until the next major
+      release. For more information on those changes and how to upgrade your
+      code, please visit "Upgrade Notes" documentation page -
       http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
@@ -63,7 +63,7 @@ Changes with Apache Libcloud in development
       in EC2 ad OpenStack driver.
       Argument in the EC2 driver has been renamed from ex_securitygroup to
       ex_security_groups. For backward compatibility reasons, old argument
-      will continue to work for the unforeseeable future. (LIBCLOUD-375)
+      will continue to work until the next major release. (LIBCLOUD-375)
       [Tomaz Muraus]
 
     - Add ex_import_keypair_from_string and ex_import_keypair method to the
@@ -154,8 +154,8 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
+      Note: Deprecated constants will continue to work until the next major
+      release.
       For more information on this change, please visit "Upgrade Notes"
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -177,8 +177,8 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of the following: 'ord', 'dfw', 'iad', 'syd', 'lon'.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
+      Note: Deprecated constants will continue to work until the next major
+      release.
       For more information on this change, please visit "Upgrade Notes"
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -193,8 +193,8 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of the following: 'us', 'uk'.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
+      Note: Deprecated constants will continue to work until the next major
+      release.
       For more information on this change, please visit "Upgrade Notes"
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -207,8 +207,9 @@ Changes with Apache Libcloud in development
      documentation section - http://s.apache.org/lc0140un
      [Tomaz Muraus]
 
-   - Add method "export_zone_to_bind_format" which allows users to export
-     Libcloud Zone to BIND zone format. (LIBCLOUD-398)
+   - Add "export_zone_to_bind_format" and export_zone_to_bind_zone_file method
+     which allows users to export Libcloud Zone to BIND zone format.
+     (LIBCLOUD-398)
      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.13.2
