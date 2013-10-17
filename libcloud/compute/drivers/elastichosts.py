@@ -66,7 +66,7 @@ API_ENDPOINTS = {
 }
 
 # Default API end-point for the base connection class.
-DEFAULT_ENDPOINT = 'us-1'
+DEFAULT_REGION = 'us-1'
 
 # Retrieved from http://www.elastichosts.com/cloud-hosting/api
 STANDARD_DRIVES = {
@@ -85,6 +85,12 @@ STANDARD_DRIVES = {
     'aee5589a-88c3-43ef-bb0a-9cab6e64192d': {
         'uuid': 'aee5589a-88c3-43ef-bb0a-9cab6e64192d',
         'description': 'Ubuntu Linux 10.04',
+        'size_gunzipped': '1GB',
+        'supports_deployment': True,
+    },
+    '62f512cd-82c7-498e-88d8-a09ac2ef20e7': {
+        'uuid': '62f512cd-82c7-498e-88d8-a09ac2ef20e7',
+        'description': 'Ubuntu Linux 12.04',
         'size_gunzipped': '1GB',
         'supports_deployment': True,
     },
@@ -141,28 +147,23 @@ class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
     _standard_drives = STANDARD_DRIVES
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region=None, **kwargs):
+                 region=DEFAULT_REGION, **kwargs):
 
         if hasattr(self, '_region'):
             region = self._region
 
-        if region is not None:
+        if region not in API_ENDPOINTS:
+            raise ValueError('Invalid region: %s' % (region))
 
-            if region not in API_ENDPOINTS:
-                raise ValueError('Invalid region: %s' % (region))
-
-            self.region = region
-            self._host_argument_set = host is not None
-        elif region is None and host is None:
-            raise ValueError("ElasticHosts Driver requires at least a region or a host argument to be specified")
-
+        self._host_argument_set = host is not None
         super(ElasticHostsNodeDriver, self).__init__(key=key, secret=secret,
                                                      secure=secure, host=host,
-                                                     port=port, **kwargs)
+                                                     port=port,
+                                                     region=region, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         """
-        Return the host value based the user supplied region
+        Return the host value based on the user supplied region.
         """
         if self._host_argument_set:
             return {}
