@@ -140,6 +140,13 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-409)
       [Oleg Suharev]
 
+    - Align Joyent driver with other drivers and deprecate "location" argument
+      in the driver constructor in favor of "region" argument.
+
+      Note: Deprecated argument will continue to work until the next major
+      release.
+      [Tomaz Muraus]
+
   *) Storage
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
