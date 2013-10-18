@@ -4,9 +4,9 @@ Changes with Apache Libcloud in development
 
  *) General
 
-    - By default read pricing data from ~/.libcloud/pricing.json if this file
-      exists. If it doesn't it uses old behavior and falls back to pricing file
-      bundled with a libcloud release.
+    - If the file exists, read pricing data from ~/.libcloud/pricing.json
+      by default. If the file doesn't exist, fall back to the old behavior
+      and use pricing data which is bundled with the release.
       [Tomaz Muraus]
 
     - Add libcloud.pricing.download_pricing_file function for downloading and
@@ -22,8 +22,8 @@ Changes with Apache Libcloud in development
       servers.
 
       Note: This change is backward incompatible. For more information on those
-      changes and how to upgrade your code to make it work with it, please visit
-      "Upgrade Notes" documentation page - http://s.apache.org/lc0140un
+      changes and how to update your code, please visit "Upgrade Notes"
+      documentation page - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
     - Deprecate the following EC2 provider constants: EC2_US_EAST,
@@ -34,7 +34,7 @@ Changes with Apache Libcloud in development
       dictates to which region to connect.
 
       Note: Deprecated constants will continue to work until the next major
-      release. For more information on those changes and how to upgrade your
+      release. For more information on those changes and how to update your
       code, please visit "Upgrade Notes" documentation page -
       http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -43,7 +43,7 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-354)
       [Emanuele Rocca]
 
-    - Add methods for managing store volumes to the OpenStack driver.
+    - Add methods for managing storage volumes to the OpenStack driver.
       (LIBCLOUD-353)
       [Bernard Kerckenaere]
 
@@ -60,7 +60,7 @@ Changes with Apache Libcloud in development
       [John Carr]
 
     - Unify extension argument names for assigning a node to security groups
-      in EC2 ad OpenStack driver.
+      in EC2 and OpenStack driver.
       Argument in the EC2 driver has been renamed from ex_securitygroup to
       ex_security_groups. For backward compatibility reasons, old argument
       will continue to work until the next major release. (LIBCLOUD-375)
@@ -88,7 +88,7 @@ Changes with Apache Libcloud in development
       arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
 
       Note: This change is backward incompatible. For more information on how
-      this affects your code and how to upgrade, visit "Upgrade Notes"
+      this affects your code and how to update it, visit "Upgrade Notes"
       documentation page - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
@@ -155,7 +155,7 @@ Changes with Apache Libcloud in development
       dictates to which region to connect.
 
       Note: Deprecated constants will continue to work until the next major
-      release. For more information on those changes and how to upgrade your
+      release. For more information on those changes and how to update your
       code, please visit "Upgrade Notes" documentation page -
       http://s.apache.org/lc0140un (LIBCLOUD-383)
       [Michael Bennett, Tomaz Muraus]
