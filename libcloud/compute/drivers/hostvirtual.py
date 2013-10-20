@@ -42,7 +42,8 @@ NODE_STATE_MAP = {
     'STOPPING': NodeState.REBOOTING,
     'REBOOTING': NodeState.REBOOTING,
     'STARTING': NodeState.REBOOTING,
-    'TERMINATED': NodeState.TERMINATED  # server is powered down
+    'TERMINATED': NodeState.TERMINATED,  # server is powered down
+    'STOPPED': NodeState.STOPPED
 }
 
 DEFAULT_NODE_LOCATION_ID = 4
