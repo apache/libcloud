@@ -42,7 +42,7 @@ Using a custom pricing file
 
 .. note::
 
-    This functionality is only available in Libcloud trunk and higher.
+    This functionality is only available in Libcloud 0.14.0 and above.
 
 By default Libcloud reads pricing data from ``data/pricing.json`` file which
 is included in the release package. If you want to use a custom pricing file,
@@ -56,7 +56,7 @@ Updating pricing
 
 .. note::
 
-    This functionality is only available in Libcloud trunk and higher.
+    This functionality is only available in Libcloud 0.14.0 and above.
 
 Currently only way to update pricing is programmatically using
 :func:`libcloud.pricing.download_pricing_file` function. By default this
