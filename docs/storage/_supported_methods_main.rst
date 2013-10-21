@@ -7,7 +7,6 @@ Provider                      list containers list objects create container dele
 `CloudFiles (UK)`_            yes             no           yes              yes              yes           yes                     yes             yes                       yes          
 `CloudFiles (US)`_            yes             no           yes              yes              yes           yes                     yes             yes                       yes          
 `Google Storage`_             yes             no           yes              yes              yes           yes                     yes             yes                       yes          
-`Local Storage`_              yes             no           yes              yes              yes           yes                     yes             yes                       no           
 `Nimbus`_                     no              no           no               no               no            no                      yes             no                        no           
 `Ninefold`_                   yes             no           yes              yes              yes           yes                     yes             yes                       no           
 `Amazon S3 (standard)`_       yes             no           yes              yes              yes           yes                     yes             yes                       yes          
@@ -25,7 +24,6 @@ Provider                      list containers list objects create container dele
 .. _`CloudFiles (US)`: http://www.rackspace.com/
 .. _`Dummy Storage Provider`: http://example.com
 .. _`Google Storage`: http://cloud.google.com/
-.. _`Local Storage`: http://example.com
 .. _`Nimbus`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
