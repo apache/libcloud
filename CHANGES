@@ -1,5 +1,13 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development
+
+ *) Compute
+
+   - Add log statements to our ParamikoSSHClient wrapper. This should make
+     debugging deployment issues easier. (LIBCLOUD-414)
+     [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta1
 
  *) General
