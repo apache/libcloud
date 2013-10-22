@@ -378,8 +378,8 @@ New code:
     driver1 = cls1('username', 'api_key', region='us')
     driver2 = cls1('username', 'api_key', region='uk')
 
-Rackspace LoadBalancer driver changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Rackspace load balancer driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Rackspace loadbalancer driver has moved to one class plus ``region`` argument
 model. As such, the following provider constants have been deprecated:
@@ -390,7 +390,7 @@ model. As such, the following provider constants have been deprecated:
 And replaced with a single constant:
 
 * ``RACKSPACE`` - Supported values for ``region`` arguments are ``dfw``,
-  ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
+  ``ord``, ``iad``, ``lon``, ``syd``, ``hkg``. Default value is ``dfw``.
 
 Old code:
 
