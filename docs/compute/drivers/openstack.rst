@@ -92,7 +92,7 @@ For information on how to use this functionality please see the method
 docstrings bellow.
 
 Other Information
-----------------
+-----------------
 
 Authentication token re-use
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,7 +136,7 @@ If the service catalog is empty, you have two options:
    the "endpoint selection using the service catalog" step all together
 
 I get ``Resource not found`` error
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This error most likely indicates that you have used an invalid value for the
 ``ex_force_base_url`` argument.
