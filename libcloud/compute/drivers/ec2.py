@@ -1671,7 +1671,8 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
         'shutting-down': NodeState.UNKNOWN,
-        'terminated': NodeState.TERMINATED
+        'terminated': NodeState.TERMINATED,
+        'stopped': NodeState.STOPPED
     }
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,

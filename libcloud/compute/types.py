@@ -175,6 +175,7 @@ class NodeState(object):
     TERMINATED = 2
     PENDING = 3
     UNKNOWN = 4
+    STOPPED = 5
 
 
 class Architecture(object):
