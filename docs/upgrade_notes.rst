@@ -93,7 +93,8 @@ And replaced with two new constants:
 * ``RACKSPACE`` - Supported values for ``region`` argument are: ``us``, ``uk``.
   Default value is ``us``.
 * ``RACKSPACE_FIRST_GEN`` - Supported values for the ``region`` argument are:
-  ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
+  ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``, ``hkg``.
+  Default value is ``dfw``.
 
 Besides that, ``RACKSPACE`` provider constant now defaults to next-generation
 OpenStack based servers. Previously it defaulted to first generation cloud
