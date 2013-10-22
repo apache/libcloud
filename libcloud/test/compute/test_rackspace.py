@@ -199,5 +199,15 @@ class RackspaceNovaSydTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
 
     expected_endpoint = 'https://syd.servers.api.rackspacecloud.com/v2/1337'
 
+
+class RackspaceNovaHkgTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
+
+    driver_klass = RackspaceNodeDriver
+    driver_type = RackspaceNodeDriver
+    driver_args = RACKSPACE_NOVA_PARAMS
+    driver_kwargs = {'region': 'hkg'}
+
+    expected_endpoint = 'https://hkg.servers.api.rackspacecloud.com/v2/1337'
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
