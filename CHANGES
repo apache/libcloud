@@ -8,6 +8,10 @@ Changes with Apache Libcloud in development
      debugging deployment issues easier. (LIBCLOUD-414)
      [Tomaz Muraus]
 
+   - Add new "NodeState.STOPPED" node state. Update HostVirual and EC2 driver to
+     also recognize this new state. (LIBCLOUD-296)
+     [Jayy Vis]
+
 Changes with Apache Libcloud 0.14.0-beta1
 
  *) General
