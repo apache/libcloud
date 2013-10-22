@@ -164,11 +164,12 @@ class NodeState(object):
     """
     Standard states for a node
 
-    :cvar RUNNING: Node is running
-    :cvar REBOOTING: Node is rebooting
-    :cvar TERMINATED: Node is terminated
-    :cvar PENDING: Node is pending
-    :cvar UNKNOWN: Node state is unknown
+    :cvar RUNNING: Node is running.
+    :cvar REBOOTING: Node is rebooting.
+    :cvar TERMINATED: Node is terminated. This node can't be started later on.
+    :cvar STOPPED: Node is stopped. This node can be started later on.
+    :cvar PENDING: Node is pending.
+    :cvar UNKNOWN: Node state is unknown.
     """
     RUNNING = 0
     REBOOTING = 1
