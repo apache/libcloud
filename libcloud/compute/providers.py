@@ -146,10 +146,12 @@ def get_driver(provider):
         old_name = id_to_name_map[provider]
         new_name = id_to_name_map[OLD_CONSTANT_TO_NEW_MAPPING[provider]]
 
-        msg = 'Provider constant %s has been removed. New constant ' \
-              'is now called %s.\n' \
-              'For more information on this change and how to modify your ' \
-              'code to work with it, please visit: TODO' % (old_name, new_name)
+        url = 'http://s.apache.org/lc0140un'
+        msg = ('Provider constant %s has been removed. New constant '
+               'is now called %s.\n'
+               'For more information on this change and how to modify your '
+               'code to work with it, please visit: %s' %
+               (old_name, new_name, url))
         raise Exception(msg)
 
     return _get_provider_driver(DRIVERS, provider)
