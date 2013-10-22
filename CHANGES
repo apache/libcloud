@@ -12,6 +12,14 @@ Changes with Apache Libcloud in development
      also recognize this new state. (LIBCLOUD-296)
      [Jayy Vis]
 
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+ *) Load Balancer
+
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
 Changes with Apache Libcloud 0.14.0-beta1
 
  *) General
