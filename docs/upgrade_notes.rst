@@ -15,6 +15,21 @@ single class plus ``region`` argument model.
 More information on how this affects existing drivers and your code can be
 found bellow.
 
+Addition of new "STOPPED" node state
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This version includes a new state called
+:class:`libcloud.compute.types.NodeState.STOPPED`. This state represents a node
+which has been stopped and can be started later on (unlike TERMINATED state
+which represents a node which has been terminated and can't be started later
+on).
+
+As such, ``EC2`` and ``HostVirual`` drivers have also been updated to recognize
+this new state.
+
+Before addition of this state, nodes in this state were mapped to
+``NodeState.UNKNOWN``.
+
 Amazon EC2 compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
