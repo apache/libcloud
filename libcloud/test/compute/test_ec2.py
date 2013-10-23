@@ -459,9 +459,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(elastic_ips2), 2)
         self.assertTrue('1.2.3.5' not in elastic_ips2)
 
+    def test_ex_allocate_address(self):
+        ret = self.driver.ex_allocate_address()
+        self.assertTrue(ret)
+
+    def test_ex_release_address(self):
+        ret = self.driver.ex_release_address('1.2.3.4')
+        self.assertTrue(ret)
+
     def test_ex_associate_addresses(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.ex_associate_addresses(node, '1.2.3.4')
+        self.assertTrue(ret)
+
+    def test_ex_disassociate_address(self):
+        ret = self.driver.ex_disassociate_address('1.2.3.4')
         self.assertTrue(ret)
 
     def test_ex_change_node_size_same_size(self):
@@ -777,8 +789,20 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('describe_addresses_multi.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _AllocateAddress(self, method, url, body, headers):
+        body = self.fixtures.load('allocate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _AssociateAddress(self, method, url, body, headers):
         body = self.fixtures.load('associate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DisassociateAddress(self, method, url, body, headers):
+        body = self.fixtures.load('disassociate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ReleaseAddress(self, method, url, body, headers):
+        body = self.fixtures.load('release_address.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _all_addresses_DescribeAddresses(self, method, url, body, headers):
