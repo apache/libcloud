@@ -881,7 +881,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {
             'Action': 'DeleteKeyPair',
-            'KeyName.1': keypair
+            'KeyName': keypair
         }
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
