@@ -380,7 +380,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(keypair2['keyFingerprint'], null_fingerprint)
 
     def ex_delete_keypair(self):
-
         resp = self.driver.ex_delete_keypair('testkey')
         self.assertTrue(resp)
 
@@ -835,7 +834,6 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteKeypair(self, method, url, body, headers):
-
         url = url[2:]
         params = dict(parse_qsl(url))
         self.assertEqual(params['KeyPair'], 'testkey')

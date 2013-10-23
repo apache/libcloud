@@ -1,5 +1,12 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development
+
+ *) Compute
+
+   - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
+     [Oleg Suharev]
+
 Changes with Apache Libcloud 0.14.0-beta2
 
  *) Compute
