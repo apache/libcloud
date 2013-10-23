@@ -623,9 +623,9 @@ class BaseEC2NodeDriver(NodeDriver):
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
         description = findtext(element=element, xpath='description', namespace=NAMESPACE)
         return VolumeSnapshot(snapId, size=int(size), driver=self,
-                               extra={'volume_id': volId,
-                                        'description': description,
-                                        'state': state})
+                              extra={'volume_id': volId,
+                                     'description': description,
+                                     'state': state})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -695,7 +695,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeImages'}
 
         if ex_owner:
-            params.update({'Owner.1': owner})
+            params.update({'Owner.1': ex_owner})
 
         if ex_image_ids:
             params.update(self._pathlist('ImageId', ex_image_ids))
@@ -1311,7 +1311,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
         public_ip = findtext(element=response, xpath='publicIp',
-                                namespace=NAMESPACE)
+                             namespace=NAMESPACE)
         return public_ip
 
     def ex_release_address(self, elastic_ip_address):
