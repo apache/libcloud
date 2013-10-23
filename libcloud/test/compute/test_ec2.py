@@ -467,10 +467,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         ret = self.driver.ex_release_address('1.2.3.4')
         self.assertTrue(ret)
 
-    def test_ex_associate_addresses(self):
+    def test_ex_associate_address_with_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
-        ret = self.driver.ex_associate_addresses(node, '1.2.3.4')
-        self.assertTrue(ret)
+
+        ret1 = self.driver.ex_associate_address_with_node(node, '1.2.3.4')
+        ret2 = self.driver.ex_associate_addresses(node, '1.2.3.4')
+        self.assertTrue(ret1)
+        self.assertTrue(ret2)
 
     def test_ex_disassociate_address(self):
         ret = self.driver.ex_disassociate_address('1.2.3.4')

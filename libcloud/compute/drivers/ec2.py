@@ -1365,7 +1365,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return elastic_ip_addresses
 
-    def ex_associate_addresses(self, node, elastic_ip_address):
+    def ex_associate_address_with_node(self, node, elastic_ip_address):
         """
         Associate an Elastic IP address with a particular node.
 
@@ -1384,6 +1384,14 @@ class BaseEC2NodeDriver(NodeDriver):
         params.update({'PublicIp': elastic_ip_address})
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
+
+    def ex_associate_addresses(self, node, elastic_ip_address):
+        """
+        Note: This method has been deprecated in favor of
+        the ex_associate_address_with_node method.
+        """
+        return self.ex_associate_address_with_node(node=node,
+            elastic_ip_address=elastic_ip_address)
 
     def ex_disassociate_address(self, elastic_ip_address):
         """

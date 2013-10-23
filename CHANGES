@@ -12,6 +12,12 @@ Changes with Apache Libcloud in development
      ex_release_address. (LIBCLOUD-417)
      [Patrick Armstrong]
 
+  - For consistency and accuracy, rename "ex_associate_addresses" method in the
+    EC2 driver to "ex_associate_address_with_node".
+
+    Note: Old method will continue to work until the next major release.
+    [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta2
 
  *) Compute
