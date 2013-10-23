@@ -623,9 +623,9 @@ class BaseEC2NodeDriver(NodeDriver):
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
         description = findtext(element=element, xpath='description', namespace=NAMESPACE)
         return VolumeSnapshot(snapId, size=int(size), driver=self,
-                               extra={'volume_id': volId,
-                                        'description': description,
-                                        'state': state})
+                              extra={'volume_id': volId,
+                                     'description': description,
+                                     'state': state})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -695,7 +695,7 @@ class BaseEC2NodeDriver(NodeDriver):
         params = {'Action': 'DescribeImages'}
 
         if ex_owner:
-            params.update({'Owner.1': owner})
+            params.update({'Owner.1': ex_owner})
 
         if ex_image_ids:
             params.update(self._pathlist('ImageId', ex_image_ids))
@@ -1311,7 +1311,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
         public_ip = findtext(element=response, xpath='publicIp',
-                                namespace=NAMESPACE)
+                             namespace=NAMESPACE)
         return public_ip
 
     def ex_release_address(self, elastic_ip_address):
@@ -1365,7 +1365,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return elastic_ip_addresses
 
-    def ex_associate_addresses(self, node, elastic_ip_address):
+    def ex_associate_address_with_node(self, node, elastic_ip_address):
         """
         Associate an Elastic IP address with a particular node.
 
@@ -1384,6 +1384,14 @@ class BaseEC2NodeDriver(NodeDriver):
         params.update({'PublicIp': elastic_ip_address})
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
+
+    def ex_associate_addresses(self, node, elastic_ip_address):
+        """
+        Note: This method has been deprecated in favor of
+        the ex_associate_address_with_node method.
+        """
+        return self.ex_associate_address_with_node(node=node,
+            elastic_ip_address=elastic_ip_address)
 
     def ex_disassociate_address(self, elastic_ip_address):
         """

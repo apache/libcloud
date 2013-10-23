@@ -20,7 +20,7 @@ node = driver.create_node(name='test-node', image=image, size=size)
 
 # Here we allocate and associate an elastic IP
 elastic_ip = driver.ex_allocate_address()
-driver.ex_associate_addresses(node, elastic_ip)
+driver.ex_associate_address_with_node(node, elastic_ip)
 
 # When we are done with our elastic IP, we can disassociate from our
 # node, and release it
