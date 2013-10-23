@@ -17,7 +17,7 @@ Supported Methods (Main)
 .. include:: compute/_supported_methods_main.rst
 
 Supported Methods (Block Storage)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: compute/_supported_methods_block_storage.rst
 

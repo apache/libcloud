@@ -34,7 +34,7 @@ Export Libcloud Zone to BIND zone format
 
 .. note::
 
-    This functionality is only available in trunk.
+    This functionality is only available in Libcloud 0.14.0 and above.
 
 This example shows how to export Libcloud Zone to bind format.
 

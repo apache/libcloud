@@ -2,11 +2,43 @@
 
 Changes with Apache Libcloud in development
 
+ *) Compute
+
+   - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
+     [Oleg Suharev]
+
+   - Add the following new extension methods for elastic IP management to the
+     EC2 driver: ex_allocate_address, ex_disassociate_address,
+     ex_release_address. (LIBCLOUD-417)
+     [Patrick Armstrong]
+
+Changes with Apache Libcloud 0.14.0-beta2
+
+ *) Compute
+
+   - Add log statements to our ParamikoSSHClient wrapper. This should make
+     debugging deployment issues easier. (LIBCLOUD-414)
+     [Tomaz Muraus]
+
+   - Add new "NodeState.STOPPED" node state. Update HostVirual and EC2 driver to
+     also recognize this new state. (LIBCLOUD-296)
+     [Jayy Vis]
+
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+ *) Load Balancer
+
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+Changes with Apache Libcloud 0.14.0-beta1
+
  *) General
 
-    - By default read pricing data from ~/.libcloud/pricing.json if this file
-      exists. If it doesn't it uses old behavior and falls back to pricing file
-      bundled with a libcloud release.
+    - If the file exists, read pricing data from ~/.libcloud/pricing.json
+      by default. If the file doesn't exist, fall back to the old behavior
+      and use pricing data which is bundled with the release.
       [Tomaz Muraus]
 
     - Add libcloud.pricing.download_pricing_file function for downloading and
@@ -22,8 +54,8 @@ Changes with Apache Libcloud in development
       servers.
 
       Note: This change is backward incompatible. For more information on those
-      changes and how to upgrade your code to make it work with it, please visit
-      "Upgrade Notes" documentation page - http://s.apache.org/lc0140un
+      changes and how to update your code, please visit "Upgrade Notes"
+      documentation page - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
     - Deprecate the following EC2 provider constants: EC2_US_EAST,
@@ -33,9 +65,9 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant now takes a "region" argument which
       dictates to which region to connect.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future. For more information on those changes and how to upgrade your
-      code, please visit "Upgrade Noted" documentation page -
+      Note: Deprecated constants will continue to work until the next major
+      release. For more information on those changes and how to update your
+      code, please visit "Upgrade Notes" documentation page -
       http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
@@ -43,7 +75,7 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-354)
       [Emanuele Rocca]
 
-    - Add methods for managing store volumes to the OpenStack driver.
+    - Add methods for managing storage volumes to the OpenStack driver.
       (LIBCLOUD-353)
       [Bernard Kerckenaere]
 
@@ -60,10 +92,10 @@ Changes with Apache Libcloud in development
       [John Carr]
 
     - Unify extension argument names for assigning a node to security groups
-      in EC2 ad OpenStack driver.
+      in EC2 and OpenStack driver.
       Argument in the EC2 driver has been renamed from ex_securitygroup to
       ex_security_groups. For backward compatibility reasons, old argument
-      will continue to work for the unforeseeable future. (LIBCLOUD-375)
+      will continue to work until the next major release. (LIBCLOUD-375)
       [Tomaz Muraus]
 
     - Add ex_import_keypair_from_string and ex_import_keypair method to the
@@ -88,7 +120,7 @@ Changes with Apache Libcloud in development
       arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
 
       Note: This change is backward incompatible. For more information on how
-      this affects your code and how to upgrade, visit "Upgrade Notes"
+      this affects your code and how to update it, visit "Upgrade Notes"
       documentation page - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
@@ -140,6 +172,26 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-409)
       [Oleg Suharev]
 
+    - Align Joyent driver with other drivers and deprecate "location" argument
+      in the driver constructor in favor of "region" argument.
+
+      Note: Deprecated argument will continue to work until the next major
+      release.
+      [Tomaz Muraus]
+
+    - Deprecate the following ElasticHosts provider constants: ELASTICHOSTS_UK1,
+      ELASTICHOSTS_UK2, ELASTICHOSTS_US1, ELASTICHOSTS_US2, ELASTICHOSTS_US3,
+      ELASTICHOSTS_CA1, ELASTICHOSTS_AU1, ELASTICHOSTS_CN1 and replace it with a
+      new ELASTICHOSTS constant.
+      Driver referenced by this new constant now takes a "region" argument which
+      dictates to which region to connect.
+
+      Note: Deprecated constants will continue to work until the next major
+      release. For more information on those changes and how to update your
+      code, please visit "Upgrade Notes" documentation page -
+      http://s.apache.org/lc0140un (LIBCLOUD-383)
+      [Michael Bennett, Tomaz Muraus]
+
   *) Storage
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
@@ -147,8 +199,8 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
+      Note: Deprecated constants will continue to work until the next major
+      release.
       For more information on this change, please visit "Upgrade Notes"
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -170,8 +222,8 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of the following: 'ord', 'dfw', 'iad', 'syd', 'lon'.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
+      Note: Deprecated constants will continue to work until the next major
+      release.
       For more information on this change, please visit "Upgrade Notes"
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -186,8 +238,8 @@ Changes with Apache Libcloud in development
       Driver referenced by this new constant takes a "region" keyword argument
       which can be one of the following: 'us', 'uk'.
 
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
+      Note: Deprecated constants will continue to work until the next major
+      release.
       For more information on this change, please visit "Upgrade Notes"
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
@@ -200,8 +252,9 @@ Changes with Apache Libcloud in development
      documentation section - http://s.apache.org/lc0140un
      [Tomaz Muraus]
 
-   - Add method "export_zone_to_bind_format" which allows users to export
-     Libcloud Zone to BIND zone format. (LIBCLOUD-398)
+   - Add "export_zone_to_bind_format" and export_zone_to_bind_zone_file method
+     which allows users to export Libcloud Zone to BIND zone format.
+     (LIBCLOUD-398)
      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.13.2

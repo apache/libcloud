@@ -215,6 +215,9 @@ def generate_supported_methods_table(api, provider_matrix):
     data.append(['Provider'] + header)
 
     for provider, values in sorted(provider_matrix.items()):
+        if 'dummy' in provider.lower():
+            continue
+
         provider_name = '`%s`_' % (values['name'])
         row = [provider_name]
         for _, supported in values['methods'].items():
@@ -239,6 +242,8 @@ def generate_supported_providers_table(api, provider_matrix):
 
     data.append(header)
     for provider, values in sorted(provider_matrix.items()):
+        if 'dummy' in provider.lower():
+            continue
 
         name_str = '`%s`_' % (values['name'])
         module_str = ':mod:`%s`' % (values['module'])

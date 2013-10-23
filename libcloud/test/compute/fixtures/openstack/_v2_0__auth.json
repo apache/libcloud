@@ -101,6 +101,14 @@
                         "versionInfo": "https://syd.servers.api.rackspacecloud.com/v2/",
                         "versionList": "https://syd.servers.api.rackspacecloud.com/",
                         "versionId": "2"
+                    },
+                    {
+                        "region": "HKG",
+                        "tenantId": "613469",
+                        "publicURL": "https://hkg.servers.api.rackspacecloud.com/v2/1337",
+                        "versionInfo": "https://hkg.servers.api.rackspacecloud.com/v2/",
+                        "versionList": "https://hkg.servers.api.rackspacecloud.com/",
+                        "versionId": "2"
                     }
 
                 ],

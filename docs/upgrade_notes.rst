@@ -15,6 +15,21 @@ single class plus ``region`` argument model.
 More information on how this affects existing drivers and your code can be
 found bellow.
 
+Addition of new "STOPPED" node state
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This version includes a new state called
+:class:`libcloud.compute.types.NodeState.STOPPED`. This state represents a node
+which has been stopped and can be started later on (unlike TERMINATED state
+which represents a node which has been terminated and can't be started later
+on).
+
+As such, ``EC2`` and ``HostVirual`` drivers have also been updated to recognize
+this new state.
+
+Before addition of this state, nodes in this state were mapped to
+``NodeState.UNKNOWN``.
+
 Amazon EC2 compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -93,7 +108,8 @@ And replaced with two new constants:
 * ``RACKSPACE`` - Supported values for ``region`` argument are: ``us``, ``uk``.
   Default value is ``us``.
 * ``RACKSPACE_FIRST_GEN`` - Supported values for the ``region`` argument are:
-  ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
+  ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``, ``hkg``.
+  Default value is ``dfw``.
 
 Besides that, ``RACKSPACE`` provider constant now defaults to next-generation
 OpenStack based servers. Previously it defaulted to first generation cloud
@@ -176,7 +192,7 @@ New code (connecting to a next-gen provider)
     driver2 = cls('username', 'api_key', region='dfw')
     driver3 = cls('username', 'api_key', region='lon')
 
-CloudStack Compute driver changes
+CloudStack compute driver changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudStack driver received a lot of changes and additions which will make it
@@ -185,16 +201,115 @@ more pleasant to use. Backward incompatible changes are listed bellow:
 * ``CloudStackForwardingRule`` class has been renamed to
   ``CloudStackIPForwardingRule``
 
-* ``create_node`` method arguments are now more consistent
-  with other drivers. Security groups are now passed as ``ex_security_groups``, SSH keypairs
-  are now passed as ``ex_keyname`` and userdata is now passed as ``ex_userdata``.
+* ``create_node`` method arguments are now more consistent with other drivers.
+  Security groups are now passed as ``ex_security_groups``, SSH keypairs
+  are now passed as ``ex_keyname`` and userdata is now passed as
+  ``ex_userdata``.
 
-* For advanced networking zones, multiple networks can now be passed to the ``create_node``
-  method instead of a single network id. These networks need to be instances of the ``CloudStackNetwork`` class.
+* For advanced networking zones, multiple networks can now be passed to the
+  ``create_node`` method instead of a single network id. These networks need
+  to be instances of the ``CloudStackNetwork`` class.
 
-* The ``extra_args`` argument of the ``create_node`` method has been removed. 
-  The only arguments accepted are now the defaults ``name``, ``size``, ``image``, ``location`` plus
-  ``ex_keyname``, ``ex_userdata``, ``ex_security_groups`` and ``networks``.
+* The ``extra_args`` argument of the ``create_node`` method has been removed.
+  The only arguments accepted are now the defaults ``name``, ``size``,
+  ``image``, ``location`` plus ``ex_keyname``, ``ex_userdata``,
+  ``ex_security_groups`` and ``networks``.
+
+Joyent compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Joyent driver has been aligned with other drivers and now the constructor takes
+``region`` instead of ``location`` argument.
+
+For backward compatibility reasons, old argument will continue to work until the
+next major release.
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.JOYENT)
+
+    driver = cls('username', 'api_key', location='us-east-1')
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.JOYENT)
+
+    driver = cls('username', 'api_key', region='us-east-1')
+
+ElasticHosts compute driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ElasticHosts compute driver has moved to single class plus ``region`` argument
+model. As such, the following provider constants have been deprecated:
+
+* ``ELASTICHOSTS_UK1``
+* ``ELASTICHOSTS_UK1``
+* ``ELASTICHOSTS_US1``
+* ``ELASTICHOSTS_US2``
+* ``ELASTICHOSTS_US3``
+* ``ELASTICHOSTS_CA1``
+* ``ELASTICHOSTS_AU1``
+* ``ELASTICHOSTS_CN1``
+
+And replaced with a single constant:
+
+* ``ELASTICHOSTS`` - Supported values for the ``region`` argument are:
+  ``lon-p``, ``lon-b``, ``sat-p``, ``lax-p``, ``sjc-c``, ``tor-p``, ``syd-y``,
+  ``cn-1`` Default value is ``sat-p``.
+
+List which shows how old classes map to a new ``region`` argument value:
+
+* ``ELASTICHOSTS_UK1`` -> ``lon-p``
+* ``ELASTICHOSTS_UK1`` -> ``lon-b``
+* ``ELASTICHOSTS_US1`` -> ``sat-p``
+* ``ELASTICHOSTS_US2`` -> ``lax-p``
+* ``ELASTICHOSTS_US3`` -> ``sjc-c``
+* ``ELASTICHOSTS_CA1`` -> ``tor-p``
+* ``ELASTICHOSTS_AU1`` -> ``syd-y``
+* ``ELASTICHOSTS_CN1`` -> ``cn-1``
+
+Because of this change main driver class has also been renamed from
+:class:`libcloud.compute.drivers.elastichosts.ElasticHostsBaseNodeDriver`
+to :class:`libcloud.compute.drivers.elastichosts.ElasticHostsNodeDriver`.
+
+Only users who directly instantiate a driver and don't use recommended
+``get_driver`` method are affected by this change.
+
+Old code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls1 = get_driver(Provider.ELASTICHOSTS_UK1)
+    cls2 = get_driver(Provider.ELASTICHOSTS_US2)
+
+    driver1 = cls('username', 'api_key')
+    driver2 = cls('username', 'api_key')
+
+New code:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.ELASTICHOSTS)
+
+    driver1 = cls('username', 'api_key', region='lon-p')
+    driver2 = cls('username', 'api_key', region='lax-p')
+>>>>>>> upstream/trunk
 
 Unification of extension arguments for security group handling in the EC2 driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -279,8 +394,8 @@ New code:
     driver1 = cls1('username', 'api_key', region='us')
     driver2 = cls1('username', 'api_key', region='uk')
 
-Rackspace LoadBalancer driver changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Rackspace load balancer driver changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Rackspace loadbalancer driver has moved to one class plus ``region`` argument
 model. As such, the following provider constants have been deprecated:
@@ -291,7 +406,7 @@ model. As such, the following provider constants have been deprecated:
 And replaced with a single constant:
 
 * ``RACKSPACE`` - Supported values for ``region`` arguments are ``dfw``,
-  ``ord``, ``iad``, ``lon``, ``syd``. Default value is ``dfw``.
+  ``ord``, ``iad``, ``lon``, ``syd``, ``hkg``. Default value is ``dfw``.
 
 Old code:
 

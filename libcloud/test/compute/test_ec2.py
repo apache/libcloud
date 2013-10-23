@@ -19,12 +19,10 @@ import os
 import sys
 from datetime import datetime
 
-from mock import Mock
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import parse_qsl
 
-from libcloud.compute.drivers.ec2 import EC2NodeDriver, EC2APSENodeDriver
+from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestOregonNodeDriver
 from libcloud.compute.drivers.ec2 import EC2EUNodeDriver
@@ -36,7 +34,6 @@ from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
 from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
-from libcloud.utils.py3 import urlparse
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
@@ -49,7 +46,7 @@ from libcloud.test.secrets import EC2_PARAMS
 
 
 null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
-                      '00:00:00:00:00'
+                   '00:00:00:00:00'
 
 
 class BaseEC2Tests(LibcloudTestCase):
@@ -95,6 +92,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['tags']['Name'], 'foo')
         self.assertEqual(len(node.extra['tags']), 1)
 
+    def test_create_node_with_ex_mincount(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       ex_mincount=1, ex_maxcount=10)
+        self.assertEqual(node.id, 'i-2ba64342')
+        self.assertEqual(node.name, 'foo')
+        self.assertEqual(node.extra['tags']['Name'], 'foo')
+        self.assertEqual(len(node.extra['tags']), 1)
+
     def test_create_node_idempotent(self):
         EC2MockHttp.type = 'idempotent'
         image = NodeImage(id='ami-be3adfd7',
@@ -104,7 +114,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                         driver=self.driver)
         token = 'testclienttoken'
         node = self.driver.create_node(name='foo', image=image, size=size,
-                ex_clienttoken=token)
+                                       ex_clienttoken=token)
         self.assertEqual(node.id, 'i-2ba64342')
         self.assertEqual(node.extra['clienttoken'], token)
 
@@ -120,8 +130,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         # different count
         try:
             self.driver.create_node(name='foo', image=image, size=size,
-                    ex_mincount='2', ex_maxcount='2',
-                    ex_clienttoken=token)
+                                    ex_mincount='2', ex_maxcount='2',
+                                    ex_clienttoken=token)
         except IdempotentParamError:
             e = sys.exc_info()[1]
             idem_error = e
@@ -148,7 +158,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ips), 2)
         self.assertEqual(node.extra['launchdatetime'],
-                            '2009-08-07T05:47:04.000Z')
+                         '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in node.extra)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
@@ -163,11 +173,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(ret_node2.id, 'i-8474834a')
 
         self.assertEqual(ret_node1.extra['launchdatetime'],
-                                        '2009-08-07T05:47:04.000Z')
+                         '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in ret_node1.extra)
 
         self.assertEqual(ret_node2.extra['launchdatetime'],
-                                        '2009-08-07T05:47:04.000Z')
+                         '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in ret_node2.extra)
 
     def test_list_nodes_with_name_tag(self):
@@ -180,7 +190,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         locations = self.driver.list_locations()
         self.assertTrue(len(locations) > 0)
         self.assertEqual(locations[0].name, 'eu-west-1a')
-        self.assertTrue(locations[0].availability_zone != None)
+        self.assertTrue(locations[0].availability_zone is not None)
         self.assertTrue(isinstance(locations[0].availability_zone,
                                    ExEC2AvailabilityZone))
 
@@ -236,13 +246,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         mappings = 'this should be a list'
         self.assertRaises(AttributeError, self.driver.create_node, name='foo',
-                                       image=image, size=size,
-                                       ex_blockdevicemappings=mappings)
+                          image=image, size=size,
+                          ex_blockdevicemappings=mappings)
 
         mappings = ['this should be a dict']
         self.assertRaises(AttributeError, self.driver.create_node, name='foo',
-                                       image=image, size=size,
-                                       ex_blockdevicemappings=mappings)
+                          image=image, size=size,
+                          ex_blockdevicemappings=mappings)
 
     def test_destroy_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
@@ -252,13 +262,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_sizes(self):
         region_old = self.driver.region_name
 
-        names = [('ec2_us_east', 'us-east-1'),
-                  ('ec2_us_west', 'us-west-1'),
-                  ('ec2_eu_west', 'eu-west-1'),
-                  ('ec2_ap_southeast', 'ap-southeast-1'),
-                  ('ec2_ap_northeast', 'ap-northeast-1'),
-                  ('ec2_ap_southeast_2', 'ap-southeast-2')
-                ]
+        names = [
+            ('ec2_us_east', 'us-east-1'),
+            ('ec2_us_west', 'us-west-1'),
+            ('ec2_eu_west', 'eu-west-1'),
+            ('ec2_ap_southeast', 'ap-southeast-1'),
+            ('ec2_ap_northeast', 'ap-northeast-1'),
+            ('ec2_ap_southeast_2', 'ap-southeast-2')
+        ]
+
         for api_name, region_name in names:
             self.driver.api_name = api_name
             self.driver.region_name = region_name
@@ -317,16 +329,18 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_images(self):
         images = self.driver.list_images()
         image = images[0]
+
+        name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
         self.assertEqual(len(images), 1)
-        self.assertEqual(image.name,
-                    'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
+        self.assertEqual(image.name, name)
         self.assertEqual(image.id, 'ami-be3adfd7')
 
     def test_list_images_with_image_ids(self):
         images = self.driver.list_images(ex_image_ids=['ami-be3adfd7'])
+
+        name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
         self.assertEqual(len(images), 1)
-        self.assertEqual(images[0].name,
-                    'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml')
+        self.assertEqual(images[0].name, name)
 
     def ex_destroy_image(self):
         images = self.driver.list_images()
@@ -379,7 +393,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('stack' in tags)
 
     def test_ex_import_keypair_from_string(self):
-        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
+                            'dummy_rsa.pub')
 
         with open(path, 'r') as fh:
             key = self.driver.ex_import_keypair_from_string('keypair', fh.read())
@@ -388,7 +403,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
     def test_ex_import_keypair(self):
-        path = os.path.join(os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+        path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
+                            'dummy_rsa.pub')
         key = self.driver.ex_import_keypair('keypair', path)
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
@@ -443,9 +459,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(elastic_ips2), 2)
         self.assertTrue('1.2.3.5' not in elastic_ips2)
 
+    def test_ex_allocate_address(self):
+        ret = self.driver.ex_allocate_address()
+        self.assertTrue(ret)
+
+    def test_ex_release_address(self):
+        ret = self.driver.ex_release_address('1.2.3.4')
+        self.assertTrue(ret)
+
     def test_ex_associate_addresses(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.ex_associate_addresses(node, '1.2.3.4')
+        self.assertTrue(ret)
+
+    def test_ex_disassociate_address(self):
+        ret = self.driver.ex_disassociate_address('1.2.3.4')
         self.assertTrue(ret)
 
     def test_ex_change_node_size_same_size(self):
@@ -481,7 +509,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(11, volumes[1].size)
         self.assertEqual('available', volumes[1].extra['state'])
 
-
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
@@ -492,17 +519,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(isinstance(vol.extra['create-time'], datetime))
 
     def test_destroy_volume(self):
-        vol = StorageVolume(
-                    id='vol-4282672b', name='test',
-                    size=10, driver=self.driver)
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            size=10, driver=self.driver)
 
         retValue = self.driver.destroy_volume(vol)
         self.assertTrue(retValue)
 
     def test_attach(self):
-        vol = StorageVolume(
-                    id='vol-4282672b', name='test',
-                    size=10, driver=self.driver)
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            size=10, driver=self.driver)
 
         node = Node('i-4382922a', None, None, None, None, self.driver)
         retValue = self.driver.attach_volume(node, vol, '/dev/sdh')
@@ -510,17 +535,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(retValue)
 
     def test_detach(self):
-        vol = StorageVolume(
-                    id='vol-4282672b', name='test',
-                    size=10, driver=self.driver)
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            size=10, driver=self.driver)
 
         retValue = self.driver.detach_volume(vol)
         self.assertTrue(retValue)
 
     def test_create_volume_snapshot(self):
-        vol = StorageVolume(
-                id='vol-4282672b', name='test',
-                size=10, driver=self.driver)
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            size=10, driver=self.driver)
         snap = self.driver.create_volume_snapshot(vol, 'Test description')
 
         self.assertEqual('snap-a7cb2hd9', snap.id)
@@ -553,7 +576,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         images = self.driver.list_images()
         image = images[0]
 
-        resp = self.driver.ex_modify_image_attribute(image, {'LaunchPermission.Add.1.Group': 'all'})
+        data = {'LaunchPermission.Add.1.Group': 'all'}
+        resp = self.driver.ex_modify_image_attribute(image, data)
         self.assertTrue(resp)
 
     def test_create_node_ex_security_groups(self):
@@ -564,8 +588,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                           driver=self.driver)
         size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
                         driver=self.driver)
-
-        oldRequest = self.driver.connection.request
 
         security_groups = ['group1', 'group2']
 
@@ -697,6 +719,8 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_groups_RunInstances(self, method, url, body, headers):
+        # Need to remove '/?'
+        url = url[2:]
         params = dict(parse_qsl(url))
 
         self.assertEqual(params['SecurityGroup.1'], 'group1')
@@ -765,8 +789,20 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('describe_addresses_multi.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _AllocateAddress(self, method, url, body, headers):
+        body = self.fixtures.load('allocate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _AssociateAddress(self, method, url, body, headers):
         body = self.fixtures.load('associate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DisassociateAddress(self, method, url, body, headers):
+        body = self.fixtures.load('disassociate_address.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ReleaseAddress(self, method, url, body, headers):
+        body = self.fixtures.load('release_address.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _all_addresses_DescribeAddresses(self, method, url, body, headers):
@@ -822,13 +858,16 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteKeypair(self, method, url, body, headers):
+        url = url[2:]
+        params = dict(parse_qsl(url))
+        self.assertEqual(params['KeyPair'], 'testkey')
+
         body = self.fixtures.load('delete_keypair.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ModifyImageAttribute(self, method, url, body, headers):
         body = self.fixtures.load('modify_image_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
 
 
 class EucMockHttp(EC2MockHttp):

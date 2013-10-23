@@ -14,24 +14,21 @@
 # limitations under the License.
 
 import sys
-import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.base import Node
-from libcloud.compute.types import Provider
-from libcloud.compute.drivers.elasticstack import (ElasticStackException,
-                              ElasticStackBaseConnection,
-                              ElasticStackBaseNodeDriver as ElasticStack)
+from libcloud.compute.drivers.elasticstack import ElasticStackException
 from libcloud.compute.drivers.elastichosts import \
-                              (ElasticHostsBaseNodeDriver as ElasticHosts)
+    ElasticHostsNodeDriver as ElasticHosts
 from libcloud.compute.drivers.skalicloud import \
-                              (SkaliCloudNodeDriver as SkaliCloud)
+    SkaliCloudNodeDriver as SkaliCloud
 from libcloud.compute.drivers.serverlove import \
-                              (ServerLoveNodeDriver as ServerLove)
+    ServerLoveNodeDriver as ServerLove
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import ComputeFileFixtures
+
 
 class ElasticStackTestCase(object):
 
@@ -135,8 +132,7 @@ class ElasticStackTestCase(object):
 
     def test_create_node(self):
         sizes = self.driver.list_sizes()
-        size = [s for s in sizes if \
-                s.id == 'large'][0]
+        size = [s for s in sizes if s.id == 'large'][0]
         image = self.image
 
         self.assertTrue(self.driver.create_node(name="api.ivan.net.nz",
@@ -151,11 +147,28 @@ class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
 
         self.driver = ElasticHosts('foo', 'bar')
         images = self.driver.list_images()
-        self.image = [i for i in images if \
+        self.image = [i for i in images if
                       i.id == '38df0986-4d85-4b76-b502-3878ffc80161'][0]
+        super(ElasticHostsTestCase, self).setUp()
 
-        ElasticStackTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+    def test_multiple_drivers_with_different_regions(self):
+        driver1 = ElasticHosts('foo', 'bar', region='lon-p')
+        driver2 = ElasticHosts('foo', 'bar', region='sat-p')
+
+        self.assertTrue(driver1.connection.host.startswith('api-lon-p'))
+        self.assertTrue(driver2.connection.host.startswith('api-sat-p'))
+
+        driver1.list_nodes()
+        driver2.list_nodes()
+        driver1.list_nodes()
+
+        self.assertTrue(driver1.connection.host.startswith('api-lon-p'))
+        self.assertTrue(driver2.connection.host.startswith('api-sat-p'))
+
+    def test_invalid_region(self):
+        expected_msg = r'Invalid region.+'
+        self.assertRaisesRegexp(ValueError, expected_msg, ElasticHosts,
+                                'foo', 'bar', region='invalid')
 
 
 class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
@@ -167,11 +180,9 @@ class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):
         self.driver = SkaliCloud('foo', 'bar')
 
         images = self.driver.list_images()
-        self.image = [i for i in images if \
-                     i.id == '90aa51f2-15c0-4cff-81ee-e93aa20b9468'][0]
-
-        ElasticStackTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+        self.image = [i for i in images if
+                      i.id == '90aa51f2-15c0-4cff-81ee-e93aa20b9468'][0]
+        super(SkaliCloudTestCase, self).setUp()
 
 
 class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
@@ -183,11 +194,9 @@ class ServerLoveTestCase(ElasticStackTestCase, unittest.TestCase):
         self.driver = ServerLove('foo', 'bar')
 
         images = self.driver.list_images()
-        self.image = [i for i in images if \
-                     i.id == '679f5f44-0be7-4745-a658-cccd4334c1aa'][0]
-
-        ElasticStackTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+        self.image = [i for i in images if
+                      i.id == '679f5f44-0be7-4745-a658-cccd4334c1aa'][0]
+        super(ServerLoveTestCase, self).setUp()
 
 
 class ElasticStackMockHttp(MockHttp):

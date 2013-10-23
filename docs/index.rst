@@ -1,17 +1,6 @@
 Welcome to Apache Libcloud's documentation!
 ===========================================
 
-.. note::
-
-    Right now we're in the progress of migrating our existing documentation to
-    Sphinx, so this may be incomplete. We apologize for the inconvenience and we
-    hope the upcoming awesomeness will make up for it.
-
-.. note::
-
-    Unless noted otherwise, all of the examples in the documentation are
-    licensed under the `Apache 2.0 license`_.
-
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources through
 a unified and easy to use API.
@@ -70,5 +59,10 @@ Committer Guide
     :maxdepth: 3
 
     committer_guide
+
+.. note::
+
+    Unless noted otherwise, all of the examples and code snippters in the
+    documentation are licensed under the `Apache 2.0 license`_.
 
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html

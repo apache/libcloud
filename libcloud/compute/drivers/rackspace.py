@@ -40,6 +40,10 @@ ENDPOINT_ARGS_MAP = {
     'syd': {'service_type': 'compute',
             'name': 'cloudServersOpenStack',
             'region': 'SYD'},
+    'hkg': {'service_type': 'compute',
+            'name': 'cloudServersOpenStack',
+            'region': 'HKG'},
+
 }
 
 

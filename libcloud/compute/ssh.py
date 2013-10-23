@@ -35,6 +35,8 @@ import logging
 from os.path import split as psplit
 from os.path import join as pjoin
 
+from libcloud.utils.logging import ExtraLogFormatter
+
 
 class BaseSSHClient(object):
     """
@@ -136,6 +138,18 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'close not implemented for this ssh client')
 
+    def _get_and_setup_logger(self):
+        logger = logging.getLogger('libcloud.compute.ssh')
+        path = os.getenv('LIBCLOUD_DEBUG')
+
+        if path:
+            handler = logging.FileHandler(path)
+            handler.setFormatter(ExtraLogFormatter())
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
+
+        return logger
+
 
 class ParamikoSSHClient(BaseSSHClient):
 
@@ -148,6 +162,7 @@ class ParamikoSSHClient(BaseSSHClient):
                                                 password, key, timeout)
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.logger = self._get_and_setup_logger()
 
     def connect(self):
         conninfo = {'hostname': self.hostname,
@@ -167,10 +182,17 @@ class ParamikoSSHClient(BaseSSHClient):
         if self.timeout:
             conninfo['timeout'] = self.timeout
 
+        extra = {'_hostname': self.hostname, '_port': self.port,
+                 '_username': self.username, '_timeout': self.timeout}
+        self.logger.debug('Connecting to server', extra=extra)
+
         self.client.connect(**conninfo)
         return True
 
     def put(self, path, contents=None, chmod=None, mode='w'):
+        extra = {'_path': path, '_mode': mode, '_chmod': chmod}
+        self.logger.debug('Uploading file', extra=extra)
+
         sftp = self.client.open_sftp()
         # less than ideal, but we need to mkdir stuff otherwise file() fails
         head, tail = psplit(path)
@@ -208,12 +230,18 @@ class ParamikoSSHClient(BaseSSHClient):
         return file_path
 
     def delete(self, path):
+        extra = {'_path': path}
+        self.logger.debug('Deleting file', extra=extra)
+
         sftp = self.client.open_sftp()
         sftp.unlink(path)
         sftp.close()
         return True
 
     def run(self, cmd):
+        extra = {'_cmd': cmd}
+        self.logger.debug('Executing command', extra=extra)
+
         # based on exec_command()
         bufsize = -1
         t = self.client.get_transport()
@@ -227,9 +255,15 @@ class ParamikoSSHClient(BaseSSHClient):
         status = chan.recv_exit_status()
         so = stdout.read()
         se = stderr.read()
+
+        extra = {'_status': status, '_stdout': so, '_stderr': se}
+        self.logger.debug('Command finished', extra=extra)
+
         return [so, se, status]
 
     def close(self):
+        self.logger.debug('Closing server connection')
+
         self.client.close()
         return True
 
@@ -287,17 +321,6 @@ class ShellOutSSHClient(BaseSSHClient):
 
     def close(self):
         return True
-
-    def _get_and_setup_logger(self):
-        logger = logging.getLogger('libcloud.compute.ssh')
-        path = os.getenv('LIBCLOUD_DEBUG')
-
-        if path:
-            handler = logging.FileHandler(path)
-            logger.addHandler(handler)
-            logger.setLevel(logging.DEBUG)
-
-        return logger
 
     def _get_base_ssh_command(self):
         cmd = ['ssh']

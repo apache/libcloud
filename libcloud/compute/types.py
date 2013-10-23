@@ -32,7 +32,7 @@ __all__ = [
     "InvalidCredsException",
     "DEPRECATED_RACKSPACE_PROVIDERS",
     "OLD_CONSTANT_TO_NEW_MAPPING"
-    ]
+]
 
 
 class Provider(object):
@@ -56,6 +56,7 @@ class Provider(object):
     :cvar IBM: IBM Developer Cloud
     :cvar OPENNEBULA: OpenNebula.org
     :cvar DREAMHOST: DreamHost Private Server
+    :cvar ELASTICHOSTS: ElasticHosts.com
     :cvar CLOUDSIGMA: CloudSigma
     :cvar NIMBUS: Nimbus
     :cvar BLUEBOX: Bluebox
@@ -91,9 +92,6 @@ class Provider(object):
     OPENNEBULA = 'opennebula'
     DREAMHOST = 'dreamhost'
     ELASTICHOSTS = 'elastichosts'
-    ELASTICHOSTS_UK1 = 'elastichosts_uk1'
-    ELASTICHOSTS_UK2 = 'elastichosts_uk2'
-    ELASTICHOSTS_US1 = 'elastichosts_us1'
     BRIGHTBOX = 'brightbox'
     CLOUDSIGMA = 'cloudsigma'
     NIMBUS = 'nimbus'
@@ -108,8 +106,6 @@ class Provider(object):
     CLOUDSTACK = 'cloudstack'
     CLOUDSIGMA_US = 'cloudsigma_us'
     LIBVIRT = 'libvirt'
-    ELASTICHOSTS_US2 = 'elastichosts_us2'
-    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
     JOYENT = 'joyent'
     VCL = 'vcl'
     KTUCLOUD = 'ktucloud'
@@ -130,6 +126,15 @@ class Provider(object):
     EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
     EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
+
+    ELASTICHOSTS_UK1 = 'elastichosts_uk1'
+    ELASTICHOSTS_UK2 = 'elastichosts_uk2'
+    ELASTICHOSTS_US1 = 'elastichosts_us1'
+    ELASTICHOSTS_US2 = 'elastichosts_us2'
+    ELASTICHOSTS_US3 = 'elastichosts_us3'
+    ELASTICHOSTS_CA1 = 'elastichosts_ca1'
+    ELASTICHOSTS_AU1 = 'elastichosts_au1'
+    ELASTICHOSTS_CN1 = 'elastichosts_cn1'
 
     # Deprecated constants which aren't supported anymore
     RACKSPACE_UK = 'rackspace_uk'
@@ -159,17 +164,19 @@ class NodeState(object):
     """
     Standard states for a node
 
-    :cvar RUNNING: Node is running
-    :cvar REBOOTING: Node is rebooting
-    :cvar TERMINATED: Node is terminated
-    :cvar PENDING: Node is pending
-    :cvar UNKNOWN: Node state is unknown
+    :cvar RUNNING: Node is running.
+    :cvar REBOOTING: Node is rebooting.
+    :cvar TERMINATED: Node is terminated. This node can't be started later on.
+    :cvar STOPPED: Node is stopped. This node can be started later on.
+    :cvar PENDING: Node is pending.
+    :cvar UNKNOWN: Node state is unknown.
     """
     RUNNING = 0
     REBOOTING = 1
     TERMINATED = 2
     PENDING = 3
     UNKNOWN = 4
+    STOPPED = 5
 
 
 class Architecture(object):
@@ -187,7 +194,8 @@ class DeploymentError(LibcloudError):
     """
     Exception used when a Deployment Task failed.
 
-    :ivar node: :class:`Node` on which this exception happened, you might want to call :class:`Node.destroy`
+    :ivar node: :class:`Node` on which this exception happened, you might want
+                to call :func:`Node.destroy`
     """
     def __init__(self, node, original_exception=None, driver=None):
         self.node = node

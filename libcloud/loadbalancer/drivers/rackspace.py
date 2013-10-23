@@ -47,6 +47,10 @@ ENDPOINT_ARGS_MAP = {
     'syd': {'service_type': 'rax:load-balancer',
             'name': 'cloudLoadBalancers',
             'region': 'SYD'},
+    'hkg': {'service_type': 'rax:load-balancer',
+            'name': 'cloudLoadBalancers',
+            'region': 'HKG'},
+
 }
 
 
