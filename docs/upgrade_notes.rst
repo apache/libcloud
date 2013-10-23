@@ -118,6 +118,9 @@ servers.
 If you want to preserve old behavior and use first-gen drivers you need to use
 ``RACKSPACE_FIRST_GEN`` provider constant.
 
+First generation cloud servers now also use auth 2.0 by default. Previously they
+used auth 1.0.
+
 Because of the nature of this first-gen to next-gen change, old constants have
 been fully removed and unlike region changes in other driver, this change is not
 backward compatible.
