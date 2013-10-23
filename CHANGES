@@ -7,6 +7,11 @@ Changes with Apache Libcloud in development
    - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
      [Oleg Suharev]
 
+   - Add the following new extension methods for elastic IP management to the
+     EC2 driver: ex_allocate_address, ex_disassociate_address,
+     ex_release_address. (LIBCLOUD-417)
+     [Patrick Armstrong]
+
 Changes with Apache Libcloud 0.14.0-beta2
 
  *) Compute
