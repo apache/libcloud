@@ -309,6 +309,7 @@ New code:
 
     driver1 = cls('username', 'api_key', region='lon-p')
     driver2 = cls('username', 'api_key', region='lax-p')
+>>>>>>> upstream/trunk
 
 Unification of extension arguments for security group handling in the EC2 driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

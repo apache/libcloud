@@ -101,8 +101,6 @@ class CloudStackPortForwardingRule(object):
         """
         A Port forwarding rule for Source NAT.
 
-        @note: This is a non-standard extension API, and only works for EC2.
-
         :param      node: Node for rule
         :type       node: :class:`Node`
 
@@ -631,7 +629,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List all volumes
 
-        :param node: Only return volumns for the provided node.
+        :param node: Only return volumes for the provided node.
         :type node: :class:`CloudStackNode`
 
         :rtype: ``list`` of :class:`StorageVolume`
@@ -658,8 +656,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         res = self._sync_request('listPublicIpAddresses')
         ips = []
-        for ip in res['publicipaddress']:
-            ips.append(CloudStackAddress(ip['id'], ip['ipaddress'], self))
+        if not res == {}:
+            for ip in res['publicipaddress']:
+                ips.append(CloudStackAddress(ip['id'], ip['ipaddress'], self))
         return ips
 
     def ex_allocate_public_ip(self, location=None):
