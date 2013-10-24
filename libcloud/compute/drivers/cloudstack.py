@@ -631,7 +631,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         List all volumes
 
-        :param node: Only return volumns for the provided node.
+        :param node: Only return volumes for the provided node.
         :type node: :class:`CloudStackNode`
 
         :rtype: ``list`` of :class:`StorageVolume`
@@ -656,8 +656,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``list`` of :class:`CloudStackAddress`
         """
-        res = self._sync_request('listPublicIpAddresses')
         ips = []
+
+        res = self._sync_request('listPublicIpAddresses')
+
+        # Workaround for basic zones
+        if not res:
+            return ips
+
         for ip in res['publicipaddress']:
             ips.append(CloudStackAddress(ip['id'], ip['ipaddress'], self))
         return ips
