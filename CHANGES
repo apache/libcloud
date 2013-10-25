@@ -18,6 +18,10 @@ Changes with Apache Libcloud in development
     Note: Old method will continue to work until the next major release.
     [Tomaz Muraus]
 
+  - Add new driver for CloudFrames (http://www.cloudfounders.com/CloudFrames)
+    provider. (LIBCLOUD-358)
+    [Bernard Kerckenaere]
+
 Changes with Apache Libcloud 0.14.0-beta2
 
  *) Compute
