@@ -1228,7 +1228,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(keypair.name, 'key2')
         self.assertEqual(
             keypair.fingerprint, '5d:66:33:ae:99:0f:fb:cb:86:f2:bc:ae:53:99:b6:ed')
-        self.assertTrue(keypair.public_key > 10)
+        self.assertTrue(len(keypair.public_key) > 10)
         self.assertEqual(keypair.private_key, None)
 
     def test_ex_create_keypair(self):
@@ -1238,8 +1238,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(keypair.fingerprint,
                          '80:f8:03:a7:8e:c1:c3:b1:7e:c5:8c:50:04:5e:1c:5b')
-        self.assertTrue(keypair.public_key > 10)
-        self.assertTrue(keypair.private_key > 10)
+        self.assertTrue(len(keypair.public_key) > 10)
+        self.assertTrue(len(keypair.private_key) > 10)
 
     def test_ex_import_keypair(self):
         name = 'key3'
