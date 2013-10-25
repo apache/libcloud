@@ -21,7 +21,7 @@ from base64 import b64encode
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
-from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
+from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse

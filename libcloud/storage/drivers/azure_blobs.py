@@ -15,14 +15,10 @@
 
 from __future__ import with_statement
 
-import time
 import base64
-import hmac
-import re
 import os
 import binascii
 
-from hashlib import sha256
 from xml.etree.ElementTree import Element, SubElement
 
 from libcloud.utils.py3 import PY3
@@ -31,7 +27,7 @@ from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
 from libcloud.utils.py3 import b
 
-from libcloud.utils.xml import fixxpath, findtext
+from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import LibcloudError
 from libcloud.common.azure import AzureConnection

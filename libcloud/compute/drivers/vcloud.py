@@ -38,7 +38,7 @@ from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation
-from libcloud.compute.base import NodeSize, NodeImage, NodeAuthPassword
+from libcloud.compute.base import NodeSize, NodeImage
 
 """
 From vcloud api "The VirtualQuantity element defines the number of MB

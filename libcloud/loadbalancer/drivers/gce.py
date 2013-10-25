@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.compute.drivers.gce import GCEConnection, GCENodeDriver
 

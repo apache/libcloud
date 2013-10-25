@@ -16,12 +16,7 @@
 Softlayer driver
 """
 
-import sys
 import time
-
-import libcloud
-
-from libcloud.utils.py3 import xmlrpclib
 
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection

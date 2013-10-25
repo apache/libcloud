@@ -22,7 +22,6 @@ import sys
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement
 
-from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import urlencode

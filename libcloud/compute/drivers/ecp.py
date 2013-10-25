@@ -24,7 +24,6 @@ import binascii
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-from libcloud.utils.py3 import u
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
