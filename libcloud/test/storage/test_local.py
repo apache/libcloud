@@ -21,6 +21,8 @@ import shutil
 import unittest
 import tempfile
 
+import mock
+
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -35,6 +37,8 @@ from libcloud.storage.types import ObjectHashMismatchError
 
 try:
     from libcloud.storage.drivers.local import LocalStorageDriver
+    from libcloud.storage.drivers.local import LockLocalStorage
+    from lockfile import LockTimeout
 except ImportError:
     print('lockfile library is not available, skipping local_storage tests...')
     LocalStorageDriver = None
@@ -317,6 +321,14 @@ class LocalTests(unittest.TestCase):
         obj.delete()
         container.delete()
         self.remove_tmp_file(tmppath)
+
+    @mock.patch("lockfile.mkdirlockfile.MkdirLockFile.acquire",
+                mock.MagicMock(side_effect=LockTimeout))
+    def test_proper_lockfile_imports(self):
+        # LockLocalStorage was previously using an un-imported exception
+        # in its __enter__ method, so the following would raise a NameError.
+        lls = LockLocalStorage("blah")
+        self.assertRaises(LibcloudError, lls.__enter__)
 
 
 if not LocalStorageDriver:
