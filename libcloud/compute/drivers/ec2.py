@@ -602,13 +602,17 @@ class BaseEC2NodeDriver(NodeDriver):
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
         state = findtext(element=element, xpath='status', namespace=NAMESPACE)
-        create_time = findtext(element=element, xpath='createTime', namespace=NAMESPACE)
+        create_time = findtext(element=element, xpath='createTime',
+                               namespace=NAMESPACE)
+        device = findtext(element=element, xpath='attachmentSet/item/device',
+                          namespace=NAMESPACE)
+
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
                              driver=self,
                              extra={'state': state,
-                                    'device': findtext(element=element, xpath='attachmentSet/item/device', namespace=NAMESPACE),
+                                    'device': device,
                                     'create-time': parse_date(create_time)})
 
     def _to_snapshots(self, response):
@@ -617,11 +621,16 @@ class BaseEC2NodeDriver(NodeDriver):
         ]
 
     def _to_snapshot(self, element):
-        snapId = findtext(element=element, xpath='snapshotId', namespace=NAMESPACE)
-        volId = findtext(element=element, xpath='volumeId', namespace=NAMESPACE)
-        size = findtext(element=element, xpath='volumeSize', namespace=NAMESPACE)
-        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
-        description = findtext(element=element, xpath='description', namespace=NAMESPACE)
+        snapId = findtext(element=element, xpath='snapshotId',
+                          namespace=NAMESPACE)
+        volId = findtext(element=element, xpath='volumeId',
+                         namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize',
+                        namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status',
+                         namespace=NAMESPACE)
+        description = findtext(element=element, xpath='description',
+                               namespace=NAMESPACE)
         return VolumeSnapshot(snapId, size=int(size), driver=self,
                               extra={'volume_id': volId,
                                      'description': description,
@@ -1391,7 +1400,8 @@ class BaseEC2NodeDriver(NodeDriver):
         the ex_associate_address_with_node method.
         """
         return self.ex_associate_address_with_node(node=node,
-            elastic_ip_address=elastic_ip_address)
+                                                   elastic_ip_address=
+                                                   elastic_ip_address)
 
     def ex_disassociate_address(self, elastic_ip_address):
         """

@@ -105,9 +105,9 @@ class GridspotNodeDriver(NodeDriver):
             port = int(parts[1])
 
         extra_params = {
-                'winning_bid_id': data['winning_bid_id'],
-                'port': port
-            }
+            'winning_bid_id': data['winning_bid_id'],
+            'port': port
+        }
 
         # Spec is vague and doesn't indicate if these will always be present
         self._add_int_param(extra_params, data, 'vm_num_logical_cores')

@@ -68,21 +68,23 @@ class BrightboxNodeDriver(NodeDriver):
                                      'started_at', 'created_at',
                                      'deleted_at'])
         extra_data['zone'] = self._to_location(data['zone'])
+
+        ipv6_addresses = [interface['ipv6_address'] for interface
+                          in data['interfaces'] if 'ipv6_address' in interface]
+
+        private_ips = [interface['ipv4_address']
+                       for interface in data['interfaces']
+                       if 'ipv4_address' in interface]
+
+        public_ips = [cloud_ip['public_ip'] for cloud_ip in data['cloud_ips']]
+        public_ips += ipv6_addresses
+
         return Node(
             id=data['id'],
             name=data['name'],
             state=self.NODE_STATE_MAP[data['status']],
-
-            private_ips=[interface['ipv4_address']
-                         for interface in data['interfaces']
-                         if 'ipv4_address' in interface],
-
-            public_ips=[cloud_ip['public_ip']
-                        for cloud_ip in data['cloud_ips']] +
-                        [interface['ipv6_address']
-                        for interface in data['interfaces']
-                        if 'ipv6_address' in interface],
-
+            private_ips=private_ips,
+            public_ips=public_ips,
             driver=self.connection.driver,
             size=self._to_size(data['server_type']),
             image=self._to_image(data['image']),

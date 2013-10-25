@@ -22,7 +22,6 @@ import sys
 from hashlib import sha1
 from xml.etree.ElementTree import Element, SubElement
 
-from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import urlencode
@@ -241,7 +240,7 @@ class S3StorageDriver(StorageDriver):
         :rtype: ``list`` of :class:`Object`
         """
         return list(self.iterate_container_objects(container,
-            ex_prefix=ex_prefix))
+                    ex_prefix=ex_prefix))
 
     def iterate_container_objects(self, container, ex_prefix=None):
         """

@@ -120,7 +120,7 @@ def display(title, resource_list):
         print('   %s' % item.name)
 
 
-def clean_up(base_name, node_list=None, resource_list=None):
+def clean_up(gce, base_name, node_list=None, resource_list=None):
     """
     Destroy all resources that have a name beginning with 'base_name'.
 
@@ -162,7 +162,6 @@ def clean_up(base_name, node_list=None, resource_list=None):
 
 # ==== DEMO CODE STARTS HERE ====
 def main():
-    global gce  # Used by the clean_up function
     gce = get_gce_driver()
     gcelb = get_gcelb_driver(gce)
 
@@ -187,7 +186,8 @@ def main():
     all_nodes = gce.list_nodes(ex_zone='all')
     firewalls = gce.ex_list_firewalls()
     print('Cleaning up any "%s" resources:' % DEMO_BASE_NAME)
-    clean_up(DEMO_BASE_NAME, all_nodes, balancers + healthchecks + firewalls)
+    clean_up(gce, DEMO_BASE_NAME, all_nodes,
+             balancers + healthchecks + firewalls)
 
     # == Create 3 nodes to balance between ==
     startup_script = ('apt-get -y update && '

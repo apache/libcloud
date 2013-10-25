@@ -24,7 +24,9 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import IBM_PARAMS
 
+
 class IBMTests(unittest.TestCase, TestCaseMixin):
+
     """
     Tests the IBM SmartCloud Enterprise driver.
     """
@@ -59,7 +61,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
-        self.assertEqual(len(ret), 9) # 9 instance configurations supported
+        self.assertEqual(len(ret), 9)  # 9 instance configurations supported
         self.assertEqual(ret[0].id, 'BRZ32.1/2048/60*175')
         self.assertEqual(ret[1].id, 'BRZ64.2/4096/60*500*350')
         self.assertEqual(ret[2].id, 'COP32.1/2048/60')
@@ -92,8 +94,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                       publicKey='MyPublicKey',
                                       configurationData={
                                            'insight_admin_password': 'myPassword1',
-                                           'db2_admin_password': 'myPassword2',
-                                           'report_user_password': 'myPassword3'})
+                                          'db2_admin_password': 'myPassword2',
+                                          'report_user_password': 'myPassword3'})
         self.assertTrue(isinstance(ret, Node))
         self.assertEqual(ret.name, 'RationalInsight4')
 
@@ -108,8 +110,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                           publicKey='MyPublicKey',
                                           configurationData={
                                                'insight_admin_password': 'myPassword1',
-                                               'db2_admin_password': 'myPassword2',
-                                               'report_user_password': 'myPassword3'})
+                                              'db2_admin_password': 'myPassword2',
+                                              'report_user_password': 'myPassword3'})
         except Exception:
             e = sys.exc_info()[1]
             self.assertEqual(e.args[0], 'Error 412: No DataCenter with id: 3')
@@ -151,7 +153,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             ret = self.driver.reboot_node(nodes[1])
         except Exception:
             e = sys.exc_info()[1]
-            self.assertEqual(e.args[0], 'Error 412: Instance must be in the Active state')
+            self.assertEqual(
+                e.args[0], 'Error 412: Instance must be in the Active state')
         else:
             self.fail('test should have thrown')
 
@@ -187,7 +190,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         IBMMockHttp.type = 'DESTROY'
         ret = self.driver.destroy_volume(vols[0])
         self.assertTrue(ret)
-        
+
     def test_ex_destroy_image(self):
         image = self.driver.list_images()
         IBMMockHttp.type = 'DESTROY'
@@ -225,6 +228,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[0].name, 'Small')
         self.assertEqual(ret[0].location, '61')
         self.assertEqual(ret[0].id, '20001208')
+
 
 class IBMMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ibm_sce')
@@ -284,11 +288,11 @@ class IBMMockHttp(MockHttp):
     def _computecloud_enterprise_api_rest_20100331_storage_39281_DESTROY(self, method, url, body, headers):
         body = self.fixtures.load('destroy_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _computecloud_enterprise_api_rest_20100331_offerings_image_2_DESTROY(self, method, url, body, headers):
         body = self.fixtures.load('destroy_image.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])    
-    
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _computecloud_enterprise_api_rest_20100331_instances_26557_DETACH(self, method, url, body, headers):
         body = self.fixtures.load('detach_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

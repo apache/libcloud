@@ -15,14 +15,10 @@
 
 from __future__ import with_statement
 
-import time
 import base64
-import hmac
-import re
 import os
 import binascii
 
-from hashlib import sha256
 from xml.etree.ElementTree import Element, SubElement
 
 from libcloud.utils.py3 import PY3
@@ -31,7 +27,7 @@ from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
 from libcloud.utils.py3 import b
 
-from libcloud.utils.xml import fixxpath, findtext
+from libcloud.utils.xml import fixxpath
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import LibcloudError
 from libcloud.common.azure import AzureConnection
@@ -182,10 +178,9 @@ class AzureBlobsStorageDriver(StorageDriver):
         # so for every request. Minor performance improvement
         secret = base64.b64decode(b(secret))
 
-        super(AzureBlobsStorageDriver, self).__init__(
-                                        key=key, secret=secret,
-                                        secure=secure, host=host,
-                                        port=port, **kwargs)
+        super(AzureBlobsStorageDriver, self).__init__(key=key, secret=secret,
+                                                      secure=secure, host=host,
+                                                      port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         result = {}
@@ -296,9 +291,9 @@ class AzureBlobsStorageDriver(StorageDriver):
                 'duration': props.findtext(fixxpath(xpath='LeaseDuration')),
             },
             'content_encoding': props.findtext(fixxpath(
-                                             xpath='Content-Encoding')),
+                                               xpath='Content-Encoding')),
             'content_language': props.findtext(fixxpath(
-                                             xpath='Content-Language')),
+                                               xpath='Content-Language')),
             'blob_type': props.findtext(fixxpath(xpath='BlobType'))
         }
 
@@ -659,7 +654,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             else:
                 headers['x-ms-page-write'] = 'update'
                 headers['x-ms-range'] = 'bytes=%d-%d' % \
-                                            (offset, bytes_transferred-1)
+                    (offset, bytes_transferred-1)
 
             # Renew lease before updating
             lease.renew()

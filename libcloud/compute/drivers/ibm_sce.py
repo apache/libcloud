@@ -85,8 +85,9 @@ class IBMNodeLocation(NodeLocation):
 
     def __repr__(self):
         return ('<IBMNodeLocation: id=%s, name=%s, country=%s, '
-                'driver=%s, extra=%s>' % (self.id, self.name, self.country,
-                self.driver.name, self.extra))
+                'driver=%s, extra=%s>' %
+                (self.id, self.name, self.country, self.driver.name,
+                 self.extra))
 
 
 class VolumeState(object):
@@ -182,8 +183,8 @@ class IBMNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.create_node`
 
         :keyword    auth: Name of the pubkey to use. When constructing
-            :class:`NodeAuthSSHKey` instance, 'pubkey' argument must be the name of
-            the public key to use. You chose this name when creating
+            :class:`NodeAuthSSHKey` instance, 'pubkey' argument must be the
+            name of the public key to use. You chose this name when creating
             a new public key on the IBM server.
         :type       auth: :class:`NodeAuthSSHKey`
 
@@ -346,7 +347,7 @@ class IBMNodeDriver(NodeDriver):
                                              method='DELETE').status)
         return status == httplib.OK
 
-    def ex_destroy_image(self,image):
+    def ex_destroy_image(self, image):
         """
         Destroys an image.
 
@@ -639,6 +640,7 @@ class IBMNodeDriver(NodeDriver):
                              'platform': platform,
                              'description': description,
                              'documentation': documentation,
+                             'instanceTypes': instanceTypes,
                              'node_sizes': nodeSizes
                          }
                          )

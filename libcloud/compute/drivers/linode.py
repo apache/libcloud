@@ -455,8 +455,9 @@ class LinodeNodeDriver(NodeDriver):
         Set the default datacenter for Linode creation
 
         Since Linodes must be created in a facility, this function sets the
-        default that :class:`create_node` will use.  If a location keyword is not
-        passed to :class:`create_node`, this method must have already been used.
+        default that :class:`create_node` will use.  If a location keyword is
+        not passed to :class:`create_node`, this method must have already been
+        used.
 
         :keyword dc: the datacenter to create Linodes in unless specified
         :type dc: :class:`NodeLocation`

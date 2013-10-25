@@ -100,7 +100,7 @@ def display(title, resource_list):
         print('   %s' % item.name)
 
 
-def clean_up(base_name, node_list=None, resource_list=None):
+def clean_up(gce, base_name, node_list=None, resource_list=None):
     """
     Destroy all resources that have a name beginning with 'base_name'.
 
@@ -142,7 +142,6 @@ def clean_up(base_name, node_list=None, resource_list=None):
 
 # ==== DEMO CODE STARTS HERE ====
 def main():
-    global gce
     gce = get_gce_driver()
     # Get project info and print name
     project = gce.ex_get_project()
@@ -183,7 +182,7 @@ def main():
 
     # == Clean up any old demo resources ==
     print('Cleaning up any "%s" resources:' % DEMO_BASE_NAME)
-    clean_up(DEMO_BASE_NAME, all_nodes,
+    clean_up(gce, DEMO_BASE_NAME, all_nodes,
              all_addresses + all_volumes + firewalls + networks)
 
     # == Create Node with non-persistent disk ==

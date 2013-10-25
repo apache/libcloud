@@ -16,7 +16,7 @@
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # NOQA
 
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.compute.drivers.gce import GCEConnection, GCENodeDriver
@@ -125,7 +125,8 @@ class GCELBDriver(Driver):
 
         :keyword  ex_healthchecks: Optional list of healthcheck objects or
                                    names to add to the load balancer.
-        :type     ex_healthchecks: ``list`` of :class:`GCEHealthCheck` or ``str``
+        :type     ex_healthchecks: ``list`` of :class:`GCEHealthCheck` or
+                                   ``str``
 
         :keyword  ex_address: Optional static address object to be assigned to
                               the load balancer.
@@ -134,8 +135,6 @@ class GCELBDriver(Driver):
         :return:  LoadBalancer object
         :rtype:   :class:`LoadBalancer`
         """
-        unused = algorithm
-
         node_list = []
         for member in members:
             # Member object

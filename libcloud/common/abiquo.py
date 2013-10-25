@@ -163,8 +163,8 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
     """
     A Connection to Abiquo API.
 
-    Basic :class:`ConnectionUserAndKey` connection with :class:`PollingConnection` features
-    for asynchronous tasks.
+    Basic :class:`ConnectionUserAndKey` connection with
+    :class:`PollingConnection` features for asynchronous tasks.
     """
 
     responseCls = AbiquoResponse
@@ -194,9 +194,10 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         """
         Manage polling request arguments.
 
-        Return keyword arguments which are passed to the :class:`NodeDriver.request`
-        method when polling for the job status. The Abiquo Asynchronous
-        Response returns and 'acceptedrequest' XmlElement as the following::
+        Return keyword arguments which are passed to the
+        :class:`NodeDriver.request` method when polling for the job status. The
+        Abiquo Asynchronous Response returns and 'acceptedrequest' XmlElement
+        as the following::
 
             <acceptedrequest>
                 <link href="http://uri/to/task" rel="status"/>

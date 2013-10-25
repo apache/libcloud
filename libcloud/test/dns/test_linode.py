@@ -30,7 +30,7 @@ from libcloud.test.secrets import DNS_PARAMS_LINODE
 class LinodeTests(unittest.TestCase):
     def setUp(self):
         LinodeDNSDriver.connectionCls.conn_classes = (
-                None, LinodeMockHttp)
+            None, LinodeMockHttp)
         LinodeMockHttp.use_param = 'api_action'
         LinodeMockHttp.type = None
         self.driver = LinodeDNSDriver(*DNS_PARAMS_LINODE)

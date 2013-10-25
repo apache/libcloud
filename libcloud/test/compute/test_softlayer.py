@@ -16,14 +16,11 @@
 import unittest
 import sys
 
-from xml.etree import ElementTree as ET
-
 from libcloud.common.types import InvalidCredsError
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import next
-from libcloud.utils.py3 import u
 
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
 from libcloud.compute.drivers.softlayer import SoftLayerException
@@ -105,7 +102,6 @@ class SoftLayerTests(unittest.TestCase):
         self.driver.create_node(name="Test", size=size)
 
     def test_create_node_domain_for_name(self):
-        size = [s for s in self.driver.list_sizes() if 'san' in s.id][0]
         self.driver.create_node(name="libcloud.org")
 
     def test_create_node_ex_options(self):

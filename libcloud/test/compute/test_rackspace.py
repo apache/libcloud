@@ -19,7 +19,6 @@ from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import httplib
 from libcloud.compute.providers import DEPRECATED_RACKSPACE_PROVIDERS
 from libcloud.compute.providers import get_driver
-from libcloud.common.rackspace import AUTH_URL
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_0_Tests
@@ -74,6 +73,7 @@ class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
 
 
 class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
+
     def __init__(self, *args, **kwargs):
         super(RackspaceNovaMockHttp, self).__init__(*args, **kwargs)
 

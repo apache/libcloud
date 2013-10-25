@@ -28,11 +28,12 @@ from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
+
 class GoGridTests(unittest.TestCase):
 
     def setUp(self):
         GoGridLBDriver.connectionCls.conn_classes = (None,
-                GoGridLBMockHttp)
+                                                     GoGridLBMockHttp)
         GoGridLBMockHttp.type = None
         self.driver = GoGridLBDriver('user', 'key')
 
@@ -59,12 +60,14 @@ class GoGridTests(unittest.TestCase):
 
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
-                port=80,
-                protocol='http',
-                algorithm=Algorithm.ROUND_ROBIN,
-                members=(Member(None, '10.1.0.10', 80),
-                    Member(None, '10.1.0.11', 80))
-                )
+                                               port=80,
+                                               protocol='http',
+                                               algorithm=Algorithm.ROUND_ROBIN,
+                                               members=(
+                                                   Member(
+                                                       None, '10.1.0.10', 80),
+                                                   Member(None, '10.1.0.11', 80))
+                                               )
 
         self.assertEqual(balancer.name, 'test2')
         self.assertEqual(balancer.id, '123')
@@ -76,15 +79,16 @@ class GoGridTests(unittest.TestCase):
 
         try:
             self.driver.create_balancer(name='test2',
-                    port=80,
-                    protocol='http',
-                    algorithm=Algorithm.ROUND_ROBIN,
-                    members=(Member(None, '10.1.0.10', 80),
-                             Member(None, '10.1.0.11', 80))
-                    )
+                                        port=80,
+                                        protocol='http',
+                                        algorithm=Algorithm.ROUND_ROBIN,
+                                        members=(Member(None, '10.1.0.10', 80),
+                                                 Member(None, '10.1.0.11', 80))
+                                        )
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(str(e).find('tried to add a member with an IP address not assigned to your account') != -1)
+            self.assertTrue(
+                str(e).find('tried to add a member with an IP address not assigned to your account') != -1)
         else:
             self.fail('Exception was not thrown')
 
@@ -114,7 +118,7 @@ class GoGridTests(unittest.TestCase):
         self.assertEqual(len(members1), 3)
         self.assertEqual(len(members2), 3)
         self.assertEqual(expected_members,
-                set(["%s:%s" % (member.ip, member.port) for member in members1]))
+                         set(["%s:%s" % (member.ip, member.port) for member in members1]))
         self.assertEquals(members1[0].balancer, balancer)
 
     def test_balancer_attach_compute_node(self):
@@ -149,6 +153,7 @@ class GoGridTests(unittest.TestCase):
 
         self.assertTrue(ret1)
         self.assertTrue(ret2)
+
 
 class GoGridLBMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')

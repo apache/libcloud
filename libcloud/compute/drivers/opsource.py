@@ -21,7 +21,7 @@ from base64 import b64encode
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
-from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
+from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
@@ -267,11 +267,12 @@ class OpsourceNodeDriver(NodeDriver):
                                    true (required)
         :type       ex_isStarted:  ``bool``
 
-        :return: The newly created :class:`Node`. NOTE: Opsource does not provide a
+        :return: The newly created :class:`Node`. NOTE: Opsource does not
+                 provide a
                  way to determine the ID of the server that was just created,
-                 so the returned :class:`Node` is not guaranteed to be the same one
-                 that was created.  This is only the case when multiple nodes
-                 with the same name exist.
+                 so the returned :class:`Node` is not guaranteed to be the same
+                 one that was created.  This is only the case when multiple
+                 nodes with the same name exist.
         :rtype: :class:`Node`
         """
         name = kwargs['name']

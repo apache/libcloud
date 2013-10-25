@@ -25,6 +25,7 @@ from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import BLUEBOX_PARAMS
 
+
 class BlueboxTest(unittest.TestCase):
 
     def setUp(self):
@@ -33,10 +34,10 @@ class BlueboxTest(unittest.TestCase):
 
     def test_create_node(self):
         node = self.driver.create_node(
-          name='foo',
-          size=self.driver.list_sizes()[0],
-          image=self.driver.list_images()[0],
-          auth=NodeAuthPassword("test123")
+            name='foo',
+            size=self.driver.list_sizes()[0],
+            image=self.driver.list_images()[0],
+            auth=NodeAuthPassword("test123")
         )
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.state, NodeState.PENDING)
@@ -78,6 +79,7 @@ class BlueboxTest(unittest.TestCase):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
+
 class BlueboxMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('bluebox')
@@ -99,13 +101,16 @@ class BlueboxMockHttp(MockHttp):
 
     def _api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json(self, method, url, body, headers):
         if method == 'DELETE':
-            body = self.fixtures.load('api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json_delete.json')
+            body = self.fixtures.load(
+                'api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json_delete.json')
         else:
-            body = self.fixtures.load('api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json.json')
+            body = self.fixtures.load(
+                'api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_json.json')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_reboot_json(self, method, url, body, headers):
-        body = self.fixtures.load('api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_reboot_json.json')
+        body = self.fixtures.load(
+            'api_blocks_99df878c_6e5c_4945_a635_d94da9fd3146_reboot_json.json')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

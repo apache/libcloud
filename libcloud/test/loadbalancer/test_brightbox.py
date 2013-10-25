@@ -63,7 +63,9 @@ class BrightboxLBTests(unittest.TestCase):
         members = [Member('srv-lv426', None, None)]
 
         balancer = self.driver.create_balancer(name='lb2', port=80,
-            protocol='http', algorithm=Algorithm.ROUND_ROBIN, members=members)
+                                               protocol='http',
+                                               algorithm=Algorithm.ROUND_ROBIN,
+                                               members=members)
 
         self.assertEqual(balancer.name, 'lb2')
         self.assertEqual(balancer.port, 80)

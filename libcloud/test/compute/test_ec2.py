@@ -50,6 +50,7 @@ null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
 
 
 class BaseEC2Tests(LibcloudTestCase):
+
     def test_instantiate_driver_valid_regions(self):
         regions = REGION_DETAILS.keys()
         regions = [d for d in regions if d != 'nimbus']
@@ -397,7 +398,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                             'dummy_rsa.pub')
 
         with open(path, 'r') as fh:
-            key = self.driver.ex_import_keypair_from_string('keypair', fh.read())
+            key = self.driver.ex_import_keypair_from_string(
+                'keypair', fh.read())
 
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
@@ -421,9 +423,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node1 = Node('i-4382922a', None, None, None, None, self.driver)
         ip_addresses1 = self.driver.ex_describe_addresses_for_node(node1)
         node2 = Node('i-4382922b', None, None, None, None, self.driver)
-        ip_addresses2 = sorted(self.driver.ex_describe_addresses_for_node(node2))
+        ip_addresses2 = sorted(
+            self.driver.ex_describe_addresses_for_node(node2))
         node3 = Node('i-4382922g', None, None, None, None, self.driver)
-        ip_addresses3 = sorted(self.driver.ex_describe_addresses_for_node(node3))
+        ip_addresses3 = sorted(
+            self.driver.ex_describe_addresses_for_node(node3))
 
         self.assertEqual(len(ip_addresses1), 1)
         self.assertEqual(ip_addresses1[0], '1.2.3.4')
@@ -451,7 +455,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_ex_describe_all_addresses(self):
         EC2MockHttp.type = 'all_addresses'
         elastic_ips1 = self.driver.ex_describe_all_addresses()
-        elastic_ips2 = self.driver.ex_describe_all_addresses(only_allocated=True)
+        elastic_ips2 = self.driver.ex_describe_all_addresses(
+            only_allocated=True)
 
         self.assertEqual(len(elastic_ips1), 3)
         self.assertTrue('1.2.3.5' in elastic_ips1)
@@ -480,7 +485,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(ret)
 
     def test_ex_change_node_size_same_size(self):
-        size = NodeSize('m1.small', 'Small Instance', None, None, None, None, driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance',
+                        None, None, None, None, driver=self.driver)
         node = Node('i-4382922a', None, None, None, None, self.driver,
                     extra={'instancetype': 'm1.small'})
 
@@ -492,7 +498,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.fail('Same size was passed, but an exception was not thrown')
 
     def test_ex_change_node_size(self):
-        size = NodeSize('m1.large', 'Small Instance', None, None, None, None, driver=self.driver)
+        size = NodeSize('m1.large', 'Small Instance',
+                        None, None, None, None, driver=self.driver)
         node = Node('i-4382922a', None, None, None, None, self.driver,
                     extra={'instancetype': 'm1.small'})
 
@@ -906,6 +913,7 @@ class EucMockHttp(EC2MockHttp):
 
 
 class NimbusTests(EC2Tests):
+
     def setUp(self):
         NimbusNodeDriver.connectionCls.conn_classes = (None, EC2MockHttp)
         EC2MockHttp.use_param = 'Action'
@@ -951,7 +959,8 @@ class NimbusTests(EC2Tests):
         self.assertEqual(node.id, 'i-8474834a')
         self.assertEqual(len(node.public_ips), 1)
         self.assertEqual(public_ips[0], '1.2.3.5')
-        self.assertEqual(node.extra['tags'], {'user_key0': 'user_val0', 'user_key1': 'user_val1'})
+        self.assertEqual(node.extra['tags'], {
+                         'user_key0': 'user_val0', 'user_key1': 'user_val1'})
 
     def test_ex_create_tags(self):
         # Nimbus doesn't support creating tags so this one should be a
@@ -962,6 +971,7 @@ class NimbusTests(EC2Tests):
 
 
 class EucTests(LibcloudTestCase, TestCaseMixin):
+
     def setUp(self):
         EucNodeDriver.connectionCls.conn_classes = (None, EucMockHttp)
         EC2MockHttp.use_param = 'Action'

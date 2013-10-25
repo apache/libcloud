@@ -23,8 +23,10 @@ from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 
 from libcloud.test import MockResponse           # pylint: disable-msg=E0611
 
+
 class FakeDriver(object):
     type = 0
+
 
 class BaseTests(unittest.TestCase):
 

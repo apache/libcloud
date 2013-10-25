@@ -214,31 +214,25 @@ class Route53MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_02_29_hostedzone_47234_rrset_ZONE_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                                               url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.xml')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _2012_02_29_hostedzone_4444_ZONE_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                                        url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.xml')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _2012_02_29_hostedzone_47234_ZONE_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
-        body = self.fixtures.load('zone_does_not_exist.xml')
-        return (httplib.NOT_FOUND, body,
-                {}, httplib.responses[httplib.NOT_FOUND])
-
-    def _2012_02_29_hostedzone_47234_rrset_ZONE_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                                         url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.xml')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _2012_02_29_hostedzone_47234_rrset_RECORD_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                                                 url, body, headers):
         if method == "POST":
             body = self.fixtures.load('invalid_change_batch.xml')
             return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
@@ -246,7 +240,7 @@ class Route53MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _2012_02_29_hostedzone_47234_RECORD_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                                           url, body, headers):
         body = self.fixtures.load('get_zone.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

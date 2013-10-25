@@ -21,6 +21,7 @@ import libcloud.pricing
 
 PRICING_FILE_PATH = os.path.join(os.path.dirname(__file__), 'pricing_test.json')
 
+
 class PricingTestCase(unittest.TestCase):
 
     def test_get_pricing_success(self):
@@ -43,7 +44,7 @@ class PricingTestCase(unittest.TestCase):
             pass
         else:
             self.fail('Invalid pricing file path provided, but an exception was not'
-                       ' thrown')
+                      ' thrown')
 
     def test_get_pricing_invalid_driver_type(self):
         try:
@@ -53,7 +54,7 @@ class PricingTestCase(unittest.TestCase):
             pass
         else:
             self.fail('Invalid driver_type provided, but an exception was not'
-                       ' thrown')
+                      ' thrown')
 
     def test_get_pricing_not_in_cache(self):
         try:
@@ -63,28 +64,28 @@ class PricingTestCase(unittest.TestCase):
             pass
         else:
             self.fail('Invalid driver provided, but an exception was not'
-                       ' thrown')
+                      ' thrown')
 
     def test_get_size_price(self):
-        libcloud.pricing.PRICING_DATA['compute']['foo'] = { 2: 2, '3': 3 }
+        libcloud.pricing.PRICING_DATA['compute']['foo'] = {2: 2, '3': 3}
         price1 = libcloud.pricing.get_size_price(driver_type='compute',
-                                                driver_name='foo',
-                                                size_id=2)
+                                                 driver_name='foo',
+                                                 size_id=2)
         price2 = libcloud.pricing.get_size_price(driver_type='compute',
-                                                driver_name='foo',
-                                                size_id='3')
+                                                 driver_name='foo',
+                                                 size_id='3')
         self.assertEqual(price1, 2)
         self.assertEqual(price2, 3)
 
     def test_invalid_pricing_cache(self):
-        libcloud.pricing.PRICING_DATA['compute']['foo'] = { 2: 2 }
+        libcloud.pricing.PRICING_DATA['compute']['foo'] = {2: 2}
         self.assertTrue('foo' in libcloud.pricing.PRICING_DATA['compute'])
 
         libcloud.pricing.invalidate_pricing_cache()
         self.assertFalse('foo' in libcloud.pricing.PRICING_DATA['compute'])
 
     def test_invalid_module_pricing_cache(self):
-        libcloud.pricing.PRICING_DATA['compute']['foo'] = { 1:1 }
+        libcloud.pricing.PRICING_DATA['compute']['foo'] = {1: 1}
 
         self.assertTrue('foo' in libcloud.pricing.PRICING_DATA['compute'])
 

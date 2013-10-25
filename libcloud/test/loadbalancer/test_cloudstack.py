@@ -9,7 +9,6 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qsl
 
-from libcloud.common.types import LibcloudError
 from libcloud.loadbalancer.types import Provider
 from libcloud.loadbalancer.providers import get_driver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
@@ -18,6 +17,7 @@ from libcloud.loadbalancer.drivers.cloudstack import CloudStackLBDriver
 from libcloud.test import unittest
 from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
+
 
 class CloudStackLBTests(unittest.TestCase):
     def setUp(self):
@@ -45,7 +45,7 @@ class CloudStackLBTests(unittest.TestCase):
         try:
             cls('key', 'secret', True, 'localhost', '/path')
         except Exception:
-             self.fail('host and path provided but driver raised an exception')
+            self.fail('host and path provided but driver raised an exception')
 
     def test_list_supported_algorithms(self):
         algorithms = self.driver.list_supported_algorithms()
@@ -83,6 +83,7 @@ class CloudStackLBTests(unittest.TestCase):
         for member in members:
             self.assertTrue(isinstance(member, Member))
             self.assertEqual(member.balancer, balancer)
+
 
 class CloudStackMockHttp(MockHttpTestCase):
     fixtures = LoadBalancerFileFixtures('cloudstack')

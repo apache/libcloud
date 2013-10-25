@@ -440,8 +440,8 @@ class ZerigoDNSDriver(DNSDriver):
         last_key = None
 
         while not exhausted:
-            items, last_key, exhausted = self._get_data(
-                                            rtype, last_key, **kwargs)
+            items, last_key, exhausted = self._get_data(rtype, last_key,
+                                                        **kwargs)
 
             for item in items:
                 yield item

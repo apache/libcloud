@@ -19,30 +19,31 @@ from libcloud.dns.types import Provider
 
 DRIVERS = {
     Provider.DUMMY:
-        ('libcloud.dns.drivers.dummy', 'DummyDNSDriver'),
+    ('libcloud.dns.drivers.dummy', 'DummyDNSDriver'),
     Provider.LINODE:
-        ('libcloud.dns.drivers.linode', 'LinodeDNSDriver'),
+    ('libcloud.dns.drivers.linode', 'LinodeDNSDriver'),
     Provider.ZERIGO:
-        ('libcloud.dns.drivers.zerigo', 'ZerigoDNSDriver'),
+    ('libcloud.dns.drivers.zerigo', 'ZerigoDNSDriver'),
     Provider.RACKSPACE:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceDNSDriver'),
+    ('libcloud.dns.drivers.rackspace', 'RackspaceDNSDriver'),
     Provider.HOSTVIRTUAL:
-        ('libcloud.dns.drivers.hostvirtual', 'HostVirtualDNSDriver'),
+    ('libcloud.dns.drivers.hostvirtual', 'HostVirtualDNSDriver'),
     Provider.ROUTE53:
-        ('libcloud.dns.drivers.route53', 'Route53DNSDriver'),
+    ('libcloud.dns.drivers.route53', 'Route53DNSDriver'),
     Provider.GANDI:
-        ('libcloud.dns.drivers.gandi', 'GandiDNSDriver'),
+    ('libcloud.dns.drivers.gandi', 'GandiDNSDriver'),
 
     # Deprecated
     Provider.RACKSPACE_US:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
+    ('libcloud.dns.drivers.rackspace', 'RackspaceUSDNSDriver'),
     Provider.RACKSPACE_UK:
-        ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
+    ('libcloud.dns.drivers.rackspace', 'RackspaceUKDNSDriver')
 }
 
 
 def get_driver(provider):
     return get_provider_driver(DRIVERS, provider)
+
 
 def set_driver(provider, module, klass):
     return set_provider_driver(DRIVERS, provider, module, klass)

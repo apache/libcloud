@@ -243,7 +243,8 @@ class MultiStepDeployment(Deployment):
         """
         Add a deployment to this chain.
 
-        :type add: Single :class:`Deployment` or a ``list`` of :class:`Deployment`
+        :type add: Single :class:`Deployment` or a ``list`` of
+                   :class:`Deployment`
         :keyword add: Adds this deployment to the others already in this
         object.
         """

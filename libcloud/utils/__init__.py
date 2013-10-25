@@ -28,6 +28,7 @@ SHOW_DEPRECATION_WARNING = True
 SHOW_IN_DEVELOPMENT_WARNING = True
 OLD_API_REMOVE_VERSION = '0.7.0'
 
+
 def deprecated_warning(module):
     if SHOW_DEPRECATION_WARNING:
         warnings.warn('This path has been deprecated and the module'

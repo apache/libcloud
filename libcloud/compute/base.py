@@ -195,7 +195,6 @@ class Node(UuidMixin):
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> driver = DummyNodeDriver(0)
         >>> node = driver.create_node()
-        >>> from libcloud.compute.types import NodeState
         >>> node.state == NodeState.RUNNING
         True
         >>> node.state == NodeState.REBOOTING
@@ -481,8 +480,8 @@ class NodeDriver(BaseDriver):
     """
     List of available features for a driver.
         - :class:`create_node`
-            - ssh_key: Supports :class:`NodeAuthSSHKey` as an authentication method
-              for nodes.
+            - ssh_key: Supports :class:`NodeAuthSSHKey` as an authentication
+              method for nodes.
             - password: Supports :class:`NodeAuthPassword` as an authentication
               method for nodes.
             - generates_password: Returns a password attribute on the Node
@@ -505,8 +504,8 @@ class NodeDriver(BaseDriver):
         Validates that only a supported object type is passed to the auth
         parameter and raises an exception if it is not.
 
-        If no :class:`NodeAuthPassword` object is provided but one is expected then a
-        password is automatically generated.
+        If no :class:`NodeAuthPassword` object is provided but one is expected
+        then a password is automatically generated.
         """
 
         if isinstance(auth, NodeAuthPassword):
@@ -538,11 +537,12 @@ class NodeDriver(BaseDriver):
         Create a new node instance. This instance will be started
         automatically.
 
-        Not all hosting API's are created equal and to allow libcloud to support
-        as many as possible there are some standard supported variations of
-        ``create_node``. These are declared using a ``features`` API. You can
-        inspect ``driver.features['create_node']`` to see what variation of the
-        API you are dealing with:
+        Not all hosting API's are created equal and to allow libcloud to
+        support as many as possible there are some standard supported
+        variations of ``create_node``. These are declared using a
+        ``features`` API.
+        You can inspect ``driver.features['create_node']`` to see what
+        variation of the API you are dealing with:
 
         ``ssh_key``
             You can inject a public key into a new node allows key based SSH
@@ -563,18 +563,22 @@ class NodeDriver(BaseDriver):
         If a driver supports the ``ssh_key`` feature flag for ``created_node``
         you can upload a public key into the new instance::
 
+            >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+            >>> driver = DummyNodeDriver(0)
             >>> auth = NodeAuthSSHKey('pubkey data here')
             >>> node = driver.create_node("test_node", auth=auth)
 
         If a driver supports the ``password`` feature flag for ``create_node``
         you can set a password::
 
+            >>> driver = DummyNodeDriver(0)
             >>> auth = NodeAuthPassword('mysecretpassword')
             >>> node = driver.create_node("test_node", auth=auth)
 
         If a driver supports the ``password`` feature and you don't provide the
         ``auth`` argument libcloud will assign a password::
 
+            >>> driver = DummyNodeDriver(0)
             >>> node = driver.create_node("test_node")
             >>> password = node.extra['password']
 
@@ -705,10 +709,10 @@ class NodeDriver(BaseDriver):
         Finally, if the ``ssh_key_file`` is supplied that key will be used to
         SSH into the server.
 
-        This function may raise a :class:`DeploymentException`, if a create_node
-        call was successful, but there is a later error (like SSH failing or
-        timing out).  This exception includes a Node object which you may want
-        to destroy if incomplete deployments are not desirable.
+        This function may raise a :class:`DeploymentException`, if a
+        create_node call was successful, but there is a later error (like SSH
+        failing or timing out).  This exception includes a Node object which
+        you may want to destroy if incomplete deployments are not desirable.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> from libcloud.compute.deployment import ScriptDeployment
@@ -720,7 +724,7 @@ class NodeDriver(BaseDriver):
         >>> msd = MultiStepDeployment([key, script])
         >>> def d():
         ...     try:
-        ...         node = driver.deploy_node(deploy=msd)
+        ...         driver.deploy_node(deploy=msd)
         ...     except NotImplementedError:
         ...         print ("not implemented for dummy driver")
         >>> d()

@@ -136,12 +136,11 @@ class VPSNetNodeDriver(NodeDriver):
         """
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':
-                        {'label': name,
-                         'fqdn': kwargs.get('ex_fqdn', ''),
-                         'system_template_id': image.id,
-                         'backups_enabled': kwargs.get('ex_backups_enabled',
-                                                       0),
-                         'slices_required': size.id}}
+                   {'label': name,
+                    'fqdn': kwargs.get('ex_fqdn', ''),
+                    'system_template_id': image.id,
+                    'backups_enabled': kwargs.get('ex_backups_enabled', 0),
+                    'slices_required': size.id}}
 
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),
                                       data=json.dumps(request),

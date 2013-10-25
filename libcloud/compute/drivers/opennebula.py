@@ -221,7 +221,7 @@ class OpenNebulaNetwork(object):
     a driver and then have that create the network for you.
 
     >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
-    >>> driver = DummyNetworkDriver()
+    >>> driver = DummyNodeDriver()
     >>> network = driver.create_network()
     >>> network = driver.list_networks()[0]
     >>> network.name
@@ -348,7 +348,7 @@ class OpenNebulaNodeDriver(NodeDriver):
                 if network.address:
                     ET.SubElement(networkGroup, 'NIC',
                                   {'network': '%s' % (str(network.id)),
-                                  'ip': network.address})
+                                   'ip': network.address})
                 else:
                     ET.SubElement(networkGroup, 'NIC',
                                   {'network': '%s' % (str(network.id))})
@@ -1112,7 +1112,8 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
 
         xml = ET.tostring(storage)
         volume = self.connection.request('/storage',
-            { 'occixml': xml }, method='POST').object
+                                         {'occixml': xml},
+                                         method='POST').object
 
         return self._to_volume(volume)
 
@@ -1196,7 +1197,8 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
             volumes.append(self._to_volume(
                 self.connection.request('/storage/%s' % storage_id).object))
 
-        return  volumes
+        return volumes
+
 
 class OpenNebula_3_8_NodeDriver(OpenNebula_3_6_NodeDriver):
     """

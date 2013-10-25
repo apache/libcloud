@@ -140,7 +140,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         members = self._sync_request('listLoadBalancerRuleInstances',
                                      id=balancer.id)
         members = members['loadbalancerruleinstance']
-        return [self._to_member(m, balancer.ex_private_port, balancer) \
+        return [self._to_member(m, balancer.ex_private_port, balancer)
                 for m in members]
 
     def _to_balancer(self, obj):

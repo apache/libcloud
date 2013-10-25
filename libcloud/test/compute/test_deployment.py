@@ -41,11 +41,13 @@ from libcloud.test.secrets import RACKSPACE_PARAMS
 
 
 class MockDeployment(Deployment):
+
     def run(self, node, client):
         return node
 
 
 class MockClient(BaseSSHClient):
+
     def __init__(self, *args, **kwargs):
         self.stdout = ''
         self.stderr = ''
@@ -71,8 +73,8 @@ class DeploymentTests(unittest.TestCase):
         self.driver.connection._populate_hosts_and_request_paths()
         self.driver.features = {'create_node': ['generates_password']}
         self.node = Node(id=12345, name='test', state=NodeState.RUNNING,
-                   public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
-                   driver=Rackspace)
+                         public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
+                         driver=Rackspace)
         self.node2 = Node(id=123456, name='test', state=NodeState.RUNNING,
                           public_ips=['1.2.3.4'], private_ips=['1.2.3.5'],
                           driver=Rackspace)
@@ -90,7 +92,7 @@ class DeploymentTests(unittest.TestCase):
         sshd = SSHKeyDeployment(key='1234')
 
         self.assertEqual(self.node, sshd.run(node=self.node,
-                        client=MockClient(hostname='localhost')))
+                                             client=MockClient(hostname='localhost')))
 
     def test_file_deployment(self):
         # use this file (__file__) for obtaining permissions
@@ -99,20 +101,21 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(target, fd.target)
         self.assertEqual(__file__, fd.source)
         self.assertEqual(self.node, fd.run(
-                node=self.node, client=MockClient(hostname='localhost')))
+            node=self.node, client=MockClient(hostname='localhost')))
 
     def test_script_deployment(self):
         sd1 = ScriptDeployment(script='foobar', delete=True)
         sd2 = ScriptDeployment(script='foobar', delete=False)
-        sd3 = ScriptDeployment(script='foobar', delete=False, name='foobarname')
+        sd3 = ScriptDeployment(
+            script='foobar', delete=False, name='foobarname')
 
         self.assertTrue(sd1.name.find('deployment') != '1')
         self.assertEqual(sd3.name, 'foobarname')
 
         self.assertEqual(self.node, sd1.run(node=self.node,
-                        client=MockClient(hostname='localhost')))
+                                            client=MockClient(hostname='localhost')))
         self.assertEqual(self.node, sd2.run(node=self.node,
-                        client=MockClient(hostname='localhost')))
+                                            client=MockClient(hostname='localhost')))
 
     def test_script_file_deployment(self):
         file_path = os.path.abspath(__file__)
@@ -185,6 +188,7 @@ class DeploymentTests(unittest.TestCase):
 
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
+
             def __init__(self, name):
                 self.name = name
 
@@ -214,29 +218,32 @@ class DeploymentTests(unittest.TestCase):
             self.fail('TypeError was not thrown')
 
     def test_wait_until_running_running_instantly(self):
-        node2, ips = self.driver.wait_until_running(nodes=[self.node], wait_period=1,
-                                                     timeout=10)[0]
+        node2, ips = self.driver.wait_until_running(
+            nodes=[self.node], wait_period=1,
+            timeout=10)[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
 
     def test_wait_until_running_running_after_1_second(self):
         RackspaceMockHttp.type = '1_SECOND_DELAY'
-        node2, ips = self.driver.wait_until_running(nodes=[self.node], wait_period=1,
-                                                     timeout=10)[0]
+        node2, ips = self.driver.wait_until_running(
+            nodes=[self.node], wait_period=1,
+            timeout=10)[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
 
     def test_wait_until_running_running_after_1_second_private_ips(self):
         RackspaceMockHttp.type = '1_SECOND_DELAY'
-        node2, ips = self.driver.wait_until_running(nodes=[self.node], wait_period=1,
-                                                     timeout=10, ssh_interface='private_ips')[0]
+        node2, ips = self.driver.wait_until_running(
+            nodes=[self.node], wait_period=1,
+            timeout=10, ssh_interface='private_ips')[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['10.176.168.218'], ips)
 
     def test_wait_until_running_invalid_ssh_interface_argument(self):
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=1,
-                                            ssh_interface='invalid')
+                                           ssh_interface='invalid')
         except ValueError:
             pass
         else:
@@ -271,18 +278,20 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.5,
-                                            timeout=1)
+                                           timeout=1)
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(e.value.find('Unable to match specified uuids') != -1)
+            self.assertTrue(
+                e.value.find('Unable to match specified uuids') != -1)
         else:
             self.fail('Exception was not thrown')
 
     def test_wait_until_running_running_wait_for_multiple_nodes(self):
         RackspaceMockHttp.type = 'MULTIPLE_NODES'
 
-        nodes = self.driver.wait_until_running(nodes=[self.node, self.node2], wait_period=0.5,
-                                               timeout=1)
+        nodes = self.driver.wait_until_running(
+            nodes=[self.node, self.node2], wait_period=0.5,
+            timeout=1)
         self.assertEqual(self.node.uuid, nodes[0][0].uuid)
         self.assertEqual(self.node2.uuid, nodes[1][0].uuid)
         self.assertEqual(['67.23.21.33'], nodes[0][1])
@@ -292,8 +301,9 @@ class DeploymentTests(unittest.TestCase):
         mock_ssh_client = Mock()
         mock_ssh_client.return_value = None
 
-        ssh_client = self.driver._ssh_client_connect(ssh_client=mock_ssh_client,
-                                                     timeout=10)
+        ssh_client = self.driver._ssh_client_connect(
+            ssh_client=mock_ssh_client,
+            timeout=10)
         self.assertEqual(mock_ssh_client, ssh_client)
 
     def test_ssh_client_connect_timeout(self):
@@ -458,28 +468,34 @@ class RackspaceMockHttp(MockHttp):
                 httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_servers_detail_deployment_success.xml')
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_success.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_1_SECOND_DELAY(self, method, url, body, headers):
         time.sleep(1)
-        body = self.fixtures.load('v1_slug_servers_detail_deployment_success.xml')
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_success.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_TIMEOUT(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_servers_detail_deployment_pending.xml')
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_pending.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_MISSING(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_servers_detail_deployment_missing.xml')
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_missing.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_SAME_UUID(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_servers_detail_deployment_same_uuid.xml')
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_same_uuid.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
     def _v1_0_slug_servers_detail_MULTIPLE_NODES(self, method, url, body, headers):
-        body = self.fixtures.load('v1_slug_servers_detail_deployment_multiple_nodes.xml')
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_multiple_nodes.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
 

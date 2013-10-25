@@ -26,13 +26,13 @@ except ImportError:
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.test import MockHttp, LibcloudTestCase, MockResponse
+from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.common.google import (GoogleAuthError,
                                     GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleServiceAcctAuthConnection,
                                     GoogleBaseConnection)
-from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
+from libcloud.test.secrets import GCE_PARAMS
 
 # Skip some tests if PyCrypto is unavailable
 try:

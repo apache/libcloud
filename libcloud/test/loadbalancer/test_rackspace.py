@@ -26,7 +26,9 @@ from libcloud.utils.py3 import urlencode
 
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.types import MemberCondition
-from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver, RackspaceHealthMonitor, RackspaceHTTPHealthMonitor, RackspaceConnectionThrottle, RackspaceAccessRule
+from libcloud.loadbalancer.drivers.rackspace import RackspaceLBDriver, \
+    RackspaceHealthMonitor, RackspaceHTTPHealthMonitor, \
+    RackspaceConnectionThrottle, RackspaceAccessRule
 from libcloud.loadbalancer.drivers.rackspace import RackspaceUKLBDriver
 from libcloud.loadbalancer.drivers.rackspace import RackspaceAccessRuleType
 from libcloud.common.types import LibcloudError
@@ -41,7 +43,7 @@ class RackspaceLBTests(unittest.TestCase):
 
     def setUp(self):
         RackspaceLBDriver.connectionCls.conn_classes = (None,
-                RackspaceLBMockHttp)
+                                                        RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceLBDriver('user', 'key')
         self.driver.connection.poll_interval = 0.0
@@ -58,9 +60,9 @@ class RackspaceLBTests(unittest.TestCase):
         driver.list_balancers()
 
         self.assertEqual(kwargs['ex_force_auth_token'],
-            driver.connection.auth_token)
+                         driver.connection.auth_token)
         self.assertEqual('/v1.0/11111',
-            driver.connection.request_path)
+                         driver.connection.request_path)
 
     def test_force_auth_url_kwargs(self):
         kwargs = {
@@ -70,27 +72,29 @@ class RackspaceLBTests(unittest.TestCase):
         driver = RackspaceLBDriver('user', 'key', **kwargs)
 
         self.assertEqual(kwargs['ex_force_auth_url'],
-            driver.connection._ex_force_auth_url)
+                         driver.connection._ex_force_auth_url)
         self.assertEqual(kwargs['ex_force_auth_version'],
-            driver.connection._auth_version)
+                         driver.connection._auth_version)
 
     def test_gets_auth_2_0_endpoint_defaults_to_ord_region(self):
         driver = RackspaceLBDriver('user', 'key',
-            ex_force_auth_version='2.0_password'
-        )
+                                   ex_force_auth_version='2.0_password'
+                                   )
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEqual('https://ord.loadbalancers.api.rackspacecloud.com/v1.0/11111',
+        self.assertEqual(
+            'https://ord.loadbalancers.api.rackspacecloud.com/v1.0/11111',
             driver.connection.get_endpoint())
 
     def test_gets_auth_2_0_endpoint_for_dfw(self):
         driver = RackspaceLBDriver('user', 'key',
-            ex_force_auth_version='2.0_password',
-            ex_force_region='dfw'
-        )
+                                   ex_force_auth_version='2.0_password',
+                                   ex_force_region='dfw'
+                                   )
         driver.connection._populate_hosts_and_request_paths()
 
-        self.assertEqual('https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/11111',
+        self.assertEqual(
+            'https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/11111',
             driver.connection.get_endpoint())
 
     def test_list_protocols(self):
@@ -148,12 +152,15 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='test2',
-                port=80,
-                algorithm=Algorithm.ROUND_ROBIN,
-                members=(Member(None, '10.1.0.10', 80, extra={'condition': MemberCondition.DISABLED,
-                                                              'weight': 10}),
-                         Member(None, '10.1.0.11', 80))
-                )
+                                               port=80,
+                                               algorithm=Algorithm.ROUND_ROBIN,
+                                               members=(
+                                                   Member(
+                                                       None, '10.1.0.10', 80,
+                                                       extra={'condition': MemberCondition.DISABLED,
+                                                             'weight': 10}),
+                                                   Member(None, '10.1.0.11', 80))
+                                               )
 
         self.assertEqual(balancer.name, 'test2')
         self.assertEqual(balancer.id, '8290')
@@ -164,11 +171,13 @@ class RackspaceLBTests(unittest.TestCase):
         RackspaceLBMockHttp.type = None
         driver = RackspaceLBDriver('user', 'key')
         balancer = driver.ex_create_balancer(name='test2',
-                port=80,
-                algorithm=Algorithm.ROUND_ROBIN,
-                members=(Member(None, '10.1.0.11', 80),),
-                vip='12af'
-        )
+                                             port=80,
+                                             algorithm=Algorithm.ROUND_ROBIN,
+                                             members=(
+                                                 Member(
+                                                     None, '10.1.0.11', 80),),
+                                             vip='12af'
+                                             )
 
         self.assertEqual(balancer.name, 'test2')
         self.assertEqual(balancer.id, '8290')
@@ -193,10 +202,10 @@ class RackspaceLBTests(unittest.TestCase):
     def test_get_balancer_extra_vips(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
         self.assertEqual(balancer.extra["virtualIps"],
-            [{"address":"50.56.49.149",
-              "id":2359,
-              "type":"PUBLIC",
-              "ipVersion":"IPV4"}])
+                         [{"address": "50.56.49.149",
+                           "id": 2359,
+                           "type": "PUBLIC",
+                           "ipVersion": "IPV4"}])
 
     def test_get_balancer_extra_public_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
@@ -205,7 +214,7 @@ class RackspaceLBTests(unittest.TestCase):
     def test_get_balancer_extra_public_source_ipv6(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
         self.assertEqual(balancer.extra["ipv6PublicSource"],
-                          '2001:4801:7901::6/64')
+                         '2001:4801:7901::6/64')
 
     def test_get_balancer_extra_private_source_ipv4(self):
         balancer = self.driver.get_balancer(balancer_id='18940')
@@ -240,18 +249,18 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(2883, access_list[0].id)
         self.assertEqual("0.0.0.0/0", access_list[0].address)
         self.assertEqual(RackspaceAccessRuleType.DENY,
-            access_list[0].rule_type)
+                         access_list[0].rule_type)
 
         self.assertEqual(2884, access_list[1].id)
         self.assertEqual("2001:4801:7901::6/64",
-            access_list[1].address)
+                         access_list[1].address)
         self.assertEqual(RackspaceAccessRuleType.ALLOW,
-            access_list[1].rule_type)
+                         access_list[1].rule_type)
 
         self.assertEqual(3006, access_list[2].id)
         self.assertEqual("8.8.8.8/0", access_list[2].address)
         self.assertEqual(RackspaceAccessRuleType.DENY,
-            access_list[2].rule_type)
+                         access_list[2].rule_type)
 
     def test_get_balancer_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -264,12 +273,12 @@ class RackspaceLBTests(unittest.TestCase):
     def test_get_balancer_weighted_round_robin_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='94692')
         self.assertEqual(balancer.extra["algorithm"],
-                           Algorithm.WEIGHTED_ROUND_ROBIN)
+                         Algorithm.WEIGHTED_ROUND_ROBIN)
 
     def test_get_balancer_weighted_least_connections_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='94693')
         self.assertEqual(balancer.extra["algorithm"],
-                           Algorithm.WEIGHTED_LEAST_CONNECTIONS)
+                         Algorithm.WEIGHTED_LEAST_CONNECTIONS)
 
     def test_get_balancer_unknown_algorithm(self):
         balancer = self.driver.get_balancer(balancer_id='94694')
@@ -283,7 +292,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(balancer_health_monitor.delay, 10)
         self.assertEqual(balancer_health_monitor.timeout, 5)
         self.assertEqual(balancer_health_monitor.attempts_before_deactivation,
-                          2)
+                         2)
 
     def test_get_balancer_http_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94696')
@@ -293,12 +302,12 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(balancer_health_monitor.delay, 10)
         self.assertEqual(balancer_health_monitor.timeout, 5)
         self.assertEqual(balancer_health_monitor.attempts_before_deactivation,
-                          2)
+                         2)
         self.assertEqual(balancer_health_monitor.path, "/")
         self.assertEqual(balancer_health_monitor.status_regex,
-                           "^[234][0-9][0-9]$")
+                         "^[234][0-9][0-9]$")
         self.assertEqual(balancer_health_monitor.body_regex,
-                           "Hello World!")
+                         "Hello World!")
 
     def test_get_balancer_https_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94697')
@@ -308,10 +317,10 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(balancer_health_monitor.delay, 15)
         self.assertEqual(balancer_health_monitor.timeout, 12)
         self.assertEqual(balancer_health_monitor.attempts_before_deactivation,
-                          5)
+                         5)
         self.assertEqual(balancer_health_monitor.path, "/test")
         self.assertEqual(balancer_health_monitor.status_regex,
-                           "^[234][0-9][0-9]$")
+                         "^[234][0-9][0-9]$")
         self.assertEqual(balancer_health_monitor.body_regex, "abcdef")
 
     def test_get_balancer_connection_throttle(self):
@@ -322,12 +331,12 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(balancer_connection_throttle.max_connections, 200)
         self.assertEqual(balancer_connection_throttle.max_connection_rate, 50)
         self.assertEqual(balancer_connection_throttle.rate_interval_seconds,
-                           10)
+                         10)
 
     def test_get_session_persistence(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
         self.assertEqual(balancer.extra["sessionPersistenceType"],
-                           "HTTP_COOKIE")
+                         "HTTP_COOKIE")
 
     def test_get_connection_logging(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
@@ -354,7 +363,7 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='94698')
 
         rule = RackspaceAccessRule(rule_type=RackspaceAccessRuleType.DENY,
-            address='0.0.0.0/0')
+                                   address='0.0.0.0/0')
 
         rule = self.driver.ex_create_balancer_access_rule(balancer, rule)
 
@@ -364,10 +373,10 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='94698')
 
         rule = RackspaceAccessRule(rule_type=RackspaceAccessRuleType.DENY,
-            address='0.0.0.0/0')
+                                   address='0.0.0.0/0')
 
         resp = self.driver.ex_create_balancer_access_rule_no_poll(balancer,
-            rule)
+                                                                  rule)
 
         self.assertTrue(resp)
 
@@ -394,7 +403,7 @@ class RackspaceLBTests(unittest.TestCase):
                                      address='8.8.8.8/0')]
 
         resp = self.driver.ex_create_balancer_access_rules_no_poll(balancer,
-            rules)
+                                                                   rules)
 
         self.assertTrue(resp)
 
@@ -402,9 +411,9 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='94698')
 
         rule = RackspaceAccessRule(id='1007',
-            rule_type=RackspaceAccessRuleType.ALLOW,
-            address="10.45.13.5/12"
-        )
+                                   rule_type=RackspaceAccessRuleType.ALLOW,
+                                   address="10.45.13.5/12"
+                                   )
 
         balancer = self.driver.ex_destroy_balancer_access_rule(balancer, rule)
 
@@ -416,19 +425,19 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='94698')
 
         rule = RackspaceAccessRule(id=1007,
-            rule_type=RackspaceAccessRuleType.ALLOW,
-            address="10.45.13.5/12"
-        )
+                                   rule_type=RackspaceAccessRuleType.ALLOW,
+                                   address="10.45.13.5/12"
+                                   )
 
         resp = self.driver.ex_destroy_balancer_access_rule_no_poll(balancer,
-            rule)
+                                                                   rule)
 
         self.assertTrue(resp)
 
     def test_ex_destroy_balancer_access_rules(self):
         balancer = self.driver.get_balancer(balancer_id='94699')
         balancer = self.driver.ex_destroy_balancer_access_rules(balancer,
-            balancer.extra['accessList'])
+                                                                balancer.extra['accessList'])
 
         self.assertEqual('94699', balancer.id)
 
@@ -436,16 +445,17 @@ class RackspaceLBTests(unittest.TestCase):
         balancer = self.driver.get_balancer(balancer_id='94699')
 
         resp = self.driver.ex_destroy_balancer_access_rules_no_poll(balancer,
-            balancer.extra['accessList'])
+                                                                    balancer.extra['accessList'])
 
         self.assertTrue(resp)
 
     def test_ex_update_balancer_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
         monitor = RackspaceHealthMonitor(type='CONNECT', delay=10, timeout=5,
-            attempts_before_deactivation=2)
+                                         attempts_before_deactivation=2)
 
-        balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
+        balancer = self.driver.ex_update_balancer_health_monitor(
+            balancer, monitor)
         updated_monitor = balancer.extra['healthMonitor']
 
         self.assertEqual('CONNECT', updated_monitor.type)
@@ -456,12 +466,13 @@ class RackspaceLBTests(unittest.TestCase):
     def test_ex_update_balancer_http_health_monitor(self):
         balancer = self.driver.get_balancer(balancer_id='94696')
         monitor = RackspaceHTTPHealthMonitor(type='HTTP', delay=10, timeout=5,
-            attempts_before_deactivation=2,
-            path='/',
-            status_regex='^[234][0-9][0-9]$',
-            body_regex='Hello World!')
+                                             attempts_before_deactivation=2,
+                                             path='/',
+                                             status_regex='^[234][0-9][0-9]$',
+                                             body_regex='Hello World!')
 
-        balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
+        balancer = self.driver.ex_update_balancer_health_monitor(
+            balancer, monitor)
         updated_monitor = balancer.extra['healthMonitor']
 
         self.assertEqual('HTTP', updated_monitor.type)
@@ -475,35 +486,36 @@ class RackspaceLBTests(unittest.TestCase):
     def test_ex_update_balancer_health_monitor_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
         monitor = RackspaceHealthMonitor(type='CONNECT', delay=10, timeout=5,
-            attempts_before_deactivation=2)
+                                         attempts_before_deactivation=2)
 
         resp = self.driver.ex_update_balancer_health_monitor_no_poll(balancer,
-            monitor)
+                                                                     monitor)
 
         self.assertTrue(resp)
 
     def test_ex_update_balancer_http_health_monitor_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94696')
         monitor = RackspaceHTTPHealthMonitor(type='HTTP', delay=10, timeout=5,
-            attempts_before_deactivation=2,
-            path='/',
-            status_regex='^[234][0-9][0-9]$',
-            body_regex='Hello World!')
+                                             attempts_before_deactivation=2,
+                                             path='/',
+                                             status_regex='^[234][0-9][0-9]$',
+                                             body_regex='Hello World!')
 
         resp = self.driver.ex_update_balancer_health_monitor_no_poll(balancer,
-            monitor)
+                                                                     monitor)
 
         self.assertTrue(resp)
 
     def test_ex_update_balancer_http_health_monitor_with_no_option_body_regex(self):
         balancer = self.driver.get_balancer(balancer_id='94700')
         monitor = RackspaceHTTPHealthMonitor(type='HTTP', delay=10, timeout=5,
-            attempts_before_deactivation=2,
-            path='/',
-            status_regex='^[234][0-9][0-9]$',
-            body_regex='')
+                                             attempts_before_deactivation=2,
+                                             path='/',
+                                             status_regex='^[234][0-9][0-9]$',
+                                             body_regex='')
 
-        balancer = self.driver.ex_update_balancer_health_monitor(balancer, monitor)
+        balancer = self.driver.ex_update_balancer_health_monitor(
+            balancer, monitor)
         updated_monitor = balancer.extra['healthMonitor']
 
         self.assertEqual('HTTP', updated_monitor.type)
@@ -529,12 +541,12 @@ class RackspaceLBTests(unittest.TestCase):
     def test_ex_update_balancer_connection_throttle(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
         connection_throttle = RackspaceConnectionThrottle(max_connections=200,
-            min_connections=50,
-            max_connection_rate=50,
-            rate_interval_seconds=10)
+                                                          min_connections=50,
+                                                          max_connection_rate=50,
+                                                          rate_interval_seconds=10)
 
         balancer = self.driver.ex_update_balancer_connection_throttle(balancer,
-            connection_throttle)
+                                                                      connection_throttle)
         updated_throttle = balancer.extra['connectionThrottle']
 
         self.assertEqual(200, updated_throttle.max_connections)
@@ -545,9 +557,9 @@ class RackspaceLBTests(unittest.TestCase):
     def test_ex_update_balancer_connection_throttle_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
         connection_throttle = RackspaceConnectionThrottle(max_connections=200,
-            min_connections=50,
-            max_connection_rate=50,
-            rate_interval_seconds=10)
+                                                          min_connections=50,
+                                                          max_connection_rate=50,
+                                                          rate_interval_seconds=10)
 
         resp = self.driver.ex_update_balancer_connection_throttle_no_poll(
             balancer, connection_throttle)
@@ -645,7 +657,8 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_ex_disable_balancer_custom_error_page_no_poll(self):
         balancer = self.driver.get_balancer(balancer_id='94695')
-        resp = self.driver.ex_disable_balancer_custom_error_page_no_poll(balancer)
+        resp = self.driver.ex_disable_balancer_custom_error_page_no_poll(
+            balancer)
 
         self.assertTrue(resp)
 
@@ -670,7 +683,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(len(members), 3)
         self.assertEqual(members[0].balancer, balancer)
         self.assertEqual(expected, set(["%s:%s" % (member.ip, member.port) for
-                                         member in members]))
+                                        member in members]))
 
     def test_balancer_members_extra_weight(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -684,11 +697,11 @@ class RackspaceLBTests(unittest.TestCase):
         members = balancer.list_members()
 
         self.assertEqual(MemberCondition.ENABLED,
-                          members[0].extra['condition'])
+                         members[0].extra['condition'])
         self.assertEqual(MemberCondition.DISABLED,
-                          members[1].extra['condition'])
+                         members[1].extra['condition'])
         self.assertEqual(MemberCondition.DRAINING,
-                          members[2].extra['condition'])
+                         members[2].extra['condition'])
 
     def test_balancer_members_extra_status(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
@@ -755,106 +768,113 @@ class RackspaceLBTests(unittest.TestCase):
 
     def test_update_balancer_protocol(self):
         balancer = LoadBalancer(id='3130', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
-        updated_balancer = self.driver.update_balancer(balancer, protocol='HTTPS')
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(
+            balancer, protocol='HTTPS')
         self.assertEqual('HTTPS', updated_balancer.extra['protocol'])
 
     def test_update_balancer_protocol_to_imapv2(self):
         balancer = LoadBalancer(id='3135', name='LB_update',
-            state='PENDING_UPDATE', ip='10.34.4.3',
-            port=80, driver=self.driver)
-        updated_balancer = self.driver.update_balancer(balancer, protocol='imapv2')
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(
+            balancer, protocol='imapv2')
         self.assertEqual('IMAPv2', updated_balancer.extra['protocol'])
 
     def test_update_balancer_protocol_to_imapv3(self):
         balancer = LoadBalancer(id='3136', name='LB_update',
-            state='PENDING_UPDATE', ip='10.34.4.3',
-            port=80, driver=self.driver)
-        updated_balancer = self.driver.update_balancer(balancer, protocol='IMAPV3')
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(
+            balancer, protocol='IMAPV3')
         self.assertEqual('IMAPv3', updated_balancer.extra['protocol'])
 
     def test_update_balancer_protocol_to_imapv4(self):
         balancer = LoadBalancer(id='3137', name='LB_update',
-            state='PENDING_UPDATE', ip='10.34.4.3',
-            port=80, driver=self.driver)
-        updated_balancer = self.driver.update_balancer(balancer, protocol='IMAPv4')
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(
+            balancer, protocol='IMAPv4')
         self.assertEqual('IMAPv4', updated_balancer.extra['protocol'])
 
     def test_update_balancer_port(self):
         balancer = LoadBalancer(id='3131', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         updated_balancer = self.driver.update_balancer(balancer, port=1337)
         self.assertEqual(1337, updated_balancer.port)
 
     def test_update_balancer_name(self):
         balancer = LoadBalancer(id='3132', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
-        updated_balancer = self.driver.update_balancer(balancer, name='new_lb_name')
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
+        updated_balancer = self.driver.update_balancer(
+            balancer, name='new_lb_name')
         self.assertEqual('new_lb_name', updated_balancer.name)
 
     def test_update_balancer_algorithm(self):
         balancer = LoadBalancer(id='3133', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         updated_balancer = self.driver.update_balancer(balancer,
                                                        algorithm=Algorithm.ROUND_ROBIN)
-        self.assertEqual(Algorithm.ROUND_ROBIN, updated_balancer.extra['algorithm'])
+        self.assertEqual(
+            Algorithm.ROUND_ROBIN, updated_balancer.extra['algorithm'])
 
     def test_update_balancer_bad_algorithm_exception(self):
         balancer = LoadBalancer(id='3134', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         try:
             self.driver.update_balancer(balancer,
                                         algorithm='HAVE_MERCY_ON_OUR_SERVERS')
         except LibcloudError:
             pass
         else:
-            self.fail('Should have thrown an exception with bad algorithm value')
+            self.fail(
+                'Should have thrown an exception with bad algorithm value')
 
     def test_ex_update_balancer_no_poll_protocol(self):
         balancer = LoadBalancer(id='3130', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         action_succeeded = self.driver.ex_update_balancer_no_poll(
-                                                              balancer,
-                                                              protocol='HTTPS')
+            balancer,
+            protocol='HTTPS')
         self.assertTrue(action_succeeded)
 
     def test_ex_update_balancer_no_poll_port(self):
         balancer = LoadBalancer(id='3131', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         action_succeeded = self.driver.ex_update_balancer_no_poll(
-                                                            balancer,
-                                                            port=1337)
+            balancer,
+            port=1337)
         self.assertTrue(action_succeeded)
 
     def test_ex_update_balancer_no_poll_name(self):
         balancer = LoadBalancer(id='3132', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
 
         action_succeeded = self.driver.ex_update_balancer_no_poll(
-                                                          balancer,
-                                                          name='new_lb_name')
+            balancer,
+            name='new_lb_name')
         self.assertTrue(action_succeeded)
 
     def test_ex_update_balancer_no_poll_algorithm(self):
         balancer = LoadBalancer(id='3133', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         action_succeeded = self.driver.ex_update_balancer_no_poll(balancer,
-                                               algorithm=Algorithm.ROUND_ROBIN)
+                                                                  algorithm=Algorithm.ROUND_ROBIN)
         self.assertTrue(action_succeeded)
 
     def test_ex_update_balancer_no_poll_bad_algorithm_exception(self):
         balancer = LoadBalancer(id='3134', name='LB_update',
-                                         state='PENDING_UPDATE', ip='10.34.4.3',
-                                         port=80, driver=self.driver)
+                                state='PENDING_UPDATE', ip='10.34.4.3',
+                                port=80, driver=self.driver)
         try:
             self.driver.update_balancer(balancer,
                                         algorithm='HAVE_MERCY_ON_OUR_SERVERS')
@@ -870,7 +890,7 @@ class RackspaceLBTests(unittest.TestCase):
         first_member = members[0]
 
         member = self.driver.ex_balancer_update_member(balancer, first_member,
-            condition=MemberCondition.ENABLED, weight=12)
+                                                       condition=MemberCondition.ENABLED, weight=12)
 
         self.assertEqual(MemberCondition.ENABLED, member.extra['condition'])
         self.assertEqual(12, member.extra['weight'])
@@ -881,22 +901,24 @@ class RackspaceLBTests(unittest.TestCase):
 
         first_member = members[0]
 
-        resp = self.driver.ex_balancer_update_member_no_poll(balancer, first_member,
+        resp = self.driver.ex_balancer_update_member_no_poll(
+            balancer, first_member,
             condition=MemberCondition.ENABLED, weight=12)
         self.assertTrue(resp)
 
     def test_ex_list_current_usage(self):
         balancer = self.driver.get_balancer(balancer_id='8290')
         usage = self.driver.ex_list_current_usage(balancer=balancer)
-        self.assertEqual(usage['loadBalancerUsageRecords'][0]['incomingTransferSsl'],
-                         6182163)
+        self.assertEqual(
+            usage['loadBalancerUsageRecords'][0]['incomingTransferSsl'],
+            6182163)
 
 
 class RackspaceUKLBTests(RackspaceLBTests):
 
     def setUp(self):
         RackspaceLBDriver.connectionCls.conn_classes = (None,
-                RackspaceLBMockHttp)
+                                                        RackspaceLBMockHttp)
         RackspaceLBMockHttp.type = None
         self.driver = RackspaceUKLBDriver('user', 'key')
         # normally authentication happens lazily, but we force it here
@@ -953,7 +975,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             for balancer in balancers_json['loadBalancers']:
                 id = balancer['id']
                 self.assertTrue(urlencode([('id', id)]) in url,
-                    msg='Did not delete balancer with id %d' % id)
+                                msg='Did not delete balancer with id %d' % id)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -985,7 +1007,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             json_node = json_body['nodes'][0]
             self.assertEqual('DISABLED', json_node['condition'])
             self.assertEqual(10, json_node['weight'])
-            response_body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
+            response_body = self.fixtures.load(
+                'v1_slug_loadbalancers_8290_nodes_post.json')
             return (httplib.ACCEPTED, response_body, {},
                     httplib.responses[httplib.ACCEPTED])
         elif method == "DELETE":
@@ -995,7 +1018,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             for node in json_nodes['nodes']:
                 id = node['id']
                 self.assertTrue(urlencode([('id', id)]) in url,
-                    msg='Did not delete member with id %d' % id)
+                                msg='Did not delete member with id %d' % id)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
@@ -1013,7 +1036,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             json_body = json.loads(body)
             json_node = json_body['nodes'][0]
             self.assertEqual('ENABLED', json_node['condition'])
-            response_body = self.fixtures.load('v1_slug_loadbalancers_8290_nodes_post.json')
+            response_body = self.fixtures.load(
+                'v1_slug_loadbalancers_8290_nodes_post.json')
             return (httplib.ACCEPTED, response_body, {},
                     httplib.responses[httplib.ACCEPTED])
 
@@ -1033,7 +1057,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             json_node_2 = json_body['nodes'][1]
             self.assertEqual('10.1.0.12', json_node_1['address'])
             self.assertEqual('10.1.0.13', json_node_2['address'])
-            response_body = self.fixtures.load('v1_slug_loadbalancers_8292_nodes_post.json')
+            response_body = self.fixtures.load(
+                'v1_slug_loadbalancers_8292_nodes_post.json')
             return (httplib.ACCEPTED, response_body, {},
                     httplib.responses[httplib.ACCEPTED])
 
@@ -1080,76 +1105,86 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
     def _v1_0_11111_loadbalancers_8290_errorpage(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('v1_slug_loadbalancers_8290_errorpage.json')
+            body = self.fixtures.load(
+                'v1_slug_loadbalancers_8290_errorpage.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == 'PUT':
             json_body = json.loads(body)
 
             self.assertEqual('<html>Generic Error Page</html>',
-                json_body['errorpage']['content'])
+                             json_body['errorpage']['content'])
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_18940(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_18940_ex_public_ips.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_18940_ex_public_ips.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_18945(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_18945_ex_public_ips.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_18945_ex_public_ips.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_18940_errorpage(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_18940_errorpage.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_18940_errorpage.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_18940_accesslist(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('v1_slug_loadbalancers_18940_accesslist.json')
+            body = self.fixtures.load(
+                'v1_slug_loadbalancers_18940_accesslist.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_18941(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_18941_ex_private_ips.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_18941_ex_private_ips.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_94692(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94692_weighted_round_robin.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94692_weighted_round_robin.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_94693(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94693_weighted_least_connections.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94693_weighted_least_connections.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_94694(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94694_unknown_algorithm.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94694_unknown_algorithm.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_94695(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94695_full_details.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94695_full_details.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
@@ -1194,7 +1229,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         if method == 'PUT':
             json_body = json.loads(body)
 
-            persistence_type = json_body['sessionPersistence']['persistenceType']
+            persistence_type = json_body[
+                'sessionPersistence']['persistenceType']
             self.assertEqual('HTTP_COOKIE', persistence_type)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
@@ -1212,7 +1248,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
     def _v1_0_11111_loadbalancers_94696(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94696_http_health_monitor.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94696_http_health_monitor.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
@@ -1235,21 +1272,24 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
     def _v1_0_11111_loadbalancers_94697(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94697_https_health_monitor.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94697_https_health_monitor.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_94698(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94698_with_access_list.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94698_with_access_list.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_94698_accesslist(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('v1_slug_loadbalancers_94698_accesslist.json')
+            body = self.fixtures.load(
+                'v1_slug_loadbalancers_94698_accesslist.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         elif method == 'POST':
             json_body = json.loads(body)
@@ -1264,7 +1304,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
     def _v1_0_11111_loadbalancers_94699(self, method, url, body, headers):
         if method == 'GET':
             # Use the same fixture for batch deletes as for single deletes
-            body = self.fixtures.load('v1_slug_loadbalancers_94698_with_access_list.json')
+            body = self.fixtures.load(
+                'v1_slug_loadbalancers_94698_with_access_list.json')
             json_body = json.loads(body)
             json_body['loadBalancer']['id'] = 94699
 
@@ -1282,7 +1323,7 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             for access_rule in access_list_json:
                 id = access_rule['id']
                 self.assertTrue(urlencode([('id', id)]) in url,
-                    msg='Did not delete access rule with id %d' % id)
+                                msg='Did not delete access rule with id %d' % id)
 
             return (httplib.ACCEPTED, '', {}, httplib.responses[httplib.ACCEPTED])
         elif method == 'POST':
@@ -1306,7 +1347,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
 
     def _v1_0_11111_loadbalancers_94700(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load("v1_slug_loadbalancers_94700_http_health_monitor_no_body_regex.json")
+            body = self.fixtures.load(
+                "v1_slug_loadbalancers_94700_http_health_monitor_no_body_regex.json")
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
         raise NotImplementedError
@@ -1334,7 +1376,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'protocol': 'HTTPS'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3130
             response_body['loadBalancer']['protocol'] = 'HTTPS'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
@@ -1347,7 +1390,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'port': 1337})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3131
             response_body['loadBalancer']['port'] = 1337
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
@@ -1360,7 +1404,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'name': 'new_lb_name'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3132
             response_body['loadBalancer']['name'] = 'new_lb_name'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
@@ -1373,7 +1418,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'algorithm': 'ROUND_ROBIN'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3133
             response_body['loadBalancer']['algorithm'] = 'ROUND_ROBIN'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
@@ -1392,7 +1438,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'protocol': 'IMAPv2'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3135
             response_body['loadBalancer']['protocol'] = 'IMAPv2'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
@@ -1405,7 +1452,8 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'protocol': 'IMAPv3'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3136
             response_body['loadBalancer']['protocol'] = 'IMAPv3'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
@@ -1418,16 +1466,18 @@ class RackspaceLBMockHttp(MockHttpTestCase):
             self.assertDictEqual(json_body, {'protocol': 'IMAPv4'})
             return (httplib.ACCEPTED, "", {}, httplib.responses[httplib.ACCEPTED])
         elif method == "GET":
-            response_body = json.loads(self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
+            response_body = json.loads(
+                self.fixtures.load("v1_slug_loadbalancers_3xxx.json"))
             response_body['loadBalancer']['id'] = 3137
             response_body['loadBalancer']['protocol'] = 'IMAPv4'
             return (httplib.OK, json.dumps(response_body), {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_8290_usage_current(self, method, url, body,
-                                                    headers):
+                                                     headers):
         if method == 'GET':
-            body = self.fixtures.load('v1_0_slug_loadbalancers_8290_usage_current.json')
+            body = self.fixtures.load(
+                'v1_0_slug_loadbalancers_8290_usage_current.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         raise NotImplementedError
 

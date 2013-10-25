@@ -30,7 +30,7 @@ from libcloud.test.secrets import DNS_PARAMS_ZERIGO
 class ZerigoTests(unittest.TestCase):
     def setUp(self):
         ZerigoDNSDriver.connectionCls.conn_classes = (
-                None, ZerigoMockHttp)
+            None, ZerigoMockHttp)
         ZerigoMockHttp.type = None
         self.driver = ZerigoDNSDriver(*DNS_PARAMS_ZERIGO)
 
@@ -136,7 +136,7 @@ class ZerigoTests(unittest.TestCase):
 
         try:
             self.driver.get_record(zone_id='12345678',
-                                            record_id='28536')
+                                   record_id='28536')
         except RecordDoesNotExistError:
             pass
         else:

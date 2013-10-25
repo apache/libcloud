@@ -25,6 +25,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import VOXEL_PARAMS
 
+
 class VoxelTest(unittest.TestCase):
 
     def setUp(self):
@@ -79,8 +80,10 @@ class VoxelTest(unittest.TestCase):
         self.assertEqual(locations[0].name, 'Amsterdam')
 
     def test_create_node_invalid_disk_size(self):
-        image = NodeImage(id=1, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
-        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        image = NodeImage(
+            id=1, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(
+            1, '256 slice', None, None, None, None, driver=self.driver)
         location = NodeLocation(id=1, name='Europe', country='England',
                                 driver=self.driver)
 
@@ -95,8 +98,10 @@ class VoxelTest(unittest.TestCase):
 
     def test_create_node(self):
         VoxelMockHttp.type = 'CREATE_NODE'
-        image = NodeImage(id=1, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
-        size = NodeSize(1, '256 slice', 1024, 500, None, None, driver=self.driver)
+        image = NodeImage(
+            id=1, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(
+            1, '256 slice', 1024, 500, None, None, driver=self.driver)
         location = NodeLocation(id=1, name='Europe', country='England',
                                 driver=self.driver)
 
@@ -110,17 +115,20 @@ class VoxelTest(unittest.TestCase):
 
     def test_reboot_node(self):
         VoxelMockHttp.type = 'REBOOT_NODE'
-        node = Node(id=72258, name=None, state=None, public_ips=None, private_ips=None,
-                    driver=self.driver)
+        node = Node(
+            id=72258, name=None, state=None, public_ips=None, private_ips=None,
+            driver=self.driver)
 
         self.assertTrue(node.reboot())
 
     def test_destroy_node(self):
         VoxelMockHttp.type = 'DESTROY_NODE'
-        node = Node(id=72258, name=None, state=None, public_ips=None, private_ips=None,
-                    driver=self.driver)
+        node = Node(
+            id=72258, name=None, state=None, public_ips=None, private_ips=None,
+            driver=self.driver)
 
         self.assertTrue(node.destroy())
+
 
 class VoxelMockHttp(MockHttp):
 

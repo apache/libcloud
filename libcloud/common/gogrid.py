@@ -27,10 +27,11 @@ HOST = 'api.gogrid.com'
 PORTS_BY_SECURITY = {True: 443, False: 80}
 API_VERSION = '1.8'
 
-__all__ = ["GoGridResponse",
-        "GoGridConnection",
-        "GoGridIpAddress",
-        "BaseGoGridDriver",
+__all__ = [
+    "GoGridResponse",
+    "GoGridConnection",
+    "GoGridIpAddress",
+    "BaseGoGridDriver",
 ]
 
 
@@ -45,14 +46,15 @@ class GoGridResponse(JsonResponse):
             raise InvalidCredsError('Invalid credentials', self.driver)
         if self.status == 401:
             raise InvalidCredsError('API Key has insufficient rights',
-                self.driver)
+                                    self.driver)
         if not self.body:
             return None
         try:
             return self.parse_body()['status'] == 'success'
         except ValueError:
             raise MalformedResponseError('Malformed reply',
-                    body=self.body, driver=self.driver)
+                                         body=self.body,
+                                         driver=self.driver)
 
     def parse_error(self):
         try:
@@ -82,9 +84,10 @@ class GoGridConnection(ConnectionUserAndKey):
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 
-    def request(self, action, params=None, data='', headers=None, method='GET', raw=False):
+    def request(self, action, params=None, data='', headers=None, method='GET',
+                raw=False):
         return super(GoGridConnection, self).request(action, params, data,
-                     headers, method, raw)
+                                                     headers, method, raw)
 
 
 class GoGridIpAddress(object):
@@ -112,10 +115,10 @@ class BaseGoGridDriver(object):
 
     def _to_ip(self, element):
         ip = GoGridIpAddress(id=element['id'],
-                ip=element['ip'],
-                public=element['public'],
-                subnet=element['subnet'],
-                state=element["state"]["name"])
+                             ip=element['ip'],
+                             public=element['public'],
+                             subnet=element['subnet'],
+                             state=element["state"]["name"])
         ip.location = self._to_location(element['datacenter'])
         return ip
 
@@ -125,9 +128,9 @@ class BaseGoGridDriver(object):
 
     def _to_location(self, element):
         location = NodeLocation(id=element['id'],
-                name=element['name'],
-                country="US",
-                driver=self.connection.driver)
+                                name=element['name'],
+                                country="US",
+                                driver=self.connection.driver)
         return location
 
     def _to_locations(self, object):
@@ -160,16 +163,15 @@ class BaseGoGridDriver(object):
 
         if "public" in kwargs and kwargs["public"] is not None:
             params["ip.type"] = {True: "Public",
-                    False: "Private"}[kwargs["public"]]
+                                 False: "Private"}[kwargs["public"]]
         if "assigned" in kwargs and kwargs["assigned"] is not None:
             params["ip.state"] = {True: "Assigned",
-                    False: "Unassigned"}[kwargs["assigned"]]
+                                  False: "Unassigned"}[kwargs["assigned"]]
         if "location" in kwargs and kwargs['location'] is not None:
             params['datacenter'] = kwargs['location'].id
 
-        ips = self._to_ips(
-                self.connection.request('/api/grid/ip/list',
-                    params=params).object)
+        response = self.connection.request('/api/grid/ip/list', params=params)
+        ips = self._to_ips(response.object)
         return ips
 
     def _get_first_ip(self, location=None):
@@ -178,4 +180,4 @@ class BaseGoGridDriver(object):
             return ips[0].ip
         except IndexError:
             raise LibcloudError('No public unassigned IPs left',
-                    self.driver)
+                                self.driver)

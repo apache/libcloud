@@ -26,7 +26,6 @@ except ImportError:
     import json
 
 from libcloud.compute.drivers.ktucloud import KTUCloudNodeDriver
-from libcloud.compute.types import DeploymentError, LibcloudError
 
 from libcloud.test import MockHttpTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -34,12 +33,13 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
+
     def setUp(self):
         KTUCloudNodeDriver.connectionCls.conn_classes = \
             (None, KTUCloudStackMockHttp)
         self.driver = KTUCloudNodeDriver('apikey', 'secret',
-                                           path='/test/path',
-                                           host='api.dummy.com')
+                                         path='/test/path',
+                                         host='api.dummy.com')
         self.driver.path = '/test/path'
         self.driver.type = -1
         KTUCloudStackMockHttp.fixture_tag = 'default'

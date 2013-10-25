@@ -36,7 +36,7 @@ class TestCaseMixin(object):
         self.assertTrue(size.ram is None or isinstance(size.ram, int))
         self.assertTrue(size.disk is None or isinstance(size.disk, int))
         self.assertTrue(size.bandwidth is None or
-                            isinstance(size.bandwidth, int))
+                        isinstance(size.bandwidth, int))
         # Check that price values are ints, floats, or None.
         self.assertTrue(size.price is None or isinstance(size.price, float)
                         or isinstance(size.price, int))
@@ -70,8 +70,8 @@ class TestCaseMixin(object):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         node = self.driver.create_node(name='node-name',
-                                     image=image,
-                                     size=size)
+                                       image=image,
+                                       size=size)
         self.assertTrue(isinstance(node, Node))
 
     def test_destroy_node_response(self):

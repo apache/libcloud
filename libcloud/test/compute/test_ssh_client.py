@@ -30,10 +30,11 @@ from libcloud.compute.ssh import have_paramiko
 from mock import patch, Mock
 
 if not have_paramiko:
-    ParamikoSSHClient = None
+    ParamikoSSHClient = None  # NOQA
 
 
 class ParamikoSSHClientTests(unittest.TestCase):
+
     @patch('paramiko.SSHClient', Mock)
     def setUp(self):
         """
@@ -154,11 +155,12 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
 
 if not ParamikoSSHClient:
-    class ParamikoSSHClientTests(unittest.TestCase):
+    class ParamikoSSHClientTests(unittest.TestCase):  # NOQA
         pass
 
 
 class ShellOutSSHClientTests(unittest.TestCase):
+
     def test_password_auth_not_supported(self):
         try:
             ShellOutSSHClient(hostname='localhost', username='foo',

@@ -16,11 +16,8 @@
 import unittest
 import sys
 
-from xml.etree import ElementTree as ET
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import xmlrpclib
-from libcloud.utils.py3 import next
 
 from libcloud.compute.drivers.vcl import VCLNodeDriver as VCL
 from libcloud.compute.types import NodeState

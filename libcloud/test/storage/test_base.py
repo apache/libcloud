@@ -28,10 +28,11 @@ if PY3:
 
 from libcloud.storage.base import StorageDriver
 
-from libcloud.test import StorageMockHttp # pylint: disable-msg=E0611
+from libcloud.test import StorageMockHttp  # pylint: disable-msg=E0611
 
 
 class BaseStorageTests(unittest.TestCase):
+
     def setUp(self):
         self.send_called = 0
         StorageDriver.connectionCls.conn_classes = (None, StorageMockHttp)
@@ -43,10 +44,12 @@ class BaseStorageTests(unittest.TestCase):
 
     def test__upload_object_iterator_must_have_next_method(self):
         class Iterator(object):
+
             def next(self):
                 pass
 
         class Iterator2(file):
+
             def __init__(self):
                 pass
 
@@ -60,8 +63,8 @@ class BaseStorageTests(unittest.TestCase):
             return True, 'barfoo', 100
 
         kwargs = {'object_name': 'foo', 'content_type': 'foo/bar',
-                   'upload_func': upload_func, 'upload_func_kwargs': {},
-                   'request_path': '/', 'headers': {}}
+                  'upload_func': upload_func, 'upload_func_kwargs': {},
+                  'request_path': '/', 'headers': {}}
 
         for value in valid_iterators:
             kwargs['iterator'] = value
@@ -94,9 +97,9 @@ class BaseStorageTests(unittest.TestCase):
 
         # Normal
         success, data_hash, bytes_transferred = \
-                 self.driver1._stream_data(response=response,
-                                           iterator=iterator,
-                                           chunked=False, calculate_hash=True)
+            self.driver1._stream_data(response=response,
+                                      iterator=iterator,
+                                      chunked=False, calculate_hash=True)
 
         self.assertTrue(success)
         self.assertEqual(data_hash, hashlib.md5(b('')).hexdigest())
@@ -105,9 +108,9 @@ class BaseStorageTests(unittest.TestCase):
 
         # Chunked
         success, data_hash, bytes_transferred = \
-                 self.driver1._stream_data(response=response,
-                                           iterator=iterator,
-                                           chunked=True, calculate_hash=True)
+            self.driver1._stream_data(response=response,
+                                      iterator=iterator,
+                                      chunked=True, calculate_hash=True)
 
         self.assertTrue(success)
         self.assertEqual(data_hash, hashlib.md5(b('')).hexdigest())
@@ -123,8 +126,8 @@ class BaseStorageTests(unittest.TestCase):
 
         data = '123456789901234567'
         success, data_hash, bytes_transferred = \
-                 self.driver1._upload_data(response=response, data=data,
-                                           calculate_hash=True)
+            self.driver1._upload_data(response=response, data=data,
+                                      calculate_hash=True)
 
         self.assertTrue(success)
         self.assertEqual(data_hash, hashlib.md5(b(data)).hexdigest())

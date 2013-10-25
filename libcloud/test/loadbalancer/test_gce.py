@@ -26,7 +26,7 @@ from libcloud.loadbalancer.drivers.gce import (GCELBDriver)
 from libcloud.test.common.test_google import GoogleAuthMockHttp
 from libcloud.test.compute.test_gce import GCEMockHttp
 
-from libcloud.test import MockHttpTestCase, LibcloudTestCase
+from libcloud.test import LibcloudTestCase
 
 from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 
@@ -111,10 +111,10 @@ class GCELoadBalancerTest(LibcloudTestCase):
         balancer = self.driver.get_balancer('lcforwardingrule')
         member = self.driver._node_to_member(node, balancer)
         # Detach member first
-        detach_member = balancer.detach_member(member)
+        balancer.detach_member(member)
         self.assertEqual(len(balancer.list_members()), 1)
         # Attach Node
-        attach_node = balancer.attach_compute_node(node)
+        balancer.attach_compute_node(node)
         self.assertEqual(len(balancer.list_members()), 2)
 
     def test_detach_attach_member(self):
@@ -127,11 +127,11 @@ class GCELoadBalancerTest(LibcloudTestCase):
         self.assertEqual(len(balancer.list_members()), 2)
 
         # Remove a member and check that it now has 1 member
-        detach_member = balancer.detach_member(member)
+        balancer.detach_member(member)
         self.assertEqual(len(balancer.list_members()), 1)
 
         # Reattach member and check that it has 2 members again
-        attach_member = balancer.attach_member(member)
+        balancer.attach_member(member)
         self.assertEqual(len(balancer.list_members()), 2)
 
     def test_balancer_list_members(self):

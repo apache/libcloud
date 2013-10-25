@@ -1388,7 +1388,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        server_params = self._create_args_to_params(node, image=image, **kwargs)
+        server_params = self._create_args_to_params(node, image=image,
+                                                    **kwargs)
         resp = self._node_action(node, 'rebuild', **server_params)
         return resp.status == httplib.ACCEPTED
 
@@ -1598,12 +1599,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 security_groups]
 
     def _to_security_group(self, obj):
+        rules = self._to_security_group_rules(obj.get('rules', []))
         return OpenStackSecurityGroup(id=obj['id'],
                                       tenant_id=obj['tenant_id'],
                                       name=obj['name'],
                                       description=obj.get('description', ''),
-                                      rules=self._to_security_group_rules(
-                                      obj.get('rules', [])),
+                                      rules=rules,
                                       driver=self)
 
     def ex_list_security_groups(self):
@@ -1691,12 +1692,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_security_group_rule(self.connection.request(
             '/os-security-group-rules', method='POST',
             data={'security_group_rule': {
-            'ip_protocol': ip_protocol,
-            'from_port': from_port,
-            'to_port': to_port,
-            'cidr': cidr,
-            'group_id': source_security_group_id,
-            'parent_group_id': security_group.id}}
+                'ip_protocol': ip_protocol,
+                'from_port': from_port,
+                'to_port': to_port,
+                'cidr': cidr,
+                'group_id': source_security_group_id,
+                'parent_group_id': security_group.id}}
         ).object['security_group_rule'])
 
     def ex_delete_security_group_rule(self, rule):

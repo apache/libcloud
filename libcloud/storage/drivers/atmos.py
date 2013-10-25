@@ -467,7 +467,6 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type='regular')
-        objects = []
         for entry in entries:
             metadata = {'object_id': entry['id']}
             yield Object(entry['name'], 0, '', {}, metadata, container, self)

@@ -34,14 +34,14 @@ API_ROOT = '/'
 # Constants that map a RAM figure to a PlanID (updated 6/28/10)
 LINODE_PLAN_IDS = {512: '1',
                    768: '2',
-                  1024: '3',
-                  1536: '4',
-                  2048: '5',
-                  4096: '6',
-                  8192: '7',
-                 12288: '8',
-                 16384: '9',
-                 20480: '10'}
+                   1024: '3',
+                   1536: '4',
+                   2048: '5',
+                   4096: '6',
+                   8192: '7',
+                   12288: '8',
+                   16384: '9',
+                   20480: '10'}
 
 
 class LinodeException(Exception):
@@ -118,7 +118,7 @@ class LinodeResponse(JsonResponse):
             errs = []
             for obj in js:
                 if ("DATA" not in obj or "ERRORARRAY" not in obj
-                    or "ACTION" not in obj):
+                        or "ACTION" not in obj):
                     ret.append(None)
                     errs.append(self.invalid)
                     continue

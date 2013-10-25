@@ -25,13 +25,13 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 from libcloud.test.secrets import ECP_PARAMS
 
+
 class ECPTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         ECPNodeDriver.connectionCls.conn_classes = (None,
-                                                            ECPMockHttp)
+                                                    ECPMockHttp)
         self.driver = ECPNodeDriver(*ECP_PARAMS)
-
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -41,7 +41,6 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'dummy-1')
         self.assertEqual(node.public_ips[0], "42.78.124.75")
         self.assertEqual(node.state, NodeState.RUNNING)
-
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -56,9 +55,12 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
     def test_list_images(self):
         images = self.driver.list_images()
         self.assertEqual(len(images), 2)
-        self.assertEqual(images[0].name, "centos54: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
+        self.assertEqual(
+            images[0].name, "centos54: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
         self.assertEqual(images[0].id, "1")
-        self.assertEqual(images[1].name, "centos54 two: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2")
+
+        name = "centos54 two: AUTO import from /opt/enomalism2/repo/5d407a68-c76c-11de-86e5-000475cb7577.xvm2"
+        self.assertEqual(images[1].name, name)
         self.assertEqual(images[1].id, "2")
 
     def test_reboot_node(self):
@@ -75,9 +77,11 @@ class ECPTests(unittest.TestCase, TestCaseMixin):
         # Raises exception on failure
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        node = self.driver.create_node(name="api.ivan.net.nz", image=image, size=size)
+        node = self.driver.create_node(
+            name="api.ivan.net.nz", image=image, size=size)
         self.assertEqual(node.name, "api.ivan.net.nz")
         self.assertEqual(node.id, "1234")
+
 
 class ECPMockHttp(MockHttp):
 
@@ -121,7 +125,6 @@ class ECPMockHttp(MockHttp):
     def _rest_hosting_ptemplate_list(self, method, url, body, headers):
         body = self.fixtures.load('ptemplate_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
 
 
 if __name__ == '__main__':

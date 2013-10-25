@@ -55,8 +55,8 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Initializes Abiquo Driver
 
-        Initializes the :class:`NodeDriver` object. After that, it generates the
-        context
+        Initializes the :class:`NodeDriver` object. After that, it generates
+        the context
 
         :param       user_id: identifier of Abiquo user (required)
         :type        user_id: ``str``
@@ -265,7 +265,8 @@ class AbiquoNodeDriver(NodeDriver):
             # Save into context the link to the itself because we will need
             # it in the future, but we save here to don't extend the class
             # :class:`NodeLocation`.
-            # So here we have the dict: :class:`NodeLocation` -> link_datacenter
+            # So here we have the dict: :class:`NodeLocation` ->
+            # link_datacenter
             self.connection.context['locations'][loc] = get_href(e_vdc, 'edit')
 
     def ex_create_group(self, name, location=None):
@@ -310,11 +311,11 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Destroy a group.
 
-        Be careful! Destroying a group means destroying all the :class:`Node`s there
-        and the group itself!
+        Be careful! Destroying a group means destroying all the :class:`Node`s
+        there and the group itself!
 
-        If there is currently any action over any :class:`Node` of the :class:`NodeGroup`,
-        then the method will raise an exception.
+        If there is currently any action over any :class:`Node` of the
+        :class:`NodeGroup`, then the method will raise an exception.
 
         :param     name: The group (required)
         :type      name: :class:`NodeGroup`
@@ -430,7 +431,8 @@ class AbiquoNodeDriver(NodeDriver):
         """
         Return list of locations where the user has access to.
 
-        :return: the list of :class:`NodeLocation` available for the current user
+        :return: the list of :class:`NodeLocation` available for the current
+                 user
         :rtype:  ``list`` of :class:`NodeLocation`
         """
         return list(self.connection.context['locations'].keys())
@@ -457,11 +459,12 @@ class AbiquoNodeDriver(NodeDriver):
         List sizes on a provider.
 
         Abiquo does not work with sizes. However, this method
-        returns a list of predefined ones (copied from :class:`DummyNodeDriver` but
-        without price neither bandwidth) to help the users to create their own.
+        returns a list of predefined ones (copied from :class:`DummyNodeDriver`
+        but without price neither bandwidth) to help the users to create their
+        own.
 
-        If you call the method :class:`AbiquoNodeDriver.create_node` with the size
-        informed, it will just override the 'ram' value of the 'image'
+        If you call the method :class:`AbiquoNodeDriver.create_node` with the
+        size informed, it will just override the 'ram' value of the 'image'
         template. So it is no too much usefull work with sizes...
 
         :return: The list of sizes
@@ -727,8 +730,9 @@ class NodeGroup(object):
 
     All :class:`Node`s in Abiquo must be defined inside a Virtual Appliance.
     We offer a way to handle virtual appliances (called NodeGroup to
-    maintain some kind of name conventions here) inside the :class:`AbiquoNodeDriver`
-    without breaking compatibility of the rest of libcloud API.
+    maintain some kind of name conventions here) inside the
+    :class:`AbiquoNodeDriver` without breaking compatibility of the rest of
+    libcloud API.
 
     If the user does not want to handle groups, all the virtual machines
     will be created inside a group named 'libcloud'
@@ -750,6 +754,7 @@ class NodeGroup(object):
 
     def destroy(self):
         """
-        Destroys the group delegating the execution to :class:`AbiquoNodeDriver`.
+        Destroys the group delegating the execution to
+        :class:`AbiquoNodeDriver`.
         """
         return self.driver.ex_destroy_group(self)

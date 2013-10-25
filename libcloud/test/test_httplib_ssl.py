@@ -28,6 +28,7 @@ from libcloud.httplib_ssl import LibcloudHTTPSConnection
 
 ORIGINAL_CA_CERS_PATH = libcloud.security.CA_CERTS_PATH
 
+
 class TestHttpLibSSLTests(unittest.TestCase):
 
     def setUp(self):
@@ -48,7 +49,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_custom_ca_path_using_env_var_is_directory(self):
-        file_path  = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.dirname(os.path.abspath(__file__))
         os.environ['SSL_CERT_FILE'] = file_path
 
         try:
@@ -64,7 +65,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         # When setting a path we don't actually check that a valid CA file is
         # provied.
         # This happens later in the code in httplib_ssl.connect method
-        file_path  = os.path.abspath(__file__)
+        file_path = os.path.abspath(__file__)
         os.environ['SSL_CERT_FILE'] = file_path
 
         reload(libcloud.security)
@@ -73,38 +74,38 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
     def test_verify_hostname(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', 'somemachine.python.org'),))}
+                 'subject': ((('countryName', 'US'),),
+                             (('stateOrProvinceName', 'Delaware'),),
+                             (('localityName', 'Wilmington'),),
+                             (('organizationName', 'Python Software Foundation'),),
+                             (('organizationalUnitName', 'SSL'),),
+                             (('commonName', 'somemachine.python.org'),))}
 
         cert2 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', 'somemachine.python.org'),)),
-         'subjectAltName': ((('DNS', 'foo.alt.name')),
-                           (('DNS', 'foo.alt.name.1')))}
+                 'subject': ((('countryName', 'US'),),
+                             (('stateOrProvinceName', 'Delaware'),),
+                             (('localityName', 'Wilmington'),),
+                             (('organizationName', 'Python Software Foundation'),),
+                             (('organizationalUnitName', 'SSL'),),
+                             (('commonName', 'somemachine.python.org'),)),
+                 'subjectAltName': ((('DNS', 'foo.alt.name')),
+                                    (('DNS', 'foo.alt.name.1')))}
 
         cert3 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', 'python.org'),))}
+                 'subject': ((('countryName', 'US'),),
+                             (('stateOrProvinceName', 'Delaware'),),
+                             (('localityName', 'Wilmington'),),
+                             (('organizationName', 'Python Software Foundation'),),
+                             (('organizationalUnitName', 'SSL'),),
+                             (('commonName', 'python.org'),))}
 
         cert4 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', '*.api.joyentcloud.com'),))}
+                 'subject': ((('countryName', 'US'),),
+                             (('stateOrProvinceName', 'Delaware'),),
+                             (('localityName', 'Wilmington'),),
+                             (('organizationName', 'Python Software Foundation'),),
+                             (('organizationalUnitName', 'SSL'),),
+                             (('commonName', '*.api.joyentcloud.com'),))}
 
         self.assertFalse(self.httplib_object._verify_hostname(
                          hostname='invalid', cert=cert1))
@@ -113,33 +114,33 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.assertFalse(self.httplib_object._verify_hostname(
                          hostname='foomachine.python.org', cert=cert1))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='somesomemachine.python.org', cert=cert1))
+                         hostname='somesomemachine.python.org', cert=cert1))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='somemachine.python.orga', cert=cert1))
+                         hostname='somemachine.python.orga', cert=cert1))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='somemachine.python.org.org', cert=cert1))
+                         hostname='somemachine.python.org.org', cert=cert1))
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='somemachine.python.org', cert=cert1))
 
         self.assertFalse(self.httplib_object._verify_hostname(
                          hostname='invalid', cert=cert2))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='afoo.alt.name.1', cert=cert2))
+                         hostname='afoo.alt.name.1', cert=cert2))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='a.foo.alt.name.1', cert=cert2))
+                         hostname='a.foo.alt.name.1', cert=cert2))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='foo.alt.name.1.2', cert=cert2))
+                         hostname='foo.alt.name.1.2', cert=cert2))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='afoo.alt.name.1.2', cert=cert2))
+                         hostname='afoo.alt.name.1.2', cert=cert2))
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='foo.alt.name.1', cert=cert2))
 
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='python.org', cert=cert3))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='opython.org', cert=cert3))
+                         hostname='opython.org', cert=cert3))
         self.assertFalse(self.httplib_object._verify_hostname(
-                        hostname='ython.org', cert=cert3))
+                         hostname='ython.org', cert=cert3))
 
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='us-east-1.api.joyentcloud.com', cert=cert4))
@@ -148,22 +149,22 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
     def test_get_subject_alt_names(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', 'somemachine.python.org'),))}
+                 'subject': ((('countryName', 'US'),),
+                             (('stateOrProvinceName', 'Delaware'),),
+                             (('localityName', 'Wilmington'),),
+                             (('organizationName', 'Python Software Foundation'),),
+                             (('organizationalUnitName', 'SSL'),),
+                             (('commonName', 'somemachine.python.org'),))}
 
         cert2 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', 'somemachine.python.org'),)),
-         'subjectAltName': ((('DNS', 'foo.alt.name')),
-                           (('DNS', 'foo.alt.name.1')))}
+                 'subject': ((('countryName', 'US'),),
+                             (('stateOrProvinceName', 'Delaware'),),
+                             (('localityName', 'Wilmington'),),
+                             (('organizationName', 'Python Software Foundation'),),
+                             (('organizationalUnitName', 'SSL'),),
+                             (('commonName', 'somemachine.python.org'),)),
+                 'subjectAltName': ((('DNS', 'foo.alt.name')),
+                                    (('DNS', 'foo.alt.name.1')))}
 
         self.assertEqual(self.httplib_object._get_subject_alt_names(cert=cert1),
                          [])
@@ -175,12 +176,12 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
     def test_get_common_name(self):
         cert = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
-         'subject': ((('countryName', 'US'),),
-                     (('stateOrProvinceName', 'Delaware'),),
-                     (('localityName', 'Wilmington'),),
-                     (('organizationName', 'Python Software Foundation'),),
-                     (('organizationalUnitName', 'SSL'),),
-                     (('commonName', 'somemachine.python.org'),))}
+                'subject': ((('countryName', 'US'),),
+                            (('stateOrProvinceName', 'Delaware'),),
+                            (('localityName', 'Wilmington'),),
+                            (('organizationName', 'Python Software Foundation'),),
+                            (('organizationalUnitName', 'SSL'),),
+                            (('commonName', 'somemachine.python.org'),))}
 
         self.assertEqual(self.httplib_object._get_common_name(cert)[0],
                          'somemachine.python.org')

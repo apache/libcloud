@@ -20,7 +20,7 @@ import hmac
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # NOQA
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode

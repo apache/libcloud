@@ -23,17 +23,12 @@ import tempfile
 
 import mock
 
-from libcloud.utils.py3 import httplib
-
-from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container, Object
+from libcloud.storage.base import Container
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
-from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.storage.types import ObjectHashMismatchError
 
 try:
     from libcloud.storage.drivers.local import LocalStorageDriver
@@ -43,8 +38,6 @@ except ImportError:
     print('lockfile library is not available, skipping local_storage tests...')
     LocalStorageDriver = None
     LockTimeout = None
-
-from libcloud.storage.drivers.dummy import DummyIterator
 
 
 class LocalTests(unittest.TestCase):
@@ -333,7 +326,7 @@ class LocalTests(unittest.TestCase):
 
 
 if not LocalStorageDriver:
-    class LocalTests(unittest.TestCase):
+    class LocalTests(unittest.TestCase):  # NOQA
         pass
 
 

@@ -524,8 +524,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
         if invalid_keys:
             raise CloudSigmaException(
-                'Invalid configuration key specified: %s' % (
-                ',' .join(invalid_keys)))
+                'Invalid configuration key specified: %s' %
+                (',' .join(invalid_keys)))
 
         response = self.connection.request(
             action='/servers/%s/set' % (node.id),

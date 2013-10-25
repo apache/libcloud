@@ -25,9 +25,10 @@ import shutil
 import sys
 
 try:
+    import lockfile
     from lockfile import LockTimeout, mkdirlockfile
 except ImportError:
-    raise ImportError('Missing lockfile dependency, you can install it ' \
+    raise ImportError('Missing lockfile dependency, you can install it '
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
@@ -305,9 +306,9 @@ class LocalStorageDriver(StorageDriver):
         """
 
         path = self.get_container_cdn_url(container)
-        lock = lockfile.MkdirFileLock(path, threaded=True)
+        lockfile.MkdirFileLock(path, threaded=True)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             self._make_path(path)
 
         return True
@@ -323,7 +324,7 @@ class LocalStorageDriver(StorageDriver):
         """
         path = self.get_object_cdn_url(obj)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             if os.path.exists(path):
                 return False
             try:
@@ -438,7 +439,7 @@ class LocalStorageDriver(StorageDriver):
 
         self._make_path(base_path)
 
-        with LockLocalStorage(obj_path) as lock:
+        with LockLocalStorage(obj_path):
             shutil.copy(file_path, obj_path)
 
         os.chmod(obj_path, int('664', 8))
@@ -488,7 +489,7 @@ class LocalStorageDriver(StorageDriver):
 
         self._make_path(base_path)
 
-        with LockLocalStorage(obj_path) as lock:
+        with LockLocalStorage(obj_path):
             obj_file = open(obj_path, 'w')
             for data in iterator:
                 obj_file.write(data)
@@ -512,7 +513,7 @@ class LocalStorageDriver(StorageDriver):
 
         path = self.get_object_cdn_url(obj)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             try:
                 os.unlink(path)
             except Exception:
@@ -585,11 +586,12 @@ class LocalStorageDriver(StorageDriver):
         # Check if there are any objects inside this
         for obj in self._get_objects(container):
             raise ContainerIsNotEmptyError(value='Container is not empty',
-                                container_name=container.name, driver=self)
+                                           container_name=container.name,
+                                           driver=self)
 
         path = self.get_container_cdn_url(container, check=True)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             try:
                 shutil.rmtree(path)
             except Exception:

@@ -20,7 +20,6 @@ import sys
 import unittest
 import tempfile
 
-from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
@@ -39,9 +38,9 @@ from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
 from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
 from libcloud.storage.drivers.dummy import DummyIterator
 
-from libcloud.test import StorageMockHttp, MockRawResponse # pylint: disable-msg=E0611
-from libcloud.test import MockHttpTestCase # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import StorageFileFixtures # pylint: disable-msg=E0611
+from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
+from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 
 
@@ -177,11 +176,11 @@ class AzureBlobsMockHttp(StorageMockHttp, MockHttpTestCase):
         # test_get_object
         body = self.fixtures.load('list_containers.xml')
         headers = {'content-type': 'application/zip',
-                    'etag': '"e31208wqsdoj329jd"',
-                    'x-amz-meta-rabbits': 'monkeys',
-                    'content-length': 12345,
-                    'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
-                    }
+                   'etag': '"e31208wqsdoj329jd"',
+                   'x-amz-meta-rabbits': 'monkeys',
+                   'content-length': 12345,
+                   'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
+                   }
 
         return (httplib.OK,
                 body,
@@ -376,9 +375,9 @@ class AzureBlobsTests(unittest.TestCase):
 
     def setUp(self):
         self.driver_type.connectionCls.conn_classes = (None,
-                                                     self.mock_response_klass)
+                                                       self.mock_response_klass)
         self.driver_type.connectionCls.rawResponseCls = \
-                self.mock_raw_response_klass
+            self.mock_raw_response_klass
         self.mock_response_klass.type = None
         self.mock_raw_response_klass.type = None
         self.driver = self.create_driver()
@@ -462,7 +461,7 @@ class AzureBlobsTests(unittest.TestCase):
     def test_get_container_success(self):
         self.mock_response_klass.type = None
         container = self.driver.get_container(
-                                    container_name='test_container200')
+            container_name='test_container200')
 
         self.assertTrue(container.name, 'test_container200')
         self.assertTrue(container.extra['etag'], '0x8CFB877BB56A6FB')
@@ -675,11 +674,11 @@ class AzureBlobsTests(unittest.TestCase):
         object_name = 'foo_test_upload'
         extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='BlockBlob')
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=False,
+                                        ex_blob_type='BlockBlob')
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -697,11 +696,11 @@ class AzureBlobsTests(unittest.TestCase):
         object_name = 'foo_test_upload'
         extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='BlockBlob')
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=False,
+                                        ex_blob_type='BlockBlob')
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -722,11 +721,11 @@ class AzureBlobsTests(unittest.TestCase):
         object_name = 'foo_test_upload'
         extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='PageBlob')
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=False,
+                                        ex_blob_type='PageBlob')
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -747,12 +746,12 @@ class AzureBlobsTests(unittest.TestCase):
         extra = {'meta_data': {'some-value': 'foobar'}}
 
         try:
-            obj = self.driver.upload_object(file_path=file_path,
-                                          container=container,
-                                          object_name=object_name,
-                                          extra=extra,
-                                          verify_hash=False,
-                                          ex_blob_type='PageBlob')
+            self.driver.upload_object(file_path=file_path,
+                                      container=container,
+                                      object_name=object_name,
+                                      extra=extra,
+                                      verify_hash=False,
+                                      ex_blob_type='PageBlob')
         except LibcloudError:
             e = sys.exc_info()[1]
             self.assertTrue(str(e).lower().find('not aligned') != -1)
@@ -769,12 +768,12 @@ class AzureBlobsTests(unittest.TestCase):
         object_name = 'foo_test_upload'
         extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='BlockBlob',
-                                      ex_use_lease=True)
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=False,
+                                        ex_blob_type='BlockBlob',
+                                        ex_use_lease=True)
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -794,12 +793,12 @@ class AzureBlobsTests(unittest.TestCase):
         object_name = 'foo_test_upload'
         extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='BlockBlob',
-                                      ex_use_lease=False)
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=False,
+                                        ex_blob_type='BlockBlob',
+                                        ex_use_lease=False)
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -821,12 +820,12 @@ class AzureBlobsTests(unittest.TestCase):
         object_name = 'foo_test_upload'
         extra = {'meta_data': {'some-value': 'foobar'}}
         obj = self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='PageBlob',
-                                      ex_use_lease=True)
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=False,
+                                        ex_blob_type='PageBlob',
+                                        ex_use_lease=True)
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)

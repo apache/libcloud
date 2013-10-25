@@ -47,7 +47,7 @@ class ResponseClassesTests(unittest.TestCase):
 
         try:
             XmlResponse(response=self._mock_response,
-                         connection=self._mock_connection)
+                        connection=self._mock_connection)
         except MalformedResponseError:
             pass
         else:
@@ -96,7 +96,7 @@ class ResponseClassesTests(unittest.TestCase):
 
         self._mock_response.read.return_value = compressed_data
         self._mock_response.getheaders.return_value = \
-                {'Content-Encoding': 'deflate'}
+            {'Content-Encoding': 'deflate'}
 
         response = Response(response=self._mock_response,
                             connection=self._mock_connection)
@@ -105,7 +105,7 @@ class ResponseClassesTests(unittest.TestCase):
         self.assertEqual(body, original_data)
 
         self._mock_response.getheaders.return_value = \
-                {'Content-Encoding': 'zlib'}
+            {'Content-Encoding': 'zlib'}
 
         response = Response(response=self._mock_response,
                             connection=self._mock_connection)
@@ -129,7 +129,7 @@ class ResponseClassesTests(unittest.TestCase):
 
         self._mock_response.read.return_value = compressed_data
         self._mock_response.getheaders.return_value = \
-                {'Content-Encoding': 'gzip'}
+            {'Content-Encoding': 'gzip'}
 
         response = Response(response=self._mock_response,
                             connection=self._mock_connection)
@@ -138,14 +138,13 @@ class ResponseClassesTests(unittest.TestCase):
         self.assertEqual(body, original_data)
 
         self._mock_response.getheaders.return_value = \
-                {'Content-Encoding': 'x-gzip'}
+            {'Content-Encoding': 'x-gzip'}
 
         response = Response(response=self._mock_response,
                             connection=self._mock_connection)
 
         body = response.parse_body()
         self.assertEqual(body, original_data)
-
 
 
 if __name__ == '__main__':

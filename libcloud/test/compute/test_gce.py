@@ -24,16 +24,14 @@ from libcloud.compute.drivers.gce import (GCENodeDriver, API_VERSION,
                                           timestamp_to_datetime,
                                           GCEAddress, GCEHealthCheck,
                                           GCEFirewall, GCEForwardingRule,
-                                          GCENetwork, GCENodeSize, GCEProject,
-                                          GCERegion, GCETargetPool, GCEZone)
+                                          GCENetwork,
+                                          GCEZone)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleInstalledAppAuthConnection,
                                     GoogleBaseConnection,
-                                    ResourceNotFoundError, ResourceExistsError,
-                                    QuotaExceededError)
+                                    ResourceNotFoundError, ResourceExistsError)
 from libcloud.test.common.test_google import GoogleAuthMockHttp
-from libcloud.compute.base import (Node, NodeImage, NodeSize, NodeLocation,
-                                   StorageVolume)
+from libcloud.compute.base import Node, StorageVolume
 
 from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -43,6 +41,7 @@ from libcloud.test.secrets import GCE_PARAMS, GCE_KEYWORD_PARAMS
 
 
 class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
+
     """
     Google Compute Engine Test Class.
     """

@@ -27,7 +27,8 @@ from libcloud.compute.base import Node, NodeImage, NodeSize
 
 from libcloud.test import MockHttp               # pylint: disable-msg=E0611
 from libcloud.test.compute import TestCaseMixin  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import ComputeFileFixtures # pylint: disable-msg=E0611
+from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-msg=E0611
+
 
 class GoGridTests(unittest.TestCase, TestCaseMixin):
 
@@ -90,9 +91,10 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
         self.assertEqual(image.id, '1531')
 
-        location = NodeLocation(id='gogrid/GSI-939ef909-84b8-4a2f-ad56-02ccd7da05ff.img',
-                                name='test location', country='Slovenia',
-                                driver=self.driver)
+        location = NodeLocation(
+            id='gogrid/GSI-939ef909-84b8-4a2f-ad56-02ccd7da05ff.img',
+            name='test location', country='Slovenia',
+            driver=self.driver)
         images = self.driver.list_images(location=location)
         image = images[0]
         self.assertEqual(len(images), 4)
@@ -154,7 +156,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_ex_edit_image(self):
         image = self.driver.list_images()[0]
         ret = self.driver.ex_edit_image(image=image, public=False,
-                ex_description="test", name="testname")
+                                        ex_description="test", name="testname")
 
         self.assertTrue(isinstance(ret, NodeImage))
 
@@ -170,14 +172,14 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         ips = self.driver.ex_list_ips()
 
         expected_ips = {"192.168.75.66": GoGridIpAddress(id="5348099",
-            ip="192.168.75.66", public=True, state="Unassigned",
-            subnet="192.168.75.64/255.255.255.240"),
-            "192.168.75.67": GoGridIpAddress(id="5348100",
-                ip="192.168.75.67", public=True, state="Assigned",
-                subnet="192.168.75.64/255.255.255.240"),
-            "192.168.75.68": GoGridIpAddress(id="5348101",
-                ip="192.168.75.68", public=False, state="Unassigned",
-                subnet="192.168.75.64/255.255.255.240")}
+                                                         ip="192.168.75.66", public=True, state="Unassigned",
+                                                         subnet="192.168.75.64/255.255.255.240"),
+                        "192.168.75.67": GoGridIpAddress(id="5348100",
+                                                         ip="192.168.75.67", public=True, state="Assigned",
+                                                         subnet="192.168.75.64/255.255.255.240"),
+                        "192.168.75.68": GoGridIpAddress(id="5348101",
+                                                         ip="192.168.75.68", public=False, state="Unassigned",
+                                                         subnet="192.168.75.64/255.255.255.240")}
 
         self.assertEqual(len(expected_ips), 3)
 
@@ -194,6 +196,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
     def test_get_state_invalid(self):
         state = self.driver._get_state('invalid')
         self.assertEqual(state, NodeState.UNKNOWN)
+
 
 class GoGridMockHttp(MockHttp):
 
@@ -270,7 +273,7 @@ class GoGridMockHttp(MockHttp):
         lookup = parse_qs(urlparse.urlparse(url).query)["lookup"][0]
         if lookup in _valid_lookups:
             fixture_path = "lookup_list_%s.json" % \
-                    (lookup.replace(".", "_"))
+                (lookup.replace(".", "_"))
         else:
             raise NotImplementedError
         body = self.fixtures.load(fixture_path)

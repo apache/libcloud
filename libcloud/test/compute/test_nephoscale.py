@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#Created by Markos Gogoulos (https://mist.io)
+# Created by Markos Gogoulos (https://mist.io)
 #
 
 import sys
@@ -28,6 +28,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class NephoScaleTest(unittest.TestCase, TestCaseMixin):
+
     def setUp(self):
         NephoscaleNodeDriver.connectionCls.conn_classes = (
             NephoscaleMockHttp, NephoscaleMockHttp)

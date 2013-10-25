@@ -14,9 +14,7 @@
 # limitations under the License.
 
 from libcloud.compute.providers import Provider
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation, \
-    NodeSize
-from libcloud.compute.types import NodeState
+from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
 

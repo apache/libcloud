@@ -26,6 +26,7 @@ from libcloud.test.secrets import JOYENT_PARAMS
 
 
 class JoyentTestCase(unittest.TestCase):
+
     def setUp(self):
         JoyentNodeDriver.connectionCls.conn_classes = (None, JoyentHttp)
         self.driver = JoyentNodeDriver(*JOYENT_PARAMS)

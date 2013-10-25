@@ -20,18 +20,15 @@ from __future__ import with_statement
 import datetime
 import time
 import sys
-import os
-import getpass
 
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import ResourceNotFoundError
 
-from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
 from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState, LibcloudError
+from libcloud.compute.types import NodeState
 
 API_VERSION = 'v1beta15'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
@@ -835,8 +832,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return a list of locations (zones).
 
-        The :class:`ex_list_zones` method returns more comprehensive results, but
-        this is here for compatibility.
+        The :class:`ex_list_zones` method returns more comprehensive results,
+        but this is here for compatibility.
 
         :return: List of NodeLocation objects
         :rtype: ``list`` of :class:`NodeLocation`
@@ -866,7 +863,8 @@ class GCENodeDriver(NodeDriver):
         Return a list of nodes in the current zone or all zones.
 
         :keyword  ex_zone:  Optional zone name or 'all'
-        :type     ex_zone:  ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     ex_zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
 
         :return:  List of Node objects
         :rtype:   ``list`` of :class:`Node`
@@ -909,7 +907,8 @@ class GCENodeDriver(NodeDriver):
         Return a list of sizes (machineTypes) in a zone.
 
         :keyword  location: Location or Zone for sizes
-        :type     location: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     location: ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
 
         :return:  List of GCENodeSize objects
         :rtype:   ``list`` of :class:`GCENodeSize`
@@ -969,7 +968,8 @@ class GCENodeDriver(NodeDriver):
         given the value of 'all'.
 
         :keyword  ex_zone: The zone to return volumes from.
-        :type     ex_zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     ex_zone: ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
 
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
@@ -1024,12 +1024,12 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(region, 'name'):
             region = self.ex_get_region(region)
         elif region is None:
-            raise GCEError('REGION_NOT_SPECIFIED',
-                           'Region must be provided for an address')
+            raise ValueError('REGION_NOT_SPECIFIED',
+                             'Region must be provided for an address')
         address_data = {'name': name}
         request = '/regions/%s/addresses' % (region.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=address_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=address_data)
         return self.ex_get_address(name, region=region)
 
     def ex_create_healthcheck(self, name, host=None, path=None, port=None,
@@ -1084,8 +1084,7 @@ class GCENodeDriver(NodeDriver):
 
         request = '/global/httpHealthChecks'
 
-        response = self.connection.async_request(request, method='POST',
-                                                 data=hc_data).object
+        self.connection.async_request(request, method='POST', data=hc_data)
         return self.ex_get_healthcheck(name)
 
     def ex_create_firewall(self, name, allowed, network='default',
@@ -1141,8 +1140,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/global/firewalls'
 
-        response = self.connection.async_request(request, method='POST',
-                                                 data=firewall_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=firewall_data)
         return self.ex_get_firewall(name)
 
     def ex_create_forwarding_rule(self, name, targetpool, region=None,
@@ -1195,8 +1194,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/regions/%s/forwardingRules' % (region.name)
 
-        response = self.connection.async_request(
-            request, method='POST', data=forwarding_rule_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=forwarding_rule_data)
 
         return self.ex_get_forwarding_rule(name)
 
@@ -1219,8 +1218,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/global/networks'
 
-        response = self.connection.async_request(request, method='POST',
-                                                 data=network_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=network_data)
 
         return self.ex_get_network(name)
 
@@ -1229,7 +1228,8 @@ class GCENodeDriver(NodeDriver):
                          persistent_disk=False):
         """
         Returns a request and body to create a new node.  This is a helper
-        method to suppor both :class:`create_node` and :class:`ex_create_multiple_nodes`.
+        method to suppor both :class:`create_node` and
+        :class:`ex_create_multiple_nodes`.
 
         :param  name: The name of the node to create.
         :type   name: ``str``
@@ -1314,7 +1314,8 @@ class GCENodeDriver(NodeDriver):
         :type   image: ``str`` or :class:`NodeImage`
 
         :keyword  location: The location (zone) to create the node in.
-        :type     location: ``str`` or :class:`NodeLocation` or :class:`GCEZone` or ``None``
+        :type     location: ``str`` or :class:`NodeLocation` or
+                            :class:`GCEZone` or ``None``
 
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
@@ -1351,8 +1352,7 @@ class GCENodeDriver(NodeDriver):
                                                    ex_tags, ex_metadata,
                                                    ex_boot_disk,
                                                    ex_persistent_disk)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=node_data).object
+        self.connection.async_request(request, method='POST', data=node_data)
 
         return self.ex_get_node(name, location.name)
 
@@ -1384,7 +1384,8 @@ class GCENodeDriver(NodeDriver):
         :type   number: ``int``
 
         :keyword  location: The location (zone) to create the nodes in.
-        :type     location: ``str`` or :class:`NodeLocation` or :class:`GCEZone` or ``None``
+        :type     location: ``str`` or :class:`NodeLocation` or
+                            :class:`GCEZone` or ``None``
 
         :keyword  ex_network: The network to associate with the nodes.
         :type     ex_network: ``str`` or :class:`GCENetwork`
@@ -1506,8 +1507,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/regions/%s/targetPools' % (region.name)
 
-        response = self.connection.async_request(request, method='POST',
-                                                 data=targetpool_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=targetpool_data)
 
         return self.ex_get_targetpool(name, region)
 
@@ -1524,7 +1525,8 @@ class GCENodeDriver(NodeDriver):
         :type   name: ``str``
 
         :keyword  location: Location (zone) to create the volume in
-        :type     location: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     location: ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
 
         :keyword  image: Image to create disk from.
         :type     image: :class:`NodeImage` or ``str`` or ``None``
@@ -1553,9 +1555,9 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
         request = '/zones/%s/disks' % (location.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=volume_data,
-                                                 params=params).object
+        self.connection.async_request(request, method='POST',
+                                      data=volume_data,
+                                      params=params)
 
         return self.ex_get_volume(name, location)
 
@@ -1587,8 +1589,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/global/httpHealthChecks/%s' % (healthcheck.name)
 
-        response = self.connection.async_request(request, method='PUT',
-                                                 data=hc_data).object
+        self.connection.async_request(request, method='PUT',
+                                      data=hc_data)
 
         return self.ex_get_healthcheck(healthcheck.name)
 
@@ -1618,8 +1620,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/global/firewalls/%s' % (firewall.name)
 
-        response = self.connection.async_request(request, method='PUT',
-                                                 data=firewall_data).object
+        self.connection.async_request(request, method='PUT',
+                                      data=firewall_data)
 
         return self.ex_get_firewall(firewall.name)
 
@@ -1645,8 +1647,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/regions/%s/targetPools/%s/addInstance' % (
             targetpool.region.name, targetpool.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=targetpool_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=targetpool_data)
         targetpool.nodes.append(node)
         return True
 
@@ -1672,8 +1674,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/regions/%s/targetPools/%s/addHealthCheck' % (
             targetpool.region.name, targetpool.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=targetpool_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=targetpool_data)
         targetpool.healthchecks.append(healthcheck)
         return True
 
@@ -1699,8 +1701,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/regions/%s/targetPools/%s/removeInstance' % (
             targetpool.region.name, targetpool.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=targetpool_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=targetpool_data)
         # Remove node object from node list
         index = None
         for i, nd in enumerate(targetpool.nodes):
@@ -1733,8 +1735,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/regions/%s/targetPools/%s/removeHealthCheck' % (
             targetpool.region.name, targetpool.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=targetpool_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=targetpool_data)
         # Remove healthcheck object from healthchecks list
         index = None
         for i, hc in enumerate(targetpool.healthchecks):
@@ -1756,8 +1758,8 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/instances/%s/reset' % (node.extra['zone'].name,
                                                     node.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data='ignored').object
+        self.connection.async_request(request, method='POST',
+                                      data='ignored')
         return True
 
     def ex_set_node_tags(self, node, tags):
@@ -1782,8 +1784,8 @@ class GCENodeDriver(NodeDriver):
         tags_data['items'] = tags
         tags_data['fingerprint'] = node.extra['tags_fingerprint']
 
-        response = self.connection.async_request(request, method='POST',
-                                                 data=tags_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=tags_data)
         new_node = self.ex_get_node(node.name, node.extra['zone'])
         node.extra['tags'] = new_node.extra['tags']
         node.extra['tags_fingerprint'] = new_node.extra['tags_fingerprint']
@@ -1807,7 +1809,8 @@ class GCENodeDriver(NodeDriver):
         :type   script: ``str``
 
         :keyword  location: The location (zone) to create the node in.
-        :type     location: ``str`` or :class:`NodeLocation` or :class:`GCEZone` or ``None``
+        :type     location: ``str`` or :class:`NodeLocation` or
+                            :class:`GCEZone` or ``None``
 
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
@@ -1872,8 +1875,8 @@ class GCENodeDriver(NodeDriver):
 
         request = '/zones/%s/instances/%s/attachDisk' % (
             node.extra['zone'].name, node.name)
-        response = self.connection.async_request(request, method='POST',
-                                                 data=volume_data).object
+        self.connection.async_request(request, method='POST',
+                                      data=volume_data)
         return True
 
     def detach_volume(self, volume, ex_node=None):
@@ -1894,8 +1897,8 @@ class GCENodeDriver(NodeDriver):
         request = '/zones/%s/instances/%s/detachDisk?deviceName=%s' % (
             ex_node.extra['zone'].name, ex_node.name, volume.name)
 
-        response = self.connection.async_request(request, method='POST',
-                                                 data='ignored').object
+        self.connection.async_request(request, method='POST',
+                                      data='ignored')
         return True
 
     def ex_destroy_address(self, address):
@@ -1911,8 +1914,7 @@ class GCENodeDriver(NodeDriver):
         request = '/regions/%s/addresses/%s' % (address.region.name,
                                                 address.name)
 
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def ex_destroy_healthcheck(self, healthcheck):
@@ -1926,8 +1928,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``bool``
         """
         request = '/global/httpHealthChecks/%s' % (healthcheck.name)
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def ex_destroy_firewall(self, firewall):
@@ -1941,8 +1942,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``bool``
         """
         request = '/global/firewalls/%s' % (firewall.name)
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def ex_destroy_forwarding_rule(self, forwarding_rule):
@@ -1957,8 +1957,7 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/regions/%s/forwardingRules/%s' % (
             forwarding_rule.region.name, forwarding_rule.name)
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def ex_destroy_network(self, network):
@@ -1972,8 +1971,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``bool``
         """
         request = '/global/networks/%s' % (network.name)
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def destroy_node(self, node):
@@ -1988,8 +1986,7 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                               node.name)
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def ex_destroy_multiple_nodes(self, nodelist, ignore_errors=True,
@@ -2023,7 +2020,7 @@ class GCENodeDriver(NodeDriver):
                 response = self.connection.request(request,
                                                    method='DELETE').object
             except:
-                e = self._catch_error(ignore_errors=ignore_errors)
+                self._catch_error(ignore_errors=ignore_errors)
                 response = None
             responses.append(response)
 
@@ -2040,7 +2037,7 @@ class GCENodeDriver(NodeDriver):
                     response = self.connection.request(
                         operation['selfLink']).object
                 except:
-                    e = self._catch_error(ignore_errors=ignore_errors)
+                    self._catch_error(ignore_errors=ignore_errors)
                     no_errors = False
                 if response['status'] == 'DONE':
                     responses[i] = None
@@ -2063,8 +2060,7 @@ class GCENodeDriver(NodeDriver):
         request = '/regions/%s/targetPools/%s' % (targetpool.region.name,
                                                   targetpool.name)
 
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def destroy_volume(self, volume):
@@ -2079,8 +2075,8 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
                                           volume.name)
-        response = self.connection.async_request(request,
-                                                 method='DELETE').object
+        self.connection.async_request(request,
+                                      method='DELETE')
         return True
 
     def ex_get_address(self, name, region=None):
@@ -2198,7 +2194,8 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  zone: The zone to search for the node in.  If set to 'all',
                         search all zones for the instance.
-        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     zone: ``str`` or :class:`GCEZone` or
+                        :class:`NodeLocation` or ``None``
 
         :return:  A Node object for the node
         :rtype:   :class:`Node`
@@ -2227,7 +2224,8 @@ class GCENodeDriver(NodeDriver):
         :type   name: ``str``
 
         :keyword  zone: The zone to search for the machine type in
-        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     zone: ``str`` or :class:`GCEZone` or
+                        :class:`NodeLocation` or ``None``
 
         :return:  A GCENodeSize object for the machine type
         :rtype:   :class:`GCENodeSize`
@@ -2248,7 +2246,8 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  zone: The zone to search for the volume in (set to 'all' to
                         search all zones)
-        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation` or ``None``
+        :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation`
+                        or ``None``
 
         :return:  A StorageVolume object for the volume
         :rtype:   :class:`StorageVolume`

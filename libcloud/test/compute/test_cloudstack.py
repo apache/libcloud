@@ -20,17 +20,14 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qsl
 
-from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
-
 try:
     import simplejson as json
 except ImportError:
     import json
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
-from libcloud.compute.types import DeploymentError, LibcloudError, Provider
+from libcloud.compute.types import LibcloudError, Provider
 from libcloud.compute.providers import get_driver
-from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 
 from libcloud.test import unittest
 from libcloud.test import MockHttpTestCase
@@ -39,6 +36,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
+
     def setUp(self):
         CloudStackNodeDriver.connectionCls.conn_classes = \
             (None, CloudStackMockHttp)
@@ -68,9 +66,9 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         image = self.driver.list_images()[0]
         CloudStackMockHttp.fixture_tag = 'deployfail'
         try:
-            node = self.driver.create_node(name='node-name',
-                                           image=image,
-                                           size=size)
+            self.driver.create_node(name='node-name',
+                                    image=image,
+                                    size=size)
         except:
             return
         self.assertTrue(False)
@@ -80,9 +78,9 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         image = self.driver.list_images()[0]
         CloudStackMockHttp.fixture_tag = 'deployfail2'
         try:
-            node = self.driver.create_node(name='node-name',
-                                           image=image,
-                                           size=size)
+            self.driver.create_node(name='node-name',
+                                    image=image,
+                                    size=size)
         except:
             return
         self.assertTrue(False)
