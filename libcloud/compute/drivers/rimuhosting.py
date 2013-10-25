@@ -24,7 +24,7 @@ from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeImage, NodeAuthPassword
+from libcloud.compute.base import NodeImage
 
 API_CONTEXT = '/r'
 API_HOST = 'rimuhosting.com'

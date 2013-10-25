@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Skip flake8 for this file as it raises many warnings about unused imports.
+# flake8: noqa
+
 # Libcloud Python 2.x and 3.x compatibility layer
 # Some methods bellow are taken from Django PYK3 port which is licensed under 3
 # clause BSD license

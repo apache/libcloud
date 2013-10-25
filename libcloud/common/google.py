@@ -65,7 +65,6 @@ except ImportError:
     import json
 
 import base64
-import calendar
 import errno
 import time
 import datetime
@@ -76,9 +75,7 @@ import sys
 from libcloud.utils.py3 import httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
-from libcloud.common.types import (InvalidCredsError,
-                                   MalformedResponseError,
-                                   ProviderError,
+from libcloud.common.types import (ProviderError,
                                    LibcloudError)
 
 try:

@@ -220,7 +220,7 @@ class OpenNebulaNetwork(object):
     You don't normally create a network object yourself; instead you use
     a driver and then have that create the network for you.
 
-    >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+    >>> from libcloud.compute.drivers.dummy import DummyNetworkDriver
     >>> driver = DummyNetworkDriver()
     >>> network = driver.create_network()
     >>> network = driver.list_networks()[0]

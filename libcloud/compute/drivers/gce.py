@@ -20,18 +20,15 @@ from __future__ import with_statement
 import datetime
 import time
 import sys
-import os
-import getpass
 
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import ResourceNotFoundError
 
-from libcloud.common.types import MalformedResponseError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
 from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState, LibcloudError
+from libcloud.compute.types import NodeState
 
 API_VERSION = 'v1beta15'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180

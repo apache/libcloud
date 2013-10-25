@@ -17,11 +17,6 @@ import time
 import hashlib
 import hmac
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 
