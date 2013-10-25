@@ -115,6 +115,7 @@ class Provider(object):
     ABIQUO = 'abiquo'
     DIGITAL_OCEAN = 'digitalocean'
     NEPHOSCALE = 'nephoscale'
+    CLOUDFRAMES = 'cloudframes'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'

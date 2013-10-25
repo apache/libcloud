@@ -4,6 +4,7 @@ Provider                              list volumes create volume destroy volume 
 `Abiquo`_                             no           no            no             no            no            no             no             
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
+`CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma`_                         no           no            no             no            no            no             no             
 `CloudSigma`_                         no           no            no             no            no            no             no             
 `CloudStack`_                         no           yes           yes            yes           yes           yes            no             
@@ -62,6 +63,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Abiquo`: http://www.abiquo.com/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
+.. _`CloudFrames`: http://www.cloudframes.net/
 .. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
