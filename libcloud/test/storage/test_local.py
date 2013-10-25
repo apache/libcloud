@@ -42,6 +42,7 @@ try:
 except ImportError:
     print('lockfile library is not available, skipping local_storage tests...')
     LocalStorageDriver = None
+    LockTimeout = None
 
 from libcloud.storage.drivers.dummy import DummyIterator
 
