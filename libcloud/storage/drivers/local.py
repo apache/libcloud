@@ -25,7 +25,7 @@ import shutil
 import sys
 
 try:
-    from lockfile import mkdirlockfile
+    from lockfile import LockTimeout, mkdirlockfile
 except ImportError:
     raise ImportError('Missing lockfile dependency, you can install it ' \
                       'using pip: pip install lockfile')
@@ -57,7 +57,7 @@ class LockLocalStorage(object):
     def __enter__(self):
         try:
             self.lock.acquire(timeout=0.1)
-        except lockfile.LockTimeout:
+        except LockTimeout:
             raise LibcloudError('Lock timeout')
 
     def __exit__(self, type, value, traceback):
