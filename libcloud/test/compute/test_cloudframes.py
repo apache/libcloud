@@ -23,7 +23,6 @@ from libcloud.compute.base import Node, NodeImage, NodeLocation
 from libcloud.compute.types import NodeState
 from libcloud.compute.drivers.cloudframes import CloudFramesNodeDriver
 from libcloud.compute.drivers.cloudframes import CloudFramesSnapshot
-from libcloud.compute.drivers.cloudframes import CloudFramesException
 
 from libcloud.utils.py3 import httplib, xmlrpclib, b
 from libcloud.test import MockHttpTestCase
