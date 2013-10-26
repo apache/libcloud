@@ -11,14 +11,34 @@ This page explains how you can contribute to the Libcloud project. If you get
 stuck at any point during this process, stop by on our IRC channel (#libcloud
 on freenode) and we will do our best to assist you.
 
-Style Guide
+Style guide
 -----------
 
 * We follow `PEP8 Python Style Guide`_
 * Use 4 spaces for a tab
+* Use 79 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
 * You can verify that your modifications don't break any rules by running the
-  ``pep8 script - e.g. pep8 libcloud/edited_file.py.``
+  ``flake8 script - e.g. flake8 libcloud/edited_file.py.`` or ``tox -e lint``.
+  Second command fill run flake8 on all the files in the repository.
+
+Git pre-commit hook
+-------------------
+
+To make complying with our style guide easier, we provide a git pre-commit hook
+which automatically checks modified Python files for violations of our style
+guide.
+
+You can install it by running following command in the root of the repository
+checkout:
+
+.. sourcecode:: bash
+
+    ln -s contrib/pre-commit.sh .git/hooks/pre-commit
+
+After you have installed this hook it will automatically check modified Python
+files for violations before a commit. If a violation is found, commit will be
+aborted.
 
 General guidelines
 ------------------
