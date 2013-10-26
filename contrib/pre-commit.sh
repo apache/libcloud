@@ -23,7 +23,6 @@ for file in "${array[@]}"
 do
     if [[ ${file} =~ "libcloud/test/" ]]; then
         flake8 --max-line-length=160 ${file}
-        continue
     else
         flake8 ${file}
     fi
