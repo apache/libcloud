@@ -19,7 +19,8 @@ Style guide
 * Use 79 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
 * You can verify that your modifications don't break any rules by running the
-  ``flake8 script - e.g. flake8 libcloud/edited_file.py.`` or ``tox -e lint``.
+  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py.`` or
+  ``tox -e lint``.
   Second command fill run flake8 on all the files in the repository.
 
 Git pre-commit hook
@@ -90,6 +91,51 @@ Github read-only mirror is used only for pull requests and code review. Once a
 pull request has been reviewed, all the comments have been addresses and it's
 ready to be merged, user who submitted the pull request must close the pull
 request, create a patch and attach it to the original JIRA ticket.
+
+Syncing your git(hub) repository with an official upstream git repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This section describes how to synchronize your git clone / Github fork with
+an official upstream repository.
+
+It's important that your repository is in-sync with the upstream one when you
+start working on a new branch and before you generate a final patch. If the
+repository is not in-sync, generated patch will be out of sync and we won't be
+able to cleanly merge it into trunk.
+
+To synchronize it, follow the steps bellow in your git clone:
+
+1. Add upstream remote if you haven't added it yet
+
+.. sourcecode:: bash
+
+    git remote add upstream https://git-wip-us.apache.org/repos/asf/libcloud.git
+
+2. Synchronize your ``trunk`` branch with an upstream one
+
+.. sourcecode:: bash
+
+    git checkout trunk
+    git pull upstream trunk
+
+3. Create a branch for your changes and start working on it
+
+.. sourcecode:: bash
+
+    git checkout -b my_new_branch
+
+4. Before generating a final patch which is to be attached to the JIRA ticket,
+   make sure your repository and branch is still in-sync
+
+.. sourcecode:: bash
+
+    git pull upstream trunk
+
+5. Generate a patch which can be attached to the JIRA ticket
+
+.. sourcecode:: bash
+
+    git format-patch --stdout remotes/upstream/trunk > patch_name.patch
 
 Contributing Bigger Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
