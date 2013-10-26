@@ -155,8 +155,9 @@ Supporting Multiple Python Versions
 
 Libcloud supports a variety of Python versions so your code also needs to work
 with all the supported versions. This means that in some cases you will need to
-include extra code to make sure it works in all the supported versions. Some
-examples are included bellow.
+include extra code to make sure it works in all the supported versions.
+
+Some examples which show how to handle those cases are described bellow.
 
 Context Managers
 ~~~~~~~~~~~~~~~~
@@ -182,13 +183,18 @@ For example:
         e = sys.exc_info()[1]
         print e
 
-Python 3
-~~~~~~~~
+Utility functions for cross-version compatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can find a lot of utility functions which make code easier to work with
-2.x and 3.x in ``libcloud.utils.py3`` module.
+Python 2.x and 3.x in ``libcloud.utils.py3`` module.
+
+You can find some more information on changes which are involved in making the
+code work with multiple versions on the following link -
+`Lessons learned while porting Libcloud to Python 3`_
 
 .. _`PEP8 Python Style Guide`: http://www.python.org/dev/peps/pep-0008/
 .. _`Issue tracker`: https://issues.apache.org/jira/browse/LIBCLOUD
 .. _`Github git repository`: https://github.com/apache/libcloud
 .. _`Apache website`: https://www.apache.org/licenses/#clas
+.. _`Lessons learned while porting Libcloud to Python 3`: http://www.tomaz.me/2011/12/03/lessons-learned-while-porting-libcloud-to-python-3.html
