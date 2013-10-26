@@ -94,7 +94,7 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.destroy() == 0
 
-    def ex_start(self, node):
+    def ex_start(self, name):
         """
         Start a stopped node.
 
@@ -103,7 +103,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        domain = self._get_domain_for_node(node=node)
+        domain = self._get_domain_for_node_by_name(name=name)
         return domain.create() == 0
 
     def ex_shutdown(self, node):
@@ -144,4 +144,8 @@ class LibvirtNodeDriver(NodeDriver):
 
     def _get_domain_for_node(self, node):
         domain = self.connection.lookupByID(int(node.id))
+        return domain
+        
+    def _get_domain_for_node_by_name(self, name):
+        domain = self.connection.lookupByName(name)
         return domain
