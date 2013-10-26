@@ -15,6 +15,44 @@ single class plus ``region`` argument model.
 More information on how this affects existing drivers and your code can be
 found bellow.
 
+New default kernel versions used when creating Linode servers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Kernel versions which are used by default when creating Linode servers have been
+updated.
+
+Old default kernel versions:
+
+* x86 (no paravirt-ops) - ``2.6.18.8-x86_64-linode1`` (#60)
+* x86 (paravirt-ops) - ``2.6.18.8-x86_64-linode1`` (#110)
+* x86_64 (no paravirt-ops) - ``2.6.39.1-linode34`` (#107)
+* x86 (paravirt-ops)64 - ``2.6.18.8-x86_64-linode1`` (#111)
+
+New default kernel versions:
+
+* x86 - ``3.9.3-x86-linode52`` (#137)
+* x86_64 - ``3.9.3-x86_64-linode33`` (#138)
+
+Those new kernel versions now come with paravirt-ops by default.
+
+If you want to preserve the old behavior, you can pass ``ex_kernel`` argument to
+the ``create_node`` method.
+
+Keep in mind that using old kernels is strongly discouraged since they contain
+known security holes.
+
+For example:
+
+.. sourcecode:: python
+
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
+
+    cls = get_driver(Provider.LINODE)
+
+    driver = cls('username', 'api_key')
+    driver.create_node(..., ex_kernel=110)
+
 Addition of new "STOPPED" node state
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

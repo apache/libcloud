@@ -22,6 +22,22 @@ Changes with Apache Libcloud in development
     provider. (LIBCLOUD-358)
     [Bernard Kerckenaere]
 
+  - Update default kernel versions which are used when creating a Linode
+    server.
+
+    Old default kernel versions:
+
+    - x86 - 2.6.18.8-x86_64-linode1
+    - x86_64 - 2.6.39.1-linode34
+
+    New default kernel versions:
+
+    - x86 - 3.9.3-x86-linode52
+    - x86_64 - 3.9.3-x86_64-linode33
+
+    (LIBCLOUD-424)
+    [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta2
 
  *) Compute
