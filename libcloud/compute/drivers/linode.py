@@ -270,9 +270,9 @@ class LinodeNodeDriver(NodeDriver):
             kernel = kwargs["ex_kernel"]
         else:
             if image.extra['64bit']:
-                kernel = 111 if image.extra['pvops'] else 107
+                kernel = 138
             else:
-                kernel = 110 if image.extra['pvops'] else 60
+                kernel = 137
         params = {"api_action": "avail.kernels"}
         kernels = self.connection.request(API_ROOT, params=params).objects[0]
         if kernel not in [z["KERNELID"] for z in kernels]:
