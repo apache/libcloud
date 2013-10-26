@@ -36,7 +36,7 @@ Changes with Apache Libcloud in development
     - x86_64 - 3.9.3-x86_64-linode33
 
     (LIBCLOUD-424)
-    [Tomaz Muraus]
+    [Tomaz Muraus, Jon Chen]
 
 Changes with Apache Libcloud 0.14.0-beta2
 
