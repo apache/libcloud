@@ -49,10 +49,10 @@ class LibvirtNodeDriver(NodeDriver):
 
     def __init__(self, uri):
         """
-        :param  uri: URI (required)
-        :type   uri: ``str``
+        @param  uri: URI (required)
+        @type   uri: C{str}
 
-        :rtype: ``None``
+        @rtype: C{None}
         """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
@@ -94,26 +94,26 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.destroy() == 0
 
-    def ex_start(self, node):
+    def ex_start(self, domain):
         """
         Start a stopped node.
 
-        :param  node: Node which should be used
-        :type   node: :class:`Node`
+        @param  node: Node which should be used
+        @type   node: L{Node}
 
-        :rtype: ``bool``
+        @rtype: C{bool}
         """
-        domain = self._get_domain_for_node(node=node)
+        domain = self._get_domain_for_name(domain=domain)
         return domain.create() == 0
 
     def ex_shutdown(self, node):
         """
         Shutdown a running node.
 
-        :param  node: Node which should be used
-        :type   node: :class:`Node`
+        @param  node: Node which should be used
+        @type   node: L{Node}
 
-        :rtype: ``bool``
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.shutdown() == 0
@@ -122,10 +122,10 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Suspend a running node.
 
-        :param  node: Node which should be used
-        :type   node: :class:`Node`
+        @param  node: Node which should be used
+        @type   node: L{Node}
 
-        :rtype: ``bool``
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.suspend() == 0
@@ -134,14 +134,18 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Resume a suspended node.
 
-        :param  node: Node which should be used
-        :type   node: :class:`Node`
+        @param  node: Node which should be used
+        @type   node: L{Node}
 
-        :rtype: ``bool``
+        @rtype: C{bool}
         """
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0
 
     def _get_domain_for_node(self, node):
         domain = self.connection.lookupByID(int(node.id))
+        return domain
+        
+    def _get_domain_for_name(self, domain):
+        domain = self.connection.lookupByName(domain)
         return domain
