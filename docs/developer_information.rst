@@ -40,8 +40,14 @@ report, please see the :doc:`Testing page </testing>`.
 Continuous Integration
 ----------------------
 
-For continuous integration we use buildbot. You can find all the build reports
-`here <https://ci.apache.org/waterfall?builder=libcloud-trunk-tox&builder=libcloud-site-staging>`_.
+For continuous integration we use Apache buildbot instance and Travis-CI. You
+can find build reports on the following two links:
+
+* https://ci.apache.org/waterfall?builder=libcloud-trunk-tox&builder=libcloud-site-staging
+* https://travis-ci.org/apache/libcloud
+
+Travis-CI builder is also integrated with Github which means that if you open a
+pull request there, Travis-CI will automatically build it.
 
 Test Coverage
 -------------
