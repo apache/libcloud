@@ -1,7 +1,7 @@
 {
-   "ERRORARRAY":[],
-   "ACTION":"domain.resource.update",
-   "DATA":{
-      "ResourceID":28537
-   }
+  "ERRORARRAY": [],
+  "DATA": {
+    "ResourceID": 3585100
+  },
+  "ACTION": "domain.resource.update"
 }

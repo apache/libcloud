@@ -1,30 +1,30 @@
 {
-   "ERRORARRAY":[],
-   "ACTION":"domain.resource.list",
-   "DATA":[
-      {
-         "PROTOCOL":"",
-         "TTL_SEC":0,
-         "PRIORITY":0,
-         "TYPE":"A",
-         "TARGET":"75.127.96.245",
-         "WEIGHT":0,
-         "RESOURCEID":28536,
-         "PORT":0,
-         "DOMAINID":5093,
-         "NAME":"www"
-      },
-      {
-         "PROTOCOL":"",
-         "TTL_SEC":0,
-         "PRIORITY":0,
-         "TYPE":"A",
-         "TARGET":"75.127.96.245",
-         "WEIGHT":0,
-         "RESOURCEID":28537,
-         "PORT":0,
-         "DOMAINID":5093,
-         "NAME":"mail"
-      }
-   ]
+  "ERRORARRAY": [],
+  "DATA": [
+    {
+      "DOMAINID": 5093,
+      "PORT": 80,
+      "RESOURCEID": 3585100,
+      "NAME": "mc",
+      "WEIGHT": 5,
+      "TTL_SEC": 0,
+      "TARGET": "127.0.0.1",
+      "PRIORITY": 10,
+      "PROTOCOL": "",
+      "TYPE": "a"
+    },
+    {
+      "DOMAINID": 5093,
+      "PORT": 25565,
+      "RESOURCEID": 3585141,
+      "NAME": "_minecraft._udp",
+      "WEIGHT": 5,
+      "TTL_SEC": 0,
+      "TARGET": "mc.linode.com",
+      "PRIORITY": 10,
+      "PROTOCOL": "udp",
+      "TYPE": "srv"
+    }
+  ],
+  "ACTION": "domain.resource.list"
 }
