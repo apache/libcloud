@@ -1,7 +1,7 @@
 {
-   "ERRORARRAY":[],
-   "ACTION":"domain.delete",
-   "DATA":{
-      "ResourceID":5123
-   }
+  "ERRORARRAY": [],
+  "DATA": {
+    "ResourceID": 3585141
+  },
+  "ACTION": "domain.resource.delete"
 }
