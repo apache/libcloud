@@ -96,6 +96,7 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if on_rtd:
     html_theme = 'default'
+    RTD_NEW_THEME = True
 else:
     html_theme = 'nature'
 
