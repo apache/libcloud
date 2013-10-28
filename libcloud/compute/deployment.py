@@ -23,6 +23,10 @@ import os
 import binascii
 
 from libcloud.utils.py3 import basestring, PY3
+from libcloud.utils.publickey import pycrypto_available
+from libcloud.utils.publickey import get_pubkey_object
+
+WEAK_RSA_KEY_LENGTH = 1024
 
 
 class Deployment(object):
@@ -62,14 +66,14 @@ class SSHKeyDeployment(Deployment):
     Installs a public SSH Key onto a server.
     """
 
-    def __init__(self, key):
+    def __init__(self, key, allow_weak_keys=False):
         """
         :type key: ``str`` or :class:`File` object
         :keyword key: Contents of the public key write or a file object which
                       can be read.
         """
-        self.key = self._get_string_value(argument_name='key',
-                                          argument_value=key)
+        key = self._get_string_value(argument_name='key', argument_value=key)
+        self.key = self._validate_key(key=key, allow_weak_keys=allow_weak_keys)
 
     def run(self, node, client):
         """
@@ -79,6 +83,35 @@ class SSHKeyDeployment(Deployment):
         """
         client.put(".ssh/authorized_keys", contents=self.key, mode='a')
         return node
+
+    def _validate_key(self, key, allow_weak_keys=False):
+        """
+        Validate key size and format.
+
+        Note: This function depends on availability of pycrypto library and at
+        the moment only supports RSA keys.
+        """
+        if not pycrypto_available:
+            return True
+
+        try:
+            pubkey = get_pubkey_object(pubkey=key)
+        except ValueError:
+            # Not an RSA key, we can only validate RSA keys for now.
+            return True
+
+        # size returns number of usable bits and the actual size is that + 1
+        key_size = pubkey.size() + 1
+
+        if key_size <= WEAK_RSA_KEY_LENGTH and not allow_weak_keys:
+            msg = ('RSA keys which are smaller or equal to %s bits are '
+                   'considered weak so you are discouraged from using them. '
+                   'If you know what you are doing and want to use a weak '
+                   'key, pass allow_weak_keys=True argument to the '
+                   'constructor' % (WEAK_RSA_KEY_LENGTH))
+            raise ValueError(msg)
+
+        return key
 
 
 class FileDeployment(Deployment):
