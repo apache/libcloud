@@ -60,6 +60,15 @@ Committer Guide
 
     committer_guide
 
+Other
+-----
+
+.. toctree::
+    :glob:
+    :maxdepth: 3
+
+   security
+
 .. note::
 
     Unless noted otherwise, all of the examples and code snippters in the
