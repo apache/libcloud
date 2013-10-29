@@ -67,7 +67,7 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, '127.0.0.1')
         self.assertHasKeys(arecord.extra, ['protocol', 'ttl_sec', 'port',
-                                          'weight'])
+                                           'weight'])
 
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
