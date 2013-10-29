@@ -38,6 +38,13 @@ Changes with Apache Libcloud in development
     (LIBCLOUD-424)
     [Tomaz Muraus, Jon Chen]
 
+  *) DNS
+
+    - Update issue with inexistent zone / record handling in the get_zone and
+      get_record method in the Linode driver. Those issues were related to
+      changes in the Linode API. (LIBCLOUD-425)
+      [Jon Chen]
+
 Changes with Apache Libcloud 0.14.0-beta2
 
  *) Compute
