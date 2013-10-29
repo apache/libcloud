@@ -1,5 +1,10 @@
 {
-   "ERRORARRAY":[],
-   "ACTION":"domain.resource.list",
-   "DATA":[]
+  "ERRORARRAY": [
+    {
+      "ERRORCODE": 5,
+      "ERRORMESSAGE": "Object not found"
+    }
+  ],
+  "DATA": {},
+  "ACTION": "domain.resource.list"
 }

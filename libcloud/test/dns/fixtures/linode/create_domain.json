@@ -1,7 +1,7 @@
 {
-   "ERRORARRAY":[],
-   "ACTION":"domain.create",
-   "DATA":{
-      "DomainID":5123
-   }
+  "ERRORARRAY": [],
+  "ACTION": "domain.create",
+  "DATA": {
+    "DomainID": 5094
+  }
 }

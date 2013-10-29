@@ -1,1 +1,22 @@
-[{"ACTION": "linode.ip.list", "DATA": [{"RDNS_NAME": "li22-54.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.54", "IPADDRESSID": 5384, "LINODEID": 8098}, {"RDNS_NAME": "li22-245.members.linode.com", "ISPUBLIC": 1, "IPADDRESS": "75.127.96.245", "IPADDRESSID": 5575, "LINODEID": 8098}], "ERRORARRAY": []}]
+[
+  {
+    "ERRORARRAY": [],
+    "DATA": [
+      {
+        "IPADDRESSID": 5384,
+        "RDNS_NAME": "li22-54.members.linode.com",
+        "LINODEID": 8098,
+        "ISPUBLIC": 1,
+        "IPADDRESS": "66.228.43.47"
+      },
+      {
+        "IPADDRESSID": 5575,
+        "RDNS_NAME": "li22-245.members.linode.com",
+        "LINODEID": 8098,
+        "ISPUBLIC": 1,
+        "IPADDRESS": "75.127.96.245"
+      }
+    ],
+    "ACTION": "linode.ip.list"
+  }
+]
