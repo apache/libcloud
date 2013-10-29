@@ -66,6 +66,9 @@ Examples
 3. Skipping the endpoint selection using service catalog by providing ``ex_force_base_url`` argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Keep in mind that the base url must also contain tenant id as the last
+component of the URL (``12345`` in the example bellow).
+
 .. literalinclude:: /examples/compute/openstack/force_base_url.py
    :language: python
 
