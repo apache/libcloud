@@ -17,8 +17,6 @@
 Common utilities for OpenStack
 """
 import sys
-import binascii
-import os
 import datetime
 
 from libcloud.utils.py3 import httplib
@@ -584,14 +582,6 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         url = self._ex_force_base_url or self.get_endpoint()
         (self.host, self.port, self.secure, self.request_path) = \
             self._tuple_from_url(url)
-
-    def _add_cache_busting_to_params(self, params):
-        cache_busting_number = binascii.hexlify(os.urandom(8)).decode('ascii')
-
-        if isinstance(params, dict):
-            params['cache-busting'] = cache_busting_number
-        else:
-            params.append(('cache-busting', cache_busting_number))
 
 
 class OpenStackDriverMixin(object):

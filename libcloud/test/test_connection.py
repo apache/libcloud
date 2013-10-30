@@ -88,6 +88,35 @@ class ConnectionClassTestCase(unittest.TestCase):
             call_kwargs = con.connection.request.call_args[1]
             self.assertEqual(call_kwargs['headers']['Content-Length'], '1')
 
+    def test_cache_busting(self):
+        params1 = {'foo1': 'bar1', 'foo2': 'bar2'}
+        params2 = [('foo1', 'bar1'), ('foo2', 'bar2')]
+
+        con = Connection()
+        con.connection = Mock()
+        con.pre_connect_hook = Mock()
+        con.pre_connect_hook.return_value = {}, {}
+        con.cache_busting = False
+
+        con.request(action='/path', params=params1)
+        args, kwargs = con.pre_connect_hook.call_args
+        self.assertFalse('cache-busting' in args[0])
+        self.assertEqual(args[0], params1)
+
+        con.request(action='/path', params=params2)
+        args, kwargs = con.pre_connect_hook.call_args
+        self.assertFalse('cache-busting' in args[0])
+        self.assertEqual(args[0], params2)
+
+        con.cache_busting = True
+
+        con.request(action='/path', params=params1)
+        args, kwargs = con.pre_connect_hook.call_args
+        self.assertTrue('cache-busting' in args[0])
+
+        con.request(action='/path', params=params2)
+        args, kwargs = con.pre_connect_hook.call_args
+        self.assertTrue('cache-busting' in args[0][len(params2)])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

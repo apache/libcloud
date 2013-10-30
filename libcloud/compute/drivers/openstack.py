@@ -145,9 +145,6 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
         if method in ("POST", "PUT"):
             headers = {'Content-Type': self.default_content_type}
 
-        if method == "GET":
-            self._add_cache_busting_to_params(params)
-
         return super(OpenStackComputeConnection, self).request(
             action=action,
             params=params, data=data,

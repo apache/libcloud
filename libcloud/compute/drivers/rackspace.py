@@ -55,6 +55,7 @@ class RackspaceFirstGenConnection(OpenStack_1_0_Connection):
     XML_NAMESPACE = 'http://docs.rackspacecloud.com/servers/api/v1.0'
     auth_url = AUTH_URL
     _auth_version = '2.0'
+    cache_busting = True
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop('region', None)

@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import ssl
 import copy
+import binascii
 import time
 
 from xml.etree import ElementTree as ET
@@ -387,6 +389,7 @@ class Connection(object):
     secure = 1
     driver = None
     action = None
+    cache_busting = False
 
     def __init__(self, secure=True, host=None, port=None, url=None,
                  timeout=None):
@@ -562,6 +565,10 @@ class Connection(object):
         # Extend default parameters
         params = self.add_default_params(params)
 
+        # Add cache busting parameters (if enabled)
+        if self.cache_busting and method == 'GET':
+            params = self._add_cache_busting_to_params(params=params)
+
         # Extend default headers
         headers = self.add_default_headers(headers)
 
@@ -670,6 +677,25 @@ class Connection(object):
         Override in a provider's subclass.
         """
         return data
+
+    def _add_cache_busting_to_params(self, params):
+        """
+        Add cache busting parameter to the query parameters of a GET request.
+
+        Parameters are only added if "cache_busting" class attribute is set to
+        True.
+
+        Note: This should only be used with *naughty* providers which use
+        excessive caching of responses.
+        """
+        cache_busting_value = binascii.hexlify(os.urandom(8)).decode('ascii')
+
+        if isinstance(params, dict):
+            params['cache-busting'] = cache_busting_value
+        else:
+            params.append(('cache-busting', cache_busting_value))
+
+        return params
 
 
 class PollingConnection(Connection):

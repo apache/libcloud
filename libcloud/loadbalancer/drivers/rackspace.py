@@ -249,6 +249,7 @@ class RackspaceConnection(RackspaceConnection, PollingConnection):
     auth_url = AUTH_URL
     poll_interval = 2
     timeout = 80
+    cache_busting = True
 
     def request(self, action, params=None, data='', headers=None,
                 method='GET'):
@@ -259,8 +260,6 @@ class RackspaceConnection(RackspaceConnection, PollingConnection):
 
         if method in ('POST', 'PUT'):
             headers['Content-Type'] = 'application/json'
-        if method == 'GET':
-            self._add_cache_busting_to_params(params)
 
         return super(RackspaceConnection, self).request(
             action=action, params=params,
