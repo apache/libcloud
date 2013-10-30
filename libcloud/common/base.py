@@ -15,6 +15,7 @@
 
 import sys
 import ssl
+import copy
 import time
 
 from xml.etree import ElementTree as ET
@@ -546,9 +547,13 @@ class Connection(object):
         """
         if params is None:
             params = {}
+        else:
+            params = copy.copy(params)
 
         if headers is None:
             headers = {}
+        else:
+            headers = copy.copy(headers)
 
         action = self.morph_action_hook(action)
         self.action = action
