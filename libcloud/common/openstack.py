@@ -133,9 +133,9 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         """
         Authenticate against the keystone api.
 
-        @param force: Forcefully update the token even if it's already cached
+        :param force: Forcefully update the token even if it's already cached
                       and still valid.
-        @type force: C{bool}
+        :type force: ``bool``
         """
         if not force and self.auth_version in AUTH_VERSIONS_WITH_EXPIRES \
            and self._is_token_valid():
@@ -154,22 +154,22 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             raise LibcloudError('Unsupported Auth Version requested')
 
     def authenticate_1_0(self):
-        resp = self.request("/v1.0",
-                    headers={
-                        'X-Auth-User': self.user_id,
-                        'X-Auth-Key': self.key,
-                    },
-                    method='GET')
+        headers = {
+            'X-Auth-User': self.user_id,
+            'X-Auth-Key': self.key,
+        }
+
+        resp = self.request('/v1.0', headers=headers, method='GET')
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status != httplib.NO_CONTENT:
-            raise MalformedResponseError('Malformed response',
-                    body='code: %s body:%s headers:%s' % (resp.status,
-                                                          resp.body,
-                                                          resp.headers),
-                    driver=self.driver)
+            body = 'code: %s body:%s headers:%s' % (resp.status,
+                                                    resp.body,
+                                                    resp.headers)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
         else:
             headers = resp.headers
             # emulate the auth 1.1 URL list
@@ -192,18 +192,16 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id,
                                               'key': self.key}})
-        resp = self.request("/v1.1/auth",
-                    data=reqbody,
-                    headers={},
-                    method='POST')
+        resp = self.request('/v1.1/auth', data=reqbody, headers={},
+                            method='POST')
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
         elif resp.status != httplib.OK:
-            raise MalformedResponseError('Malformed response',
-                    body='code: %s body:%s' % (resp.status, resp.body),
-                    driver=self.driver)
+            body = 'code: %s body:%s' % (resp.status, resp.body)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
         else:
             try:
                 body = json.loads(resp.body)
@@ -240,8 +238,8 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         # Password based authentication is the only 'core' authentication
         # method in Keystone at this time.
         # 'keystone' - http://s.apache.org/e8h
-        data = {'auth': \
-                {'passwordCredentials': \
+        data = {'auth':
+                {'passwordCredentials':
                  {'username': self.user_id, 'password': self.key}}}
         if self.tenant_name:
             data['auth']['tenantName'] = self.tenant_name
@@ -249,17 +247,16 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
-        resp = self.request('/v2.0/tokens',
-                    data=reqbody,
-                    headers={'Content-Type': 'application/json'},
-                    method='POST')
+        resp = self.request('/v2.0/tokens', data=reqbody,
+                            headers={'Content-Type': 'application/json'},
+                            method='POST')
         if resp.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
         elif resp.status not in [httplib.OK,
                                  httplib.NON_AUTHORITATIVE_INFORMATION]:
-            raise MalformedResponseError('Malformed response',
-                    body='code: %s body: %s' % (resp.status, resp.body),
-                    driver=self.driver)
+            body = 'code: %s body: %s' % (resp.status, resp.body)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
         else:
             try:
                 body = json.loads(resp.body)
@@ -287,7 +284,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         Return True if the current taken is already cached and hasn't expired
         yet.
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         if not self.auth_token:
             return False
@@ -296,7 +293,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return False
 
         expires = self.auth_token_expires - \
-                datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
+            datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
 
         time_tuple_expires = expires.utctimetuple()
         time_tuple_now = datetime.datetime.utcnow().utctimetuple()
@@ -306,6 +303,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return True
 
         return False
+
 
 class OpenStackServiceCatalog(object):
     """
@@ -414,51 +412,51 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     """
     Base class for OpenStack connections.
 
-    @param user_id: User name to use when authenticating
-    @type user_id: C{string}
+    :param user_id: User name to use when authenticating
+    :type user_id: ``str``
 
-    @param key: Secret to use when authenticating.
-    @type key: C{string}
+    :param key: Secret to use when authenticating.
+    :type key: ``str``
 
-    @param secure: Use HTTPS?  (True by default.)
-    @type secure: C{bool}
+    :param secure: Use HTTPS?  (True by default.)
+    :type secure: ``bool``
 
-    @param ex_force_base_url: Base URL for connection requests.  If
+    :param ex_force_base_url: Base URL for connection requests.  If
     not specified, this will be determined by authenticating.
-    @type ex_force_base_url: C{string}
+    :type ex_force_base_url: ``str``
 
-    @param ex_force_auth_url: Base URL for authentication requests.
-    @type ex_force_auth_url: C{string}
+    :param ex_force_auth_url: Base URL for authentication requests.
+    :type ex_force_auth_url: ``str``
 
-    @param ex_force_auth_version: Authentication version to use.  If
+    :param ex_force_auth_version: Authentication version to use.  If
     not specified, defaults to AUTH_API_VERSION.
-    @type ex_force_auth_version: C{string}
+    :type ex_force_auth_version: ``str``
 
-    @param ex_force_auth_token: Authentication token to use for
+    :param ex_force_auth_token: Authentication token to use for
     connection requests.  If specified, the connection will not attempt
     to authenticate, and the value of ex_force_base_url will be used to
     determine the base request URL.  If ex_force_auth_token is passed in,
     ex_force_base_url must also be provided.
-    @type ex_force_auth_token: C{string}
+    :type ex_force_auth_token: ``str``
 
-    @param ex_tenant_name: When authenticating, provide this tenant
+    :param ex_tenant_name: When authenticating, provide this tenant
     name to the identity service.  A scoped token will be returned.
     Some cloud providers require the tenant name to be provided at
     authentication time.  Others will use a default tenant if none
     is provided.
-    @type ex_tenant_name: C{string}
+    :type ex_tenant_name: ``str``
 
-    @param ex_force_service_type: Service type to use when selecting an
+    :param ex_force_service_type: Service type to use when selecting an
     service.  If not specified, a provider specific default will be used.
-    @type ex_force_service_type: C{string}
+    :type ex_force_service_type: ``str``
 
-    @param ex_force_service_name: Service name to use when selecting an
+    :param ex_force_service_name: Service name to use when selecting an
     service.  If not specified, a provider specific default will be used.
-    @type ex_force_service_name: C{string}
+    :type ex_force_service_name: ``str``
 
-    @param ex_force_service_region: Region to use when selecting an
+    :param ex_force_service_region: Region to use when selecting an
     service.  If not specified, a provider specific default will be used.
-    @type ex_force_service_region: C{string}
+    :type ex_force_service_region: ``str``
     """
 
     auth_url = None
@@ -517,7 +515,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         Selects the endpoint to use based on provider specific values,
         or overrides passed in by the user when setting up the driver.
 
-        @returns: url of the relevant endpoint for the driver
+        :returns: url of the relevant endpoint for the driver
         """
         service_type = self.service_type
         service_name = self.service_name
@@ -561,7 +559,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             if self._ex_force_auth_url is not None:
                 aurl = self._ex_force_auth_url
 
-            if aurl == None:
+            if not aurl:
                 raise LibcloudError('OpenStack instance must ' +
                                     'have auth_url set')
 
@@ -578,16 +576,17 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             self.auth_user_info = osa.auth_user_info
 
             # pull out and parse the service catalog
-            self.service_catalog = OpenStackServiceCatalog(osa.urls,
-                    ex_force_auth_version=self._auth_version)
+            osc = OpenStackServiceCatalog(osa.urls, ex_force_auth_version=
+                                          self._auth_version)
+            self.service_catalog = osc
 
         # Set up connection info
         url = self._ex_force_base_url or self.get_endpoint()
         (self.host, self.port, self.secure, self.request_path) = \
-                self._tuple_from_url(url)
+            self._tuple_from_url(url)
 
     def _add_cache_busting_to_params(self, params):
-        cache_busting_number = binascii.hexlify(os.urandom(8))
+        cache_busting_number = binascii.hexlify(os.urandom(8)).decode('ascii')
 
         if isinstance(params, dict):
             params['cache-busting'] = cache_busting_number
@@ -611,7 +610,7 @@ class OpenStackDriverMixin(object):
     def openstack_connection_kwargs(self):
         """
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         rv = {}
         if self._ex_force_base_url:

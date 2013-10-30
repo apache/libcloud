@@ -156,6 +156,7 @@ class GandiTests(unittest.TestCase):
 
 
 class GandiRatingTests(unittest.TestCase):
+
     """Tests where rating model is involved"""
 
     node_name = 'test2'
@@ -190,7 +191,6 @@ class GandiRatingTests(unittest.TestCase):
                                        password=passwd, image=img,
                                        location=loc, size=size)
         self.assertEqual(node.name, self.node_name)
-
 
 
 class GandiMockHttp(BaseGandiMockHttp):
@@ -287,6 +287,7 @@ class GandiMockHttp(BaseGandiMockHttp):
 
 
 class GandiMockRatingHttp(BaseGandiMockHttp):
+
     """Fixtures needed for tests related to rating model"""
 
     fixtures = ComputeFileFixtures('gandi')

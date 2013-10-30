@@ -57,7 +57,7 @@ class TestUtils(unittest.TestCase):
     def test_guess_file_mime_type(self):
         file_path = os.path.abspath(__file__)
         mimetype, encoding = libcloud.utils.files.guess_file_mime_type(
-                file_path=file_path)
+            file_path=file_path)
 
         self.assertTrue(mimetype.find('python') != -1)
 

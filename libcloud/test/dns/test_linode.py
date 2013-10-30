@@ -30,7 +30,7 @@ from libcloud.test.secrets import DNS_PARAMS_LINODE
 class LinodeTests(unittest.TestCase):
     def setUp(self):
         LinodeDNSDriver.connectionCls.conn_classes = (
-                None, LinodeMockHttp)
+            None, LinodeMockHttp)
         LinodeMockHttp.use_param = 'api_action'
         LinodeMockHttp.type = None
         self.driver = LinodeDNSDriver(*DNS_PARAMS_LINODE)
@@ -61,13 +61,13 @@ class LinodeTests(unittest.TestCase):
         records = self.driver.list_records(zone=zone)
         self.assertEqual(len(records), 2)
 
-        record = records[0]
-        self.assertEqual(record.id, '28536')
-        self.assertEqual(record.name, 'www')
-        self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, '75.127.96.245')
-        self.assertHasKeys(record.extra, ['protocol', 'ttl_sec', 'port',
-                                          'weight'])
+        arecord = records[0]
+        self.assertEqual(arecord.id, '3585100')
+        self.assertEqual(arecord.name, 'mc')
+        self.assertEqual(arecord.type, RecordType.A)
+        self.assertEqual(arecord.data, '127.0.0.1')
+        self.assertHasKeys(arecord.extra, ['protocol', 'ttl_sec', 'port',
+                                           'weight'])
 
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
@@ -104,11 +104,11 @@ class LinodeTests(unittest.TestCase):
 
     def test_get_record_success(self):
         LinodeMockHttp.type = 'GET_RECORD'
-        record = self.driver.get_record(zone_id='1234', record_id='28536')
-        self.assertEqual(record.id, '28536')
+        record = self.driver.get_record(zone_id='1234', record_id='3585100')
+        self.assertEqual(record.id, '3585100')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, '75.127.96.245')
+        self.assertEqual(record.data, '127.0.0.1')
         self.assertHasKeys(record.extra, ['protocol', 'ttl_sec', 'port',
                                           'weight'])
 
@@ -116,7 +116,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'GET_RECORD_ZONE_DOES_NOT_EXIST'
 
         try:
-            self.driver.get_record(zone_id='444', record_id='28536')
+            self.driver.get_record(zone_id='444', record_id='3585100')
         except ZoneDoesNotExistError:
             pass
         else:
@@ -126,7 +126,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
 
         try:
-            self.driver.get_record(zone_id='4441', record_id='28536')
+            self.driver.get_record(zone_id='4441', record_id='3585100')
         except RecordDoesNotExistError:
             pass
         else:
@@ -135,7 +135,7 @@ class LinodeTests(unittest.TestCase):
     def test_create_zone_success(self):
         zone = self.driver.create_zone(domain='foo.bar.com', type='master',
                                        ttl=None, extra=None)
-        self.assertEqual(zone.id, '5123')
+        self.assertEqual(zone.id, '5094')
         self.assertEqual(zone.domain, 'foo.bar.com')
 
     def test_create_zone_validaton_error(self):
@@ -173,7 +173,7 @@ class LinodeTests(unittest.TestCase):
         record = self.driver.create_record(name='www', zone=zone,
                                            type=RecordType.A, data='127.0.0.1')
 
-        self.assertEqual(record.id, '28537')
+        self.assertEqual(record.id, '3585100')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
@@ -186,7 +186,7 @@ class LinodeTests(unittest.TestCase):
                                                    type=RecordType.AAAA,
                                                    data='::1')
 
-        self.assertEqual(record.data, '75.127.96.245')
+        self.assertEqual(record.data, '127.0.0.1')
 
         self.assertEqual(updated_record.id, record.id)
         self.assertEqual(updated_record.name, 'www')

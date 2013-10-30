@@ -24,7 +24,7 @@ from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node, NodeLocation
-from libcloud.compute.base import NodeImage, NodeAuthPassword
+from libcloud.compute.base import NodeImage
 
 API_CONTEXT = '/r'
 API_HOST = 'rimuhosting.com'
@@ -116,26 +116,27 @@ class RimuHostingNodeDriver(NodeDriver):
     name = 'RimuHosting'
     website = 'http://rimuhosting.com/'
     connectionCls = RimuHostingConnection
+    features = {'create_node': ['password']}
 
     def __init__(self, key, host=API_HOST, port=443,
                  api_context=API_CONTEXT, secure=True):
         """
-        @param    key: API key (required)
-        @type     key: C{str}
+        :param    key: API key (required)
+        :type     key: ``str``
 
-        @param    host: hostname for connection
-        @type     host: C{str}
+        :param    host: hostname for connection
+        :type     host: ``str``
 
-        @param    port: Override port used for connections.
-        @type     port: C{int}
+        :param    port: Override port used for connections.
+        :type     port: ``int``
 
-        @param    api_context: Optional API context.
-        @type     api_context: C{str}
+        :param    api_context: Optional API context.
+        :type     api_context: ``str``
 
-        @param    secure: Weither to use HTTPS or HTTP.
-        @type     secure: C{bool}
+        :param    secure: Weither to use HTTPS or HTTP.
+        :type     secure: ``bool``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         # Pass in some extra vars so that
         self.key = key
@@ -230,41 +231,41 @@ class RimuHostingNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Creates a RimuHosting instance
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    name: Must be a FQDN. e.g example.com.
-        @type       name: C{str}
+        :keyword    name: Must be a FQDN. e.g example.com.
+        :type       name: ``str``
 
-        @keyword    ex_billing_oid: If not set,
+        :keyword    ex_billing_oid: If not set,
                                     a billing method is automatically picked.
-        @type       ex_billing_oid: C{str}
+        :type       ex_billing_oid: ``str``
 
-        @keyword    ex_host_server_oid: The host server to set the VPS up on.
-        @type       ex_host_server_oid: C{str}
+        :keyword    ex_host_server_oid: The host server to set the VPS up on.
+        :type       ex_host_server_oid: ``str``
 
-        @keyword    ex_vps_order_oid_to_clone: Clone another VPS to use as
+        :keyword    ex_vps_order_oid_to_clone: Clone another VPS to use as
                                                 the image for the new VPS.
-        @type       ex_vps_order_oid_to_clone: C{str}
+        :type       ex_vps_order_oid_to_clone: ``str``
 
-        @keyword    ex_num_ips: Number of IPs to allocate. Defaults to 1.
-        @type       ex_num_ips: C{int}
+        :keyword    ex_num_ips: Number of IPs to allocate. Defaults to 1.
+        :type       ex_num_ips: ``int``
 
-        @keyword    ex_extra_ip_reason: Reason for needing the extra IPs.
-        @type       ex_extra_ip_reason: C{str}
+        :keyword    ex_extra_ip_reason: Reason for needing the extra IPs.
+        :type       ex_extra_ip_reason: ``str``
 
-        @keyword    ex_memory_mb: Memory to allocate to the VPS.
-        @type       ex_memory_mb: C{int}
+        :keyword    ex_memory_mb: Memory to allocate to the VPS.
+        :type       ex_memory_mb: ``int``
 
-        @keyword    ex_disk_space_mb: Diskspace to allocate to the VPS.
+        :keyword    ex_disk_space_mb: Diskspace to allocate to the VPS.
             Defaults to 4096 (4GB).
-        @type       ex_disk_space_mb: C{int}
+        :type       ex_disk_space_mb: ``int``
 
-        @keyword    ex_disk_space_2_mb: Secondary disk size allocation.
+        :keyword    ex_disk_space_2_mb: Secondary disk size allocation.
                                         Disabled by default.
-        @type       ex_disk_space_2_mb: C{int}
+        :type       ex_disk_space_2_mb: ``int``
 
-        @keyword    ex_control_panel: Control panel to install on the VPS.
-        @type       ex_control_panel: C{str}
+        :keyword    ex_control_panel: Control panel to install on the VPS.
+        :type       ex_control_panel: ``str``
         """
         # Note we don't do much error checking in this because we
         # expect the API to error out if there is a problem.
@@ -283,11 +284,8 @@ class RimuHostingNodeDriver(NodeDriver):
             data['instantiation_options']['control_panel'] = \
                 kwargs['ex_control_panel']
 
-        if 'auth' in kwargs:
-            auth = kwargs['auth']
-            if not isinstance(auth, NodeAuthPassword):
-                raise ValueError('auth must be of NodeAuthPassword type')
-            data['instantiation_options']['password'] = auth.password
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+        data['instantiation_options']['password'] = auth.password
 
         if 'ex_billing_oid' in kwargs:
             #TODO check for valid oid.
@@ -345,5 +343,3 @@ class RimuHostingNodeDriver(NodeDriver):
             NodeLocation('DCLONDON', "RimuHosting London", 'GB', self),
             NodeLocation('DCSYDNEY', "RimuHosting Sydney", 'AU', self),
         ]
-
-    features = {"create_node": ["password"]}

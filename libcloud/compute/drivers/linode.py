@@ -74,14 +74,15 @@ class LinodeNodeDriver(NodeDriver):
     website = 'http://www.linode.com/'
     connectionCls = LinodeConnection
     _linode_plan_ids = LINODE_PLAN_IDS
+    features = {'create_node': ['ssh_key', 'password']}
 
     def __init__(self, key):
         """Instantiate the driver with the given API key
 
-        @param   key: the API key to use (required)
-        @type    key: C{str}
+        :param   key: the API key to use (required)
+        :type    key: ``str``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         self.datacenter = None
         NodeDriver.__init__(self, key)
@@ -106,8 +107,8 @@ class LinodeNodeDriver(NodeDriver):
         If a node is in this list, rebooting will work; however, creation and
         destruction are a separate grant.
 
-        @return: List of node objects that the API key can access
-        @rtype: C{list} of L{Node}
+        :return: List of node objects that the API key can access
+        :rtype: ``list`` of :class:`Node`
         """
         params = {"api_action": "linode.list"}
         data = self.connection.request(API_ROOT, params=params).objects[0]
@@ -120,10 +121,10 @@ class LinodeNodeDriver(NodeDriver):
         Will issue a shutdown job followed by a boot job, using the last booted
         configuration.  In most cases, this will be the only configuration.
 
-        @param      node: the Linode to reboot
-        @type       node: L{Node}
+        :param      node: the Linode to reboot
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {"api_action": "linode.reboot", "LinodeID": node.id}
         self.connection.request(API_ROOT, params=params)
@@ -140,10 +141,10 @@ class LinodeNodeDriver(NodeDriver):
         Linode can be removed; however, this call explicitly skips those
         safeguards. There is no going back from this method.
 
-        @param       node: the Linode to destroy
-        @type        node: L{Node}
+        :param       node: the Linode to destroy
+        :type        node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {"api_action": "linode.delete", "LinodeID": node.id,
                   "skipChecks": True}
@@ -160,55 +161,55 @@ class LinodeNodeDriver(NodeDriver):
         Note that there is a safety valve of 5 Linodes per hour, in order to
         prevent a runaway script from ruining your day.
 
-        @keyword name: the name to assign the Linode (mandatory)
-        @type    name: C{str}
+        :keyword name: the name to assign the Linode (mandatory)
+        :type    name: ``str``
 
-        @keyword image: which distribution to deploy on the Linode (mandatory)
-        @type    image: L{NodeImage}
+        :keyword image: which distribution to deploy on the Linode (mandatory)
+        :type    image: :class:`NodeImage`
 
-        @keyword size: the plan size to create (mandatory)
-        @type    size: L{NodeSize}
+        :keyword size: the plan size to create (mandatory)
+        :type    size: :class:`NodeSize`
 
-        @keyword auth: an SSH key or root password (mandatory)
-        @type    auth: L{NodeAuthSSHKey} or L{NodeAuthPassword}
+        :keyword auth: an SSH key or root password (mandatory)
+        :type    auth: :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
-        @keyword location: which datacenter to create the Linode in
-        @type    location: L{NodeLocation}
+        :keyword location: which datacenter to create the Linode in
+        :type    location: :class:`NodeLocation`
 
-        @keyword ex_swap: size of the swap partition in MB (128)
-        @type    ex_swap: C{int}
+        :keyword ex_swap: size of the swap partition in MB (128)
+        :type    ex_swap: ``int``
 
-        @keyword ex_rsize: size of the root partition in MB (plan size - swap).
-        @type    ex_rsize: C{int}
+        :keyword ex_rsize: size of the root partition in MB (plan size - swap).
+        :type    ex_rsize: ``int``
 
-        @keyword ex_kernel: a kernel ID from avail.kernels (Latest 2.6 Stable).
-        @type    ex_kernel: C{str}
+        :keyword ex_kernel: a kernel ID from avail.kernels (Latest 2.6 Stable).
+        :type    ex_kernel: ``str``
 
-        @keyword ex_payment: one of 1, 12, or 24; subscription length (1)
-        @type    ex_payment: C{int}
+        :keyword ex_payment: one of 1, 12, or 24; subscription length (1)
+        :type    ex_payment: ``int``
 
-        @keyword ex_comment: a small comment for the configuration (libcloud)
-        @type    ex_comment: C{str}
+        :keyword ex_comment: a small comment for the configuration (libcloud)
+        :type    ex_comment: ``str``
 
-        @keyword ex_private: whether or not to request a private IP (False)
-        @type    ex_private: C{bool}
+        :keyword ex_private: whether or not to request a private IP (False)
+        :type    ex_private: ``bool``
 
-        @keyword lconfig: what to call the configuration (generated)
-        @type    lconfig: C{str}
+        :keyword lconfig: what to call the configuration (generated)
+        :type    lconfig: ``str``
 
-        @keyword lroot: what to call the root image (generated)
-        @type    lroot: C{str}
+        :keyword lroot: what to call the root image (generated)
+        :type    lroot: ``str``
 
-        @keyword lswap: what to call the swap space (generated)
-        @type    lswap: C{str}
+        :keyword lswap: what to call the swap space (generated)
+        :type    lswap: ``str``
 
-        @return: Node representing the newly-created Linode
-        @rtype: L{Node}
+        :return: Node representing the newly-created Linode
+        :rtype: :class:`Node`
         """
         name = kwargs["name"]
         image = kwargs["image"]
         size = kwargs["size"]
-        auth = kwargs["auth"]
+        auth = self._get_and_check_auth(kwargs["auth"])
 
         # Pick a location (resolves LIBCLOUD-41 in JIRA)
         if "location" in kwargs:
@@ -269,9 +270,11 @@ class LinodeNodeDriver(NodeDriver):
             kernel = kwargs["ex_kernel"]
         else:
             if image.extra['64bit']:
-                kernel = 111 if image.extra['pvops'] else 107
+                # For a list of available kernel ids, see
+                # https://www.linode.com/kernels/
+                kernel = 138
             else:
-                kernel = 110 if image.extra['pvops'] else 60
+                kernel = 137
         params = {"api_action": "avail.kernels"}
         kernels = self.connection.request(API_ROOT, params=params).objects[0]
         if kernel not in [z["KERNELID"] for z in kernels]:
@@ -372,7 +375,10 @@ class LinodeNodeDriver(NodeDriver):
         nodes = self._to_nodes(data)
 
         if len(nodes) == 1:
-            return nodes[0]
+            node = nodes[0]
+            if getattr(auth, "generated", False):
+                node.extra['password'] = auth.password
+            return node
 
         return None
 
@@ -384,10 +390,10 @@ class LinodeNodeDriver(NodeDriver):
         Linode plans vary per-location, this method can also be passed a
         location to filter the availability.
 
-        @keyword location: the facility to retrieve plans in
-        @type    location: L{NodeLocation}
+        :keyword location: the facility to retrieve plans in
+        :type    location: :class:`NodeLocation`
 
-        @rtype: C{list} of L{NodeSize}
+        :rtype: ``list`` of :class:`NodeSize`
         """
         params = {"api_action": "avail.linodeplans"}
         data = self.connection.request(API_ROOT, params=params).objects[0]
@@ -405,7 +411,7 @@ class LinodeNodeDriver(NodeDriver):
 
         Retrieve all Linux distributions that can be deployed to a Linode.
 
-        @rtype: C{list} of L{NodeImage}
+        :rtype: ``list`` of :class:`NodeImage`
         """
         params = {"api_action": "avail.distributions"}
         data = self.connection.request(API_ROOT, params=params).objects[0]
@@ -425,7 +431,7 @@ class LinodeNodeDriver(NodeDriver):
 
         Retrieve all facilities that a Linode can be deployed in.
 
-        @rtype: C{list} of L{NodeLocation}
+        :rtype: ``list`` of :class:`NodeLocation`
         """
         params = {"api_action": "avail.datacenters"}
         data = self.connection.request(API_ROOT, params=params).objects[0]
@@ -451,13 +457,14 @@ class LinodeNodeDriver(NodeDriver):
         Set the default datacenter for Linode creation
 
         Since Linodes must be created in a facility, this function sets the
-        default that L{create_node} will use.  If a C{location} keyword is not
-        passed to L{create_node}, this method must have already been used.
+        default that :class:`create_node` will use.  If a location keyword is
+        not passed to :class:`create_node`, this method must have already been
+        used.
 
-        @keyword dc: the datacenter to create Linodes in unless specified
-        @type dc: L{NodeLocation}
+        :keyword dc: the datacenter to create Linodes in unless specified
+        :type dc: :class:`NodeLocation`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         did = dc.id
         params = {"api_action": "avail.datacenters"}
@@ -474,9 +481,9 @@ class LinodeNodeDriver(NodeDriver):
     def _to_nodes(self, objs):
         """Convert returned JSON Linodes into Node instances
 
-        @keyword objs: C{list} of JSON dictionaries representing the Linodes
-        @type objs: C{list}
-        @return: C{list} of L{Node}s"""
+        :keyword objs: ``list`` of JSON dictionaries representing the Linodes
+        :type objs: ``list``
+        :return: ``list`` of :class:`Node`s"""
 
         # Get the IP addresses for the Linodes
         nodes = {}
@@ -517,8 +524,6 @@ class LinodeNodeDriver(NodeDriver):
                     nodes[lid].private_ips
                 which.append(ip["IPADDRESS"])
         return list(nodes.values())
-
-    features = {"create_node": ["ssh_key", "password"]}
 
 
 def _izip_longest(*args, **kwds):

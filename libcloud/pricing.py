@@ -13,53 +13,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import with_statement
+
 """
 A class which handles loading the pricing files.
 """
+
+import os.path
+from os.path import join as pjoin
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-import os.path
-from os.path import join as pjoin
+from libcloud.utils.connection import get_response_object
 
-PRICING_FILE_PATH = 'data/pricing.json'
+__all__ = [
+    'get_pricing',
+    'get_size_price',
+    'set_pricing',
+    'clear_pricing_data',
+    'download_pricing_file'
+]
 
-PRICING_DATA = {}
+# Default URL to the pricing file
+DEFAULT_FILE_URL = 'https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json'  # NOQA
+
+CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, 'data/pricing.json')
+CUSTOM_PRICING_FILE_PATH = os.path.expanduser('~/.libcloud/pricing.json')
+
+# Pricing data cache
+PRICING_DATA = {
+    'compute': {},
+    'storage': {}
+}
 
 VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 
 
-def clear_pricing_data():
-    PRICING_DATA.clear()
-    PRICING_DATA.update({
-        'compute': {},
-        'storage': {},
-    })
-clear_pricing_data()
-
-
 def get_pricing_file_path(file_path=None):
-    pricing_directory = os.path.dirname(os.path.abspath(__file__))
-    pricing_file_path = pjoin(pricing_directory, PRICING_FILE_PATH)
+    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and \
+       os.path.isfile(CUSTOM_PRICING_FILE_PATH):
+        # Custom pricing file is available, use it
+        return CUSTOM_PRICING_FILE_PATH
 
-    return pricing_file_path
+    return DEFAULT_PRICING_FILE_PATH
 
 
 def get_pricing(driver_type, driver_name, pricing_file_path=None):
     """
     Return pricing for the provided driver.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str`
+    :param driver_name: Driver name
 
-    @rtype: C{dict}
-    @return: Dictionary with pricing where a key name is size ID and
+    :type pricing_file_path: ``str``
+    :param pricing_file_path: Custom path to a price file. If not provided
+                              it uses a default path.
+
+    :rtype: ``dict``
+    :return: Dictionary with pricing where a key name is size ID and
              the value is a price.
     """
     if not driver_type in VALID_PRICING_DRIVER_TYPES:
@@ -89,14 +106,14 @@ def set_pricing(driver_type, driver_name, pricing):
     """
     Populate the driver pricing dictionary.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str``
+    :param driver_name: Driver name
 
-    @type pricing: C{dict}
-    @param pricing: Dictionary where a key is a size ID and a value is a price.
+    :type pricing: ``dict``
+    :param pricing: Dictionary where a key is a size ID and a value is a price.
     """
 
     PRICING_DATA[driver_type][driver_name] = pricing
@@ -106,18 +123,18 @@ def get_size_price(driver_type, driver_name, size_id):
     """
     Return price for the provided size.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str``
+    :param driver_name: Driver name
 
-    @type size_id: C{int/str}
-    @param size_id: Unique size ID (can be an integer or a string - depends on
+    :type size_id: ``str`` or ``int``
+    :param size_id: Unique size ID (can be an integer or a string - depends on
                     the driver)
 
-    @rtype: C{int}
-    @return: Size price.
+    :rtype: ``float``
+    :return: Size price.
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
     price = float(pricing[size_id])
@@ -126,21 +143,74 @@ def get_size_price(driver_type, driver_name, size_id):
 
 def invalidate_pricing_cache():
     """
-    Invalidate the cache for all the drivers.
+    Invalidate pricing cache for all the drivers.
     """
     PRICING_DATA['compute'] = {}
     PRICING_DATA['storage'] = {}
+
+
+def clear_pricing_data():
+    """
+    Invalidate pricing cache for all the drivers.
+
+    Note: This method does the same thing as invalidate_pricing_cache and is
+    here for backward compatibility reasons.
+    """
+    invalidate_pricing_cache()
 
 
 def invalidate_module_pricing_cache(driver_type, driver_name):
     """
     Invalidate the cache for the specified driver.
 
-    @type driver_type: C{str}
-    @param driver_type: Driver type ('compute' or 'storage')
+    :type driver_type: ``str``
+    :param driver_type: Driver type ('compute' or 'storage')
 
-    @type driver_name: C{str}
-    @param driver_name: Driver name
+    :type driver_name: ``str``
+    :param driver_name: Driver name
     """
     if driver_name in PRICING_DATA[driver_type]:
         del PRICING_DATA[driver_type][driver_name]
+
+
+def download_pricing_file(file_url=DEFAULT_FILE_URL,
+                          file_path=CUSTOM_PRICING_FILE_PATH):
+    """
+    Download pricing file from the file_url and save it to file_path.
+
+    :type file_url: ``str``
+    :param file_url: URL pointing to the pricing file.
+
+    :type file_path: ``str``
+    :param file_path: Path where a download pricing file will be saved.
+    """
+    dir_name = os.path.dirname(file_path)
+
+    if not os.path.exists(dir_name):
+        # Verify a valid path is provided
+        msg = ('Can\'t write to %s, directory %s, doesn\'t exist' %
+              (file_path, dir_name))
+        raise ValueError(msg)
+
+    if os.path.exists(file_path) and os.path.isdir(file_path):
+        msg = ('Can\'t write to %s file path because it\'s a'
+               ' directory' % (file_path))
+        raise ValueError(msg)
+
+    response = get_response_object(file_url)
+    body = response.body
+
+    # Verify pricing file is valid
+    try:
+        data = json.loads(body)
+    except json.decoder.JSONDecodeError:
+        msg = 'Provided URL doesn\'t contain valid pricing data'
+        raise Exception(msg)
+
+    if not data.get('updated', None):
+        msg = 'Provided URL doesn\'t contain valid pricing data'
+        raise Exception(msg)
+
+    # No need to stream it since file is small
+    with open(file_path, 'w') as file_handle:
+        file_handle.write(body)

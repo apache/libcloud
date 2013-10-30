@@ -63,11 +63,12 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         context = {'command': command}
         context.update(kwargs)
         result = super(CloudStackConnection, self).async_request(action=None,
-                                                               params=None,
-                                                               data=None,
-                                                               headers=None,
-                                                               method=None,
-                                                               context=context)
+                                                                 params=None,
+                                                                 data=None,
+                                                                 headers=None,
+                                                                 method=None,
+                                                                 context=
+                                                                 context)
         return result['jobresult']
 
     def get_request_kwargs(self, action, params=None, data='', headers=None,

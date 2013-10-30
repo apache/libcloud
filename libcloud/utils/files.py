@@ -31,15 +31,15 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False):
     """
     Return a generator which yields data in chunks.
 
-    @type iterator: C{Iterator}
-    @param response: An object which implements an iterator interface
+    :type iterator: :class:`object` which implements iterator interface.
+    :param response: An object which implements an iterator interface
                      or a File like object with read method.
 
-    @type chunk_size: C{int}
-    @param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
+    :type chunk_size: ``int``
+    :param chunk_size: Optional chunk size (defaults to CHUNK_SIZE)
 
-    @type fill_size: C{bool}
-    @param fill_size: If True, make sure chunks are chunk_size in length
+    :type fill_size: ``bool``
+    :param fill_size: If True, make sure chunks are chunk_size in length
                       (except for last chunk).
 
     TODO: At some point in the future we could use byte arrays here if version
@@ -84,12 +84,12 @@ def exhaust_iterator(iterator):
     """
     Exhaust an iterator and return all data returned by it.
 
-    @type iterator: C{Iterator}
-    @param response: An object which implements an iterator interface
+    :type iterator: :class:`object` which implements iterator interface.
+    :param response: An object which implements an iterator interface
                      or a File like object with read method.
 
-    @rtype C{str}
-    @return Data returned by the iterator.
+    :rtype ``str``
+    :return Data returned by the iterator.
     """
     data = b('')
 

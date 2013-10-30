@@ -135,10 +135,10 @@ class DreamhostNodeDriver(NodeDriver):
     def create_node(self, **kwargs):
         """Create a new Dreamhost node
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_movedata: Copy all your existing users to this new PS
-        @type       ex_movedata: C{str}
+        :keyword    ex_movedata: Copy all your existing users to this new PS
+        :type       ex_movedata: ``str``
         """
         size = kwargs['size'].ram
         params = {

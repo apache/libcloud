@@ -32,9 +32,11 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
+
     """
     Abiquo Node Driver test suite
     """
+
     def setUp(self):
         """
         Set up the driver with the main user
@@ -267,6 +269,7 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
 
 class AbiquoMockHttp(MockHttpTestCase):
+
     """
     Mock the functionallity of the remote Abiquo API.
     """
@@ -330,7 +333,8 @@ class AbiquoMockHttp(MockHttpTestCase):
     def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_tasks_1da8c8b6_86f6_49ef_9d29_57dcc73b875a(self, method, url, body, headers):
         if headers['Authorization'] == 'Basic bXV0ZW46cm9zaGk=':
             # User 'muten:roshi' failed task
-            response = self.fixtures.load('vdc_4_vapp_6_undeploy_task_failed.xml')
+            response = self.fixtures.load(
+                'vdc_4_vapp_6_undeploy_task_failed.xml')
         else:
             response = self.fixtures.load('vdc_4_vapp_6_undeploy_task.xml')
         return (httplib.OK, response, {}, '')
@@ -373,7 +377,8 @@ class AbiquoMockHttp(MockHttpTestCase):
             response = self.fixtures.load('vdc_4_vapp_6_vm_3.xml')
         return (httplib.OK, response, {}, '')
 
-    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_action_deploy(self, method, url, body, headers):
+    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_action_deploy(self, method, url,
+                                                                                            body, headers):
         response = self.fixtures.load('vdc_4_vapp_6_vm_3_deploy.xml')
         return (httplib.CREATED, response, {}, '')
 
@@ -381,7 +386,8 @@ class AbiquoMockHttp(MockHttpTestCase):
 
         if headers['Authorization'] == 'Basic dGVuOnNoaW4=':
             # User 'ten:shin' failed task
-            response = self.fixtures.load('vdc_4_vapp_6_vm_3_deploy_task_failed.xml')
+            response = self.fixtures.load(
+                'vdc_4_vapp_6_vm_3_deploy_task_failed.xml')
         else:
             response = self.fixtures.load('vdc_4_vapp_6_vm_3_deploy_task.xml')
         return (httplib.OK, response, {}, '')
@@ -391,23 +397,27 @@ class AbiquoMockHttp(MockHttpTestCase):
         response = self.fixtures.load('vdc_4_vapp_6_undeploy.xml')
         return (httplib.OK, response, {}, '')
 
-    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_action_reset(self, method, url, body, headers):
+    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_action_reset(self, method,
+                                                                                           url, body, headers):
         response = self.fixtures.load('vdc_4_vapp_6_vm_3_reset.xml')
         return (httplib.CREATED, response, {}, '')
 
     def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_tasks_a8c9818e_f389_45b7_be2c_3db3a9689940(self, method, url, body, headers):
         if headers['Authorization'] == 'Basic bXV0ZW46cm9zaGk=':
             # User 'muten:roshi' failed task
-            response = self.fixtures.load('vdc_4_vapp_6_undeploy_task_failed.xml')
+            response = self.fixtures.load(
+                'vdc_4_vapp_6_undeploy_task_failed.xml')
         else:
             response = self.fixtures.load('vdc_4_vapp_6_vm_3_reset_task.xml')
         return (httplib.OK, response, {}, '')
 
-    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_action_undeploy(self, method, url, body, headers):
+    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_action_undeploy(self, method, url,
+                                                                                              body, headers):
         response = self.fixtures.load('vdc_4_vapp_6_vm_3_undeploy.xml')
         return (httplib.CREATED, response, {}, '')
 
-    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_network_nics(self, method, url, body, headers):
+    def _api_cloud_virtualdatacenters_4_virtualappliances_6_virtualmachines_3_network_nics(self, method, url,
+                                                                                           body, headers):
         response = self.fixtures.load('vdc_4_vapp_6_vm_3_nics.xml')
         return (httplib.OK, response, {}, '')
 
@@ -438,8 +448,9 @@ class AbiquoMockHttp(MockHttpTestCase):
                 {}, '')
 
     def _api_admin_enterprises_1_datacenterrepositories_2_virtualmachinetemplates_11(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ent_1_dcrep_2_template_11.xml'),
-                {}, '')
+        return (
+            httplib.OK, self.fixtures.load('ent_1_dcrep_2_template_11.xml'),
+            {}, '')
 
 
 if __name__ == '__main__':

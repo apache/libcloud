@@ -46,16 +46,16 @@ class ElasticLBTests(unittest.TestCase):
     def test_list_balancers(self):
         balancers = self.driver.list_balancers()
 
-        self.assertEquals(len(balancers), 1)
-        self.assertEquals(balancers[0].id, 'tests')
-        self.assertEquals(balancers[0].name, 'tests')
+        self.assertEqual(len(balancers), 1)
+        self.assertEqual(balancers[0].id, 'tests')
+        self.assertEqual(balancers[0].name, 'tests')
 
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
 
-        self.assertEquals(balancer.id, 'tests')
-        self.assertEquals(balancer.name, 'tests')
-        self.assertEquals(balancer.state, State.UNKNOWN)
+        self.assertEqual(balancer.id, 'tests')
+        self.assertEqual(balancer.name, 'tests')
+        self.assertEqual(balancer.state, State.UNKNOWN)
 
     def test_destroy_balancer(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
@@ -66,20 +66,21 @@ class ElasticLBTests(unittest.TestCase):
         members = [Member('srv-lv426', None, None)]
 
         balancer = self.driver.create_balancer(name='lb2', port=80,
-            protocol='http', algorithm=Algorithm.ROUND_ROBIN,
-            members=members)
+                                               protocol='http',
+                                               algorithm=Algorithm.ROUND_ROBIN,
+                                               members=members)
 
-        self.assertEquals(balancer.name, 'lb2')
-        self.assertEquals(balancer.port, 80)
-        self.assertEquals(balancer.state, State.PENDING)
+        self.assertEqual(balancer.name, 'lb2')
+        self.assertEqual(balancer.port, 80)
+        self.assertEqual(balancer.state, State.PENDING)
 
     def test_balancer_list_members(self):
         balancer = self.driver.get_balancer(balancer_id='tests')
         members = balancer.list_members()
 
-        self.assertEquals(len(members), 1)
-        self.assertEquals(members[0].balancer, balancer)
-        self.assertEquals('i-64bd081c', members[0].id)
+        self.assertEqual(len(members), 1)
+        self.assertEqual(members[0].balancer, balancer)
+        self.assertEqual('i-64bd081c', members[0].id)
 
     def test_balancer_detach_member(self):
         balancer = self.driver.get_balancer(balancer_id='lba-1235f')

@@ -29,6 +29,7 @@ from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.secrets import DREAMHOST_PARAMS
 
+
 class DreamhostTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
@@ -47,10 +48,10 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
         DreamhostMockHttp.type = 'BAD_AUTH'
         try:
             self.driver.list_nodes()
-            self.assertTrue(False) # Above command should have thrown an InvalidCredsException
+            self.assertTrue(
+                False)  # Above command should have thrown an InvalidCredsException
         except InvalidCredsError:
             self.assertTrue(True)
-
 
     def test_list_nodes(self):
         """
@@ -207,74 +208,77 @@ class DreamhostTest(unittest.TestCase, TestCaseMixin):
     def test_list_locations_response(self):
         self.assertRaises(NotImplementedError, self.driver.list_locations)
 
+
 class DreamhostMockHttp(MockHttp):
 
     def _BAD_AUTH_dreamhost_ps_list_ps(self, method, url, body, headers):
-        body = json.dumps({'data' : 'invalid_api_key', 'result' : 'error'})
+        body = json.dumps({'data': 'invalid_api_key', 'result': 'error'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dreamhost_ps_add_ps(self, method, url, body, headers):
-        body = json.dumps({'data' : {'added_web' : 'ps12345'}, 'result' : 'success'})
+        body = json.dumps(
+            {'data': {'added_web': 'ps12345'}, 'result': 'success'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dreamhost_ps_list_ps(self, method, url, body, headers):
         data = [{
-            'account_id' : 000000,
+            'account_id': 000000,
             'ip': '75.119.203.51',
-            'memory_mb' : 500,
-            'ps' : 'ps22174',
-            'start_date' : '2010-02-25',
-            'type' : 'web'
+            'memory_mb': 500,
+            'ps': 'ps22174',
+            'start_date': '2010-02-25',
+            'type': 'web'
         },
-        {
-            'account_id' : 000000,
-            'ip' : '75.119.203.52',
-            'memory_mb' : 1500,
-            'ps' : 'ps22175',
-            'start_date' : '2010-02-25',
-            'type' : 'mysql'
-        }]
+            {
+                'account_id': 000000,
+                'ip': '75.119.203.52',
+                'memory_mb': 1500,
+                'ps': 'ps22175',
+                'start_date': '2010-02-25',
+                'type': 'mysql'
+            }]
         result = 'success'
-        body = json.dumps({'data' : data, 'result' : result})
+        body = json.dumps({'data': data, 'result': result})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dreamhost_ps_list_images(self, method, url, body, headers):
         data = [{
-            'description' : 'Private web server',
-            'image' : 'web'
+            'description': 'Private web server',
+            'image': 'web'
         },
-        {
-            'description' : 'Private MySQL server',
-            'image' : 'mysql'
-        }]
+            {
+                'description': 'Private MySQL server',
+                'image': 'mysql'
+            }]
         result = 'success'
-        body = json.dumps({'data' : data, 'result' : result})
+        body = json.dumps({'data': data, 'result': result})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dreamhost_ps_reboot(self, method, url, body, headers):
-        body = json.dumps({'data' : 'reboot_scheduled', 'result' : 'success'})
+        body = json.dumps({'data': 'reboot_scheduled', 'result': 'success'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _API_FAILURE_dreamhost_ps_reboot(self, method, url, body, headers):
-        body = json.dumps({'data' : 'no_such_ps', 'result' : 'error'})
+        body = json.dumps({'data': 'no_such_ps', 'result': 'error'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dreamhost_ps_set_size(self, method, url, body, headers):
-        body = json.dumps({'data' : {'memory-mb' : '500'}, 'result' : 'success'})
+        body = json.dumps(
+            {'data': {'memory-mb': '500'}, 'result': 'success'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _API_FAILURE_dreamhost_ps_set_size(self, method, url, body, headers):
-        body = json.dumps({'data' : 'internal_error_setting_size', 'result' : 'error'})
+        body = json.dumps(
+            {'data': 'internal_error_setting_size', 'result': 'error'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _dreamhost_ps_remove_ps(self, method, url, body, headers):
-        body = json.dumps({'data' : 'removed_web', 'result' : 'success'})
+        body = json.dumps({'data': 'removed_web', 'result': 'success'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _API_FAILURE_dreamhost_ps_remove_ps(self, method, url, body, headers):
-        body = json.dumps({'data' : 'no_such_ps', 'result' : 'error'})
+        body = json.dumps({'data': 'no_such_ps', 'result': 'error'})
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
-

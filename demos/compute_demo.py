@@ -60,10 +60,10 @@ def get_demo_driver(provider_name='RACKSPACE', *args, **kwargs):
 
     # And maybe do more than that:
     >>> node = driver.create_node(
-            name='my_first_node',
-            image=images[0],
-            size=sizes[0],
-        )
+        ... name='my_first_node',
+        ... image=images[0],
+        ... size=sizes[0],
+        ... )
     >>> node.destroy()
     """
     provider_name = provider_name.upper()

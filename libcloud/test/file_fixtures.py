@@ -29,6 +29,7 @@ FIXTURES_ROOT = {
     'openstack': 'compute/fixtures/openstack',
 }
 
+
 class FileFixtures(object):
     def __init__(self, fixtures_type, sub_dir=''):
         script_dir = os.path.abspath(os.path.split(__file__)[0])
@@ -49,27 +50,32 @@ class FileFixtures(object):
         else:
             raise IOError(path)
 
+
 class ComputeFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
         super(ComputeFileFixtures, self).__init__(fixtures_type='compute',
                                                   sub_dir=sub_dir)
+
 
 class StorageFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
         super(StorageFileFixtures, self).__init__(fixtures_type='storage',
                                                   sub_dir=sub_dir)
 
+
 class LoadBalancerFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
         super(LoadBalancerFileFixtures, self).__init__(fixtures_type='loadbalancer',
-                                                  sub_dir=sub_dir)
+                                                       sub_dir=sub_dir)
+
 
 class DNSFileFixtures(FileFixtures):
     def __init__(self, sub_dir=''):
         super(DNSFileFixtures, self).__init__(fixtures_type='dns',
                                               sub_dir=sub_dir)
 
+
 class OpenStackFixtures(FileFixtures):
-  def __init__(self, sub_dir=''):
-      super(OpenStackFixtures, self).__init__(fixtures_type='openstack',
+    def __init__(self, sub_dir=''):
+        super(OpenStackFixtures, self).__init__(fixtures_type='openstack',
                                                 sub_dir=sub_dir)

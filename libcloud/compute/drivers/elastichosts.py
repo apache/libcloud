@@ -19,42 +19,41 @@ ElasticHosts Driver
 
 from libcloud.compute.types import Provider
 from libcloud.compute.drivers.elasticstack import ElasticStackBaseNodeDriver
-from libcloud.compute.drivers.elasticstack import ElasticStackBaseConnection
 
 
 # API end-points
 API_ENDPOINTS = {
-    'uk-1': {
+    'lon-p': {
         'name': 'London Peer 1',
         'country': 'United Kingdom',
         'host': 'api-lon-p.elastichosts.com'
     },
-    'uk-2': {
+    'lon-b': {
         'name': 'London BlueSquare',
         'country': 'United Kingdom',
         'host': 'api-lon-b.elastichosts.com'
     },
-    'us-1': {
+    'sat-p': {
         'name': 'San Antonio Peer 1',
         'country': 'United States',
         'host': 'api-sat-p.elastichosts.com'
     },
-    'us-2': {
+    'lax-p': {
         'name': 'Los Angeles Peer 1',
         'country': 'United States',
         'host': 'api-lax-p.elastichosts.com'
     },
-    'us-3': {
+    'sjc-c': {
         'name': 'San Jose (Silicon Valley)',
         'country': 'United States',
         'host': 'api-sjc-c.elastichosts.com'
     },
-    'ca-1': {
+    'tor-p': {
         'name': 'Toronto Peer 1',
         'country': 'Canada',
         'host': 'api-tor-p.elastichosts.com'
     },
-    'au-1': {
+    'syd-y': {
         'name': 'Sydney',
         'country': 'Australia',
         'host': 'api-syd-v.elastichosts.com'
@@ -67,7 +66,7 @@ API_ENDPOINTS = {
 }
 
 # Default API end-point for the base connection class.
-DEFAULT_ENDPOINT = 'us-1'
+DEFAULT_REGION = 'sat-p'
 
 # Retrieved from http://www.elastichosts.com/cloud-hosting/api
 STANDARD_DRIVES = {
@@ -86,6 +85,12 @@ STANDARD_DRIVES = {
     'aee5589a-88c3-43ef-bb0a-9cab6e64192d': {
         'uuid': 'aee5589a-88c3-43ef-bb0a-9cab6e64192d',
         'description': 'Ubuntu Linux 10.04',
+        'size_gunzipped': '1GB',
+        'supports_deployment': True,
+    },
+    '62f512cd-82c7-498e-88d8-a09ac2ef20e7': {
+        'uuid': '62f512cd-82c7-498e-88d8-a09ac2ef20e7',
+        'description': 'Ubuntu Linux 12.04',
         'size_gunzipped': '1GB',
         'supports_deployment': True,
     },
@@ -122,91 +127,110 @@ STANDARD_DRIVES = {
 }
 
 
-class ElasticHostsBaseConnection(ElasticStackBaseConnection):
-    host = API_ENDPOINTS[DEFAULT_ENDPOINT]['host']
+class ElasticHostsException(Exception):
+    def __str__(self):
+        return self.args[0]
+
+    def __repr__(self):
+        return "<ElasticHostsException '%s'>" % (self.args[0])
 
 
-class ElasticHostsBaseNodeDriver(ElasticStackBaseNodeDriver):
+class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
+    """
+    Node Driver class for ElasticHosts
+    """
     type = Provider.ELASTICHOSTS
     api_name = 'elastichosts'
     name = 'ElasticHosts'
     website = 'http://www.elastichosts.com/'
-    connectionCls = ElasticHostsBaseConnection
     features = {"create_node": ["generates_password"]}
     _standard_drives = STANDARD_DRIVES
 
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region=DEFAULT_REGION, **kwargs):
 
-class ElasticHostsUK1Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the London Peer 1 end-point
-    """
+        if hasattr(self, '_region'):
+            region = self._region
 
-    host = API_ENDPOINTS['uk-1']['host']
+        if region not in API_ENDPOINTS:
+            raise ValueError('Invalid region: %s' % (region))
+
+        self._host_argument_set = host is not None
+        super(ElasticHostsNodeDriver, self).__init__(key=key, secret=secret,
+                                                     secure=secure, host=host,
+                                                     port=port,
+                                                     region=region, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        """
+        Return the host value based on the user supplied region.
+        """
+        kwargs = {}
+        if not self._host_argument_set:
+            kwargs['host'] = API_ENDPOINTS[self.region]['host']
+
+        return kwargs
 
 
-class ElasticHostsUK1NodeDriver(ElasticHostsBaseNodeDriver):
+class ElasticHostsUK1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the London Peer 1 end-point
     """
-    connectionCls = ElasticHostsUK1Connection
+    name = 'ElasticHosts (lon-p)'
+    _region = 'lon-p'
 
 
-class ElasticHostsUK2Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the London Bluesquare end-point
-    """
-    host = API_ENDPOINTS['uk-2']['host']
-
-
-class ElasticHostsUK2NodeDriver(ElasticHostsBaseNodeDriver):
+class ElasticHostsUK2NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the London Bluesquare end-point
     """
-    connectionCls = ElasticHostsUK2Connection
+    name = 'ElasticHosts (lon-b)'
+    _region = 'lon-b'
 
 
-class ElasticHostsUS1Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the San Antonio Peer 1 end-point
-    """
-    host = API_ENDPOINTS['us-1']['host']
-
-
-class ElasticHostsUS1NodeDriver(ElasticHostsBaseNodeDriver):
+class ElasticHostsUS1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the San Antonio Peer 1 end-point
     """
-    connectionCls = ElasticHostsUS1Connection
+    name = 'ElasticHosts (sat-p)'
+    _region = 'sat-p'
 
 
-class ElasticHostsUS2Connection(ElasticStackBaseConnection):
-    """
-    Connection class for the ElasticHosts driver for
-    the Los Angeles Peer 1 end-point
-    """
-    host = API_ENDPOINTS['us-2']['host']
-
-
-class ElasticHostsUS2NodeDriver(ElasticHostsBaseNodeDriver):
+class ElasticHostsUS2NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the Los Angeles Peer 1 end-point
     """
-    connectionCls = ElasticHostsUS2Connection
+    name = 'ElasticHosts (lax-p)'
+    _region = 'lax-p'
 
 
-class ElasticHostsCA1Connection(ElasticStackBaseConnection):
+class ElasticHostsUS3NodeDriver(ElasticHostsNodeDriver):
     """
-    Connection class for the ElasticHosts driver for
-    the Toronto Peer 1 end-point
+    ElasticHosts node driver for the San Jose (Silicon Valley) end-point
     """
-    host = API_ENDPOINTS['ca-1']['host']
+    name = 'ElasticHosts (sjc-c)'
+    _region = 'sjc-c'
 
 
-class ElasticHostsCA1NodeDriver(ElasticHostsBaseNodeDriver):
+class ElasticHostsCA1NodeDriver(ElasticHostsNodeDriver):
     """
     ElasticHosts node driver for the Toronto Peer 1 end-point
     """
-    connectionCls = ElasticHostsCA1Connection
+    name = 'ElasticHosts (tor-p)'
+    _region = 'tor-p'
+
+
+class ElasticHostsAU1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the Sydney end-point
+    """
+    name = 'ElasticHosts (syd-y)'
+    _region = 'syd-y'
+
+
+class ElasticHostsCN1NodeDriver(ElasticHostsNodeDriver):
+    """
+    ElasticHosts node driver for the Hong Kong end-point
+    """
+    name = 'ElasticHosts (cn-1)'
+    _region = 'cn-1'

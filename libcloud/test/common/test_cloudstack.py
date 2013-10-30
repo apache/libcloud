@@ -26,13 +26,14 @@ from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import parse_qsl
 
-from libcloud.common.cloudstack import CloudStackConnection, CloudStackResponse
+from libcloud.common.cloudstack import CloudStackConnection
 from libcloud.common.types import MalformedResponseError
 
 from libcloud.test import MockHttpTestCase
 
 
 async_delay = 0
+
 
 class CloudStackMockDriver(object):
     host = 'nonexistant.'
@@ -42,6 +43,7 @@ class CloudStackMockDriver(object):
     name = 'fake'
 
     async_delay = 0
+
 
 class CloudStackCommonTest(unittest.TestCase):
     def setUp(self):
@@ -76,7 +78,7 @@ class CloudStackCommonTest(unittest.TestCase):
             self.connection._async_request('fake')
         except Exception:
             e = sys.exc_info()[1]
-            self.assertEquals(CloudStackMockHttp.ERROR_TEXT, str(e))
+            self.assertEqual(CloudStackMockHttp.ERROR_TEXT, str(e))
             return
         self.assertFalse(True)
 
@@ -102,7 +104,7 @@ class CloudStackCommonTest(unittest.TestCase):
                     'templateid': 17,
                     'zoneid': 23,
                     'networkids': 42
-                 }, 'gHTo7mYmadZ+zluKHzlEKb1i/QU='
+                }, 'gHTo7mYmadZ+zluKHzlEKb1i/QU='
             ), (
                 {
                     'command': 'deployVirtualMachine',
@@ -112,7 +114,7 @@ class CloudStackCommonTest(unittest.TestCase):
                     'templateid': 17,
                     'zoneid': 23,
                     'networkids': 42
-                 }, 'tAgfrreI1ZvWlWLClD3gu4+aKv4='
+                }, 'tAgfrreI1ZvWlWLClD3gu4+aKv4='
             )
         ]
 
@@ -120,6 +122,7 @@ class CloudStackCommonTest(unittest.TestCase):
         for case in cases:
             params = connection.add_default_params(case[0])
             self.assertEqual(connection._make_signature(params), b(case[1]))
+
 
 class CloudStackMockHttp(MockHttpTestCase):
 

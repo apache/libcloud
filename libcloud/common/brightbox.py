@@ -67,14 +67,16 @@ class BrightboxConnection(ConnectionUserAndKey):
 
         self.connect()
 
-        response = self.connection.request(method='POST', url='/token',
-                                           body=body, headers={
+        headers = {
             'Host': self.host,
             'User-Agent': self._user_agent(),
             'Authorization': authorization,
             'Content-Type': 'application/json',
             'Content-Length': str(len(body))
-        })
+        }
+
+        response = self.connection.request(method='POST', url='/token',
+                                           body=body, headers=headers)
 
         response = self.connection.getresponse()
 

@@ -14,31 +14,51 @@
 # limitations under the License.
 
 import sys
-import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.types import LibcloudError
-from libcloud.compute.base import Node, NodeState
+from libcloud.compute.base import NodeState
 from libcloud.compute.drivers.joyent import JoyentNodeDriver
 
-from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
+from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import JOYENT_PARAMS
 
 
 class JoyentTestCase(unittest.TestCase):
+
     def setUp(self):
         JoyentNodeDriver.connectionCls.conn_classes = (None, JoyentHttp)
         self.driver = JoyentNodeDriver(*JOYENT_PARAMS)
 
-    def test_instantiate_invalid_location(self):
-        try:
-            JoyentNodeDriver('user', 'key', location='invalid')
-        except LibcloudError:
-            pass
-        else:
-            self.fail('Exception was not thrown')
+    def test_instantiate_multiple_drivers_with_different_region(self):
+        kwargs1 = {'region': 'us-east-1'}
+        kwargs2 = {'region': 'us-west-1'}
+        driver1 = JoyentNodeDriver(*JOYENT_PARAMS, **kwargs1)
+        driver2 = JoyentNodeDriver(*JOYENT_PARAMS, **kwargs2)
+
+        self.assertTrue(driver1.connection.host.startswith(kwargs1['region']))
+        self.assertTrue(driver2.connection.host.startswith(kwargs2['region']))
+
+        driver1.list_nodes()
+        driver2.list_nodes()
+        driver1.list_nodes()
+
+        self.assertTrue(driver1.connection.host.startswith(kwargs1['region']))
+        self.assertTrue(driver2.connection.host.startswith(kwargs2['region']))
+
+    def test_location_backward_compatibility(self):
+        kwargs = {'location': 'us-west-1'}
+        driver = JoyentNodeDriver(*JOYENT_PARAMS, **kwargs)
+        self.assertTrue(driver.connection.host.startswith(kwargs['location']))
+
+    def test_instantiate_invalid_region(self):
+        expected_msg = 'Invalid region.+'
+
+        self.assertRaisesRegexp(LibcloudError, expected_msg, JoyentNodeDriver,
+                                'user', 'key', location='invalid')
+        self.assertRaisesRegexp(LibcloudError, expected_msg, JoyentNodeDriver,
+                                'user', 'key', region='invalid')
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()

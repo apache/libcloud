@@ -26,16 +26,19 @@ import copy
 
 from xml.etree import ElementTree as ET
 
-from libcloud.utils.py3 import b
+from libcloud.utils.py3 import b, basestring
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
+from libcloud.utils.publickey import get_pubkey_comment
+from libcloud.utils.iso8601 import parse_date
 from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
-from libcloud.compute.base import NodeImage, StorageVolume
+from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -264,7 +267,8 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
-            'c1.xlarge'
+            'c1.xlarge',
+            'hs1.8xlarge'
         ]
     },
     'ap-northeast-1': {
@@ -320,7 +324,8 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
-            'c1.xlarge'
+            'c1.xlarge',
+            'hs1.8xlarge'
         ]
     },
     'nimbus': {
@@ -335,8 +340,8 @@ REGION_DETAILS = {
     }
 }
 
-VALID_EC2_DATACENTERS = REGION_DETAILS.keys()
-VALID_EC2_DATACENTERS = [d for d in VALID_EC2_DATACENTERS if d != 'nimbus']
+VALID_EC2_REGIONS = REGION_DETAILS.keys()
+VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -422,8 +427,8 @@ class BaseEC2NodeDriver(NodeDriver):
     """
 
     connectionCls = EC2Connection
-    path = '/'
     features = {'create_node': ['ssh_key']}
+    path = '/'
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -541,7 +546,9 @@ class BaseEC2NodeDriver(NodeDriver):
                 'clienttoken': findattr(element=element, xpath="clientToken",
                                         namespace=NAMESPACE),
                 'groups': groups,
-                'tags': tags
+                'tags': tags,
+                'iam_profile': findattr(element, xpath="iamInstanceProfile/id",
+                                        namespace=NAMESPACE)
             }
         )
         return n
@@ -594,11 +601,40 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
+        create_time = findtext(element=element, xpath='createTime',
+                               namespace=NAMESPACE)
+        device = findtext(element=element, xpath='attachmentSet/item/device',
+                          namespace=NAMESPACE)
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
-                             driver=self)
+                             driver=self,
+                             extra={'state': state,
+                                    'device': device,
+                                    'create-time': parse_date(create_time)})
+
+    def _to_snapshots(self, response):
+        return [self._to_snapshot(el) for el in response.findall(
+            fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_snapshot(self, element):
+        snapId = findtext(element=element, xpath='snapshotId',
+                          namespace=NAMESPACE)
+        volId = findtext(element=element, xpath='volumeId',
+                         namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize',
+                        namespace=NAMESPACE)
+        state = findtext(element=element, xpath='status',
+                         namespace=NAMESPACE)
+        description = findtext(element=element, xpath='description',
+                               namespace=NAMESPACE)
+        return VolumeSnapshot(snapId, size=int(size), driver=self,
+                              extra={'volume_id': volId,
+                                     'description': description,
+                                     'state': state})
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -608,10 +644,10 @@ class BaseEC2NodeDriver(NodeDriver):
         nodes that should be returned. Only the nodes
         with the corresponding node ids will be returned.
 
-        @param      ex_node_ids: List of C{node.id}
-        @type       ex_node_ids: C{list} of C{str}
+        :param      ex_node_ids: List of ``node.id``
+        :type       ex_node_ids: ``list`` of ``str``
 
-        @rtype: C{list} of L{Node}
+        :rtype: ``list`` of :class:`Node`
         """
         params = {'Action': 'DescribeInstances'}
         if ex_node_ids:
@@ -644,7 +680,7 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None, ex_image_ids=None):
+    def list_images(self, location=None, ex_image_ids=None, ex_owner=None):
         """
         List all images
 
@@ -652,12 +688,23 @@ class BaseEC2NodeDriver(NodeDriver):
         images that should be returned. Only the images
         with the corresponding image ids will be returned.
 
-        @param      ex_image_ids: List of C{NodeImage.id}
-        @type       ex_image_ids: C{list} of C{str}
+        Ex_owner parameter is used to filter the list of
+        images that should be returned. Only the images
+        with the corresponding owner will be returned.
+        Valid values: amazon|aws-marketplace|self|all|aws id
 
-        @rtype: C{list} of L{NodeImage}
+        :param      ex_image_ids: List of ``NodeImage.id``
+        :type       ex_image_ids: ``list`` of ``str``
+
+        :param      ex_owner: Owner name
+        :type       ex_image_ids: ``str``
+
+        :rtype: ``list`` of :class:`NodeImage`
         """
         params = {'Action': 'DescribeImages'}
+
+        if ex_owner:
+            params.update({'Owner.1': ex_owner})
 
         if ex_image_ids:
             params.update(self._pathlist('ImageId', ex_image_ids))
@@ -677,7 +724,26 @@ class BaseEC2NodeDriver(NodeDriver):
                     )
         return locations
 
+    def list_volumes(self, node=None):
+        params = {
+            'Action': 'DescribeVolumes',
+        }
+        if node:
+            params.update({
+                'Filter.1.Name': 'attachment.instance-id',
+                'Filter.1.Value': node.id,
+            })
+        response = self.connection.request(self.path, params=params).object
+        volumes = [self._to_volume(el, '') for el in response.findall(
+            fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
+        ]
+        return volumes
+
     def create_volume(self, size, name, location=None, snapshot=None):
+        """
+        :param location: Datacenter in which to create a volume in.
+        :type location: :class:`ExEC2AvailabilityZone`
+        """
         params = {
             'Action': 'CreateVolume',
             'Size': str(size)}
@@ -716,16 +782,86 @@ class BaseEC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
+    def create_volume_snapshot(self, volume, name=None):
+        """
+        Create snapshot from volume
+
+        :param      volume: Instance of ``StorageVolume``
+        :type       volume: ``StorageVolume``
+
+        :param      name: Description for snapshot
+        :type       name: ``str``
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        params = {
+            'Action': 'CreateSnapshot',
+            'VolumeId': volume.id,
+        }
+        if name:
+            params.update({
+                'Description': name,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshot = self._to_snapshot(response)
+        return snapshot
+
+    def list_volume_snapshots(self, snapshot):
+        return self.list_snapshots(snapshot)
+
+    def list_snapshots(self, snapshot=None, owner=None):
+        """
+        Describe all snapshots.
+
+        :param snapshot: If provided, only return snapshot information for the
+                         provided snapshot.
+
+        :param owner: Owner for snapshot: self|amazon|ID
+        :type owner: ``str``
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
+        params = {
+            'Action': 'DescribeSnapshots',
+        }
+        if snapshot:
+            params.update({
+                'SnapshotId.1': snapshot.id,
+            })
+        if owner:
+            params.update({
+                'Owner.1': owner,
+            })
+        response = self.connection.request(self.path, params=params).object
+        snapshots = self._to_snapshots(response)
+        return snapshots
+
+    def destroy_volume_snapshot(self, snapshot):
+        params = {
+            'Action': 'DeleteSnapshot',
+            'SnapshotId': snapshot.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
+    def ex_destroy_image(self, image):
+        params = {
+            'Action': 'DeregisterImage',
+            'ImageId': image.id
+        }
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
     def ex_create_keypair(self, name):
         """Creates a new keypair
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the keypair to Create. This must be
+        :param      name: The name of the keypair to Create. This must be
             unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         params = {
             'Action': 'CreateKeyPair',
@@ -741,25 +877,42 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
-    def ex_import_keypair(self, name, keyfile):
+    def ex_delete_keypair(self, keypair):
         """
-        imports a new public key
+        Delete a key pair by name.
+
+        @note: This is a non-standard extension API, and only works with EC2.
+
+        :param      keypair: The name of the keypair to delete.
+        :type       keypair: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName': keypair
+        }
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
+    def ex_import_keypair_from_string(self, name, key_material):
+        """
+        imports a new public key where the public key is passed in as a string
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the public key to import. This must be
+        :param      name: The name of the public key to import. This must be
          unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @param     keyfile: The filename with path of the public key to import.
-        @type      keyfile: C{str}
+        :param     key_material: The contents of a public key file.
+        :type      key_material: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
-        with open(os.path.expanduser(keyfile)) as fh:
-            content = fh.read()
-
-        base64key = base64.b64encode(content)
+        base64key = base64.b64encode(b(key_material))
 
         params = {
             'Action': 'ImportKeyPair',
@@ -777,27 +930,76 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': key_fingerprint,
         }
 
-    def ex_describe_all_keypairs(self):
+    def ex_import_keypair(self, name, keyfile):
         """
-        Describes all keypairs.
+        imports a new public key where the public key is passed via a filename
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list} of C{str}
-        """
+        :param      name: The name of the public key to import. This must be
+         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        :type       name: ``str``
 
+        :param     keyfile: The filename with path of the public key to import.
+        :type      keyfile: ``str``
+
+        :rtype: ``dict``
+        """
+        with open(os.path.expanduser(keyfile)) as fh:
+            content = fh.read()
+        return self.ex_import_keypair_from_string(name, content)
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default='unnamed')
+        key_name = "%s-%s" % (key_comment, key_fingerprint)
+
+        for keypair in self.ex_list_keypairs():
+            if keypair['keyFingerprint'] == key_fingerprint:
+                return keypair
+
+        return self.ex_import_keypair_from_string(key_name, pubkey)
+
+    def ex_list_keypairs(self):
+        """
+        Lists all the keypair names and fingerprints.
+
+        :rtype: ``list`` of ``dict``
+        """
         params = {
             'Action': 'DescribeKeyPairs'
         }
 
         response = self.connection.request(self.path, params=params).object
-        names = []
+        keypairs = []
         for elem in findall(element=response, xpath='keySet/item',
                             namespace=NAMESPACE):
-            name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
-            names.append(name)
+            keypair = {
+                'keyName': findtext(element=elem, xpath='keyName',
+                                    namespace=NAMESPACE),
+                'keyFingerprint': findtext(element=elem,
+                                           xpath='keyFingerprint',
+                                           namespace=NAMESPACE).strip(),
+            }
+            keypairs.append(keypair)
 
-        return names
+        return keypairs
+
+    def ex_describe_all_keypairs(self):
+        """
+        Describes all keypairs. This is here for backward compatibilty.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :rtype: ``list`` of ``str``
+        """
+        return [k['keyName'] for k in self.ex_list_keypairs()]
 
     def ex_describe_keypairs(self, name):
         """
@@ -811,10 +1013,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the keypair to describe.
-        @type       name: C{str}
+        :param      name: The name of the keypair to describe.
+        :type       name: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
 
         params = {
@@ -839,7 +1041,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         params = {'Action': 'DescribeSecurityGroups'}
         response = self.connection.request(self.path, params=params).object
@@ -859,15 +1061,15 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the security group to Create.
+        :param      name: The name of the security group to Create.
                           This must be unique.
-        @type       name: C{str}
+        :type       name: ``str``
 
-        @param      description: Human readable description of a Security
+        :param      description: Human readable description of a Security
         Group.
-        @type       description: C{str}
+        :type       description: ``str``
 
-        @rtype: C{str}
+        :rtype: ``str``
         """
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
@@ -881,22 +1083,22 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the security group to edit
-        @type       name: C{str}
+        :param      name: The name of the security group to edit
+        :type       name: ``str``
 
-        @param      from_port: The beginning of the port range to open
-        @type       from_port: C{str}
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``str``
 
-        @param      to_port: The end of the port range to open
-        @type       to_port: C{str}
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``str``
 
-        @param      cidr_ip: The ip to allow traffic for.
-        @type       cidr_ip: C{str}
+        :param      cidr_ip: The ip to allow traffic for.
+        :type       cidr_ip: ``str``
 
-        @param      protocol: tcp/udp/icmp
-        @type       protocol: C{str}
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         params = {'Action': 'AuthorizeSecurityGroupIngress',
@@ -921,10 +1123,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         @note: This is a non-standard extension API, and only works for EC2.
 
-        @param      name: The name of the security group to edit
-        @type       name: C{str}
+        :param      name: The name of the security group to edit
+        :type       name: ``str``
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
 
         results = []
@@ -968,17 +1170,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_list_availability_zones(self, only_available=True):
         """
-        Return a list of L{ExEC2AvailabilityZone} objects for the
+        Return a list of :class:`ExEC2AvailabilityZone` objects for the
         current region.
 
         Note: This is an extension method and is only available for EC2
         driver.
 
-        @keyword  only_available: If true, return only availability zones
+        :keyword  only_available: If true, return only availability zones
                                   with state 'available'
-        @type     only_available: C{str}
+        :type     only_available: ``str``
 
-        @rtype: C{list} of L{ExEC2AvailabilityZone}
+        :rtype: ``list`` of :class:`ExEC2AvailabilityZone`
         """
         params = {'Action': 'DescribeAvailabilityZones'}
 
@@ -1016,11 +1218,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Return a dictionary of tags for a resource (Node or StorageVolume).
 
-        @param  resource: resource which should be used
-        @type   resource: L{Node} or L{StorageVolume}
+        :param  resource: resource which should be used
+        :type   resource: :class:`Node` or :class:`StorageVolume`
 
-        @return: dict Node tags
-        @rtype: C{dict}
+        :return: dict Node tags
+        :rtype: ``dict``
         """
         params = {'Action': 'DescribeTags',
                   'Filter.0.Name': 'resource-id',
@@ -1046,14 +1248,14 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Create tags for a resource (Node or StorageVolume).
 
-        @param resource: Resource to be tagged
-        @type resource: L{Node} or L{StorageVolume}
+        :param resource: Resource to be tagged
+        :type resource: :class:`Node` or :class:`StorageVolume`
 
-        @param tags: A dictionary or other mapping of strings to strings,
+        :param tags: A dictionary or other mapping of strings to strings,
                      associating tag names with tag values.
-        @type tags: C{dict}
+        :type tags: ``dict``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         if not tags:
             return
@@ -1074,14 +1276,14 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Delete tags from a resource.
 
-        @param resource: Resource to be tagged
-        @type resource: L{Node} or L{StorageVolume}
+        :param resource: Resource to be tagged
+        :type resource: :class:`Node` or :class:`StorageVolume`
 
-        @param tags: A dictionary or other mapping of strings to strings,
+        :param tags: A dictionary or other mapping of strings to strings,
                      specifying the tag names and tag values to be deleted.
-        @type tags: C{dict}
+        :type tags: ``dict``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         if not tags:
             return
@@ -1107,17 +1309,47 @@ class BaseEC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
+    def ex_allocate_address(self):
+        """
+        Allocate a new Elastic IP address
+
+        :return: String representation of allocated IP address
+        :rtype: ``str``
+        """
+        params = {'Action': 'AllocateAddress'}
+
+        response = self.connection.request(self.path, params=params).object
+        public_ip = findtext(element=response, xpath='publicIp',
+                             namespace=NAMESPACE)
+        return public_ip
+
+    def ex_release_address(self, elastic_ip_address):
+        """
+        Release an Elastic IP address
+
+        :param      elastic_ip_address: Elastic IP address which should be used
+        :type       elastic_ip_address: ``str``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        params = {'Action': 'ReleaseAddress'}
+
+        params.update({'PublicIp': elastic_ip_address})
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
+
     def ex_describe_all_addresses(self, only_allocated=False):
         """
         Return all the Elastic IP addresses for this account
         optionally, return only the allocated addresses
 
-        @param    only_allocated: If true, return only those addresses
+        :param    only_allocated: If true, return only those addresses
                                   that are associated with an instance
-        @type     only_allocated: C{str}
+        :type     only_allocated: ``str``
 
-        @return:   list list of elastic ips for this particular account.
-        @rtype: C{list} of C{str}
+        :return:   list list of elastic ips for this particular account.
+        :rtype: ``list`` of ``str``
         """
         params = {'Action': 'DescribeAddresses'}
 
@@ -1142,21 +1374,47 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return elastic_ip_addresses
 
-    def ex_associate_addresses(self, node, elastic_ip_address):
+    def ex_associate_address_with_node(self, node, elastic_ip_address):
         """
-        Associate an IP address with a particular node.
+        Associate an Elastic IP address with a particular node.
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @param      elastic_ip_address: IP address which should be used
-        @type       elastic_ip_address: C{str}
+        :param      elastic_ip_address: IP address which should be used
+        :type       elastic_ip_address: ``str``
 
-        @rtype: C{bool}
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
         """
         params = {'Action': 'AssociateAddress'}
 
-        params.update(self._pathlist('InstanceId', [node.id]))
+        params.update({'InstanceId': node.id})
+        params.update({'PublicIp': elastic_ip_address})
+        res = self.connection.request(self.path, params=params).object
+        return self._get_boolean(res)
+
+    def ex_associate_addresses(self, node, elastic_ip_address):
+        """
+        Note: This method has been deprecated in favor of
+        the ex_associate_address_with_node method.
+        """
+        return self.ex_associate_address_with_node(node=node,
+                                                   elastic_ip_address=
+                                                   elastic_ip_address)
+
+    def ex_disassociate_address(self, elastic_ip_address):
+        """
+        Disassociate an Elastic IP address
+
+        :param      elastic_ip_address: Elastic IP address which should be used
+        :type       elastic_ip_address: ``str``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DisassociateAddress'}
+
         params.update({'PublicIp': elastic_ip_address})
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
@@ -1165,12 +1423,12 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Return Elastic IP addresses for all the nodes in the provided list.
 
-        @param      nodes: List of C{Node} instances
-        @type       nodes: C{list} of L{Node}
+        :param      nodes: List of :class:`Node` instances
+        :type       nodes: ``list`` of :class:`Node`
 
-        @return: Dictionary where a key is a node ID and the value is a
+        :return: Dictionary where a key is a node ID and the value is a
             list with the Elastic IP addresses associated with this node.
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         if not nodes:
             return {}
@@ -1205,11 +1463,11 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         Return a list of Elastic IP addresses associated with this node.
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @return: list Elastic IP addresses attached to this node.
-        @rtype: C{list} of C{str}
+        :return: list Elastic IP addresses attached to this node.
+        :rtype: ``list`` of ``str``
         """
         node_elastic_ips = self.ex_describe_addresses([node])
         return node_elastic_ips[node.id]
@@ -1219,14 +1477,14 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify node attributes.
         A list of valid attributes can be found at http://goo.gl/gxcj8
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @param      attributes: Dictionary with node attributes
-        @type       attributes: C{dict}
+        :param      attributes: Dictionary with node attributes
+        :type       attributes: ``dict``
 
-        @return: True on success, False otherwise.
-        @rtype: C{bool}
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
         """
         attributes = attributes or {}
         attributes.update({'InstanceId': node.id})
@@ -1240,19 +1498,44 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
+    def ex_modify_image_attribute(self, image, attributes):
+        """
+        Modify image attributes.
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :param      attributes: Dictionary with node attributes
+        :type       attributes: ``dict``
+
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
+        """
+        attributes = attributes or {}
+        attributes.update({'ImageId': image.id})
+
+        params = {'Action': 'ModifyImageAttribute'}
+        params.update(attributes)
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
     def ex_change_node_size(self, node, new_size):
         """
         Change the node size.
         Note: Node must be turned of before changing the size.
 
-        @param      node: Node instance
-        @type       node: L{Node}
+        :param      node: Node instance
+        :type       node: :class:`Node`
 
-        @param      new_size: NodeSize intance
-        @type       new_size: L{NodeSize}
+        :param      new_size: NodeSize intance
+        :type       new_size: :class:`NodeSize`
 
-        @return: True on success, False otherwise.
-        @rtype: C{bool}
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
         """
         if 'instancetype' in node.extra:
             current_instance_type = node.extra['instancetype']
@@ -1269,47 +1552,62 @@ class BaseEC2NodeDriver(NodeDriver):
 
         Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_mincount: Minimum number of instances to launch
-        @type       ex_mincount: C{int}
+        :keyword    ex_mincount: Minimum number of instances to launch
+        :type       ex_mincount: ``int``
 
-        @keyword    ex_maxcount: Maximum number of instances to launch
-        @type       ex_maxcount: C{int}
+        :keyword    ex_maxcount: Maximum number of instances to launch
+        :type       ex_maxcount: ``int``
 
-        @keyword    ex_securitygroup: Name of security group
-        @type       ex_securitygroup: C{str}
+        :keyword    ex_security_groups: A list of names of security groups to
+                                        assign to the node.
+        :type       ex_security_groups:   ``list``
 
-        @keyword    ex_keyname: The name of the key pair
-        @type       ex_keyname: C{str}
+        :keyword    ex_keyname: The name of the key pair
+        :type       ex_keyname: ``str``
 
-        @keyword    ex_userdata: User data
-        @type       ex_userdata: C{str}
+        :keyword    ex_userdata: User data
+        :type       ex_userdata: ``str``
 
-        @keyword    ex_clienttoken: Unique identifier to ensure idempotency
-        @type       ex_clienttoken: C{str}
+        :keyword    ex_clienttoken: Unique identifier to ensure idempotency
+        :type       ex_clienttoken: ``str``
 
-        @keyword    ex_blockdevicemappings: C{list} of C{dict} block device
+        :keyword    ex_blockdevicemappings: ``list`` of ``dict`` block device
                     mappings. Example:
-                    [{'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
-        @type       ex_blockdevicemappings: C{list} of C{dict}
+                    [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
+                     {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+        :type       ex_blockdevicemappings: ``list`` of ``dict``
+
+        :keyword    ex_iamprofile: Name or ARN of IAM profile
+        :type       ex_iamprofile: ``str``
         """
         image = kwargs["image"]
         size = kwargs["size"]
         params = {
             'Action': 'RunInstances',
             'ImageId': image.id,
-            'MinCount': kwargs.get('ex_mincount', '1'),
-            'MaxCount': kwargs.get('ex_maxcount', '1'),
+            'MinCount': str(kwargs.get('ex_mincount', '1')),
+            'MaxCount': str(kwargs.get('ex_maxcount', '1')),
             'InstanceType': size.id
         }
 
-        if 'ex_securitygroup' in kwargs:
-            if not isinstance(kwargs['ex_securitygroup'], list):
-                kwargs['ex_securitygroup'] = [kwargs['ex_securitygroup']]
-            for sig in range(len(kwargs['ex_securitygroup'])):
+        if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
+            raise ValueError('You can only supply ex_security_groups or'
+                             ' ex_securitygroup')
+
+        # ex_securitygroup is here for backward compatibility
+        ex_security_groups = kwargs.get('ex_security_groups', None)
+        ex_securitygroup = kwargs.get('ex_securitygroup', None)
+        security_groups = ex_security_groups or ex_securitygroup
+
+        if security_groups:
+            if not isinstance(security_groups, (tuple, list)):
+                security_groups = [security_groups]
+
+            for sig in range(len(security_groups)):
                 params['SecurityGroup.%d' % (sig + 1,)] =\
-                    kwargs['ex_securitygroup'][sig]
+                    security_groups[sig]
 
         if 'location' in kwargs:
             availability_zone = getattr(kwargs['location'],
@@ -1319,6 +1617,14 @@ class BaseEC2NodeDriver(NodeDriver):
                     raise AttributeError('Invalid availability zone: %s'
                                          % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
+
+        if 'auth' in kwargs and 'ex_keyname' in kwargs:
+            raise AttributeError('Cannot specify auth and ex_keyname together')
+
+        if 'auth' in kwargs:
+            auth = self._get_and_check_auth(kwargs['auth'])
+            params['KeyName'] = \
+                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
 
         if 'ex_keyname' in kwargs:
             params['KeyName'] = kwargs['ex_keyname']
@@ -1331,11 +1637,27 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
-            for index, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                params['BlockDeviceMapping.%d.DeviceName' % (index + 1)] = \
-                    mapping['DeviceName']
-                params['BlockDeviceMapping.%d.VirtualName' % (index + 1)] = \
-                    mapping['VirtualName']
+            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
+                raise AttributeError(
+                    'ex_blockdevicemappings not list or tuple')
+
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                idx += 1  # we want 1-based indexes
+                if not isinstance(mapping, dict):
+                    raise AttributeError(
+                        'mapping %s in ex_blockdevicemappings '
+                        'not a dict' % mapping)
+                for k, v in mapping.items():
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+
+        if 'ex_iamprofile' in kwargs:
+            if not isinstance(kwargs['ex_iamprofile'], basestring):
+                raise AttributeError('ex_iamprofile not string')
+
+            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
+                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
+            else:
+                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
 
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
@@ -1367,10 +1689,10 @@ class BaseEC2NodeDriver(NodeDriver):
         Start the node by passing in the node object, does not work with
         instance store backed instances
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'Action': 'StartInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1382,10 +1704,10 @@ class BaseEC2NodeDriver(NodeDriver):
         Stop the node by passing in the node object, does not work with
         instance store backed instances
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {'Action': 'StopInstances'}
         params.update(self._pathlist('InstanceId', [node.id]))
@@ -1410,25 +1732,24 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     website = 'http://aws.amazon.com/ec2/'
     path = '/'
 
-    features = {'create_node': ['ssh_key']}
-
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
         'running': NodeState.RUNNING,
         'shutting-down': NodeState.UNKNOWN,
-        'terminated': NodeState.TERMINATED
+        'terminated': NodeState.TERMINATED,
+        'stopped': NodeState.STOPPED
     }
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 datacenter='us-east-1', **kwargs):
-        if hasattr(self, '_datacenter'):
-            datacenter = self._datacenter
+                 region='us-east-1', **kwargs):
+        if hasattr(self, '_region'):
+            region = self._region
 
-        if datacenter not in VALID_EC2_DATACENTERS:
-            raise ValueError('Invalid datacenter: %s' % (datacenter))
+        if region not in VALID_EC2_REGIONS:
+            raise ValueError('Invalid region: %s' % (region))
 
-        details = REGION_DETAILS[datacenter]
-        self.region_name = datacenter
+        details = REGION_DETAILS[region]
+        self.region_name = region
         self.api_name = details['api_name']
         self.country = details['country']
 
@@ -1453,49 +1774,56 @@ class EC2EUNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western Europe Region.
     """
-    _datacenter = 'eu-west-1'
+    name = 'Amazon EC2 (eu-west-1)'
+    _region = 'eu-west-1'
 
 
 class EC2USWestNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Western US Region
     """
-    _datacenter = 'us-west-1'
+    name = 'Amazon EC2 (us-west-1)'
+    _region = 'us-west-1'
 
 
 class EC2USWestOregonNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the US West Oregon region.
     """
-    _datacenter = 'us-west-2'
+    name = 'Amazon EC2 (us-west-2)'
+    _region = 'us-west-2'
 
 
 class EC2APSENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific Region.
     """
-    _datacenter = 'ap-southeast-1'
+    name = 'Amazon EC2 (ap-southeast-1)'
+    _region = 'ap-southeast-1'
 
 
 class EC2APNENodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Northeast Asia Pacific Region.
     """
-    _datacenter = 'ap-northeast-1'
+    name = 'Amazon EC2 (ap-northeast-1)'
+    _region = 'ap-northeast-1'
 
 
 class EC2SAEastNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the South America (Sao Paulo) Region.
     """
-    _datacenter = 'sa-east-1'
+    name = 'Amazon EC2 (sa-east-1)'
+    _region = 'sa-east-1'
 
 
 class EC2APSESydneyNodeDriver(EC2NodeDriver):
     """
     Driver class for EC2 in the Southeast Asia Pacific (Sydney) Region.
     """
-    _datacenter = 'ap-southeast-2'
+    name = 'Amazon EC2 (ap-southeast-2)'
+    _region = 'ap-southeast-2'
 
 
 class EucConnection(EC2Connection):
@@ -1520,10 +1848,10 @@ class EucNodeDriver(BaseEC2NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None,
                  path=None, port=None):
         """
-        @inherits: L{EC2NodeDriver.__init__}
+        @inherits: :class:`EC2NodeDriver.__init__`
 
-        @param    path: The host where the API can be reached.
-        @type     path: C{str}
+        :param    path: The host where the API can be reached.
+        :type     path: ``str``
         """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
@@ -1568,7 +1896,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
         """
         Nimbus doesn't support elastic IPs, so this is a passthrough.
 
-        @inherits: L{EC2NodeDriver.ex_describe_addresses}
+        @inherits: :class:`EC2NodeDriver.ex_describe_addresses`
         """
         nodes_elastic_ip_mappings = {}
         for node in nodes:
@@ -1580,6 +1908,6 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
         """
         Nimbus doesn't support creating tags, so this is a passthrough.
 
-        @inherits: L{EC2NodeDriver.ex_create_tags}
+        @inherits: :class:`EC2NodeDriver.ex_create_tags`
         """
         pass

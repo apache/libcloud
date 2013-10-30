@@ -64,7 +64,7 @@ INSTANCE_TYPES = {
         'disk': 50,
         'bandwidth': 10240,
     },
-    'extra-large': {
+    'x-large': {
         'id': 'x-large',
         'name': 'Extra Large instance',
         'cpu': 4,
@@ -90,7 +90,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
     def __init__(self, *args, **kwargs):
         """
-        @inherits: L{NodeDriver.__init__}
+        @inherits: :class:`NodeDriver.__init__`
         """
         super(BaseGandiDriver, self).__init__(*args, **kwargs)
 
@@ -182,7 +182,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         deploy_node is not implemented for gandi driver
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'deploy_node not implemented for gandi driver')
@@ -191,30 +191,30 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Create a new Gandi node
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        :keyword    name:   String with a name for this new node (required)
+        :type       name:   ``str``
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage`
 
-        @keyword    location: Which data center to create a node in. If empty,
+        :keyword    location: Which data center to create a node in. If empty,
                               undefined behavior will be selected. (optional)
-        @type       location: L{NodeLocation}
+        :type       location: :class:`NodeLocation`
 
-        @keyword    size:   The size of resources allocated to this node.
+        :keyword    size:   The size of resources allocated to this node.
                             (required)
-        @type       size:   L{NodeSize}
+        :type       size:   :class:`NodeSize`
 
-        @keyword    login: user name to create for login on machine (required)
-        @type       login: C{str}
+        :keyword    login: user name to create for login on machine (required)
+        :type       login: ``str``
 
-        @keyword    password: password for user that'll be created (required)
-        @type       password: C{str}
+        :keyword    password: password for user that'll be created (required)
+        :type       password: ``str``
 
-        @keyword    inet_family: version of ip to use, default 4 (optional)
-        @type       inet_family: C{int}
+        :keyword    inet_family: version of ip to use, default 4 (optional)
+        :type       inet_family: ``int``
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
 
         if kwargs.get('login') is None or kwargs.get('password') is None:
@@ -369,7 +369,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def list_volumes(self):
         """
 
-        @rtype: C{list} of L{StorageVolume}
+        :rtype: ``list`` of :class:`StorageVolume`
         """
         res = self.connection.request('hosting.disk.list', {})
         return self._to_volumes(res.object)
@@ -401,13 +401,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Detaches a volume from a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @param      volume: Volume to be detached
-        @type       volume: L{StorageVolume}
+        :param      volume: Volume to be detached
+        :type       volume: :class:`StorageVolume`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         op = self.connection.request('hosting.vm.disk_detach',
                                      int(node.id), int(volume.id))
@@ -456,7 +456,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to list network interfaces
 
-        @rtype: C{list} of L{GandiNetworkInterface}
+        :rtype: ``list`` of :class:`GandiNetworkInterface`
         """
         ifaces = self.connection.request('hosting.iface.list').object
         ips = self.connection.request('hosting.ip.list').object
@@ -486,7 +486,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to list all disk
 
-        @rtype: C{list} of L{GandiDisk}
+        :rtype: ``list`` of :class:`GandiDisk`
         """
         res = self.connection.request('hosting.disk.list', {})
         return self._to_disks(res.object)
@@ -495,13 +495,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to attach a disk to a node
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @param      disk: Disk which should be used
-        @type       disk: L{GandiDisk}
+        :param      disk: Disk which should be used
+        :type       disk: :class:`GandiDisk`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         op = self.connection.request('hosting.vm.disk_attach',
                                      int(node.id), int(disk.id))
@@ -513,13 +513,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to detach a disk from a node
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @param      disk: Disk which should be used
-        @type       disk: L{GandiDisk}
+        :param      disk: Disk which should be used
+        :type       disk: :class:`GandiDisk`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         op = self.connection.request('hosting.vm.disk_detach',
                                      int(node.id), int(disk.id))
@@ -531,14 +531,14 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to attach an interface to a node
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
 
-        @param      iface: Network interface which should be used
-        @type       iface: L{GandiNetworkInterface}
+        :param      iface: Network interface which should be used
+        :type       iface: :class:`GandiNetworkInterface`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         op = self.connection.request('hosting.vm.iface_attach',
                                      int(node.id), int(iface.id))
@@ -550,14 +550,14 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to detach an interface from a node
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
 
-        @param      iface: Network interface which should be used
-        @type       iface: L{GandiNetworkInterface}
+        :param      iface: Network interface which should be used
+        :type       iface: :class:`GandiNetworkInterface`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         op = self.connection.request('hosting.vm.iface_detach',
                                      int(node.id), int(iface.id))
@@ -569,13 +569,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         Specific method to make a snapshot of a disk
 
-        @param      disk: Disk which should be used
-        @type       disk: L{GandiDisk}
+        :param      disk: Disk which should be used
+        :type       disk: :class:`GandiDisk`
 
-        @param      name: Name which should be used
-        @type       name: C{str}
+        :param      name: Name which should be used
+        :type       name: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         if not disk.extra.get('can_snapshot'):
             raise GandiException(1021, 'Disk %s can\'t snapshot' % disk.id)
@@ -595,16 +595,16 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """Specific method to update size or name of a disk
         WARNING: if a server is attached it'll be rebooted
 
-        @param      disk: Disk which should be used
-        @type       disk: L{GandiDisk}
+        :param      disk: Disk which should be used
+        :type       disk: :class:`GandiDisk`
 
-        @param      new_size: New size
-        @type       new_size: C{int}
+        :param      new_size: New size
+        :type       new_size: ``int``
 
-        @param      new_name: New name
-        @type       new_name: C{str}
+        :param      new_name: New name
+        :type       new_name: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         params = {}
         if new_size:

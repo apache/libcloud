@@ -78,6 +78,7 @@ if PY3:
             return s
         else:
             raise TypeError("Invalid argument %r for b()" % (s,))
+
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
@@ -89,17 +90,17 @@ if PY3:
     def tostring(node):
         return ET.tostring(node, encoding='unicode')
 else:
-    import httplib
-    from StringIO import StringIO
-    import urllib
-    import urllib2
-    import urlparse
-    import xmlrpclib
-    from urllib import quote as urlquote
-    from urllib import unquote as urlunquote
-    from urllib import urlencode as urlencode
+    import httplib  # NOQA
+    from StringIO import StringIO  # NOQA
+    import urllib  # NOQA
+    import urllib2  # NOQA
+    import urlparse  # NOQA
+    import xmlrpclib  # NOQA
+    from urllib import quote as urlquote  # NOQA
+    from urllib import unquote as urlunquote  # NOQA
+    from urllib import urlencode as urlencode  # NOQA
 
-    from __builtin__ import reload
+    from __builtin__ import reload  # NOQA
 
     if PY25:
         import cgi
@@ -111,18 +112,22 @@ else:
         parse_qsl = urlparse.parse_qsl
 
     if not PY25:
-        from os.path import relpath
+        from os.path import relpath  # NOQA
 
     basestring = unicode = str
 
     method_type = types.MethodType
 
     b = bytes = str
+
     def byte(n):
         return n
+
     u = unicode
+
     def next(i):
         return i.next()
+
     def dictvalues(d):
         return d.values()
 
@@ -133,7 +138,7 @@ if PY25:
 
     # Taken from http://jimmyg.org/work/code/barenecessities/index.html
     # (MIT license)
-    def relpath(path, start=posixpath.curdir):
+    def relpath(path, start=posixpath.curdir):   # NOQA
         """Return a relative version of a path"""
         if not path:
             raise ValueError("no path specified")
@@ -146,4 +151,7 @@ if PY25:
             return posixpath.curdir
         return posixpath.join(*rel_list)
 
-unittest2_required = not (PY27 or PY3)
+if PY27 or PY3:
+    unittest2_required = False
+else:
+    unittest2_required = True

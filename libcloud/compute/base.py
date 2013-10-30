@@ -78,7 +78,7 @@ class UuidMixin(object):
     def get_uuid(self):
         """Unique hash for a node, node image, or node size
 
-        @return: C{string}
+        :return: ``string``
 
         The hash is a function of an SHA1 hash of the node, node image,
         or node size's ID and its driver which means that it should be
@@ -188,14 +188,13 @@ class Node(UuidMixin):
     def reboot(self):
         """Reboot this node
 
-        @return: C{bool}
+        :return: ``bool``
 
         This calls the node's driver and reboots the node
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> driver = DummyNodeDriver(0)
         >>> node = driver.create_node()
-        >>> from libcloud.compute.types import NodeState
         >>> node.state == NodeState.RUNNING
         True
         >>> node.state == NodeState.REBOOTING
@@ -210,7 +209,7 @@ class Node(UuidMixin):
     def destroy(self):
         """Destroy this node
 
-        @return: C{bool}
+        :return: ``bool``
 
         This calls the node's driver and destroys the node
 
@@ -358,8 +357,9 @@ class NodeAuthPassword(object):
     """
     A password to be used for authentication to a node.
     """
-    def __init__(self, password):
+    def __init__(self, password, generated=False):
         self.password = password
+        self.generated = generated
 
     def __repr__(self):
         return '<NodeAuthPassword>'
@@ -382,14 +382,14 @@ class StorageVolume(UuidMixin):
         """
         Attach this volume to a node.
 
-        @param      node: Node to attach volume to
-        @type       node: L{Node}
+        :param node: Node to attach volume to
+        :type node: :class:`Node`
 
-        @param      device: Where the device is exposed,
+        :param device: Where the device is exposed,
                             e.g. '/dev/sdb (optional)
-        @type       device: C{str}
+        :type device: ``str``
 
-        @returns C{bool}
+        :return s ``bool``
         """
 
         return self.driver.attach_volume(node=node, volume=self, device=device)
@@ -398,15 +398,30 @@ class StorageVolume(UuidMixin):
         """
         Detach this volume from its node
 
-        @returns C{bool}
+        :return s ``bool``
         """
 
         return self.driver.detach_volume(volume=self)
 
-    def destroy(self):
-        """Destroy this storage volume.
+    def list_snapshots(self):
+        """
+        :return s ``list`` of ``VolumeSnapshot``
+        """
+        return self.driver.list_volume_snapshots(volume=self)
 
-        @returns C{bool}
+    def snapshot(self, name):
+        """
+        Creates a snapshot of this volume.
+
+        :return s ``VolumeSnapshot``
+        """
+        return self.driver.create_volume_snapshot(volume=self, name=name)
+
+    def destroy(self):
+        """
+        Destroy this storage volume.
+
+        :return s ``bool``
         """
 
         return self.driver.destroy_volume(volume=self)
@@ -414,6 +429,37 @@ class StorageVolume(UuidMixin):
     def __repr__(self):
         return '<StorageVolume id=%s size=%s driver=%s>' % (
                self.id, self.size, self.driver.name)
+
+
+class VolumeSnapshot(object):
+    """
+    A base VolumeSnapshot class to derive from.
+    """
+    def __init__(self, id, driver, size=None, extra=None):
+        """
+        VolumeSnapshot constructor.
+
+        :param      id: Snapshot ID.
+        :type       id: ``str``
+
+        :param      size: A snapshot size in GB.
+        :type       size: ``int``
+
+        :param      extra: Provider depends parameters for snapshot.
+        :type       extra: ``dict``
+        """
+        self.id = id
+        self.driver = driver
+        self.size = size
+        self.extra = extra or {}
+
+    def destroy(self):
+        """
+        Destroys this snapshot.
+
+        :return s ``bool``
+        """
+        return self.driver.destroy_volume_snapshot(snapshot=self)
 
 
 class NodeDriver(BaseDriver):
@@ -433,10 +479,10 @@ class NodeDriver(BaseDriver):
     features = {"create_node": []}
     """
     List of available features for a driver.
-        - L{create_node}
-            - ssh_key: Supports L{NodeAuthSSHKey} as an authentication method
-              for nodes.
-            - password: Supports L{NodeAuthPassword} as an authentication
+        - :class:`create_node`
+            - ssh_key: Supports :class:`NodeAuthSSHKey` as an authentication
+              method for nodes.
+            - password: Supports :class:`NodeAuthPassword` as an authentication
               method for nodes.
             - generates_password: Returns a password attribute on the Node
               object returned from creation.
@@ -450,29 +496,121 @@ class NodeDriver(BaseDriver):
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
 
+    def _get_and_check_auth(self, auth):
+        """
+        Helper function for providers supporting :class:`NodeAuthPassword` or
+        :class:`NodeAuthSSHKey`
+
+        Validates that only a supported object type is passed to the auth
+        parameter and raises an exception if it is not.
+
+        If no :class:`NodeAuthPassword` object is provided but one is expected
+        then a password is automatically generated.
+        """
+
+        if isinstance(auth, NodeAuthPassword):
+            if 'password' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'Password provided as authentication information, but password'
+                'not supported', driver=self)
+
+        if isinstance(auth, NodeAuthSSHKey):
+            if 'ssh_key' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'SSH Key provided as authentication information, but SSH Key'
+                'not supported', driver=self)
+
+        if 'password' in self.features['create_node']:
+            value = os.urandom(16)
+            value = binascii.hexlify(value).decode('ascii')
+            return NodeAuthPassword(value, generated=True)
+
+        if auth:
+            raise LibcloudError(
+                '"auth" argument provided, but it was not a NodeAuthPassword'
+                'or NodeAuthSSHKey object', driver=self)
+
     def create_node(self, **kwargs):
-        """Create a new node instance.
+        """
+        Create a new node instance. This instance will be started
+        automatically.
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        Not all hosting API's are created equal and to allow libcloud to
+        support as many as possible there are some standard supported
+        variations of ``create_node``. These are declared using a
+        ``features`` API.
+        You can inspect ``driver.features['create_node']`` to see what
+        variation of the API you are dealing with:
 
-        @keyword    size:   The size of resources allocated to this node.
+        ``ssh_key``
+            You can inject a public key into a new node allows key based SSH
+            authentication.
+        ``password``
+            You can inject a password into a new node for SSH authentication.
+            If no password is provided libcloud will generated a password.
+            The password will be available as
+            ``return_value.extra['password']``.
+        ``generates_password``
+            The hosting provider will generate a password. It will be returned
+            to you via ``return_value.extra['password']``.
+
+        Some drivers allow you to set how you will authenticate with the
+        instance that is created. You can inject this initial authentication
+        information via the ``auth`` parameter.
+
+        If a driver supports the ``ssh_key`` feature flag for ``created_node``
+        you can upload a public key into the new instance::
+
+            >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
+            >>> driver = DummyNodeDriver(0)
+            >>> auth = NodeAuthSSHKey('pubkey data here')
+            >>> node = driver.create_node("test_node", auth=auth)
+
+        If a driver supports the ``password`` feature flag for ``create_node``
+        you can set a password::
+
+            >>> driver = DummyNodeDriver(0)
+            >>> auth = NodeAuthPassword('mysecretpassword')
+            >>> node = driver.create_node("test_node", auth=auth)
+
+        If a driver supports the ``password`` feature and you don't provide the
+        ``auth`` argument libcloud will assign a password::
+
+            >>> driver = DummyNodeDriver(0)
+            >>> node = driver.create_node("test_node")
+            >>> password = node.extra['password']
+
+        A password will also be returned in this way for drivers that declare
+        the ``generates_password`` feature, though in that case the password is
+        actually provided to the driver API by the hosting provider rather than
+        generated by libcloud.
+
+        You can only pass a :class:`NodeAuthPassword` or
+        :class:`NodeAuthSSHKey` to ``create_node`` via the auth parameter if
+        has the corresponding feature flag.
+
+        :param name:   String with a name for this new node (required)
+        :type name:   ``str``
+
+        :param size:   The size of resources allocated to this node.
                             (required)
-        @type       size:   L{NodeSize}
+        :type size:   :class:`NodeSize`
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :param image:  OS Image to boot on node. (required)
+        :type image:  :class:`NodeImage`
 
-        @keyword    location: Which data center to create a node in. If empty,
+        :param location: Which data center to create a node in. If empty,
                               undefined behavoir will be selected. (optional)
-        @type       location: L{NodeLocation}
+        :type location: :class:`NodeLocation`
 
-        @keyword    auth:   Initial authentication information for the node
+        :param auth:   Initial authentication information for the node
                             (optional)
-        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+        :type auth:   :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
-        @return: The newly created node.
-        @rtype: L{Node}
+        :return: The newly created node.
+        :rtype: :class:`Node`
         """
         raise NotImplementedError(
             'create_node not implemented for this driver')
@@ -483,11 +621,11 @@ class NodeDriver(BaseDriver):
         Depending upon the provider, this may destroy all data associated with
         the node, including backups.
 
-        @param node: The node to be destroyed
-        @type node: L{Node}
+        :param node: The node to be destroyed
+        :type node: :class:`Node`
 
-        @return: True if the destroy was successful, otherwise False
-        @rtype: C{bool}
+        :return: True if the destroy was successful, otherwise False
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'destroy_node not implemented for this driver')
@@ -496,11 +634,11 @@ class NodeDriver(BaseDriver):
         """
         Reboot a node.
 
-        @param node: The node to be rebooted
-        @type node: L{Node}
+        :param node: The node to be rebooted
+        :type node: :class:`Node`
 
-        @return: True if the reboot was successful, otherwise False
-        @rtype: C{bool}
+        :return: True if the reboot was successful, otherwise False
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'reboot_node not implemented for this driver')
@@ -508,8 +646,8 @@ class NodeDriver(BaseDriver):
     def list_nodes(self):
         """
         List all nodes
-        @return:  list of node objects
-        @rtype: C{list} of L{Node}
+        :return:  list of node objects
+        :rtype: ``list`` of :class:`Node`
         """
         raise NotImplementedError(
             'list_nodes not implemented for this driver')
@@ -518,11 +656,11 @@ class NodeDriver(BaseDriver):
         """
         List images on a provider
 
-        @keyword location: The location at which to list images
-        @type location: L{NodeLocation}
+        :param location: The location at which to list images
+        :type location: :class:`NodeLocation`
 
-        @return: list of node image objects
-        @rtype: C{list} of L{NodeImage}
+        :return: list of node image objects
+        :rtype: ``list`` of :class:`NodeImage`
         """
         raise NotImplementedError(
             'list_images not implemented for this driver')
@@ -531,11 +669,11 @@ class NodeDriver(BaseDriver):
         """
         List sizes on a provider
 
-        @keyword location: The location at which to list sizes
-        @type location: L{NodeLocation}
+        :param location: The location at which to list sizes
+        :type location: :class:`NodeLocation`
 
-        @return: list of node size objects
-        @rtype: C{list} of L{NodeSize}
+        :return: list of node size objects
+        :rtype: ``list`` of :class:`NodeSize`
         """
         raise NotImplementedError(
             'list_sizes not implemented for this driver')
@@ -544,8 +682,8 @@ class NodeDriver(BaseDriver):
         """
         List data centers for a provider
 
-        @return: list of node location objects
-        @rtype: C{list} of L{NodeLocation}
+        :return: list of node location objects
+        :rtype: ``list`` of :class:`NodeLocation`
         """
         raise NotImplementedError(
             'list_locations not implemented for this driver')
@@ -554,13 +692,27 @@ class NodeDriver(BaseDriver):
         """
         Create a new node, and start deployment.
 
-        Depends on a Provider Driver supporting either using a specific
-        password or returning a generated password.
+        In order to be able to SSH into a created node access credentials are
+        required.
 
-        This function may raise a L{DeploymentException}, if a create_node
-        call was successful, but there is a later error (like SSH failing or
-        timing out).  This exception includes a Node object which you may want
-        to destroy if incomplete deployments are not desirable.
+        A user can pass either a :class:`NodeAuthPassword` or
+        :class:`NodeAuthSSHKey` to the ``auth`` argument. If the
+        ``create_node`` implementation supports that kind if credential (as
+        declared in ``self.features['create_node']``) then it is passed on to
+        ``create_node``. Otherwise it is not passed on to ``create_node`` and
+        it is only used for authentication.
+
+        If the ``auth`` parameter is not supplied but the driver declares it
+        supports ``generates_password`` then the password returned by
+        ``create_node`` will be used to SSH into the server.
+
+        Finally, if the ``ssh_key_file`` is supplied that key will be used to
+        SSH into the server.
+
+        This function may raise a :class:`DeploymentException`, if a
+        create_node call was successful, but there is a later error (like SSH
+        failing or timing out).  This exception includes a Node object which
+        you may want to destroy if incomplete deployments are not desirable.
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> from libcloud.compute.deployment import ScriptDeployment
@@ -572,7 +724,7 @@ class NodeDriver(BaseDriver):
         >>> msd = MultiStepDeployment([key, script])
         >>> def d():
         ...     try:
-        ...         node = driver.deploy_node(deploy=msd)
+        ...         driver.deploy_node(deploy=msd)
         ...     except NotImplementedError:
         ...         print ("not implemented for dummy driver")
         >>> d()
@@ -581,76 +733,78 @@ class NodeDriver(BaseDriver):
         Deploy node is typically not overridden in subclasses.  The
         existing implementation should be able to handle most such.
 
-        @inherits: L{NodeDriver.create_node}
-
-        @keyword    deploy: Deployment to run once machine is online and
+        :param deploy: Deployment to run once machine is online and
                             availble to SSH.
-        @type       deploy: L{Deployment}
+        :type deploy: :class:`Deployment`
 
-        @keyword    ssh_username: Optional name of the account which is used
+        :param ssh_username: Optional name of the account which is used
                                   when connecting to
                                   SSH server (default is root)
-        @type       ssh_username: C{str}
+        :type ssh_username: ``str``
 
-        @keyword    ssh_alternate_usernames: Optional list of ssh usernames to
+        :param ssh_alternate_usernames: Optional list of ssh usernames to
                                              try to connect with if using the
                                              default one fails
-        @type       ssh_alternate_usernames: C{list}
+        :type ssh_alternate_usernames: ``list``
 
-        @keyword    ssh_port: Optional SSH server port (default is 22)
-        @type       ssh_port: C{int}
+        :param ssh_port: Optional SSH server port (default is 22)
+        :type ssh_port: ``int``
 
-        @keyword    ssh_timeout: Optional SSH connection timeout in seconds
-                                 (default is None)
-        @type       ssh_timeout: C{float}
+        :param ssh_timeout: Optional SSH connection timeout in seconds
+                                 (default is 10)
+        :type ssh_timeout: ``float``
 
-        @keyword    auth:   Initial authentication information for the node
+        :param auth:   Initial authentication information for the node
                             (optional)
-        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+        :type auth:   :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
 
-        @keyword    ssh_key: A path (or paths) to an SSH private key with which
+        :param ssh_key: A path (or paths) to an SSH private key with which
                              to attempt to authenticate. (optional)
-        @type       ssh_key: C{str} or C{list} of C{str}
+        :type ssh_key: ``str`` or ``list`` of ``str``
 
-        @keyword    timeout: How many seconds to wait before timing out.
+        :param timeout: How many seconds to wait before timing out.
                              (default is 600)
-        @type       timeout: C{int}
+        :type timeout: ``int``
 
-        @keyword    max_tries: How many times to retry if a deployment fails
+        :param max_tries: How many times to retry if a deployment fails
                                before giving up (default is 3)
-        @type       max_tries: C{int}
+        :type max_tries: ``int``
 
-        @keyword    ssh_interface: The interface to wait for. Default is
+        :param ssh_interface: The interface to wait for. Default is
                                    'public_ips', other option is 'private_ips'.
-        @type       ssh_interface: C{str}
+        :type ssh_interface: ``str``
         """
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError('paramiko is not installed. You can install ' +
                                'it using pip: pip install paramiko')
 
-        password = None
-
-        if 'create_node' not in self.features:
-            raise NotImplementedError(
-                'deploy_node not implemented for this driver')
-        elif 'generates_password' not in self.features["create_node"]:
-            if 'password' not in self.features["create_node"] and \
-               'ssh_key' not in self.features["create_node"]:
+        if 'auth' in kwargs:
+            auth = kwargs['auth']
+            if not isinstance(auth, (NodeAuthSSHKey, NodeAuthPassword)):
+                raise NotImplementedError(
+                    'If providing auth, only NodeAuthSSHKey or'
+                    'NodeAuthPassword is supported')
+        elif 'ssh_key' in kwargs:
+            # If an ssh_key is provided we can try deploy_node
+            pass
+        elif 'create_node' in self.features:
+            f = self.features['create_node']
+            if not 'generates_password' in f and not "password" in f:
                 raise NotImplementedError(
                     'deploy_node not implemented for this driver')
-
-            if 'auth' not in kwargs:
-                value = os.urandom(16)
-                kwargs['auth'] = NodeAuthPassword(binascii.hexlify(value))
-
-            if 'ssh_key' not in kwargs:
-                password = kwargs['auth'].password
+        else:
+            raise NotImplementedError(
+                'deploy_node not implemented for this driver')
 
         node = self.create_node(**kwargs)
         max_tries = kwargs.get('max_tries', 3)
 
-        if 'generates_password' in self.features['create_node']:
-            password = node.extra.get('password')
+        password = None
+        if 'auth' in kwargs:
+            if isinstance(kwargs['auth'], NodeAuthPassword):
+                password = kwargs['auth'].password
+        elif 'password' in node.extra:
+            password = node.extra['password']
 
         ssh_interface = kwargs.get('ssh_interface', 'public_ips')
 
@@ -664,9 +818,6 @@ class NodeDriver(BaseDriver):
         except Exception:
             e = sys.exc_info()[1]
             raise DeploymentError(node=node, original_exception=e, driver=self)
-
-        if password:
-            node.extra['password'] = password
 
         ssh_username = kwargs.get('ssh_username', 'root')
         ssh_alternate_usernames = kwargs.get('ssh_alternate_usernames', [])
@@ -706,23 +857,23 @@ class NodeDriver(BaseDriver):
         """
         Create a new volume.
 
-        @param      size: Size of volume in gigabytes (required)
-        @type       size: C{int}
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
 
-        @keyword    name: Name of the volume to be created
-        @type       name: C{str}
+        :param name: Name of the volume to be created
+        :type name: ``str``
 
-        @keyword    location: Which data center to create a volume in. If
+        :param location: Which data center to create a volume in. If
                                empty, undefined behavoir will be selected.
                                (optional)
-        @type       location: L{NodeLocation}
+        :type location: :class:`NodeLocation`
 
-        @keyword    snapshot:  Name of snapshot from which to create the new
+        :param snapshot:  Name of snapshot from which to create the new
                                volume.  (optional)
-        @type       snapshot:  C{str}
+        :type snapshot:  ``str``
 
-        @return: The newly created volume.
-        @rtype: L{StorageVolume}
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
         """
         raise NotImplementedError(
             'create_volume not implemented for this driver')
@@ -731,10 +882,10 @@ class NodeDriver(BaseDriver):
         """
         Destroys a storage volume.
 
-        @param      volume: Volume to be destroyed
-        @type       volume: L{StorageVolume}
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         raise NotImplementedError(
@@ -744,17 +895,11 @@ class NodeDriver(BaseDriver):
         """
         Attaches volume to node.
 
-        @param      node: Node to attach volume to
-        @type       node: L{Node}
+        :param Node node: Node to attach volume to.
+        :param StorageVolume volume: Volume to attach.
+        :param str device: Where the device is exposed, e.g. '/dev/sdb'
 
-        @param      volume: Volume to attach
-        @type       volume: L{StorageVolume}
-
-        @param      device: Where the device is exposed,
-                            e.g. '/dev/sdb (optional)
-        @type       device: C{str}
-
-        @rtype: C{bool}
+        :return bool:
         """
         raise NotImplementedError('attach not implemented for this driver')
 
@@ -762,10 +907,8 @@ class NodeDriver(BaseDriver):
         """
         Detaches a volume from a node.
 
-        @param      volume: Volume to be detached
-        @type       volume: L{StorageVolume}
-
-        @rtype: C{bool}
+        :param StorageVolume volume: Volume to be detached
+        :return bool:
         """
 
         raise NotImplementedError('detach not implemented for this driver')
@@ -774,11 +917,37 @@ class NodeDriver(BaseDriver):
         """
         List storage volumes.
 
-        @return: list of storageVolume objects
-        @rtype: C{list} of L{StorageVolume}
+        :return [StorageVolume]:
         """
         raise NotImplementedError(
             'list_volumes not implemented for this driver')
+
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots for a storage volume.
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
+        raise NotImplementedError(
+            'list_volume_snapshots not implemented for this driver')
+
+    def create_volume_snapshot(self, volume, name):
+        """
+        Creates a snapshot of the storage volume.
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        raise NotImplementedError(
+            'create_volume_snapshot not implemented for this driver')
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Destroys a snapshot.
+
+        :rtype: :class:`bool`
+        """
+        raise NotImplementedError(
+            'destroy_volume_snapshot not implemented for this driver')
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
@@ -795,31 +964,28 @@ class NodeDriver(BaseDriver):
         Block until the given nodes are fully booted and have an IP address
         assigned.
 
-        @keyword    nodes: list of node instances.
-        @type       nodes: C{List} of L{Node}
+        :param nodes: list of node instances.
+        :type nodes: ``List`` of :class:`Node`
 
-        @keyword    wait_period: How many seconds to between each loop
+        :param wait_period: How many seconds to between each loop
                                  iteration (default is 3)
-        @type       wait_period: C{int}
+        :type wait_period: ``int``
 
-        @keyword    timeout: How many seconds to wait before timing out
+        :param timeout: How many seconds to wait before timing out
                              (default is 600)
-        @type       timeout: C{int}
+        :type timeout: ``int``
 
-        @keyword    ssh_interface: The interface to wait for.
+        :param ssh_interface: The interface to wait for.
                                    Default is 'public_ips', other option is
                                    'private_ips'.
-        @type       ssh_interface: C{str}
+        :type ssh_interface: ``str``
 
-        @keyword    force_ipv4: Ignore ipv6 IP addresses (default is True).
-        @type       force_ipv4: C{bool}
+        :param force_ipv4: Ignore ipv6 IP addresses (default is True).
+        :type force_ipv4: ``bool``
 
-        @return: C{[(Node, ip_addresses)]} list of tuple of Node instance and
+        :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
                  list of ip_address on success.
-
-        @return: List of tuple of Node instance and list of ip_address on
-                 success (node, ip_addresses).
-        @rtype: C{list} of C{tuple}
+        :rtype: ``list`` of ``tuple``
         """
         def is_supported(address):
             """Return True for supported address"""
@@ -868,18 +1034,18 @@ class NodeDriver(BaseDriver):
         Try to connect to the remote SSH server. If a connection times out or
         is refused it is retried up to timeout number of seconds.
 
-        @keyword    ssh_client: A configured SSHClient instance
-        @type       ssh_client: C{SSHClient}
+        :param ssh_client: A configured SSHClient instance
+        :type ssh_client: ``SSHClient``
 
-        @keyword    wait_period: How many seconds to wait between each loop
+        :param wait_period: How many seconds to wait between each loop
                                  iteration (default is 1.5)
-        @type       wait_period: C{int}
+        :type wait_period: ``int``
 
-        @keyword    timeout: How many seconds to wait before timing out
+        :param timeout: How many seconds to wait before timing out
                              (default is 600)
-        @type       timeout: C{int}
+        :type timeout: ``int``
 
-        @return: C{SSHClient} on success
+        :return: ``SSHClient`` on success
         """
         start = time.time()
         end = start + timeout
@@ -923,20 +1089,20 @@ class NodeDriver(BaseDriver):
         Run the deployment script on the provided node. At this point it is
         assumed that SSH connection has already been established.
 
-        @keyword    task: Deployment task to run on the node.
-        @type       task: C{Deployment}
+        :param task: Deployment task to run on the node.
+        :type task: ``Deployment``
 
-        @keyword    node: Node to operate one
-        @type       node: C{Node}
+        :param node: Node to operate one
+        :type node: ``Node``
 
-        @keyword    ssh_client: A configured and connected SSHClient instance
-        @type       ssh_client: C{SSHClient}
+        :param ssh_client: A configured and connected SSHClient instance
+        :type ssh_client: ``SSHClient``
 
-        @keyword    max_tries: How many times to retry if a deployment fails
+        :param max_tries: How many times to retry if a deployment fails
                                before giving up (default is 3)
-        @type       max_tries: C{int}
+        :type max_tries: ``int``
 
-        @return: C{Node} Node instance on success.
+        :return: ``Node`` Node instance on success.
         """
         tries = 0
         while tries < max_tries:
@@ -963,10 +1129,10 @@ def is_private_subnet(ip):
     """
     Utility function to check if an IP address is inside a private subnet.
 
-    @type ip: C{str}
-    @keyword ip: IP address to check
+    :type ip: ``str``
+    :param ip: IP address to check
 
-    @return: C{bool} if the specified IP address is private.
+    :return: ``bool`` if the specified IP address is private.
     """
     priv_subnets = [{'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
                     {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
@@ -988,7 +1154,7 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     """
     Check if the provided address is valid IPv4 or IPv6 adddress.
 
-    @return: C{bool} True if the provided address is valid.
+    :return: ``bool`` True if the provided address is valid.
     """
     try:
         socket.inet_pton(family, address)

@@ -94,12 +94,12 @@ class XMLRPCConnection(Connection):
         """
         Call a given `method_name`.
 
-        @type method_name: C{str}
-        @param method_name: A method exposed by the xmlrpc endpoint that you
+        :type method_name: ``str``
+        :param method_name: A method exposed by the xmlrpc endpoint that you
             are connecting to.
 
-        @type args: C{tuple}
-        @param args: Arguments to invoke with method with.
+        :type args: ``tuple``
+        :param args: Arguments to invoke with method with.
         """
         endpoint = kwargs.get('endpoint', self.endpoint)
         data = xmlrpclib.dumps(args, methodname=method_name, allow_none=True)

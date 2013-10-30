@@ -25,13 +25,15 @@ import shutil
 import sys
 
 try:
-    from lockfile import mkdirlockfile
+    import lockfile
+    from lockfile import LockTimeout, mkdirlockfile
 except ImportError:
-    raise ImportError('Missing lockfile dependency, you can install it ' \
+    raise ImportError('Missing lockfile dependency, you can install it '
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
 from libcloud.utils.py3 import relpath
+from libcloud.utils.py3 import u
 from libcloud.common.base import Connection
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.common.types import LibcloudError
@@ -56,7 +58,7 @@ class LockLocalStorage(object):
     def __enter__(self):
         try:
             self.lock.acquire(timeout=0.1)
-        except lockfile.LockTimeout:
+        except LockTimeout:
             raise LibcloudError('Lock timeout')
 
     def __exit__(self, type, value, traceback):
@@ -108,8 +110,8 @@ class LocalStorageDriver(StorageDriver):
         """
         Check if the container name is valid
 
-        @param container_name: Container name
-        @type container_name: C{str}
+        :param container_name: Container name
+        :type container_name: ``str``
         """
 
         if '/' in container_name or '\\' in container_name:
@@ -120,11 +122,11 @@ class LocalStorageDriver(StorageDriver):
         """
         Create a container instance
 
-        @param container_name: Container name.
-        @type container_name: C{str}
+        :param container_name: Container name.
+        :type container_name: ``str``
 
-        @return: Container instance.
-        @rtype: L{Container}
+        :return: Container instance.
+        :rtype: :class:`Container`
         """
 
         self._check_container_name(container_name)
@@ -150,14 +152,14 @@ class LocalStorageDriver(StorageDriver):
         """
         Create an object instance
 
-        @param container: Container.
-        @type container: L{Container}
+        :param container: Container.
+        :type container: :class:`Container`
 
-        @param object_name: Object name.
-        @type object_name: C{str}
+        :param object_name: Object name.
+        :type object_name: ``str``
 
-        @return: Object instance.
-        @rtype: L{Object}
+        :return: Object instance.
+        :rtype: :class:`Object`
         """
 
         full_path = os.path.join(self.base_path, container.name, object_name)
@@ -175,7 +177,7 @@ class LocalStorageDriver(StorageDriver):
         # use only the mtime attribute here. If the file contents change,
         # the underlying file-system will change mtime
         data_hash = self._get_hash_function()
-        data_hash.update(str(stat.st_mtime))
+        data_hash.update(u(stat.st_mtime).encode('ascii'))
         data_hash = data_hash.hexdigest()
 
         extra = {}
@@ -191,8 +193,8 @@ class LocalStorageDriver(StorageDriver):
         """
         Return a generator of containers.
 
-        @return: A generator of Container instances.
-        @rtype: C{generator} of L{Container}
+        :return: A generator of Container instances.
+        :rtype: ``generator`` of :class:`Container`
         """
 
         for container_name in os.listdir(self.base_path):
@@ -223,11 +225,11 @@ class LocalStorageDriver(StorageDriver):
         """
         Returns a generator of objects for the given container.
 
-        @param container: Container instance
-        @type container: L{Container}
+        :param container: Container instance
+        :type container: :class:`Container`
 
-        @return: A generator of Object instances.
-        @rtype: C{generator} of L{Object}
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
         """
 
         return self._get_objects(container)
@@ -236,11 +238,11 @@ class LocalStorageDriver(StorageDriver):
         """
         Return a container instance.
 
-        @param container_name: Container name.
-        @type container_name: C{str}
+        :param container_name: Container name.
+        :type container_name: ``str``
 
-        @return: L{Container} instance.
-        @rtype: L{Container}
+        :return: :class:`Container` instance.
+        :rtype: :class:`Container`
         """
         return self._make_container(container_name)
 
@@ -248,14 +250,14 @@ class LocalStorageDriver(StorageDriver):
         """
         Return a container CDN URL.
 
-        @param container: Container instance
-        @type  container: L{Container}
+        :param container: Container instance
+        :type  container: :class:`Container`
 
-        @param check: Indicates if the path's existance must be checked
-        @type check: C{bool}
+        :param check: Indicates if the path's existance must be checked
+        :type check: ``bool``
 
-        @return: A CDN URL for this container.
-        @rtype: C{str}
+        :return: A CDN URL for this container.
+        :rtype: ``str``
         """
         path = os.path.join(self.base_path, container.name)
 
@@ -269,14 +271,14 @@ class LocalStorageDriver(StorageDriver):
         """
         Return an object instance.
 
-        @param container_name: Container name.
-        @type  container_name: C{str}
+        :param container_name: Container name.
+        :type  container_name: ``str``
 
-        @param object_name: Object name.
-        @type  object_name: C{str}
+        :param object_name: Object name.
+        :type  object_name: ``str``
 
-        @return: L{Object} instance.
-        @rtype: L{Object}
+        :return: :class:`Object` instance.
+        :rtype: :class:`Object`
         """
         container = self._make_container(container_name)
         return self._make_object(container, object_name)
@@ -285,11 +287,11 @@ class LocalStorageDriver(StorageDriver):
         """
         Return a object CDN URL.
 
-        @param obj: Object instance
-        @type  obj: L{Object}
+        :param obj: Object instance
+        :type  obj: :class:`Object`
 
-        @return: A CDN URL for this object.
-        @rtype: C{str}
+        :return: A CDN URL for this object.
+        :rtype: ``str``
         """
         return os.path.join(self.base_path, obj.container.name, obj.name)
 
@@ -297,16 +299,16 @@ class LocalStorageDriver(StorageDriver):
         """
         Enable container CDN.
 
-        @param container: Container instance
-        @type  container: L{Container}
+        :param container: Container instance
+        :type  container: :class:`Container`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         path = self.get_container_cdn_url(container)
-        lock = lockfile.MkdirFileLock(path, threaded=True)
+        lockfile.MkdirFileLock(path, threaded=True)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             self._make_path(path)
 
         return True
@@ -315,14 +317,14 @@ class LocalStorageDriver(StorageDriver):
         """
         Enable object CDN.
 
-        @param obj: Object instance
-        @type  obj: L{Object}
+        :param obj: Object instance
+        :type  obj: :class:`Object`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         path = self.get_object_cdn_url(obj)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             if os.path.exists(path):
                 return False
             try:
@@ -338,24 +340,24 @@ class LocalStorageDriver(StorageDriver):
         """
         Download an object to the specified destination path.
 
-        @param obj: Object instance.
-        @type obj: L{Object}
+        :param obj: Object instance.
+        :type obj: :class:`Object`
 
-        @param destination_path: Full path to a file or a directory where the
+        :param destination_path: Full path to a file or a directory where the
                                 incoming file will be saved.
-        @type destination_path: C{str}
+        :type destination_path: ``str``
 
-        @param overwrite_existing: True to overwrite an existing file,
+        :param overwrite_existing: True to overwrite an existing file,
             defaults to False.
-        @type overwrite_existing: C{bool}
+        :type overwrite_existing: ``bool``
 
-        @param delete_on_failure: True to delete a partially downloaded file if
+        :param delete_on_failure: True to delete a partially downloaded file if
         the download was not successful (hash mismatch / file size).
-        @type delete_on_failure: C{bool}
+        :type delete_on_failure: ``bool``
 
-        @return: True if an object has been successfully downloaded, False
+        :return: True if an object has been successfully downloaded, False
         otherwise.
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
 
         obj_path = self.get_object_cdn_url(obj)
@@ -393,13 +395,13 @@ class LocalStorageDriver(StorageDriver):
         """
         Return a generator which yields object data.
 
-        @param obj: Object instance
-        @type obj: L{Object}
+        :param obj: Object instance
+        :type obj: :class:`Object`
 
-        @param chunk_size: Optional chunk size (in bytes).
-        @type chunk_size: C{int}
+        :param chunk_size: Optional chunk size (in bytes).
+        :type chunk_size: ``int``
 
-        @rtype: C{object}
+        :rtype: ``object``
         """
 
         path = self.get_object_cdn_url(obj)
@@ -413,22 +415,22 @@ class LocalStorageDriver(StorageDriver):
         """
         Upload an object currently located on a disk.
 
-        @param file_path: Path to the object on disk.
-        @type file_path: C{str}
+        :param file_path: Path to the object on disk.
+        :type file_path: ``str``
 
-        @param container: Destination container.
-        @type container: L{Container}
+        :param container: Destination container.
+        :type container: :class:`Container`
 
-        @param object_name: Object name.
-        @type object_name: C{str}
+        :param object_name: Object name.
+        :type object_name: ``str``
 
-        @param verify_hash: Verify hast
-        @type verify_hash: C{bool}
+        :param verify_hash: Verify hast
+        :type verify_hash: ``bool``
 
-        @param extra: (optional) Extra attributes (driver specific).
-        @type extra: C{dict}
+        :param extra: (optional) Extra attributes (driver specific).
+        :type extra: ``dict``
 
-        @rtype: C{object}
+        :rtype: ``object``
         """
 
         path = self.get_container_cdn_url(container, check=True)
@@ -437,7 +439,7 @@ class LocalStorageDriver(StorageDriver):
 
         self._make_path(base_path)
 
-        with LockLocalStorage(obj_path) as lock:
+        with LockLocalStorage(obj_path):
             shutil.copy(file_path, obj_path)
 
         os.chmod(obj_path, int('664', 8))
@@ -464,21 +466,21 @@ class LocalStorageDriver(StorageDriver):
         function which uses fs.stat function to determine the file size and it
         doesn't need to buffer whole object in the memory.
 
-        @type iterator: C{object}
-        @param iterator: An object which implements the iterator interface.
+        :type iterator: ``object``
+        :param iterator: An object which implements the iterator interface.
 
-        @type container: L{Container}
-        @param container: Destination container.
+        :type container: :class:`Container`
+        :param container: Destination container.
 
-        @type object_name: C{str}
-        @param object_name: Object name.
+        :type object_name: ``str``
+        :param object_name: Object name.
 
-        @type extra: C{dict}
-        @param extra: (optional) Extra attributes (driver specific). Note:
+        :type extra: ``dict``
+        :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
 
-        @rtype: C{object}
+        :rtype: ``object``
         """
 
         path = self.get_container_cdn_url(container, check=True)
@@ -487,7 +489,7 @@ class LocalStorageDriver(StorageDriver):
 
         self._make_path(base_path)
 
-        with LockLocalStorage(obj_path) as lock:
+        with LockLocalStorage(obj_path):
             obj_file = open(obj_path, 'w')
             for data in iterator:
                 obj_file.write(data)
@@ -502,16 +504,16 @@ class LocalStorageDriver(StorageDriver):
         """
         Delete an object.
 
-        @type obj: L{Object}
-        @param obj: Object instance.
+        :type obj: :class:`Object`
+        :param obj: Object instance.
 
-        @return: C{bool} True on success.
-        @rtype: C{bool}
+        :return: ``bool`` True on success.
+        :rtype: ``bool``
         """
 
         path = self.get_object_cdn_url(obj)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             try:
                 os.unlink(path)
             except Exception:
@@ -539,11 +541,11 @@ class LocalStorageDriver(StorageDriver):
         """
         Create a new container.
 
-        @type container_name: C{str}
-        @param container_name: Container name.
+        :type container_name: ``str``
+        :param container_name: Container name.
 
-        @return: C{Container} instance on success.
-        @rtype: L{Container}
+        :return: :class:`Container` instance on success.
+        :rtype: :class:`Container`
         """
 
         self._check_container_name(container_name)
@@ -574,21 +576,22 @@ class LocalStorageDriver(StorageDriver):
         """
         Delete a container.
 
-        @type container: L{Container}
-        @param container: Container instance
+        :type container: :class:`Container`
+        :param container: Container instance
 
-        @return: True on success, False otherwise.
-        @rtype: C{bool}
+        :return: True on success, False otherwise.
+        :rtype: ``bool``
         """
 
         # Check if there are any objects inside this
         for obj in self._get_objects(container):
             raise ContainerIsNotEmptyError(value='Container is not empty',
-                                container_name=container.name, driver=self)
+                                           container_name=container.name,
+                                           driver=self)
 
         path = self.get_container_cdn_url(container, check=True)
 
-        with LockLocalStorage(path) as lock:
+        with LockLocalStorage(path):
             try:
                 shutil.rmtree(path)
             except Exception:

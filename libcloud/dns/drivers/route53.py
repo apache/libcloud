@@ -215,8 +215,8 @@ class Route53DNSDriver(DNSDriver):
         """
         Remove all the records for the provided zone.
 
-        @param zone: Zone to delete records for.
-        @type  zone: L{Zone}
+        :param zone: Zone to delete records for.
+        :type  zone: :class:`Zone`
         """
         deletions = []
         for r in zone.list_records():

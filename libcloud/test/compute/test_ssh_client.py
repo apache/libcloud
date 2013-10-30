@@ -17,9 +17,12 @@
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import os
 import sys
+import tempfile
 import unittest
 
+from libcloud import _init_once
 from libcloud.compute.ssh import ParamikoSSHClient
 from libcloud.compute.ssh import ShellOutSSHClient
 from libcloud.compute.ssh import have_paramiko
@@ -27,10 +30,11 @@ from libcloud.compute.ssh import have_paramiko
 from mock import patch, Mock
 
 if not have_paramiko:
-    ParamikoSSHClient = None
+    ParamikoSSHClient = None  # NOQA
 
 
 class ParamikoSSHClientTests(unittest.TestCase):
+
     @patch('paramiko.SSHClient', Mock)
     def setUp(self):
         """
@@ -41,6 +45,9 @@ class ParamikoSSHClientTests(unittest.TestCase):
                        'username': 'ubuntu',
                        'key': '~/.ssh/ubuntu_ssh',
                        'timeout': '600'}
+        _, self.tmp_file = tempfile.mkstemp()
+        os.environ['LIBCLOUD_DEBUG'] = self.tmp_file
+        _init_once()
         self.ssh_cli = ParamikoSSHClient(**conn_params)
 
     @patch('paramiko.SSHClient', Mock)
@@ -64,6 +71,7 @@ class ParamikoSSHClientTests(unittest.TestCase):
                          'look_for_keys': False,
                          'port': 22}
         mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
 
     @patch('paramiko.SSHClient', Mock)
     def test_create_without_credentials(self):
@@ -112,9 +120,12 @@ class ParamikoSSHClientTests(unittest.TestCase):
                                                           mode='w')
 
         mock.run(sd)
+
         # Make assertions over 'run' method
         mock_cli.get_transport().open_session().exec_command \
                 .assert_called_once_with(sd)
+        self.assertLogMsg('Executing command (cmd=/root/random_script.sh)')
+        self.assertLogMsg('Command finished')
 
         mock.close()
 
@@ -131,16 +142,25 @@ class ParamikoSSHClientTests(unittest.TestCase):
         mock.delete(sd)
         # Make assertions over the 'delete' method
         mock.client.open_sftp().unlink.assert_called_with(sd)
+        self.assertLogMsg('Deleting file')
 
         mock.close()
+        self.assertLogMsg('Closing server connection')
+
+    def assertLogMsg(self, expected_msg):
+        with open(self.tmp_file, 'r') as fp:
+            content = fp.read()
+
+        self.assertTrue(content.find(expected_msg) != -1)
 
 
 if not ParamikoSSHClient:
-    class ParamikoSSHClientTests(unittest.TestCase):
+    class ParamikoSSHClientTests(unittest.TestCase):  # NOQA
         pass
 
 
 class ShellOutSSHClientTests(unittest.TestCase):
+
     def test_password_auth_not_supported(self):
         try:
             ShellOutSSHClient(hostname='localhost', username='foo',
@@ -191,11 +211,11 @@ class ShellOutSSHClientTests(unittest.TestCase):
         cmd2 = client2._get_base_ssh_command()
         cmd3 = client3._get_base_ssh_command()
 
-        self.assertEquals(cmd1, ['ssh', 'root@localhost'])
-        self.assertEquals(cmd2, ['ssh', '-i', '/home/my.key',
-                                 'root@localhost'])
-        self.assertEquals(cmd3, ['ssh', '-i', '/home/my.key',
-                                 '-oConnectTimeout=5', 'root@localhost'])
+        self.assertEqual(cmd1, ['ssh', 'root@localhost'])
+        self.assertEqual(cmd2, ['ssh', '-i', '/home/my.key',
+                                'root@localhost'])
+        self.assertEqual(cmd3, ['ssh', '-i', '/home/my.key',
+                                '-oConnectTimeout=5', 'root@localhost'])
 
 
 if __name__ == '__main__':

@@ -26,6 +26,7 @@ from libcloud.test.secrets import HOSTVIRTUAL_PARAMS
 
 
 class HostVirtualTest(unittest.TestCase):
+
     def setUp(self):
         HostVirtualNodeDriver.connectionCls.conn_classes = (
             None, HostVirtualMockHttp)
@@ -105,14 +106,6 @@ class HostVirtualTest(unittest.TestCase):
         )
         self.assertEqual('62291', node.id)
         self.assertEqual('server1.vr-cluster.org', node.name)
-
-    def test_ex_provision_node(self):
-        node = self.driver.list_nodes()[0]
-        auth = NodeAuthPassword('vr!@#hosted#@!')
-        self.assertTrue(self.driver.ex_provision_node(
-            node=node,
-            auth=auth
-        ))
 
     def test_ex_provision_node(self):
         node = self.driver.list_nodes()[0]

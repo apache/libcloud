@@ -4,17 +4,363 @@ Changes with Apache Libcloud in development
 
  *) Compute
 
-    - Modify ElasticHosts drive to store drive UUID in 'extra' field.
-      (LIBCLOUD-357)
-      [Bob Thompson]
+   - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
+     [Oleg Suharev]
+
+   - Add the following new extension methods for elastic IP management to the
+     EC2 driver: ex_allocate_address, ex_disassociate_address,
+     ex_release_address. (LIBCLOUD-417)
+     [Patrick Armstrong]
+
+  - For consistency and accuracy, rename "ex_associate_addresses" method in the
+    EC2 driver to "ex_associate_address_with_node".
+
+    Note: Old method will continue to work until the next major release.
+    [Tomaz Muraus]
+
+  - Add new driver for CloudFrames (http://www.cloudfounders.com/CloudFrames)
+    provider. (LIBCLOUD-358)
+    [Bernard Kerckenaere]
+
+  - Update default kernel versions which are used when creating a Linode
+    server.
+
+    Old default kernel versions:
+
+    - x86 - 2.6.18.8-x86_64-linode1
+    - x86_64 - 2.6.39.1-linode34
+
+    New default kernel versions:
+
+    - x86 - 3.9.3-x86-linode52
+    - x86_64 - 3.9.3-x86_64-linode33
+
+    (LIBCLOUD-424)
+    [Tomaz Muraus, Jon Chen]
+
+  *) DNS
+
+    - Update issue with inexistent zone / record handling in the get_zone and
+      get_record method in the Linode driver. Those issues were related to
+      changes in the Linode API. (LIBCLOUD-425)
+      [Jon Chen]
+
+Changes with Apache Libcloud 0.14.0-beta2
+
+ *) Compute
+
+   - Add log statements to our ParamikoSSHClient wrapper. This should make
+     debugging deployment issues easier. (LIBCLOUD-414)
+     [Tomaz Muraus]
+
+   - Add new "NodeState.STOPPED" node state. Update HostVirual and EC2 driver to
+     also recognize this new state. (LIBCLOUD-296)
+     [Jayy Vis]
+
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+ *) Load Balancer
+
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+Changes with Apache Libcloud 0.14.0-beta1
+
+ *) General
+
+    - If the file exists, read pricing data from ~/.libcloud/pricing.json
+      by default. If the file doesn't exist, fall back to the old behavior
+      and use pricing data which is bundled with the release.
+      [Tomaz Muraus]
+
+    - Add libcloud.pricing.download_pricing_file function for downloading and
+      updating the pricing file.
+      [Tomaz Muraus]
+
+ *) Compute
+
+    - Refactor Rackspace driver classes and make them easier to use. Now there
+      are two Rackspace provider constants - Provider.RACKSPACE which
+      represents new next-gen OpenStack servers and
+      Provider.RACKSPACE_FIRST_GEN which represents old first-gen cloud
+      servers.
+
+      Note: This change is backward incompatible. For more information on those
+      changes and how to update your code, please visit "Upgrade Notes"
+      documentation page - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
+    - Deprecate the following EC2 provider constants: EC2_US_EAST,
+      EC2_EU, EC2_EU_WEST, EC2_AP_SOUTHEAST, EC2_AP_NORTHEAST,
+      EC2_US_WEST_OREGON, EC2_SA_EAST, EC2_SA_EAST and replace it with a new
+      EC2 constant.
+      Driver referenced by this new constant now takes a "region" argument which
+      dictates to which region to connect.
+
+      Note: Deprecated constants will continue to work until the next major
+      release. For more information on those changes and how to update your
+      code, please visit "Upgrade Notes" documentation page -
+      http://s.apache.org/lc0140un
+      [Tomaz Muraus]
 
     - Add support for volume related functions to OpenNebula driver.
       (LIBCLOUD-354)
       [Emanuele Rocca]
 
-    - Add methods for managing store volumes to the OpenStack driver.
+    - Add methods for managing storage volumes to the OpenStack driver.
       (LIBCLOUD-353)
       [Bernard Kerckenaere]
+
+    - Add new driver for Google Compute Engine (LIBCLOUD-266, LIBCLOUD-386)
+      [Rick Wright]
+
+    - Fix create_node "features" metadata and update affected drivers.
+      (LIBCLOUD-367)
+      [John Carr]
+
+    - Update EC2 driver to accept the auth kwarg (it will accept NodeAuthSSH
+      objects and automatically import a public key that is not already
+      uploaded to the EC2 keyring). (Follow on from LIBCLOUD-367).
+      [John Carr]
+
+    - Unify extension argument names for assigning a node to security groups
+      in EC2 and OpenStack driver.
+      Argument in the EC2 driver has been renamed from ex_securitygroup to
+      ex_security_groups. For backward compatibility reasons, old argument
+      will continue to work until the next major release. (LIBCLOUD-375)
+      [Tomaz Muraus]
+
+    - Add ex_import_keypair_from_string and ex_import_keypair method to the
+      CloudStack driver. (LIBCLOUD-380)
+      [Sebastien Goasguen]
+
+    - Add support for managing floating IP addresses to the OpenStack driver.
+      (LIBCLOUD-382)
+      [Ivan Kusalic]
+
+    - Add extension methods for handling port forwarding to the CloudStack
+      driver, rename CloudStackForwardingRule class to
+      CloudStackIPForwardingRule. (LIBCLOUD-383)
+      [sebastien goasguen]
+
+    - Hook up deploy_node functionality in the CloudStack driver and unify
+      extension arguments for handling security groups. (LIBCLOUD-388)
+      [sebastien goasguen]
+
+    - Allow user to pass "args" argument to the ScriptDeployment and
+      ScriptFileDeployment class. This argument tells which command line
+      arguments get passed to the ScriptDeployment script. (LIBCLOUD-394)
+
+      Note: This change is backward incompatible. For more information on how
+      this affects your code and how to update it, visit "Upgrade Notes"
+      documentation page - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
+    - Allow user to specify IAM profile to use when creating an EC2 node.
+      (LIBCLOUD-403)
+      [Xavier Barbosa]
+
+    - Add support for keypair management to the OpenStack driver.
+      (LIBCLOUD-392)
+      [L. Schaub]
+
+    - Allow user to specify disk partitioning mode using ex_disk_config argument
+      in the OpenStack based drivers. (LIBCLOUD-402)
+      [Brian Curtin]
+
+    - Add new driver for NephoScale provider (http://nephoscale.com/).
+      (LIBCLOUD-404)
+      [Markos Gogoulos]
+
+    - Update network related extension methods so they work correctly with
+      both, OpenStack and Rackspace driver. (LIBCLOUD-368)
+      [Tomaz Muraus]
+
+    - Add tests for networking functionality in the OpenStack and Rackspace
+      driver.
+      [Tomaz Muraus]
+
+    - Allow user to pass all supported extension arguments to ex_rebuild_server
+      method in the OpenStack driver. (LIBCLOUD-408)
+      [Dave King]
+
+    - Add pricing information for Rackspace Cloud Sydney region.
+      [Tomaz Muraus]
+
+    - Update EC2 instance type map and pricing data. High Storage instances are
+      now also available in Sydney and Singapore region.
+      [Tomaz Muraus]
+
+    - Add new methods for managing storage volumes and snapshots to the EC2
+      driver (list_volumes, list_snapshots, destroy_volume_snapshot,
+      create_volume_snapshot) (LIBCLOUD-409)
+      [Oleg Suharev]
+
+    - Add the following new extension methods to EC2 driver: ex_destroy_image,
+      ex_modify_instance_attributes, ex_delete_keypair. (LIBCLOUD-409)
+      [Oleg Suharev]
+
+    - Allow user to specify a port range when creating a port forwarding rule.
+      (LIBCLOUD-409)
+      [Oleg Suharev]
+
+    - Align Joyent driver with other drivers and deprecate "location" argument
+      in the driver constructor in favor of "region" argument.
+
+      Note: Deprecated argument will continue to work until the next major
+      release.
+      [Tomaz Muraus]
+
+    - Deprecate the following ElasticHosts provider constants: ELASTICHOSTS_UK1,
+      ELASTICHOSTS_UK2, ELASTICHOSTS_US1, ELASTICHOSTS_US2, ELASTICHOSTS_US3,
+      ELASTICHOSTS_CA1, ELASTICHOSTS_AU1, ELASTICHOSTS_CN1 and replace it with a
+      new ELASTICHOSTS constant.
+      Driver referenced by this new constant now takes a "region" argument which
+      dictates to which region to connect.
+
+      Note: Deprecated constants will continue to work until the next major
+      release. For more information on those changes and how to update your
+      code, please visit "Upgrade Notes" documentation page -
+      http://s.apache.org/lc0140un (LIBCLOUD-383)
+      [Michael Bennett, Tomaz Muraus]
+
+  *) Storage
+
+    - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
+      it with a new CLOUDFILES constant.
+      Driver referenced by this new constant takes a "region" keyword argument
+      which can be one of 'ord', 'dfw', 'iad', 'syd', 'lon'.
+
+      Note: Deprecated constants will continue to work until the next major
+      release.
+      For more information on this change, please visit "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
+    - Allow users to filter objects starting with a prefix by passing ex_prefix
+      argument to the list_container_objects method in the S3, Google Storage
+      and CloudFiles driver. (LIBCLOUD-369)
+      [Stefan Friesel]
+
+    - Fix an issue with mutating connectionCls.host attribute in the Azure
+      driver. This bug prevented user from having multiple Azure drivers with
+      different keys instantiated at the same time. (LIBCLOUD-399)
+      [Olivier Grisel]
+
+ *) Load Balancer
+
+    - Deprecate RACKSPACE_US and RACKSPACE_UK provider constant and replace it
+      with a new RACKSPACE constant.
+      Driver referenced by this new constant takes a "region" keyword argument
+      which can be one of the following: 'ord', 'dfw', 'iad', 'syd', 'lon'.
+
+      Note: Deprecated constants will continue to work until the next major
+      release.
+      For more information on this change, please visit "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
+    - Add new driver for Google Compute Engine (LIBCLOUD-386)
+      [Rick Wright]
+
+ *) DNS
+
+    - Deprecate RACKSPACE_US and RACKSPACE_UK provider constant and replace it
+      with a new RACKSPACE constant.
+      Driver referenced by this new constant takes a "region" keyword argument
+      which can be one of the following: 'us', 'uk'.
+
+      Note: Deprecated constants will continue to work until the next major
+      release.
+      For more information on this change, please visit "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
+
+   - Use string instead of integer for RecordType ENUM value.
+
+     Note: If you directly use an integer instead of RecordType ENUM class you
+     need to update your code to use the RecordType ENUM otherwise the code
+     won't work. For more information on how to do that, see "Upgrade Notes"
+     documentation section - http://s.apache.org/lc0140un
+     [Tomaz Muraus]
+
+   - Add "export_zone_to_bind_format" and export_zone_to_bind_zone_file method
+     which allows users to export Libcloud Zone to BIND zone format.
+     (LIBCLOUD-398)
+     [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.2
+
+  *) General
+
+    - Don't sent Content-Length: 0 header with POST and PUT request if "raw"
+      mode is used. This fixes a regression which could cause broken behavior
+      in some storage driver when uploading a file from disk.
+      (LIBCLOUD-396)
+      [Ivan Kusalic]
+
+  *) Compute
+
+    - Added Ubuntu Linux 12.04 image to ElasticHost driver image list.
+      (LIBCLOUD-364)
+      [Bob Thompson]
+
+    - Update ElasticHosts driver to store drive UUID in the node 'extra' field.
+      (LIBCLOUD-357)
+      [Bob Thompson]
+
+  *) Storage
+
+    - Store last_modified timestamp in the Object extra dictionary in the S3
+      driver. (LIBCLOUD-373)
+      [Stefan Friesel]
+
+  *) Load Balancer
+
+   - Expose CloudStack driver directly through the Provider.CLOUDSTACK
+     constant.
+     [Tomaz Muraus]
+
+ *) DNS
+
+   - Modify Zerigo driver to include record TTL in the record 'extra' attribute
+     if a record has a TTL set.
+     [Tomaz Muraus]
+
+   - Modify values in the Record 'extra' dictionary attribute in the Zerigo DNS
+     driver to be set to None instead of an empty string ('') if a value for
+     the provided key is not set.
+     [Tomaz Muraus]
+
+Changes with Apache Libcloud 0.13.1
+
+ *) General
+
+    - Fix a regression introduced in 0.13.0 and make sure to include
+      Content-Length 0 with PUT and POST requests. (LIBCLOUD-362, LIBCLOUD-390)
+      [Tomaz Muraus]
+
+ *) Compute
+
+    - Fix a bug in the ElasticHosts driver and check for right HTTP status
+      code when determining drive imaging success. (LIBCLOUD-363)
+      [Bob Thompson]
+
+    - Update Opsource driver to include node public ip address (if available).
+      (LIBCLOUD-384)
+      [Michael Bennett]
+
+  *) Storage
+
+    - Fix a regression with calling encode_container_name instead of
+      encode_object_name on object name in get_object method.
+      Reported by Ben Meng (LIBCLOUD-366)
+      [Tomaz Muraus]
+
+    - Ensure that AWS S3 multipart upload works for small iterators.
+      (LIBCLOUD-378)
+      [Mahendra M]
 
 Changes with Apache Libcloud 0.13.0:
 
@@ -281,16 +627,6 @@ Changes with Apache Libcloud 0.12.1:
       (LIBCLOUD-245)
       [Tomaz Muraus]
 
-    - Refactor Rackspace driver classes and make them easier to use. Now there
-      are two rackspace constants - Provider.RACKSPACE which represents new
-      next-gen OpenStack servers and Provider.RACKSPACE_FIRST_GEN which
-      represents old cloud servers.
-
-      Note: This change is backward incompatible. For more information on those
-      changes and how to upgrade your code to make it work with it, please visit
-      TODO.
-      [Tomaz Muraus]
-
     - Improvements and additions in vCloud driver:
       - Expose generic query method (ex_query)
       - Provide functionality to get and set control access for vApps. This way
@@ -421,15 +757,6 @@ Changes with Apache Libcloud 0.12.1:
 
     - Add ex_purge_object_from_cdn method to the CloudFiles driver.
       (LIBCLOUD-267)
-      [Tomaz Muraus]
-
-    - Deprecate CLOUDFILES_US and CLOUDFILES_UK storage provider constants and
-      add a new CLOUDFILES constant.
-      Driver referenced by this constant takes a "datacenter" keyword argument
-      and can be one of 'ord', 'dfw' or 'lon'.
-
-      Note: Deprecated constants will continue to work for the foreseeable
-      future.
       [Tomaz Muraus]
 
     - Support for multipart uploads and other improvements in the S3 driver

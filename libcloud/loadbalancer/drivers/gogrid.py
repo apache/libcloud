@@ -71,7 +71,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
 
     def __init__(self, *args, **kwargs):
         """
-        @inherits: L{Driver.__init__}
+        @inherits: :class:`Driver.__init__`
         """
         super(GoGridLBDriver, self).__init__(*args, **kwargs)
 
@@ -86,7 +86,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
     def ex_create_balancer_nowait(self, name, members, protocol='http',
                                   port=80, algorithm=DEFAULT_ALGORITHM):
         """
-        @inherits: L{Driver.create_balancer}
+        @inherits: :class:`Driver.create_balancer`
         """
         algorithm = self._algorithm_to_value(algorithm)
 
@@ -164,8 +164,9 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
 
         resp = self._update_balancer(params)
         return [m for m in
-               self._to_members(resp.object["list"][0]["realiplist"], balancer)
-               if m.ip == member.ip][0]
+                self._to_members(resp.object["list"][0]["realiplist"],
+                                 balancer)
+                if m.ip == member.ip][0]
 
     def balancer_detach_member(self, balancer, member):
         members = self.balancer_list_members(balancer)
@@ -199,7 +200,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
 
     def _members_to_params(self, members):
         """
-        Helper method to convert list of L{Member} objects
+        Helper method to convert list of :class:`Member` objects
         to GET params.
 
         """

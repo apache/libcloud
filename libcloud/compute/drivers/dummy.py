@@ -69,10 +69,10 @@ class DummyNodeDriver(NodeDriver):
 
     def __init__(self, creds):
         """
-        @param  creds: Credentials
-        @type   creds: C{str}
+        :param  creds: Credentials
+        :type   creds: ``str``
 
-        @rtype: C{None}
+        :rtype: ``None``
         """
         self.creds = creds
         try:
@@ -115,9 +115,9 @@ class DummyNodeDriver(NodeDriver):
     def get_uuid(self, unique_field=None):
         """
 
-        @param  unique_field: Unique field
-        @type   unique_field: C{bool}
-        @rtype: L{UUID}
+        :param  unique_field: Unique field
+        :type   unique_field: ``bool``
+        :rtype: :class:`UUID`
         """
         return str(uuid.uuid4())
 
@@ -145,10 +145,10 @@ class DummyNodeDriver(NodeDriver):
         's1'
         >>> node.image.id
         'i2'
-        >>> sorted([node.name for node in driver.list_nodes()])
+        >>> sorted([n.name for n in driver.list_nodes()])
         ['dummy-1', 'dummy-2', 'dummy-3']
 
-        @inherits: L{NodeDriver.list_nodes}
+        @inherits: :class:`NodeDriver.list_nodes`
         """
         return self.nl
 
@@ -172,7 +172,7 @@ class DummyNodeDriver(NodeDriver):
 
         Please note, dummy nodes never recover from the reboot.
 
-        @inherits: L{NodeDriver.reboot_node}
+        @inherits: :class:`NodeDriver.reboot_node`
         """
 
         node.state = NodeState.REBOOTING
@@ -185,17 +185,18 @@ class DummyNodeDriver(NodeDriver):
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> driver = DummyNodeDriver(0)
         >>> from libcloud.compute.types import NodeState
-        >>> node = [node for node in driver.list_nodes() if node.name == 'dummy-1'][0]
+        >>> node = [node for node in driver.list_nodes() if
+        ...         node.name == 'dummy-1'][0]
         >>> node.state == NodeState.RUNNING
         True
         >>> driver.destroy_node(node)
         True
         >>> node.state == NodeState.RUNNING
         False
-        >>> [node for node in driver.list_nodes() if node.name == 'dummy-1']
+        >>> [n for n in driver.list_nodes() if n.name == 'dummy-1']
         []
 
-        @inherits: L{NodeDriver.destroy_node}
+        @inherits: :class:`NodeDriver.destroy_node`
         """
 
         node.state = NodeState.TERMINATED
@@ -211,7 +212,7 @@ class DummyNodeDriver(NodeDriver):
         >>> sorted([image.name for image in driver.list_images()])
         ['Slackware 4', 'Ubuntu 9.04', 'Ubuntu 9.10']
 
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
         """
         return [
             NodeImage(id=1, name="Ubuntu 9.10", driver=self),
@@ -228,7 +229,7 @@ class DummyNodeDriver(NodeDriver):
         >>> sorted([size.ram for size in driver.list_sizes()])
         [128, 512, 4096, 8192]
 
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
         """
 
         return [
@@ -268,10 +269,11 @@ class DummyNodeDriver(NodeDriver):
 
         >>> from libcloud.compute.drivers.dummy import DummyNodeDriver
         >>> driver = DummyNodeDriver(0)
-        >>> sorted([loc.name + " in " + loc.country for loc in driver.list_locations()])
+        >>> sorted([loc.name + " in " + loc.country for loc in
+        ...         driver.list_locations()])
         ['Island Datacenter in FJ', 'London Loft in GB', "Paul's Room in US"]
 
-        @inherits: L{NodeDriver.list_locations}
+        @inherits: :class:`NodeDriver.list_locations`
         """
         return [
             NodeLocation(id=1,
@@ -307,7 +309,7 @@ class DummyNodeDriver(NodeDriver):
         >>> sorted([node.name for node in driver.list_nodes()])
         ['dummy-1', 'dummy-2', 'dummy-4']
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
         """
         l = len(self.nl) + 1
         n = Node(id=l,

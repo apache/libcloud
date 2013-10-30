@@ -1,0 +1,57 @@
+{
+  "id": "projects/project_name/aggregated/forwardingRules",
+  "items": {
+    "regions/europe-west1": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "regions/europe-west1"
+          }
+        ],
+        "message": "There are no results for scope 'regions/europe-west1' on this page."
+      }
+    },
+    "regions/us-central1": {
+      "forwardingRules": [
+        {
+          "IPAddress": "173.255.119.224",
+          "IPProtocol": "TCP",
+          "creationTimestamp": "2013-09-03T00:17:25.544-07:00",
+          "id": "10901665092293158938",
+          "kind": "compute#forwardingRule",
+          "name": "lcforwardingrule",
+          "portRange": "8000-8500",
+          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
+          "target": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
+        },
+        {
+          "IPAddress": "173.255.119.185",
+          "IPProtocol": "TCP",
+          "creationTimestamp": "2013-09-02T22:25:50.575-07:00",
+          "id": "15826316229163619337",
+          "kind": "compute#forwardingRule",
+          "name": "libcloud-lb-demo-lb",
+          "portRange": "80-80",
+          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
+          "target": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
+        }
+      ]
+    },
+    "regions/us-central2": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "regions/us-central2"
+          }
+        ],
+        "message": "There are no results for scope 'regions/us-central2' on this page."
+      }
+    }
+  },
+  "kind": "compute#forwardingRuleAggregatedList",
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/aggregated/forwardingRules"
+}

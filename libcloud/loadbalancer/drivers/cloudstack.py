@@ -16,6 +16,7 @@
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.loadbalancer.base import LoadBalancer, Member, Driver, Algorithm
 from libcloud.loadbalancer.base import DEFAULT_ALGORITHM
+from libcloud.loadbalancer.types import Provider
 from libcloud.loadbalancer.types import State
 from libcloud.utils.misc import reverse_dict
 
@@ -26,6 +27,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
     api_name = 'cloudstack_lb'
     name = 'CloudStack'
     website = 'http://cloudstack.org/'
+    type = Provider.CLOUDSTACK
 
     _VALUE_TO_ALGORITHM_MAP = {
         'roundrobin': Algorithm.ROUND_ROBIN,
@@ -37,17 +39,33 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         'Active': State.RUNNING,
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, key, secret=None, secure=True, host=None,
+                 path=None, port=None, *args, **kwargs):
         """
-        @inherits: L{Driver.__init__}
+        @inherits: :class:`Driver.__init__`
         """
-        super(CloudStackLBDriver, self).__init__(*args, **kwargs)
+        host = host if host else self.host
+        path = path if path else self.path
+
+        if path is not None:
+            self.path = path
+
+        if host is not None:
+            self.host = host
+
+        if (self.type == Provider.CLOUDSTACK) and (not host or not path):
+            raise Exception('When instantiating CloudStack driver directly ' +
+                            'you also need to provide host and path argument')
+
+        super(CloudStackLBDriver, self).__init__(key=key, secret=secret,
+                                                 secure=secure,
+                                                 host=host, port=port)
 
     def list_protocols(self):
         """
         We don't actually have any protocol awareness beyond TCP.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         return ['tcp']
 
@@ -67,13 +85,13 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
                         algorithm=DEFAULT_ALGORITHM, location=None,
                         private_port=None):
         """
-        @inherits: L{Driver.create_balancer}
+        @inherits: :class:`Driver.create_balancer`
 
-        @param location: Location
-        @type  location: L{NodeLocation}
+        :param location: Location
+        :type  location: :class:`NodeLocation`
 
-        @param private_port: Private port
-        @type  private_port: C{int}
+        :param private_port: Private port
+        :type  private_port: ``int``
         """
         if location is None:
             locations = self._sync_request('listZones')
@@ -122,7 +140,7 @@ class CloudStackLBDriver(CloudStackDriverMixIn, Driver):
         members = self._sync_request('listLoadBalancerRuleInstances',
                                      id=balancer.id)
         members = members['loadbalancerruleinstance']
-        return [self._to_member(m, balancer.ex_private_port, balancer) \
+        return [self._to_member(m, balancer.ex_private_port, balancer)
                 for m in members]
 
     def _to_balancer(self, obj):

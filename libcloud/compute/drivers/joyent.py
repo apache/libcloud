@@ -46,8 +46,8 @@ NODE_STATE_MAP = {
     'deleted': NodeState.TERMINATED
 }
 
-LOCATIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
-DEFAULT_LOCATION = LOCATIONS[0]
+VALID_REGIONS = ['us-east-1', 'us-west-1', 'us-sw-1', 'eu-ams-1']
+DEFAULT_REGION = 'us-east-1'
 
 
 class JoyentResponse(JsonResponse):
@@ -59,7 +59,7 @@ class JoyentResponse(JsonResponse):
                             httplib.NO_CONTENT]
 
     def parse_error(self):
-        if self.status == 401:
+        if self.status == httplib.UNAUTHORIZED:
             data = self.parse_body()
             raise InvalidCredsError(data['code'] + ': ' + data['message'])
         return self.body
@@ -96,23 +96,22 @@ class JoyentNodeDriver(NodeDriver):
     connectionCls = JoyentConnection
     features = {'create_node': ['generates_password']}
 
-    def __init__(self, *args, **kwargs):
-        """
-        @inherits: L{NodeDriver.__init__}
-
-        @keyword    location: Location which should be used
-        @type       location: C{str}
-        """
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region=DEFAULT_REGION, **kwargs):
+        # Location is here for backward compatibility reasons
         if 'location' in kwargs:
-            if kwargs['location'] not in LOCATIONS:
-                msg = 'Invalid location: "%s". Valid locations: %s'
-                raise LibcloudError(msg % (kwargs['location'],
-                                    ', '.join(LOCATIONS)), driver=self)
-        else:
-            kwargs['location'] = DEFAULT_LOCATION
+            region = kwargs['location']
 
-        super(JoyentNodeDriver, self).__init__(*args, **kwargs)
-        self.connection.host = kwargs['location'] + API_HOST_SUFFIX
+        if region not in VALID_REGIONS:
+            msg = 'Invalid region: "%s". Valid region: %s'
+            raise LibcloudError(msg % (region,
+                                ', '.join(VALID_REGIONS)), driver=self)
+
+        super(JoyentNodeDriver, self).__init__(key=key, secret=secret,
+                                               secure=secure, host=host,
+                                               port=port, region=region,
+                                               **kwargs)
+        self.connection.host = region + API_HOST_SUFFIX
 
     def list_images(self):
         result = self.connection.request('/my/datasets').object
@@ -176,10 +175,10 @@ class JoyentNodeDriver(NodeDriver):
         """
         Stop node
 
-        @param  node: The node to be stopped
-        @type   node: L{Node}
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         data = json.dumps({'action': 'stop'})
         result = self.connection.request('/my/machines/%s' % (node.id),
@@ -190,10 +189,10 @@ class JoyentNodeDriver(NodeDriver):
         """
         Start node
 
-        @param  node: The node to be stopped
-        @type   node: L{Node}
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         data = json.dumps({'action': 'start'})
         result = self.connection.request('/my/machines/%s' % (node.id),

@@ -44,7 +44,6 @@ class BrightboxNodeDriver(NodeDriver):
     type = Provider.BRIGHTBOX
     name = 'Brightbox'
     website = 'http://www.brightbox.co.uk/'
-    features = {'create_node': ['ssh_key']}
 
     NODE_STATE_MAP = {'creating': NodeState.PENDING,
                       'active': NodeState.RUNNING,
@@ -69,21 +68,23 @@ class BrightboxNodeDriver(NodeDriver):
                                      'started_at', 'created_at',
                                      'deleted_at'])
         extra_data['zone'] = self._to_location(data['zone'])
+
+        ipv6_addresses = [interface['ipv6_address'] for interface
+                          in data['interfaces'] if 'ipv6_address' in interface]
+
+        private_ips = [interface['ipv4_address']
+                       for interface in data['interfaces']
+                       if 'ipv4_address' in interface]
+
+        public_ips = [cloud_ip['public_ip'] for cloud_ip in data['cloud_ips']]
+        public_ips += ipv6_addresses
+
         return Node(
             id=data['id'],
             name=data['name'],
             state=self.NODE_STATE_MAP[data['status']],
-
-            private_ips=[interface['ipv4_address']
-                         for interface in data['interfaces']
-                         if 'ipv4_address' in interface],
-
-            public_ips=[cloud_ip['public_ip']
-                        for cloud_ip in data['cloud_ips']] +
-                        [interface['ipv6_address']
-                        for interface in data['interfaces']
-                        if 'ipv6_address' in interface],
-
+            private_ips=private_ips,
+            public_ips=public_ips,
             driver=self.connection.driver,
             size=self._to_size(data['server_type']),
             image=self._to_image(data['image']),
@@ -142,14 +143,14 @@ class BrightboxNodeDriver(NodeDriver):
 
         Reference: https://api.gb1.brightbox.com/1.0/#server_create_server
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    ex_userdata: User data
-        @type       ex_userdata: C{str}
+        :keyword    ex_userdata: User data
+        :type       ex_userdata: ``str``
 
-        @keyword    ex_servergroup: Name or list of server group ids to
+        :keyword    ex_servergroup: Name or list of server group ids to
                                     add server to
-        @type       ex_servergroup: C{str} or C{list} of C{str}
+        :type       ex_servergroup: ``str`` or ``list`` of ``str``
         """
         data = {
             'name': kwargs['name'],
@@ -201,7 +202,7 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @rtype: C{list} of C{dict}
+        :rtype: ``list`` of ``dict``
         """
         return self.connection.request('/%s/cloud_ips' % self.api_version) \
                               .object
@@ -212,10 +213,10 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @param      reverse_dns: Reverse DNS hostname
-        @type       reverse_dns: C{str}
+        :param      reverse_dns: Reverse DNS hostname
+        :type       reverse_dns: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         params = {}
 
@@ -230,13 +231,13 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
+        :param  cloud_ip_id: The id of the cloud ip.
+        :type   cloud_ip_id: ``str``
 
-        @param      reverse_dns: Reverse DNS hostname
-        @type       reverse_dns: C{str}
+        :param      reverse_dns: Reverse DNS hostname
+        :type       reverse_dns: ``str``
 
-        @rtype: C{dict}
+        :rtype: ``dict``
         """
         response = self._put('/%s/cloud_ips/%s' % (self.api_version,
                                                    cloud_ip_id),
@@ -250,15 +251,15 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
+        :param  cloud_ip_id: The id of the cloud ip.
+        :type   cloud_ip_id: ``str``
 
-        @param  interface_id: The Interface ID or LoadBalancer ID to
+        :param  interface_id: The Interface ID or LoadBalancer ID to
                               which this Cloud IP should be mapped to
-        @type   interface_id: C{str}
+        :type   interface_id: ``str``
 
-        @return: True if the mapping was successful.
-        @rtype: C{bool}
+        :return: True if the mapping was successful.
+        :rtype: ``bool``
         """
         response = self._post('/%s/cloud_ips/%s/map' % (self.api_version,
                                                         cloud_ip_id),
@@ -273,11 +274,11 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
+        :param  cloud_ip_id: The id of the cloud ip.
+        :type   cloud_ip_id: ``str``
 
-        @return: True if the unmap was successful.
-        @rtype: C{bool}
+        :return: True if the unmap was successful.
+        :rtype: ``bool``
         """
         response = self._post('/%s/cloud_ips/%s/unmap' % (self.api_version,
                                                           cloud_ip_id))
@@ -289,11 +290,11 @@ class BrightboxNodeDriver(NodeDriver):
 
         @note: This is an API extension for use on Brightbox
 
-        @param  cloud_ip_id: The id of the cloud ip.
-        @type   cloud_ip_id: C{str}
+        :param  cloud_ip_id: The id of the cloud ip.
+        :type   cloud_ip_id: ``str``
 
-        @return: True if the unmap was successful.
-        @rtype: C{bool}
+        :return: True if the unmap was successful.
+        :rtype: ``bool``
         """
         response = self.connection.request(
             '/%s/cloud_ips/%s' % (self.api_version,

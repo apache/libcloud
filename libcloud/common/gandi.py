@@ -115,7 +115,7 @@ class BaseObject(object):
     def get_uuid(self):
         """Unique hash for this object
 
-        @return: C{string}
+        :return: ``str``
 
         The hash is a function of an SHA1 hash of prefix, the object's ID and
         its driver which means that it should be unique between all

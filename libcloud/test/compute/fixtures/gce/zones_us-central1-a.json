@@ -1,0 +1,40 @@
+{
+  "creationTimestamp": "2013-02-05T16:19:23.269-08:00",
+  "description": "us-central1-a",
+  "id": "13462829244527433283",
+  "kind": "compute#zone",
+  "maintenanceWindows": [
+    {
+      "beginTime": "2013-08-17T12:00:00.000-07:00",
+      "description": "maintenance zone",
+      "endTime": "2013-09-01T12:00:00.000-07:00",
+      "name": "2013-08-17-planned-outage"
+    }
+  ],
+  "name": "us-central1-a",
+  "quotas": [
+    {
+      "limit": 8.0,
+      "metric": "INSTANCES",
+      "usage": 4.0
+    },
+    {
+      "limit": 8.0,
+      "metric": "CPUS",
+      "usage": 4.0
+    },
+    {
+      "limit": 8.0,
+      "metric": "DISKS",
+      "usage": 2.0
+    },
+    {
+      "limit": 1024.0,
+      "metric": "DISKS_TOTAL_GB",
+      "usage": 20.0
+    }
+  ],
+  "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
+  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a",
+  "status": "UP"
+}

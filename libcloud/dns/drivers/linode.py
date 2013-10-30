@@ -87,6 +87,8 @@ class LinodeDNSDriver(DNSDriver):
 
     def get_zone(self, zone_id):
         params = {'api_action': 'domain.list', 'DomainID': zone_id}
+        self.connection.set_context(context={'resource': 'zone',
+                                             'id': zone_id})
         data = self.connection.request(API_ROOT, params=params).objects[0]
         zones = self._to_zones(data)
 
@@ -99,6 +101,8 @@ class LinodeDNSDriver(DNSDriver):
         zone = self.get_zone(zone_id=zone_id)
         params = {'api_action': 'domain.resource.list', 'DomainID': zone_id,
                   'ResourceID': record_id}
+        self.connection.set_context(context={'resource': 'record',
+                                             'id': record_id})
         data = self.connection.request(API_ROOT, params=params).objects[0]
         records = self._to_records(items=data, zone=zone)
 
@@ -113,8 +117,6 @@ class LinodeDNSDriver(DNSDriver):
         Create a new zone.
 
         API docs: http://www.linode.com/api/dns/domain.create
-
-        @inherits: C{DNSDriver.create_zone}
         """
         params = {'api_action': 'domain.create', 'Type': type,
                   'Domain': domain}
@@ -135,8 +137,6 @@ class LinodeDNSDriver(DNSDriver):
         Update an existing zone.
 
         API docs: http://www.linode.com/api/dns/domain.update
-
-        @inherits: C{DNSDriver.update_zone}
         """
         params = {'api_action': 'domain.update', 'DomainID': zone.id}
 
@@ -164,8 +164,6 @@ class LinodeDNSDriver(DNSDriver):
         Create a new record.
 
         API docs: http://www.linode.com/api/dns/domain.resource.create
-
-        @inherits: C{DNSDriver.create_record}
         """
         params = {'api_action': 'domain.resource.create', 'DomainID': zone.id,
                   'Name': name, 'Target': data,
@@ -185,8 +183,6 @@ class LinodeDNSDriver(DNSDriver):
         Update an existing record.
 
         API docs: http://www.linode.com/api/dns/domain.resource.update
-
-        @inherits: C{DNSDriver.update_record}
         """
         params = {'api_action': 'domain.resource.update',
                   'ResourceID': record.id, 'DomainID': record.zone.id}

@@ -24,7 +24,9 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import IBM_PARAMS
 
+
 class IBMTests(unittest.TestCase, TestCaseMixin):
+
     """
     Tests the IBM SmartCloud Enterprise driver.
     """
@@ -42,29 +44,29 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         except InvalidCredsError:
             e = sys.exc_info()[1]
             self.assertTrue(isinstance(e, InvalidCredsError))
-            self.assertEquals(e.value, '401: Unauthorized')
+            self.assertEqual(e.value, '401: Unauthorized')
         else:
             self.fail('test should have thrown')
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
-        self.assertEquals(len(ret), 3)
-        self.assertEquals(ret[0].id, '26557')
-        self.assertEquals(ret[0].name, 'Insight Instance')
-        self.assertEquals(ret[0].public_ips, ['129.33.196.128'])
-        self.assertEquals(ret[0].private_ips, [])  # Private IPs not supported
-        self.assertEquals(ret[1].public_ips, [])   # Node is non-active (no IP)
-        self.assertEquals(ret[1].private_ips, [])
-        self.assertEquals(ret[1].id, '28193')
+        self.assertEqual(len(ret), 3)
+        self.assertEqual(ret[0].id, '26557')
+        self.assertEqual(ret[0].name, 'Insight Instance')
+        self.assertEqual(ret[0].public_ips, ['129.33.196.128'])
+        self.assertEqual(ret[0].private_ips, [])  # Private IPs not supported
+        self.assertEqual(ret[1].public_ips, [])   # Node is non-active (no IP)
+        self.assertEqual(ret[1].private_ips, [])
+        self.assertEqual(ret[1].id, '28193')
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
-        self.assertEquals(len(ret), 9) # 9 instance configurations supported
-        self.assertEquals(ret[0].id, 'BRZ32.1/2048/60*175')
-        self.assertEquals(ret[1].id, 'BRZ64.2/4096/60*500*350')
-        self.assertEquals(ret[2].id, 'COP32.1/2048/60')
-        self.assertEquals(ret[0].name, 'Bronze 32 bit')
-        self.assertEquals(ret[0].disk, None)
+        self.assertEqual(len(ret), 9)  # 9 instance configurations supported
+        self.assertEqual(ret[0].id, 'BRZ32.1/2048/60*175')
+        self.assertEqual(ret[1].id, 'BRZ64.2/4096/60*500*350')
+        self.assertEqual(ret[2].id, 'COP32.1/2048/60')
+        self.assertEqual(ret[0].name, 'Bronze 32 bit')
+        self.assertEqual(ret[0].disk, None)
 
     def test_list_images(self):
         ret = self.driver.list_images()
@@ -74,10 +76,10 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_locations(self):
         ret = self.driver.list_locations()
-        self.assertEquals(len(ret), 6)
-        self.assertEquals(ret[0].id, '41')
-        self.assertEquals(ret[0].name, 'Raleigh')
-        self.assertEquals(ret[0].country, 'U.S.A')
+        self.assertEqual(len(ret), 6)
+        self.assertEqual(ret[0].id, '41')
+        self.assertEqual(ret[0].name, 'Raleigh')
+        self.assertEqual(ret[0].country, 'U.S.A')
 
     def test_create_node(self):
         # Test creation of node
@@ -92,10 +94,10 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                       publicKey='MyPublicKey',
                                       configurationData={
                                            'insight_admin_password': 'myPassword1',
-                                           'db2_admin_password': 'myPassword2',
-                                           'report_user_password': 'myPassword3'})
+                                          'db2_admin_password': 'myPassword2',
+                                          'report_user_password': 'myPassword3'})
         self.assertTrue(isinstance(ret, Node))
-        self.assertEquals(ret.name, 'RationalInsight4')
+        self.assertEqual(ret.name, 'RationalInsight4')
 
         # Test creation attempt with invalid location
         IBMMockHttp.type = 'CREATE_INVALID'
@@ -108,18 +110,18 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
                                           publicKey='MyPublicKey',
                                           configurationData={
                                                'insight_admin_password': 'myPassword1',
-                                               'db2_admin_password': 'myPassword2',
-                                               'report_user_password': 'myPassword3'})
+                                              'db2_admin_password': 'myPassword2',
+                                              'report_user_password': 'myPassword3'})
         except Exception:
             e = sys.exc_info()[1]
-            self.assertEquals(e.args[0], 'Error 412: No DataCenter with id: 3')
+            self.assertEqual(e.args[0], 'Error 412: No DataCenter with id: 3')
         else:
             self.fail('test should have thrown')
 
     def test_destroy_node(self):
         # Delete existent node
         nodes = self.driver.list_nodes()            # retrieves 3 nodes
-        self.assertEquals(len(nodes), 3)
+        self.assertEqual(len(nodes), 3)
         IBMMockHttp.type = 'DELETE'
         toDelete = nodes[1]
         ret = self.driver.destroy_node(toDelete)
@@ -128,12 +130,12 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         # Delete non-existant node
         IBMMockHttp.type = 'DELETED'
         nodes = self.driver.list_nodes()            # retrieves 2 nodes
-        self.assertEquals(len(nodes), 2)
+        self.assertEqual(len(nodes), 2)
         try:
             self.driver.destroy_node(toDelete)      # delete non-existent node
         except Exception:
             e = sys.exc_info()[1]
-            self.assertEquals(e.args[0], 'Error 404: Invalid Instance ID 28193')
+            self.assertEqual(e.args[0], 'Error 404: Invalid Instance ID 28193')
         else:
             self.fail('test should have thrown')
 
@@ -142,7 +144,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         IBMMockHttp.type = 'REBOOT'
 
         # Reboot active node
-        self.assertEquals(len(nodes), 3)
+        self.assertEqual(len(nodes), 3)
         ret = self.driver.reboot_node(nodes[0])
         self.assertTrue(ret)
 
@@ -151,7 +153,8 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
             ret = self.driver.reboot_node(nodes[1])
         except Exception:
             e = sys.exc_info()[1]
-            self.assertEquals(e.args[0], 'Error 412: Instance must be in the Active state')
+            self.assertEqual(
+                e.args[0], 'Error 412: Instance must be in the Active state')
         else:
             self.fail('test should have thrown')
 
@@ -187,7 +190,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         IBMMockHttp.type = 'DESTROY'
         ret = self.driver.destroy_volume(vols[0])
         self.assertTrue(ret)
-        
+
     def test_ex_destroy_image(self):
         image = self.driver.list_images()
         IBMMockHttp.type = 'DESTROY'
@@ -225,6 +228,7 @@ class IBMTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[0].name, 'Small')
         self.assertEqual(ret[0].location, '61')
         self.assertEqual(ret[0].id, '20001208')
+
 
 class IBMMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('ibm_sce')
@@ -284,11 +288,11 @@ class IBMMockHttp(MockHttp):
     def _computecloud_enterprise_api_rest_20100331_storage_39281_DESTROY(self, method, url, body, headers):
         body = self.fixtures.load('destroy_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-        
+
     def _computecloud_enterprise_api_rest_20100331_offerings_image_2_DESTROY(self, method, url, body, headers):
         body = self.fixtures.load('destroy_image.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])    
-    
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _computecloud_enterprise_api_rest_20100331_instances_26557_DETACH(self, method, url, body, headers):
         body = self.fixtures.load('detach_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

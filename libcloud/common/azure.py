@@ -20,11 +20,10 @@ import hmac
 
 from hashlib import sha256
 
-from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-from libcloud.utils.xml import fixxpath, findtext
-from xml.etree          import ElementTree
+from libcloud.utils.xml import fixxpath
+from xml.etree import ElementTree
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError

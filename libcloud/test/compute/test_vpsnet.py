@@ -24,6 +24,8 @@ from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 
 from libcloud.test.secrets import VPSNET_PARAMS
+from libcloud.test.file_fixtures import ComputeFileFixtures
+
 
 class VPSNetTests(unittest.TestCase, TestCaseMixin):
 
@@ -90,9 +92,8 @@ class VPSNetTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(isinstance(ret, bool))
 
 
-
 class VPSNetMockHttp(MockHttp):
-
+    fixtures = ComputeFileFixtures('vpsnet')
 
     def _nodes_api10json_sizes(self, method, url, body, headers):
         body = """[{"slice":{"virtual_machine_id":8592,"id":12256,"consumer_id":0}},
@@ -198,10 +199,13 @@ class VPSNetMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _available_clouds_api10json_templates(self, method, url, body, headers):
-        body = """[{"cloud":{"system_templates":[{"id":9,"label":"Ubuntu 8.04 x64"},{"id":10,"label":"CentOS 5.2 x64"},{"id":11,"label":"Gentoo 2008.0 x64"},{"id":18,"label":"Ubuntu 8.04 x64 LAMP"},{"id":19,"label":"Ubuntu 8.04 x64 MySQL"},{"id":20,"label":"Ubuntu 8.04 x64 Postfix"},{"id":21,"label":"Ubuntu 8.04 x64 Apache"},{"id":22,"label":"CentOS 5.2 x64 MySQL"},{"id":23,"label":"CentOS 5.2 x64 LAMP"},{"id":24,"label":"CentOS 5.2 x64 HAProxy"},{"id":25,"label":"CentOS 5.2 x64 Postfix"},{"id":26,"label":"CentOS 5.2 x64 Varnish"},{"id":27,"label":"CentOS 5.2 x64 Shoutcast"},{"id":28,"label":"CentOS 5.2 x64 Apache"},{"id":40,"label":"cPanel"},{"id":42,"label":"Debian 5.0 (Lenny) x64"},{"id":58,"label":"Django on Ubuntu 8.04 (x86)"},{"id":59,"label":"Drupal 5 on Ubuntu 8.04 (x86)"},{"id":60,"label":"Drupal 6 on Ubuntu 8.04 (x86)"},{"id":61,"label":"Google App Engine on Ubuntu 8.04 (x86)"},{"id":62,"label":"LAMP on Ubuntu 8.04 (x86)"},{"id":63,"label":"LAPP on Ubuntu 8.04 (x86)"},{"id":64,"label":"MediaWiki on Ubuntu 8.04 (x86)"},{"id":65,"label":"MySQL on Ubuntu 8.04 (x86)"},{"id":66,"label":"phpBB on Ubuntu 8.04 (x86)"},{"id":67,"label":"PostgreSQL on Ubuntu 8.04 (x86)"},{"id":68,"label":"Rails on Ubuntu 8.04 (x86)"},{"id":69,"label":"Tomcat on Ubuntu 8.04 (x86)"},{"id":70,"label":"Wordpress on Ubuntu 8.04 (x86)"},{"id":71,"label":"Joomla on Ubuntu 8.04 (x86)"},{"id":72,"label":"Ubuntu 8.04 Default Install (turnkey)"},{"id":128,"label":"CentOS Optimised"},{"id":129,"label":"Optimised CentOS + Apache + MySQL + PHP"},{"id":130,"label":"Optimised CentOS + Apache + MySQL + Ruby"},{"id":131,"label":"Optimised CentOS + Apache + MySQL + Ruby + PHP"},{"id":132,"label":"Debian Optimised"},{"id":133,"label":"Optimised Debian + Apache + MySQL + PHP"},{"id":134,"label":"Optimised Debian + NGINX + MySQL + PHP"},{"id":135,"label":"Optimised Debian + Lighttpd + MySQL + PHP"},{"id":136,"label":"Optimised Debian + Apache + MySQL + Ruby + PHP"},{"id":137,"label":"Optimised Debian + Apache + MySQL + Ruby"},{"id":138,"label":"Optimised Debian + NGINX + MySQL + Ruby + PHP"},{"id":139,"label":"Optimised Debian + NGINX + MySQL + Ruby"},{"id":140,"label":"Optimised Debian + Apache + MySQL + PHP + Magento"},{"id":141,"label":"Optimised Debian + NGINX + MySQL + PHP + Magento"},{"id":142,"label":"Optimised Debian + Lighttpd + MySQL + PHP + Wordpress"}],"id":2,"label":"USA VPS Cloud"}},{"cloud":{"system_templates":[{"id":15,"label":"Ubuntu 8.04 x64"},{"id":16,"label":"CentOS 5.2 x64"},{"id":17,"label":"Gentoo 2008.0 x64"},{"id":29,"label":"Ubuntu 8.04 x64 LAMP"},{"id":30,"label":"Ubuntu 8.04 x64 MySQL"},{"id":31,"label":"Ubuntu 8.04 x64 Postfix"},{"id":32,"label":"Ubuntu 8.04 x64 Apache"},{"id":33,"label":"CentOS 5.2 x64 MySQL"},{"id":34,"label":"CentOS 5.2 x64 LAMP"},{"id":35,"label":"CentOS 5.2 x64 HAProxy"},{"id":36,"label":"CentOS 5.2 x64 Postfix"},{"id":37,"label":"CentOS 5.2 x64 Varnish"},{"id":38,"label":"CentOS 5.2 x64 Shoutcast"},{"id":39,"label":"CentOS 5.2 x64 Apache"},{"id":41,"label":"cPanel"},{"id":43,"label":"Debian 5.0 (Lenny) x64"},{"id":44,"label":"Django on Ubuntu 8.04 (x86)"},{"id":45,"label":"Drupal 5 on Ubuntu 8.04 (x86)"},{"id":46,"label":"Drupal 6 on Ubuntu 8.04 (x86)"},{"id":47,"label":"Google App Engine on Ubuntu 8.04 (x86)"},{"id":48,"label":"LAMP on Ubuntu 8.04 (x86)"},{"id":49,"label":"LAPP on Ubuntu 8.04 (x86)"},{"id":50,"label":"MediaWiki on Ubuntu 8.04 (x86)"},{"id":51,"label":"MySQL on Ubuntu 8.04 (x86)"},{"id":52,"label":"phpBB on Ubuntu 8.04 (x86)"},{"id":53,"label":"PostgreSQL on Ubuntu 8.04 (x86)"},{"id":54,"label":"Rails on Ubuntu 8.04 (x86)"},{"id":55,"label":"Tomcat on Ubuntu 8.04 (x86)"},{"id":56,"label":"Wordpress on Ubuntu 8.04 (x86)"},{"id":57,"label":"Joomla on Ubuntu 8.04 (x86)"},{"id":73,"label":"Ubuntu 8.04 Default Install (turnkey)"},{"id":148,"label":"CentOS Optimised"},{"id":149,"label":"Optimised CentOS + Apache + MySQL + PHP"},{"id":150,"label":"Optimised CentOS + Apache + MySQL + Ruby"},{"id":151,"label":"Optimised CentOS + Apache + MySQL + Ruby + PHP"},{"id":152,"label":"Debian Optimised"},{"id":153,"label":"Optimised Debian + Apache + MySQL + PHP"},{"id":154,"label":"Optimised Debian + NGINX + MySQL + PHP"},{"id":155,"label":"Optimised Debian + Lighttpd + MySQL + PHP"},{"id":156,"label":"Optimised Debian + Apache + MySQL + Ruby + PHP"},{"id":157,"label":"Optimised Debian + Apache + MySQL + Ruby"},{"id":158,"label":"Optimised Debian + NGINX + MySQL + Ruby + PHP"},{"id":159,"label":"Optimised Debian + NGINX + MySQL + Ruby"},{"id":160,"label":"Optimised Debian + Lighttpd + MySQL + PHP + Wordpress"}],"id":3,"label":"UK VPS Cloud"}}]"""
+        body = self.fixtures.load('_available_clouds_api10json_templates.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _available_clouds_api10json_create(self, method, url, body, headers):
-        body = """[{"cloud":{"system_templates":[{"id":9,"label":"Ubuntu 8.04 x64"}],"id":2,"label":"USA VPS Cloud"}}]"""
+        body = """
+        [{"cloud":{"system_templates":[{"id":9,"label":"Ubuntu 8.04 x64"}],"id":2,"label":"USA VPS Cloud"}}]
+        """
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':

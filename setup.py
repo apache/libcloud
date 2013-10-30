@@ -66,6 +66,17 @@ def read_version_string():
     return version
 
 
+def forbid_publish():
+    argv = sys.argv
+    if 'upload'in argv:
+        print('You shouldn\'t use upload command to upload a release to PyPi. '
+              'You need to manually upload files generated using release.sh '
+              'script.\n'
+              'For more information, see "Making a release section" in the '
+              'documentation')
+        sys.exit(1)
+
+
 class TestCommand(Command):
     description = "run test suite"
     user_options = []
@@ -95,8 +106,9 @@ class TestCommand(Command):
                 import unittest2
                 unittest2
             except ImportError:
-                print('Missing "unittest2" library. unittest2 is library is needed '
-                      'to run the tests. You can install it using pip: '
+                print('Python version: %s' % (sys.version))
+                print('Missing "unittest2" library. unittest2 is library is '
+                      'needed to run the tests. You can install it using pip: '
                       'pip install unittest2')
                 sys.exit(1)
 
@@ -118,7 +130,7 @@ class TestCommand(Command):
 
         if mtime_dist > mtime_current:
             print("It looks like test/secrets.py file is out of date.")
-            print("Please copy the new secret.py-dist file over otherwise" +
+            print("Please copy the new secrets.py-dist file over otherwise" +
                   " tests might fail")
 
         if pre_python26:
@@ -228,6 +240,7 @@ class CoverageCommand(Command):
         cov.save()
         cov.html_report()
 
+forbid_publish()
 
 setup(
     name='apache-libcloud',
@@ -266,4 +279,5 @@ setup(
         'Programming Language :: Python :: 3.0',
         'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: Implementation :: PyPy'])

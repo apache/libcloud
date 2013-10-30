@@ -27,6 +27,7 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import SLICEHOST_PARAMS
 
+
 class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
@@ -66,8 +67,9 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.id, '2')
 
     def test_reboot_node(self):
-        node = Node(id=1, name=None, state=None, public_ips=None, private_ips=None,
-                    driver=self.driver)
+        node = Node(
+            id=1, name=None, state=None, public_ips=None, private_ips=None,
+            driver=self.driver)
 
         ret = node.reboot()
         self.assertTrue(ret is True)
@@ -85,8 +87,9 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
             self.fail('test should have thrown')
 
     def test_destroy_node(self):
-        node = Node(id=1, name=None, state=None, public_ips=None, private_ips=None,
-                    driver=self.driver)
+        node = Node(
+            id=1, name=None, state=None, public_ips=None, private_ips=None,
+            driver=self.driver)
 
         ret = node.destroy()
         self.assertTrue(ret is True)
@@ -96,10 +99,13 @@ class SlicehostTest(unittest.TestCase, TestCaseMixin):
 
     def test_create_node(self):
         image = NodeImage(id=11, name='ubuntu 8.10', driver=self.driver)
-        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
-        node = self.driver.create_node(name='slicetest', image=image, size=size)
+        size = NodeSize(
+            1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(
+            name='slicetest', image=image, size=size)
         self.assertEqual(node.name, 'slicetest')
         self.assertEqual(node.extra.get('password'), 'fooadfa1231')
+
 
 class SlicehostMockHttp(MockHttp):
 
@@ -117,7 +123,7 @@ class SlicehostMockHttp(MockHttp):
             if not (name and image_id and flavor_id) \
                 or tree.tag != 'slice' \
                 or not 'Content-Type' in headers  \
-                or headers['Content-Type'] != 'application/xml':
+                    or headers['Content-Type'] != 'application/xml':
 
                 err_body = self.fixtures.load('slices_error.xml')
                 return (httplib.UNPROCESSABLE_ENTITY, err_body, {}, '')

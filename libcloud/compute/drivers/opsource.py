@@ -21,7 +21,7 @@ from base64 import b64encode
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
-from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
+from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.types import LibcloudError, InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
@@ -241,38 +241,39 @@ class OpsourceNodeDriver(NodeDriver):
     name = 'Opsource'
     website = 'http://www.opsource.net/'
     type = Provider.OPSOURCE
-    features = {"create_node": ["password"]}
+    features = {'create_node': ['password']}
 
     def create_node(self, **kwargs):
         """
         Create a new opsource node
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        :keyword    name:   String with a name for this new node (required)
+        :type       name:   ``str``
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage`
 
-        @keyword    auth:   Initial authentication information for the
+        :keyword    auth:   Initial authentication information for the
                             node (required)
-        @type       auth:   L{NodeAuthPassword}
+        :type       auth:   :class:`NodeAuthPassword`
 
-        @keyword    ex_description:  description for this node (required)
-        @type       ex_description:  C{str}
+        :keyword    ex_description:  description for this node (required)
+        :type       ex_description:  ``str``
 
-        @keyword    ex_network:  Network to create the node within (required)
-        @type       ex_network: L{OpsourceNetwork}
+        :keyword    ex_network:  Network to create the node within (required)
+        :type       ex_network: :class:`OpsourceNetwork`
 
-        @keyword    ex_isStarted:  Start server after creation? default
+        :keyword    ex_isStarted:  Start server after creation? default
                                    true (required)
-        @type       ex_isStarted:  C{bool}
+        :type       ex_isStarted:  ``bool``
 
-        @return: The newly created L{Node}. NOTE: Opsource does not provide a
+        :return: The newly created :class:`Node`. NOTE: Opsource does not
+                 provide a
                  way to determine the ID of the server that was just created,
-                 so the returned L{Node} is not guaranteed to be the same one
-                 that was created.  This is only the case when multiple nodes
-                 with the same name exist.
-        @rtype: L{Node}
+                 so the returned :class:`Node` is not guaranteed to be the same
+                 one that was created.  This is only the case when multiple
+                 nodes with the same name exist.
+        :rtype: :class:`Node`
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -281,12 +282,8 @@ class OpsourceNodeDriver(NodeDriver):
         #       cannot be set at create time because size is part of the
         #       image definition.
         password = None
-        if 'auth' in kwargs:
-            auth = kwargs.get('auth')
-            if isinstance(auth, NodeAuthPassword):
-                password = auth.password
-            else:
-                raise ValueError('auth must be of NodeAuthPassword type')
+        auth = self._get_and_check_auth(kwargs.get('auth'))
+        password = auth.password
 
         ex_description = kwargs.get('ex_description', '')
         ex_isStarted = kwargs.get('ex_isStarted', True)
@@ -319,7 +316,12 @@ class OpsourceNodeDriver(NodeDriver):
         # XXX: return the last node in the list that has a matching name.  this
         #      is likely but not guaranteed to be the node we just created
         #      because opsource allows multiple nodes to have the same name
-        return list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
+        node = list(filter(lambda x: x.name == name, self.list_nodes()))[-1]
+
+        if getattr(auth, "generated", False):
+            node.extra['password'] = auth.password
+
+        return node
 
     def destroy_node(self, node):
         body = self.connection.request_with_orgId(
@@ -347,7 +349,7 @@ class OpsourceNodeDriver(NodeDriver):
             Currently only returns the default 'base OS images' provided by
             opsource. Customer images (snapshots) are not yet supported.
 
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
         """
         return self._to_base_images(self.connection.request('base/image')
                    .object)
@@ -368,7 +370,7 @@ class OpsourceNodeDriver(NodeDriver):
         list locations (datacenters) available for instantiating servers and
         networks.
 
-        @inherits: L{NodeDriver.list_locations}
+        @inherits: :class:`NodeDriver.list_locations`
         """
         return self._to_locations(
             self.connection.request_with_orgId('datacenter').object)
@@ -379,11 +381,11 @@ class OpsourceNodeDriver(NodeDriver):
         organization.  The response includes the location of each network.
 
 
-        @keyword location: The location
-        @type    location: L{NodeLocation}
+        :keyword location: The location
+        :type    location: :class:`NodeLocation`
 
-        @return: a list of OpsourceNetwork objects
-        @rtype: C{list} of L{OpsourceNetwork}
+        :return: a list of OpsourceNetwork objects
+        :rtype: ``list`` of :class:`OpsourceNetwork`
         """
         return self._to_networks(
             self.connection.request_with_orgId('networkWithLocation').object)
@@ -427,10 +429,10 @@ class OpsourceNodeDriver(NodeDriver):
         """
         Powers on an existing deployed server
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         body = self.connection.request_with_orgId(
             'server/%s?start' % node.id).object
@@ -444,10 +446,10 @@ class OpsourceNodeDriver(NodeDriver):
         A successful response on this function means the system has
         successfully passed the request into the operating system.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         body = self.connection.request_with_orgId(
             'server/%s?shutdown' % (node.id)).object
@@ -461,10 +463,10 @@ class OpsourceNodeDriver(NodeDriver):
         and application configurations may be adversely affected by the
         equivalent of pulling the power plug out of the machine.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         body = self.connection.request_with_orgId(
             'server/%s?poweroff' % node.id).object
@@ -476,8 +478,8 @@ class OpsourceNodeDriver(NodeDriver):
         List networks deployed across all data center locations for your
         organization.  The response includes the location of each network.
 
-        @return: a list of OpsourceNetwork objects
-        @rtype: C{list} of L{OpsourceNetwork}
+        :return: a list of OpsourceNetwork objects
+        :rtype: ``list`` of :class:`OpsourceNetwork`
         """
         response = self.connection.request_with_orgId('networkWithLocation') \
                                   .object
@@ -487,10 +489,10 @@ class OpsourceNodeDriver(NodeDriver):
         """
         Get location by ID.
 
-        @param  id: ID of the node location which should be used
-        @type   id: C{str}
+        :param  id: ID of the node location which should be used
+        :type   id: ``str``
 
-        @rtype: L{NodeLocation}
+        :rtype: :class:`NodeLocation`
         """
         location = None
         if id is not None:
@@ -578,10 +580,12 @@ class OpsourceNodeDriver(NodeDriver):
             'status': status,
         }
 
+        public_ip = findtext(element, 'publicIpAddress', SERVER_NS)
+
         n = Node(id=findtext(element, 'id', SERVER_NS),
                  name=findtext(element, 'name', SERVER_NS),
                  state=state,
-                 public_ips=[],
+                 public_ips=[public_ip] if public_ip is not None else [],
                  private_ips=findtext(element, 'privateIpAddress', SERVER_NS),
                  driver=self.connection.driver,
                  extra=extra)

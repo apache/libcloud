@@ -213,7 +213,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Because Cloudsigma API does not provide native reboot call,
         it's emulated using stop and start.
 
-        @inherits: L{NodeDriver.reboot_node}
+        @inherits: :class:`NodeDriver.reboot_node`
         """
         node = self._get_node(node.id)
         state = node.state
@@ -237,7 +237,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
         If a node is still running, it's stopped before it's destroyed.
 
-        @inherits: L{NodeDriver.destroy_node}
+        @inherits: :class:`NodeDriver.destroy_node`
         """
         node = self._get_node(node.id)
         state = node.state
@@ -262,7 +262,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Return a list of available standard images (this call might take up
         to 15 seconds to return).
 
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
         """
         response = self.connection.request(
             action='/drives/standard/info').object
@@ -305,24 +305,24 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Creates a CloudSigma instance
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    name: String with a name for this new node (required)
-        @type       name: C{str}
+        :keyword    name: String with a name for this new node (required)
+        :type       name: ``str``
 
-        @keyword    smp: Number of virtual processors or None to calculate
+        :keyword    smp: Number of virtual processors or None to calculate
         based on the cpu speed
-        @type       smp: C{int}
+        :type       smp: ``int``
 
-        @keyword    nic_model: e1000, rtl8139 or virtio (is not specified,
+        :keyword    nic_model: e1000, rtl8139 or virtio (is not specified,
         e1000 is used)
-        @type       nic_model: C{str}
+        :type       nic_model: ``str``
 
-        @keyword    vnc_password: If not set, VNC access is disabled.
-        @type       vnc_password: C{bool}
+        :keyword    vnc_password: If not set, VNC access is disabled.
+        :type       vnc_password: ``bool``
 
-        @keyword    drive_type: Drive type (ssd|hdd). Defaults to hdd.
-        @type       drive_type: C{str}
+        :keyword    drive_type: Drive type (ssd|hdd). Defaults to hdd.
+        :type       drive_type: ``str``
         """
         size = kwargs['size']
         image = kwargs['image']
@@ -399,10 +399,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Destroy a node and all the drives associated with it.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         node = self._get_node_info(node)
 
@@ -428,7 +428,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Return a list of available static IP addresses.
 
-        @rtype: C{list} of C{str}
+        :rtype: ``list`` of ``str``
         """
         response = self.connection.request(action='/resources/ip/list',
                                            method='GET')
@@ -443,7 +443,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Return a list of all the available drives.
 
-        @rtype: C{list} of C{dict}
+        :rtype: ``list`` of ``dict``
         """
         response = self.connection.request(action='/drives/info', method='GET')
 
@@ -454,7 +454,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Create a new static IP address.p
 
-        @rtype: C{list} of C{dict}
+        :rtype: ``list`` of ``dict``
         """
         response = self.connection.request(action='/resources/ip/create',
                                            method='GET')
@@ -466,10 +466,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Destroy a static IP address.
 
-        @param      ip_address: IP address which should be used
-        @type       ip_address: C{str}
+        :param      ip_address: IP address which should be used
+        :type       ip_address: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         response = self.connection.request(
             action='/resources/ip/%s/destroy' % (ip_address), method='GET')
@@ -481,10 +481,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Destroy a drive with a specified uuid.
         If the drive is currently mounted an exception is thrown.
 
-        @param      drive_uuid: Drive uuid which should be used
-        @type       drive_uuid: C{str}
+        :param      drive_uuid: Drive uuid which should be used
+        :type       drive_uuid: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         response = self.connection.request(
             action='/drives/%s/destroy' % (drive_uuid), method='POST')
@@ -496,13 +496,13 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         Update a node configuration.
         Changing most of the parameters requires node to be stopped.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @param      kwargs: keyword arguments
-        @type       kwargs: C{dict}
+        :param      kwargs: keyword arguments
+        :type       kwargs: ``dict``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         valid_keys = ('^name$', '^parent$', '^cpu$', '^smp$', '^mem$',
                       '^boot$', '^nic:0:model$', '^nic:0:dhcp',
@@ -524,8 +524,8 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
 
         if invalid_keys:
             raise CloudSigmaException(
-                'Invalid configuration key specified: %s' % (
-                ',' .join(invalid_keys)))
+                'Invalid configuration key specified: %s' %
+                (',' .join(invalid_keys)))
 
         response = self.connection.request(
             action='/servers/%s/set' % (node.id),
@@ -538,10 +538,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Start a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         response = self.connection.request(
             action='/servers/%s/start' % (node.id),
@@ -553,10 +553,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Stop (shutdown) a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         response = self.connection.request(
             action='/servers/%s/stop' % (node.id),
@@ -567,7 +567,7 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Stop (shutdown) a node.
 
-        @inherits: L{CloudSigmaBaseNodeDriver.ex_stop_node}
+        @inherits: :class:`CloudSigmaBaseNodeDriver.ex_stop_node`
         """
         return self.ex_stop_node(node)
 
@@ -575,10 +575,10 @@ class CloudSigmaBaseNodeDriver(NodeDriver):
         """
         Destroy a drive.
 
-        @param      drive_uuid: Drive uuid which should be used
-        @type       drive_uuid: C{str}
+        :param      drive_uuid: Drive uuid which should be used
+        :type       drive_uuid: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         response = self.connection.request(
             action='/drives/%s/destroy' % (drive_uuid),

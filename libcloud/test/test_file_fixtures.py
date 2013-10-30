@@ -17,6 +17,7 @@ import unittest
 
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+
 class FileFixturesTests(unittest.TestCase):
 
     def test_success(self):

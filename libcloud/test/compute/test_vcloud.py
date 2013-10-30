@@ -43,7 +43,8 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
 
     def test_list_images(self):
         ret = self.driver.list_images()
-        self.assertEqual(ret[0].id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
+        self.assertEqual(
+            ret[0].id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vAppTemplate/5')
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -61,13 +62,15 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
             cpus=2,
         )
         self.assertTrue(isinstance(node, Node))
-        self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
+        self.assertEqual(
+            node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
         self.assertEqual(node.name, 'testerpart2')
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
         node = ret[0]
-        self.assertEqual(node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
+        self.assertEqual(
+            node.id, 'https://services.vcloudexpress.terremark.com/api/v0.8/vapp/14031')
         self.assertEqual(node.name, 'testerpart2')
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, [])
@@ -88,13 +91,15 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = 'test'
-        VCloudNodeDriver.connectionCls.conn_classes = (None, VCloud_1_5_MockHttp)
+        VCloudNodeDriver.connectionCls.conn_classes = (
+            None, VCloud_1_5_MockHttp)
         VCloud_1_5_MockHttp.type = None
         self.driver = VCloud_1_5_NodeDriver(*VCLOUD_PARAMS)
 
     def test_list_images(self):
         ret = self.driver.list_images()
-        self.assertEqual('https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
+        self.assertEqual(
+            'https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
 
     def test_list_sizes(self):
         ret = self.driver.list_sizes()
@@ -102,7 +107,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
 
     def test_networks(self):
         ret = self.driver.networks
-        self.assertEqual(ret[0].get('href'), 'https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4')
+        self.assertEqual(
+            ret[0].get('href'), 'https://vm-vcloud/api/network/dca8b667-6c8f-4c3e-be57-7a9425dba4f4')
 
     def test_create_node(self):
         image = self.driver.list_images()[0]
@@ -114,50 +120,54 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             ex_vdc='MyVdc',
             ex_network='vCloud - Default',
             cpus=2,
-            )
+        )
         self.assertTrue(isinstance(node, Node))
-        self.assertEqual('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', node.id)
+        self.assertEqual(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', node.id)
         self.assertEqual('testNode', node.name)
 
     def test_create_node_clone(self):
         image = self.driver.list_nodes()[0]
         node = self.driver.create_node(name='testNode', image=image)
         self.assertTrue(isinstance(node, Node))
-        self.assertEqual('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', node.id)
+        self.assertEqual(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', node.id)
         self.assertEqual('testNode', node.name)
 
     def test_list_nodes(self):
         ret = self.driver.list_nodes()
         node = ret[0]
-        self.assertEqual(node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
+        self.assertEqual(
+            node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
         self.assertEqual(node.name, 'testNode')
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['65.41.67.2'])
         self.assertEqual(node.private_ips, ['65.41.67.2'])
         self.assertEqual(node.extra, {'vdc': 'MyVdc',
-            'vms': [{
-            'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045',
-            'name': 'testVm',
-            'state': NodeState.RUNNING,
-            'public_ips': ['65.41.67.2'],
-            'private_ips': ['65.41.67.2'],
-            'os_type': 'rhel5_64Guest'
-        }]})
+                                      'vms': [{
+                                          'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045',
+                                          'name': 'testVm',
+                                          'state': NodeState.RUNNING,
+                                          'public_ips': ['65.41.67.2'],
+                                          'private_ips': ['65.41.67.2'],
+                                          'os_type': 'rhel5_64Guest'
+                                      }]})
         node = ret[1]
-        self.assertEqual(node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b')
+        self.assertEqual(
+            node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b')
         self.assertEqual(node.name, 'testNode2')
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['192.168.0.103'])
         self.assertEqual(node.private_ips, ['192.168.0.100'])
         self.assertEqual(node.extra, {'vdc': 'MyVdc',
-            'vms': [{
-            'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046',
-            'name': 'testVm2',
-            'state': NodeState.RUNNING,
-            'public_ips': ['192.168.0.103'],
-            'private_ips': ['192.168.0.100'],
-            'os_type': 'rhel5_64Guest'
-            }]})
+                                      'vms': [{
+                                          'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046',
+                                          'name': 'testVm2',
+                                          'state': NodeState.RUNNING,
+                                          'public_ips': ['192.168.0.103'],
+                                          'private_ips': ['192.168.0.100'],
+                                          'os_type': 'rhel5_64Guest'
+                                      }]})
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
@@ -175,24 +185,35 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.driver._validate_vm_names(['tc-mybuild-b1'])
         self.driver._validate_vm_names(None)
         # invalid inputs
-        self.assertRaises(ValueError, self.driver._validate_vm_names, ['invalid.host'])
-        self.assertRaises(ValueError, self.driver._validate_vm_names, ['inv-alid.host'])
-        self.assertRaises(ValueError, self.driver._validate_vm_names, ['hostnametoooolong'])
-        self.assertRaises(ValueError, self.driver._validate_vm_names, ['host$name'])
+        self.assertRaises(
+            ValueError, self.driver._validate_vm_names, ['invalid.host'])
+        self.assertRaises(
+            ValueError, self.driver._validate_vm_names, ['inv-alid.host'])
+        self.assertRaises(
+            ValueError, self.driver._validate_vm_names, ['hostnametoooolong'])
+        self.assertRaises(
+            ValueError, self.driver._validate_vm_names, ['host$name'])
 
     def test_change_vm_names(self):
-        self.driver._change_vm_names('/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', ['changed1', 'changed2'])
+        self.driver._change_vm_names(
+            '/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a', ['changed1', 'changed2'])
 
     def test_is_node(self):
-        self.assertTrue(self.driver._is_node(Node('testId', 'testNode', state=0, public_ips=[], private_ips=[], driver=self.driver)))
-        self.assertFalse(self.driver._is_node(NodeImage('testId', 'testNode', driver=self.driver)))
+        self.assertTrue(self.driver._is_node(
+            Node('testId', 'testNode', state=0, public_ips=[], private_ips=[], driver=self.driver)))
+        self.assertFalse(self.driver._is_node(
+            NodeImage('testId', 'testNode', driver=self.driver)))
 
     def test_ex_undeploy(self):
-        node = self.driver.ex_undeploy_node(Node('https://test/api/vApp/undeployTest', 'testNode', state=0, public_ips=[], private_ips=[], driver=self.driver))
+        node = self.driver.ex_undeploy_node(
+            Node('https://test/api/vApp/undeployTest', 'testNode', state=0,
+                 public_ips=[], private_ips=[], driver=self.driver))
         self.assertEqual(node.state, NodeState.TERMINATED)
 
     def test_ex_undeploy_with_error(self):
-        node = self.driver.ex_undeploy_node(Node('https://test/api/vApp/undeployErrorTest', 'testNode', state=0, public_ips=[], private_ips=[], driver=self.driver))
+        node = self.driver.ex_undeploy_node(
+            Node('https://test/api/vApp/undeployErrorTest', 'testNode',
+                 state=0, public_ips=[], private_ips=[], driver=self.driver))
         self.assertEqual(node.state, NodeState.TERMINATED)
 
     def test_ex_find_node(self):
@@ -204,8 +225,10 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node, None)
 
     def test_ex_add_vm_disk__with_invalid_values(self):
-        self.assertRaises(ValueError, self.driver.ex_add_vm_disk, 'dummy', 'invalid value')
-        self.assertRaises(ValueError, self.driver.ex_add_vm_disk, 'dummy', '-1')
+        self.assertRaises(
+            ValueError, self.driver.ex_add_vm_disk, 'dummy', 'invalid value')
+        self.assertRaises(
+            ValueError, self.driver.ex_add_vm_disk, 'dummy', '-1')
 
     def test_ex_add_vm_disk(self):
         self.driver.ex_add_vm_disk('https://test/api/vApp/vm-test', '20')
@@ -218,8 +241,10 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.ex_set_vm_cpu('https://test/api/vApp/vm-test', 4)
 
     def test_ex_set_vm_memory__with_invalid_values(self):
-        self.assertRaises(ValueError, self.driver.ex_set_vm_memory, 'dummy', 777)
-        self.assertRaises(ValueError, self.driver.ex_set_vm_memory, 'dummy', -1024)
+        self.assertRaises(
+            ValueError, self.driver.ex_set_vm_memory, 'dummy', 777)
+        self.assertRaises(
+            ValueError, self.driver.ex_set_vm_memory, 'dummy', -1024)
 
     def test_ex_set_vm_memory(self):
         self.driver.ex_set_vm_memory('https://test/api/vApp/vm-test', 1024)
@@ -227,7 +252,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
     def test_vdcs(self):
         vdcs = self.driver.vdcs
         self.assertEqual(len(vdcs), 1)
-        self.assertEqual(vdcs[0].id, 'https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0')
+        self.assertEqual(
+            vdcs[0].id, 'https://vm-vcloud/api/vdc/3d9ae28c-1de9-4307-8107-9356ff8ba6d0')
         self.assertEqual(vdcs[0].name, 'MyVdc')
         self.assertEqual(vdcs[0].allocation_model, 'AllocationPool')
         self.assertEqual(vdcs[0].storage.limit, 5120000)
@@ -241,7 +267,8 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(vdcs[0].memory.units, 'MB')
 
     def test_ex_list_nodes(self):
-        self.assertEqual(len(self.driver.ex_list_nodes()), len(self.driver.list_nodes()))
+        self.assertEqual(
+            len(self.driver.ex_list_nodes()), len(self.driver.list_nodes()))
 
     def test_ex_list_nodes__masked_exception(self):
         """
@@ -251,41 +278,55 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertRaises(AnotherError, self.driver.ex_list_nodes, (brokenVdc))
 
     def test_ex_power_off(self):
-        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_power_off_node(node)
 
     def test_ex_query(self):
-        results = self.driver.ex_query('user', filter='name==jrambo', page=2, page_size=30, sort_desc='startDate')
+        results = self.driver.ex_query(
+            'user', filter='name==jrambo', page=2, page_size=30, sort_desc='startDate')
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['type'], 'UserRecord')
         self.assertEqual(results[0]['name'], 'jrambo')
         self.assertEqual(results[0]['isLdapUser'], 'true')
 
     def test_ex_get_control_access(self):
-        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
         control_access = self.driver.ex_get_control_access(node)
-        self.assertEqual(control_access.everyone_access_level, ControlAccess.AccessLevel.READ_ONLY)
+        self.assertEqual(
+            control_access.everyone_access_level, ControlAccess.AccessLevel.READ_ONLY)
         self.assertEqual(len(control_access.subjects), 1)
         self.assertEqual(control_access.subjects[0].type, 'group')
         self.assertEqual(control_access.subjects[0].name, 'MyGroup')
-        self.assertEqual(control_access.subjects[0].id, 'https://vm-vcloud/api/admin/group/b8202c48-7151-4e61-9a6c-155474c7d413')
-        self.assertEqual(control_access.subjects[0].access_level, ControlAccess.AccessLevel.FULL_CONTROL)
+        self.assertEqual(control_access.subjects[
+                         0].id, 'https://vm-vcloud/api/admin/group/b8202c48-7151-4e61-9a6c-155474c7d413')
+        self.assertEqual(control_access.subjects[
+                         0].access_level, ControlAccess.AccessLevel.FULL_CONTROL)
 
     def test_ex_set_control_access(self):
-        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
         control_access = ControlAccess(node, None, [Subject(
-            name =  'MyGroup',
-            type = 'group',
-            access_level = ControlAccess.AccessLevel.FULL_CONTROL)])
+            name='MyGroup',
+            type='group',
+            access_level=ControlAccess.AccessLevel.FULL_CONTROL)])
         self.driver.ex_set_control_access(node, control_access)
 
     def test_ex_get_metadata(self):
-        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
         metadata = self.driver.ex_get_metadata(node)
-        self.assertEqual(metadata, {'owners':'msamia@netsuite.com'})
+        self.assertEqual(metadata, {'owners': 'msamia@netsuite.com'})
 
     def test_ex_set_metadata_entry(self):
-        node = Node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b', 'testNode', NodeState.RUNNING, [], [], self.driver)
+        node = Node(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
+            'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_set_metadata_entry(node, 'foo', 'bar')
 
 
@@ -293,9 +334,11 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
         VCloudNodeDriver.connectionCls.host = 'test'
-        VCloudNodeDriver.connectionCls.conn_classes = (None, VCloud_1_5_MockHttp)
+        VCloudNodeDriver.connectionCls.conn_classes = (
+            None, VCloud_1_5_MockHttp)
         VCloud_1_5_MockHttp.type = None
-        self.driver = VCloudNodeDriver(*VCLOUD_PARAMS, **{'api_version': '5.1'})
+        self.driver = VCloudNodeDriver(
+            *VCLOUD_PARAMS, **{'api_version': '5.1'})
 
         self.assertTrue(isinstance(self.driver, VCloud_5_1_NodeDriver))
 
@@ -335,14 +378,14 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
                     ex_vm_memory=value
                 )
             except ValueError:
-               pass
+                pass
             else:
-               self.fail('Exception was not thrown')
-
+                self.fail('Exception was not thrown')
 
     def test_list_images(self):
         ret = self.driver.list_images()
-        self.assertEqual('https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
+        self.assertEqual(
+            'https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158', ret[0].id)
 
 
 class TerremarkMockHttp(MockHttp):
@@ -371,7 +414,8 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _api_v0_8_vdc_224_action_instantiateVAppTemplate(self, method, url, body, headers):
-        body = self.fixtures.load('api_v0_8_vdc_224_action_instantiateVAppTemplate.xml')
+        body = self.fixtures.load(
+            'api_v0_8_vdc_224_action_instantiateVAppTemplate.xml')
         return (httplib.OK, body, headers, httplib.responses[httplib.OK])
 
     def _api_v0_8_vapp_14031_action_deploy(self, method, url, body, headers):
@@ -383,7 +427,8 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _api_v0_8_vapp_14031_power_action_powerOn(self, method, url, body, headers):
-        body = self.fixtures.load('api_v0_8_vapp_14031_power_action_powerOn.xml')
+        body = self.fixtures.load(
+            'api_v0_8_vapp_14031_power_action_powerOn.xml')
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _api_v0_8_vapp_14031(self, method, url, body, headers):
@@ -398,7 +443,8 @@ class TerremarkMockHttp(MockHttp):
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _api_v0_8_vapp_14031_power_action_poweroff(self, method, url, body, headers):
-        body = self.fixtures.load('api_v0_8_vapp_14031_power_action_poweroff.xml')
+        body = self.fixtures.load(
+            'api_v0_8_vapp_14031_power_action_poweroff.xml')
         return (httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED])
 
     def _api_v0_8_task_11001(self, method, url, body, headers):
@@ -407,6 +453,7 @@ class TerremarkMockHttp(MockHttp):
 
 
 class AnotherErrorMember(Exception):
+
     """
     helper class for the synthetic exception
     """
@@ -415,7 +462,8 @@ class AnotherErrorMember(Exception):
         self.tag = 'Error'
 
     def get(self, foo):
-        return 'ACCESS_TO_RESOURCE_IS_FORBIDDEN'
+        return 'ACCESS_TO_RESOURCE_IS_FORBIDDEN_1'
+
 
 class AnotherError(Exception):
     pass
@@ -426,8 +474,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('vcloud_1_5')
 
     def request(self, method, url, body=None, headers=None, raw=False):
-        self.assertTrue(url.startswith('/api/'), ('"%s" is invalid. Needs to ' \
-                        'start with "/api". The passed URL should be just ' \
+        self.assertTrue(url.startswith('/api/'), ('"%s" is invalid. Needs to '
+                        'start with "/api". The passed URL should be just '
                         'the path, not full URL.', url))
         super(VCloud_1_5_MockHttp, self).request(method, url, body, headers,
                                                  raw)
@@ -442,15 +490,18 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_org_96726c78_4ae3_402f_b08b_7a78c6903d2a(self, method, url, body, headers):
-        body = self.fixtures.load('api_org_96726c78_4ae3_402f_b08b_7a78c6903d2a.xml')
+        body = self.fixtures.load(
+            'api_org_96726c78_4ae3_402f_b08b_7a78c6903d2a.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4(self, method, url, body, headers):
-        body = self.fixtures.load('api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4.xml')
+        body = self.fixtures.load(
+            'api_network_dca8b667_6c8f_4c3e_be57_7a9425dba4f4.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0(self, method, url, body, headers):
-        body = self.fixtures.load('api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0.xml')
+        body = self.fixtures.load(
+            'api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vdc_brokenVdc(self, method, url, body, headers):
@@ -462,7 +513,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         raise AnotherError(m)
 
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_instantiateVAppTemplate(self, method, url, body, headers):
-        body = self.fixtures.load('api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_instantiateVAppTemplate.xml')
+        body = self.fixtures.load(
+            'api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_instantiateVAppTemplate.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_powerOn(self, method, url, body, headers):
@@ -470,41 +522,50 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     # Clone
     def _api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_cloneVApp(self, method, url, body, headers):
-        body = self.fixtures.load('api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_cloneVApp.xml')
+        body = self.fixtures.load(
+            'api_vdc_3d9ae28c_1de9_4307_8107_9356ff8ba6d0_action_cloneVApp.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_networkConnectionSection(self, method, url, body, headers):
-        body = self.fixtures.load('api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
+        body = self.fixtures.load(
+            'api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a(self, method, url, body, headers):
         status = httplib.OK
         if method == 'GET':
-            body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a.xml')
+            body = self.fixtures.load(
+                'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a.xml')
             status = httplib.OK
         elif method == 'DELETE':
-            body = self.fixtures.load('api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
+            body = self.fixtures.load(
+                'api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b(self, method, url, body, headers):
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b.xml')
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c(self, method, url, body, headers):
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c.xml')
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6c.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045(self, method, url, body, headers):
-        body = self.fixtures.load('put_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
+        body = self.fixtures.load(
+            'put_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('get_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
+            body = self.fixtures.load(
+                'get_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
             status = httplib.OK
         else:
-            body = self.fixtures.load('put_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
+            body = self.fixtures.load(
+                'put_api_vApp_vm_dd75d1d3_5b7b_48f0_aff3_69622ab7e045_guestCustomizationSection.xml')
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
@@ -512,15 +573,18 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(method, url, body, headers)
 
     def _api_task_b034df55_fe81_4798_bc81_1f0fd0ead450(self, method, url, body, headers):
-        body = self.fixtures.load('api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
+        body = self.fixtures.load(
+            'api_task_b034df55_fe81_4798_bc81_1f0fd0ead450.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4(self, method, url, body, headers):
-        body = self.fixtures.load('api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4.xml')
+        body = self.fixtures.load(
+            'api_catalog_cddb3cb2_3394_4b14_b831_11fbc4028da4.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_catalogItem_3132e037_759b_4627_9056_ca66466fa607(self, method, url, body, headers):
-        body = self.fixtures.load('api_catalogItem_3132e037_759b_4627_9056_ca66466fa607.xml')
+        body = self.fixtures.load(
+            'api_catalogItem_3132e037_759b_4627_9056_ca66466fa607.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_undeployTest(self, method, url, body, headers):
@@ -551,7 +615,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vapp_access_to_resource_forbidden(self, method, url, body, headers):
-        raise Exception(ET.fromstring(self.fixtures.load('api_vApp_vapp_access_to_resource_forbidden.xml')))
+        raise Exception(
+            ET.fromstring(self.fixtures.load('api_vApp_vapp_access_to_resource_forbidden.xml')))
 
     def _api_vApp_vm_test(self, method, url, body, headers):
         body = self.fixtures.load('api_vApp_vm_test.xml')
@@ -559,28 +624,34 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     def _api_vApp_vm_test_virtualHardwareSection_disks(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('get_api_vApp_vm_test_virtualHardwareSection_disks.xml')
+            body = self.fixtures.load(
+                'get_api_vApp_vm_test_virtualHardwareSection_disks.xml')
             status = httplib.OK
         else:
-            body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_disks.xml')
+            body = self.fixtures.load(
+                'put_api_vApp_vm_test_virtualHardwareSection_disks.xml')
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
     def _api_vApp_vm_test_virtualHardwareSection_cpu(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('get_api_vApp_vm_test_virtualHardwareSection_cpu.xml')
+            body = self.fixtures.load(
+                'get_api_vApp_vm_test_virtualHardwareSection_cpu.xml')
             status = httplib.OK
         else:
-            body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_cpu.xml')
+            body = self.fixtures.load(
+                'put_api_vApp_vm_test_virtualHardwareSection_cpu.xml')
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
     def _api_vApp_vm_test_virtualHardwareSection_memory(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('get_api_vApp_vm_test_virtualHardwareSection_memory.xml')
+            body = self.fixtures.load(
+                'get_api_vApp_vm_test_virtualHardwareSection_memory.xml')
             status = httplib.OK
         else:
-            body = self.fixtures.load('put_api_vApp_vm_test_virtualHardwareSection_memory.xml')
+            body = self.fixtures.load(
+                'put_api_vApp_vm_test_virtualHardwareSection_memory.xml')
             status = httplib.ACCEPTED
         return status, body, headers, httplib.responses[status]
 
@@ -589,7 +660,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(self, method, url, body, headers):
         assert method == 'POST'
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_all.xml')
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_all.xml')
         return httplib.ACCEPTED, body, headers, httplib.responses[httplib.ACCEPTED]
 
     def _api_query(self, method, url, body, headers):
@@ -614,20 +686,25 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
             return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_controlAccess(self, method, url, body, headers):
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_action_controlAccess(self, method, url, body, headers):
         body = str(body)
         self.assertTrue(method == 'POST')
-        self.assertTrue('<IsSharedToEveryone>false</IsSharedToEveryone>' in body)
-        self.assertTrue('<Subject href="https://vm-vcloud/api/admin/group/b8202c48-7151-4e61-9a6c-155474c7d413" />' in body)
+        self.assertTrue(
+            '<IsSharedToEveryone>false</IsSharedToEveryone>' in body)
+        self.assertTrue(
+            '<Subject href="https://vm-vcloud/api/admin/group/b8202c48-7151-4e61-9a6c-155474c7d413" />' in body)
         self.assertTrue('<AccessLevel>FullControl</AccessLevel>' in body)
-        body = self.fixtures.load('api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_controlAccess.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
     def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(self, method, url, body, headers):
-        body = self.fixtures.load('api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml')
+        body = self.fixtures.load(
+            'api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
 

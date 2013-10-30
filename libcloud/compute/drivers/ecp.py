@@ -24,7 +24,6 @@ import binascii
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
-from libcloud.utils.py3 import u
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -102,7 +101,7 @@ class ECPConnection(ConnectionUserAndKey):
         #use a random boundary that does not appear in the fields
         boundary = ''
         while boundary in ''.join(fields):
-            boundary = u(binascii.hexlify(os.urandom(16)))
+            boundary = binascii.hexlify(os.urandom(16)).decode('utf-8')
         L = []
         for i in fields:
             L.append('--' + boundary)
@@ -131,7 +130,7 @@ class ECPNodeDriver(NodeDriver):
         """
         Returns a list of all running Nodes
 
-        @rtype: C{list} of L{Node}
+        :rtype: ``list`` of :class:`Node`
         """
 
         #Make the call
@@ -190,7 +189,7 @@ class ECPNodeDriver(NodeDriver):
         """
         Shuts down a VM and then starts it again.
 
-        @inherits: L{NodeDriver.reboot_node}
+        @inherits: :class:`NodeDriver.reboot_node`
         """
 
         #Turn the VM off
@@ -232,7 +231,7 @@ class ECPNodeDriver(NodeDriver):
         """
         Shuts down and deletes a VM.
 
-        @inherits: L{NodeDriver.destroy_node}
+        @inherits: :class:`NodeDriver.destroy_node`
         """
 
         #Shut down first
@@ -274,7 +273,7 @@ class ECPNodeDriver(NodeDriver):
         """
         Returns a list of all package templates aka appiances aka images.
 
-        @inherits: L{NodeDriver.list_images}
+        @inherits: :class:`NodeDriver.list_images`
         """
 
         #Make the call
@@ -296,7 +295,7 @@ class ECPNodeDriver(NodeDriver):
         """
         Returns a list of all hardware templates
 
-        @inherits: L{NodeDriver.list_sizes}
+        @inherits: :class:`NodeDriver.list_sizes`
         """
 
         #Make the call
@@ -322,7 +321,7 @@ class ECPNodeDriver(NodeDriver):
         """
         This feature does not exist in ECP. Returns hard coded dummy location.
 
-        @rtype: C{list} of L{NodeLocation}
+        :rtype: ``list`` of :class:`NodeLocation`
         """
         return [NodeLocation(id=1,
                              name="Cloud",
@@ -334,17 +333,17 @@ class ECPNodeDriver(NodeDriver):
         """
         Creates a virtual machine.
 
-        @keyword    name:   String with a name for this new node (required)
-        @type       name:   C{str}
+        :keyword    name:   String with a name for this new node (required)
+        :type       name:   ``str``
 
-        @keyword    size:   The size of resources allocated to this node .
+        :keyword    size:   The size of resources allocated to this node .
                             (required)
-        @type       size:   L{NodeSize}
+        :type       size:   :class:`NodeSize`
 
-        @keyword    image:  OS Image to boot on node. (required)
-        @type       image:  L{NodeImage}
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage`
 
-        @rtype: L{Node}
+        :rtype: :class:`Node`
         """
 
         #Find out what network to put the VM on.

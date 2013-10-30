@@ -85,8 +85,9 @@ class IBMNodeLocation(NodeLocation):
 
     def __repr__(self):
         return ('<IBMNodeLocation: id=%s, name=%s, country=%s, '
-                'driver=%s, extra=%s>' % (self.id, self.name, self.country,
-                self.driver.name, self.extra))
+                'driver=%s, extra=%s>' %
+                (self.id, self.name, self.country, self.driver.name,
+                 self.extra))
 
 
 class VolumeState(object):
@@ -177,23 +178,23 @@ class IBMNodeDriver(NodeDriver):
         """
         Creates a node in the IBM SmartCloud Enterprise.
 
-        See L{NodeDriver.create_node} for more keyword args.
+        See :class:`NodeDriver.create_node` for more keyword args.
 
-        @inherits: L{NodeDriver.create_node}
+        @inherits: :class:`NodeDriver.create_node`
 
-        @keyword    auth: Name of the pubkey to use. When constructing
-            C{NodeAuthSSHKey} instance, 'pubkey' argument must be the name of
-            the public key to use. You chose this name when creating
+        :keyword    auth: Name of the pubkey to use. When constructing
+            :class:`NodeAuthSSHKey` instance, 'pubkey' argument must be the
+            name of the public key to use. You chose this name when creating
             a new public key on the IBM server.
-        @type       auth: L{NodeAuthSSHKey}
+        :type       auth: :class:`NodeAuthSSHKey`
 
-        @keyword    ex_configurationData: Image-specific configuration
+        :keyword    ex_configurationData: Image-specific configuration
             parameters. Configuration parameters are defined in the parameters
             .xml file.  The URL to this file is defined in the NodeImage at
             extra[parametersURL].
             Note: This argument must be specified when launching a Windows
             instance. It must contain 'UserName' and 'Password' keys.
-        @type       ex_configurationData: C{dict}
+        :type       ex_configurationData: ``dict``
         """
 
         # Compose headers for message body
@@ -225,48 +226,48 @@ class IBMNodeDriver(NodeDriver):
         """
         Create a new block storage volume (virtual disk)
 
-        @param      size: Size of volume in gigabytes (required).
+        :param      size: Size of volume in gigabytes (required).
                           Find out the possible sizes from the
                           offerings/storage REST interface
-        @type       size: C{int}
+        :type       size: ``int``
 
-        @keyword    name: Name of the volume to be created (required)
-        @type       name: C{str}
+        :keyword    name: Name of the volume to be created (required)
+        :type       name: ``str``
 
-        @keyword    location: Which data center to create a volume in. If
+        :keyword    location: Which data center to create a volume in. If
                               empty, it will fail for IBM SmartCloud Enterprise
                               (required)
-        @type       location: L{NodeLocation}
+        :type       location: :class:`NodeLocation`
 
-        @keyword    snapshot:  Not supported for IBM SmartCloud Enterprise
-        @type       snapshot:  C{str}
+        :keyword    snapshot:  Not supported for IBM SmartCloud Enterprise
+        :type       snapshot:  ``str``
 
-        @keyword    kwargs.format:  Either RAW or EXT3 for IBM SmartCloud
+        :keyword    kwargs.format:  Either RAW or EXT3 for IBM SmartCloud
                                     Enterprise (optional)
-        @type       kwargs.format:  C{str}
+        :type       kwargs.format:  ``str``
 
-        @keyword    kwargs.offering_id:  The storage offering ID for IBM
+        :keyword    kwargs.offering_id:  The storage offering ID for IBM
                                          SmartCloud Enterprise
                                          Find this from the REST interface
                                          storage/offerings. (optional)
-        @type       kwargs.offering_id:  C{str}
+        :type       kwargs.offering_id:  ``str``
 
-        @keyword    kwargs.source_disk_id:  If cloning a volume, the storage
+        :keyword    kwargs.source_disk_id:  If cloning a volume, the storage
                                             disk to make a copy from (optional)
-        @type       kwargs.source_disk_id:  C{str}
+        :type       kwargs.source_disk_id:  ``str``
 
-        @keyword    kwargs.storage_area_id:  The id of the storage availability
+        :keyword    kwargs.storage_area_id:  The id of the storage availability
                                              area to create the volume in
                                              (optional)
-        @type       kwargs.storage_area_id:  C{str}
+        :type       kwargs.storage_area_id:  ``str``
 
-        @keyword    kwargs.target_location_id:  If cloning a volume, the
+        :keyword    kwargs.target_location_id:  If cloning a volume, the
                                                 storage disk to make a copy
                                                 from (optional)
-        @type       kwargs.target_location_id:  C{str}
+        :type       kwargs.target_location_id:  ``str``
 
-        @return: The newly created L{StorageVolume}.
-        @rtype: L{StorageVolume}
+        :return: The newly created :class:`StorageVolume`.
+        :rtype: :class:`StorageVolume`
         """
         data = {}
         data.update({'name': name})
@@ -295,21 +296,21 @@ class IBMNodeDriver(NodeDriver):
         """
         Create a new node image from an existing volume or image.
 
-        @param      name: Name of the image to be created (required)
-        @type       name: C{str}
+        :param      name: Name of the image to be created (required)
+        :type       name: ``str``
 
-        @param      description: Description of the image to be created
-        @type       description: C{str}
+        :param      description: Description of the image to be created
+        :type       description: ``str``
 
-        @keyword    image_id:  The ID of the source image if cloning the image
-        @type       image_id:  C{str}
+        :keyword    image_id:  The ID of the source image if cloning the image
+        :type       image_id:  ``str``
 
-        @keyword    volume_id:  The ID of the storage volume if
+        :keyword    volume_id:  The ID of the storage volume if
                                 importing the image
-        @type       volume_id:  C{str}
+        :type       volume_id:  ``str``
 
-        @return: The newly created L{NodeImage}.
-        @rtype: L{NodeImage}
+        :return: The newly created :class:`NodeImage`.
+        :rtype: :class:`NodeImage`
         """
         data = {}
         data.update({'name': name})
@@ -336,24 +337,24 @@ class IBMNodeDriver(NodeDriver):
         """
         Destroys a storage volume.
 
-        @param      volume: Volume to be destroyed
-        @type       volume: L{StorageVolume}
+        :param      volume: Volume to be destroyed
+        :type       volume: :class:`StorageVolume`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         url = REST_BASE + '/storage/%s' % (volume.id)
         status = int(self.connection.request(action=url,
                                              method='DELETE').status)
         return status == httplib.OK
 
-    def ex_destroy_image(self,image):
+    def ex_destroy_image(self, image):
         """
         Destroys an image.
 
-        @param      image: Image to be destroyed
-        @type       image: L{NodeImage}
+        :param      image: Image to be destroyed
+        :type       image: :class:`NodeImage`
 
-        @return: C{bool}
+        :return: ``bool``
         """
 
         url = REST_BASE + '/offerings/image/%s' % (image.id)
@@ -365,13 +366,13 @@ class IBMNodeDriver(NodeDriver):
         """
         Attaches volume to node.
 
-        @param      node: Node to attach volume to
-        @type       node: L{Node}
+        :param      node: Node to attach volume to
+        :type       node: :class:`Node`
 
-        @param      volume: Volume to attach
-        @type       volume: L{StorageVolume}
+        :param      volume: Volume to attach
+        :type       volume: :class:`StorageVolume`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         url = REST_BASE + '/instances/%s' % (node.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -386,13 +387,13 @@ class IBMNodeDriver(NodeDriver):
         """
         Detaches a volume from a node.
 
-        @param      node: Node which should be used
-        @type       node: L{Node}
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
 
-        @param      volume: Volume to be detached
-        @type       volume: L{StorageVolume}
+        :param      volume: Volume to be detached
+        :type       volume: :class:`StorageVolume`
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         url = REST_BASE + '/instances/%s' % (node.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -426,7 +427,7 @@ class IBMNodeDriver(NodeDriver):
         """
         List storage volumes.
 
-        @rtype: C{list} of L{StorageVolume}
+        :rtype: ``list`` of :class:`StorageVolume`
         """
         return self._to_volumes(
             self.connection.request(REST_BASE + '/storage').object)
@@ -438,7 +439,7 @@ class IBMNodeDriver(NodeDriver):
         a size that matches the architecture (32-bit vs 64-bit) of the virtual
         machine image operating system.
 
-        @inherits: L{NodeDriver.list_sizes}
+        @inherits: :class:`NodeDriver.list_sizes`
         """
         return [
             NodeSize('BRZ32.1/2048/60*175', 'Bronze 32 bit', None, None, None,
@@ -468,7 +469,7 @@ class IBMNodeDriver(NodeDriver):
         """
         List the storage center offerings
 
-        @rtype: C{list} of L{VolumeOffering}
+        :rtype: ``list`` of :class:`VolumeOffering`
         """
         return self._to_volume_offerings(
             self.connection.request(REST_BASE + '/offerings/storage').object)
@@ -477,17 +478,17 @@ class IBMNodeDriver(NodeDriver):
         """
         Allocate a new reserved IP address
 
-        @param      location_id: Target data center
-        @type       location_id: C{str}
+        :param      location_id: Target data center
+        :type       location_id: ``str``
 
-        @param      offering_id: Offering ID for address to create
-        @type       offering_id: C{str}
+        :param      offering_id: Offering ID for address to create
+        :type       offering_id: ``str``
 
-        @param      vlan_id: ID of target VLAN
-        @type       vlan_id: C{str}
+        :param      vlan_id: ID of target VLAN
+        :type       vlan_id: ``str``
 
-        @return: L{Address} object
-        @rtype: L{Address}
+        :return: :class:`Address` object
+        :rtype: :class:`Address`
         """
         url = REST_BASE + '/addresses'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -504,11 +505,11 @@ class IBMNodeDriver(NodeDriver):
         """
         List the reserved IP addresses
 
-        @param      resource_id: If this is supplied only a single address will
+        :param      resource_id: If this is supplied only a single address will
          be returned (optional)
-        @type       resource_id: C{str}
+        :type       resource_id: ``str``
 
-        @rtype: C{list} of L{Address}
+        :rtype: ``list`` of :class:`Address`
         """
         url = REST_BASE + '/addresses'
         if resource_id:
@@ -519,14 +520,14 @@ class IBMNodeDriver(NodeDriver):
         """
         Copies a node image to a storage volume
 
-        @param      image: source image to copy
-        @type       image: L{NodeImage}
+        :param      image: source image to copy
+        :type       image: :class:`NodeImage`
 
-        @param      volume: Target storage volume to copy to
-        @type       volume: L{StorageVolume}
+        :param      volume: Target storage volume to copy to
+        :type       volume: :class:`StorageVolume`
 
-        @return: C{bool} The success of the operation
-        @rtype: C{bool}
+        :return: ``bool`` The success of the operation
+        :rtype: ``bool``
         """
         url = REST_BASE + '/storage/%s' % (volume.id)
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -541,10 +542,10 @@ class IBMNodeDriver(NodeDriver):
         """
         Delete a reserved IP address
 
-        @param      resource_id: The address to delete (required)
-        @type       resource_id: C{str}
+        :param      resource_id: The address to delete (required)
+        :type       resource_id: ``str``
 
-        @rtype: C{bool}
+        :rtype: ``bool``
         """
         url = REST_BASE + '/addresses/' + resource_id
         status = int(self.connection.request(action=url,
@@ -556,21 +557,21 @@ class IBMNodeDriver(NodeDriver):
         """
         Block until storage volume state changes to the given value
 
-        @param      volume: Storage volume.
-        @type       volume: L{StorageVolume}
+        :param      volume: Storage volume.
+        :type       volume: :class:`StorageVolume`
 
-        @param      state: The target state to wait for
-        @type       state: C{int}
+        :param      state: The target state to wait for
+        :type       state: ``int``
 
-        @param      wait_period: How many seconds to between each loop
+        :param      wait_period: How many seconds to between each loop
                                  iteration (default is 3)
-        @type       wait_period: C{int}
+        :type       wait_period: ``int``
 
-        @param      timeout: How many seconds to wait before timing out
+        :param      timeout: How many seconds to wait before timing out
                              (default is 1200)
-        @type       timeout: C{int}
+        :type       timeout: ``int``
 
-        @rtype: L{StorageVolume}
+        :rtype: :class:`StorageVolume`
         """
         start = time.time()
         end = start + timeout
@@ -639,6 +640,7 @@ class IBMNodeDriver(NodeDriver):
                              'platform': platform,
                              'description': description,
                              'documentation': documentation,
+                             'instanceTypes': instanceTypes,
                              'node_sizes': nodeSizes
                          }
                          )

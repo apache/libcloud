@@ -14,29 +14,25 @@
 # limitations under the License.
 import sys
 import unittest
-import base64
 
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # NOQA
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-from libcloud.utils.py3 import u
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
-from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITAL_OCEAN_PARAMS
 
 
-#class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
+# class DigitalOceanTests(unittest.TestCase, TestCaseMixin):
 class DigitalOceanTests(unittest.TestCase):
+
     def setUp(self):
         DigitalOceanNodeDriver.connectionCls.conn_classes = \
             (None, DigitalOceanMockHttp)
