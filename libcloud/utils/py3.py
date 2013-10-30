@@ -96,7 +96,7 @@ else:
     import urllib2  # NOQA
     import urlparse  # NOQA
     import xmlrpclib  # NOQA
-    from urllib import quote as urlquote  # NOQA
+    from urllib import quote as _urlquote  # NOQA
     from urllib import unquote as urlunquote  # NOQA
     from urllib import urlencode as urlencode  # NOQA
 
@@ -114,6 +114,9 @@ else:
     if not PY25:
         from os.path import relpath  # NOQA
 
+    # Save the real value of unicode because urlquote needs it to tell the
+    # difference between a unicode string and a byte string.
+    _real_unicode = unicode
     basestring = unicode = str
 
     method_type = types.MethodType
@@ -132,6 +135,12 @@ else:
         return d.values()
 
     tostring = ET.tostring
+
+    def urlquote(s, safe='/'):
+        if isinstance(s, _real_unicode):
+            # Pretend to be py3 by encoding the URI automatically.
+            s = s.encode('utf8')
+        return _urlquote(s, safe)
 
 if PY25:
     import posixpath
