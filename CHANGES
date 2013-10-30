@@ -38,6 +38,10 @@ Changes with Apache Libcloud in development
     (LIBCLOUD-424)
     [Tomaz Muraus, Jon Chen]
 
+  - Disable cache busting functionality in the OpenStack and Rackspace next-gen
+    driver and enable it only for Rackspace first-gen driver.
+    [Tomaz Muraus]
+
   *) DNS
 
     - Update issue with inexistent zone / record handling in the get_zone and
