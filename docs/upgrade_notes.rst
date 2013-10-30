@@ -15,6 +15,24 @@ single class plus ``region`` argument model.
 More information on how this affects existing drivers and your code can be
 found bellow.
 
+Cache busting functionality is now only enabled in Rackspace first-gen driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cache busting functionality has been disabled in the Rackspace next-gen driver
+and all of the OpenStack drivers. It's now only enabled in the Rackspace
+first-gen driver.
+
+Cache busting functionality works by appending a random query parameter to
+every GET HTTP request. It was originally added to the Rackspace first-gen
+driver a long time ago to avoid excessive HTTP caching on the provider side.
+This excessive caching some times caused list_nodes and other calls to return
+stale data.
+
+This approach should not be needed with Rackspace next-gen and OpenStack drivers
+so it has been disabled.
+
+No action is required on the user's side.
+
 New default kernel versions used when creating Linode servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
