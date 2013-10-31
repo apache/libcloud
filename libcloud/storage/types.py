@@ -57,6 +57,7 @@ class Provider(object):
     LOCAL = 'local'
     CLOUDFILES = 'cloudfiles'
     AZURE_BLOBS = 'azure_blobs'
+    KTUCLOUD = 'ktucloud'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
