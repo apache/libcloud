@@ -98,9 +98,10 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     responseCls = OpenStackAuthResponse
     name = 'OpenStack Auth'
     timeout = None
+    auth_uri = None
 
     def __init__(self, parent_conn, auth_url, auth_version, user_id, key,
-                 tenant_name=None, timeout=None):
+                 tenant_name=None, timeout=None, auth_uri=None):
         self.parent_conn = parent_conn
         # enable tests to use the same mock connection classes.
         self.conn_classes = parent_conn.conn_classes
@@ -113,6 +114,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.driver = self.parent_conn.driver
         self.tenant_name = tenant_name
         self.timeout = timeout
+        self.auth_uri = auth_uri
 
         self.urls = {}
         self.auth_token = None
@@ -141,12 +143,24 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             return self
 
         if self.auth_version == "1.0":
+            if self.auth_uri is None:
+                self.auth_uri = '/v1.0'
+
             return self.authenticate_1_0()
         elif self.auth_version == "1.1":
+            if self.auth_uri is None:
+                self.auth_uri = '/v1.1/auth'
+
             return self.authenticate_1_1()
         elif self.auth_version == "2.0" or self.auth_version == "2.0_apikey":
+            if self.auth_uri is None:
+                self.auth_uri = '/v2.0/tokens'
+
             return self.authenticate_2_0_with_apikey()
         elif self.auth_version == "2.0_password":
+            if self.auth_uri is None:
+                self.auth_uri = '/v2.0/tokens'
+
             return self.authenticate_2_0_with_password()
         else:
             raise LibcloudError('Unsupported Auth Version requested')
@@ -157,12 +171,12 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
             'X-Auth-Key': self.key,
         }
 
-        resp = self.request('/v1.0', headers=headers, method='GET')
+        resp = self.request(self.auth_uri, headers=headers, method='GET')
 
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
-        elif resp.status != httplib.NO_CONTENT:
+        elif resp.status != httplib.NO_CONTENT and resp.status != httplib.OK:
             body = 'code: %s body:%s headers:%s' % (resp.status,
                                                     resp.body,
                                                     resp.headers)
@@ -190,7 +204,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
     def authenticate_1_1(self):
         reqbody = json.dumps({'credentials': {'username': self.user_id,
                                               'key': self.key}})
-        resp = self.request('/v1.1/auth', data=reqbody, headers={},
+        resp = self.request(self.auth_uri, data=reqbody, headers={},
                             method='POST')
 
         if resp.status == httplib.UNAUTHORIZED:
@@ -245,7 +259,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         return self.authenticate_2_0_with_body(reqbody)
 
     def authenticate_2_0_with_body(self, reqbody):
-        resp = self.request('/v2.0/tokens', data=reqbody,
+        resp = self.request(self.auth_uri, data=reqbody,
                             headers={'Content-Type': 'application/json'},
                             method='POST')
         if resp.status == httplib.UNAUTHORIZED:
@@ -466,6 +480,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     service_name = None
     service_region = None
     _auth_version = None
+    auth_uri = None
 
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, timeout=None,
@@ -564,7 +579,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             osa = OpenStackAuthConnection(self, aurl, self._auth_version,
                                           self.user_id, self.key,
                                           tenant_name=self._ex_tenant_name,
-                                          timeout=self.timeout)
+                                          timeout=self.timeout,
+                                          auth_uri=self.auth_uri)
 
             # may throw InvalidCreds, etc
             osa.authenticate()
