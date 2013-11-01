@@ -46,6 +46,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.local', 'LocalStorageDriver'),
     Provider.AZURE_BLOBS:
     ('libcloud.storage.drivers.azure_blobs', 'AzureBlobsStorageDriver'),
+    Provider.KTUCLOUD:
+    ('libcloud.storage.drivers.ktucloud', 'KTUCloudStorageDriver'),
 
     # Deprecated
     Provider.CLOUDFILES_US:

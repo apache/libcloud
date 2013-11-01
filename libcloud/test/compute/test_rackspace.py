@@ -119,7 +119,7 @@ class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
 
 class BaseRackspaceNovaTestCase(object):
     conn_classes = (RackspaceNovaMockHttp, RackspaceNovaMockHttp)
-    auth_url = 'https://auth.api.example.com/v2.0/'
+    auth_url = 'https://auth.api.example.com'
 
     def create_driver(self):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
@@ -185,7 +185,7 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_kwargs = {'region': 'lon'}
 
     conn_classes = (RackspaceNovaLonMockHttp, RackspaceNovaLonMockHttp)
-    auth_url = 'https://lon.auth.api.example.com/v2.0/'
+    auth_url = 'https://lon.auth.api.example.com'
 
     expected_endpoint = 'https://lon.servers.api.rackspacecloud.com/v2/1337'
 
