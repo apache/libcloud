@@ -30,7 +30,7 @@ from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 
-API_VERSION = 'v1beta15'
+API_VERSION = 'v1beta16'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
 
 
@@ -359,11 +359,10 @@ class GCETargetPool(UuidMixin):
 
 class GCEZone(NodeLocation):
     """Subclass of NodeLocation to provide additional information."""
-    def __init__(self, id, name, status, maintenance_windows, quotas,
-                 deprecated, driver, extra=None):
+    def __init__(self, id, name, status, maintenance_windows, deprecated,
+                 driver, extra=None):
         self.status = status
         self.maintenance_windows = maintenance_windows
-        self.quotas = quotas
         self.deprecated = deprecated
         self.extra = extra
         country = name.split('-')[0]
@@ -382,16 +381,19 @@ class GCEZone(NodeLocation):
         """
         Returns the next Maintenance Window.
 
-        :return:  A dictionary containing maintenance window info
+        :return:  A dictionary containing maintenance window info (or None if
+                  no maintenance windows are scheduled)
                   The dictionary contains 4 keys with values of type ``str``
                       - name: The name of the maintence window
                       - description: Description of the maintenance window
                       - beginTime: RFC3339 Timestamp
                       - endTime: RFC3339 Timestamp
-        :rtype:   ``dict``
+        :rtype:   ``dict`` or ``None``
         """
         begin = None
         next_window = None
+        if not self.maintenance_windows:
+            return None
         if len(self.maintenance_windows) == 1:
             return self.maintenance_windows[0]
         for mw in self.maintenance_windows:
@@ -405,10 +407,13 @@ class GCEZone(NodeLocation):
         """
         Returns time until next maintenance window.
 
-        :return:  Time until next maintenance window
-        :rtype:   :class:`datetime.timedelta`
+        :return:  Time until next maintenance window (or None if no
+                  maintenance windows are scheduled)
+        :rtype:   :class:`datetime.timedelta` or ``None``
         """
         next_window = self._get_next_maint()
+        if not next_window:
+            return None
         now = self._now()
         next_begin = timestamp_to_datetime(next_window['beginTime'])
         return next_begin - now
@@ -417,10 +422,13 @@ class GCEZone(NodeLocation):
         """
         Returns the duration of the next maintenance window.
 
-        :return:  Duration of next maintenance window
-        :rtype:   :class:`datetime.timedelta`
+        :return:  Duration of next maintenance window (or None if no
+                  maintenance windows are scheduled)
+        :rtype:   :class:`datetime.timedelta` or ``None``
         """
         next_window = self._get_next_maint()
+        if not next_window:
+            return None
         next_begin = timestamp_to_datetime(next_window['beginTime'])
         next_end = timestamp_to_datetime(next_window['endTime'])
         return next_end - next_begin
@@ -2677,5 +2685,4 @@ class GCENodeDriver(NodeDriver):
 
         return GCEZone(id=zone['id'], name=zone['name'], status=zone['status'],
                        maintenance_windows=zone.get('maintenanceWindows'),
-                       quotas=zone['quotas'], deprecated=deprecated,
-                       driver=self, extra=extra)
+                       deprecated=deprecated, driver=self, extra=extra)

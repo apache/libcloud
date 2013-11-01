@@ -7,16 +7,16 @@
       "id": "1549141992333368759",
       "kind": "compute#image",
       "name": "debian-7-wheezy-v20130617",
-      "preferredKernel": "https://www.googleapis.com/compute/v1beta15/projects/google/global/kernels/gce-v20130603",
+      "preferredKernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-v20130603",
       "rawDisk": {
         "containerType": "TAR",
         "source": ""
       },
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
       "sourceType": "RAW",
       "status": "READY"
     }
   ],
   "kind": "compute#imageList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/images"
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/images"
 }

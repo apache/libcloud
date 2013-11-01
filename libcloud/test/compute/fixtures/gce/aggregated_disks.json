@@ -4,14 +4,25 @@
     "zones/europe-west1-a": {
       "disks": [
         {
-          "creationTimestamp": "2013-06-26T09:50:22.508-07:00",
-          "id": "0811494794539478718",
+          "creationTimestamp": "2013-11-01T14:45:38.422-07:00",
+          "description": "Image: https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
+          "id": "4294778976520895166",
           "kind": "compute#disk",
           "name": "libcloud-demo-europe-boot-disk",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-boot-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-boot-disk",
           "sizeGb": "10",
           "status": "READY",
-          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/europe-west1-a"
+          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a"
+        },
+        {
+          "creationTimestamp": "2013-11-01T14:45:27.063-07:00",
+          "id": "2488119868186709482",
+          "kind": "compute#disk",
+          "name": "libcloud-demo-europe-attach-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-attach-disk",
+          "sizeGb": "1",
+          "status": "READY",
+          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a"
         }
       ]
     },
@@ -28,54 +39,58 @@
       }
     },
     "zones/us-central1-a": {
+      "warning": {
+        "code": "NO_RESULTS_ON_PAGE",
+        "data": [
+          {
+            "key": "scope",
+            "value": "zones/us-central1-a"
+          }
+        ],
+        "message": "There are no results for scope 'zones/us-central1-a' on this page."
+      }
+    },
+    "zones/us-central1-b": {
       "disks": [
         {
-          "creationTimestamp": "2013-06-25T10:57:34.305-07:00",
-          "id": "14383387450728762434",
+          "creationTimestamp": "2013-09-04T11:03:54.122-07:00",
+          "description": "Persistent boot disk created from https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130723.",
+          "id": "8658241308250794904",
           "kind": "compute#disk",
-          "name": "test-disk",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/disks/test-disk",
+          "name": "test1",
+          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b/disks/test1",
           "sizeGb": "10",
           "status": "READY",
-          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
-        },
-        {
-          "creationTimestamp": "2013-06-26T09:47:09.178-07:00",
-          "id": "10880026303683859871",
-          "kind": "compute#disk",
-          "name": "libcloud-demo-boot-disk",
-          "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/disks/libcloud-demo-boot-disk",
-          "sizeGb": "10",
-          "status": "READY",
-          "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b"
         }
       ]
     },
-    "zones/us-central1-b": {
-      "warning": {
-        "code": "NO_RESULTS_ON_PAGE",
-        "data": [
-          {
-            "key": "scope",
-            "value": "zones/us-central1-b"
-          }
-        ],
-        "message": "There are no results for scope 'zones/us-central1-b' on this page."
-      }
-    },
     "zones/us-central2-a": {
-      "warning": {
-        "code": "NO_RESULTS_ON_PAGE",
-        "data": [
-          {
-            "key": "scope",
-            "value": "zones/us-central2-a"
-          }
-        ],
-        "message": "There are no results for scope 'zones/us-central2-a' on this page."
-      }
+      "disks": [
+        {
+          "creationTimestamp": "2013-11-01T14:43:36.763-07:00",
+          "id": "01690270691106097961",
+          "kind": "compute#disk",
+          "name": "libcloud-demo-attach-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/disks/libcloud-demo-attach-disk",
+          "sizeGb": "1",
+          "status": "READY",
+          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
+        },
+        {
+          "creationTimestamp": "2013-11-01T14:43:46.039-07:00",
+          "description": "Image: https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
+          "id": "01805374214887472027",
+          "kind": "compute#disk",
+          "name": "libcloud-demo-boot-disk",
+          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/disks/libcloud-demo-boot-disk",
+          "sizeGb": "10",
+          "status": "READY",
+          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
+        }
+      ]
     }
   },
   "kind": "compute#diskAggregatedList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/aggregated/disks"
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/aggregated/disks"
 }

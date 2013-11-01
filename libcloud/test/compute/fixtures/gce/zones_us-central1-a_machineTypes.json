@@ -12,7 +12,7 @@
       "maximumPersistentDisksSizeGb": "3072",
       "memoryMb": 614,
       "name": "f1-micro",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/f1-micro",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/f1-micro",
       "zone": "us-central1-a"
     },
     {
@@ -26,7 +26,7 @@
       "maximumPersistentDisksSizeGb": "3072",
       "memoryMb": 1740,
       "name": "g1-small",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/g1-small",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/g1-small",
       "zone": "us-central1-a"
     },
     {
@@ -40,7 +40,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 1843,
       "name": "n1-highcpu-2",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-2",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-2",
       "zone": "us-central1-a"
     },
     {
@@ -59,7 +59,7 @@
           "diskGb": 870
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-2-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-2-d",
       "zone": "us-central1-a"
     },
     {
@@ -73,7 +73,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 3686,
       "name": "n1-highcpu-4",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-4",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-4",
       "zone": "us-central1-a"
     },
     {
@@ -92,7 +92,7 @@
           "diskGb": 1770
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-4-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-4-d",
       "zone": "us-central1-a"
     },
     {
@@ -106,7 +106,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 7373,
       "name": "n1-highcpu-8",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-8",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-8",
       "zone": "us-central1-a"
     },
     {
@@ -128,7 +128,7 @@
           "diskGb": 1770
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-8-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highcpu-8-d",
       "zone": "us-central1-a"
     },
     {
@@ -142,7 +142,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 13312,
       "name": "n1-highmem-2",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-2",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-2",
       "zone": "us-central1-a"
     },
     {
@@ -161,7 +161,7 @@
           "diskGb": 870
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-2-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-2-d",
       "zone": "us-central1-a"
     },
     {
@@ -175,7 +175,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 26624,
       "name": "n1-highmem-4",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-4",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-4",
       "zone": "us-central1-a"
     },
     {
@@ -194,7 +194,7 @@
           "diskGb": 1770
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-4-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-4-d",
       "zone": "us-central1-a"
     },
     {
@@ -208,7 +208,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 53248,
       "name": "n1-highmem-8",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-8",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-8",
       "zone": "us-central1-a"
     },
     {
@@ -230,7 +230,7 @@
           "diskGb": 1770
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-8-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-highmem-8-d",
       "zone": "us-central1-a"
     },
     {
@@ -244,7 +244,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 3840,
       "name": "n1-standard-1",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
       "zone": "us-central1-a"
     },
     {
@@ -263,7 +263,7 @@
           "diskGb": 420
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1-d",
       "zone": "us-central1-a"
     },
     {
@@ -277,7 +277,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 7680,
       "name": "n1-standard-2",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-2",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-2",
       "zone": "us-central1-a"
     },
     {
@@ -296,7 +296,7 @@
           "diskGb": 870
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-2-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-2-d",
       "zone": "us-central1-a"
     },
     {
@@ -310,7 +310,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 15360,
       "name": "n1-standard-4",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-4",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-4",
       "zone": "us-central1-a"
     },
     {
@@ -329,7 +329,7 @@
           "diskGb": 1770
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-4-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-4-d",
       "zone": "us-central1-a"
     },
     {
@@ -343,7 +343,7 @@
       "maximumPersistentDisksSizeGb": "10240",
       "memoryMb": 30720,
       "name": "n1-standard-8",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-8",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-8",
       "zone": "us-central1-a"
     },
     {
@@ -365,10 +365,10 @@
           "diskGb": 1770
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-8-d",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-8-d",
       "zone": "us-central1-a"
     }
   ],
   "kind": "compute#machineTypeList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes"
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes"
 }

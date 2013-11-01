@@ -64,7 +64,7 @@ MAX_NODES = 5
 DEMO_BASE_NAME = 'libcloud-demo'
 
 # Datacenter to create resources in
-DATACENTER = 'us-central2-a'
+DATACENTER = 'us-central1-a'
 
 # Clean up resources at the end (can be set to false in order to
 # inspect resources at the end of the run). Resources will be cleaned
@@ -284,7 +284,7 @@ def main():
 
     if CLEANUP:
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
-        clean_up(DEMO_BASE_NAME, nodes,
+        clean_up(gce, DEMO_BASE_NAME, nodes,
                  addresses + volumes + firewalls + networks)
 
 if __name__ == '__main__':

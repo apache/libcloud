@@ -447,7 +447,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     responseCls = GoogleResponse
     host = 'www.googleapis.com'
     poll_interval = 2.0
-    timeout = 120
+    timeout = 180
 
     def __init__(self, user_id, key, auth_type=None,
                  credential_file=None, **kwargs):

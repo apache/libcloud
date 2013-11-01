@@ -85,7 +85,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_find_zone_or_region(self):
         zone1 = self.driver._find_zone_or_region('libcloud-demo-np-node',
                                                  'instances')
-        self.assertEqual(zone1.name, 'us-central1-a')
+        self.assertEqual(zone1.name, 'us-central2-a')
         zone2 = self.driver._find_zone_or_region(
             'libcloud-demo-europe-np-node', 'instances')
         self.assertEqual(zone2.name, 'europe-west1-a')
@@ -96,9 +96,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_match_images(self):
         project = 'debian-cloud'
         image = self.driver._match_images(project, 'debian-7')
-        self.assertEqual(image.name, 'debian-7-wheezy-v20130617')
+        self.assertEqual(image.name, 'debian-7-wheezy-v20131014')
         image = self.driver._match_images(project, 'debian-6')
-        self.assertEqual(image.name, 'debian-6-squeeze-v20130617')
+        self.assertEqual(image.name, 'debian-6-squeeze-v20130926')
 
     def test_ex_list_addresses(self):
         address_list = self.driver.ex_list_addresses()
@@ -118,7 +118,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_list_firewalls(self):
         firewalls = self.driver.ex_list_firewalls()
-        self.assertEqual(len(firewalls), 4)
+        self.assertEqual(len(firewalls), 5)
         self.assertEqual(firewalls[0].name, 'default-allow-internal')
 
     def test_ex_list_forwarding_rules(self):
@@ -137,7 +137,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         local_images = self.driver.list_images()
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         self.assertEqual(len(local_images), 1)
-        self.assertEqual(len(debian_images), 10)
+        self.assertEqual(len(debian_images), 17)
         self.assertEqual(local_images[0].name, 'debian-7-wheezy-v20130617')
 
     def test_list_locations(self):
@@ -194,12 +194,12 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         volumes_all = self.driver.list_volumes('all')
         volumes_uc1a = self.driver.list_volumes('us-central1-a')
         self.assertEqual(len(volumes), 3)
-        self.assertEqual(len(volumes_all), 3)
+        self.assertEqual(len(volumes_all), 5)
         self.assertEqual(len(volumes_uc1a), 3)
         self.assertEqual(volumes[0].name, 'lcdisk')
         self.assertEqual(volumes_uc1a[0].name, 'lcdisk')
         names = [v.name for v in volumes_all]
-        self.assertTrue('test-disk' in names)
+        self.assertTrue('libcloud-demo-europe-boot-disk' in names)
 
     def test_ex_list_zones(self):
         zones = self.driver.ex_list_zones()
@@ -480,7 +480,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
         partial_name = 'debian-6'
         image = self.driver.ex_get_image(partial_name)
-        self.assertEqual(image.name, 'debian-6-squeeze-v20130617')
+        self.assertEqual(image.name, 'debian-6-squeeze-v20130926')
         self.assertTrue(image.extra['description'].startswith('Debian'))
 
     def test_ex_get_network(self):
@@ -506,9 +506,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_ex_get_project(self):
         project = self.driver.ex_get_project()
         self.assertEqual(project.name, 'project_name')
-        instances_quota = project.quotas[0]
-        self.assertEqual(instances_quota['usage'], 7.0)
-        self.assertEqual(instances_quota['limit'], 8.0)
+        networks_quota = project.quotas[1]
+        self.assertEqual(networks_quota['usage'], 3.0)
+        self.assertEqual(networks_quota['limit'], 5.0)
+        self.assertEqual(networks_quota['metric'], 'NETWORKS')
 
     def test_ex_get_region(self):
         region_name = 'us-central1'
@@ -541,13 +542,16 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(volume.extra['status'], 'READY')
 
     def test_ex_get_zone(self):
-        zone_name = 'us-central1-a'
-        expected_time_until = datetime.timedelta(days=52)
-        expected_duration = datetime.timedelta(days=15)
+        zone_name = 'us-central1-b'
+        expected_time_until = datetime.timedelta(days=129)
+        expected_duration = datetime.timedelta(days=8, hours=1)
         zone = self.driver.ex_get_zone(zone_name)
         self.assertEqual(zone.name, zone_name)
         self.assertEqual(zone.time_until_mw, expected_time_until)
         self.assertEqual(zone.next_mw_duration, expected_duration)
+
+        zone_no_mw = self.driver.ex_get_zone('us-central1-a')
+        self.assertEqual(zone_no_mw.time_until_mw, None)
 
 
 class GCEMockHttp(MockHttpTestCase):
