@@ -72,7 +72,7 @@ from libcloud.loadbalancer.providers import get_driver as get_driver_lb
 DEMO_BASE_NAME = 'libcloud-lb-demo'
 
 # Datacenter to create resources in
-DATACENTER = 'us-central1-b'
+DATACENTER = 'us-central1-a'
 
 # Clean up resources at the end (can be set to false in order to
 # inspect resources at the end of the run). Resources will be cleaned
@@ -296,7 +296,7 @@ def main():
         firewalls = gce.ex_list_firewalls()
 
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
-        clean_up(DEMO_BASE_NAME, nodes, balancers + healthchecks + firewalls)
+        clean_up(gce, DEMO_BASE_NAME, nodes, balancers + healthchecks + firewalls)
 
 if __name__ == '__main__':
     main()

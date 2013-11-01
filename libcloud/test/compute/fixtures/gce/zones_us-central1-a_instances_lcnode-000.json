@@ -10,9 +10,9 @@
     }
   ],
   "id": "5390075309006132922",
-  "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
+  "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
   "kind": "compute#instance",
-  "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+  "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
   "metadata": {
     "fingerprint": "42WmSpB8rSM=",
     "kind": "compute#metadata"
@@ -29,14 +29,14 @@
         }
       ],
       "name": "nic0",
-      "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+      "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
       "networkIP": "10.240.106.153"
     }
   ],
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a/instances/lcnode-000",
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/instances/lcnode-000",
   "status": "RUNNING",
   "tags": {
     "fingerprint": "42WmSpB8rSM="
   },
-  "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a"
 }

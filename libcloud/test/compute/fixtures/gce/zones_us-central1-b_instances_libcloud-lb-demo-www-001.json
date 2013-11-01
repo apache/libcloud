@@ -10,10 +10,10 @@
     }
   ],
   "id": "11204787063927654129",
-  "image": "https://www.googleapis.com/compute/v1beta15/projects/debian-cloud/global/images/debian-7-wheezy-v20130723",
-  "kernel": "https://www.googleapis.com/compute/v1beta15/projects/google/global/kernels/gce-v20130603",
+  "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20130723",
+  "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-v20130603",
   "kind": "compute#instance",
-  "machineType": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b/machineTypes/n1-standard-1",
+  "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b/machineTypes/n1-standard-1",
   "metadata": {
     "fingerprint": "n9EGknQZPSA=",
     "items": [
@@ -36,11 +36,11 @@
         }
       ],
       "name": "nic0",
-      "network": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/networks/default",
+      "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
       "networkIP": "10.240.0.123"
     }
   ],
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b/instances/libcloud-lb-demo-www-001",
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b/instances/libcloud-lb-demo-www-001",
   "status": "RUNNING",
   "tags": {
     "fingerprint": "XI0he92M8l8=",
@@ -48,5 +48,5 @@
       "libcloud-lb-demo-www"
     ]
   },
-  "zone": "https://www.googleapis.com/compute/v1beta15/projects/project_name/zones/us-central1-b"
+  "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b"
 }

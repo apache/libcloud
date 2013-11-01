@@ -23,8 +23,8 @@
           "kind": "compute#forwardingRule",
           "name": "lcforwardingrule",
           "portRange": "8000-8500",
-          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-          "target": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
+          "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1",
+          "target": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
         },
         {
           "IPAddress": "173.255.119.185",
@@ -34,8 +34,8 @@
           "kind": "compute#forwardingRule",
           "name": "libcloud-lb-demo-lb",
           "portRange": "80-80",
-          "region": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1",
-          "target": "https://www.googleapis.com/compute/v1beta15/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
+          "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1",
+          "target": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1/targetPools/libcloud-lb-demo-lb-tp"
         }
       ]
     },
@@ -53,5 +53,5 @@
     }
   },
   "kind": "compute#forwardingRuleAggregatedList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/aggregated/forwardingRules"
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/aggregated/forwardingRules"
 }

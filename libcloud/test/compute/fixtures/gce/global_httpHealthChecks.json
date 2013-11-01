@@ -12,7 +12,7 @@
       "name": "basic-check",
       "port": 80,
       "requestPath": "/",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks/basic-check",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/httpHealthChecks/basic-check",
       "timeoutSec": 5,
       "unhealthyThreshold": 2
     },
@@ -25,11 +25,11 @@
       "name": "libcloud-lb-demo-healthcheck",
       "port": 80,
       "requestPath": "/",
-      "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks/libcloud-lb-demo-healthcheck",
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/httpHealthChecks/libcloud-lb-demo-healthcheck",
       "timeoutSec": 5,
       "unhealthyThreshold": 2
     }
   ],
   "kind": "compute#httpHealthCheckList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta15/projects/project_name/global/httpHealthChecks"
+  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/httpHealthChecks"
 }

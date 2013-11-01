@@ -50,7 +50,7 @@ class GCELoadBalancerTest(LibcloudTestCase):
         self.driver = GCELBDriver(*GCE_PARAMS, **kwargs)
 
     def test_get_node_from_ip(self):
-        ip = '173.255.115.146'
+        ip = '8.35.197.91'
         expected_name = 'node-name'
         node = self.driver._get_node_from_ip(ip)
         self.assertEqual(node.name, expected_name)
