@@ -94,7 +94,7 @@ class OpenStackServiceCatalogTests(unittest.TestCase):
 
     def test_connection_get_service_catalog(self):
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
-        connection.auth_url = "https://auth.api.example.com/v1.1/"
+        connection.auth_url = "https://auth.api.example.com"
         connection._ex_force_base_url = "https://www.foo.com"
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
 
@@ -119,6 +119,61 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
     def setUp(self):
         OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
                                                 OpenStackMockHttp)
+
+    def test_auth_url_is_correctly_assembled(self):
+        tuples = [
+            ('1.0', OpenStackMockHttp),
+            ('1.1', OpenStackMockHttp),
+            ('2.0', OpenStack_2_0_MockHttp),
+            ('2.0_apikey', OpenStack_2_0_MockHttp),
+            ('2.0_password', OpenStack_2_0_MockHttp)
+        ]
+
+        APPEND = 0
+        NOTAPPEND = 1
+
+        auth_urls = [
+            ("https://auth.api.example.com", APPEND, ''),
+            ("https://auth.api.example.com/", NOTAPPEND, '/'),
+            ("https://auth.api.example.com/foo/bar", NOTAPPEND, '/foo/bar'),
+            ("https://auth.api.example.com/foo/bar/", NOTAPPEND, '/foo/bar/')
+        ]
+
+        actions = {
+            "1.0": "/v1.0",
+            "1.1": "/v1.1/auth",
+            "2.0": "/v2.0/tokens",
+            "2.0_apikey": "/v2.0/tokens",
+            "2.0_password": "/v2.0/tokens"
+        }
+
+        user_id = OPENSTACK_PARAMS[0]
+        key = OPENSTACK_PARAMS[1]
+
+        for (auth_version, mock_http_class) in tuples:
+            for _auth_url, \
+                should_append_default_path, \
+                expected_path in auth_urls:
+
+                connection = \
+                    self._get_mock_connection(mock_http_class=mock_http_class,
+                                              auth_url=_auth_url)
+                auth_url = connection.auth_url
+
+                osa = OpenStackAuthConnection(connection,
+                                              auth_url,
+                                              auth_version,
+                                              user_id, key)
+
+                try:
+                    osa = osa.authenticate()
+                except:
+                    pass
+
+                if (should_append_default_path == APPEND):
+                    expected_path = actions[auth_version]
+
+                self.assertEqual(osa.action, expected_path)
 
     def test_basic_authentication(self):
         tuples = [
@@ -224,12 +279,16 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
 
         self.assertEqual(mocked_auth_method.call_count, 5)
 
-    def _get_mock_connection(self, mock_http_class):
+    def _get_mock_connection(self, mock_http_class, auth_url=None):
         OpenStackBaseConnection.conn_classes = (mock_http_class,
                                                 mock_http_class)
 
         connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
-        connection.auth_url = "https://auth.api.example.com/v1.1/"
+        if auth_url is None:
+            connection.auth_url = "https://auth.api.example.com"
+        else:
+            connection.auth_url = auth_url
+
         connection._ex_force_base_url = "https://www.foo.com"
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
 
@@ -260,7 +319,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
 
         self.driver_klass.connectionCls.conn_classes = (
             OpenStackMockHttp, OpenStackMockHttp)
-        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v1.1/"
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
         OpenStackMockHttp.type = None
         self.driver = self.create_driver()
         # normally authentication happens lazily, but we force it here
@@ -749,7 +808,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         self.driver_klass.connectionCls.conn_classes = (
             OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
-        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None
@@ -1681,7 +1740,7 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
     def setUp(self):
         self.driver_klass.connectionCls.conn_classes = \
             (OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
-        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com/v2.0/"
+        self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None

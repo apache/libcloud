@@ -120,7 +120,37 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         self.auth_user_info = None
 
     def morph_action_hook(self, action):
-        return action
+        (host, port, secure, request_path) = \
+            self._tuple_from_url(self.auth_url)
+
+        # for example auth_url is
+        #
+        # http://192.168.0.100      - assume path is not provided,
+        #                             depending on the auth_version,
+        #                             correct path should be appended
+        #                             to the final url
+        #                             if auth_version is 1.0
+        #                             final is http://192.168.0.100/v1.0
+        #                             if auth_version is 1.1
+        #                             final is http://192.168.0.100/v1.1/auth
+        #                             if auth_version is 2.0
+        #                             final is http://192.168.0.100/v2.0/tokens
+        #
+        # http://192.168.0.100/         - assume path(foo/bar) is already
+        #                                 provided, nothing should be
+        #                                 apppended to the final url
+        #
+        # http://192.168.0.100/foo/bar  - assume path(foo/bar) is already
+        #                                 provided, nothing should be
+        #                                 apppended to the final url
+        #
+        # http://192.168.0.100/foo/bar/ - assume path(foo/bar) is already
+        #                                 provided, nothing should be
+        #                                 appended to the final url
+        if request_path is "":
+            return action
+
+        return request_path
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
@@ -162,7 +192,7 @@ class OpenStackAuthConnection(ConnectionUserAndKey):
         if resp.status == httplib.UNAUTHORIZED:
             # HTTP UNAUTHORIZED (401): auth failed
             raise InvalidCredsError()
-        elif resp.status != httplib.NO_CONTENT:
+        elif resp.status not in [httplib.NO_CONTENT, httplib.OK]:
             body = 'code: %s body:%s headers:%s' % (resp.status,
                                                     resp.body,
                                                     resp.headers)
