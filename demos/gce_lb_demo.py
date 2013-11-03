@@ -296,7 +296,8 @@ def main():
         firewalls = gce.ex_list_firewalls()
 
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
-        clean_up(gce, DEMO_BASE_NAME, nodes, balancers + healthchecks + firewalls)
+        clean_up(gce, DEMO_BASE_NAME, nodes,
+                 balancers + healthchecks + firewalls)
 
 if __name__ == '__main__':
     main()
