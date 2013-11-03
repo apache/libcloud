@@ -42,6 +42,9 @@ Changes with Apache Libcloud in development
     driver and enable it only for Rackspace first-gen driver.
     [Tomaz Muraus]
 
+  - Update Google Compute Engine driver to v1beta16.
+    [Rick Wright]
+
   *) DNS
 
     - Update issue with inexistent zone / record handling in the get_zone and
