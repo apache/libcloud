@@ -51,12 +51,26 @@ Changes with Apache Libcloud in development
   - Update Google Compute Engine driver to v1beta16.
     [Rick Wright]
 
+  - Modify auth_url variable in the OpenStack drivers so it works more like
+    users would expect it to.
+
+    Previously path specified in the auth_url was ignored and only protocol,
+    hostname and port were used. Now user can provide a full url for the
+    auth_url variable and the path provided in the url is also used.
+    [DaeMyung Kang, Tomaz Muraus]
+
+ *) Storage
+
+  - Add a new driver for KT UCloud based on the OpenStack Swift driver.
+    (LIBCLOUD-431).
+    [DaeMyung Kang]
+
   *) DNS
 
-    - Update issue with inexistent zone / record handling in the get_zone and
-      get_record method in the Linode driver. Those issues were related to
-      changes in the Linode API. (LIBCLOUD-425)
-      [Jon Chen]
+   - Update issue with inexistent zone / record handling in the get_zone and
+     get_record method in the Linode driver. Those issues were related to
+     changes in the Linode API. (LIBCLOUD-425)
+     [Jon Chen]
 
 Changes with Apache Libcloud 0.14.0-beta2
 
