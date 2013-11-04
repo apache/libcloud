@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud in development
 
+ *) General
+
+   - Fix libcloud.utils.py3.urlquote so it works with unicode strings under
+     Python 2. (LIBCLOUD-429)
+     [Michael Farrell]
+
  *) Compute
 
    - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
