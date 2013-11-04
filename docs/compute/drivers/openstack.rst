@@ -14,8 +14,11 @@ common scenario with a default installation, you will only need to provide
 
 Available arguments:
 
-* ``ex_force_auth_url`` - Authentication service (Keystone) API URL (e.g.
-  ``http://192.168.1.101:5000/v2.0``)
+* ``ex_force_auth_url`` - Authentication service (Keystone) API URL. It can
+  either be a full URL with a path (e.g.
+  ``https://192.168.1.101:5000/v2.0/tokens/``) or a base URL without a path
+  (e.g. ``https://192.168.1.1``). If no path is provided, default path for the
+  provided auth version is appended to the base URL.
 * ``ex_force_auth_version`` - API version of the authentication service. This
   argument determines how authentication is performed. Valid and supported
   versions are:

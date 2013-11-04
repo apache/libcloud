@@ -11,7 +11,7 @@ libcloud.security.VERIFY_SSL_CERT = False
 
 OpenStack = get_driver(Provider.OPENSTACK)
 driver = OpenStack('your_auth_username', 'your_auth_password',
-                   ex_force_auth_url='http://10.0.4.1:5000/v2.0',
+                   ex_force_auth_url='http://10.0.4.1:5000',
                    ex_force_auth_version='2.0_password',
                    ex_tenant_name='your_tenant')
 
