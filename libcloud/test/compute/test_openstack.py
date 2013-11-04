@@ -151,13 +151,11 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
         key = OPENSTACK_PARAMS[1]
 
         for (auth_version, mock_http_class) in tuples:
-            for _auth_url, \
-                should_append_default_path, \
-                expected_path in auth_urls:
-
+            for (url, should_append_default_path, expected_path) in auth_urls:
                 connection = \
                     self._get_mock_connection(mock_http_class=mock_http_class,
-                                              auth_url=_auth_url)
+                                              auth_url=url)
+
                 auth_url = connection.auth_url
 
                 osa = OpenStackAuthConnection(connection,
