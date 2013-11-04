@@ -133,18 +133,18 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
         NOTAPPEND = 1
 
         auth_urls = [
-            ("https://auth.api.example.com", APPEND, ''),
-            ("https://auth.api.example.com/", NOTAPPEND, '/'),
-            ("https://auth.api.example.com/foo/bar", NOTAPPEND, '/foo/bar'),
-            ("https://auth.api.example.com/foo/bar/", NOTAPPEND, '/foo/bar/')
+            ('https://auth.api.example.com', APPEND, ''),
+            ('https://auth.api.example.com/', NOTAPPEND, '/'),
+            ('https://auth.api.example.com/foo/bar', NOTAPPEND, '/foo/bar'),
+            ('https://auth.api.example.com/foo/bar/', NOTAPPEND, '/foo/bar/')
         ]
 
         actions = {
-            "1.0": "/v1.0",
-            "1.1": "/v1.1/auth",
-            "2.0": "/v2.0/tokens",
-            "2.0_apikey": "/v2.0/tokens",
-            "2.0_password": "/v2.0/tokens"
+            '1.0': '/v1.0',
+            '1.1': '/v1.1/auth',
+            '2.0': '/v2.0/tokens',
+            '2.0_apikey': '/v2.0/tokens',
+            '2.0_password': '/v2.0/tokens'
         }
 
         user_id = OPENSTACK_PARAMS[0]
