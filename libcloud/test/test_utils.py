@@ -27,7 +27,7 @@ import libcloud.utils.files
 
 from libcloud.utils.misc import get_driver, set_driver
 
-from libcloud.utils.py3 import PY3, PY32
+from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlquote
@@ -215,15 +215,15 @@ class TestUtils(unittest.TestCase):
         else:
             val = codecs.unicode_escape_decode('\xe9')[0]
 
-        uri = libcloud.utils.py3.urlquote(val)
+        uri = urlquote(val)
         self.assertEqual(b(uri), b('%C3%A9'))
 
         # Unicode without unicode characters
-        uri = libcloud.utils.py3.urlquote('~abc')
+        uri = urlquote('~abc')
         self.assertEqual(b(uri), b('%7Eabc'))
 
         # Already-encoded bytestring without unicode characters
-        uri = libcloud.utils.py3.urlquote(b('~abc'))
+        uri = urlquote(b('~abc'))
         self.assertEqual(b(uri), b('%7Eabc'))
 
 
