@@ -14,11 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Allows unicode literals ('' == unicode) on Python 2, for compatibility with
-# Python 3
-from __future__ import unicode_literals
-
 import sys
+import codecs
 import unittest
 import warnings
 import os.path
@@ -30,7 +27,7 @@ import libcloud.utils.files
 
 from libcloud.utils.misc import get_driver, set_driver
 
-from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import PY3, PY32
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlquote
@@ -212,9 +209,13 @@ class TestUtils(unittest.TestCase):
 
     def test_unicode_urlquote(self):
         # Regression tests for LIBCLOUD-429
+        if PY3:
+            # Note: this is a unicode literal
+            val = '\xe9'
+        else:
+            val = codecs.unicode_escape_decode('\xe9')[0]
 
-        # Note: this is a unicode literal
-        uri = libcloud.utils.py3.urlquote('\xe9')
+        uri = libcloud.utils.py3.urlquote(val)
         self.assertEqual(b(uri), b('%C3%A9'))
 
         # Unicode without unicode characters
