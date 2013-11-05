@@ -1311,7 +1311,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :return: A dictionary or other mapping of strings to strings,
                  associating tag names with tag values.
-        :type tags: ``dict``
+        :rtype tags: ``dict``
         """
         return node.extra['tags']
 
