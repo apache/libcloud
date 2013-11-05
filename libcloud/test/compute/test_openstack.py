@@ -1412,6 +1412,17 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         network = self.driver.ex_list_networks()[0]
         self.assertTrue(self.driver.ex_delete_network(network=network))
 
+    def test_ex_get_metadata_for_node(self):
+        image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
+        size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
+        node = self.driver.create_node(name='foo',
+                                       image=image,
+                                       size=size)
+
+        metadata = self.driver.ex_get_metadata_for_node(node)
+        self.assertEqual(metadata['My Server Name'], 'Apache1')
+        self.assertEqual(len(metadata), 1)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False

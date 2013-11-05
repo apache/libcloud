@@ -1302,6 +1302,19 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
+    def ex_get_metadata_for_node(self, node):
+        """
+        Return the metadata associated with the node.
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :return: A dictionary or other mapping of strings to strings,
+                 associating tag names with tag values.
+        :type tags: ``dict``
+        """
+        return node.extra['tags']
+
     def _add_instance_filter(self, params, node):
         """
         Add instance filter to the provided params dictionary.

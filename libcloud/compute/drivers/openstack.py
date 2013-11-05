@@ -2023,6 +2023,19 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        method='POST', data=data)
         return resp.status == httplib.ACCEPTED
 
+    def ex_get_metadata_for_node(self, node):
+        """
+        Return the metadata associated with the node.
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :return: A dictionary or other mapping of strings to strings,
+                 associating tag names with tag values.
+        :type tags: ``dict``
+        """
+        return node.extra['metadata']
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """

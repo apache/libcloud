@@ -630,6 +630,23 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                           ex_securitygroup=security_groups,
                           ex_security_groups=security_groups)
 
+    def test_ex_get_metadata_for_node(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        node = self.driver.create_node(name='foo',
+                                       image=image,
+                                       size=size,
+                                       ex_metadata={'Bar': 'baz', 'Num': '42'})
+
+        metadata = self.driver.ex_get_metadata_for_node(node)
+        self.assertEqual(metadata['Name'], 'foo')
+        self.assertEqual(metadata['Bar'], 'baz')
+        self.assertEqual(metadata['Num'], '42')
+        self.assertEqual(len(metadata), 3)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
