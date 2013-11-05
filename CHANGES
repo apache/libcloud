@@ -59,6 +59,17 @@ Changes with Apache Libcloud in development
     auth_url variable and the path provided in the url is also used.
     [DaeMyung Kang, Tomaz Muraus]
 
+  - Allow user to associate arbitrary key/value pairs with a node by passing
+    "ex_metadata" argument (dictionary) to create_node method in the EC2
+    driver.
+    Those values are associated with a node using tags functionality.
+    (LIBCLOUD-395)
+    [Ivan Kusalic]
+
+   - Add "ex_get_metadata" method to EC2 and OpenStack driver. This method reads
+     metadata dictionary from the Node object. (LIBCLOUD-395)
+    [Ivan Kusalic]
+
  *) Storage
 
   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
