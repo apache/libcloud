@@ -154,6 +154,14 @@ class RackspaceLBTests(unittest.TestCase):
                          Member(None, '10.1.0.11', 80))
                 )
 
+        stats = self.driver.ex_list_current_stats(balancer)
+        self.assertEqual(stats['connectError'], 20)
+        self.assertEqual(stats['connectTimeOut'], 10)
+        self.assertEqual(stats['connectFailure'], 30)
+        self.assertEqual(stats['dataTimedOut'], 40)
+        self.assertEqual(stats['keepAliveTimedOut'], 50)
+        self.assertEqual(stats['maxConn'], 60)
+
         self.assertEqual(balancer.name, 'test2')
         self.assertEqual(balancer.id, '8290')
 
@@ -919,11 +927,16 @@ class RackspaceLBMockHttp(MockHttpTestCase):
         return (httplib.ACCEPTED, body, {},
                 httplib.responses[httplib.ACCEPTED])
 
+    def _v1_0_slug_loadbalancers_8290_stats(self, method, url, body, headers):
+        body = self.fixtures.load('v1_0_slug_loadbalancers_8290_stats.json')
+        return (httplib.ACCEPTED, body, {},
+                httplib.responses[httplib.ACCEPTED])
+
     def _v1_0_slug_loadbalancers_algorithms(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('v1_slug_loadbalancers_algorithms.json')
-            return (httplib.ACCEPTED, body, {},
-                    httplib.responses[httplib.ACCEPTED])
+            return (httplib.OK, body, {},
+                    httplib.responses[httplib.OK])
 
         raise NotImplementedError
 
