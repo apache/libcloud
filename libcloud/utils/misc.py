@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+import binascii
+
+
 __all__ = [
     'get_driver',
     'set_driver',
@@ -21,10 +26,9 @@ __all__ = [
     'str2dicts',
     'dict2str',
     'reverse_dict',
-    'lowercase_keys'
+    'lowercase_keys',
+    'get_secure_random_string'
 ]
-
-import sys
 
 
 def get_driver(drivers, provider):
@@ -231,3 +235,20 @@ def reverse_dict(dictionary):
 
 def lowercase_keys(dictionary):
     return dict(((k.lower(), v) for k, v in dictionary.items()))
+
+
+def get_secure_random_string(size):
+    """
+    Return a string of ``size`` random bytes. Returned string is suitable for
+    cryptographic use.
+
+    :param size: Size of the generated string.
+    :type size: ``int``
+
+    :return: Random string.
+    :rtype: ``str``
+    """
+    value = os.urandom(size)
+    value = binascii.hexlify(value)
+    value = value.decode('utf-8')[:size]
+    return value

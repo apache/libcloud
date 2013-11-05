@@ -33,6 +33,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlquote
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
+from libcloud.utils.misc import get_secure_random_string
 
 
 WARNINGS_BUFFER = []
@@ -225,6 +226,11 @@ class TestUtils(unittest.TestCase):
         # Already-encoded bytestring without unicode characters
         uri = urlquote(b('~abc'))
         self.assertEqual(b(uri), b('%7Eabc'))
+
+    def test_get_secure_random_string(self):
+        for i in range(1, 500):
+            value = get_secure_random_string(size=i)
+            self.assertEqual(len(value), i)
 
 
 if __name__ == '__main__':
