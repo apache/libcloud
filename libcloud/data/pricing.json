@@ -25,7 +25,16 @@
             "5": 0.240,
             "6": 0.480,
             "7": 0.960,
-            "8": 1.200
+            "8": 1.200,
+            "performance1-1": 0.040,
+            "performance1-2": 0.080,
+            "performance1-4": 0.160,
+            "performance1-8": 0.320,
+            "performance2-15": 0.680,
+            "performance2-30": 1.360,
+            "performance2-60": 2.720,
+            "performance2-90": 4.080,
+            "performance2-120": 5.440
         },
 
         "rackspacenovalon": {
