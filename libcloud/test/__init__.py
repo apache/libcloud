@@ -20,6 +20,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
+from libcloud.utils.py3 import parse_qsl
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import unittest2_required
 
@@ -221,6 +222,33 @@ class MockHttpTestCase(MockHttp, unittest.TestCase):
 
     def runTest(self):
         pass
+
+    def assertUrlContainsQueryParams(self, url, expected_params, strict=False):
+        """
+        Assert that provided url contains provided query parameters.
+
+        :param url: URL to assert.
+        :type url: ``str``
+
+        :param expected_params: Dictionary of expected query parameters.
+        :type expected_params: ``dict``
+
+        :param strict: Assert that provided url contains only expected_params.
+                       (defaults to ``False``)
+        :type strict: ``bool``
+        """
+        question_mark_index = url.find('?')
+
+        if question_mark_index != -1:
+            url = url[question_mark_index + 1:]
+
+        params = dict(parse_qsl(url))
+
+        if strict:
+            self.assertDictEqual(params, expected_params)
+        else:
+            for key, value in expected_params.items():
+                self.assertEqual(params[key], value)
 
 
 class StorageMockHttp(MockHttp):

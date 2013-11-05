@@ -20,7 +20,6 @@ import sys
 from datetime import datetime
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import parse_qsl
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.ec2 import EC2USWestNodeDriver
@@ -729,32 +728,22 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ex_security_groups_RunInstances(self, method, url, body, headers):
-        # Need to remove '/?'
-        url = url[2:]
-        params = dict(parse_qsl(url))
-
-        self.assertEqual(params['SecurityGroup.1'], 'group1')
-        self.assertEqual(params['SecurityGroup.1'], 'group1')
+        self.assertUrlContainsQueryParams(url, {'SecurityGroup.1': 'group1'})
+        self.assertUrlContainsQueryParams(url, {'SecurityGroup.2': 'group2'})
 
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _create_ex_blockdevicemappings_RunInstances(self, method, url, body, headers):
-        # Need to remove '/?'
-        url = url[2:]
-        parameters = dict(parse_qsl(url))
-        self.assertEqual(parameters['BlockDeviceMapping.1.DeviceName'],
-                         '/dev/sda1')
-        self.assertEqual(parameters['BlockDeviceMapping.1.Ebs.VolumeSize'],
-                         '10')
-        self.assertEqual(parameters['BlockDeviceMapping.2.DeviceName'],
-                         '/dev/sdb')
-        self.assertEqual(parameters['BlockDeviceMapping.2.VirtualName'],
-                         'ephemeral0')
-        self.assertEqual(parameters['BlockDeviceMapping.3.DeviceName'],
-                         '/dev/sdc')
-        self.assertEqual(parameters['BlockDeviceMapping.3.VirtualName'],
-                         'ephemeral1')
+        expected_params = {
+            'BlockDeviceMapping.1.DeviceName': '/dev/sda1',
+            'BlockDeviceMapping.1.Ebs.VolumeSize': '10',
+            'BlockDeviceMapping.2.DeviceName': '/dev/sdb',
+            'BlockDeviceMapping.2.VirtualName': 'ephemeral0',
+            'BlockDeviceMapping.3.DeviceName': '/dev/sdc',
+            'BlockDeviceMapping.3.VirtualName': 'ephemeral1'
+        }
+        self.assertUrlContainsQueryParams(url, expected_params)
 
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -868,9 +857,7 @@ class EC2MockHttp(MockHttpTestCase):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteKeypair(self, method, url, body, headers):
-        url = url[2:]
-        params = dict(parse_qsl(url))
-        self.assertEqual(params['KeyPair'], 'testkey')
+        self.assertUrlContainsQueryParams(url, {'KeyPair': 'testkey'})
 
         body = self.fixtures.load('delete_keypair.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
