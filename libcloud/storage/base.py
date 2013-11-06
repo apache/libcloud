@@ -598,9 +598,9 @@ class StorageDriver(BaseDriver):
             content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
             if not content_type:
-                raise AttributeError(
-                    'File content-type could not be guessed and' +
-                    ' no content_type value provided')
+                # Fallback to a content-type that will cause most browsers to
+                # download it again as a binary file.
+                content_type = 'application/octet-stream'
 
         file_size = None
 
