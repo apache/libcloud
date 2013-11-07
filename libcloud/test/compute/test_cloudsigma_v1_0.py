@@ -18,20 +18,26 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.base import Node
+from libcloud.compute.drivers.cloudsigma import CloudSigmaNodeDriver
 from libcloud.compute.drivers.cloudsigma import CloudSigmaZrhNodeDriver
 from libcloud.utils.misc import str2dicts, str2list, dict2str
 
-from libcloud.test import MockHttp               # pylint: disable-msg=E0611
-from libcloud.test.compute import TestCaseMixin  # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp
+from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
+class CloudSigmaAPI10BaseTestCase(object):
+    should_list_locations = False
+
+    driver_klass = CloudSigmaZrhNodeDriver
+    driver_kwargs = {}
 
     def setUp(self):
-        CloudSigmaZrhNodeDriver.connectionCls.conn_classes = (None,
-                                                              CloudSigmaHttp)
-        self.driver = CloudSigmaZrhNodeDriver('foo', 'bar')
+        self.driver = self.driver_klass(*self.driver_args,
+                                        **self.driver_kwargs)
+
+        self.driver.connectionCls.conn_classes = (None,
+                                                  CloudSigmaHttp)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -51,9 +57,6 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
     def test_list_images(self):
         sizes = self.driver.list_images()
         self.assertEqual(len(sizes), 10)
-
-    def test_list_locations_response(self):
-        pass
 
     def test_start_node(self):
         nodes = self.driver.list_nodes()
@@ -131,6 +134,20 @@ class CloudSigmaTestCase(unittest.TestCase, TestCaseMixin):
         self.assertTrue(result.find('smp 5') >= 0)
         self.assertTrue(result.find('cpu 2200') >= 0)
         self.assertTrue(result.find('mem 1024') >= 0)
+
+
+class CloudSigmaAPI10DirectTestCase(CloudSigmaAPI10BaseTestCase,
+                                    unittest.TestCase):
+    driver_klass = CloudSigmaZrhNodeDriver
+    driver_args = ('foo', 'bar')
+    driver_kwargs = {}
+
+
+class CloudSigmaAPI10IndiretTestCase(CloudSigmaAPI10BaseTestCase,
+                                     unittest.TestCase):
+    driver_klass = CloudSigmaNodeDriver
+    driver_args = ('foo', 'bar')
+    driver_kwargs = {'api_version': '1.0'}
 
 
 class CloudSigmaHttp(MockHttp):

@@ -70,9 +70,7 @@ DRIVERS = {
     Provider.SERVERLOVE:
     ('libcloud.compute.drivers.serverlove', 'ServerLoveNodeDriver'),
     Provider.CLOUDSIGMA:
-    ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaZrhNodeDriver'),
-    Provider.CLOUDSIGMA_US:
-    ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaLvsNodeDriver'),
+    ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaNodeDriver'),
     Provider.GCE:
     ('libcloud.compute.drivers.gce', 'GCENodeDriver'),
     Provider.GOGRID:
@@ -141,6 +139,10 @@ DRIVERS = {
     ('libcloud.compute.drivers.exoscale', 'ExoscaleNodeDriver'),
     Provider.IKOULA:
     ('libcloud.compute.drivers.ikoula', 'IkoulaNodeDriver'),
+
+    # Deprecated
+    Provider.CLOUDSIGMA_US:
+    ('libcloud.compute.drivers.cloudsigma', 'CloudSigmaLvsNodeDriver'),
 }
 
 

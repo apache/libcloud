@@ -104,7 +104,6 @@ class Provider(object):
     NINEFOLD = 'ninefold'
     TERREMARK = 'terremark'
     CLOUDSTACK = 'cloudstack'
-    CLOUDSIGMA_US = 'cloudsigma_us'
     LIBVIRT = 'libvirt'
     JOYENT = 'joyent'
     VCL = 'vcl'
@@ -138,6 +137,8 @@ class Provider(object):
     ELASTICHOSTS_CA1 = 'elastichosts_ca1'
     ELASTICHOSTS_AU1 = 'elastichosts_au1'
     ELASTICHOSTS_CN1 = 'elastichosts_cn1'
+
+    CLOUDSIGMA_US = 'cloudsigma_us'
 
     # Deprecated constants which aren't supported anymore
     RACKSPACE_UK = 'rackspace_uk'

@@ -141,6 +141,8 @@ IGNORED_PROVIDERS = [
     'local',
 
     # Deprecated constants
+    'cloudsigma_us',
+
     'cloudfiles_swift'
 ]
 
