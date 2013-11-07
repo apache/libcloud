@@ -117,11 +117,24 @@ class Route53DNSDriver(DNSDriver):
         return zones
 
     def list_records(self, zone):
+        def list_records_paginated(zone, next_record_name=None):
+            uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
+            if next_record_name is not None:
+                uri += '?' + urlencode({'name': next_record_name})
+            data = self.connection.request(uri).object
+            records = self._to_records(data=data, zone=zone)
+            is_truncated = findtext(element=data,
+                                    xpath='IsTruncated',
+                                    namespace=NAMESPACE)
+            if is_truncated == 'true':
+                next_record_name = findtext(element=data,
+                                            xpath='NextRecordName',
+                                            namespace=NAMESPACE)
+                return records + list_records_paginated(zone, next_record_name)
+            else:
+                return records
         self.connection.set_context({'zone_id': zone.id})
-        uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
-        data = self.connection.request(uri).object
-        records = self._to_records(data=data, zone=zone)
-        return records
+        return list_records_paginated(zone)
 
     def get_zone(self, zone_id):
         self.connection.set_context({'zone_id': zone_id})
