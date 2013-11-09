@@ -21,6 +21,7 @@ from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 class KTUCloudNodeDriver(CloudStackNodeDriver):
     "Driver for KTUCloud Compute platform."
 
+    EMPTY_DISKOFFERINGID = '0'
     type = Provider.KTUCLOUD
     name = 'KTUCloud'
     website = 'https://ucloudbiz.olleh.com/'
@@ -55,8 +56,10 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         szs = self._sync_request('listAvailableProductTypes')
         sizes = []
         for sz in szs['producttypes']:
+            diskofferingid = sz.get('diskofferingid',
+                                    self.EMPTY_DISKOFFERINGID)
             sizes.append(NodeSize(
-                sz['diskofferingid'],
+                diskofferingid,
                 sz['diskofferingdesc'],
                 0, 0, 0, 0, self)
             )
@@ -70,11 +73,13 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         else:
             extra_args['usageplantype'] = usageplantype
 
+        if size.id != self.EMPTY_DISKOFFERINGID:
+            extra_args['diskofferingid'] = size.id
+
         result = self._async_request(
             'deployVirtualMachine',
             displayname=name,
             serviceofferingid=image.id,
-            diskofferingid=size.id,
             templateid=str(image.extra['templateid']),
             zoneid=str(image.extra['zoneid']),
             **extra_args
