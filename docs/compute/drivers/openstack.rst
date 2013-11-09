@@ -30,7 +30,7 @@ Available arguments:
       the past)
     * ``2.0`` or ``2.0_apikey`` - authenticate against keystone with a username
      and API key
-    * `2.0_password`` - authenticate against keystone with a username and
+    * ``2.0_password`` - authenticate against keystone with a username and
       password
 
   Unless you are working with a very old version of OpenStack you will either
