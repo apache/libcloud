@@ -71,6 +71,27 @@ class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEqual(0, len(images))
 
+    def test_list_images_available(self):
+        images = self.driver.list_images()
+        self.assertEqual(112, len(images))
+
+    def test_list_sizes_available(self):
+        sizes = self.driver.list_sizes()
+        self.assertEqual(112, len(sizes))
+
+    def test_list_sizes_nodisk(self):
+        KTUCloudStackMockHttp.fixture_tag = 'nodisk'
+
+        sizes = self.driver.list_sizes()
+        self.assertEqual(2, len(sizes))
+
+        check = False
+        size = sizes[1]
+        if size.id == KTUCloudNodeDriver.EMPTY_DISKOFFERINGID:
+            check = True
+
+        self.assertTrue(check)
+
 
 class KTUCloudStackMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('ktucloud')
