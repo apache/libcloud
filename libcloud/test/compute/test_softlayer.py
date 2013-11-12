@@ -70,9 +70,9 @@ class SoftLayerTests(unittest.TestCase):
 
     def test_create_node(self):
         node = self.driver.create_node(name="libcloud-testing",
-                                location=self.driver.list_locations()[0],
-                                size=self.driver.list_sizes()[0],
-                                image=self.driver.list_images()[0])
+                                       location=self.driver.list_locations()[0],
+                                       size=self.driver.list_sizes()[0],
+                                       image=self.driver.list_images()[0])
         self.assertEqual(node.name, 'libcloud-testing')
         self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
 
