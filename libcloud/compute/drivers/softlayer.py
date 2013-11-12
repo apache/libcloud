@@ -218,19 +218,27 @@ class SoftLayerNodeDriver(NodeDriver):
         recurringFee = host.get('billingItem', {}).get('recurringFee', 0)
         recurringMonths = host.get('billingItem', {}).get('recurringMonths', 0)
         createDate = host.get('createDate', None)
-        #When machine is launching it gets state halted
-        #we change this to pending
-        state = NODE_STATE_MAP.get(
-                host['powerState']['keyName'], NodeState.UNKNOWN)
+
+        # When machine is launching it gets state halted
+        # we change this to pending
+        state = NODE_STATE_MAP.get(host['powerState']['keyName'],
+                                   NodeState.UNKNOWN)
+
         if not password and state == NodeState.UNKNOWN:
             state = NODE_STATE_MAP['INITIATING']
 
         public_ips = []
+        private_ips = []
+
         if 'primaryIpAddress' in host:
             public_ips.append(host['primaryIpAddress'])
-        private_ips = []
+
         if 'primaryBackendIpAddress' in host:
             private_ips.append(host['primaryBackendIpAddress'])
+
+        image = host.get('operatingSystem', {}).get('softwareLicense', {}) \
+                    .get('softwareDescription', {}) \
+                    .get('longDescription', None)
 
         return Node(
             id=host['id'],
@@ -244,9 +252,7 @@ class SoftLayerNodeDriver(NodeDriver):
                 'maxCpu': host.get('maxCpu', None),
                 'datacenter': host.get('datacenter', {}).get('longName', None),
                 'maxMemory': host.get('maxMemory', None),
-                'image': host.get('operatingSystem', {}).get('softwareLicense',
-                         {}).get('softwareDescription',
-                         {}).get('longDescription', None),
+                'image': image,
                 'hourlyRecurringFee': hourlyRecurringFee,
                 'recurringFee': recurringFee,
                 'recurringMonths': recurringMonths,
