@@ -70,6 +70,15 @@ Changes with Apache Libcloud in development
      metadata dictionary from the Node object. (LIBCLOUD-395)
     [Ivan Kusalic]
 
+   - Multiple improvements in the Softlayer driver:
+     - Map "INITIATING" node state to NodeState.PENDING
+     - If node is launching remap "halted" state to "pending"
+     - Add more node sizes
+     - Add ex_stop_node and ex_start_node method
+     - Update tests response fixtures
+    (LIBCLOUD-416)
+    [Markos Gogoulos]
+
  *) Storage
 
   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
