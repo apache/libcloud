@@ -6,13 +6,13 @@
    <member>
     <name>accountId</name>
     <value>
-     <int>12345</int>
+     <int>282402</int>
     </value>
    </member>
    <member>
     <name>createDate</name>
     <value>
-     <string>2013-01-01T19:31:22-06:00</string>
+     <string>2013-11-12T19:33:57+01:00</string>
     </value>
    </member>
    <member>
@@ -24,31 +24,31 @@
    <member>
     <name>domain</name>
     <value>
-     <string>domain.com</string>
+     <string>example.com</string>
     </value>
    </member>
    <member>
     <name>fullyQualifiedDomainName</name>
     <value>
-     <string>hostname.domain.com</string>
+     <string>libcloud-testing.example.com</string>
     </value>
    </member>
    <member>
     <name>hostname</name>
     <value>
-     <string>hostname</string>
+     <string>libcloud-testing</string>
     </value>
    </member>
    <member>
     <name>id</name>
     <value>
-     <int>123456</int>
+     <int>2905761</int>
     </value>
    </member>
    <member>
     <name>lastPowerStateId</name>
     <value>
-     <int>1</int>
+     <string/>
     </value>
    </member>
    <member>
@@ -60,7 +60,7 @@
    <member>
     <name>maxCpu</name>
     <value>
-     <int>2</int>
+     <int>1</int>
     </value>
    </member>
    <member>
@@ -84,19 +84,13 @@
    <member>
     <name>modifyDate</name>
     <value>
-     <string>2013-01-01T19:36:47-06:00</string>
-    </value>
-   </member>
-   <member>
-    <name>privateNetworkOnlyFlag</name>
-    <value>
-     <boolean>0</boolean>
+     <string>2013-11-12T19:36:55+01:00</string>
     </value>
    </member>
    <member>
     <name>startCpus</name>
     <value>
-     <int>2</int>
+     <int>1</int>
     </value>
    </member>
    <member>
@@ -108,7 +102,7 @@
    <member>
     <name>uuid</name>
     <value>
-     <string>f47ac10b-58cc-4372-a567-0e02b2c3d479</string>
+     <string>cbc33604-afd0-4820-57c3-6c68ae7c5fe0</string>
     </value>
    </member>
    <member>
@@ -136,43 +130,43 @@
       <member>
        <name>createDate</name>
        <value>
-        <string>2013-01-01T19:31:26-06:00</string>
+        <string>2013-11-12T19:33:59+01:00</string>
        </value>
       </member>
       <member>
        <name>currentHourlyCharge</name>
        <value>
-        <string>0</string>
+        <string>.056</string>
        </value>
       </member>
       <member>
        <name>cycleStartDate</name>
        <value>
-        <string>2013-01-01T19:38:00-06:00</string>
+        <string>2013-11-12T19:39:03+01:00</string>
        </value>
       </member>
       <member>
        <name>description</name>
        <value>
-        <string>2 x 2.0 GHz Cores</string>
+        <string>1 x 2.0 GHz Core</string>
        </value>
       </member>
       <member>
        <name>domainName</name>
        <value>
-        <string>domain.com</string>
+        <string>example.com</string>
        </value>
       </member>
       <member>
        <name>hostName</name>
        <value>
-        <string>hostname</string>
+        <string>libcloud-testing</string>
        </value>
       </member>
       <member>
        <name>hourlyRecurringFee</name>
        <value>
-        <string>0</string>
+        <string>.056</string>
        </value>
       </member>
       <member>
@@ -184,7 +178,7 @@
       <member>
        <name>id</name>
        <value>
-        <int>12345678</int>
+        <int>16538495</int>
        </value>
       </member>
       <member>
@@ -196,25 +190,25 @@
       <member>
        <name>laborFeeTaxRate</name>
        <value>
-        <string>.066</string>
+        <string>.21</string>
        </value>
       </member>
       <member>
        <name>lastBillDate</name>
        <value>
-        <string>2013-01-01T19:38:00-06:00</string>
+        <string>2013-11-12T19:39:03+01:00</string>
        </value>
       </member>
       <member>
        <name>modifyDate</name>
        <value>
-        <string>2013-01-01T19:38:00-06:00</string>
+        <string>2013-11-12T19:39:03+01:00</string>
        </value>
       </member>
       <member>
        <name>nextBillDate</name>
        <value>
-        <string>2013-01-19T00:00:00-06:00</string>
+        <string>2013-11-28T07:00:00+01:00</string>
        </value>
       </member>
       <member>
@@ -226,13 +220,13 @@
       <member>
        <name>oneTimeFeeTaxRate</name>
        <value>
-        <string>.066</string>
+        <string>.21</string>
        </value>
       </member>
       <member>
        <name>orderItemId</name>
        <value>
-        <int>98765</int>
+        <int>22774406</int>
        </value>
       </member>
       <member>
@@ -244,13 +238,13 @@
       <member>
        <name>recurringFee</name>
        <value>
-        <string>0</string>
+        <string>.056</string>
        </value>
       </member>
       <member>
        <name>recurringFeeTaxRate</name>
        <value>
-        <string>.066</string>
+        <string>.21</string>
        </value>
       </member>
       <member>
@@ -274,13 +268,13 @@
       <member>
        <name>setupFeeTaxRate</name>
        <value>
-        <string>.066</string>
+        <string>.21</string>
        </value>
       </member>
       <member>
        <name>resourceTableId</name>
        <value>
-        <int>1412553</int>
+        <int>2905761</int>
        </value>
       </member>
      </struct>
@@ -289,7 +283,7 @@
    <member>
     <name>globalIdentifier</name>
     <value>
-     <string>f47ac10b-58cc-4372-a567-0e02b2c3d479</string>
+     <string>633fd9e3-4cf7-4c78-b746-c2b76e2c8b88</string>
     </value>
    </member>
    <member>
@@ -311,7 +305,7 @@
       <member>
        <name>id</name>
        <value>
-        <int>12345</int>
+        <int>2211183</int>
        </value>
       </member>
       <member>
@@ -330,25 +324,25 @@
             <member>
              <name>createDate</name>
              <value>
-              <string>2013-01-01T19:33:12-06:00</string>
+              <string>2013-11-12T19:34:16+01:00</string>
              </value>
             </member>
             <member>
              <name>id</name>
              <value>
-              <int>12345</int>
+              <int>1867597</int>
              </value>
             </member>
             <member>
              <name>modifyDate</name>
              <value>
-              <string>2013-01-01T19:33:12-06:00</string>
+              <string>2013-11-12T19:34:16+01:00</string>
              </value>
             </member>
             <member>
              <name>password</name>
              <value>
-              <string>abczyx</string>
+              <string>LTSp4cpJ</string>
              </value>
             </member>
             <member>
@@ -360,7 +354,7 @@
             <member>
              <name>softwareId</name>
              <value>
-              <int>1809157</int>
+              <int>2211183</int>
              </value>
             </member>
             <member>
@@ -382,13 +376,13 @@
          <member>
           <name>id</name>
           <value>
-           <int>1104</int>
+           <int>1523</int>
           </value>
          </member>
          <member>
           <name>softwareDescriptionId</name>
           <value>
-           <int>1025</int>
+           <int>1163</int>
           </value>
          </member>
          <member>
@@ -404,19 +398,25 @@
             <member>
              <name>id</name>
              <value>
-              <int>1025</int>
+              <int>1163</int>
+             </value>
+            </member>
+            <member>
+             <name>longDescription</name>
+             <value>
+              <string>Debian / Debian / 7.0.0-64 Minimal for CCI</string>
              </value>
             </member>
             <member>
              <name>manufacturer</name>
              <value>
-              <string>Ubuntu</string>
+              <string>Debian</string>
              </value>
             </member>
             <member>
              <name>name</name>
              <value>
-              <string>Ubuntu</string>
+              <string>Debian</string>
              </value>
             </member>
             <member>
@@ -428,13 +428,7 @@
             <member>
              <name>referenceCode</name>
              <value>
-              <string>UBUNTU_12_64</string>
-             </value>
-            </member>
-            <member>
-             <name>requiredUser</name>
-             <value>
-              <string>root</string>
+              <string>DEBIAN_7_64</string>
              </value>
             </member>
             <member>
@@ -452,7 +446,7 @@
             <member>
              <name>version</name>
              <value>
-              <string>12.04-64 Minimal for CCI</string>
+              <string>7.0.0-64 Minimal for CCI</string>
              </value>
             </member>
             <member>
@@ -465,6 +459,12 @@
              <name>virtualizationPlatform</name>
              <value>
               <int>0</int>
+             </value>
+            </member>
+            <member>
+             <name>requiredUser</name>
+             <value>
+              <string>root</string>
              </value>
             </member>
            </struct>
@@ -498,22 +498,22 @@
    <member>
     <name>primaryBackendIpAddress</name>
     <value>
-     <string>10.80.10.10</string>
+     <string>10.55.62.124</string>
     </value>
    </member>
    <member>
     <name>primaryIpAddress</name>
     <value>
-     <string>173.193.10.10</string>
+     <string>50.97.215.202</string>
     </value>
    </member>
    <member>
     <name>provisionDate</name>
     <value>
-     <string>2013-01-01T19:38:01-06:00</string>
+     <string>2013-11-12T19:39:03+01:00</string>
     </value>
    </member>
   </struct>
  </value>
- </param>
+</param>
 </params>
