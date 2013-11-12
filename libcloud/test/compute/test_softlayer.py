@@ -23,7 +23,8 @@ from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import next
 
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
-from libcloud.compute.drivers.softlayer import SoftLayerException, NODE_STATE_MAP
+from libcloud.compute.drivers.softlayer import SoftLayerException, \
+    NODE_STATE_MAP
 from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp               # pylint: disable-msg=E0611
