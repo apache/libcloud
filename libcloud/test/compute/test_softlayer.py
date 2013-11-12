@@ -23,11 +23,12 @@ from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import next
 
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
-from libcloud.compute.drivers.softlayer import SoftLayerException
+from libcloud.compute.drivers.softlayer import SoftLayerException, \
+    NODE_STATE_MAP
 from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp               # pylint: disable-msg=E0611
-from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-msg=E0611
+from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import SOFTLAYER_PARAMS
 
 
@@ -40,17 +41,23 @@ class SoftLayerTests(unittest.TestCase):
         self.driver = SoftLayer(*SOFTLAYER_PARAMS)
 
     def test_list_nodes(self):
-        node = self.driver.list_nodes()[0]
-        self.assertEqual(node.name, 'test1')
+        nodes = self.driver.list_nodes()
+        node = nodes[0]
+        self.assertEqual(node.name, 'libcloud-testing1')
         self.assertEqual(node.state, NodeState.RUNNING)
-        self.assertEqual(node.extra['password'], 'TEST')
+        self.assertEqual(node.extra['password'], 'L3TJVubf')
+
+    def test_initializing_state(self):
+        nodes = self.driver.list_nodes()
+        node = nodes[1]
+        self.assertEqual(node.state, NODE_STATE_MAP['INITIATING'])
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
         dal = next(l for l in locations if l.id == 'dal05')
         self.assertEqual(dal.country, 'US')
         self.assertEqual(dal.id, 'dal05')
-        self.assertEqual(dal.name, 'Dallas 5')
+        self.assertEqual(dal.name, 'Dallas - Central U.S.')
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -59,15 +66,15 @@ class SoftLayerTests(unittest.TestCase):
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
-        self.assertEqual(len(sizes), 10)
-        size = [s for s in sizes if s.id == 'sl2_local_disk']
-        self.assertEqual(len(size), 1)
+        self.assertEqual(len(sizes), 13)
 
     def test_create_node(self):
-        self.driver.create_node(name="Test",
+        node = self.driver.create_node(name="libcloud-testing",
                                 location=self.driver.list_locations()[0],
                                 size=self.driver.list_sizes()[0],
                                 image=self.driver.list_images()[0])
+        self.assertEqual(node.name, 'libcloud-testing')
+        self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
 
     def test_create_fail(self):
         SoftLayerMockHttp.type = "SOFTLAYEREXCEPTION"
@@ -98,8 +105,7 @@ class SoftLayerTests(unittest.TestCase):
         self.driver.create_node(name="Test", size=self.driver.list_sizes()[0])
 
     def test_create_node_san(self):
-        size = [s for s in self.driver.list_sizes() if 'san' in s.id][0]
-        self.driver.create_node(name="Test", size=size)
+        self.driver.create_node(name="Test", ex_local_disk=False)
 
     def test_create_node_domain_for_name(self):
         self.driver.create_node(name="libcloud.org")
