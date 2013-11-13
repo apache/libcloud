@@ -31,6 +31,24 @@ Extension methods are there for your convenience, but you should be careful
 when you use them because they make switching or working with multiple
 providers harder.
 
+How do I test if provider credentials are valid?
+------------------------------------------------
+
+Libcloud makes the whole authentication process transparent to the user. As
+such, the easiest way to check if provider credentials are valid is by
+instantiating a driver and calling a method which results in an HTTP call.
+
+If the credentials are valid, method will return a result, otherwise
+:class:`libcloud.common.types.InvalidCredsError` exception will be thrown.
+
+An example of such method is
+:func:`libcloud.compute.base.NodeDriver.list_nodes`. Keep in mind that depending
+on the account state, list_nodes method might return a lot of data.
+
+If you want to avoid unnecessarily fetching a lot of data, you should find a
+method specific to your provider which issues a request which results in small
+amount of data being retrieved.
+
 I want do add a new provider driver what should I do?
 -----------------------------------------------------
 
