@@ -117,6 +117,7 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
     # TODO refactor and move into libcloud/test/common
 
     def setUp(self):
+        OpenStackBaseConnection.auth_url = None
         OpenStackBaseConnection.conn_classes = (OpenStackMockHttp,
                                                 OpenStackMockHttp)
 
@@ -244,7 +245,7 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
         for i in range(0, count):
             osa.authenticate(force=False)
 
-        self.assertEqual(mocked_auth_method.call_count, count)
+        self.assertEqual(mocked_auth_method.call_count, 1)
 
         # No force reauth, valid / non-expired token
         osa.auth_token = None
@@ -270,22 +271,22 @@ class OpenStackAuthConnectionTests(unittest.TestCase):
         self.assertEqual(mocked_auth_method.call_count, 0)
 
         for i in range(0, count):
-            osa.authenticate(force=False)
-
             if i == 0:
                 osa.auth_token_expires = soon
 
-        self.assertEqual(mocked_auth_method.call_count, 5)
+            osa.authenticate(force=False)
+
+        self.assertEqual(mocked_auth_method.call_count, 1)
 
     def _get_mock_connection(self, mock_http_class, auth_url=None):
         OpenStackBaseConnection.conn_classes = (mock_http_class,
                                                 mock_http_class)
 
-        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
         if auth_url is None:
-            connection.auth_url = "https://auth.api.example.com"
-        else:
-            connection.auth_url = auth_url
+            auth_url = "https://auth.api.example.com"
+
+        OpenStackBaseConnection.auth_url = auth_url
+        connection = OpenStackBaseConnection(*OPENSTACK_PARAMS)
 
         connection._ex_force_base_url = "https://www.foo.com"
         connection.driver = OpenStack_1_0_NodeDriver(*OPENSTACK_PARAMS)
@@ -300,6 +301,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
     driver_klass = OpenStack_1_0_NodeDriver
     driver_args = OPENSTACK_PARAMS
     driver_kwargs = {}
+    #driver_kwargs = {'ex_force_auth_version': '1.0'}
 
     @classmethod
     def create_driver(self):
@@ -315,10 +317,12 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
             return "https://servers.api.rackspacecloud.com/v1.0/slug"
         self.driver_klass.connectionCls.get_endpoint = get_endpoint
 
-        self.driver_klass.connectionCls.conn_classes = (
-            OpenStackMockHttp, OpenStackMockHttp)
+        self.driver_klass.connectionCls.conn_classes = (OpenStackMockHttp,
+                                                        OpenStackMockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
+
         OpenStackMockHttp.type = None
+
         self.driver = self.create_driver()
         # normally authentication happens lazily, but we force it here
         self.driver.connection._populate_hosts_and_request_paths()
@@ -333,7 +337,7 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2011-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2031-11-23T21:00:14-06:00")
 
     def test_auth(self):
         if self.driver.connection._auth_version == '2.0':
@@ -654,7 +658,7 @@ class OpenStackMockHttp(MockHttpTestCase):
     def _v1_0_UNAUTHORIZED_MISSING_KEY(self, method, url, body, headers):
         headers = {
             'x-server-management-url': 'https://servers.api.rackspacecloud.com/v1.0/slug',
-            'x-auth-token': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
+            'x-auth-tokenx': 'FE011C19-CF86-4F87-BE5D-9229145D7A06',
             'x-cdn-management-url': 'https://cdn.clouddrive.com/v1/MossoCloudFS_FE011C19-CF86-4F87-BE5D-9229145D7A06'}
         return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
 
@@ -817,27 +821,30 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
-    def test_auth_token_is_set(self):
-        # change base url and trash the current auth token so we can
-        # re-authenticate
+    def _force_reauthentication(self):
+        """
+        Trash current auth token so driver will be forced to re-authentication
+        on next request.
+        """
         self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
         self.driver.connection.auth_token = None
         self.driver.connection.auth_token_expires = None
+        self.driver.connection._osa.auth_token = None
+        self.driver.connection._osa.auth_token_expires = None
+
+    def test_auth_token_is_set(self):
+        self._force_reauthentication()
         self.driver.connection._populate_hosts_and_request_paths()
 
         self.assertEqual(
             self.driver.connection.auth_token, "aaaaaaaaaaaa-bbb-cccccccccccccc")
 
     def test_auth_token_expires_is_set(self):
-        # change base url and trash the current auth token so we can
-        # re-authenticate
-        self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
-        self.driver.connection.auth_token = None
-        self.driver.connection.auth_token_expires = None
+        self._force_reauthentication()
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2011-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2031-11-23T21:00:14-06:00")
 
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can
@@ -896,6 +903,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             'ex_force_auth_token': 'preset-auth-token',
             'ex_force_base_url': base_url
         }
+
         driver = self.driver_type(*self.driver_args, **kwargs)
         driver.list_nodes()
 
