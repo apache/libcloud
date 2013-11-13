@@ -79,6 +79,10 @@ Changes with Apache Libcloud in development
     (LIBCLOUD-416)
     [Markos Gogoulos]
 
+  - Modify list_sizes method in the KT UCloud driver to work, even if the item
+    doesn't have 'diskofferingid' attribute. (LIBCLOUD-435)
+    [DaeMyung Kang]
+
  *) Storage
 
   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
