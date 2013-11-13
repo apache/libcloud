@@ -78,6 +78,16 @@ component of the URL (``12345`` in the example bellow).
 4. Skipping normal authentication flow and hitting the API endpoint directly using the ``ex_force_auth_token`` argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+This is an advanced use cases which assumes you manage authentication and token
+retrieval yourself.
+
+If you use this argument, the driver won't hit authentication service and as
+such, won't be aware of the token expiration time.
+
+This means auth token will be considered valid for the whole life time of the
+driver instance and you will need to manually re-instantiate a driver with a new
+token before the currently used one is about to expire.
+
 .. literalinclude:: /examples/compute/openstack/force_auth_token.py
    :language: python
 
@@ -108,6 +118,9 @@ between different requests.
 
 This means that driver will only hit authentication service and obtain auth
 token on the first request or if the auth token is about to expire.
+
+As noted in the example 4 above, this doesn't hold true if you use
+``ex_force_auth_token`` argument.
 
 Troubleshooting
 ---------------
