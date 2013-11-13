@@ -195,7 +195,7 @@ class DigitalOceanNodeDriver(NodeDriver):
             public_ips = []
 
         if 'private_ip_address' in data \
-            and data['private_ip_address'] is not None:
+                and data['private_ip_address'] is not None:
             private_ips = [data['private_ip_address']]
         else:
             private_ips = []
@@ -231,7 +231,7 @@ class DigitalOceanNodeDriver(NodeDriver):
         elif 'gb' in ram:
             ram = int(ram.replace('gb', '')) * 1024
         price = "$%s/hour, $%s/month" % \
-               (data.get('cost_per_hour'), data.get('cost_per_month'))
+           (data.get('cost_per_hour'), data.get('cost_per_month'))
         disk = "%sGB SSD" % data.get('disk')
         return NodeSize(id=data['id'], name=data['name'], ram=ram, disk=disk,
                         bandwidth=0, price=price, driver=self)
