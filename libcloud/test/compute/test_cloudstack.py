@@ -284,6 +284,11 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(keypairs[0]['name'], 'cs-keypair')
         self.assertEqual(keypairs[0]['fingerprint'], fingerprint)
 
+    def test_ex_list_keypairs_no_keypair_key(self):
+        CloudStackMockHttp.fixture_tag = 'no_keys'
+        keypairs = self.driver.ex_list_keypairs()
+        self.assertEqual(keypairs, [])
+
     def test_ex_create_keypair(self):
         self.assertRaises(
             LibcloudError,
@@ -321,6 +326,12 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(2, len(groups))
         self.assertEqual(groups[0]['name'], 'default')
         self.assertEqual(groups[1]['name'], 'mongodb')
+
+    def test_ex_list_security_groups_no_securitygroup_key(self):
+        CloudStackMockHttp.fixture_tag = 'no_groups'
+
+        groups = self.driver.ex_list_security_groups()
+        self.assertEqual(groups, [])
 
     def test_ex_create_security_group(self):
         group = self.driver.ex_create_security_group(name='MySG')

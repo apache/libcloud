@@ -86,6 +86,12 @@ Changes with Apache Libcloud in development
   - Add new c3 instance types to the EC2 driver.
     [Tomaz Muraus]
 
+  - Fix an issue with the ex_list_keypairs and ex_list_security_groups method
+    in the CloudStack driver which caused an exception to be thrown if the API
+    returned no keypairs / security groups.
+    (LIBCLOUD-432)
+    [Carlos Reategui, Tomaz Muraus]
+
  *) Storage
 
   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
