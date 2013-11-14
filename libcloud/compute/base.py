@@ -156,6 +156,36 @@ class Node(UuidMixin):
 
     def __init__(self, id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None):
+        """
+        :param id: Node ID.
+        :type id: ``str``
+
+        :param name: Node name.
+        :type name: ``str``
+
+        :param state: Node state.
+        :type state: :class:`libcloud.compute.types.NodeState`
+
+        :param public_ips: Public IP addresses associated with this node.
+        :type public_ips: ``list``
+
+        :param private_ips: Private IP addresses associated with this node.
+        :type private_ips: ``list``
+
+        :param driver: Driver this node belongs to.
+        :type driver: :class:`.NodeDriver`
+
+        :param size: Size of this node. (optional)
+        :type size: :class:`.NodeSize:
+
+        :param image: Image of this node. (optional)
+        :type size: :class:`.NodeImage:
+
+        :param extra: Optional provided specific attributes associated with
+                      this node.
+        :type extra: ``dict``
+
+        """
         self.id = str(id) if id else None
         self.name = name
         self.state = state
@@ -259,6 +289,28 @@ class NodeSize(UuidMixin):
     """
 
     def __init__(self, id, name, ram, disk, bandwidth, price, driver):
+        """
+        :param id: Size ID.
+        :type id: ``str``
+
+        :param name: Size name.
+        :type name: ``str``
+
+        :param ram: Amount of memory (in MB) provided by this size.
+        :type ram: ``int``
+
+        :param disk: Amount of disk storage (in GB) provided by this image.
+        :type disk: ``int``
+
+        :param bandwidth: Amount of bandiwdth included with this size.
+        :type bandwidth: ``int``
+
+        :param price: Price (in US dollars) of running this node for an hour.
+        :type price: ``float``
+
+        :param driver: Driver this image belongs to.
+        :type driver: :class:`.NodeDriver`
+        """
         self.id = str(id)
         self.name = name
         self.ram = ram
@@ -295,10 +347,23 @@ class NodeImage(UuidMixin):
     to the create_node function to decide which OS image to use.
 
     >>> node = driver.create_node(image=image)
-
     """
 
     def __init__(self, id, name, driver, extra=None):
+        """
+        :param id: Image ID.
+        :type id: ``str``
+
+        :param name: Image name.
+        :type name: ``str``
+
+        :param driver: Driver this image belongs to.
+        :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provided specific attributes associated with
+                      this image.
+        :type extra: ``dict``
+        """
         self.id = str(id)
         self.name = name
         self.driver = driver
@@ -371,6 +436,22 @@ class StorageVolume(UuidMixin):
     """
 
     def __init__(self, id, name, size, driver, extra=None):
+        """
+        :param id: Storage volume ID.
+        :type id: ``str``
+
+        :param name: Storage volume name.
+        :type name: ``str``
+
+        :param size: Size of this volume (in GB).
+        :type size: ``int``
+
+        :param driver: Driver this image belongs to.
+        :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provider specific attributes.
+        :type extra: ``dict``
+        """
         self.id = id
         self.name = name
         self.size = size
