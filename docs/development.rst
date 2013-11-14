@@ -53,25 +53,82 @@ General guidelines
 Contribution workflow
 ---------------------
 
-1. If you are implementing a big feature or a change, start a discussion on the
-   mailing list first.
-2. Open a new issue on our `issue tracker`_ (JIRA)
-3. Fork libcloud `Github git repository`_ and make your changes
-4. Create a new branch for your changes:
-   ``git checkout -b <jira_issue_id>_<change_name>``
+1. Start a discussion on the mailing list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are implementing a big feature or a change, start a discussion on the
+:ref:`mailing list <mailing-lists>` first.
+
+2. Open a new issue on our issue tracker
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Go to our `issue tracker`_ and open a new issue for your changes there. This
+issue will be used as an umbrella place for your changes. As such, it will be
+used to track progress and discuss implementation details.
+
+3. Fork our Github repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fork our `Github git repository`_. Your fork will be used to hold your changes.
+
+4. Create a new branch for your changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For example:
+
+.. sourcecode:: bash
+
+    git checkout -b <jira_issue_id>_<change_name>
+
 5. Make your changes
-6. Make a single commit for your changes and if a corresponding JIRA
-   ticket exists, make sure the commit message contains the ticket number.
-   For example: ``git commit -a -m "Issue LIBCLOUD-123: Add a new compute driver for CloudStack based providers."``
-7. Write tests for your modifications and make sure that all the tests pass.
-   For more information about running the tests refer to the Testing page.
-8. Open a pull request with your changes. Your pull request will appear at
-   https://github.com/apache/libcloud/pulls
-9. Wait for the code to be reviewed and address any outstanding comments.
-10. Once the code has been reviewed, all the outstanding issues have been
-    addressed and the pull request has been +1'ed, close the pull request,
-    generate a patch and attach it to the JIRA issue you have created earlier:
-    ``git format-patch --stdout trunk > patch_name.patch``
+~~~~~~~~~~~~~~~~~~~~
+
+6. Write tests for your changes and make sure all the tests pass
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Make sure that all the code you have added or modified has appropriate test
+coverage. Also make sure all the tests including the existing ones still pass.
+
+For more information on how to write and run tests, please see
+:doc:`Testing page </testing>`.
+
+7. Commit your changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Make a single commit for your changes. If a corresponding JIRA ticket exists,
+make sure the commit message contains the ticket number.
+
+For example:
+
+.. sourcode:: bash
+
+    git commit -a -m "[LIBCLOUD-123] Add a new compute driver for CloudStack based providers."
+
+8. Open a pull request with your changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Go to https://github.com/apache/libcloud/ and open a new pull request with your
+changes. Your pull request will appear at https://github.com/apache/libcloud/pulls.
+
+Make sure the pull request name is prefixed with a JIRA ticket number, e.g.
+``[LIBCLOUD-436] Improvements to DigitalOcean compute driver`` and that the
+pull request description contains link to the JIRA ticket.
+
+9. Wait for the review
+~~~~~~~~~~~~~~~~~~~~~~
+
+Wait for your changes to be reviewed and address any outstanding comments.
+
+10. Attach a final patch with your changes to the corresponding JIRA ticket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once the changes has been reviewed, all the outstanding issues have been
+addressed and the pull request has been +1'ed, close the pull request,
+generate a patch and attach it to the JIRA issue you have created earlier.
+
+.. sourcecode:: bash
+
+    git format-patch --stdout trunk > patch_name.patch
 
 Note about Github
 ~~~~~~~~~~~~~~~~~
