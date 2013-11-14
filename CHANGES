@@ -83,6 +83,9 @@ Changes with Apache Libcloud in development
     doesn't have 'diskofferingid' attribute. (LIBCLOUD-435)
     [DaeMyung Kang]
 
+  - Add new c3 instance types to the EC2 driver.
+    [Tomaz Muraus]
+
  *) Storage
 
   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
