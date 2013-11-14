@@ -470,7 +470,7 @@ class StorageVolume(UuidMixin):
                             e.g. '/dev/sdb (optional)
         :type device: ``str``
 
-        :return s ``bool``
+        :rtype: ``bool``
         """
 
         return self.driver.attach_volume(node=node, volume=self, device=device)
@@ -479,14 +479,14 @@ class StorageVolume(UuidMixin):
         """
         Detach this volume from its node
 
-        :return s ``bool``
+        :rtype: ``bool``
         """
 
         return self.driver.detach_volume(volume=self)
 
     def list_snapshots(self):
         """
-        :return s ``list`` of ``VolumeSnapshot``
+        :rtype: ``list`` of ``VolumeSnapshot``
         """
         return self.driver.list_volume_snapshots(volume=self)
 
@@ -494,7 +494,7 @@ class StorageVolume(UuidMixin):
         """
         Creates a snapshot of this volume.
 
-        :return s ``VolumeSnapshot``
+        :rtype: ``VolumeSnapshot``
         """
         return self.driver.create_volume_snapshot(volume=self, name=name)
 
@@ -502,7 +502,7 @@ class StorageVolume(UuidMixin):
         """
         Destroy this storage volume.
 
-        :return s ``bool``
+        :rtype: ``bool``
         """
 
         return self.driver.destroy_volume(volume=self)
@@ -538,7 +538,7 @@ class VolumeSnapshot(object):
         """
         Destroys this snapshot.
 
-        :return s ``bool``
+        :rtype: ``bool``
         """
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
