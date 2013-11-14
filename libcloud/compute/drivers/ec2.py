@@ -153,6 +153,42 @@ INSTANCE_TYPES = {
         'disk': 3370,
         'bandwidth': None
     },
+    # c3 instances have 2 SSDs of the specified disk size
+    'c3.large': {
+        'id': 'c3.large',
+        'name': 'Compute Optimized Large Instance',
+        'ram': 3750,
+        'disk': 16,
+        'bandwidth': None
+    },
+    'c3.xlarge': {
+        'id': 'c3.xlarge',
+        'name': 'Compute Optimized Extra Large Instance',
+        'ram': 7000,
+        'disk': 40,
+        'bandwidth': None
+    },
+    'c3.2xlarge': {
+        'id': 'c3.2xlarge',
+        'name': 'Compute Optimized Double Extra Large Instance',
+        'ram': 15000,
+        'disk': 80,
+        'bandwidth': None
+    },
+    'c3.4xlarge': {
+        'id': 'c3.4xlarge',
+        'name': 'Compute Optimized Quadruple Extra Large Instance',
+        'ram': 30000,
+        'disk': 160,
+        'bandwidth': None
+    },
+    'c3.8xlarge': {
+        'id': 'c3.8xlarge',
+        'name': 'Compute Optimized Eight Extra Large Instance',
+        'ram': 60000,
+        'disk': 320,
+        'bandwidth': None
+    },
     'cr1.8xlarge': {
         'id': 'cr1.8xlarge',
         'name': 'High Memory Cluster Eight Extra Large',
@@ -189,6 +225,11 @@ REGION_DETAILS = {
             'c1.xlarge',
             'cc1.4xlarge',
             'cc2.8xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
             'cg1.4xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge'
@@ -228,6 +269,11 @@ REGION_DETAILS = {
             'm2.4xlarge',
             'c1.medium',
             'c1.xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
             'cc2.8xlarge'
         ]
     },
@@ -248,6 +294,11 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
             'cc2.8xlarge'
         ]
     },
@@ -268,6 +319,11 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
             'hs1.8xlarge'
         ]
     },
@@ -287,7 +343,12 @@ REGION_DETAILS = {
             'm3.xlarge',
             'm3.2xlarge',
             'c1.medium',
-            'c1.xlarge'
+            'c1.xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge'
         ]
     },
     'sa-east-1': {
@@ -327,6 +388,11 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge',
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
             'hs1.8xlarge'
         ]
     },
