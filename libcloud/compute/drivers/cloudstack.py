@@ -899,7 +899,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :type      domainid: ``str``
 
         :return:   A list of keypair dictionaries
-        :rtype:    :class:`dict`
+        :rtype:   ``list`` of ``dict``
         """
 
         extra_args = kwargs.copy()
