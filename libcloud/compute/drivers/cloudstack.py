@@ -904,7 +904,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         extra_args = kwargs.copy()
         res = self._sync_request('listSSHKeyPairs', **extra_args)
-        return res['sshkeypair']
+        keypairs = res.get('sshkeypair', [])
+        return keypairs
 
     def ex_create_keypair(self, name, **kwargs):
         """
@@ -1050,8 +1051,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype ``list``
         """
         extra_args = kwargs
-        return self._sync_request('listSecurityGroups',
-                                  **extra_args)['securitygroup']
+        res = self._sync_request('listSecurityGroups', **extra_args)
+
+        security_groups = res.get('securitygroup', [])
+        return security_groups
 
     def ex_create_security_group(self, name, **kwargs):
         """
