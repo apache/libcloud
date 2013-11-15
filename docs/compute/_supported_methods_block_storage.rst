@@ -4,7 +4,7 @@ Provider                              list volumes create volume destroy volume 
 `Abiquo`_                             no           no            no             no            no            no             no             
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
-`CloudFrames`_                        no           no            no             no            no            no             no
+`CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma`_                         no           no            no             no            no            no             no             
 `CloudSigma`_                         no           no            no             no            no            no             no             
 `CloudStack`_                         no           yes           yes            yes           yes           yes            no             

@@ -4,7 +4,7 @@ Provider                              list nodes create node reboot node destroy
 `Abiquo`_                             yes        yes         yes         yes          yes         yes        no         
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
 `Brightbox`_                          yes        yes         yes         yes          yes         no         no         
-`CloudFrames`_                        yes        yes         yes         yes          yes         yes        no
+`CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
 `CloudSigma`_                         yes        yes         yes         yes          yes         yes        no         
 `CloudSigma`_                         yes        yes         yes         yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
