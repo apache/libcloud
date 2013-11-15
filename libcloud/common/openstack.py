@@ -574,6 +574,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def request(self, **kwargs):
         return super(OpenStackBaseConnection, self).request(**kwargs)
 
+    def _set_up_connection_info(self, url):
+        result = self._tuple_from_url(url)
+        (self.host, self.port, self.secure, self.request_path) = result
+
     def _populate_hosts_and_request_paths(self):
         """
         OpenStack uses a separate host for API calls which is only provided
@@ -581,10 +585,19 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         """
         osa = self._osa
 
-        # Token is not available or it has expired. Need to retrieve a new one.
-        if not self._ex_force_auth_token and not osa.is_token_valid():
-            # This call may throw InvalidCreds, etc
-            osa.authenticate()
+        if self._ex_force_auth_token:
+            # If ex_force_auth_token is provided we always hit the api directly
+            # and never try to authenticate.
+            #
+            # Note: When ex_force_auth_token is provided, ex_force_base_url
+            # must be provided as well.
+            self._set_up_connection_info(url=self._ex_force_base_url)
+            return
+
+        if not osa.is_token_valid():
+            # Token is not available or it has expired. Need to retrieve a
+            # new one.
+            osa.authenticate()  # may throw InvalidCreds
 
             self.auth_token = osa.auth_token
             self.auth_token_expires = osa.auth_token_expires
@@ -595,10 +608,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                                           self._auth_version)
             self.service_catalog = osc
 
-        # Set up connection info
         url = self._ex_force_base_url or self.get_endpoint()
-        (self.host, self.port, self.secure, self.request_path) = \
-            self._tuple_from_url(url)
+        self._set_up_connection_info(url=url)
 
 
 class OpenStackDriverMixin(object):
