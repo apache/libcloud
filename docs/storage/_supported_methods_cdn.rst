@@ -7,6 +7,8 @@ Provider                      enable container cdn enable object cdn get contain
 `CloudFiles (UK)`_            no                   yes               yes                   yes               
 `CloudFiles (US)`_            no                   yes               yes                   yes               
 `Google Storage`_             no                   no                no                    no                
+`KTUCloud Storage`_           no                   yes               yes                   yes               
+`Local Storage`_              yes                  yes               yes                   yes               
 `Nimbus`_                     no                   no                no                    no                
 `Ninefold`_                   yes                  no                yes                   no                
 `Amazon S3 (standard)`_       no                   no                no                    no                
@@ -24,6 +26,8 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`CloudFiles (US)`: http://www.rackspace.com/
 .. _`Dummy Storage Provider`: http://example.com
 .. _`Google Storage`: http://cloud.google.com/
+.. _`KTUCloud Storage`: http://www.rackspace.com/
+.. _`Local Storage`: http://example.com
 .. _`Nimbus`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
