@@ -328,6 +328,45 @@ class OpenStack_1_0_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
         clear_pricing_data()
 
+    def test_populate_hosts_and_requests_path(self):
+        tomorrow = datetime.datetime.today() + datetime.timedelta(1)
+        cls = self.driver_klass.connectionCls
+
+        count = 5
+
+        # Test authentication and token re-use
+        con = cls('username', 'key')
+        osa = con._osa
+
+        mocked_auth_method = Mock()
+        osa.authenticate = mocked_auth_method
+
+        # Valid token returned on first call, should be reused.
+        for i in range(0, count):
+            con._populate_hosts_and_request_paths()
+
+            if i == 0:
+                osa.auth_token = '1234'
+                osa.auth_token_expires = tomorrow
+
+        self.assertEqual(mocked_auth_method.call_count, 1)
+
+        osa.auth_token = None
+        osa.auth_token_expires = None
+
+        # ex_force_auth_token provided, authenticate should never be called
+        con = cls('username', 'key', ex_force_base_url='http://ponies',
+                  ex_force_auth_token='1234')
+        osa = con._osa
+
+        mocked_auth_method = Mock()
+        osa.authenticate = mocked_auth_method
+
+        for i in range(0, count):
+            con._populate_hosts_and_request_paths()
+
+        self.assertEqual(mocked_auth_method.call_count, 0)
+
     def test_auth_token_is_set(self):
         self.driver.connection._populate_hosts_and_request_paths()
         self.assertEqual(
