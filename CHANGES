@@ -1,139 +1,8 @@
                                    -*- coding: utf-8 -*-
 
-Changes with Apache Libcloud in development
+Changes with Apache Libcloud 0.14.0-beta3
 
- *) General
-
-   - Fix libcloud.utils.py3.urlquote so it works with unicode strings under
-     Python 2. (LIBCLOUD-429)
-     [Michael Farrell]
-
- *) Compute
-
-   - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
-     [Oleg Suharev]
-
-   - Add the following new extension methods for elastic IP management to the
-     EC2 driver: ex_allocate_address, ex_disassociate_address,
-     ex_release_address. (LIBCLOUD-417)
-     [Patrick Armstrong]
-
-  - For consistency and accuracy, rename "ex_associate_addresses" method in the
-    EC2 driver to "ex_associate_address_with_node".
-
-    Note: Old method will continue to work until the next major release.
-    [Tomaz Muraus]
-
-  - Add new driver for CloudFrames (http://www.cloudfounders.com/CloudFrames)
-    provider. (LIBCLOUD-358)
-    [Bernard Kerckenaere]
-
-  - Update default kernel versions which are used when creating a Linode
-    server.
-
-    Old default kernel versions:
-
-    - x86 - 2.6.18.8-x86_64-linode1
-    - x86_64 - 2.6.39.1-linode34
-
-    New default kernel versions:
-
-    - x86 - 3.9.3-x86-linode52
-    - x86_64 - 3.9.3-x86_64-linode33
-
-    (LIBCLOUD-424)
-    [Tomaz Muraus, Jon Chen]
-
-  - Disable cache busting functionality in the OpenStack and Rackspace next-gen
-    driver and enable it only for Rackspace first-gen driver.
-    [Tomaz Muraus]
-
-  - Update Google Compute Engine driver to v1beta16.
-    [Rick Wright]
-
-  - Modify auth_url variable in the OpenStack drivers so it works more like
-    users would expect it to.
-
-    Previously path specified in the auth_url was ignored and only protocol,
-    hostname and port were used. Now user can provide a full url for the
-    auth_url variable and the path provided in the url is also used.
-    [DaeMyung Kang, Tomaz Muraus]
-
-  - Allow user to associate arbitrary key/value pairs with a node by passing
-    "ex_metadata" argument (dictionary) to create_node method in the EC2
-    driver.
-    Those values are associated with a node using tags functionality.
-    (LIBCLOUD-395)
-    [Ivan Kusalic]
-
-   - Add "ex_get_metadata" method to EC2 and OpenStack driver. This method reads
-     metadata dictionary from the Node object. (LIBCLOUD-395)
-    [Ivan Kusalic]
-
-   - Multiple improvements in the Softlayer driver:
-     - Map "INITIATING" node state to NodeState.PENDING
-     - If node is launching remap "halted" state to "pending"
-     - Add more node sizes
-     - Add ex_stop_node and ex_start_node method
-     - Update tests response fixtures
-    (LIBCLOUD-416)
-    [Markos Gogoulos]
-
-  - Modify list_sizes method in the KT UCloud driver to work, even if the item
-    doesn't have 'diskofferingid' attribute. (LIBCLOUD-435)
-    [DaeMyung Kang]
-
-  - Add new c3 instance types to the EC2 driver.
-    [Tomaz Muraus]
-
-  - Fix an issue with the ex_list_keypairs and ex_list_security_groups method
-    in the CloudStack driver which caused an exception to be thrown if the API
-    returned no keypairs / security groups.
-    (LIBCLOUD-438)
-    [Carlos Reategui, Tomaz Muraus]
-
-  - Fix a bug in the OpenStack based drivers with not correctly checking if the
-    auth token has expired before re-using it. (LIBCLOUD-428)
-
-    Reported by Michael Farrell.
-    [Tomaz Muraus,  Michael Farrell]
-
- *) Storage
-
-  - Add a new driver for KT UCloud based on the OpenStack Swift driver.
-    (LIBCLOUD-431).
-    [DaeMyung Kang]
-
-  *) DNS
-
-   - Update issue with inexistent zone / record handling in the get_zone and
-     get_record method in the Linode driver. Those issues were related to
-     changes in the Linode API. (LIBCLOUD-425)
-     [Jon Chen]
-
-Changes with Apache Libcloud 0.14.0-beta2
-
- *) Compute
-
-   - Add log statements to our ParamikoSSHClient wrapper. This should make
-     debugging deployment issues easier. (LIBCLOUD-414)
-     [Tomaz Muraus]
-
-   - Add new "NodeState.STOPPED" node state. Update HostVirual and EC2 driver to
-     also recognize this new state. (LIBCLOUD-296)
-     [Jayy Vis]
-
-   - Add new Hong Kong endpoint to Rackspace driver.
-     [Brian Curtin]
-
- *) Load Balancer
-
-   - Add new Hong Kong endpoint to Rackspace driver.
-     [Brian Curtin]
-
-Changes with Apache Libcloud 0.14.0-beta1
-
- *) General
+  *) General
 
     - If the file exists, read pricing data from ~/.libcloud/pricing.json
       by default. If the file doesn't exist, fall back to the old behavior
@@ -144,7 +13,11 @@ Changes with Apache Libcloud 0.14.0-beta1
       updating the pricing file.
       [Tomaz Muraus]
 
- *) Compute
+    - Fix libcloud.utils.py3.urlquote so it works with unicode strings under
+      Python 2. (LIBCLOUD-429)
+      [Michael Farrell]
+
+  *) Compute
 
     - Refactor Rackspace driver classes and make them easier to use. Now there
       are two Rackspace provider constants - Provider.RACKSPACE which
@@ -291,6 +164,105 @@ Changes with Apache Libcloud 0.14.0-beta1
       http://s.apache.org/lc0140un (LIBCLOUD-383)
       [Michael Bennett, Tomaz Muraus]
 
+   - Add log statements to our ParamikoSSHClient wrapper. This should make
+     debugging deployment issues easier. (LIBCLOUD-414)
+     [Tomaz Muraus]
+
+   - Add new "NodeState.STOPPED" node state. Update HostVirual and EC2 driver to
+     also recognize this new state. (LIBCLOUD-296)
+     [Jayy Vis]
+
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+   - Fix ex_delete_keypair method in the EC2 driver. (LIBCLOUD-415)
+     [Oleg Suharev]
+
+   - Add the following new extension methods for elastic IP management to the
+     EC2 driver: ex_allocate_address, ex_disassociate_address,
+     ex_release_address. (LIBCLOUD-417)
+     [Patrick Armstrong]
+
+  - For consistency and accuracy, rename "ex_associate_addresses" method in the
+    EC2 driver to "ex_associate_address_with_node".
+
+    Note: Old method will continue to work until the next major release.
+    [Tomaz Muraus]
+
+  - Add new driver for CloudFrames (http://www.cloudfounders.com/CloudFrames)
+    provider. (LIBCLOUD-358)
+    [Bernard Kerckenaere]
+
+  - Update default kernel versions which are used when creating a Linode
+    server.
+
+    Old default kernel versions:
+
+    - x86 - 2.6.18.8-x86_64-linode1
+    - x86_64 - 2.6.39.1-linode34
+
+    New default kernel versions:
+
+    - x86 - 3.9.3-x86-linode52
+    - x86_64 - 3.9.3-x86_64-linode33
+
+    (LIBCLOUD-424)
+    [Tomaz Muraus, Jon Chen]
+
+  - Disable cache busting functionality in the OpenStack and Rackspace next-gen
+    driver and enable it only for Rackspace first-gen driver.
+    [Tomaz Muraus]
+
+  - Update Google Compute Engine driver to v1beta16.
+    [Rick Wright]
+
+  - Modify auth_url variable in the OpenStack drivers so it works more like
+    users would expect it to.
+
+    Previously path specified in the auth_url was ignored and only protocol,
+    hostname and port were used. Now user can provide a full url for the
+    auth_url variable and the path provided in the url is also used.
+    [DaeMyung Kang, Tomaz Muraus]
+
+  - Allow user to associate arbitrary key/value pairs with a node by passing
+    "ex_metadata" argument (dictionary) to create_node method in the EC2
+    driver.
+    Those values are associated with a node using tags functionality.
+    (LIBCLOUD-395)
+    [Ivan Kusalic]
+
+   - Add "ex_get_metadata" method to EC2 and OpenStack driver. This method reads
+     metadata dictionary from the Node object. (LIBCLOUD-395)
+    [Ivan Kusalic]
+
+   - Multiple improvements in the Softlayer driver:
+     - Map "INITIATING" node state to NodeState.PENDING
+     - If node is launching remap "halted" state to "pending"
+     - Add more node sizes
+     - Add ex_stop_node and ex_start_node method
+     - Update tests response fixtures
+    (LIBCLOUD-416)
+    [Markos Gogoulos]
+
+  - Modify list_sizes method in the KT UCloud driver to work, even if the item
+    doesn't have 'diskofferingid' attribute. (LIBCLOUD-435)
+    [DaeMyung Kang]
+
+  - Add new c3 instance types to the EC2 driver.
+    [Tomaz Muraus]
+
+  - Fix an issue with the ex_list_keypairs and ex_list_security_groups method
+    in the CloudStack driver which caused an exception to be thrown if the API
+    returned no keypairs / security groups.
+    (LIBCLOUD-438)
+    [Carlos Reategui, Tomaz Muraus]
+
+  - Fix a bug in the OpenStack based drivers with not correctly checking if the
+    auth token has expired before re-using it. (LIBCLOUD-428)
+
+    Reported by Michael Farrell.
+    [Tomaz Muraus,  Michael Farrell]
+
   *) Storage
 
     - Deprecate CLOUDFILES_US and CLOUDFILES_UK provider constant and replace
@@ -314,6 +286,10 @@ Changes with Apache Libcloud 0.14.0-beta1
       different keys instantiated at the same time. (LIBCLOUD-399)
       [Olivier Grisel]
 
+   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
+     (LIBCLOUD-431).
+     [DaeMyung Kang]
+
  *) Load Balancer
 
     - Deprecate RACKSPACE_US and RACKSPACE_UK provider constant and replace it
@@ -330,7 +306,10 @@ Changes with Apache Libcloud 0.14.0-beta1
     - Add new driver for Google Compute Engine (LIBCLOUD-386)
       [Rick Wright]
 
- *) DNS
+   - Add new Hong Kong endpoint to Rackspace driver.
+     [Brian Curtin]
+
+  *) DNS
 
     - Deprecate RACKSPACE_US and RACKSPACE_UK provider constant and replace it
       with a new RACKSPACE constant.
@@ -343,18 +322,23 @@ Changes with Apache Libcloud 0.14.0-beta1
       documentation section - http://s.apache.org/lc0140un
       [Tomaz Muraus]
 
-   - Use string instead of integer for RecordType ENUM value.
+    - Use string instead of integer for RecordType ENUM value.
 
-     Note: If you directly use an integer instead of RecordType ENUM class you
-     need to update your code to use the RecordType ENUM otherwise the code
-     won't work. For more information on how to do that, see "Upgrade Notes"
-     documentation section - http://s.apache.org/lc0140un
-     [Tomaz Muraus]
+      Note: If you directly use an integer instead of RecordType ENUM class you
+      need to update your code to use the RecordType ENUM otherwise the code
+      won't work. For more information on how to do that, see "Upgrade Notes"
+      documentation section - http://s.apache.org/lc0140un
+      [Tomaz Muraus]
 
-   - Add "export_zone_to_bind_format" and export_zone_to_bind_zone_file method
-     which allows users to export Libcloud Zone to BIND zone format.
-     (LIBCLOUD-398)
-     [Tomaz Muraus]
+    - Add "export_zone_to_bind_format" and export_zone_to_bind_zone_file method
+      which allows users to export Libcloud Zone to BIND zone format.
+      (LIBCLOUD-398)
+      [Tomaz Muraus]
+
+    - Update issue with inexistent zone / record handling in the get_zone and
+      get_record method in the Linode driver. Those issues were related to
+      changes in the Linode API. (LIBCLOUD-425)
+      [Jon Chen]
 
 Changes with Apache Libcloud 0.13.2
 
