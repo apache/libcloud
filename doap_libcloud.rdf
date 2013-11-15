@@ -147,6 +147,55 @@
         <revision>0.11.3</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>0.11.4</name>
+        <created>2012-11-19</created>
+        <revision>0.11.4</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.12.1</name>
+        <created>2013-02-19</created>
+        <revision>0.12.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.12.3</name>
+        <created>2013-03-11</created>
+        <revision>0.12.3</revision>
+      </Version>
+  </release>
+   <release>
+      <Version>
+        <name>0.12.4</name>
+        <created>2013-04-22</created>
+        <revision>0.12.3</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.13.0</name>
+        <created>2013-07-01</created>
+        <revision>0.13.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.13.1</name>
+        <created>2013-09-05</created>
+        <revision>0.13.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>0.13.2</name>
+        <created>2013-09-18</created>
+        <revision>0.13.2</revision>
+      </Version>
+  </release>
     <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>
