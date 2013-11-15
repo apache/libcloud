@@ -2,7 +2,7 @@
     "auth": {
         "token": {
             "id": "aaaaaaaaaaaa-bbb-cccccccccccccc",
-            "expires": "2011-11-23T21:00:14-06:00"
+            "expires": "2031-11-23T21:00:14-06:00"
         },
         "serviceCatalog": {
             "cloudFilesCDN": [
