@@ -92,6 +92,12 @@ Changes with Apache Libcloud in development
     (LIBCLOUD-438)
     [Carlos Reategui, Tomaz Muraus]
 
+  - Fix a bug in the OpenStack based drivers with not correctly checking if the
+    auth token has expired before re-using it. (LIBCLOUD-428)
+
+    Reported by Michael Farrell.
+    [Tomaz Muraus,  Michael Farrell]
+
  *) Storage
 
   - Add a new driver for KT UCloud based on the OpenStack Swift driver.
