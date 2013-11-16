@@ -391,11 +391,19 @@ class Connection(object):
     action = None
     cache_busting = False
 
+    allow_insecure = True
+
     def __init__(self, secure=True, host=None, port=None, url=None,
                  timeout=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
+
+        if not self.allow_insecure and not secure:
+            # TODO: We should eventually switch to whitelist instead of
+            # blacklist approach
+            raise ValueError('Non https connections are not allowed (use '
+                             'secure=True)')
 
         self.request_path = ''
 

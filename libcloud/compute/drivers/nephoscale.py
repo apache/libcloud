@@ -95,6 +95,8 @@ class NephoscaleConnection(ConnectionUserAndKey):
     host = API_HOST
     responseCls = NephoscaleResponse
 
+    allow_insecure = False
+
     def add_default_headers(self, headers):
         """
         Add parameters that are necessary for every request

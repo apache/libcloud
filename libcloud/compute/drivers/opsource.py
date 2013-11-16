@@ -134,6 +134,8 @@ class OpsourceConnection(ConnectionUserAndKey):
     _orgId = None
     responseCls = OpsourceResponse
 
+    allow_insecure = False
+
     def add_default_headers(self, headers):
         headers['Authorization'] = \
             ('Basic %s' % b64encode(b('%s:%s' % (self.user_id,
