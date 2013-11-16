@@ -51,7 +51,6 @@ Provider                              Documentation                             
 `RimuHosting`_                                                                    RIMUHOSTING         :mod:`libcloud.compute.drivers.rimuhosting`    :class:`RimuHostingNodeDriver`      
 `ServerLove`_                                                                     SERVERLOVE          :mod:`libcloud.compute.drivers.serverlove`     :class:`ServerLoveNodeDriver`       
 `skalicloud`_                                                                     SKALICLOUD          :mod:`libcloud.compute.drivers.skalicloud`     :class:`SkaliCloudNodeDriver`       
-`Slicehost`_                                                                      SLICEHOST           :mod:`libcloud.compute.drivers.slicehost`      :class:`SlicehostNodeDriver`        
 `SoftLayer`_                                                                      SOFTLAYER           :mod:`libcloud.compute.drivers.softlayer`      :class:`SoftLayerNodeDriver`        
 `vCloud`_                                                                         TERREMARK           :mod:`libcloud.compute.drivers.vcloud`         :class:`TerremarkDriver`            
 `VCL`_                                                                            VCL                 :mod:`libcloud.compute.drivers.vcl`            :class:`VCLNodeDriver`              
@@ -111,7 +110,6 @@ Provider                              Documentation                             
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
-.. _`Slicehost`: http://slicehost.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`VCL`: http://incubator.apache.org/vcl/

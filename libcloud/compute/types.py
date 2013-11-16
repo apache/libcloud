@@ -45,7 +45,6 @@ class Provider(object):
     :cvar EC2_EU_WEST: Amazon AWS EU Ireland
     :cvar RACKSPACE: Rackspace next-gen OpenStack based Cloud Servers
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
-    :cvar SLICEHOST: Slicehost.com
     :cvar GCE: Google Compute Engine
     :cvar GOGRID: GoGrid
     :cvar VPSNET: VPS.net
@@ -77,7 +76,6 @@ class Provider(object):
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
     RACKSPACE = 'rackspace'
-    SLICEHOST = 'slicehost'
     GCE = 'gce'
     GOGRID = 'gogrid'
     VPSNET = 'vpsnet'
@@ -143,6 +141,9 @@ class Provider(object):
     RACKSPACE_NOVA_DFW = 'rackspace_nova_dfw'
     RACKSPACE_NOVA_LON = 'rackspace_nova_lon'
     RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
+
+    # Removed
+    # SLICEHOST = 'slicehost'
 
 
 DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
