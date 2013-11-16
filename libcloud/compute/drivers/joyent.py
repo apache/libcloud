@@ -75,6 +75,8 @@ class JoyentConnection(ConnectionUserAndKey):
 
     responseCls = JoyentResponse
 
+    allow_insecure = False
+
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json; charset=UTF-8'

@@ -10,6 +10,16 @@ Changes with Apache Libcloud in development
       this driver.
       [Tomaz Muraus]
 
+    - Modify drivers for public cloud providers which use HTTP Basic
+      authentication to not allow insecure connections (secure constructor
+      kwarg being set to False) by default.
+
+      This way credentials can't accidentaly be sent in plain text over the
+      write.
+
+      Affected drivers: Bluebox, Joyent, NephoScale, OpSource, VPSNet
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General

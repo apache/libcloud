@@ -29,10 +29,23 @@ class ConnectionClassTestCase(unittest.TestCase):
 
         Connection.connect = Mock()
         Connection.responseCls = Mock()
+        Connection.allow_insecure = True
 
     def tearDown(self):
         Connection.connect = self.originalConnect
         Connection.responseCls = Connection.responseCls
+        Connection.allow_insecure = True
+
+    def test_dont_allow_insecure(self):
+        Connection.allow_insecure = True
+        Connection(secure=False)
+
+        Connection.allow_insecure = False
+
+        expected_msg = (r'Non https connections are not allowed \(use '
+                        'secure=True\)')
+        self.assertRaisesRegexp(ValueError, expected_msg, Connection,
+                                secure=False)
 
     def test_content_length(self):
         con = Connection()
