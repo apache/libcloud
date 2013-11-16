@@ -51,7 +51,6 @@ Provider                              list nodes create node reboot node destroy
 `RimuHosting`_                        yes        yes         yes         yes          yes         yes        yes        
 `ServerLove`_                         yes        yes         yes         yes          yes         yes        yes        
 `skalicloud`_                         yes        yes         yes         yes          yes         yes        yes        
-`Slicehost`_                          yes        yes         yes         yes          yes         yes        yes        
 `SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes        
 `vCloud`_                             yes        yes         yes         yes          yes         yes        yes        
 `VCL`_                                yes        yes         yes         yes          yes         no         no         
@@ -111,7 +110,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
-.. _`Slicehost`: http://slicehost.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`VCL`: http://incubator.apache.org/vcl/

@@ -1,5 +1,15 @@
                                    -*- coding: utf-8 -*-
 
+Changes with Apache Libcloud in development
+
+  *) Compute
+
+    - Remove Slicehost driver.
+
+      SliceHost API has been shut down in 2012 so it makes no sense to keep
+      this driver.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General

@@ -51,7 +51,6 @@ Provider                              list volumes create volume destroy volume 
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `ServerLove`_                         no           no            no             no            no            no             no             
 `skalicloud`_                         no           no            no             no            no            no             no             
-`Slicehost`_                          no           no            no             no            no            no             no             
 `SoftLayer`_                          no           no            no             no            no            no             no             
 `vCloud`_                             no           no            no             no            no            no             no             
 `VCL`_                                no           no            no             no            no            no             no             
@@ -111,7 +110,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`RimuHosting`: http://rimuhosting.com/
 .. _`ServerLove`: http://www.serverlove.com/
 .. _`skalicloud`: http://www.skalicloud.com/
-.. _`Slicehost`: http://slicehost.com/
 .. _`SoftLayer`: http://www.softlayer.com/
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`VCL`: http://incubator.apache.org/vcl/
