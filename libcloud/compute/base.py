@@ -31,13 +31,8 @@ import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, DeploymentError
 from libcloud.compute.ssh import SSHClient
-
-# @@TR: are the imports below part of the public api for this
-# module? They aren't used in here ...
-from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
+from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
-from libcloud.httplib_ssl import LibcloudHTTPSConnection
-from libcloud.common.base import LibcloudHTTPConnection
 from libcloud.common.types import LibcloudError
 
 
@@ -57,13 +52,7 @@ __all__ = [
     "NodeLocation",
     "NodeAuthSSHKey",
     "NodeAuthPassword",
-    "NodeDriver",
-
-    # @@TR: do the following need exporting?
-    "ConnectionKey",
-    "ConnectionUserAndKey",
-    "LibcloudHTTPSConnection",
-    "LibcloudHTTPConnection"
+    "NodeDriver"
 ]
 
 
