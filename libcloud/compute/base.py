@@ -22,7 +22,6 @@ import time
 import hashlib
 import os
 import socket
-import struct
 import binascii
 
 from libcloud.utils.py3 import b
@@ -34,6 +33,9 @@ from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
+
+from libcloud.utils.networking import is_private_subnet
+from libcloud.utils.networking import is_valid_ip_address
 
 
 # How long to wait for the node to come online after creating it
@@ -52,7 +54,11 @@ __all__ = [
     'NodeLocation',
     'NodeAuthSSHKey',
     'NodeAuthPassword',
-    'NodeDriver'
+    'NodeDriver',
+
+    # Deprecated, moved to libcloud.utils.networking
+    'is_private_subnet',
+    'is_valid_ip_address'
 ]
 
 
@@ -1217,44 +1223,6 @@ class NodeDriver(BaseDriver):
         return get_size_price(driver_type='compute',
                               driver_name=self.api_name,
                               size_id=size_id)
-
-
-def is_private_subnet(ip):
-    """
-    Utility function to check if an IP address is inside a private subnet.
-
-    :type ip: ``str``
-    :param ip: IP address to check
-
-    :return: ``bool`` if the specified IP address is private.
-    """
-    priv_subnets = [{'subnet': '10.0.0.0', 'mask': '255.0.0.0'},
-                    {'subnet': '172.16.0.0', 'mask': '255.240.0.0'},
-                    {'subnet': '192.168.0.0', 'mask': '255.255.0.0'}]
-
-    ip = struct.unpack('I', socket.inet_aton(ip))[0]
-
-    for network in priv_subnets:
-        subnet = struct.unpack('I', socket.inet_aton(network['subnet']))[0]
-        mask = struct.unpack('I', socket.inet_aton(network['mask']))[0]
-
-        if (ip & mask) == (subnet & mask):
-            return True
-
-    return False
-
-
-def is_valid_ip_address(address, family=socket.AF_INET):
-    """
-    Check if the provided address is valid IPv4 or IPv6 adddress.
-
-    :return: ``bool`` True if the provided address is valid.
-    """
-    try:
-        socket.inet_pton(family, address)
-    except socket.error:
-        return False
-    return True
 
 
 if __name__ == '__main__':

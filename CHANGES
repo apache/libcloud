@@ -24,6 +24,10 @@ Changes with Apache Libcloud in development
       0.7.0 from the Node object.
       [Tomaz Muraus]
 
+    - Move "is_private_ip" and "is_valid_ip_address" function from
+      libcloud.compute.base into libcloud.utils.networking module.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General

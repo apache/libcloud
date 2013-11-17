@@ -36,7 +36,7 @@ from libcloud.common.base import Response, ConnectionUserAndKey
 from libcloud.compute.base import NodeDriver, NodeSize, NodeLocation
 from libcloud.compute.base import NodeImage, Node
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
-from libcloud.compute.base import is_private_subnet
+from libcloud.utils.networking import is_private_subnet
 
 #Defaults
 API_HOST = ''
