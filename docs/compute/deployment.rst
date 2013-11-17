@@ -56,8 +56,8 @@ using LIBCLOUD_DEBUG method which is described on the
 
 :func:`libcloud.compute.base.NodeDriver.deploy_node` takes the same base
 keyword arguments as the :func:`libcloud.compute.base.NodeDriver.create_node`
-method a couple of additional arguments. The most important ones are ``deploy``
-and ``auth``:
+method and couple of additional arguments. The most important ones are
+``deploy`` and ``auth``:
 
 * ``deploy`` argument specifies which deployment step or steps to run after the
   server has been created.
@@ -67,7 +67,8 @@ and ``auth``:
   log in. For more information, please see the create_node and deploy_node
   method docstring.
 
-Examples which demonstrates how this method can be used are displayed bellow.
+Some examples which demonstrate how this method can be used are displayed
+bellow.
 
 Run a single deploy step using ScriptDeployment class
 -----------------------------------------------------
