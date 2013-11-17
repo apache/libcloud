@@ -15,17 +15,17 @@
 
 from __future__ import with_statement
 
-__all__ = [
-    'Zone',
-    'Record',
-    'DNSDriver'
-]
-
 import datetime
 
 from libcloud import __version__
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
+
+__all__ = [
+    'Zone',
+    'Record',
+    'DNSDriver'
+]
 
 
 class Zone(object):
