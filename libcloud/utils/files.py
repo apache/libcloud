@@ -21,10 +21,16 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import b
 
-CHUNK_SIZE = 8096
-
 if PY3:
     from io import FileIO as file
+
+CHUNK_SIZE = 8096
+
+__all__ = [
+    'read_in_chunks',
+    'exhaust_iterator',
+    'guess_file_mime_type'
+]
 
 
 def read_in_chunks(iterator, chunk_size=None, fill_size=False):

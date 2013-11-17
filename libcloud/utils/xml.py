@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = [
+    'fixxpath',
+    'findtext',
+    'findattr',
+    'findall'
+]
+
 
 def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
