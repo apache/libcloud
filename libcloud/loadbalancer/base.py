@@ -25,8 +25,27 @@ __all__ = [
 
 
 class Member(object):
+    """
+    Represents a load balancer member.
+    """
 
     def __init__(self, id, ip, port, balancer=None, extra=None):
+        """
+        :param id: Member ID.
+        :type id: ``str``
+
+        :param ip: IP address of this member.
+        :param ip: ``str``
+
+        :param port: Port of this member
+        :param port: ``str``
+
+        :param balancer: Balancer this member is attached to. (optional)
+        :param balancer: :class:`.LoadBalancer`
+
+        :param extra: Provider specific attributes.
+        :type extra: ``dict``
+        """
         self.id = str(id) if id else None
         self.ip = ip
         self.port = port
@@ -39,6 +58,10 @@ class Member(object):
 
 
 class Algorithm(object):
+    """
+    Represents a load balancing algorithm.
+    """
+
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
@@ -53,10 +76,29 @@ class LoadBalancer(object):
     Provide a common interface for handling Load Balancers.
     """
 
-    name = None
-    website = None
-
     def __init__(self, id, name, state, ip, port, driver, extra=None):
+        """
+        :param id: Load balancer ID.
+        :type id: ``str``
+
+        :param name: Load balancer name.
+        :type name: ``str``
+
+        :param state: State this loadbalancer is in.
+        :type state: :class:`libcloud.loadbalancer.types.State`
+
+        :param ip: IP address of this loadbalancer.
+        :type ip: ``str``
+
+        :param port: Port of this loadbalancer.
+        :type port: ``int``
+
+        :param driver: Driver this loadbalancer belongs to.
+        :type driver: :class:`.Driver`
+
+        :param extra: Provier specific attributes. (optional)
+        :type extra: ``dict``
+        """
         self.id = str(id) if id else None
         self.name = name
         self.state = state
@@ -94,6 +136,9 @@ class Driver(BaseDriver):
 
     This class is always subclassed by a specific driver.
     """
+
+    name = None
+    website = None
 
     connectionCls = ConnectionKey
     _ALGORITHM_TO_VALUE_MAP = {}
