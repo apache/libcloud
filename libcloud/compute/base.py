@@ -187,24 +187,6 @@ class Node(UuidMixin):
         self.extra = extra or {}
         UuidMixin.__init__(self)
 
-    # Note: getters and setters bellow are here only for backward
-    # compatibility. They will be removed in the next release.
-
-    def _set_public_ips(self, value):
-        self.public_ips = value
-
-    def _get_public_ips(self):
-        return self.public_ips
-
-    def _set_private_ips(self, value):
-        self.private_ips = value
-
-    def _get_private_ips(self):
-        return self.private_ips
-
-    public_ip = property(fget=_get_public_ips, fset=_set_public_ips)
-    private_ip = property(fget=_get_private_ips, fset=_set_private_ips)
-
     def reboot(self):
         """
         Reboot this node
