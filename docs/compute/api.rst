@@ -24,3 +24,12 @@ Compute Base API
 
 .. autoclass:: libcloud.compute.base.StorageVolume
     :members:
+
+.. autoclass:: libcloud.compute.types.NodeState
+    :members:
+
+Error Classes
+-------------
+
+.. autoclass:: libcloud.compute.types.DeploymentError
+    :members:
