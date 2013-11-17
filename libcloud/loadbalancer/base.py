@@ -19,8 +19,9 @@ from libcloud.common.types import LibcloudError
 __all__ = [
     'Member',
     'LoadBalancer',
+    'Algorithm',
     'Driver',
-    'Algorithm'
+    'DEFAULT_ALGORITHM'
 ]
 
 
@@ -55,20 +56,6 @@ class Member(object):
     def __repr__(self):
         return ('<Member: id=%s, address=%s:%s>' % (self.id,
                                                     self.ip, self.port))
-
-
-class Algorithm(object):
-    """
-    Represents a load balancing algorithm.
-    """
-
-    RANDOM = 0
-    ROUND_ROBIN = 1
-    LEAST_CONNECTIONS = 2
-    WEIGHTED_ROUND_ROBIN = 3
-    WEIGHTED_LEAST_CONNECTIONS = 4
-
-DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
 
 class LoadBalancer(object):
@@ -128,6 +115,20 @@ class LoadBalancer(object):
     def __repr__(self):
         return ('<LoadBalancer: id=%s, name=%s, state=%s>' % (self.id,
                 self.name, self.state))
+
+
+class Algorithm(object):
+    """
+    Represents a load balancing algorithm.
+    """
+
+    RANDOM = 0
+    ROUND_ROBIN = 1
+    LEAST_CONNECTIONS = 2
+    WEIGHTED_ROUND_ROBIN = 3
+    WEIGHTED_LEAST_CONNECTIONS = 4
+
+DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
 
 class Driver(BaseDriver):
