@@ -37,7 +37,7 @@ CHUNK_SIZE = 8096
 
 __all__ = [
     'Object',
-    'Contaner',
+    'Container',
     'StorageDriver'
 ]
 
