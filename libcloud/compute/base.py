@@ -171,7 +171,7 @@ class Node(UuidMixin):
         :param image: Image of this node. (optional)
         :type size: :class:`.NodeImage:
 
-        :param extra: Optional provided specific attributes associated with
+        :param extra: Optional provider specific attributes associated with
                       this node.
         :type extra: ``dict``
 
