@@ -20,6 +20,10 @@ Changes with Apache Libcloud in development
       Affected drivers: Bluebox, Joyent, NephoScale, OpSource, VPSNet
       [Tomaz Muraus]
 
+    - Remove "public_ip" and "private_ip" property which has been deprecated in
+      0.7.0 from the Node object.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
