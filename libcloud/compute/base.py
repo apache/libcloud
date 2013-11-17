@@ -45,14 +45,14 @@ SSH_CONNECT_TIMEOUT = 5 * 60
 
 
 __all__ = [
-    "Node",
-    "NodeState",
-    "NodeSize",
-    "NodeImage",
-    "NodeLocation",
-    "NodeAuthSSHKey",
-    "NodeAuthPassword",
-    "NodeDriver"
+    'Node',
+    'NodeState',
+    'NodeSize',
+    'NodeImage',
+    'NodeLocation',
+    'NodeAuthSSHKey',
+    'NodeAuthPassword',
+    'NodeDriver'
 ]
 
 
@@ -65,9 +65,8 @@ class UuidMixin(object):
         self._uuid = None
 
     def get_uuid(self):
-        """Unique hash for a node, node image, or node size
-
-        :return: ``string``
+        """
+        Unique hash for a node, node image, or node size
 
         The hash is a function of an SHA1 hash of the node, node image,
         or node size's ID and its driver which means that it should be
@@ -85,6 +84,8 @@ class UuidMixin(object):
 
         Note, for example, that this example will always produce the
         same UUID!
+
+        :rtype: ``str``
         """
         if not self._uuid:
             self._uuid = hashlib.sha1(b('%s:%s' %
@@ -205,7 +206,8 @@ class Node(UuidMixin):
     private_ip = property(fget=_get_private_ips, fset=_set_private_ips)
 
     def reboot(self):
-        """Reboot this node
+        """
+        Reboot this node
 
         :return: ``bool``
 
@@ -226,7 +228,8 @@ class Node(UuidMixin):
         return self.driver.reboot_node(self)
 
     def destroy(self):
-        """Destroy this node
+        """
+        Destroy this node
 
         :return: ``bool``
 
@@ -716,7 +719,8 @@ class NodeDriver(BaseDriver):
             'create_node not implemented for this driver')
 
     def destroy_node(self, node):
-        """Destroy a node.
+        """
+        Destroy a node.
 
         Depending upon the provider, this may destroy all data associated with
         the node, including backups.
@@ -745,7 +749,8 @@ class NodeDriver(BaseDriver):
 
     def list_nodes(self):
         """
-        List all nodes
+        List all nodes.
+
         :return:  list of node objects
         :rtype: ``list`` of :class:`.Node`
         """
@@ -1270,6 +1275,6 @@ def is_valid_ip_address(address, family=socket.AF_INET):
     return True
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import doctest
     doctest.testmod()

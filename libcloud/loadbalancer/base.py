@@ -17,10 +17,10 @@ from libcloud.common.base import ConnectionKey, BaseDriver
 from libcloud.common.types import LibcloudError
 
 __all__ = [
-    "Member",
-    "LoadBalancer",
-    "Driver",
-    "Algorithm"
+    'Member',
+    'LoadBalancer',
+    'Driver',
+    'Algorithm'
 ]
 
 
