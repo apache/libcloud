@@ -31,5 +31,5 @@ We have :doc:`examples of several common patterns </loadbalancer/examples>`.
 API Reference
 -------------
 
-There is a reference to :doc:`all the methods on the base loadbalancer driver
-</loadbalancer/api/>`.
+For a full reference of all the classes and methods exposed by the loadbalancer
+API, see :doc:`this page </loadbalancer/api>`.
