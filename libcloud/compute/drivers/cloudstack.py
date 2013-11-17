@@ -23,8 +23,9 @@ from libcloud.utils.py3 import b
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
-    NodeSize, StorageVolume, is_private_subnet
+    NodeSize, StorageVolume
 from libcloud.compute.types import NodeState, LibcloudError
+from libcloud.utils.networking import is_private_subnet
 
 
 class CloudStackNode(Node):

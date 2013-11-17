@@ -30,12 +30,12 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlencode
 
 from libcloud.compute.providers import Provider
-from libcloud.compute.base import is_private_subnet
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.compute.types import (NodeState, InvalidCredsError,
                                     LibcloudError)
 from libcloud.compute.base import (Node, NodeDriver, NodeImage, NodeSize,
                                    NodeLocation)
+from libcloud.utils.networking import is_private_subnet
 
 API_HOST = 'api.nephoscale.com'
 
