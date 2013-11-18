@@ -30,6 +30,7 @@ import os
 import sys
 import argparse
 import subprocess
+import random
 
 from os.path import join as pjoin
 
@@ -82,6 +83,7 @@ def resize_images(logo_files, output_path):
 
 def assemble_final_image(resized_images, output_path):
     final_name = pjoin(output_path, 'final/logos.png')
+    random.shuffle(resized_images)
     values = {'images': ' '.join(resized_images), 'geometry': GEOMETRY,
               'out_name': final_name}
     cmd = 'montage %(images)s -geometry %(geometry)s %(out_name)s'
