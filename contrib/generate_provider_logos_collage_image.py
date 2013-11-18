@@ -75,13 +75,13 @@ def resize_images(logo_files, output_path):
         cmd = cmd % values
         subprocess.call(cmd, shell=True)
 
-        resized_images.append(new_name)
+        resized_images.append(out_name)
 
     return resized_images
 
 
 def assemble_final_image(resized_images, output_path):
-    final_name = 'final/logos.png'
+    final_name = pjoin(output_path, 'final/logos.png')
     values = {'images': ' '.join(resized_images), 'geometry': GEOMETRY,
               'out_name': final_name}
     cmd = 'montage %(images)s -geometry %(geometry)s %(out_name)s'
