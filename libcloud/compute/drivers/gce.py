@@ -2470,7 +2470,7 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
         extra['preferredKernel'] = image['preferredKernel']
-        extra['description'] = image['description']
+        extra['description'] = image.get('description', None)
         extra['creationTimestamp'] = image['creationTimestamp']
         extra['selfLink'] = image['selfLink']
         return NodeImage(id=image['id'], name=image['name'], driver=self,

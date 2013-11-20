@@ -15,6 +15,20 @@
       "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
       "sourceType": "RAW",
       "status": "READY"
+    },
+    {
+      "creationTimestamp": "2013-11-18T12:24:21.560-07:00",
+      "id": "1539141992335368259",
+      "kind": "compute#image",
+      "name": "centos-6-v20131118",
+      "preferredKernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-v20130603",
+      "rawDisk": {
+        "containerType": "TAR",
+        "source": ""
+      },
+      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/centos-6-v20131118",
+      "sourceType": "RAW",
+      "status": "READY"
     }
   ],
   "kind": "compute#imageList",
