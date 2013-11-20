@@ -19,6 +19,7 @@ import os
 import base64
 
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import urlparse
 
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
@@ -207,17 +208,37 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     }
 
     def __init__(self, key, secret=None, secure=True, host=None,
-                 path=None, port=None, *args, **kwargs):
+                 path=None, port=None, url=None, *args, **kwargs):
         """
-        @inherits: :class:`NodeDriver.__init__`
+        :inherits: :class:`NodeDriver.__init__`
 
         :param    host: The host where the API can be reached. (required)
         :type     host: ``str``
 
-        :param    path: The host where the API can be reached. (required)
+        :param    path: The path where the API can be reached. (required)
         :type     path: ``str``
+
+        :param url: Full URL to the API endpoint. Mutually exclusive with host
+                    and path argument.
+        :type url: ``str``
         """
-        host = host if host else self.host
+        if url:
+            parsed = urlparse.urlparse(url)
+
+            path = parsed.path
+
+            scheme = parsed.scheme
+            split = parsed.netloc.split(':')
+
+            if len(split) == 1:
+                # No port provided, use the default one
+                host = parsed.netloc
+                port = 443 if scheme == 'https' else 80
+            else:
+                host = split[0]
+                port = int(split[1])
+        else:
+            host = host if host else self.host
 
         if path is not None:
             self.path = path
@@ -226,8 +247,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             self.host = host
 
         if (self.type == Provider.CLOUDSTACK) and (not host or not path):
-            raise Exception('When instantiating CloudStack driver directly ' +
-                            'you also need to provide host and path argument')
+            raise Exception('When instantiating CloudStack driver directly '
+                            'you also need to provide url or host and path '
+                            'argument')
 
         NodeDriver.__init__(self, key=key, secret=secret, secure=secure,
                             host=host, port=port)

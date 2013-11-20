@@ -48,9 +48,36 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
 
-    def test_user_must_provide_host_and_path(self):
-        expected_msg = 'When instantiating CloudStack driver directly ' + \
-                       'you also need to provide host and path argument'
+    def test_driver_instantiation(self):
+        urls = [
+            'http://api.exoscale.ch/compute1',  # http, default port
+            'https://api.exoscale.ch/compute2',  # https, default port
+            'http://api.exoscale.ch:8888/compute3',  # https, custom port
+            'https://api.exoscale.ch:8787/compute4',  # https, custom port
+            'https://api.test.com/compute/endpoint'  # https, default port
+        ]
+
+        expected_values = [
+            {'host': 'api.exoscale.ch', 'port': 80, 'path': '/compute1'},
+            {'host': 'api.exoscale.ch', 'port': 443, 'path': '/compute2'},
+            {'host': 'api.exoscale.ch', 'port': 8888, 'path': '/compute3'},
+            {'host': 'api.exoscale.ch', 'port': 8787, 'path': '/compute4'},
+            {'host': 'api.test.com', 'port': 443, 'path': '/compute/endpoint'}
+        ]
+
+        cls = get_driver(Provider.CLOUDSTACK)
+
+        for url, expected in zip(urls, expected_values):
+            driver = cls('key', 'secret', url=url)
+
+            self.assertEqual(driver.host, expected['host'])
+            self.assertEqual(driver.path, expected['path'])
+            self.assertEqual(driver.connection.port, expected['port'])
+
+    def test_user_must_provide_host_and_path_or_url(self):
+        expected_msg = ('When instantiating CloudStack driver directly '
+                        'you also need to provide url or host and path '
+                        'argument')
         cls = get_driver(Provider.CLOUDSTACK)
 
         self.assertRaisesRegexp(Exception, expected_msg, cls,
@@ -60,6 +87,11 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
             cls('key', 'secret', True, 'localhost', '/path')
         except Exception:
             self.fail('host and path provided but driver raised an exception')
+
+        try:
+            cls('key', 'secret', url='https://api.exoscale.ch/compute')
+        except Exception:
+            self.fail('url provided but driver raised an exception')
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
