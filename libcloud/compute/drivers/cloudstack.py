@@ -251,8 +251,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             'you also need to provide url or host and path '
                             'argument')
 
-        NodeDriver.__init__(self, key=key, secret=secret, secure=secure,
-                            host=host, port=port)
+        super(CloudStackNodeDriver, self).__init__(key=key,
+                                                   secret=secret,
+                                                   secure=secure,
+                                                   host=host,
+                                                   port=port)
 
     def list_images(self, location=None):
         args = {
