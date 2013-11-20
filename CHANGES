@@ -28,6 +28,11 @@ Changes with Apache Libcloud in development
       libcloud.compute.base into libcloud.utils.networking module.
       [Tomaz Muraus]
 
+    - Allow user to pass "url" argument to the CloudStack driver constructor.
+      This argument can be provided instead of "host" and "path" arguments and
+      can contain a full URL to the API endpoint.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
