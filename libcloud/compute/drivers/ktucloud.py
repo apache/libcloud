@@ -33,7 +33,8 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         if location is not None:
             args['zoneid'] = location.id
 
-        imgs = self._sync_request('listAvailableProductTypes')
+        imgs = self._sync_request(command='listAvailableProductTypes',
+                                  method='GET')
         images = []
 
         for img in imgs['producttypes']:
@@ -66,24 +67,24 @@ class KTUCloudNodeDriver(CloudStackNodeDriver):
         return sizes
 
     def create_node(self, name, size, image, location=None, **kwargs):
-        extra_args = {}
+        params = {'displayname': name,
+                  'serviceofferingid': image.id,
+                  'templateid': str(image.extra['templateid']),
+                  'zoneid': str(image.extra['zoneid'])}
+
         usageplantype = kwargs.pop('usageplantype', None)
         if usageplantype is None:
-            extra_args['usageplantype'] = 'hourly'
+            params['usageplantype'] = 'hourly'
         else:
-            extra_args['usageplantype'] = usageplantype
+            params['usageplantype'] = usageplantype
 
         if size.id != self.EMPTY_DISKOFFERINGID:
-            extra_args['diskofferingid'] = size.id
+            params['diskofferingid'] = size.id
 
         result = self._async_request(
-            'deployVirtualMachine',
-            displayname=name,
-            serviceofferingid=image.id,
-            templateid=str(image.extra['templateid']),
-            zoneid=str(image.extra['zoneid']),
-            **extra_args
-        )
+            command='deployVirtualMachine',
+            params=params,
+            method='GET')
 
         node = result['virtualmachine']
 

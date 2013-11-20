@@ -263,7 +263,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         }
         if location is not None:
             args['zoneid'] = location.id
-        imgs = self._sync_request('listTemplates', **args)
+        imgs = self._sync_request(command='listTemplates',
+                                  params=args,
+                                  method='GET')
         images = []
         for img in imgs.get('template', []):
             images.append(NodeImage(
@@ -389,7 +391,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         :rtype ``list`` of :class:`NodeSize`
         """
-        szs = self._sync_request('listServiceOfferings')
+        szs = self._sync_request(command='listServiceOfferings',
+                                 method='GET')
         sizes = []
         for sz in szs['serviceoffering']:
             sizes.append(NodeSize(sz['id'], sz['name'], sz['memory'], 0, 0,
@@ -420,8 +423,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         server_params = self._create_args_to_params(None, **kwargs)
 
-        node = self._async_request('deployVirtualMachine',
-                                   **server_params)['virtualmachine']
+        node = self._async_request(command='deployVirtualMachine',
+                                   params=server_params,
+                                   method='GET')['virtualmachine']
         public_ips = []
         private_ips = []
         for nic in node['nic']:
@@ -511,7 +515,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``bool``
         """
-        self._async_request('destroyVirtualMachine', id=node.id)
+        self._async_request(command='destroyVirtualMachine',
+                            params={'id': node.id},
+                            method='GET')
         return True
 
     def reboot_node(self, node):
@@ -521,7 +527,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``bool``
         """
-        self._async_request('rebootVirtualMachine', id=node.id)
+        self._async_request(command='rebootVirtualMachine',
+                            params={'id': node.id},
+                            method='GET')
         return True
 
     def ex_start(self, node):
@@ -539,7 +547,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype ``str``
         """
-        res = self._async_request('startVirtualMachine', id=node.id)
+        res = self._async_request(command='startVirtualMachine',
+                                  params={'id': node.id},
+                                  method='GET')
         return res['virtualmachine']['state']
 
     def ex_stop(self, node):
@@ -559,7 +569,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype ``str``
         """
-        res = self._async_request('stopVirtualMachine', id=node.id)
+        res = self._async_request(command='stopVirtualMachine',
+                                  params={'id': node.id},
+                                  method='GET')
         return res['virtualmachine']['state']
 
     def ex_list_disk_offerings(self):
@@ -571,7 +583,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         diskOfferings = []
 
-        diskOfferResponse = self._sync_request('listDiskOfferings')
+        diskOfferResponse = self._sync_request(command='listDiskOfferings',
+                                               method='GET')
         for diskOfferDict in diskOfferResponse.get('diskoffering', ()):
             diskOfferings.append(
                 CloudStackDiskOffering(
@@ -589,7 +602,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype ``list`` of :class:`CloudStackNetwork`
         """
 
-        nets = self._sync_request('listNetworks')['network']
+        nets = self._sync_request(command='listNetworks',
+                                  method='GET')['network']
 
         networks = []
         for net in nets:
@@ -615,18 +629,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             raise LibcloudError(
                 'Disk offering with size=%s not found' % size)
 
-        extraParams = dict()
-        if diskOffering.customizable:
-            extraParams['size'] = size
-
         if location is None:
             location = self.list_locations()[0]
 
-        requestResult = self._async_request('createVolume',
-                                            name=name,
-                                            diskOfferingId=diskOffering.id,
-                                            zoneId=location.id,
-                                            **extraParams)
+        params = {'name': name,
+                  'diskOfferingId': diskOffering.id,
+                  'zoneId': location.id}
+
+        if diskOffering.customizable:
+            params['size'] = size
+
+        requestResult = self._async_request(command='createVolume',
+                                            params=params,
+                                            method='GET')
 
         volumeResponse = requestResult['volume']
 
@@ -640,7 +655,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         :rtype: ``bool``
         """
-        self._sync_request('deleteVolume', id=volume.id)
+        self._sync_request(command='deleteVolume',
+                           params={'id': volume.id},
+                           method='GET')
         return True
 
     def attach_volume(self, node, volume, device=None):
@@ -651,15 +668,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``bool``
         """
         # TODO Add handling for device name
-        self._async_request('attachVolume', id=volume.id,
-                            virtualMachineId=node.id)
+        self._async_request(command='attachVolume',
+                            params={'id': volume.id,
+                                    'virtualMachineId': node.id},
+                            method='GET')
         return True
 
     def detach_volume(self, volume):
         """
         :rtype: ``bool``
         """
-        self._async_request('detachVolume', id=volume.id)
+        self._async_request(command='detachVolume',
+                            params={'id': volume.id},
+                            method='GET')
         return True
 
     def list_volumes(self, node=None):
@@ -672,10 +693,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``list`` of :class:`StorageVolume`
         """
         if node:
-            volumes = self._sync_request('listVolumes',
-                                         virtualmachineid=node.id)
+            volumes = self._sync_request(command='listVolumes',
+                                         params={'virtualmachineid': node.id},
+                                         method='GET')
         else:
-            volumes = self._sync_request('listVolumes')
+            volumes = self._sync_request(command='listVolumes',
+                                         method='GET')
 
         list_volumes = []
         for vol in volumes['volume']:
@@ -693,7 +716,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         ips = []
 
-        res = self._sync_request('listPublicIpAddresses')
+        res = self._sync_request(command='listPublicIpAddresses',
+                                 method='GET')
 
         # Workaround for basic zones
         if not res:
@@ -715,7 +739,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if location is None:
             location = self.list_locations()[0]
 
-        addr = self._async_request('associateIpAddress', zoneid=location.id)
+        addr = self._async_request(command='associateIpAddress',
+                                   params={'zoneid': location.id},
+                                   method='GET')
         addr = addr['ipaddress']
         addr = CloudStackAddress(addr['id'], addr['ipaddress'], self)
         return addr
@@ -729,7 +755,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``bool``
         """
-        res = self._async_request('disassociateIpAddress', id=address.id)
+        res = self._async_request(command='disassociateIpAddress',
+                                  params={'id': address.id},
+                                  method='GET')
         return res['success']
 
     def ex_list_port_forwarding_rules(self):
@@ -739,7 +767,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``list`` of :class:`CloudStackPortForwardingRule`
         """
         rules = []
-        result = self._sync_request('listPortForwardingRules')
+        result = self._sync_request(command='listPortForwardingRules',
+                                    method='GET')
         if result != {}:
             public_ips = self.ex_list_public_ips()
             nodes = self.list_nodes()
@@ -798,7 +827,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if private_end_port:
             args['privateendport'] = int(private_end_port)
 
-        result = self._async_request('createPortForwardingRule', **args)
+        result = self._async_request(command='createPortForwardingRule',
+                                     params=args,
+                                     method='GET')
         rule = CloudStackPortForwardingRule(node,
                                             result['portforwardingrule']
                                             ['id'],
@@ -827,7 +858,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         node.extra['port_forwarding_rules'].remove(rule)
         node.public_ips.remove(rule.address.address)
-        res = self._async_request('deletePortForwardingRule', id=rule.id)
+        res = self._async_request(command='deletePortForwardingRule',
+                                  params={'id': rule.id},
+                                  method='GET')
         return res['success']
 
     def ex_add_ip_forwarding_rule(self, node, address, protocol,
@@ -865,7 +898,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if end_port is not None:
             args['endport'] = int(end_port)
 
-        result = self._async_request('createIpForwardingRule', **args)
+        result = self._async_request(command='createIpForwardingRule',
+                                     params=args,
+                                     method='GET')
         result = result['ipforwardingrule']
         rule = CloudStackIPForwardingRule(node, result['id'], address,
                                           protocol, start_port, end_port)
@@ -886,7 +921,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         node.extra['ip_forwarding_rules'].remove(rule)
-        self._async_request('deleteIpForwardingRule', id=rule.id)
+        self._async_request(command='deleteIpForwardingRule',
+                            params={'id': rule.id},
+                            method='GET')
         return True
 
     def ex_list_keypairs(self, **kwargs):
@@ -938,7 +975,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         extra_args = kwargs.copy()
-        res = self._sync_request('listSSHKeyPairs', **extra_args)
+        res = self._sync_request(command='listSSHKeyPairs',
+                                 params=extra_args,
+                                 method='GET')
         keypairs = res.get('sshkeypair', [])
         return keypairs
 
@@ -971,7 +1010,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 raise LibcloudError('SSH KeyPair with name=%s already exists'
                                     % (name))
 
-        res = self._sync_request('createSSHKeyPair', name=name, **extra_args)
+        params = {'name': name}
+        params.update(extra_args)
+
+        res = self._sync_request(command='createSSHKeyPair',
+                                 params=params,
+                                 method='GET')
         return res['keypair']
 
     def ex_delete_keypair(self, keypair, **kwargs):
@@ -996,9 +1040,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
 
         extra_args = kwargs.copy()
+        params = {'name': keypair}
+        params.update(extra_args)
 
-        res = self._sync_request('deleteSSHKeyPair', name=keypair,
-                                 **extra_args)
+        res = self._sync_request(command='deleteSSHKeyPair',
+                                 params=params,
+                                 method='GET')
         return res['success']
 
     def ex_import_keypair_from_string(self, name, key_material):
@@ -1013,8 +1060,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype: ``dict``
         """
-        res = self._sync_request('registerSSHKeyPair', name=name,
-                                 publickey=key_material)
+        res = self._sync_request(command='registerSSHKeyPair',
+                                 params={'name': name,
+                                         'publickey': key_material},
+                                 method='GET')
         return {
             'keyName': res['keypair']['name'],
             'keyFingerprint': res['keypair']['fingerprint']
@@ -1085,8 +1134,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         :rtype ``list``
         """
-        extra_args = kwargs
-        res = self._sync_request('listSecurityGroups', **extra_args)
+        extra_args = kwargs.copy()
+        res = self._sync_request(command='listSecurityGroups',
+                                 params=extra_args,
+                                 method='GET')
 
         security_groups = res.get('securitygroup', [])
         return security_groups
@@ -1122,8 +1173,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             if name in sg['name']:
                 raise LibcloudError('This Security Group name already exists')
 
-        return self._sync_request('createSecurityGroup',
-                                  name=name, **extra_args)['securitygroup']
+        params = {'name': name}
+        params.update(extra_args)
+
+        return self._sync_request(command='createSecurityGroup',
+                                  params=params,
+                                  method='GET')['securitygroup']
 
     def ex_delete_security_group(self, name):
         """
@@ -1151,7 +1206,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype: ``bool``
         """
 
-        return self._sync_request('deleteSecurityGroup', name=name)['success']
+        return self._sync_request(command='deleteSecurityGroup',
+                                  params={'name': name},
+                                  method='GET')['success']
 
     def ex_authorize_security_group_ingress(self, securitygroupname,
                                             protocol, cidrlist, startport,
@@ -1218,8 +1275,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if endport is None:
             args['endport'] = int(startport)
 
-        return self._async_request('authorizeSecurityGroupIngress',
-                                   **args)['securitygroup']
+        return self._async_request(command='authorizeSecurityGroupIngress',
+                                   params=args,
+                                   method='GET')['securitygroup']
 
     def ex_register_iso(self, name, url, location=None, **kwargs):
         """
@@ -1239,19 +1297,22 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if location is None:
             location = self.list_locations()[0]
 
-        extra_args = {}
-        extra_args['bootable'] = kwargs.pop('bootable', False)
-        if extra_args['bootable']:
+        params = {'name': name,
+                  'displaytext': name,
+                  'url': url,
+                  'zoneid': location.id}
+        params['bootable'] = kwargs.pop('bootable', False)
+        if params['bootable']:
             os_type_id = kwargs.pop('ostypeid', None)
 
             if not os_type_id:
                 raise LibcloudError('If bootable=True, ostypeid is required!')
 
-            extra_args['ostypeid'] = os_type_id
+            params['ostypeid'] = os_type_id
 
-        return self._sync_request('registerIso',
+        return self._sync_request(command='registerIso',
                                   name=name,
                                   displaytext=name,
                                   url=url,
                                   zoneid=location.id,
-                                  **extra_args)
+                                  params=params)
