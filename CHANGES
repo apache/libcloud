@@ -37,6 +37,12 @@ Changes with Apache Libcloud in development
       method. (LIBCLOUD-431)
       [Tomaz Muraus]
 
+    - Refactor CloudStack Connection class so it looks more like other
+      connection classes and user can specify which attributes to send as part
+      of query parameters in the GET request and which inside the body of a POST
+      request.
+      [Tomaz Muraus, Philipp Strube]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
