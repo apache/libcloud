@@ -136,9 +136,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_list_images(self):
         local_images = self.driver.list_images()
         debian_images = self.driver.list_images(ex_project='debian-cloud')
-        self.assertEqual(len(local_images), 1)
+        self.assertEqual(len(local_images), 2)
         self.assertEqual(len(debian_images), 17)
         self.assertEqual(local_images[0].name, 'debian-7-wheezy-v20130617')
+        self.assertEqual(local_images[1].name, 'centos-6-v20131118')
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
