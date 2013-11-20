@@ -15,6 +15,7 @@
 
 import base64
 import hashlib
+import copy
 import hmac
 
 from libcloud.utils.py3 import urlencode
@@ -39,6 +40,17 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
     ASYNC_SUCCESS = 1
     ASYNC_FAILURE = 2
 
+    def encode_data(self, data):
+        """
+        Must of the data is sent as part of query params (eeww),
+        but in newer versions, userdata argument can be sent as a
+        urlencoded data in the request body.
+        """
+        if data:
+            data = urlencode(data)
+
+        return data
+
     def _make_signature(self, params):
         signature = [(k.lower(), v) for k, v in list(params.items())]
         signature.sort(key=lambda x: x[0])
@@ -59,25 +71,37 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         return params, headers
 
-    def _async_request(self, command, **kwargs):
-        context = {'command': command}
-        context.update(kwargs)
-        result = super(CloudStackConnection, self).async_request(action=None,
-                                                                 params=None,
-                                                                 data=None,
-                                                                 headers=None,
-                                                                 method=None,
+    def _async_request(self, command, action=None, params=None, data=None,
+                       headers=None, method='GET', context=None):
+        if params:
+            context = copy.deepcopy(params)
+        else:
+            context = {}
+
+        # Command is specified as part of GET call
+        context['command'] = command
+        result = super(CloudStackConnection, self).async_request(action=action,
+                                                                 params=params,
+                                                                 data=data,
+                                                                 headers=
+                                                                 headers,
+                                                                 method=method,
                                                                  context=
                                                                  context)
         return result['jobresult']
 
     def get_request_kwargs(self, action, params=None, data='', headers=None,
                            method='GET', context=None):
-        return context
+        command = context['command']
+        request_kwargs = {'command': command, 'action': action,
+                          'params': params, 'data': data,
+                          'headers': headers, 'method': method}
+        return request_kwargs
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response['jobid']
-        kwargs = {'command': 'queryAsyncJobResult', 'jobid': job_id}
+        params = {'jobid': job_id}
+        kwargs = {'command': 'queryAsyncJobResult', 'params': params}
         return kwargs
 
     def has_completed(self, response):
@@ -89,13 +113,24 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
 
         return status == self.ASYNC_SUCCESS
 
-    def _sync_request(self, command, **kwargs):
-        """This method handles synchronous calls which are generally fast
-           information retrieval requests and thus return 'quickly'."""
+    def _sync_request(self, command, action=None, params=None, data=None,
+                      headers=None, method='GET'):
+        """
+        This method handles synchronous calls which are generally fast
+        information retrieval requests and thus return 'quickly'.
+        """
+        # command is always sent as part of "command" query parameter
+        if params:
+            params = copy.deepcopy(params)
+        else:
+            params = {}
 
-        kwargs['command'] = command
-        result = self.request(self.driver.path, params=kwargs)
+        params['command'] = command
+        result = self.request(action=self.driver.path, params=params,
+                              data=data, headers=headers, method=method)
+
         command = command.lower() + 'response'
+
         if command not in result.object:
             raise MalformedResponseError(
                 "Unknown response format",
@@ -116,8 +151,15 @@ class CloudStackDriverMixIn(object):
         super(CloudStackDriverMixIn, self).__init__(key, secret, secure, host,
                                                     port)
 
-    def _sync_request(self, command, **kwargs):
-        return self.connection._sync_request(command, **kwargs)
+    def _sync_request(self, command, action=None, params=None, data=None,
+                      headers=None, method='GET'):
+        return self.connection._sync_request(command=command, action=action,
+                                             params=params, data=data,
+                                             headers=headers, method=method)
 
-    def _async_request(self, command, **kwargs):
-        return self.connection._async_request(command, **kwargs)
+    def _async_request(self, command, action=None, params=None, data=None,
+                       headers=None, method='GET', context=None):
+        return self.connection._async_request(command=command, action=action,
+                                              params=params, data=data,
+                                              headers=headers, method=method,
+                                              context=context)
