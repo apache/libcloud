@@ -462,36 +462,45 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             'name': kwargs.get('name'),
         }
 
-        if 'name' in kwargs:
-            server_params['displayname'] = kwargs.get('name')
+        # TODO: Refactor and use "kwarg_to_server_params" map
+        name = kwargs.get('name', None)
+        size = kwargs.get('size', None)
+        image = kwargs.get('image', None)
+        location = kwargs.get('location', None)
+        networks = kwargs.get('networks', None)
+        ex_key_name = kwargs.get('ex_keyname', None)
+        ex_user_data = kwargs.get('ex_userdata', None)
+        ex_security_groups = kwargs.get('ex_security_groups', None)
 
-        if 'size' in kwargs:
-            server_params['serviceofferingid'] = kwargs.get('size').id
+        if name:
+            server_params['name'] = name
 
-        if 'image' in kwargs:
-            server_params['templateid'] = kwargs.get('image').id
+        if size:
+            server_params['serviceofferingid'] = size.id
 
-        if 'location' in kwargs:
-            server_params['zoneid'] = kwargs.get('location').id
+        if image:
+            server_params['templateid'] = image.id
+
+        if location:
+            server_params['zoneid'] = location.id
         else:
+            # Use a default location
             server_params['zoneid'] = self.list_locations()[0].id
 
-        if 'ex_keyname' in kwargs:
-            server_params['keypair'] = kwargs['ex_keyname']
-
-        if 'ex_userdata' in kwargs:
-            server_params['userdata'] = base64.b64encode(
-                b(kwargs['ex_userdata'])).decode('ascii')
-
-        if 'networks' in kwargs:
-            networks = kwargs['networks']
+        if networks:
             networks = ','.join([network.id for network in networks])
             server_params['networkids'] = networks
 
-        if 'ex_security_groups' in kwargs:
-            security_groups = kwargs['ex_security_groups']
-            security_groups = ','.join(security_groups)
-            server_params['securitygroupnames'] = security_groups
+        if ex_key_name:
+            server_params['keypair'] = ex_key_name
+
+        if ex_user_data:
+            ex_user_data = base64.b64encode(b(ex_user_data).decode('ascii'))
+            server_params['userdata'] = ex_user_data
+
+        if ex_security_groups:
+            ex_security_groups = ','.join(ex_security_groups)
+            server_params['securitygroupnames'] = ex_security_groups
 
         return server_params
 
