@@ -35,63 +35,19 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
+class CloudStackCommonTestCase(TestCaseMixin):
+    driver_klass = CloudStackNodeDriver
 
     def setUp(self):
-        CloudStackNodeDriver.connectionCls.conn_classes = \
+        self.driver_klass.connectionCls.conn_classes = \
             (None, CloudStackMockHttp)
-        self.driver = CloudStackNodeDriver('apikey', 'secret',
-                                           path='/test/path',
-                                           host='api.dummy.com')
+        self.driver = self.driver_klass('apikey', 'secret',
+                                        path='/test/path',
+                                        host='api.dummy.com')
         self.driver.path = '/test/path'
         self.driver.type = -1
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
-
-    def test_driver_instantiation(self):
-        urls = [
-            'http://api.exoscale.ch/compute1',  # http, default port
-            'https://api.exoscale.ch/compute2',  # https, default port
-            'http://api.exoscale.ch:8888/compute3',  # https, custom port
-            'https://api.exoscale.ch:8787/compute4',  # https, custom port
-            'https://api.test.com/compute/endpoint'  # https, default port
-        ]
-
-        expected_values = [
-            {'host': 'api.exoscale.ch', 'port': 80, 'path': '/compute1'},
-            {'host': 'api.exoscale.ch', 'port': 443, 'path': '/compute2'},
-            {'host': 'api.exoscale.ch', 'port': 8888, 'path': '/compute3'},
-            {'host': 'api.exoscale.ch', 'port': 8787, 'path': '/compute4'},
-            {'host': 'api.test.com', 'port': 443, 'path': '/compute/endpoint'}
-        ]
-
-        cls = get_driver(Provider.CLOUDSTACK)
-
-        for url, expected in zip(urls, expected_values):
-            driver = cls('key', 'secret', url=url)
-
-            self.assertEqual(driver.host, expected['host'])
-            self.assertEqual(driver.path, expected['path'])
-            self.assertEqual(driver.connection.port, expected['port'])
-
-    def test_user_must_provide_host_and_path_or_url(self):
-        expected_msg = ('When instantiating CloudStack driver directly '
-                        'you also need to provide url or host and path '
-                        'argument')
-        cls = get_driver(Provider.CLOUDSTACK)
-
-        self.assertRaisesRegexp(Exception, expected_msg, cls,
-                                'key', 'secret')
-
-        try:
-            cls('key', 'secret', True, 'localhost', '/path')
-        except Exception:
-            self.fail('host and path provided but driver raised an exception')
-
-        try:
-            cls('key', 'secret', url='https://api.exoscale.ch/compute')
-        except Exception:
-            self.fail('url provided but driver raised an exception')
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
@@ -436,6 +392,53 @@ class CloudStackNodeDriverTest(unittest.TestCase, TestCaseMixin):
         rule = self.driver.ex_list_port_forwarding_rules()[0]
         res = self.driver.ex_delete_port_forwarding_rule(node, rule)
         self.assertTrue(res)
+
+
+class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
+    def test_driver_instantiation(self):
+        urls = [
+            'http://api.exoscale.ch/compute1',  # http, default port
+            'https://api.exoscale.ch/compute2',  # https, default port
+            'http://api.exoscale.ch:8888/compute3',  # https, custom port
+            'https://api.exoscale.ch:8787/compute4',  # https, custom port
+            'https://api.test.com/compute/endpoint'  # https, default port
+        ]
+
+        expected_values = [
+            {'host': 'api.exoscale.ch', 'port': 80, 'path': '/compute1'},
+            {'host': 'api.exoscale.ch', 'port': 443, 'path': '/compute2'},
+            {'host': 'api.exoscale.ch', 'port': 8888, 'path': '/compute3'},
+            {'host': 'api.exoscale.ch', 'port': 8787, 'path': '/compute4'},
+            {'host': 'api.test.com', 'port': 443, 'path': '/compute/endpoint'}
+        ]
+
+        cls = get_driver(Provider.CLOUDSTACK)
+
+        for url, expected in zip(urls, expected_values):
+            driver = cls('key', 'secret', url=url)
+
+            self.assertEqual(driver.host, expected['host'])
+            self.assertEqual(driver.path, expected['path'])
+            self.assertEqual(driver.connection.port, expected['port'])
+
+    def test_user_must_provide_host_and_path_or_url(self):
+        expected_msg = ('When instantiating CloudStack driver directly '
+                        'you also need to provide url or host and path '
+                        'argument')
+        cls = get_driver(Provider.CLOUDSTACK)
+
+        self.assertRaisesRegexp(Exception, expected_msg, cls,
+                                'key', 'secret')
+
+        try:
+            cls('key', 'secret', True, 'localhost', '/path')
+        except Exception:
+            self.fail('host and path provided but driver raised an exception')
+
+        try:
+            cls('key', 'secret', url='https://api.exoscale.ch/compute')
+        except Exception:
+            self.fail('url provided but driver raised an exception')
 
 
 class CloudStackMockHttp(MockHttpTestCase):

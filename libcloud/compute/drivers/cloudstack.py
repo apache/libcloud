@@ -195,7 +195,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
     website = 'http://cloudstack.org/'
     type = Provider.CLOUDSTACK
 
-    features = {"create_node": ["generates_password", ]}
+    features = {'create_node': ['generates_password']}
 
     NODE_STATE_MAP = {
         'Running': NodeState.RUNNING,
@@ -239,6 +239,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                 port = int(split[1])
         else:
             host = host if host else self.host
+            path = path if path else self.path
 
         if path is not None:
             self.path = path

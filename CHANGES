@@ -43,6 +43,9 @@ Changes with Apache Libcloud in development
       request.
       [Tomaz Muraus, Philipp Strube]
 
+    - Add a new driver for Exoscale (https://www.exoscale.ch/) provider.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General

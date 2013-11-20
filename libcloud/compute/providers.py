@@ -137,6 +137,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.nephoscale', 'NephoscaleNodeDriver'),
     Provider.CLOUDFRAMES:
     ('libcloud.compute.drivers.cloudframes', 'CloudFramesNodeDriver'),
+    Provider.EXOSCALE:
+    ('libcloud.compute.drivers.exoscale', 'ExoscaleNodeDriver'),
 }
 
 

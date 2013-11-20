@@ -71,7 +71,8 @@ class Provider(object):
     :cvar KTUCLOUD: kt ucloud driver
     :cvar GRIDSPOT: Gridspot driver
     :cvar ABIQUO: Abiquo driver
-    @cvar NEPHOSCALE: NephoScale driver
+    :cvar NEPHOSCALE: NephoScale driver
+    :cvar EXOSCALE: Exoscale driver.
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
@@ -114,6 +115,7 @@ class Provider(object):
     DIGITAL_OCEAN = 'digitalocean'
     NEPHOSCALE = 'nephoscale'
     CLOUDFRAMES = 'cloudframes'
+    EXOSCALE = 'exoscale'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
