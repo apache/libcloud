@@ -16,7 +16,7 @@ import os
 import sys
 import doctest
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.core import Command
 from unittest import TextTestRunner, TestLoader
 from glob import glob
