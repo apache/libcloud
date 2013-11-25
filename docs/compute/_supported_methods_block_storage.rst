@@ -31,6 +31,7 @@ Provider                              list volumes create volume destroy volume 
 `ElasticHosts (lax-p)`_               no           no            no             no            no            no             no             
 `ElasticHosts (sjc-c)`_               no           no            no             no            no            no             no             
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
+`Exoscale`_                           no           yes           yes            yes           yes           yes            no             
 `Gandi`_                              no           yes           yes            yes           yes           yes            no             
 `Google Compute Engine`_              no           yes           yes            yes           yes           yes            no             
 `GoGrid`_                             no           no            no             no            no            no             no             
@@ -90,6 +91,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
 .. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
+.. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://www.googleapis.com/
 .. _`GoGrid`: http://www.gogrid.com/
