@@ -91,10 +91,10 @@ token before the currently used one is about to expire.
 .. literalinclude:: /examples/compute/openstack/force_auth_token.py
    :language: python
 
-5. HP Cloud
+5. HP Cloud (www.hpcloud.com)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Connecting with HP Cloud (www.hpcloud.com) US West AZ 1-3 (OpenStack Havana) and US East (Openstack Horizon)
+Connecting with HP Cloud US West AZ 1-3 (OpenStack Havana) and US East (OpenStack Horizon)
 
 .. literalinclude:: /examples/compute/openstack/hpcloud.py
    :language: python
