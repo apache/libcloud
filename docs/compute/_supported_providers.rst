@@ -31,6 +31,7 @@ Provider                              Documentation                             
 `ElasticHosts (lax-p)`_                                                           ELASTICHOSTS_US2    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS2NodeDriver`  
 `ElasticHosts (sjc-c)`_                                                           ELASTICHOSTS_US3    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS3NodeDriver`  
 `Eucalyptus`_                                                                     EUCALYPTUS          :mod:`libcloud.compute.drivers.ec2`            :class:`EucNodeDriver`              
+`Exoscale`_                                                                       EXOSCALE            :mod:`libcloud.compute.drivers.exoscale`       :class:`ExoscaleNodeDriver`         
 `Gandi`_                                                                          GANDI               :mod:`libcloud.compute.drivers.gandi`          :class:`GandiNodeDriver`            
 `Google Compute Engine`_                                                          GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
 `GoGrid`_                                                                         GOGRID              :mod:`libcloud.compute.drivers.gogrid`         :class:`GoGridNodeDriver`           
@@ -90,6 +91,7 @@ Provider                              Documentation                             
 .. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
 .. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
+.. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://www.googleapis.com/
 .. _`GoGrid`: http://www.gogrid.com/

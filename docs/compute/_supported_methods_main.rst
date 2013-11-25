@@ -31,6 +31,7 @@ Provider                              list nodes create node reboot node destroy
 `ElasticHosts (lax-p)`_               yes        yes         yes         yes          yes         yes        yes        
 `ElasticHosts (sjc-c)`_               yes        yes         yes         yes          yes         yes        yes        
 `Eucalyptus`_                         yes        yes         yes         yes          yes         yes        yes        
+`Exoscale`_                           yes        yes         yes         yes          yes         yes        yes        
 `Gandi`_                              yes        yes         yes         yes          yes         yes        no         
 `Google Compute Engine`_              yes        yes         yes         yes          yes         yes        no         
 `GoGrid`_                             yes        yes         yes         yes          yes         yes        yes        
@@ -90,6 +91,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`ElasticHosts (lax-p)`: http://www.elastichosts.com/
 .. _`ElasticHosts (sjc-c)`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
+.. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://www.googleapis.com/
 .. _`GoGrid`: http://www.gogrid.com/
