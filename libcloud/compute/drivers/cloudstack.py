@@ -377,20 +377,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         @inherits: :class:`NodeDriver.create_node`
 
+        :keyword    networks: Optional list of networks to launch the server
+                              into.
+        :type       networks: ``list`` of :class:`.CloudStackNetwork`
+
         :keyword    ex_keyname:  Name of existing keypair
         :type       ex_keyname:  ``str``
 
         :keyword    ex_userdata: String containing user data
         :type       ex_userdata: ``str``
 
-        :keyword    networks: The server is launched into a set of Networks.
-        :type       networks: :class:`CloudStackNetwork`
-
         :keyword    ex_security_groups: List of security groups to assign to
                                         the node
         :type       ex_security_groups: ``list`` of ``str``
 
-        :rtype:     :class:`CloudStackNode`
+        :rtype:     :class:`.CloudStackNode`
         """
 
         server_params = self._create_args_to_params(None, **kwargs)
