@@ -46,6 +46,12 @@ Changes with Apache Libcloud in development
     - Add a new driver for Exoscale (https://www.exoscale.ch/) provider.
       [Tomaz Muraus]
 
+    - Fix a bug in Abiquo driver which caused the driver to fail if the endpoint
+      URL didn't start with "/api". (LIBCLOUD-447)
+
+      Reported by Igor Ajdisek.
+      [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
