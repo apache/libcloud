@@ -72,15 +72,15 @@ following criteria:
 3. It's possible to build a common API on top of services provided by different
    services
 
-Last point is the most important one, because Libcloud acts as a lowest common
-denominator and can be used with many different providers.
-Sometimes it doesn't make sense to build a common Libcloud API even if multiple
-providers offer a similar service. Usually the case is that the APIs are vastly
-different and there aren't enough common points which would allow us to build a
-cross-provider API which would still provide enough benefit to the end user.
+Libcloud can be used with many different providers and acts as a lowest common
+denominator which makes the last point most important one. Sometimes it doesn't
+make sense to build a common Libcloud API even if multiple providers offer a
+similar service. Usually the case is that the APIs are vastly different and
+there aren't enough common points which would allow us to build a
+cross-provider API which would still provide enough value to the end user.
 
-If the API matches the criteria mentioned above you should send a proposal to
-our :ref:`mailing list <mailing-list>` where we can discuss it further. Ideally proposal should also
-contain a prototype of a driver for at least two different providers. This
-help with making sure that API you designed is not biased against a single
-provider.
+If the API matches the criteria defined above, you should send a proposal to
+our :ref:`mailing list <mailing-list>` where we can discuss it further.
+Ideally, the proposal should also contain a prototype of a driver for at least
+two different providers. This helps us make sure that the API you have designed
+is not biased towards a single provider.
