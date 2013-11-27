@@ -285,9 +285,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype ``list`` of :class:`NodeLocation`
         """
         locs = self._sync_request('listZones')
+
         locations = []
         for loc in locs['zone']:
-            locations.append(NodeLocation(loc['id'], loc['name'], 'AU', self))
+            location = NodeLocation(str(loc['id']), loc['name'], 'Unknown',
+                                    self)
+            locations.append(location)
+
         return locations
 
     def list_nodes(self):
@@ -310,42 +314,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         nodes = []
 
         for vm in vms.get('virtualmachine', []):
-            state = self.NODE_STATE_MAP[vm['state']]
-
-            public_ips = []
-            private_ips = []
-
-            for nic in vm['nic']:
-                if 'ipaddress' in nic:
-                    private_ips.append(nic['ipaddress'])
-
-            public_ips = public_ips_map.get(vm['id'], {}).keys()
+            public_ips = public_ips_map.get(str(vm['id']), {}).keys()
             public_ips = list(public_ips)
-            public_ips.extend([ip for ip in private_ips
-                              if not is_private_subnet(ip)])
-
-            keypair, password, securitygroup = None, None, None
-            if 'keypair' in vm.keys():
-                keypair = vm['keypair']
-            if 'password' in vm.keys():
-                password = vm['password']
-            if 'securitygroup' in vm.keys():
-                securitygroup = [sg['name'] for sg in vm['securitygroup']]
-
-            node = CloudStackNode(
-                id=vm['id'],
-                name=vm.get('displayname', None),
-                state=state,
-                public_ips=public_ips,
-                private_ips=private_ips,
-                driver=self,
-                extra={'zoneid': vm['zoneid'],
-                       'password': password,
-                       'keyname': keypair,
-                       'securitygroup': securitygroup,
-                       'created': vm['created']
-                       }
-            )
+            node = self._to_node(data=vm, public_ips=public_ips)
 
             addresses = public_ips_map.get(vm['id'], {}).items()
             addresses = [CloudStackAddress(node, v, k) for k, v in addresses]
@@ -424,43 +395,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         server_params = self._create_args_to_params(None, **kwargs)
 
-        node = self._async_request(command='deployVirtualMachine',
+        data = self._async_request(command='deployVirtualMachine',
                                    params=server_params,
                                    method='GET')['virtualmachine']
-        public_ips = []
-        private_ips = []
-        for nic in node['nic']:
-            if is_private_subnet(nic['ipaddress']):
-                private_ips.append(nic['ipaddress'])
-            else:
-                public_ips.append(nic['ipaddress'])
-
-        keypair, password, securitygroup = None, None, None
-        if 'keypair' in node.keys():
-            keypair = node['keypair']
-        if 'password' in node.keys():
-            password = node['password']
-        if 'securitygroup' in node.keys():
-            securitygroup = [sg['name'] for sg in node['securitygroup']]
-
-        return CloudStackNode(
-            id=node['id'],
-            name=node['displayname'],
-            state=self.NODE_STATE_MAP[node['state']],
-            public_ips=public_ips,
-            private_ips=private_ips,
-            driver=self,
-            extra={'zoneid': server_params['zoneid'],
-                   'ip_addresses': [],
-                   'ip_forwarding_rules': [],
-                   'port_forwarding_rules': [],
-                   'password': password,
-                   'keyname': keypair,
-                   'securitygroup': securitygroup,
-                   'created': node['created']
-                   }
-
-        )
+        node = self._to_node(data=data)
+        return node
 
     def _create_args_to_params(self, node, **kwargs):
         server_params = {
@@ -1317,3 +1256,52 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   url=url,
                                   zoneid=location.id,
                                   params=params)
+
+    def _to_node(self, data, public_ips=None):
+        """
+        :param data: Node data object.
+        :type data: ``dict``
+
+        :param public_ips: A list of additional IP addresses belonging to
+                           this node. (optional)
+        :type public_ips: ``list`` or ``None``
+        """
+        id = data['id']
+        name = data['displayname']
+        state = self.NODE_STATE_MAP[data['state']]
+
+        public_ips = public_ips if public_ips else []
+        private_ips = []
+
+        for nic in data['nic']:
+            if is_private_subnet(nic['ipaddress']):
+                private_ips.append(nic['ipaddress'])
+            else:
+                public_ips.append(nic['ipaddress'])
+
+        zone_id = str(data['zoneid'])
+        password = data.get('password', None)
+        keypair = data.get('keypair', None)
+
+        security_groups = data.get('securitygroup', [])
+
+        if security_groups:
+            security_groups = [sg['name'] for sg in security_groups]
+
+        created = data.get('created', False)
+
+        extra = {
+            'zoneid': zone_id,
+            'ip_addresses': [],
+            'ip_forwarding_rules': [],
+            'port_forwarding_rules': [],
+            'password': password,
+            'keyname': keypair,
+            'securitygroup': security_groups,
+            'created': created
+        }
+
+        node = CloudStackNode(id=id, name=name, state=state,
+                              public_ips=public_ips, private_ips=private_ips,
+                              driver=self, extra=extra)
+        return node
