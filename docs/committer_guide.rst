@@ -92,8 +92,9 @@ are suitable to be uploaded for a release.
   Apache mirrors, but they should be instantly available at
   http://www.apache.org/dist/libcloud/.
 
-* If there is more than one older release in the repository, delete the
-  oldest one. Old releases are automatically archived and available at
+* If there is more than one older release in the repository, delete rest of the
+  old release and only leave current and previous release there.
+  Old releases are automatically archived and available at
   https://dist.apache.org/repos/dist/release/libcloud/.
 
 4. Tagging a release
