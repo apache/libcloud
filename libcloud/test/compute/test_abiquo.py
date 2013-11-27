@@ -23,7 +23,7 @@ from xml.etree import ElementTree as ET
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.abiquo import AbiquoNodeDriver
-from libcloud.common.abiquo import ForbiddenError
+from libcloud.common.abiquo import ForbiddenError, get_href
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.base import NodeLocation, NodeImage
 from libcloud.test.compute import TestCaseMixin
@@ -266,6 +266,27 @@ class AbiquoNodeDriverTest(unittest.TestCase, TestCaseMixin):
         # Node is in the correct state, but it fails because of the
         # async task and it raises the error.
         self.assertRaises(LibcloudError, self.driver.ex_run_node, node)
+
+    def test_get_href(self):
+        xml = '''
+<datacenter>
+        <link href="http://10.60.12.7:80/api/admin/datacenters/2"
+        type="application/vnd.abiquo.datacenter+xml" rel="edit1"/>
+        <link href="http://10.60.12.7:80/ponies/bar/foo/api/admin/datacenters/3"
+        type="application/vnd.abiquo.datacenter+xml" rel="edit2"/>
+        <link href="http://vdcbridge.interoute.com:80/jclouds/apiouds/api/admin/enterprises/1234"
+        type="application/vnd.abiquo.datacenter+xml" rel="edit3"/>
+</datacenter>
+'''
+
+        elem = ET.XML(xml)
+
+        href = get_href(element=elem, rel='edit1')
+        self.assertEqual(href, '/admin/datacenters/2')
+        href = get_href(element=elem, rel='edit2')
+        self.assertEqual(href, '/admin/datacenters/3')
+        href = get_href(element=elem, rel='edit3')
+        self.assertEqual(href, '/admin/enterprises/1234')
 
 
 class AbiquoMockHttp(MockHttpTestCase):
