@@ -1267,7 +1267,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :type public_ips: ``list`` or ``None``
         """
         id = data['id']
-        name = data['displayname']
+
+        if 'name' in data:
+            name = data['name']
+        elif 'displayname' in data:
+            name = data['displayname']
+        else:
+            name = None
+
         state = self.NODE_STATE_MAP[data['state']]
 
         public_ips = public_ips if public_ips else []
