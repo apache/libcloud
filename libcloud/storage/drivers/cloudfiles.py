@@ -697,12 +697,16 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         object_name_encoded = self._encode_object_name(object_name)
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
+        content_disposition = extra.get('content_disposition', None)
 
         headers = {}
         if meta_data:
             for key, value in list(meta_data.items()):
                 key = 'X-Object-Meta-%s' % (key)
                 headers[key] = value
+
+        if content_disposition is not None:
+            headers['Content-Disposition'] = content_disposition
 
         request_path = '/%s/%s' % (container_name_encoded, object_name_encoded)
         result_dict = self._upload_object(
