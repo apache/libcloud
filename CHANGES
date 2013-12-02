@@ -139,7 +139,7 @@ Changes with Apache Libcloud 0.14.0-beta3
 
     - Add extension methods for handling port forwarding to the CloudStack
       driver, rename CloudStackForwardingRule class to
-      CloudStackIPForwardingRule. (LIBCLOUD-383)
+      CloudStackIPForwardingRule. (LIBCLOUD-348, LIBCLOUD-381)
       [sebastien goasguen]
 
     - Hook up deploy_node functionality in the CloudStack driver and unify
