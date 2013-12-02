@@ -2458,7 +2458,7 @@ class GCENodeDriver(NodeDriver):
                           cidr=network['IPv4Range'],
                           driver=self, extra=extra)
 
-    def _to_node_image(self, image):
+        def _to_node_image(self, image):
         """
         Return an Image object from the json-response dictionary.
 
@@ -2469,7 +2469,7 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`NodeImage`
         """
         extra = {}
-        extra['preferredKernel'] = image.get('preferredKernel')
+        extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
         extra['creationTimestamp'] = image['creationTimestamp']
         extra['selfLink'] = image['selfLink']
