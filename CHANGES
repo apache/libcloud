@@ -52,6 +52,13 @@ Changes with Apache Libcloud in development
       Reported by Igor Ajdisek.
       [Tomaz Muraus]
 
+  *) Storage
+
+    - Allow user to specify 'Content-Disposition' header in the CloudFiles
+      driver by passing 'content_disposition' key in the extra dictionary of
+      the upload object methods. (LIBCLOUD-430)
+      [Michael Farrell]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
