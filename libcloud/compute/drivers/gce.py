@@ -2469,7 +2469,7 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`NodeImage`
         """
         extra = {}
-        extra['preferredKernel'] = image['preferredKernel']
+        extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
         extra['creationTimestamp'] = image['creationTimestamp']
         extra['selfLink'] = image['selfLink']
