@@ -2458,7 +2458,7 @@ class GCENodeDriver(NodeDriver):
                           cidr=network['IPv4Range'],
                           driver=self, extra=extra)
 
-        def _to_node_image(self, image):
+    def _to_node_image(self, image):
         """
         Return an Image object from the json-response dictionary.
 
