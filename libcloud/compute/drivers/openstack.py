@@ -39,6 +39,7 @@ from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, ProviderError
 from libcloud.compute.types import NodeState, Provider
+from libcloud.compute.base import is_private_subnet
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, StorageVolume
 from libcloud.pricing import get_size_price
@@ -1730,7 +1731,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_keypairs(
             self.connection.request('/os-keypairs').object)
 
-    def ex_create_keypair(self, name):
+    def ex_create_keypair(self, name, public_key=None):
         """
         Create a new KeyPair
 
@@ -1739,9 +1740,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
+        data = {'keypair': {'name': name}}
+        if public_key:
+            data['keypair']['public_key'] = public_key
         return self._to_keypair(self.connection.request(
             '/os-keypairs', method='POST',
-            data={'keypair': {'name': name}}
+            data=data
         ).object['keypair'])
 
     def ex_import_keypair(self, name, keyfile):
@@ -1859,7 +1863,15 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             if label in public_networks_labels:
                 public_ips.extend(ips)
             else:
-                private_ips.extend(ips)
+                for ip in ips:
+                    #is_private_subnet does not check for ipv6
+                    try:
+                        if is_private_subnet(ip):
+                            private_ips.append(ip)
+                        else:
+                            public_ips.append(ip)
+                    except:
+                        private_ips.append(ip)
 
         return Node(
             id=api_node['id'],
