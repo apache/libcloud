@@ -122,7 +122,7 @@ class CloudFilesConnection(OpenStackBaseConnection):
                 name='cloudFiles',
                 region=region)
             cdn_ep = self.service_catalog.get_endpoint(
-                service_type='object-store',
+                service_type='rax:object-cdn',
                 name='cloudFilesCDN',
                 region=region)
         else:
