@@ -139,6 +139,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.cloudframes', 'CloudFramesNodeDriver'),
     Provider.EXOSCALE:
     ('libcloud.compute.drivers.exoscale', 'ExoscaleNodeDriver'),
+    Provider.IKOULA:
+    ('libcloud.compute.drivers.ikoula', 'IkoulaNodeDriver'),
 }
 
 
