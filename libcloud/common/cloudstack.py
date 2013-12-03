@@ -18,16 +18,22 @@ import hashlib
 import copy
 import hmac
 
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import b
 
 from libcloud.common.base import ConnectionUserAndKey, PollingConnection
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import MalformedResponseError
+from libcloud.compute.types import InvalidCredsError
 
 
 class CloudStackResponse(JsonResponse):
-    pass
+    def parse_error(self):
+        if self.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsError('Invalid provider credentials')
+
+        return self.body
 
 
 class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
