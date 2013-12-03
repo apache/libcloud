@@ -73,6 +73,7 @@ class Provider(object):
     :cvar ABIQUO: Abiquo driver
     :cvar NEPHOSCALE: NephoScale driver
     :cvar EXOSCALE: Exoscale driver.
+    :cvar IKOULA: Ikoula driver.
     """
     DUMMY = 'dummy'
     EC2 = 'ec2_us_east'
@@ -116,6 +117,7 @@ class Provider(object):
     NEPHOSCALE = 'nephoscale'
     CLOUDFRAMES = 'cloudframes'
     EXOSCALE = 'exoscale'
+    IKOULA = 'ikoula'
 
     # Deprecated constants which are still supported
     EC2_US_EAST = 'ec2_us_east'
