@@ -26,7 +26,7 @@ except ImportError:
     import json
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
-from libcloud.compute.types import LibcloudError, Provider
+from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
 from libcloud.compute.providers import get_driver
 
 from libcloud.test import unittest
@@ -46,8 +46,15 @@ class CloudStackCommonTestCase(TestCaseMixin):
                                         host='api.dummy.com')
         self.driver.path = '/test/path'
         self.driver.type = -1
+        CloudStackMockHttp.type = None
         CloudStackMockHttp.fixture_tag = 'default'
         self.driver.connection.poll_interval = 0.0
+
+    def test_invalid_credentials(self):
+        CloudStackMockHttp.type = 'invalid_credentials'
+        driver = self.driver_klass('invalid', 'invalid', path='/test/path',
+                                   host='api.dummy.com')
+        self.assertRaises(InvalidCredsError, driver.list_nodes)
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
@@ -448,6 +455,11 @@ class CloudStackMockHttp(MockHttpTestCase):
     def _load_fixture(self, fixture):
         body = self.fixtures.load(fixture)
         return body, json.loads(body)
+
+    def _test_path_invalid_credentials(self, method, url, body, headers):
+        body = ''
+        return (httplib.UNAUTHORIZED, body, {},
+                httplib.responses[httplib.UNAUTHORIZED])
 
     def _test_path(self, method, url, body, headers):
         url = urlparse.urlparse(url)

@@ -52,6 +52,10 @@ Changes with Apache Libcloud in development
       Reported by Igor Ajdisek.
       [Tomaz Muraus]
 
+   - Modify CloudStack driver to correctly throw InvalidCredsError exception if
+     invalid credentials are provided.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
