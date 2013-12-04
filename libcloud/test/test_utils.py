@@ -15,10 +15,13 @@
 # limitations under the License.
 
 import sys
+import socket
 import codecs
 import unittest
 import warnings
 import os.path
+
+from itertools import chain
 
 # In Python > 2.7 DeprecationWarnings are disabled by default
 warnings.simplefilter('default')
@@ -34,6 +37,7 @@ from libcloud.utils.py3 import urlquote
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
 from libcloud.utils.misc import get_secure_random_string
+from libcloud.utils.networking import is_valid_ip_address
 
 
 WARNINGS_BUFFER = []
@@ -231,6 +235,55 @@ class TestUtils(unittest.TestCase):
         for i in range(1, 500):
             value = get_secure_random_string(size=i)
             self.assertEqual(len(value), i)
+
+
+class NetworkingUtilsTestCase(unittest.TestCase):
+    def test_is_valid_ip_address(self):
+        valid_ipv4_addresses = [
+            '192.168.1.100',
+            '10.0.0.1',
+            '213.151.0.8',
+            '77.77.77.77'
+        ]
+
+        invalid_ipv4_addresses = [
+            '10.1',
+            '256.256.256.256',
+            '0.567.567.567',
+            '192.168.0.257'
+        ]
+
+        valid_ipv6_addresses = [
+            'fe80::200:5aee:feaa:20a2',
+            '2607:f0d0:1002:51::4',
+            '2607:f0d0:1002:0051:0000:0000:0000:0004',
+            '::1'
+        ]
+
+        invalid_ipv6_addresses = [
+            '2607:f0d',
+            '2607:f0d0:0004',
+        ]
+
+        for address in valid_ipv4_addresses:
+            status = is_valid_ip_address(address=address,
+                                         family=socket.AF_INET)
+            self.assertTrue(status)
+
+        for address in valid_ipv6_addresses:
+            status = is_valid_ip_address(address=address,
+                                         family=socket.AF_INET6)
+            self.assertTrue(status)
+
+        for address in chain(invalid_ipv4_addresses, invalid_ipv6_addresses):
+            status = is_valid_ip_address(address=address,
+                                         family=socket.AF_INET)
+            self.assertFalse(status)
+
+        for address in chain(invalid_ipv4_addresses, invalid_ipv6_addresses):
+            status = is_valid_ip_address(address=address,
+                                         family=socket.AF_INET6)
+            self.assertFalse(status)
 
 
 if __name__ == '__main__':
