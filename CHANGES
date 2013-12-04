@@ -63,6 +63,13 @@ Changes with Apache Libcloud in development
       the upload object methods. (LIBCLOUD-430)
       [Michael Farrell]
 
+    - Fix CloudFiles driver so it references a correct service catalog entry for
+      the CDN endpoint.
+
+      This was broken in the 0.14.0-beta3 release when we migrated all the
+      Rackspace drivers to use auth 2.0 by default.
+      [John Obelenus]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
