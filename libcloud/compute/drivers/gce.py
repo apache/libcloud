@@ -30,7 +30,7 @@ from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 
-API_VERSION = 'v1beta16'
+API_VERSION = 'v1'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
 
 
@@ -97,6 +97,18 @@ class GCEAddress(UuidMixin):
         :rtype:  ``bool``
         """
         return self.driver.ex_destroy_address(address=self)
+
+
+class GCEFailedDisk(object):
+    """Dummy Node object for disks that are not created."""
+    def __init__(self, name, error, code):
+        self.name = name
+        self.error = error
+        self.code = code
+
+    def __repr__(self):
+        return '<GCEFailedDisk name="%s" error_code="%s">' % (
+            self.name, self.code)
 
 
 class GCEFailedNode(object):
@@ -1232,8 +1244,7 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_network(name)
 
     def _create_node_req(self, name, size, image, location, network,
-                         tags=None, metadata=None, boot_disk=None,
-                         persistent_disk=False):
+                         tags=None, metadata=None, boot_disk=None):
         """
         Returns a request and body to create a new node.  This is a helper
         method to suppor both :class:`create_node` and
@@ -1264,11 +1275,6 @@ class GCENodeDriver(NodeDriver):
         :keyword  boot_disk:  Persistent boot disk to attach.
         :type     :class:`StorageVolume`
 
-        :keyword  persistent_disk: If True, create a persistent disk instead of
-                                   an ephemeral one.  Has no effect if
-                                   boot_disk is specified.
-        :type     persistent_disk: ``bool``
-
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -1279,9 +1285,7 @@ class GCENodeDriver(NodeDriver):
             node_data['tags'] = {'items': tags}
         if metadata:
             node_data['metadata'] = metadata
-        if (not boot_disk) and persistent_disk:
-            boot_disk = self.create_volume(None, name, location=location,
-                                           image=image)
+
         if boot_disk:
             disks = [{'kind': 'compute#attachedDisk',
                       'boot': True,
@@ -1291,7 +1295,6 @@ class GCENodeDriver(NodeDriver):
                       'zone': boot_disk.extra['zone'].extra['selfLink'],
                       'source': boot_disk.extra['selfLink']}]
             node_data['disks'] = disks
-            node_data['kernel'] = image.extra['preferredKernel']
         else:
             node_data['image'] = image.extra['selfLink']
 
@@ -1307,7 +1310,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
-                    ex_boot_disk=None, ex_persistent_disk=False):
+                    ex_boot_disk=None):
         """
         Create a new node and return a node object for the node.
 
@@ -1337,11 +1340,6 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_boot_disk: The boot disk to attach to the instance.
         :type     ex_boot_disk: :class:`StorageVolume` or ``str``
 
-        :keyword  ex_persistent_disk: If True, create a persistent_disk instead
-                                      of a ephemeral one.  Has no effect if
-                                      ex_boot_disk is specified.
-        :type     ex_persistent_disk: ``bool``
-
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -1355,19 +1353,23 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(image, 'name'):
             image = self.ex_get_image(image)
 
+        if not ex_boot_disk:
+            ex_boot_disk = self.create_volume(None, name, location=location,
+                                              image=image)
+
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
-                                                   ex_boot_disk,
-                                                   ex_persistent_disk)
+                                                   ex_boot_disk)
         self.connection.async_request(request, method='POST', data=node_data)
 
         return self.ex_get_node(name, location.name)
 
+
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
-                                 ignore_errors=True, ex_persistent_disk=False,
+                                 ignore_errors=True,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1408,12 +1410,9 @@ class GCENodeDriver(NodeDriver):
                                  more nodes fails.
         :type     ignore_errors: ``bool``
 
-        :keyword  persistent_disk: If True, create persistent boot disks
-                                   instead of ephemeral ones.
-        :type     persistent_disk: ``bool``
-
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
+        :type     timeout: ``int``
 
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
@@ -1429,16 +1428,23 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(image, 'name'):
             image = self.ex_get_image(image)
 
-        node_list = [None] * number
-        responses = []
+        # List for holding the status information for disk/node creation.
+        status_list = [None] * number
+
         for i in range(number):
             name = '%s-%03d' % (base_name, i)
-            request, node_data = self._create_node_req(
-                name, size, image, location, ex_network, ex_tags, ex_metadata,
-                persistent_disk=ex_persistent_disk)
-            response = self.connection.request(request, method='POST',
-                                               data=node_data)
-            responses.append(response.object)
+
+            # Create disks for nodes
+            disk_req, disk_data, disk_params = self._create_vol_req(
+                None, name, location=location, image=image)
+            disk_res = self.connection.request(disk_req, method='POST',
+                                               data=disk_data,
+                                               params=disk_params).object
+            status_list[i] = {'name': name,
+                              'node_response': None,
+                              'node': None,
+                              'disk_response': disk_res,
+                              'disk': None}
 
         start_time = time.time()
         complete = False
@@ -1447,27 +1453,66 @@ class GCENodeDriver(NodeDriver):
                 raise Exception("Timeout (%s sec) while waiting for multiple "
                                 "instances")
             complete = True
-            for i, operation in enumerate(responses):
-                if operation is None:
-                    continue
-                error = None
-                try:
-                    response = self.connection.request(
-                        operation['selfLink']).object
-                except:
-                    e = self._catch_error(ignore_errors=ignore_errors)
-                    error = e.value
-                    code = e.code
-                if response['status'] == 'DONE':
-                    responses[i] = None
-                    name = '%s-%03d' % (base_name, i)
-                    if error:
-                        node_list[i] = GCEFailedNode(name, error, code)
+            time.sleep(2)
+            for i, status in enumerate(status_list):
+                # If disk does not yet exist, check on its status
+                if not status['disk']:
+                    error = None
+                    try:
+                        response = self.connection.request(
+                            status['disk_response']['selfLink']).object
+                    except:
+                        e = self._catch_error(ignore_errors=ignore_errors)
+                        error = e.value
+                        code = e.code
+                    if response['status'] == 'DONE':
+                        status['disk_response'] = None
+                        if error:
+                            status['disk'] = GCEFailedDisk(status['name'],
+                                                           error, code)
+                        else:
+                            status['disk'] = self.ex_get_volume(status['name'], location)
+
+                # If disk exists, but node does not, create the node or check on
+                # its status if already in progress.
+                if status['disk'] and not status['node']:
+                    if not status['node_response']:
+                        request, node_data = self._create_node_req(status['name'], size,
+                                                                   image,
+                                                                   location,
+                                                                   ex_network,
+                                                                   ex_tags,
+                                                                   ex_metadata,
+                                                                   boot_disk=status['disk'])
+                        node_res = self.connection.request(request,
+                                                           method='POST',
+                                                           data=node_data).object
+                        status['node_response'] = node_res
                     else:
-                        node_list[i] = self.ex_get_node(name, location.name)
-                else:
+                        error = None
+                        try:
+                            response = self.connection.request(
+                                status['node_response']['selfLink']).object
+                        except:
+                            e = self._catch_error(ignore_errors=ignore_errors)
+                            error = e.value
+                            code = e.code
+                        if response['status'] == 'DONE':
+                            status['node_response'] = None
+                        if error:
+                            status['node'] = GCEFailedNode(status['name'],
+                                                           error, code)
+                        else:
+                            status['node'] = self.ex_get_node(status['name'], location)
+
+                # If any of the nodes have not been created (or failed) we are
+                # not done yet.
+                if not status['node']:
                     complete = False
-                    time.sleep(2)
+
+        node_list = []
+        for status in status_list:
+            node_list.append(status['node'])
         return node_list
 
     def ex_create_targetpool(self, name, region=None, healthchecks=None,
@@ -1520,6 +1565,56 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_targetpool(name, region)
 
+    def _create_vol_req(self, size, name, location=None, image=None,
+                        snapshot=None):
+        """
+        Assemble the request/data for creating a volume.
+
+        Used by create_volume and ex_create_multiple_nodes
+
+        :param  size: Size of volume to create (in GB). Can be None if image
+                      or snapshot is supplied.
+        :type   size: ``int`` or ``str`` or ``None``
+
+        :param  name: Name of volume to create
+        :type   name: ``str``
+
+        :keyword  location: Location (zone) to create the volume in
+        :type     location: ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
+
+        :keyword  image: Image to create disk from.
+        :type     image: :class:`NodeImage` or ``str`` or ``None``
+
+        :keyword  snapshot: Snapshot to create image from (needs full URI)
+        :type     snapshot: ``str``
+
+        :return:  Tuple containg the request string, the data dictionary and the
+                  URL parameters
+        :rtype:   ``tuple``
+        """
+        volume_data = {}
+        params = None
+        volume_data['name'] = name
+        if size:
+            volume_data['sizeGb'] = str(size)
+        if image:
+            if not hasattr(image, 'name'):
+                image = self.ex_get_image(image)
+            params = {'sourceImage': image.extra['selfLink']}
+            volume_data['description'] = 'Image: %s' % (
+                image.extra['selfLink'])
+        if snapshot:
+            volume_data['sourceSnapshot'] = snapshot
+            volume_data['description'] = 'Snapshot: %s' % (snapshot)
+        location = location or self.zone
+        if not hasattr(location, 'name'):
+            location = self.ex_get_zone(location)
+        request = '/zones/%s/disks' % (location.name)
+
+        return request, volume_data, params
+
+
     def create_volume(self, size, name, location=None, image=None,
                       snapshot=None):
         """
@@ -1545,26 +1640,9 @@ class GCENodeDriver(NodeDriver):
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
-        volume_data = {}
-        params = None
-        volume_data['name'] = name
-        if size:
-            volume_data['sizeGb'] = str(size)
-        if image:
-            if not hasattr(image, 'name'):
-                image = self.ex_get_image(image)
-            params = {'sourceImage': image.extra['selfLink']}
-            volume_data['description'] = 'Image: %s' % (
-                image.extra['selfLink'])
-        if snapshot:
-            volume_data['sourceSnapshot'] = snapshot
-            volume_data['description'] = 'Snapshot: %s' % (snapshot)
-        location = location or self.zone
-        if not hasattr(location, 'name'):
-            location = self.ex_get_zone(location)
-        request = '/zones/%s/disks' % (location.name)
-        self.connection.async_request(request, method='POST',
-                                      data=volume_data,
+        request, volume_data, params = self._create_vol_req(
+            size, name, location, image, snapshot)
+        self.connection.async_request(request, method='POST', data=volume_data,
                                       params=params)
 
         return self.ex_get_volume(name, location)
