@@ -30,7 +30,7 @@
 
                 ],
                 "name": "cloudFilesCDN",
-                "type": "object-store"
+                "type": "rax:object-cdn"
             },
             {
                 "endpoints": [
