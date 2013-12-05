@@ -136,8 +136,8 @@ class CloudFilesConnection(OpenStackBaseConnection):
         if not ep:
             raise LibcloudError('Could not find specified endpoint')
 
-        if 'internalURL' in ep:
-            return ep['internalURL']
+        if 'publicURL' in ep:
+            return ep['publicURL']
         else:
             raise LibcloudError('Could not find specified endpoint')
 
