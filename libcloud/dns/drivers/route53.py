@@ -317,13 +317,13 @@ class Route53DNSDriver(DNSDriver):
         if last_key:
             params['name'] = last_key
         path = API_ROOT + 'hostedzone'
-        
+
         if rtype == 'zones':
             response = self.connection.request(path, params=params)
             transform_func = self._to_zones
         elif rtype == 'records':
             zone = kwargs['zone']
-            path += '/{}/rrset'.format(zone.id)
+            path += '/%s/rrset' % zone.id
             response = self.connection.request(path, params=params)
             transform_func = self._to_records
 
