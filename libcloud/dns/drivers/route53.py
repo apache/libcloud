@@ -111,30 +111,11 @@ class Route53DNSDriver(DNSDriver):
         RecordType.TXT: 'TXT'
     }
 
-    def list_zones(self):
-        data = self.connection.request(API_ROOT + 'hostedzone').object
-        zones = self._to_zones(data=data)
-        return zones
+    def iterate_zones(self):
+        return self._get_more('zones')
 
-    def list_records(self, zone):
-        def list_records_paginated(zone, next_record_name=None):
-            uri = API_ROOT + 'hostedzone/' + zone.id + '/rrset'
-            if next_record_name is not None:
-                uri += '?' + urlencode({'name': next_record_name})
-            data = self.connection.request(uri).object
-            records = self._to_records(data=data, zone=zone)
-            is_truncated = findtext(element=data,
-                                    xpath='IsTruncated',
-                                    namespace=NAMESPACE)
-            if is_truncated == 'true':
-                next_record_name = findtext(element=data,
-                                            xpath='NextRecordName',
-                                            namespace=NAMESPACE)
-                return records + list_records_paginated(zone, next_record_name)
-            else:
-                return records
-        self.connection.set_context({'zone_id': zone.id})
-        return list_records_paginated(zone)
+    def iterate_records(self, zone):
+        return self._get_more('records', zone=zone)
 
     def get_zone(self, zone_id):
         self.connection.set_context({'zone_id': zone_id})
@@ -321,3 +302,40 @@ class Route53DNSDriver(DNSDriver):
         record = Record(id=id, name=name, type=type, data=data, zone=zone,
                         driver=self, extra=extra)
         return record
+
+    def _get_more(self, rtype, **kwargs):
+        exhausted = False
+        last_key = None
+        while not exhausted:
+            items, last_key, exhausted = self._get_data(rtype, last_key,
+                                                        **kwargs)
+            for item in items:
+                yield item
+
+    def _get_data(self, rtype, last_key, **kwargs):
+        params = {}
+        if last_key:
+            params['name'] = last_key
+        path = API_ROOT + 'hostedzone'
+        
+        if rtype == 'zones':
+            response = self.connection.request(path, params=params)
+            transform_func = self._to_zones
+        elif rtype == 'records':
+            zone = kwargs['zone']
+            path += '/{}/rrset'.format(zone.id)
+            response = self.connection.request(path, params=params)
+            transform_func = self._to_records
+
+        if response.status == httplib.OK:
+            is_truncated = findtext(element=response.object,
+                                    xpath='IsTruncated',
+                                    namespace=NAMESPACE)
+            exhausted = is_truncated != 'true'
+            last_key = findtext(element=response.object,
+                                xpath='NextRecordName',
+                                namespace=NAMESPACE)
+            items = transform_func(data=response.object, **kwargs)
+            return items, last_key, exhausted
+        else:
+            return [], None, True
