@@ -324,6 +324,7 @@ class Route53DNSDriver(DNSDriver):
         elif rtype == 'records':
             zone = kwargs['zone']
             path += '/%s/rrset' % zone.id
+            self.connection.set_context({'zone_id': zone.id})
             response = self.connection.request(path, params=params)
             transform_func = self._to_records
 
