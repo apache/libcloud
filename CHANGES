@@ -70,6 +70,13 @@ Changes with Apache Libcloud in development
       Rackspace drivers to use auth 2.0 by default.
       [John Obelenus]
 
+  *) DNS
+
+    - Implement iterate_* methods in the Route53 driver and makes it work
+      correctly if there are more results which can fit on a single page.
+      Previously, only first 100 results were returned. (LIBCLOUD-434)
+      [Chris Clarke]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
