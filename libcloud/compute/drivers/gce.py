@@ -1310,7 +1310,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
-                    ex_boot_disk=None):
+                    ex_boot_disk=None, use_existing_disk=False):
         """
         Create a new node and return a node object for the node.
 
@@ -1340,6 +1340,11 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_boot_disk: The boot disk to attach to the instance.
         :type     ex_boot_disk: :class:`StorageVolume` or ``str``
 
+        :keyword  use_existing_disk: If True and if an existing disk with the
+                                     same name/location is found, use that
+                                     disk instead of creating a new one.
+        :type     use_existing_disk: ``bool``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -1355,7 +1360,8 @@ class GCENodeDriver(NodeDriver):
 
         if not ex_boot_disk:
             ex_boot_disk = self.create_volume(None, name, location=location,
-                                              image=image)
+                                              image=image,
+                                              use_existing=use_existing_disk)
 
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
@@ -1365,11 +1371,10 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_node(name, location.name)
 
-
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
-                                 ignore_errors=True,
+                                 ignore_errors=True, use_existing_disk=False,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1410,6 +1415,11 @@ class GCENodeDriver(NodeDriver):
                                  more nodes fails.
         :type     ignore_errors: ``bool``
 
+        :keyword  use_existing_disk: If True and if an existing disk with the
+                                     same name/location is found, use that
+                                     disk instead of creating a new one.
+        :type     use_existing_disk: ``bool``
+
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
         :type     timeout: ``int``
@@ -1429,22 +1439,36 @@ class GCENodeDriver(NodeDriver):
             image = self.ex_get_image(image)
 
         # List for holding the status information for disk/node creation.
-        status_list = [None] * number
+        status_list = []
 
         for i in range(number):
             name = '%s-%03d' % (base_name, i)
 
+            status = {'name': name,
+                      'node_response': None,
+                      'node': None,
+                      'disk_response': None,
+                      'disk': None}
+
             # Create disks for nodes
-            disk_req, disk_data, disk_params = self._create_vol_req(
-                None, name, location=location, image=image)
-            disk_res = self.connection.request(disk_req, method='POST',
-                                               data=disk_data,
-                                               params=disk_params).object
-            status_list[i] = {'name': name,
-                              'node_response': None,
-                              'node': None,
-                              'disk_response': disk_res,
-                              'disk': None}
+            disk = None
+            if use_existing_disk:
+                try:
+                    disk = self.ex_get_volume(name, location)
+                except:
+                    pass
+
+            if disk:
+                status['disk'] = disk
+            else:
+                disk_req, disk_data, disk_params = self._create_vol_req(
+                    None, name, location=location, image=image)
+                disk_res = self.connection.request(disk_req, method='POST',
+                                                   data=disk_data,
+                                                   params=disk_params).object
+                status['disk_response'] = disk_res
+
+            status_list.append(status)
 
         start_time = time.time()
         complete = False
@@ -1471,22 +1495,18 @@ class GCENodeDriver(NodeDriver):
                             status['disk'] = GCEFailedDisk(status['name'],
                                                            error, code)
                         else:
-                            status['disk'] = self.ex_get_volume(status['name'], location)
+                            status['disk'] = self.ex_get_volume(status['name'],
+                                                                location)
 
-                # If disk exists, but node does not, create the node or check on
-                # its status if already in progress.
+                # If disk exists, but node does not, create the node or check
+                # on its status if already in progress.
                 if status['disk'] and not status['node']:
                     if not status['node_response']:
-                        request, node_data = self._create_node_req(status['name'], size,
-                                                                   image,
-                                                                   location,
-                                                                   ex_network,
-                                                                   ex_tags,
-                                                                   ex_metadata,
-                                                                   boot_disk=status['disk'])
-                        node_res = self.connection.request(request,
-                                                           method='POST',
-                                                           data=node_data).object
+                        request, node_data = self._create_node_req(
+                            status['name'], size, image, location, ex_network,
+                            ex_tags, ex_metadata, boot_disk=status['disk'])
+                        node_res = self.connection.request(
+                            request, method='POST', data=node_data).object
                         status['node_response'] = node_res
                     else:
                         error = None
@@ -1503,7 +1523,8 @@ class GCENodeDriver(NodeDriver):
                             status['node'] = GCEFailedNode(status['name'],
                                                            error, code)
                         else:
-                            status['node'] = self.ex_get_node(status['name'], location)
+                            status['node'] = self.ex_get_node(status['name'],
+                                                              location)
 
                 # If any of the nodes have not been created (or failed) we are
                 # not done yet.
@@ -1589,8 +1610,8 @@ class GCENodeDriver(NodeDriver):
         :keyword  snapshot: Snapshot to create image from (needs full URI)
         :type     snapshot: ``str``
 
-        :return:  Tuple containg the request string, the data dictionary and the
-                  URL parameters
+        :return:  Tuple containg the request string, the data dictionary and
+                  the URL parameters
         :rtype:   ``tuple``
         """
         volume_data = {}
@@ -1614,9 +1635,8 @@ class GCENodeDriver(NodeDriver):
 
         return request, volume_data, params
 
-
     def create_volume(self, size, name, location=None, image=None,
-                      snapshot=None):
+                      snapshot=None, use_existing=False):
         """
         Create a volume (disk).
 
@@ -1637,9 +1657,22 @@ class GCENodeDriver(NodeDriver):
         :keyword  snapshot: Snapshot to create image from (needs full URI)
         :type     snapshot: ``str``
 
+        :keyword  use_existing: If True and a disk with the given name already
+                                exists, return an object for that disk instead
+                                of attempting to create a new disk.
+        :type     use_existing: ``bool``
+
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
+        vol = None
+        if use_existing:
+            try:
+                vol = self.ex_get_volume(name, location)
+            except:
+                pass
+        if vol:
+            return vol
         request, volume_data, params = self._create_vol_req(
             size, name, location, image, snapshot)
         self.connection.async_request(request, method='POST', data=volume_data,
