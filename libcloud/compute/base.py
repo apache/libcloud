@@ -463,6 +463,12 @@ class StorageVolume(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
+    def list_snapshots(self):
+        """
+        :rtype: ``list`` of ``VolumeSnapshot``
+        """
+        return self.driver.list_volume_snapshots(volume=self)
+
     def attach(self, node, device=None):
         """
         Attach this volume to a node.
@@ -489,12 +495,6 @@ class StorageVolume(UuidMixin):
         """
 
         return self.driver.detach_volume(volume=self)
-
-    def list_snapshots(self):
-        """
-        :rtype: ``list`` of ``VolumeSnapshot``
-        """
-        return self.driver.list_volume_snapshots(volume=self)
 
     def snapshot(self, name):
         """
@@ -587,41 +587,51 @@ class NodeDriver(BaseDriver):
                                          host=host, port=port,
                                          api_version=api_version, **kwargs)
 
-    def _get_and_check_auth(self, auth):
+    def list_nodes(self):
         """
-        Helper function for providers supporting :class:`.NodeAuthPassword` or
-        :class:`.NodeAuthSSHKey`
+        List all nodes.
 
-        Validates that only a supported object type is passed to the auth
-        parameter and raises an exception if it is not.
-
-        If no :class:`.NodeAuthPassword` object is provided but one is expected
-        then a password is automatically generated.
+        :return:  list of node objects
+        :rtype: ``list`` of :class:`.Node`
         """
+        raise NotImplementedError(
+            'list_nodes not implemented for this driver')
 
-        if isinstance(auth, NodeAuthPassword):
-            if 'password' in self.features['create_node']:
-                return auth
-            raise LibcloudError(
-                'Password provided as authentication information, but password'
-                'not supported', driver=self)
+    def list_images(self, location=None):
+        """
+        List images on a provider
 
-        if isinstance(auth, NodeAuthSSHKey):
-            if 'ssh_key' in self.features['create_node']:
-                return auth
-            raise LibcloudError(
-                'SSH Key provided as authentication information, but SSH Key'
-                'not supported', driver=self)
+        :param location: The location at which to list images
+        :type location: :class:`.NodeLocation`
 
-        if 'password' in self.features['create_node']:
-            value = os.urandom(16)
-            value = binascii.hexlify(value).decode('ascii')
-            return NodeAuthPassword(value, generated=True)
+        :return: list of node image objects
+        :rtype: ``list`` of :class:`.NodeImage`
+        """
+        raise NotImplementedError(
+            'list_images not implemented for this driver')
 
-        if auth:
-            raise LibcloudError(
-                '"auth" argument provided, but it was not a NodeAuthPassword'
-                'or NodeAuthSSHKey object', driver=self)
+    def list_sizes(self, location=None):
+        """
+        List sizes on a provider
+
+        :param location: The location at which to list sizes
+        :type location: :class:`.NodeLocation`
+
+        :return: list of node size objects
+        :rtype: ``list`` of :class:`.NodeSize`
+        """
+        raise NotImplementedError(
+            'list_sizes not implemented for this driver')
+
+    def list_locations(self):
+        """
+        List data centers for a provider
+
+        :return: list of node location objects
+        :rtype: ``list`` of :class:`.NodeLocation`
+        """
+        raise NotImplementedError(
+            'list_locations not implemented for this driver')
 
     def create_node(self, **kwargs):
         """
@@ -705,81 +715,6 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'create_node not implemented for this driver')
-
-    def destroy_node(self, node):
-        """
-        Destroy a node.
-
-        Depending upon the provider, this may destroy all data associated with
-        the node, including backups.
-
-        :param node: The node to be destroyed
-        :type node: :class:`.Node`
-
-        :return: True if the destroy was successful, False otherwise.
-        :rtype: ``bool``
-        """
-        raise NotImplementedError(
-            'destroy_node not implemented for this driver')
-
-    def reboot_node(self, node):
-        """
-        Reboot a node.
-
-        :param node: The node to be rebooted
-        :type node: :class:`.Node`
-
-        :return: True if the reboot was successful, otherwise False
-        :rtype: ``bool``
-        """
-        raise NotImplementedError(
-            'reboot_node not implemented for this driver')
-
-    def list_nodes(self):
-        """
-        List all nodes.
-
-        :return:  list of node objects
-        :rtype: ``list`` of :class:`.Node`
-        """
-        raise NotImplementedError(
-            'list_nodes not implemented for this driver')
-
-    def list_images(self, location=None):
-        """
-        List images on a provider
-
-        :param location: The location at which to list images
-        :type location: :class:`.NodeLocation`
-
-        :return: list of node image objects
-        :rtype: ``list`` of :class:`.NodeImage`
-        """
-        raise NotImplementedError(
-            'list_images not implemented for this driver')
-
-    def list_sizes(self, location=None):
-        """
-        List sizes on a provider
-
-        :param location: The location at which to list sizes
-        :type location: :class:`.NodeLocation`
-
-        :return: list of node size objects
-        :rtype: ``list`` of :class:`.NodeSize`
-        """
-        raise NotImplementedError(
-            'list_sizes not implemented for this driver')
-
-    def list_locations(self):
-        """
-        List data centers for a provider
-
-        :return: list of node location objects
-        :rtype: ``list`` of :class:`.NodeLocation`
-        """
-        raise NotImplementedError(
-            'list_locations not implemented for this driver')
 
     def deploy_node(self, **kwargs):
         """
@@ -946,6 +881,57 @@ class NodeDriver(BaseDriver):
 
         return node
 
+    def reboot_node(self, node):
+        """
+        Reboot a node.
+
+        :param node: The node to be rebooted
+        :type node: :class:`.Node`
+
+        :return: True if the reboot was successful, otherwise False
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'reboot_node not implemented for this driver')
+
+    def destroy_node(self, node):
+        """
+        Destroy a node.
+
+        Depending upon the provider, this may destroy all data associated with
+        the node, including backups.
+
+        :param node: The node to be destroyed
+        :type node: :class:`.Node`
+
+        :return: True if the destroy was successful, False otherwise.
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'destroy_node not implemented for this driver')
+
+    ##
+    # Volume and snapshot management methods
+    ##
+
+    def list_volumes(self):
+        """
+        List storage volumes.
+
+        :rtype: ``list`` of :class:`.StorageVolume`
+        """
+        raise NotImplementedError(
+            'list_volumes not implemented for this driver')
+
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots for a storage volume.
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
+        raise NotImplementedError(
+            'list_volume_snapshots not implemented for this driver')
+
     def create_volume(self, size, name, location=None, snapshot=None):
         """
         Create a new volume.
@@ -971,18 +957,14 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_volume not implemented for this driver')
 
-    def destroy_volume(self, volume):
+    def create_volume_snapshot(self, volume, name):
         """
-        Destroys a storage volume.
+        Creates a snapshot of the storage volume.
 
-        :param volume: Volume to be destroyed
-        :type volume: :class:`StorageVolume`
-
-        :rtype: ``bool``
+        :rtype: :class:`VolumeSnapshot`
         """
-
         raise NotImplementedError(
-            'destroy_volume not implemented for this driver')
+            'create_volume_snapshot not implemented for this driver')
 
     def attach_volume(self, node, volume, device=None):
         """
@@ -1013,32 +995,18 @@ class NodeDriver(BaseDriver):
 
         raise NotImplementedError('detach not implemented for this driver')
 
-    def list_volumes(self):
+    def destroy_volume(self, volume):
         """
-        List storage volumes.
+        Destroys a storage volume.
 
-        :rtype: ``list`` of :class:`.StorageVolume`
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
         """
+
         raise NotImplementedError(
-            'list_volumes not implemented for this driver')
-
-    def list_volume_snapshots(self, volume):
-        """
-        List snapshots for a storage volume.
-
-        :rtype: ``list`` of :class:`VolumeSnapshot`
-        """
-        raise NotImplementedError(
-            'list_volume_snapshots not implemented for this driver')
-
-    def create_volume_snapshot(self, volume, name):
-        """
-        Creates a snapshot of the storage volume.
-
-        :rtype: :class:`VolumeSnapshot`
-        """
-        raise NotImplementedError(
-            'create_volume_snapshot not implemented for this driver')
+            'destroy_volume not implemented for this driver')
 
     def destroy_volume_snapshot(self, snapshot):
         """
@@ -1048,15 +1016,6 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'destroy_volume_snapshot not implemented for this driver')
-
-    def _wait_until_running(self, node, wait_period=3, timeout=600,
-                            ssh_interface='public_ips', force_ipv4=True):
-        # This is here for backward compatibility and will be removed in the
-        # next major release
-        return self.wait_until_running(nodes=[node], wait_period=wait_period,
-                                       timeout=timeout,
-                                       ssh_interface=ssh_interface,
-                                       force_ipv4=force_ipv4)
 
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):
@@ -1128,6 +1087,51 @@ class NodeDriver(BaseDriver):
 
         raise LibcloudError(value='Timed out after %s seconds' % (timeout),
                             driver=self)
+
+    def _get_and_check_auth(self, auth):
+        """
+        Helper function for providers supporting :class:`.NodeAuthPassword` or
+        :class:`.NodeAuthSSHKey`
+
+        Validates that only a supported object type is passed to the auth
+        parameter and raises an exception if it is not.
+
+        If no :class:`.NodeAuthPassword` object is provided but one is expected
+        then a password is automatically generated.
+        """
+
+        if isinstance(auth, NodeAuthPassword):
+            if 'password' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'Password provided as authentication information, but password'
+                'not supported', driver=self)
+
+        if isinstance(auth, NodeAuthSSHKey):
+            if 'ssh_key' in self.features['create_node']:
+                return auth
+            raise LibcloudError(
+                'SSH Key provided as authentication information, but SSH Key'
+                'not supported', driver=self)
+
+        if 'password' in self.features['create_node']:
+            value = os.urandom(16)
+            value = binascii.hexlify(value).decode('ascii')
+            return NodeAuthPassword(value, generated=True)
+
+        if auth:
+            raise LibcloudError(
+                '"auth" argument provided, but it was not a NodeAuthPassword'
+                'or NodeAuthSSHKey object', driver=self)
+
+    def _wait_until_running(self, node, wait_period=3, timeout=600,
+                            ssh_interface='public_ips', force_ipv4=True):
+        # This is here for backward compatibility and will be removed in the
+        # next major release
+        return self.wait_until_running(nodes=[node], wait_period=wait_period,
+                                       timeout=timeout,
+                                       ssh_interface=ssh_interface,
+                                       force_ipv4=force_ipv4)
 
     def _ssh_client_connect(self, ssh_client, wait_period=1.5, timeout=300):
         """
