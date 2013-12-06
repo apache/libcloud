@@ -259,7 +259,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def get_container_cdn_url(self, container):
-        if not getattr(self, '_container_cdn_url'):
+        if not getattr(self, '_container_cdn_url', None):
             container_name = container.name
             response = self.connection.request('/%s' % (container_name),
                                                method='HEAD',
