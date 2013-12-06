@@ -106,12 +106,14 @@ class CloudFilesConnection(OpenStackBaseConnection):
     auth_url = AUTH_URL
     _auth_version = '2.0'
 
-    def __init__(self, user_id, key, secure=True, **kwargs):
+    def __init__(self, user_id, key, secure=True,
+                 use_internal_url=False, **kwargs):
         super(CloudFilesConnection, self).__init__(user_id, key, secure=secure,
                                                    **kwargs)
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
+        self.endpoint_url = 'internalURL' if use_internal_url else 'publicURL'
 
     def get_endpoint(self):
         region = self._ex_force_service_region.upper()
@@ -136,8 +138,8 @@ class CloudFilesConnection(OpenStackBaseConnection):
         if not ep:
             raise LibcloudError('Could not find specified endpoint')
 
-        if 'publicURL' in ep:
-            return ep['publicURL']
+        if self.endpoint_url in ep:
+            return ep[self.endpoint_url]
         else:
             raise LibcloudError('Could not find specified endpoint')
 
@@ -182,8 +184,8 @@ class OpenStackSwiftConnection(CloudFilesConnection):
             endpoint = self.service_catalog.get_endpoint(
                 name=self._service_name, region=self._region_name)
 
-        if 'publicURL' in endpoint:
-            return endpoint['publicURL']
+        if self.endpoint_url in endpoint:
+            return endpoint[self.endpoint_url]
         else:
             raise LibcloudError('Could not find specified endpoint')
 
@@ -200,7 +202,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     supports_chunked_encoding = True
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region='ord', **kwargs):
+                 region='ord', use_internal_url=False, **kwargs):
         """
         @inherits:  :class:`StorageDriver.__init__`
 
@@ -211,6 +213,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         if 'ex_force_service_region' in kwargs:
             region = kwargs['ex_force_service_region']
 
+        self.use_internal_url = use_internal_url
         OpenStackDriverMixin.__init__(self, (), **kwargs)
         super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
@@ -820,6 +823,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()
         kwargs['ex_force_service_region'] = self.region
+        kwargs['use_internal_url'] = self.use_internal_url
         return kwargs
 
 
