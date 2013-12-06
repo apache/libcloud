@@ -850,9 +850,11 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver_klass.connectionCls.conn_classes = (
             OpenStack_2_0_MockHttp, OpenStack_2_0_MockHttp)
         self.driver_klass.connectionCls.auth_url = "https://auth.api.example.com"
+
         OpenStackMockHttp.type = None
         OpenStack_1_1_MockHttp.type = None
         OpenStack_2_0_MockHttp.type = None
+
         self.driver = self.create_driver()
 
         # normally authentication happens lazily, but we force it here
@@ -972,6 +974,14 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra.get('metadata'), {})
         self.assertEqual(node.extra['updated'], '2011-10-11T00:50:04Z')
         self.assertEqual(node.extra['created'], '2011-10-11T00:51:39Z')
+
+    def test_list_nodes_no_image_id_attribute(self):
+        # Regression test for LIBCLOD-455
+        self.driver_klass.connectionCls.conn_classes[0].type = 'ERROR_STATE_NO_IMAGE_ID'
+        self.driver_klass.connectionCls.conn_classes[1].type = 'ERROR_STATE_NO_IMAGE_ID'
+
+        nodes = self.driver.list_nodes()
+        self.assertEqual(nodes[0].extra['imageId'], None)
 
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
@@ -1499,6 +1509,10 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
 
     def _v1_1_slug_servers_detail(self, method, url, body, headers):
         body = self.fixtures.load('_servers_detail.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_servers_detail_ERROR_STATE_NO_IMAGE_ID(self, method, url, body, headers):
+        body = self.fixtures.load('_servers_detail_ERROR_STATE.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_flavors_detail(self, method, url, body, headers):

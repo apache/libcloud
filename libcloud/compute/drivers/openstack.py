@@ -1861,6 +1861,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             else:
                 private_ips.extend(ips)
 
+        # Sometimes 'image' attribute is not present if the node is in an error
+        # state
+        image = api_node.get('image', None)
+        image_id = image.get('id', None) if image else None
+
         return Node(
             id=api_node['id'],
             name=api_node['name'],
@@ -1875,8 +1880,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 # Docs says "tenantId", but actual is "tenant_id". *sigh*
                 # Best handle both.
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
-                # sometimes the image is not set if openstack is in an error state
-                imageId=api_node.get('image', {}).get('id', None),
+                imageId=image_id,
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
