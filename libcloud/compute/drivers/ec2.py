@@ -17,12 +17,10 @@
 Amazon EC2, Eucalyptus and Nimbus drivers.
 """
 
-from __future__ import with_statement
-
 import sys
 import base64
-import os
 import copy
+import warnings
 
 from xml.etree import ElementTree as ET
 
@@ -39,6 +37,7 @@ from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
+from libcloud.compute.base import KeyPair
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -912,6 +911,71 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
+        fingerprint = findtext(element=elem, xpath='keyFingerprint',
+                               namespace=NAMESPACE).strip()
+        private_key = findtext(element=elem, xpath='keyMaterial',
+                               namespace=NAMESPACE)
+
+        key_pair = KeyPair(name=name,
+                           public_key=None,
+                           fingerprint=fingerprint,
+                           private_key=private_key,
+                           driver=self)
+        return key_pair
+
+    def list_key_pairs(self):
+        params = {
+            'Action': 'DescribeKeyPairs'
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='keySet/item',
+                        namespace=NAMESPACE)
+
+        key_pairs = self._to_key_pairs(elems=elems)
+        return key_pairs
+
+    def create_key_pair(self, name):
+        params = {
+            'Action': 'CreateKeyPair',
+            'KeyName': name
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        base64key = base64.b64encode(b(key_material))
+
+        params = {
+            'Action': 'ImportKeyPair',
+            'KeyName': name,
+            'PublicKeyMaterial': base64key
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName': key_pair
+        }
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
+
     def ex_destroy_image(self, image):
         params = {
             'Action': 'DeregisterImage',
@@ -921,7 +985,8 @@ class BaseEC2NodeDriver(NodeDriver):
         return self._get_boolean(response)
 
     def ex_create_keypair(self, name):
-        """Creates a new keypair
+        """
+        Creates a new keypair
 
         @note: This is a non-standard extension API, and only works for EC2.
 
@@ -931,19 +996,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        params = {
-            'Action': 'CreateKeyPair',
-            'KeyName': name,
+        warnings.warn('This method has been deprecated in favor of '
+                      'create_key_pair method')
+
+        key_pair = self.create_key_pair(name=name)
+
+        result = {
+            'keyMaterial': key_pair.private_key,
+            'keyFingerprint': key_pair.fingerprint
         }
-        response = self.connection.request(self.path, params=params).object
-        key_material = findtext(element=response, xpath='keyMaterial',
-                                namespace=NAMESPACE)
-        key_fingerprint = findtext(element=response, xpath='keyFingerprint',
-                                   namespace=NAMESPACE)
-        return {
-            'keyMaterial': key_material,
-            'keyFingerprint': key_fingerprint,
-        }
+
+        return result
 
     def ex_delete_keypair(self, keypair):
         """
@@ -956,14 +1019,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        params = {
-            'Action': 'DeleteKeyPair',
-            'KeyName': keypair
-        }
-        result = self.connection.request(self.path, params=params).object
-        element = findtext(element=result, xpath='return',
-                           namespace=NAMESPACE)
-        return element == 'true'
+        warnings.warn('This method has been deprecated in favor of '
+                      'delete_key_pair method')
+
+        return self.delete_key_pair(name=keypair)
 
     def ex_import_keypair_from_string(self, name, key_material):
         """
@@ -980,23 +1039,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        base64key = base64.b64encode(b(key_material))
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_string method')
 
-        params = {
-            'Action': 'ImportKeyPair',
-            'KeyName': name,
-            'PublicKeyMaterial': base64key
-        }
+        key_pair = self.import_key_pair_from_string(name=name,
+                                                    key_material=key_material)
 
-        response = self.connection.request(self.path, params=params).object
-        key_name = findtext(element=response, xpath='keyName',
-                            namespace=NAMESPACE)
-        key_fingerprint = findtext(element=response, xpath='keyFingerprint',
-                                   namespace=NAMESPACE)
-        return {
-            'keyName': key_name,
-            'keyFingerprint': key_fingerprint,
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
         }
+        return result
 
     def ex_import_keypair(self, name, keyfile):
         """
@@ -1013,9 +1066,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        with open(os.path.expanduser(keyfile)) as fh:
-            content = fh.read()
-        return self.ex_import_keypair_from_string(name, content)
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_file method')
+
+        key_pair = self.import_key_pair_from_file(name=name,
+                                                  key_file_path=keyfile)
+
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+        return result
 
     def ex_find_or_import_keypair_by_key_material(self, pubkey):
         """
@@ -1023,16 +1084,27 @@ class BaseEC2NodeDriver(NodeDriver):
         exists, return any information we have about it. Otherwise, create it.
 
         Keys that are created are named based on their comment and fingerprint.
+
+        :rtype: ``dict``
         """
         key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_comment = get_pubkey_comment(pubkey, default='unnamed')
-        key_name = "%s-%s" % (key_comment, key_fingerprint)
+        key_name = '%s-%s' % (key_comment, key_fingerprint)
 
-        for keypair in self.ex_list_keypairs():
-            if keypair['keyFingerprint'] == key_fingerprint:
-                return keypair
+        key_pairs = self.list_key_pairs()
+        key_pairs = [key_pair for key_pair in key_pairs if
+                     key_pair.fingerprint == key_fingerprint]
 
-        return self.ex_import_keypair_from_string(key_name, pubkey)
+        if len(key_pairs) >= 1:
+            key_pair = key_pairs[0]
+            result = {
+                'keyName': key_pair.name,
+                'keyFingerprint': key_pair.fingerprint
+            }
+        else:
+            result = self.ex_import_keypair_from_string(key_name, pubkey)
+
+        return result
 
     def ex_list_keypairs(self):
         """
@@ -1040,34 +1112,32 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``dict``
         """
-        params = {
-            'Action': 'DescribeKeyPairs'
-        }
+        warnings.warn('This method has been deprecated in favor of '
+                      'list_key_pairs method')
 
-        response = self.connection.request(self.path, params=params).object
-        keypairs = []
-        for elem in findall(element=response, xpath='keySet/item',
-                            namespace=NAMESPACE):
-            keypair = {
-                'keyName': findtext(element=elem, xpath='keyName',
-                                    namespace=NAMESPACE),
-                'keyFingerprint': findtext(element=elem,
-                                           xpath='keyFingerprint',
-                                           namespace=NAMESPACE).strip(),
+        key_pairs = self.list_key_pairs()
+
+        result = []
+
+        for key_pair in key_pairs:
+            item = {
+                'keyName': key_pair.name,
+                'keyFingerprint': key_pair.fingerprint,
             }
-            keypairs.append(keypair)
+            result.append(item)
 
-        return keypairs
+        return result
 
     def ex_describe_all_keypairs(self):
         """
-        Describes all keypairs. This is here for backward compatibilty.
+        Return names for all the available key pairs.
 
         @note: This is a non-standard extension API, and only works for EC2.
 
         :rtype: ``list`` of ``str``
         """
-        return [k['keyName'] for k in self.ex_list_keypairs()]
+        names = [key_pair.name for key_pair in self.list_key_pairs()]
+        return names
 
     def ex_describe_keypairs(self, name):
         """

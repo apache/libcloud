@@ -16,22 +16,18 @@
 OpenStack driver
 """
 
-from __future__ import with_statement
-
 try:
     import simplejson as json
 except ImportError:
     import json
 
 import warnings
+import base64
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import urlparse
-
-import os
-import base64
 
 from xml.etree import ElementTree as ET
 
@@ -41,6 +37,7 @@ from libcloud.common.types import MalformedResponseError, ProviderError
 from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, StorageVolume
+from libcloud.compute.base import KeyPair
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
 from libcloud.utils.xml import findall
@@ -1710,16 +1707,51 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                        (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
 
-    def _to_keypairs(self, obj):
-        keypairs = obj['keypairs']
-        return [self._to_keypair(keypair['keypair']) for keypair in keypairs]
+    def _to_key_pairs(self, obj):
+        key_pairs = obj['keypairs']
+        key_pairs = [self._to_key_pair(key_pair['keypair']) for key_pair in
+                     key_pairs]
+        return key_pairs
 
-    def _to_keypair(self, obj):
-        return OpenStackKeyPair(name=obj['name'],
-                                fingerprint=obj['fingerprint'],
-                                public_key=obj['public_key'],
-                                private_key=obj.get('private_key', None),
-                                driver=self)
+    def _to_key_pair(self, obj):
+        key_pair = KeyPair(name=obj['name'],
+                           fingerprint=obj['fingerprint'],
+                           public_key=obj['public_key'],
+                           private_key=obj.get('private_key', None),
+                           driver=self)
+        return key_pair
+
+    def list_key_pairs(self):
+        response = self.connection.request('/os-keypairs')
+        key_pairs = self._to_key_pairs(response.object)
+        return key_pairs
+
+    def create_key_pair(self, name):
+        data = {'keypair': {'name': name}}
+        response = self.connection.request('/os-keypairs', method='POST',
+                                           data=data)
+        key_pair = self._to_key_pair(response.object['keypair'])
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        data = {'keypair': {'name': name, 'public_key': key_material}}
+        response = self.connection.request('/os-keypairs', method='POST',
+                                           data=data)
+        key_pair = self._to_key_pair(response.object['keypair'])
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete a KeyPair.
+
+        :param keypair: KeyPair to delete
+        :type  keypair: :class:`OpenStackKeyPair`
+
+        :rtype: ``bool``
+        """
+        response = self.connection.request('/os-keypairs/%s' % (key_pair.name),
+                                           method='DELETE')
+        return response.status == httplib.ACCEPTED
 
     def ex_list_keypairs(self):
         """
@@ -1727,8 +1759,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackKeyPair`
         """
-        return self._to_keypairs(
-            self.connection.request('/os-keypairs').object)
+        warnings.warn('This method has been deprecated in favor of '
+                      'list_key_pairs method')
+
+        return self.list_key_pairs()
 
     def ex_create_keypair(self, name):
         """
@@ -1739,10 +1773,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
-        return self._to_keypair(self.connection.request(
-            '/os-keypairs', method='POST',
-            data={'keypair': {'name': name}}
-        ).object['keypair'])
+        warnings.warn('This method has been deprecated in favor of '
+                      'create_key_pair method')
+
+        return self.create_key_pair(name=name)
 
     def ex_import_keypair(self, name, keyfile):
         """
@@ -1756,10 +1790,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
-        with open(os.path.expanduser(keyfile), 'r') as fp:
-            public_key = fp.read()
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_file method')
 
-        return self.ex_import_keypair_from_string(name, public_key)
+        return self.import_key_pair_from_file(name=name, key_file_path=keyfile)
 
     def ex_import_keypair_from_string(self, name, key_material):
         """
@@ -1773,10 +1807,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStackKeyPair`
         """
-        return self._to_keypair(self.connection.request(
-            '/os-keypairs', method='POST',
-            data={'keypair': {'name': name, 'public_key': key_material}}
-        ).object['keypair'])
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_string method')
+
+        return self.import_key_pair_from_string(name=name,
+                                                key_material=key_material)
 
     def ex_delete_keypair(self, keypair):
         """
@@ -1787,9 +1822,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/os-keypairs/%s' % (keypair.name),
-                                       method='DELETE')
-        return resp.status == httplib.ACCEPTED
+        warnings.warn('This method has been deprecated in favor of '
+                      'delete_key_pair method')
+
+        return self.delete_key_pair(key_pair=keypair)
 
     def ex_get_size(self, size_id):
         """

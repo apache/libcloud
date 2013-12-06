@@ -375,12 +375,34 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(availability_zone.zone_state, 'available')
         self.assertEqual(availability_zone.region_name, 'eu-west-1')
 
-    def test_ex_list_keypairs(self):
+    def test_list_keypairs(self):
+        keypairs = self.driver.list_key_pairs()
+
+        self.assertEqual(len(keypairs), 1)
+        self.assertEqual(keypairs[0].name, 'gsg-keypair')
+        self.assertEqual(keypairs[0].fingerprint, null_fingerprint)
+
+        # Test old deprecated method
         keypairs = self.driver.ex_list_keypairs()
 
         self.assertEqual(len(keypairs), 1)
         self.assertEqual(keypairs[0]['keyName'], 'gsg-keypair')
         self.assertEqual(keypairs[0]['keyFingerprint'], null_fingerprint)
+
+    def test_create_key_pair(self):
+        key_pair = self.driver.create_key_pair(name='test-keypair')
+
+        fingerprint = ('1f:51:ae:28:bf:89:e9:d8:1f:25:5d'
+                       ':37:2d:7d:b8:ca:9f:f5:f1:6f')
+
+        self.assertEqual(key_pair.name, 'my-key-pair')
+        self.assertEqual(key_pair.fingerprint, fingerprint)
+        self.assertTrue(key_pair.private_key is not None)
+
+        # Test old and deprecated method
+        key_pair = self.driver.ex_create_keypair(name='test-keypair')
+        self.assertEqual(key_pair['keyFingerprint'], fingerprint)
+        self.assertTrue(key_pair['keyMaterial'] is not None)
 
     def test_ex_describe_all_keypairs(self):
         keys = self.driver.ex_describe_all_keypairs()
@@ -397,7 +419,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(keypair2['keyName'], 'gsg-keypair')
         self.assertEqual(keypair2['keyFingerprint'], null_fingerprint)
 
-    def ex_delete_keypair(self):
+    def ex_delete_key_pair(self):
+        success = self.driver.delete_key_pair('testkey')
+        self.assertTrue(success)
+
+        # Test old and deprecated method
         resp = self.driver.ex_delete_keypair('testkey')
         self.assertTrue(resp)
 
@@ -410,20 +436,33 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue('owner' in tags)
         self.assertTrue('stack' in tags)
 
-    def test_ex_import_keypair_from_string(self):
+    def test_import_key_pair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
                             'dummy_rsa.pub')
 
-        with open(path, 'r') as fh:
-            key = self.driver.ex_import_keypair_from_string(
-                'keypair', fh.read())
+        with open(path, 'r') as fp:
+            key_material = fp.read()
 
+        key = self.driver.import_key_pair_from_string(name='keypair',
+                                                      key_material=key_material)
+        self.assertEqual(key.name, 'keypair')
+        self.assertEqual(key.fingerprint, null_fingerprint)
+
+        # Test old and deprecated method
+        key = self.driver.ex_import_keypair_from_string('keypair',
+                                                        key_material)
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
 
-    def test_ex_import_keypair(self):
+    def test_import_key_pair_from_file(self):
         path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
                             'dummy_rsa.pub')
+
+        key = self.driver.import_key_pair_from_file('keypair', path)
+        self.assertEqual(key.name, 'keypair')
+        self.assertEqual(key.fingerprint, null_fingerprint)
+
+        # Test old and deprecated method
         key = self.driver.ex_import_keypair('keypair', path)
         self.assertEqual(key['keyName'], 'keypair')
         self.assertEqual(key['keyFingerprint'], null_fingerprint)
@@ -801,6 +840,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeKeyPairs(self, method, url, body, headers):
         body = self.fixtures.load('describe_key_pairs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateKeyPair(self, method, url, body, headers):
+        body = self.fixtures.load('create_key_pair.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ImportKeyPair(self, method, url, body, headers):

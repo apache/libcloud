@@ -15,16 +15,17 @@
 
 from __future__ import with_statement
 
-import os
 import base64
+import warnings
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import urlparse
 
 from libcloud.compute.providers import Provider
 from libcloud.common.cloudstack import CloudStackDriverMixIn
-from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation,\
-    NodeSize, StorageVolume
+from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
+from libcloud.compute.base import NodeSize, StorageVolume
+from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, LibcloudError
 from libcloud.utils.networking import is_private_subnet
 
@@ -649,6 +650,147 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                 driver=self))
         return list_volumes
 
+    def list_key_pairs(self, **kwargs):
+        """
+        List registered key pairs.
+
+        :param     projectid: list objects by project
+        :type      projectid: ``str``
+
+        :param     page: The page to list the keypairs from
+        :type      page: ``int``
+
+        :param     keyword: List by keyword
+        :type      keyword: ``str``
+
+        :param     listall: If set to false, list only resources
+                            belonging to the command's caller;
+                            if set to true - list resources that
+                            the caller is authorized to see.
+                            Default value is false
+
+        :type      listall: ``bool``
+
+        :param     pagesize: The number of results per page
+        :type      pagesize: ``int``
+
+        :param     account: List resources by account.
+                            Must be used with the domainId parameter
+        :type      account: ``str``
+
+        :param     isrecursive: Defaults to false, but if true,
+                                lists all resources from
+                                the parent specified by the
+                                domainId till leaves.
+        :type      isrecursive: ``bool``
+
+        :param     fingerprint: A public key fingerprint to look for
+        :type      fingerprint: ``str``
+
+        :param     name: A key pair name to look for
+        :type      name: ``str``
+
+        :param     domainid: List only resources belonging to
+                                     the domain specified
+        :type      domainid: ``str``
+
+        :return:   A list of key par objects.
+        :rtype:   ``list`` of :class:`libcloud.compute.base.KeyPair`
+        """
+        extra_args = kwargs.copy()
+        res = self._sync_request(command='listSSHKeyPairs',
+                                 params=extra_args,
+                                 method='GET')
+        key_pairs = res.get('sshkeypair', [])
+        key_pairs = self._to_key_pairs(data=key_pairs)
+        return key_pairs
+
+    def create_key_pair(self, name, **kwargs):
+        """
+        Create a new key pair object.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param     name: Name of the keypair (required)
+        :type      name: ``str``
+
+        :param     projectid: An optional project for the ssh key
+        :type      projectid: ``str``
+
+        :param     domainid: An optional domainId for the ssh key.
+                             If the account parameter is used,
+                             domainId must also be used.
+        :type      domainid: ``str``
+
+        :param     account: An optional account for the ssh key.
+                            Must be used with domainId.
+        :type      account: ``str``
+
+        :return:   Created key pair object.
+        :rtype:    :class:`libcloud.compute.base.KeyPair`
+        """
+        extra_args = kwargs.copy()
+
+        params = {'name': name}
+        params.update(extra_args)
+
+        res = self._sync_request(command='createSSHKeyPair',
+                                 params=params,
+                                 method='GET')
+        key_pair = self._to_key_pair(data=res['keypair'])
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        """
+        Import a new public key from string.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param key_material: Public key material.
+        :type key_material: ``str``
+
+        :return: Imported key pair object.
+        :rtype: :class:`libcloud.compute.base.KeyPair`
+        """
+        res = self._sync_request(command='registerSSHKeyPair',
+                                 params={'name': name,
+                                         'publickey': key_material},
+                                 method='GET')
+        key_pair = self._to_key_pair(data=res['keypair'])
+        return key_pair
+
+    def delete_key_pair(self, key_pair, **kwargs):
+        """
+        Delete an existing key pair.
+
+        :param key_pair: Key pair object.
+        :type key_pair: :class`libcloud.compute.base.KeyPair`
+
+        :param     projectid: The project associated with keypair
+        :type      projectid: ``str``
+
+        :param     domainid : The domain ID associated with the keypair
+        :type      domainid: ``str``
+
+        :param     account : The account associated with the keypair.
+                             Must be used with the domainId parameter.
+        :type      account: ``str``
+
+        :return:   True of False based on success of Keypair deletion
+        :rtype:    ``bool``
+        """
+
+        extra_args = kwargs.copy()
+        params = {'name': key_pair.name}
+        params.update(extra_args)
+
+        res = self._sync_request(command='deleteSSHKeyPair',
+                                 params=params,
+                                 method='GET')
+        return res['success'] == 'true'
+
     def ex_list_public_ips(self):
         """
         Lists all Public IP Addresses.
@@ -914,13 +1056,22 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :return:   A list of keypair dictionaries
         :rtype:   ``list`` of ``dict``
         """
+        warnings.warn('This method has been deprecated in favor of '
+                      'list_key_pairs method')
 
-        extra_args = kwargs.copy()
-        res = self._sync_request(command='listSSHKeyPairs',
-                                 params=extra_args,
-                                 method='GET')
-        keypairs = res.get('sshkeypair', [])
-        return keypairs
+        key_pairs = self.list_key_pairs(**kwargs)
+
+        result = []
+
+        for key_pair in key_pairs:
+            item = {
+                'name': key_pair.name,
+                'fingerprint': key_pair.fingerprint,
+                'privateKey': key_pair.private_key
+            }
+            result.append(item)
+
+        return result
 
     def ex_create_keypair(self, name, **kwargs):
         """
@@ -944,20 +1095,66 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :return:   A keypair dictionary
         :rtype:    ``dict``
         """
-        extra_args = kwargs.copy()
+        warnings.warn('This method has been deprecated in favor of '
+                      'create_key_pair method')
 
-        for keypair in self.ex_list_keypairs():
-            if keypair['name'] == name:
-                raise LibcloudError('SSH KeyPair with name=%s already exists'
-                                    % (name))
+        key_pair = self.create_key_pair(name=name, **kwargs)
 
-        params = {'name': name}
-        params.update(extra_args)
+        result = {
+            'name': key_pair.name,
+            'fingerprint': key_pair.fingerprint,
+            'privateKey': key_pair.private_key
+        }
 
-        res = self._sync_request(command='createSSHKeyPair',
-                                 params=params,
-                                 method='GET')
-        return res['keypair']
+        return result
+
+    def ex_import_keypair_from_string(self, name, key_material):
+        """
+        Imports a new public key where the public key is passed in as a string
+
+        :param     name: The name of the public key to import.
+        :type      name: ``str``
+
+        :param     key_material: The contents of a public key file.
+        :type      key_material: ``str``
+
+        :rtype: ``dict``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_string method')
+
+        key_pair = self.import_key_pair_from_string(name=name,
+                                                    key_material=key_material)
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+
+        return result
+
+    def ex_import_keypair(self, name, keyfile):
+        """
+        Imports a new public key where the public key is passed via a filename
+
+        :param     name: The name of the public key to import.
+        :type      name: ``str``
+
+        :param     keyfile: The filename with path of the public key to import.
+        :type      keyfile: ``str``
+
+        :rtype: ``dict``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_file method')
+
+        key_pair = self.import_key_pair_from_file(name=name,
+                                                  key_file_path=keyfile)
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+
+        return result
 
     def ex_delete_keypair(self, keypair, **kwargs):
         """
@@ -979,52 +1176,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :return:   True of False based on success of Keypair deletion
         :rtype:    ``bool``
         """
+        warnings.warn('This method has been deprecated in favor of '
+                      'delete_key_pair method')
 
-        extra_args = kwargs.copy()
-        params = {'name': keypair}
-        params.update(extra_args)
+        key_pair = KeyPair(name=keypair, public_key=None, fingerprint=None,
+                           driver=self)
 
-        res = self._sync_request(command='deleteSSHKeyPair',
-                                 params=params,
-                                 method='GET')
-        return res['success']
-
-    def ex_import_keypair_from_string(self, name, key_material):
-        """
-        Imports a new public key where the public key is passed in as a string
-
-        :param     name: The name of the public key to import.
-        :type      name: ``str``
-
-        :param     key_material: The contents of a public key file.
-        :type      key_material: ``str``
-
-        :rtype: ``dict``
-        """
-        res = self._sync_request(command='registerSSHKeyPair',
-                                 params={'name': name,
-                                         'publickey': key_material},
-                                 method='GET')
-        return {
-            'keyName': res['keypair']['name'],
-            'keyFingerprint': res['keypair']['fingerprint']
-        }
-
-    def ex_import_keypair(self, name, keyfile):
-        """
-        Imports a new public key where the public key is passed via a filename
-
-        :param     name: The name of the public key to import.
-        :type      name: ``str``
-
-        :param     keyfile: The filename with path of the public key to import.
-        :type      keyfile: ``str``
-
-        :rtype: ``dict``
-        """
-        with open(os.path.expanduser(keyfile)) as fh:
-            content = fh.read()
-        return self.ex_import_keypair_from_string(name, content)
+        return self.delete_key_pair(key_pair=key_pair)
 
     def ex_list_security_groups(self, **kwargs):
         """
@@ -1313,3 +1471,15 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                               public_ips=public_ips, private_ips=private_ips,
                               driver=self, extra=extra)
         return node
+
+    def _to_key_pairs(self, data):
+        key_pairs = [self._to_key_pair(data=item) for item in data]
+        return key_pairs
+
+    def _to_key_pair(self, data):
+        key_pair = KeyPair(name=data['name'],
+                           fingerprint=data['fingerprint'],
+                           public_key=data.get('publicKey', None),
+                           private_key=data.get('privateKey', None),
+                           driver=self)
+        return key_pair

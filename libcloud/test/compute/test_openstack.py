@@ -1327,8 +1327,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_delete_security_group_rule(security_group_rule)
         self.assertTrue(result)
 
-    def test_ex_list_keypairs(self):
-        keypairs = self.driver.ex_list_keypairs()
+    def test_list_key_pairs(self):
+        keypairs = self.driver.list_key_pairs()
         self.assertEqual(len(keypairs), 2, 'Wrong keypairs count')
         keypair = keypairs[1]
         self.assertEqual(keypair.name, 'key2')
@@ -1337,9 +1337,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertEqual(keypair.private_key, None)
 
-    def test_ex_create_keypair(self):
+    def test_create_key_pair(self):
         name = 'key0'
-        keypair = self.driver.ex_create_keypair(name)
+        keypair = self.driver.create_key_pair(name=name)
         self.assertEqual(keypair.name, name)
 
         self.assertEqual(keypair.fingerprint,
@@ -1347,34 +1347,36 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertTrue(len(keypair.private_key) > 10)
 
-    def test_ex_import_keypair(self):
+    def test_import_key_pair_from_file(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
         pub_key = open(path, 'r').read()
-        keypair = self.driver.ex_import_keypair(name, path)
+        keypair = self.driver.import_key_pair_from_file(name=name,
+                                                        key_file_path=path)
         self.assertEqual(keypair.name, name)
         self.assertEqual(
             keypair.fingerprint, '97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a')
         self.assertEqual(keypair.public_key, pub_key)
         self.assertEqual(keypair.private_key, None)
 
-    def test_ex_import_keypair_from_string(self):
+    def test_import_key_pair_from_string(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
         pub_key = open(path, 'r').read()
-        keypair = self.driver.ex_import_keypair_from_string(name, pub_key)
+        keypair = self.driver.import_key_pair_from_string(name=name,
+                                                          key_material=pub_key)
         self.assertEqual(keypair.name, name)
         self.assertEqual(
             keypair.fingerprint, '97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a')
         self.assertEqual(keypair.public_key, pub_key)
         self.assertEqual(keypair.private_key, None)
 
-    def test_ex_delete_keypair(self):
+    def test_delete_key_pair(self):
         keypair = OpenStackKeyPair(
             name='key1', fingerprint=None, public_key=None, driver=self.driver)
-        result = self.driver.ex_delete_keypair(keypair)
+        result = self.driver.delete_key_pair(key_pair=keypair)
         self.assertTrue(result)
 
     def test_ex_list_floating_ip_pools(self):

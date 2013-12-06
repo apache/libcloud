@@ -271,50 +271,80 @@ class CloudStackCommonTestCase(TestCaseMixin):
         res = node.reboot()
         self.assertTrue(res)
 
-    def test_ex_list_keypairs(self):
-        keypairs = self.driver.ex_list_keypairs()
+    def test_list_key_pairs(self):
+        keypairs = self.driver.list_key_pairs()
         fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
                       '00:00:00:00:00'
+
+        self.assertEqual(keypairs[0].name, 'cs-keypair')
+        self.assertEqual(keypairs[0].fingerprint, fingerprint)
+
+        # Test old and deprecated way
+        keypairs = self.driver.ex_list_keypairs()
 
         self.assertEqual(keypairs[0]['name'], 'cs-keypair')
         self.assertEqual(keypairs[0]['fingerprint'], fingerprint)
 
-    def test_ex_list_keypairs_no_keypair_key(self):
+    def test_list_key_pairs_no_keypair_key(self):
         CloudStackMockHttp.fixture_tag = 'no_keys'
-        keypairs = self.driver.ex_list_keypairs()
+        keypairs = self.driver.list_key_pairs()
         self.assertEqual(keypairs, [])
 
-    def test_ex_create_keypair(self):
-        self.assertRaises(
-            LibcloudError,
-            self.driver.ex_create_keypair,
-            'cs-keypair')
+    def test_create_keypair(self):
+        key_pair = self.driver.create_key_pair(name='test-keypair')
 
-    def test_ex_delete_keypair(self):
-        res = self.driver.ex_delete_keypair('cs-keypair')
-        self.assertTrue(res)
+        self.assertEqual(key_pair.name, 'test-keypair')
+        self.assertTrue(key_pair.fingerprint is not None)
+        self.assertTrue(key_pair.private_key is not None)
 
-    def test_ex_import_keypair(self):
+        # Test old and deprecated way
+        res = self.driver.ex_create_keypair(name='test-keypair')
+        self.assertEqual(res['name'], 'test-keypair')
+        self.assertTrue(res['fingerprint'] is not None)
+        self.assertTrue(res['privateKey'] is not None)
+
+    def test_import_keypair_from_file(self):
         fingerprint = 'c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15'
-        path = os.path.join(os.path.dirname(__file__), "fixtures",
-                            "cloudstack",
-                            "dummy_rsa.pub")
+        path = os.path.join(os.path.dirname(__file__), 'fixtures',
+                            'cloudstack',
+                            'dummy_rsa.pub')
 
+        key_pair = self.driver.import_key_pair_from_file('foobar', path)
+        self.assertEqual(key_pair.name, 'foobar')
+        self.assertEqual(key_pair.fingerprint, fingerprint)
+
+        # Test old and deprecated way
         res = self.driver.ex_import_keypair('foobar', path)
         self.assertEqual(res['keyName'], 'foobar')
         self.assertEqual(res['keyFingerprint'], fingerprint)
 
     def test_ex_import_keypair_from_string(self):
         fingerprint = 'c4:a1:e5:d4:50:84:a9:4c:6b:22:ee:d6:57:02:b8:15'
-        path = os.path.join(os.path.dirname(__file__), "fixtures",
-                            "cloudstack",
-                            "dummy_rsa.pub")
+        path = os.path.join(os.path.dirname(__file__), 'fixtures',
+                            'cloudstack',
+                            'dummy_rsa.pub')
         fh = open(path)
-        res = self.driver.ex_import_keypair_from_string('foobar',
-                                                        fh.read())
+        key_material = fh.read()
         fh.close()
+
+        key_pair = self.driver.import_key_pair_from_string('foobar', key_material=key_material)
+        self.assertEqual(key_pair.name, 'foobar')
+        self.assertEqual(key_pair.fingerprint, fingerprint)
+
+        # Test old and deprecated way
+        res = self.driver.ex_import_keypair_from_string('foobar', key_material=key_material)
         self.assertEqual(res['keyName'], 'foobar')
         self.assertEqual(res['keyFingerprint'], fingerprint)
+
+    def test_delete_key_pair(self):
+        key_pair = self.driver.list_key_pairs()[0]
+
+        res = self.driver.delete_key_pair(key_pair=key_pair)
+        self.assertTrue(res)
+
+        # Test old and deprecated way
+        res = self.driver.ex_delete_keypair(keypair='cs-keypair')
+        self.assertTrue(res)
 
     def test_ex_list_security_groups(self):
         groups = self.driver.ex_list_security_groups()
