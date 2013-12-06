@@ -56,6 +56,12 @@ Changes with Apache Libcloud in development
      invalid credentials are provided.
      [Tomaz Muraus]
 
+   - Don't throw an exception if a node object is missing an "image" attribute
+     in the list nodes / get node response.
+
+     This could happen if node is in an error state. (LIBCLOUD-455)
+     [Dustin Spicuzza, Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
