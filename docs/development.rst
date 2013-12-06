@@ -23,6 +23,9 @@ Style guide
   ``tox -e lint``.
   Second command fill run flake8 on all the files in the repository.
 
+And most importantly, follow the existing style in the files you are editing and
+be consistent.
+
 Git pre-commit hook
 -------------------
 
