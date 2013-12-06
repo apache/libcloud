@@ -1875,7 +1875,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 # Docs says "tenantId", but actual is "tenant_id". *sigh*
                 # Best handle both.
                 tenantId=api_node.get('tenant_id') or api_node['tenantId'],
-                imageId=api_node['image']['id'],
+                # sometimes the image is not set if openstack is in an error state
+                imageId=api_node.get('image', {}).get('id', None),
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
