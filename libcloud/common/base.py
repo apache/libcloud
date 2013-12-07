@@ -79,6 +79,13 @@ class Response(object):
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
+        """
+        :param response: HTTP response object. (optional)
+        :type response: :class:`httplib.HTTPResponse`
+
+        :param connection: Parent connection object.
+        :type connection: :class:`.Connection`
+        """
         self.body = self._decompress_response(response=response)
 
         if PY3:
@@ -104,6 +111,7 @@ class Response(object):
         Override in a provider's subclass.
 
         :return: Parsed body.
+        :rtype: ``str``
         """
         return self.body
 
@@ -114,6 +122,7 @@ class Response(object):
         Override in a provider's subclass.
 
         :return: Parsed error.
+        :rtype: ``str``
         """
         return self.body
 
@@ -134,6 +143,7 @@ class Response(object):
         Decompress a response body if it is using deflate or gzip encoding.
 
         :return: Decompressed response
+        :rtype: ``str``
         """
         headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
@@ -168,7 +178,7 @@ class JsonResponse(Response):
             body = json.loads(self.body)
         except:
             raise MalformedResponseError(
-                "Failed to parse JSON",
+                'Failed to parse JSON',
                 body=self.body,
                 driver=self.connection.driver)
         return body
@@ -199,6 +209,10 @@ class XmlResponse(Response):
 class RawResponse(Response):
 
     def __init__(self, connection):
+        """
+        :param connection: Parent connection object.
+        :type connection: :class:`.Connection`
+        """
         self._status = None
         self._response = None
         self._headers = {}
