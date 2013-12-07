@@ -62,8 +62,9 @@ BASE_API_METHODS = {
                      'download_object_as_stream', 'delete_object'],
     'storage_cdn': ['enable_container_cdn', 'enable_object_cdn',
                     'get_container_cdn_url', 'get_object_cdn_url'],
-    'dns': ['list_zones', 'list_records', 'create_zone', 'update_zone',
-            'create_record', 'update_record', 'delete_zone', 'delete_record']
+    'dns': ['list_zones', 'list_records', 'iterate_zones', 'iterate_records',
+            'create_zone', 'update_zone', 'create_record', 'update_record',
+            'delete_zone', 'delete_record']
 }
 
 FRIENDLY_METHODS_NAMES = {
@@ -211,7 +212,7 @@ def generate_supported_methods_table(api, provider_matrix):
     base_api_methods = BASE_API_METHODS[api]
     data = []
     header = [FRIENDLY_METHODS_NAMES[api][method_name] for method_name in
-              base_api_methods]
+              base_api_methods if not method_name.startswith('iterate_')]
     data.append(['Provider'] + header)
 
     for provider, values in sorted(provider_matrix.items()):
@@ -220,7 +221,24 @@ def generate_supported_methods_table(api, provider_matrix):
 
         provider_name = '`%s`_' % (values['name'])
         row = [provider_name]
-        for _, supported in values['methods'].items():
+
+        if api == 'dns':
+            # TODO: Make it nicer
+            # list_zones and list_records don't need to be implemented if
+            # iterate_* methods are implemented
+            if values['methods']['iterate_zones']:
+                values['methods']['list_zones'] = True
+
+            if values['methods']['iterate_records']:
+                values['methods']['list_records'] = True
+
+        for method in base_api_methods:
+            # TODO: ghetto
+            if api == 'dns' and method.startswith('iterate_'):
+                continue
+
+            supported = values['methods'][method]
+
             if supported:
                 row.append('yes')
             else:
