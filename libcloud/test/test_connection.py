@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import sys
+import ssl
 
 from mock import Mock, call
 
@@ -130,6 +131,56 @@ class ConnectionClassTestCase(unittest.TestCase):
         con.request(action='/path', params=params2)
         args, kwargs = con.pre_connect_hook.call_args
         self.assertTrue('cache-busting' in args[0][len(params2)])
+
+    def test_context_is_reset_after_request_has_finished(self):
+        context = {'foo': 'bar'}
+
+        def responseCls(connection, response):
+            connection.called = True
+            self.assertEqual(connection.context, context)
+
+        con = Connection()
+        con.called = False
+        con.connection = Mock()
+        con.responseCls = responseCls
+
+        con.set_context(context)
+        self.assertEqual(con.context, context)
+
+        con.request('/')
+
+        # Context should have been reset
+        self.assertTrue(con.called)
+        self.assertEqual(con.context, {})
+
+        # Context should also be reset if a method inside request throws
+        con = Connection()
+        con.connection = Mock()
+
+        con.set_context(context)
+        self.assertEqual(con.context, context)
+
+        con.connection.request = Mock(side_effect=ssl.SSLError())
+
+        try:
+            con.request('/')
+        except ssl.SSLError:
+            pass
+
+        self.assertEqual(con.context, {})
+
+        con.connection = Mock()
+        con.set_context(context)
+        self.assertEqual(con.context, context)
+
+        con.responseCls = Mock(side_effect=ValueError())
+
+        try:
+            con.request('/')
+        except ValueError:
+            pass
+
+        self.assertEqual(con.context, {})
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

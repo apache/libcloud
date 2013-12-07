@@ -426,7 +426,13 @@ class Connection(object):
             self.timeout = timeout
 
     def set_context(self, context):
+        if not isinstance(context, dict):
+            raise TypeError('context needs to be a dictionary')
+
         self.context = context
+
+    def reset_context(self):
+        self.context = {}
 
     def _tuple_from_url(self, url):
         secure = 1
@@ -633,13 +639,22 @@ class Connection(object):
                                         headers=headers)
         except ssl.SSLError:
             e = sys.exc_info()[1]
+            self.reset_context()
             raise ssl.SSLError(str(e))
 
         if raw:
-            response = self.rawResponseCls(connection=self)
+            responseCls = self.rawResponseCls
+            kwargs = {'connection': self}
         else:
-            response = self.responseCls(response=self.connection.getresponse(),
-                                        connection=self)
+            responseCls = self.responseCls
+            kwargs = {'connection': self,
+                      'response': self.connection.getresponse()}
+
+        try:
+            response = responseCls(**kwargs)
+        finally:
+            # Always reset the context after the request has completed
+            self.reset_context()
 
         return response
 
