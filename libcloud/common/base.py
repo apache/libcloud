@@ -69,12 +69,13 @@ class Response(object):
     A base Response class to derive from.
     """
 
-    object = None
-    body = None
-    status = httplib.OK
-    headers = {}
-    error = None
-    connection = None
+    status = httplib.OK  # Response status code
+    headers = {}  # Response headers
+    body = None  # Raw response body
+    object = None  # Parsed response body
+
+    error = None  # Reason returned by the server.
+    connection = None  # Parent connection class
     parse_zero_length_body = False
 
     def __init__(self, response, connection):
@@ -147,9 +148,14 @@ class Response(object):
         headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
 
+        # This attribute is set when using LoggingConnection
         original_data = getattr(response, '_original_data', None)
 
         if original_data is not None:
+            # LoggingConnection decompresses data before we get into this
+            # function so it can log decompressed body.
+            # If this attribute is present, this means the body has already
+            # been decompressed.
             return original_data
 
         body = response.read()
