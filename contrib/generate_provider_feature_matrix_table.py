@@ -123,6 +123,11 @@ FRIENDLY_METHODS_NAMES = {
     },
 }
 
+IGNORED_PROVIDERS = [
+    'dummy',
+    'local'
+]
+
 
 def get_provider_api_names(Provider):
     names = [key for key, value in Provider.__dict__.items() if
@@ -166,6 +171,9 @@ def generate_providers_table(api):
             cls = get_driver_method(enum)
         except:
             # Deprecated providers throw an exception
+            continue
+
+        if name.lower() in IGNORED_PROVIDERS:
             continue
 
         driver_methods = dict(inspect.getmembers(cls,
@@ -216,9 +224,6 @@ def generate_supported_methods_table(api, provider_matrix):
     data.append(['Provider'] + header)
 
     for provider, values in sorted(provider_matrix.items()):
-        if 'dummy' in provider.lower():
-            continue
-
         provider_name = '`%s`_' % (values['name'])
         row = [provider_name]
 
@@ -260,9 +265,6 @@ def generate_supported_providers_table(api, provider_matrix):
 
     data.append(header)
     for provider, values in sorted(provider_matrix.items()):
-        if 'dummy' in provider.lower():
-            continue
-
         name_str = '`%s`_' % (values['name'])
         module_str = ':mod:`%s`' % (values['module'])
         class_str = ':class:`%s`' % (values['class'])
