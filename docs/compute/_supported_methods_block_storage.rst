@@ -7,7 +7,7 @@ Provider                              list volumes create volume destroy volume 
 `CloudFrames`_                        no           no            no             no            no            no             no             
 `CloudSigma`_                         no           no            no             no            no            no             no             
 `CloudSigma`_                         no           no            no             no            no            no             no             
-`CloudStack`_                         no           yes           yes            yes           yes           yes            no             
+`CloudStack`_                         yes          yes           yes            yes           yes           no             no             
 `Digital Ocean`_                      no           no            no             no            no            no             no             
 `Dreamhost`_                          no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
@@ -31,25 +31,25 @@ Provider                              list volumes create volume destroy volume 
 `ElasticHosts (lax-p)`_               no           no            no             no            no            no             no             
 `ElasticHosts (sjc-c)`_               no           no            no             no            no            no             no             
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
-`Exoscale`_                           no           yes           yes            yes           yes           yes            no             
-`Gandi`_                              no           yes           yes            yes           yes           yes            no             
-`Google Compute Engine`_              no           yes           yes            yes           yes           yes            no             
+`Exoscale`_                           yes          yes           yes            yes           yes           no             no             
+`Gandi`_                              yes          yes           yes            yes           yes           no             no             
+`Google Compute Engine`_              yes          yes           yes            yes           yes           no             no             
 `GoGrid`_                             no           no            no             no            no            no             no             
 `HostVirtual`_                        no           no            no             no            no            no             no             
-`IBM SmartCloud Enterprise`_          no           yes           yes            yes           yes           yes            no             
-`Ikoula`_                             no           yes           yes            yes           yes           yes            no             
+`IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             
+`Ikoula`_                             yes          yes           yes            yes           yes           no             no             
 `Joyent`_                             no           no            no             no            no            no             no             
-`KTUCloud`_                           no           yes           yes            yes           yes           yes            no             
+`KTUCloud`_                           yes          yes           yes            yes           yes           no             no             
 `Libvirt`_                            no           no            no             no            no            no             no             
 `Linode`_                             no           no            no             no            no            no             no             
 `NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
-`Ninefold`_                           no           yes           yes            yes           yes           yes            no             
+`Ninefold`_                           yes          yes           yes            yes           yes           no             no             
 `OpenNebula`_                         no           no            no             no            no            no             no             
-`OpenStack`_                          no           yes           yes            yes           yes           yes            no             
+`OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Opsource`_                           no           no            no             no            no            no             no             
-`Rackspace Cloud (Next Gen)`_         no           yes           yes            yes           yes           yes            no             
-`Rackspace Cloud (First Gen)`_        no           yes           yes            yes           yes           yes            no             
+`Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           no             no             
+`Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
 `ServerLove`_                         no           no            no             no            no            no             no             
 `skalicloud`_                         no           no            no             no            no            no             no             
@@ -70,7 +70,6 @@ Provider                              list volumes create volume destroy volume 
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/
-.. _`Dummy Node Provider`: http://example.com
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/

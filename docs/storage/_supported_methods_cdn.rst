@@ -2,14 +2,14 @@
 Provider                      enable container cdn enable object cdn get container cdn URL get object cdn URL
 ============================= ==================== ================= ===================== ==================
 `Microsoft Azure (blobs)`_    no                   no                no                    no                
-`CloudFiles`_                 no                   yes               yes                   yes               
-`CloudFiles (SWIFT)`_         no                   yes               yes                   yes               
-`CloudFiles (UK)`_            no                   yes               yes                   yes               
-`CloudFiles (US)`_            no                   yes               yes                   yes               
+`CloudFiles`_                 yes                  no                yes                   yes               
+`CloudFiles (SWIFT)`_         yes                  no                yes                   yes               
+`CloudFiles (UK)`_            yes                  no                yes                   yes               
+`CloudFiles (US)`_            yes                  no                yes                   yes               
 `Google Storage`_             no                   no                no                    no                
-`KTUCloud Storage`_           no                   yes               yes                   yes               
+`KTUCloud Storage`_           yes                  no                yes                   yes               
 `Nimbus`_                     no                   no                no                    no                
-`Ninefold`_                   yes                  no                yes                   no                
+`Ninefold`_                   no                   yes               no                    yes               
 `Amazon S3 (standard)`_       no                   no                no                    no                
 `Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
 `Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
@@ -23,7 +23,6 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`CloudFiles (SWIFT)`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/
 .. _`CloudFiles (US)`: http://www.rackspace.com/
-.. _`Dummy Storage Provider`: http://example.com
 .. _`Google Storage`: http://cloud.google.com/
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Nimbus`: https://nimbus.io/

@@ -23,7 +23,6 @@ Provider                      Documentation                                  Pro
 .. _`CloudFiles (SWIFT)`: http://www.rackspace.com/
 .. _`CloudFiles (UK)`: http://www.rackspace.com/
 .. _`CloudFiles (US)`: http://www.rackspace.com/
-.. _`Dummy Storage Provider`: http://example.com
 .. _`Google Storage`: http://cloud.google.com/
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Nimbus`: https://nimbus.io/

@@ -70,7 +70,6 @@ Provider                              Documentation                             
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/
-.. _`Dummy Node Provider`: http://example.com
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-northeast-1)`: http://aws.amazon.com/ec2/
 .. _`Amazon EC2 (ap-southeast-1)`: http://aws.amazon.com/ec2/

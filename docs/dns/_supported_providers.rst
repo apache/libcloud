@@ -11,7 +11,6 @@ Provider              Documentation Provider constant Module                    
 `Zerigo DNS`_                       ZERIGO            :mod:`libcloud.dns.drivers.zerigo`      :class:`ZerigoDNSDriver`     
 ===================== ============= ================= ======================================= =============================
 
-.. _`Dummy DNS Provider`: http://example.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
 .. _`Host Virtual DNS`: http://www.vr.org/
 .. _`Linode DNS`: http://www.linode.com/

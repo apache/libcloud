@@ -2,14 +2,14 @@
 Provider                 create balancer list balancers list members attach member detach member attach compute node
 ======================== =============== ============== ============ ============= ============= ===================
 `Brightbox`_             yes             yes            yes          yes           yes           yes                
-`CloudStack`_            yes             yes            yes          no            yes           yes                
-`ELB`_                   yes             yes            yes          yes           no            yes                
+`CloudStack`_            yes             yes            yes          yes           yes           no                 
+`ELB`_                   yes             yes            yes          no            yes           yes                
 `Google Compute Engine`_ yes             yes            yes          yes           yes           yes                
-`GoGrid LB`_             yes             yes            yes          no            yes           yes                
-`Ninefold LB`_           yes             yes            yes          no            yes           yes                
-`Rackspace LB`_          yes             yes            yes          no            yes           yes                
-`Rackspace LB`_          yes             yes            yes          no            yes           yes                
-`Rackspace LB`_          yes             yes            yes          no            yes           yes                
+`GoGrid LB`_             yes             yes            yes          yes           yes           no                 
+`Ninefold LB`_           yes             yes            yes          yes           yes           no                 
+`Rackspace LB`_          yes             yes            yes          yes           yes           no                 
+`Rackspace LB`_          yes             yes            yes          yes           yes           no                 
+`Rackspace LB`_          yes             yes            yes          yes           yes           no                 
 ======================== =============== ============== ============ ============= ============= ===================
 
 .. _`Brightbox`: http://www.brightbox.co.uk/
