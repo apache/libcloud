@@ -79,7 +79,7 @@ class NimbusConnection(ConnectionUserAndKey):
 
 
 class NimbusStorageDriver(StorageDriver):
-    name = 'Nimbus'
+    name = 'Nimbus.io'
     website = 'https://nimbus.io/'
     connectionCls = NimbusConnection
 
