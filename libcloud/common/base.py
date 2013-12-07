@@ -66,9 +66,8 @@ class HTTPResponse(httplib.HTTPResponse):
 
 class Response(object):
     """
-    A Base Response class to derive from.
+    A base Response class to derive from.
     """
-    NODE_STATE_MAP = {}
 
     object = None
     body = None
