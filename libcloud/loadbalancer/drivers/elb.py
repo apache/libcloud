@@ -46,7 +46,7 @@ class ELBConnection(SignedAWSConnection):
 
 
 class ElasticLBDriver(Driver):
-    name = 'ELB'
+    name = 'Amazon Elastic Load Balancing'
     website = 'http://aws.amazon.com/elasticloadbalancing/'
     connectionCls = ELBConnection
 
