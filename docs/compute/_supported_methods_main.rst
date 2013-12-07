@@ -37,6 +37,7 @@ Provider                              list nodes create node reboot node destroy
 `GoGrid`_                             yes        yes         yes         yes          yes         yes        yes        
 `HostVirtual`_                        yes        yes         yes         yes          yes         yes        yes        
 `IBM SmartCloud Enterprise`_          yes        yes         yes         yes          yes         yes        no         
+`Ikoula`_                             yes        yes         yes         yes          yes         yes        yes        
 `Joyent`_                             yes        yes         yes         yes          yes         yes        yes        
 `KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes        
 `Libvirt`_                            yes        yes         no          no           no          yes        no         
@@ -97,6 +98,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
+.. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/

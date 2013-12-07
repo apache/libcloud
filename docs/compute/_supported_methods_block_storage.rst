@@ -37,6 +37,7 @@ Provider                              list volumes create volume destroy volume 
 `GoGrid`_                             no           no            no             no            no            no             no             
 `HostVirtual`_                        no           no            no             no            no            no             no             
 `IBM SmartCloud Enterprise`_          no           yes           yes            yes           yes           yes            no             
+`Ikoula`_                             no           yes           yes            yes           yes           yes            no             
 `Joyent`_                             no           no            no             no            no            no             no             
 `KTUCloud`_                           no           yes           yes            yes           yes           yes            no             
 `Libvirt`_                            no           no            no             no            no            no             no             
@@ -97,6 +98,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
+.. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/

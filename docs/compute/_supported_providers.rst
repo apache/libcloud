@@ -37,6 +37,7 @@ Provider                              Documentation                             
 `GoGrid`_                                                                         GOGRID              :mod:`libcloud.compute.drivers.gogrid`         :class:`GoGridNodeDriver`           
 `HostVirtual`_                                                                    HOSTVIRTUAL         :mod:`libcloud.compute.drivers.hostvirtual`    :class:`HostVirtualNodeDriver`      
 `IBM SmartCloud Enterprise`_                                                      IBM                 :mod:`libcloud.compute.drivers.ibm_sce`        :class:`IBMNodeDriver`              
+`Ikoula`_                                                                         IKOULA              :mod:`libcloud.compute.drivers.ikoula`         :class:`IkoulaNodeDriver`           
 `Joyent`_                                                                         JOYENT              :mod:`libcloud.compute.drivers.joyent`         :class:`JoyentNodeDriver`           
 `KTUCloud`_                                                                       KTUCLOUD            :mod:`libcloud.compute.drivers.ktucloud`       :class:`KTUCloudNodeDriver`         
 `Libvirt`_                                                                        LIBVIRT             :mod:`libcloud.compute.drivers.libvirt_driver` :class:`LibvirtNodeDriver`          
@@ -97,6 +98,7 @@ Provider                              Documentation                             
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
+.. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Joyent`: http://www.joyentcloud.com
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
