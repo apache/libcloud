@@ -13,3 +13,4 @@ coverage_html_report/
 .idea
 dist/*apache-libcloud*
 _build/
+apache_libcloud.egg-info/
