@@ -14,6 +14,8 @@ This includes the following functionality:
 
 * listing all the available key pairs on your account
   (:func:`libcloud.compute.base.NodeDriver.list_key_pairs`)
+* retrieve information (fingerprint, public key) about a sigle key pair
+  (:func:`libcloud.compute.base.NodeDriver.get_key_pair`)
 * creating a new key pair
   (:func:`libcloud.compute.base.NodeDriver.create_key_pair`)
 * importing an existing public key

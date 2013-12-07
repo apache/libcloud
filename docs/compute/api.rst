@@ -36,3 +36,6 @@ Error Classes
 
 .. autoclass:: libcloud.compute.types.DeploymentError
     :members:
+
+.. autoclass:: libcloud.compute.types.KeyPairDoesNotExistError
+    :members:

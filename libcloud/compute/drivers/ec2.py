@@ -17,6 +17,7 @@
 Amazon EC2, Eucalyptus and Nimbus drivers.
 """
 
+import re
 import sys
 import base64
 import copy
@@ -34,10 +35,10 @@ from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
 from libcloud.compute.providers import Provider
-from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
+from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
 API_VERSION = '2010-08-31'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -444,18 +445,29 @@ class EC2Response(AWSBaseResponse):
 
         for err in body.findall('Errors/Error'):
             code, message = err.getchildren()
-            err_list.append("%s: %s" % (code.text, message.text))
-            if code.text == "InvalidClientTokenId":
+            err_list.append('%s: %s' % (code.text, message.text))
+            if code.text == 'InvalidClientTokenId':
                 raise InvalidCredsError(err_list[-1])
-            if code.text == "SignatureDoesNotMatch":
+            if code.text == 'SignatureDoesNotMatch':
                 raise InvalidCredsError(err_list[-1])
-            if code.text == "AuthFailure":
+            if code.text == 'AuthFailure':
                 raise InvalidCredsError(err_list[-1])
-            if code.text == "OptInRequired":
+            if code.text == 'OptInRequired':
                 raise InvalidCredsError(err_list[-1])
-            if code.text == "IdempotentParameterMismatch":
+            if code.text == 'IdempotentParameterMismatch':
                 raise IdempotentParamError(err_list[-1])
-        return "\n".join(err_list)
+            if code.text == 'InvalidKeyPair.NotFound':
+                # TODO: Use connection context instead
+                match = re.match(r'.*\'(.+?)\'.*', message.text)
+
+                if match:
+                    name = match.groups()[0]
+                else:
+                    name = None
+
+                raise KeyPairDoesNotExistError(name=name,
+                                               driver=self.connection.driver)
+        return '\n'.join(err_list)
 
 
 class EC2Connection(SignedAWSConnection):
@@ -940,6 +952,19 @@ class BaseEC2NodeDriver(NodeDriver):
 
         key_pairs = self._to_key_pairs(elems=elems)
         return key_pairs
+
+    def get_key_pair(self, name):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'KeyName': name
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='keySet/item',
+                        namespace=NAMESPACE)
+
+        key_pair = self._to_key_pairs(elems=elems)[0]
+        return key_pair
 
     def create_key_pair(self, name):
         params = {

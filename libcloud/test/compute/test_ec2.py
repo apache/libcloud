@@ -35,6 +35,7 @@ from libcloud.compute.drivers.ec2 import REGION_DETAILS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
+from libcloud.compute.types import KeyPairDoesNotExistError
 
 from libcloud.test import MockHttpTestCase, LibcloudTestCase
 from libcloud.test.compute import TestCaseMixin
@@ -388,6 +389,18 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(keypairs), 1)
         self.assertEqual(keypairs[0]['keyName'], 'gsg-keypair')
         self.assertEqual(keypairs[0]['keyFingerprint'], null_fingerprint)
+
+    def test_get_key_pair(self):
+        EC2MockHttp.type = 'get_one'
+
+        key_pair = self.driver.get_key_pair(name='gsg-keypair')
+        self.assertEqual(key_pair.name, 'gsg-keypair')
+
+    def test_get_key_pair_does_not_exist(self):
+        EC2MockHttp.type = 'doesnt_exist'
+
+        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair,
+                          name='test-key-pair')
 
     def test_create_key_pair(self):
         key_pair = self.driver.create_key_pair(name='test-keypair')
@@ -841,6 +854,17 @@ class EC2MockHttp(MockHttpTestCase):
     def _DescribeKeyPairs(self, method, url, body, headers):
         body = self.fixtures.load('describe_key_pairs.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _get_one_DescribeKeyPairs(self, method, url, body, headers):
+        self.assertUrlContainsQueryParams(url, {'KeyName': 'gsg-keypair'})
+
+        body = self.fixtures.load('describe_key_pairs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _doesnt_exist_DescribeKeyPairs(self, method, url, body, headers):
+        body = self.fixtures.load('describe_key_pairs_doesnt_exist.xml')
+        return (httplib.BAD_REQUEST, body, {},
+                httplib.responses[httplib.BAD_REQUEST])
 
     def _CreateKeyPair(self, method, url, body, headers):
         body = self.fixtures.load('create_key_pair.xml')

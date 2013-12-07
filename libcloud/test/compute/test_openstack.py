@@ -36,7 +36,7 @@ from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackAuthConnection
 from libcloud.common.openstack import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
-from libcloud.compute.types import Provider
+from libcloud.compute.types import Provider, KeyPairDoesNotExistError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
@@ -1337,6 +1337,16 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertEqual(keypair.private_key, None)
 
+    def test_get_key_pair(self):
+        key_pair = self.driver.get_key_pair(name='test-key-pair')
+
+        self.assertEqual(key_pair.name, 'test-key-pair')
+
+    def test_get_key_pair_doesnt_exist(self):
+        self.assertRaises(KeyPairDoesNotExistError,
+                          self.driver.get_key_pair,
+                          name='doesnt-exist')
+
     def test_create_key_pair(self):
         name = 'key0'
         keypair = self.driver.create_key_pair(name=name)
@@ -1691,6 +1701,23 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             raise NotImplementedError()
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_keypairs_test_key_pair(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_keypairs_get_one.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_keypairs_doesnt_exist(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_keypairs_not_found.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.NOT_FOUND, body, self.json_content_headers,
+                httplib.responses[httplib.NOT_FOUND])
 
     def _v1_1_slug_os_keypairs_key1(self, method, url, body, headers):
         if method == "DELETE":

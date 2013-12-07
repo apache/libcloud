@@ -34,10 +34,11 @@ from xml.etree import ElementTree as ET
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, ProviderError
-from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, StorageVolume
 from libcloud.compute.base import KeyPair
+from libcloud.compute.types import NodeState, Provider
+from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.pricing import get_size_price
 from libcloud.common.base import Response
 from libcloud.utils.xml import findall
@@ -106,12 +107,19 @@ class OpenStackResponse(Response):
         body = self.parse_body()
 
         if self.has_content_type('application/xml'):
-            text = "; ".join([err.text or '' for err in body.getiterator()
+            text = '; '.join([err.text or '' for err in body.getiterator()
                               if err.text])
         elif self.has_content_type('application/json'):
-            values = body.values()
+            values = list(body.values())
 
-            if len(values) > 0 and 'message' in values[0]:
+            context = self.connection.context
+            driver = self.connection.driver
+            key_pair_name = context.get('key_pair_name', None)
+
+            if len(values) > 0 and values[0]['code'] == 404 and key_pair_name:
+                raise KeyPairDoesNotExistError(name=key_pair_name,
+                                               driver=driver)
+            elif len(values) > 0 and 'message' in values[0]:
                 text = ';'.join([fault_data['message'] for fault_data
                                  in values])
             else:
@@ -1725,6 +1733,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         response = self.connection.request('/os-keypairs')
         key_pairs = self._to_key_pairs(response.object)
         return key_pairs
+
+    def get_key_pair(self, name):
+        self.connection.set_context({'key_pair_name': name})
+
+        response = self.connection.request('/os-keypairs/%s' % (name))
+        key_pair = self._to_key_pair(response.object['keypair'])
+        return key_pair
 
     def create_key_pair(self, name):
         data = {'keypair': {'name': name}}

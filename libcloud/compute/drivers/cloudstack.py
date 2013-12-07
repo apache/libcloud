@@ -27,6 +27,7 @@ from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, LibcloudError
+from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.utils.networking import is_private_subnet
 
 
@@ -704,6 +705,19 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         key_pairs = res.get('sshkeypair', [])
         key_pairs = self._to_key_pairs(data=key_pairs)
         return key_pairs
+
+    def get_key_pair(self, name):
+        params = {'name': name}
+        res = self._sync_request(command='listSSHKeyPairs',
+                                 params=params,
+                                 method='GET')
+        key_pairs = res.get('sshkeypair', [])
+
+        if len(key_pairs) == 0:
+            raise KeyPairDoesNotExistError(name=name, driver=self)
+
+        key_pair = self._to_key_pair(data=key_pairs[0])
+        return key_pair
 
     def create_key_pair(self, name, **kwargs):
         """

@@ -1070,6 +1070,18 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_key_pairs not implemented for this driver')
 
+    def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
+        """
+        raise NotImplementedError(
+            'get_key_pair not implemented for this driver')
+
     def create_key_pair(self, name):
         """
         Create a new key pair object.

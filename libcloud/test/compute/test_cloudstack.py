@@ -27,6 +27,7 @@ except ImportError:
 
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
+from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.compute.providers import get_driver
 
 from libcloud.test import unittest
@@ -289,6 +290,17 @@ class CloudStackCommonTestCase(TestCaseMixin):
         CloudStackMockHttp.fixture_tag = 'no_keys'
         keypairs = self.driver.list_key_pairs()
         self.assertEqual(keypairs, [])
+
+    def test_get_key_pair(self):
+        CloudStackMockHttp.fixture_tag = 'get_one'
+        key_pair = self.driver.get_key_pair(name='cs-keypair')
+        self.assertEqual(key_pair.name, 'cs-keypair')
+
+    def test_get_key_pair_doesnt_exist(self):
+        CloudStackMockHttp.fixture_tag = 'get_one_doesnt_exist'
+
+        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair,
+                          name='does-not-exist')
 
     def test_create_keypair(self):
         key_pair = self.driver.create_key_pair(name='test-keypair')
