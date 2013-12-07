@@ -56,8 +56,8 @@ BASE_API_METHODS = {
                      'balancer_list_members', 'balancer_attach_member',
                      'balancer_detach_member', 'balancer_attach_compute_node'],
     'storage_main': ['list_containers', 'list_container_objects',
-                     'create_container',
-                     'delete_container', 'upload_object',
+                     'iterate_containers', 'iterate_container_objects',
+                     'create_container', 'delete_container', 'upload_object',
                      'upload_object_via_stream', 'download_object',
                      'download_object_as_stream', 'delete_object'],
     'storage_cdn': ['enable_container_cdn', 'enable_object_cdn',
@@ -227,10 +227,17 @@ def generate_supported_methods_table(api, provider_matrix):
         provider_name = '`%s`_' % (values['name'])
         row = [provider_name]
 
-        if api == 'dns':
-            # TODO: Make it nicer
+        # TODO: Make it nicer
+        # list_* methods don't need to be implemented if iterate_* methods are
+        # implemented
+        if api == 'storage_main':
+            if values['methods']['iterate_containers']:
+                values['methods']['list_containers'] = True
+
+            if values['methods']['iterate_container_objects']:
+                values['methods']['list_container_objects'] = True
+        elif api == 'dns':
             # list_zones and list_records don't need to be implemented if
-            # iterate_* methods are implemented
             if values['methods']['iterate_zones']:
                 values['methods']['list_zones'] = True
 
@@ -239,7 +246,7 @@ def generate_supported_methods_table(api, provider_matrix):
 
         for method in base_api_methods:
             # TODO: ghetto
-            if api == 'dns' and method.startswith('iterate_'):
+            if method.startswith('iterate_'):
                 continue
 
             supported = values['methods'][method]
