@@ -8,7 +8,7 @@ Provider                      Documentation                                  Pro
 `CloudFiles (US)`_                                                           CLOUDFILES_US     :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesUSStorageDriver`   
 `Google Storage`_             :doc:`Click </storage/drivers/google_storage>` GOOGLE_STORAGE    :mod:`libcloud.storage.drivers.google_storage` :class:`GoogleStorageDriver`         
 `KTUCloud Storage`_                                                          KTUCLOUD          :mod:`libcloud.storage.drivers.ktucloud`       :class:`KTUCloudStorageDriver`       
-`Nimbus`_                                                                    NIMBUS            :mod:`libcloud.storage.drivers.nimbus`         :class:`NimbusStorageDriver`         
+`Nimbus.io`_                                                                 NIMBUS            :mod:`libcloud.storage.drivers.nimbus`         :class:`NimbusStorageDriver`         
 `Ninefold`_                                                                  NINEFOLD          :mod:`libcloud.storage.drivers.ninefold`       :class:`NinefoldStorageDriver`       
 `Amazon S3 (standard)`_                                                      S3                :mod:`libcloud.storage.drivers.s3`             :class:`S3StorageDriver`             
 `Amazon S3 (ap-northeast-1)`_                                                S3_AP_NORTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APNEStorageDriver`         
@@ -25,7 +25,7 @@ Provider                      Documentation                                  Pro
 .. _`CloudFiles (US)`: http://www.rackspace.com/
 .. _`Google Storage`: http://cloud.google.com/
 .. _`KTUCloud Storage`: http://www.rackspace.com/
-.. _`Nimbus`: https://nimbus.io/
+.. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`Amazon S3 (standard)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ap-northeast-1)`: http://aws.amazon.com/s3/
