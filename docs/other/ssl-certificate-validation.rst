@@ -46,10 +46,16 @@ Using a custom CA certificate
 -----------------------------
 
 If you want to use a custom CA certificate file for validating the server
-certificate, you can do that by setting ``libcloud.security.CA_CERTS_PATH``
-variable (``list``) to point to your CA file.
+certificate, you can do that using two different approaches:
 
-For example:
+1. Setting ``SSL_CERT_FILE`` environment variable to point to your CA file
+
+.. sourcecode:: bash
+
+    SSL_CERT_FILE=/home/user/path-to-your-ca-file.crt python my_script.py
+
+2. Setting ``libcloud.security.CA_CERTS_PATH`` variable in your script to 
+   point to your CA file
 
 .. sourcecode:: python
 
