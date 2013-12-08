@@ -69,9 +69,10 @@ CA_CERTS_UNAVAILABLE_WARNING_MSG = (
 )
 
 CA_CERTS_UNAVAILABLE_ERROR_MSG = (
-    'No CA Certificates were found in CA_CERTS_PATH. For information on'
+    'No CA Certificates were found in CA_CERTS_PATH. For information on '
     'how to get required certificate files, please visit '
-    'http://libcloud.apache.org/docs/ssl-certificate-validation.html'
+    'https://libcloud.readthedocs.org/en/latest/other/'
+    'ssl-certificate-validation.html'
 )
 
 VERIFY_SSL_DISABLED_MSG = (
