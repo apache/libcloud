@@ -15,7 +15,6 @@
 
 import os
 import sys
-import unittest
 import os.path
 import warnings
 
@@ -25,6 +24,8 @@ import libcloud.security
 
 from libcloud.utils.py3 import reload
 from libcloud.httplib_ssl import LibcloudHTTPSConnection
+
+from libcloud.test import unittest
 
 ORIGINAL_CA_CERS_PATH = libcloud.security.CA_CERTS_PATH
 
@@ -52,18 +53,13 @@ class TestHttpLibSSLTests(unittest.TestCase):
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.environ['SSL_CERT_FILE'] = file_path
 
-        try:
-            reload(libcloud.security)
-        except ValueError:
-            e = sys.exc_info()[1]
-            msg = 'Certificate file can\'t be a directory'
-            self.assertEqual(str(e), msg)
-        else:
-            self.fail('Exception was not thrown')
+        expected_msg = 'Certificate file can\'t be a directory'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                reload, libcloud.security)
 
     def test_custom_ca_path_using_env_var_exist(self):
         # When setting a path we don't actually check that a valid CA file is
-        # provied.
+        # provided.
         # This happens later in the code in httplib_ssl.connect method
         file_path = os.path.abspath(__file__)
         os.environ['SSL_CERT_FILE'] = file_path
@@ -195,15 +191,9 @@ class TestHttpLibSSLTests(unittest.TestCase):
         # Should throw a runtime error
         libcloud.security.VERIFY_SSL_CERT = True
 
-        try:
-            self.httplib_object._setup_verify()
-        except RuntimeError:
-            e = sys.exc_info()[1]
-            msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
-            self.assertEqual(str(e), msg)
-            pass
-        else:
-            self.fail('Exception not thrown')
+        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
+        self.assertRaisesRegexp(RuntimeError, expected_msg,
+                                self.httplib_object._setup_verify)
 
         libcloud.security.VERIFY_SSL_CERT = False
         self.httplib_object._setup_verify()
@@ -228,15 +218,9 @@ class TestHttpLibSSLTests(unittest.TestCase):
         # verify = True, no CA certs are available, exception should be thrown
         libcloud.security.CA_CERTS_PATH = []
 
-        try:
-            self.httplib_object._setup_ca_cert()
-        except RuntimeError:
-            e = sys.exc_info()[1]
-            msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
-            self.assertEqual(str(e), msg)
-            pass
-        else:
-            self.fail('Exception not thrown')
+        expected_msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
+        self.assertRaisesRegexp(RuntimeError, expected_msg,
+                                self.httplib_object._setup_ca_cert)
 
 
 if __name__ == '__main__':
