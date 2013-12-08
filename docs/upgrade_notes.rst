@@ -15,6 +15,21 @@ single class plus ``region`` argument model.
 More information on how this affects existing drivers and your code can be
 found bellow.
 
+libcloud.security.VERIFY_SSL_CERT_STRICT variable has been removed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``libcloud.security.VERIFY_SSL_CERT_STRICT`` variable has been introduced in
+version 0.4.2 when we initially added support for SSL certificate verification.
+This variable was added to ease the migration from older versions of Libcloud
+which didn't verify SSL certificates.
+
+In version 0.6.0, this variable has been set to ``True`` by default and
+deprecated.
+
+In this release, this variable has been fully removed. For more information
+on how SSL certificate validation works in Libcloud, see the :doc:`SSL
+Certificate Validation </other/ssl-certificate-validation>` page.
+
 Cache busting functionality is now only enabled in Rackspace first-gen driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
