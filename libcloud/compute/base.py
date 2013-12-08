@@ -56,6 +56,9 @@ __all__ = [
     'NodeAuthPassword',
     'NodeDriver',
 
+    'StorageVolume',
+    'VolumeSnapshot',
+
     # Deprecated, moved to libcloud.utils.networking
     'is_private_subnet',
     'is_valid_ip_address'
