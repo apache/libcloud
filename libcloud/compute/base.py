@@ -17,6 +17,8 @@
 Provides base classes for working with drivers
 """
 
+from __future__ import with_statement
+
 import sys
 import time
 import hashlib
@@ -551,6 +553,44 @@ class VolumeSnapshot(object):
         return self.driver.destroy_volume_snapshot(snapshot=self)
 
 
+class KeyPair(object):
+    """
+    Represents a SSH key pair.
+    """
+
+    def __init__(self, name, public_key, fingerprint, driver, private_key=None,
+                 extra=None):
+        """
+        Constructor.
+
+        :keyword    name: Name of the key pair object.
+        :type       name: ``str``
+
+        :keyword    fingerprint: Key fingerprint.
+        :type       fingerprint: ``str``
+
+        :keyword    public_key: Public key in OpenSSH format.
+        :type       public_key: ``str``
+
+        :keyword    private_key: Private key in PEM format.
+        :type       private_key: ``str``
+
+        :keyword    extra: Provider specific attributes associated with this
+                           key pair. (optional)
+        :type       extra: ``dict``
+        """
+        self.name = name
+        self.fingerprint = fingerprint
+        self.public_key = public_key
+        self.private_key = private_key
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<KeyPair name=%s fingerprint=%s driver=%s>' %
+                (self.name, self.fingerprint, self.driver.name))
+
+
 class NodeDriver(BaseDriver):
     """
     A base NodeDriver class to derive from
@@ -565,7 +605,7 @@ class NodeDriver(BaseDriver):
     name = None
     type = None
     port = None
-    features = {"create_node": []}
+    features = {'create_node': []}
 
     """
     List of available features for a driver.
@@ -1016,6 +1056,86 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'destroy_volume_snapshot not implemented for this driver')
+
+    ##
+    # SSH key pair management methods
+    ##
+
+    def list_key_pairs(self):
+        """
+        List all the available key pair objects.
+
+        :rtype: ``list`` of :class:`.KeyPair` objects
+        """
+        raise NotImplementedError(
+            'list_key_pairs not implemented for this driver')
+
+    def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
+        """
+        raise NotImplementedError(
+            'get_key_pair not implemented for this driver')
+
+    def create_key_pair(self, name):
+        """
+        Create a new key pair object.
+
+        :param name: Key pair name.
+        :type name: ``str``
+        """
+        raise NotImplementedError(
+            'create_key_pair not implemented for this driver')
+
+    def import_key_pair_from_string(self, name, key_material):
+        """
+        Import a new public key from string.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param key_material: Public key material.
+        :type key_material: ``str``
+
+        :rtype: :class:`.KeyPair` object
+        """
+        raise NotImplementedError(
+            'import_key_pair_from_string not implemented for this driver')
+
+    def import_key_pair_from_file(self, name, key_file_path):
+        """
+        Import a new public key from string.
+
+        :param name: Key pair name.
+        :type name: ``str``
+
+        :param key_file_path: Path to the public key file.
+        :type key_file_path: ``str``
+
+        :rtype: :class:`.KeyPair` object
+        """
+        key_file_path = os.path.expanduser(key_file_path)
+
+        with open(key_file_path, 'r') as fp:
+            key_material = fp.read()
+
+        return self.import_key_pair_from_string(name=name,
+                                                key_material=key_material)
+
+    def delete_key_pair(self, key_pair):
+        """
+        Delete an existing key pair.
+
+        :param key_pair: Key pair object.
+        :type key_pair: :class`.KeyPair`
+        """
+        raise NotImplementedError(
+            'delete_key_pair not implemented for this driver')
 
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):

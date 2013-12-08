@@ -36,7 +36,7 @@ from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackAuthConnection
 from libcloud.common.openstack import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
-from libcloud.compute.types import Provider
+from libcloud.compute.types import Provider, KeyPairDoesNotExistError
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver, OpenStack_1_0_Response,
@@ -1327,8 +1327,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_delete_security_group_rule(security_group_rule)
         self.assertTrue(result)
 
-    def test_ex_list_keypairs(self):
-        keypairs = self.driver.ex_list_keypairs()
+    def test_list_key_pairs(self):
+        keypairs = self.driver.list_key_pairs()
         self.assertEqual(len(keypairs), 2, 'Wrong keypairs count')
         keypair = keypairs[1]
         self.assertEqual(keypair.name, 'key2')
@@ -1337,9 +1337,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertEqual(keypair.private_key, None)
 
-    def test_ex_create_keypair(self):
+    def test_get_key_pair(self):
+        key_pair = self.driver.get_key_pair(name='test-key-pair')
+
+        self.assertEqual(key_pair.name, 'test-key-pair')
+
+    def test_get_key_pair_doesnt_exist(self):
+        self.assertRaises(KeyPairDoesNotExistError,
+                          self.driver.get_key_pair,
+                          name='doesnt-exist')
+
+    def test_create_key_pair(self):
         name = 'key0'
-        keypair = self.driver.ex_create_keypair(name)
+        keypair = self.driver.create_key_pair(name=name)
         self.assertEqual(keypair.name, name)
 
         self.assertEqual(keypair.fingerprint,
@@ -1347,34 +1357,36 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(len(keypair.public_key) > 10)
         self.assertTrue(len(keypair.private_key) > 10)
 
-    def test_ex_import_keypair(self):
+    def test_import_key_pair_from_file(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
         pub_key = open(path, 'r').read()
-        keypair = self.driver.ex_import_keypair(name, path)
+        keypair = self.driver.import_key_pair_from_file(name=name,
+                                                        key_file_path=path)
         self.assertEqual(keypair.name, name)
         self.assertEqual(
             keypair.fingerprint, '97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a')
         self.assertEqual(keypair.public_key, pub_key)
         self.assertEqual(keypair.private_key, None)
 
-    def test_ex_import_keypair_from_string(self):
+    def test_import_key_pair_from_string(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), "fixtures", "misc", "dummy_rsa.pub")
+            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
         pub_key = open(path, 'r').read()
-        keypair = self.driver.ex_import_keypair_from_string(name, pub_key)
+        keypair = self.driver.import_key_pair_from_string(name=name,
+                                                          key_material=pub_key)
         self.assertEqual(keypair.name, name)
         self.assertEqual(
             keypair.fingerprint, '97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a')
         self.assertEqual(keypair.public_key, pub_key)
         self.assertEqual(keypair.private_key, None)
 
-    def test_ex_delete_keypair(self):
+    def test_delete_key_pair(self):
         keypair = OpenStackKeyPair(
             name='key1', fingerprint=None, public_key=None, driver=self.driver)
-        result = self.driver.ex_delete_keypair(keypair)
+        result = self.driver.delete_key_pair(key_pair=keypair)
         self.assertTrue(result)
 
     def test_ex_list_floating_ip_pools(self):
@@ -1689,6 +1701,23 @@ class OpenStack_1_1_MockHttp(MockHttpTestCase):
             raise NotImplementedError()
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_keypairs_test_key_pair(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_keypairs_get_one.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_keypairs_doesnt_exist(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_keypairs_not_found.json')
+        else:
+            raise NotImplementedError()
+
+        return (httplib.NOT_FOUND, body, self.json_content_headers,
+                httplib.responses[httplib.NOT_FOUND])
 
     def _v1_1_slug_os_keypairs_key1(self, method, url, body, headers):
         if method == "DELETE":
