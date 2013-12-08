@@ -52,6 +52,11 @@ BASE_API_METHODS = {
                               'attach_volume', 'detach_volume',
                               'list_volume_snapshots',
                               'create_volume_snapshot'],
+    'compute_key_pair_management': ['list_key_pairs', 'get_key_pair',
+                                    'create_key_pair',
+                                    'import_key_pair_from_string',
+                                    'import_key_pair_from_file',
+                                    'delete_key_pair'],
     'loadbalancer': ['create_balancer', 'list_balancers',
                      'balancer_list_members', 'balancer_attach_member',
                      'balancer_detach_member', 'balancer_attach_compute_node'],
@@ -85,6 +90,14 @@ FRIENDLY_METHODS_NAMES = {
         'detach_volume': 'detach volume',
         'list_volume_snapshots': 'list snapshots',
         'create_volume_snapshot': 'create snapshot'
+    },
+    'compute_key_pair_management': {
+        'list_key_pairs': 'list key pairs',
+        'get_key_pair': 'get key pair',
+        'create_key_pair': 'create key pair',
+        'import_key_pair_from_string': 'import public key from string',
+        'import_key_pair_from_file': 'import public key from file',
+        'delete_key_pair': 'delete key pair'
     },
     'loadbalancer': {
         'create_balancer': 'create balancer',
@@ -138,7 +151,8 @@ def get_provider_api_names(Provider):
 def generate_providers_table(api):
     result = {}
 
-    if api in ['compute_main', 'compute_block_storage']:
+    if api in ['compute_main', 'compute_block_storage',
+               'compute_key_pair_management']:
         driver = NodeDriver
         drivers = COMPUTE_DRIVERS
         provider = ComputeProvider
@@ -324,6 +338,8 @@ def generate_tables():
             file_name_2 = '_supported_methods_main.rst'
         elif api == 'compute_block_storage':
             file_name_2 = '_supported_methods_block_storage.rst'
+        elif api == 'compute_key_pair_management':
+            file_name_2 = '_supported_methods_key_pair_management.rst'
         elif api == 'storage_main':
             file_name_2 = '_supported_methods_main.rst'
         elif api == 'storage_cdn':
