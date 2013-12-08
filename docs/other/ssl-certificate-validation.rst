@@ -26,22 +26,6 @@ If the above packages are unavailable to you, and you don't wish to roll
 your own, the makers of cURL provides an excellent resource, generated
 from Mozilla: http://curl.haxx.se/docs/caextract.html.
 
-Adding additional CA certificate to the path
---------------------------------------------
-
-If you want to add an additional CA certificate to the ``CA_CERTS_PATH``, you
-can do this by appending a path to your CA file to the
-``libcloud.security.CA_CERTS_PATH`` list.
-
-For example:
-
-.. sourcecode:: python
-
-    import libcloud.security
-    libcloud.security.CA_CERTS_PATH.append('/home/user/path-to-your-ca-file.crt')
-
-    # Instantiate and work with the driver here...
-
 Using a custom CA certificate
 -----------------------------
 
@@ -61,6 +45,22 @@ certificate, you can do that using two different approaches:
 
     import libcloud.security
     libcloud.security.CA_CERTS_PATH = ['/home/user/path-to-your-ca-file.crt']
+
+    # Instantiate and work with the driver here...
+
+Adding additional CA certificate to the path
+--------------------------------------------
+
+If you want to add an additional CA certificate to the ``CA_CERTS_PATH``, you
+can do this by appending a path to your CA file to the
+``libcloud.security.CA_CERTS_PATH`` list.
+
+For example:
+
+.. sourcecode:: python
+
+    import libcloud.security
+    libcloud.security.CA_CERTS_PATH.append('/home/user/path-to-your-ca-file.crt')
 
     # Instantiate and work with the driver here...
 
