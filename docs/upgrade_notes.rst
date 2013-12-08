@@ -161,9 +161,9 @@ model. As such, the following provider constants have been **removed**:
 
 And replaced with two new constants:
 
-* ``RACKSPACE`` - Supported values for ``region`` argument are: ``us``, ``uk``.
+* ``RACKSPACE_FIRST_GEN`` - Supported values for ``region`` argument are: ``us``, ``uk``.
   Default value is ``us``.
-* ``RACKSPACE_FIRST_GEN`` - Supported values for the ``region`` argument are:
+* ``RACKSPACE`` - Supported values for the ``region`` argument are:
   ``dfw``, ``ord``, ``iad``, ``lon``, ``syd``, ``hkg``.
   Default value is ``dfw``.
 
