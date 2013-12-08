@@ -192,17 +192,8 @@ class TestHttpLibSSLTests(unittest.TestCase):
     def test_setup_verify(self, _):
         libcloud.security.CA_CERTS_PATH = []
 
-        # non-strict mode should just emit a warning
+        # Should throw a runtime error
         libcloud.security.VERIFY_SSL_CERT = True
-        libcloud.security.VERIFY_SSL_CERT_STRICT = False
-        self.httplib_object._setup_verify()
-
-        warnings.warn.assert_called_once_with(
-            libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
-
-        # strict mode, should throw a runtime error
-        libcloud.security.VERIFY_SSL_CERT = True
-        libcloud.security.VERIFY_SSL_CERT_STRICT = True
 
         try:
             self.httplib_object._setup_verify()
@@ -215,14 +206,12 @@ class TestHttpLibSSLTests(unittest.TestCase):
             self.fail('Exception not thrown')
 
         libcloud.security.VERIFY_SSL_CERT = False
-        libcloud.security.VERIFY_SSL_CERT_STRICT = False
         self.httplib_object._setup_verify()
 
     @patch('warnings.warn')
     def test_setup_ca_cert(self, _):
         # verify = False, _setup_ca_cert should be a no-op
         self.httplib_object.verify = False
-        self.httplib_object.strict = False
         self.httplib_object._setup_ca_cert()
 
         self.assertEqual(self.httplib_object.ca_cert, None)
@@ -236,15 +225,18 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         self.assertTrue(self.httplib_object.ca_cert is not None)
 
-        # verify = True, no CA certs are available, warning should be emitted
+        # verify = True, no CA certs are available, exception should be thrown
         libcloud.security.CA_CERTS_PATH = []
-        self.httplib_object._setup_ca_cert()
 
-        warnings.warn.assert_called_once_with(
-            libcloud.security.CA_CERTS_UNAVAILABLE_WARNING_MSG)
-
-        self.assertFalse(self.httplib_object.ca_cert)
-        self.assertFalse(self.httplib_object.verify)
+        try:
+            self.httplib_object._setup_ca_cert()
+        except RuntimeError:
+            e = sys.exc_info()[1]
+            msg = libcloud.security.CA_CERTS_UNAVAILABLE_ERROR_MSG
+            self.assertEqual(str(e), msg)
+            pass
+        else:
+            self.fail('Exception not thrown')
 
 
 if __name__ == '__main__':
