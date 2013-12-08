@@ -33,7 +33,7 @@ class LibcloudHTTPSConnection(httplib.HTTPSConnection):
     Subclass of HTTPSConnection which verifies certificate names
     if and only if CA certificates are available.
     """
-    verify = False        # does not verify
+    verify = True         # verify by default
     ca_cert = None        # no default CA Certificate
 
     def __init__(self, *args, **kwargs):
