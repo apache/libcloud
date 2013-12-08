@@ -22,20 +22,26 @@ Terminology
 Compute
 ~~~~~~~
 
-* **Node** - represents a cloud or virtual server.
-* **NodeSize** - represents node hardware configuration. Usually this is amount
-  of the available RAM, bandwidth, CPU speed and disk size. Most of the drivers
-  also expose hourly price (in dollars) for the Node of this size.
-* **NodeImage** - represents an operating system image.
-* **NodeLocation** - represents a physical location where a server can be.
-* **NodeState** - represents a node state. Standard states are: ``running``,
-  ``stopped``, ``rebooting``, ``terminated``, ``pending``, and ``unknown``.
+* :class:`~libcloud.compute.base.Node` - represents a cloud or virtual server.
+* :class:`~libcloud.compute.base.NodeSize` - represents node hardware
+  configuration. Usually this is amount of the available RAM, bandwidth,
+  CPU speed and disk size. Most of the drivers also expose an hourly price
+  (in dollars) for the Node of this size.
+* :class:`~libcloud.compute.base.NodeImage` - represents an operating system
+  image.
+* :class:`~libcloud.compute.base.NodeLocation` - represents a physical location
+  where a server can be.
+* :class:`~libcloud.compute.types.NodeState` - represents a node state.
+  Standard states are: ``running``, ``stopped``, ``rebooting``, ``terminated``,
+  ``pending``, and ``unknown``.
 
 Block Storage
 ~~~~~~~~~~~~~
 
-* **StorageVolume** - represents a block storage volume
-* **VolumeSnapshot** - represents a point in time snapshot of a StorageVolume
+* :class:`~libcloud.compute.base.StorageVolume` - represents a block storage
+  volume
+* :class:`~libcloud.compute.base.VolumeSnapshot` - represents a point in time
+  snapshot of a StorageVolume
 
 Supported Providers
 -------------------

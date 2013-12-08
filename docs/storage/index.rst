@@ -15,11 +15,12 @@ CDN management functionality.
 Terminology
 -----------
 
-* **Object** - represents an object or so called BLOB.
-* **Container** - represents a container which can contain multiple objects.
-  You can think of it as a folder on a file system. Difference between
-  container and a folder on file system is that containers cannot be nested.
-  Some APIs and providers (e.g. AWS) refer to it as a Bucket.
+* :class:`~libcloud.storage.base.Container` - represents a container which can
+  contain multiple objects. You can think of it as a folder on a file system.
+  Difference between container and a folder on file system is that containers
+  cannot be nested. Some APIs and providers (e.g. AWS) refer to it as a Bucket.
+* :class:`~libcloud.storage.base.Object` - represents an object or so called
+  BLOB.
 
 Supported Providers
 -------------------
