@@ -86,18 +86,27 @@ class Response(object):
         :param connection: Parent connection object.
         :type connection: :class:`.Connection`
         """
-        self.body = self._decompress_response(response=response)
-
-        if PY3:
-            self.body = b(self.body).decode('utf-8')
-
-        self.status = response.status
+        self.connection = connection
 
         # http.client In Python 3 doesn't automatically lowercase the header
         # names
         self.headers = lowercase_keys(dict(response.getheaders()))
         self.error = response.reason
-        self.connection = connection
+        self.status = response.status
+
+        # This attribute is set when using LoggingConnection.
+        original_data = getattr(response, '_original_data', None)
+
+        if original_data:
+            # LoggingConnection already decompresses data so it can log it
+            # which means we don't need to decompress it here.
+            self.body = response._original_data
+        else:
+            self.body = self._decompress_response(body=response.read(),
+                                                  headers=self.headers)
+
+        if PY3:
+            self.body = b(self.body).decode('utf-8')
 
         if not self.success():
             raise Exception(self.parse_error())
@@ -136,29 +145,22 @@ class Response(object):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
-        return self.status == httplib.OK or self.status == httplib.CREATED
+        return self.status in [httplib.OK, httplib.CREATED]
 
-    def _decompress_response(self, response):
+    def _decompress_response(self, body, headers):
         """
         Decompress a response body if it is using deflate or gzip encoding.
+
+        :param body: Response body.
+        :type body: ``str``
+
+        :param headers: Response headers.
+        :type headers: ``dict``
 
         :return: Decompressed response
         :rtype: ``str``
         """
-        headers = lowercase_keys(dict(response.getheaders()))
         encoding = headers.get('content-encoding', None)
-
-        # This attribute is set when using LoggingConnection
-        original_data = getattr(response, '_original_data', None)
-
-        if original_data is not None:
-            # LoggingConnection decompresses data before we get into this
-            # function so it can log decompressed body.
-            # If this attribute is present, this means the body has already
-            # been decompressed.
-            return original_data
-
-        body = response.read()
 
         if encoding in ['zlib', 'deflate']:
             body = decompress_data('zlib', body)

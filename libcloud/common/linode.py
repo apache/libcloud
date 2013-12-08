@@ -80,21 +80,26 @@ class LinodeResponse(JsonResponse):
 
         :keyword response: The raw response returned by urllib
         :return: parsed :class:`LinodeResponse`"""
-        self.body = self._decompress_response(response=response)
+
+        self.connection = connection
+
+        self.headers = dict(response.getheaders())
+        self.error = response.reason
+        self.status = response.status
+
+        self.body = self._decompress_response(body=response.read(),
+                                              headers=self.headers)
 
         if PY3:
             self.body = b(self.body).decode('utf-8')
 
-        self.status = response.status
-        self.headers = dict(response.getheaders())
-        self.error = response.reason
-        self.connection = connection
         self.invalid = LinodeException(0xFF,
                                        "Invalid JSON received from server")
 
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.objects, self.errors = self.parse_body()
+
         if not self.success():
             # Raise the first error, as there will usually only be one
             raise self.errors[0]
