@@ -16,7 +16,6 @@
 import os
 import sys
 import os.path
-import warnings
 
 from mock import patch
 
