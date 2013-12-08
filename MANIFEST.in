@@ -4,8 +4,7 @@ include DISCLAIMER
 include example_*.py
 include CONTRIBUTORS
 include CHANGES
-include RELEASING
-include README
+include README.rst
 include tox.ini
 include libcloud/data/pricing.json
 prune libcloud/test/secrets.py
