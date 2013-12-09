@@ -44,8 +44,8 @@ __all__ = [
 
 CHUNK_SIZE = 8096
 
-# Default Content-Type which is sent when upload an object if one is not
-# supplied and can't be detected
+# Default Content-Type which is sent when uploading an object if one is not
+# supplied and can't be detected when using non-strict mode.
 DEFAULT_CONTENT_TYPE = 'application/octet-stream'
 
 
@@ -185,6 +185,10 @@ class StorageDriver(BaseDriver):
     name = None
     hash_type = 'md5'
     supports_chunked_encoding = False
+
+    # When strict mode is used, exception will be thrown if no content type is
+    # provided and none can be detected when uploading an object
+    strict_mode = False
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
@@ -605,9 +609,13 @@ class StorageDriver(BaseDriver):
             content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
             if not content_type:
-                # Fallback to a content-type that will cause most browsers to
-                # download it again as a binary file.
-                content_type = DEFAULT_CONTENT_TYPE
+                if self.strict_mode:
+                    raise AttributeError('File content-type could not be '
+                                         'guessed and no content_type value '
+                                         'is provided')
+                else:
+                    # Fallback to a content-type
+                    content_type = DEFAULT_CONTENT_TYPE
 
         file_size = None
 
