@@ -15,6 +15,33 @@ single class plus ``region`` argument model.
 More information on how this affects existing drivers and your code can be
 found bellow.
 
+Default Content-Type is now provided if none is supplied and none can be guessed
+--------------------------------------------------------------------------------
+
+In older versions, Libcloud would throw an exception when a content type is not
+supplied and none can't be automatically detected when uploading an object.
+
+This has changed with the 0.14.0 release. Now if no content type is specified
+and none can't be detected, a default content type of
+``application/octet-stream`` is used.
+
+If you want to preserve the old behavior, you can set ``strict_mode`` attribute
+on the driver object to ``True``.
+
+.. sourcecode:: python
+
+    from libcloud.storage.types import Provider
+    from libcloud.stoage.providers import get_driver
+
+    cls = get_driver(Provider.CLOUDFILES)
+    driver = cls('username', 'api key')
+
+    driver.strict_mode = True
+
+If you are not using strict mode and you are uploading a binary object, we
+still encourage you to practice Python's "explicit is better than implicit"
+mantra and explicitly specify Content-Type of ``application/octet-stream``.
+
 libcloud.security.VERIFY_SSL_CERT_STRICT variable has been removed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
