@@ -76,6 +76,11 @@ Changes with Apache Libcloud in development
       Rackspace drivers to use auth 2.0 by default.
       [John Obelenus]
 
+    - Update storage drivers to default to "application/octet-stream"
+      Content-Type if none is provided and none can be guessed.
+      (LIBCLOUD-433)
+      [Michael Farrell]
+
   *) DNS
 
     - Implement iterate_* methods in the Route53 driver and makes it work
