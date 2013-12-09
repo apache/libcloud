@@ -33,13 +33,20 @@ from libcloud.common.types import LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
-CHUNK_SIZE = 8096
-
 __all__ = [
     'Object',
     'Container',
-    'StorageDriver'
+    'StorageDriver',
+
+    'CHUNK_SIZE',
+    'DEFAULT_CONTENT_TYPE'
 ]
+
+CHUNK_SIZE = 8096
+
+# Default Content-Type which is sent when upload an object if one is not
+# supplied and can't be detected
+DEFAULT_CONTENT_TYPE = 'application/octet-stream'
 
 
 class Object(object):
@@ -600,7 +607,7 @@ class StorageDriver(BaseDriver):
             if not content_type:
                 # Fallback to a content-type that will cause most browsers to
                 # download it again as a binary file.
-                content_type = 'application/octet-stream'
+                content_type = DEFAULT_CONTENT_TYPE
 
         file_size = None
 

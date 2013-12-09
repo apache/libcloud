@@ -27,6 +27,7 @@ if PY3:
     from io import FileIO as file
 
 from libcloud.storage.base import StorageDriver
+from libcloud.storage.base import DEFAULT_CONTENT_TYPE
 
 from libcloud.test import StorageMockHttp  # pylint: disable-msg=E0611
 
@@ -150,6 +151,24 @@ class BaseStorageTests(unittest.TestCase):
             pass
         else:
             self.fail('Invalid hash type but exception was not thrown')
+
+    def test_upload_default_content_type_is_specified_when_not_supplied(self):
+        iterator = StringIO()
+
+        upload_func = Mock()
+        upload_func.return_value = True, '', 0
+
+        self.driver1.connection = Mock()
+
+        self.driver1._upload_object(object_name='test',
+                                    content_type=None,
+                                    upload_func=upload_func,
+                                    upload_func_kwargs={},
+                                    request_path='/',
+                                    iterator=iterator)
+
+        headers = self.driver1.connection.request.call_args[-1]['headers']
+        self.assertEqual(headers['Content-Type'], DEFAULT_CONTENT_TYPE)
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
