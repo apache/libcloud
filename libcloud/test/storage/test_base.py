@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import sys
-import unittest
 import hashlib
 
 from mock import Mock
@@ -29,7 +28,8 @@ if PY3:
 from libcloud.storage.base import StorageDriver
 from libcloud.storage.base import DEFAULT_CONTENT_TYPE
 
-from libcloud.test import StorageMockHttp  # pylint: disable-msg=E0611
+from libcloud.test import unittest
+from libcloud.test import StorageMockHttp
 
 
 class BaseStorageTests(unittest.TestCase):
