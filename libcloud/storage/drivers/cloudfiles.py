@@ -102,7 +102,7 @@ class CloudFilesConnection(OpenStackBaseConnection):
 
     responseCls = CloudFilesResponse
     rawResponseCls = CloudFilesRawResponse
-
+    
     auth_url = AUTH_URL
     _auth_version = '2.0'
 
@@ -112,6 +112,7 @@ class CloudFilesConnection(OpenStackBaseConnection):
         self.api_version = API_VERSION
         self.accept_format = 'application/json'
         self.cdn_request = False
+        self.endpoint_url = 'internalURL' if 'use_internal_url' in kwargs else 'publicURL'
 
     def get_endpoint(self):
         region = self._ex_force_service_region.upper()
@@ -136,8 +137,8 @@ class CloudFilesConnection(OpenStackBaseConnection):
         if not ep:
             raise LibcloudError('Could not find specified endpoint')
 
-        if 'publicURL' in ep:
-            return ep['publicURL']
+        if self.endpoint_url in ep:
+            return ep[self.endpoint_url]
         else:
             raise LibcloudError('Could not find specified endpoint')
 
@@ -180,8 +181,8 @@ class CloudFilesSwiftConnection(CloudFilesConnection):
             endpoint = self.service_catalog.get_endpoint(
                 name='swift', region=self.region_name)
 
-        if 'publicURL' in endpoint:
-            return endpoint['publicURL']
+        if self.endpoint_url in endpoint:
+            return endpoint[self.endpoint_url]
         else:
             raise LibcloudError('Could not find specified endpoint')
 
@@ -208,6 +209,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         # This is here for backard compatibility
         if 'ex_force_service_region' in kwargs:
             region = kwargs['ex_force_service_region']
+            
 
         OpenStackDriverMixin.__init__(self, (), **kwargs)
         super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
@@ -257,20 +259,21 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         raise LibcloudError('Unexpected status code: %s' % (response.status))
 
     def get_container_cdn_url(self, container):
-        container_name = container.name
-        response = self.connection.request('/%s' % (container_name),
-                                           method='HEAD',
-                                           cdn_request=True)
+        if not getattr(self, '_container_cdn_url', None):
+            container_name = container.name
+            response = self.connection.request('/%s' % (container_name),
+                                               method='HEAD',
+                                               cdn_request=True)
 
-        if response.status == httplib.NO_CONTENT:
-            cdn_url = response.headers['x-cdn-uri']
-            return cdn_url
-        elif response.status == httplib.NOT_FOUND:
-            raise ContainerDoesNotExistError(value='',
-                                             container_name=container_name,
-                                             driver=self)
-
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+            if response.status == httplib.NO_CONTENT:
+                self._container_cdn_url = response.headers['x-cdn-uri']
+            elif response.status == httplib.NOT_FOUND:
+                raise ContainerDoesNotExistError(value='',
+                                                 container_name=container_name,
+                                                 driver=self)
+            else:
+                raise LibcloudError('Unexpected status code: %s' % (response.status))
+        return self._container_cdn_url
 
     def get_object_cdn_url(self, obj):
         container_cdn_url = self.get_container_cdn_url(container=obj.container)
