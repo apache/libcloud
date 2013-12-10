@@ -16,7 +16,7 @@ More information on how this affects existing drivers and your code can be
 found bellow.
 
 Default Content-Type is now provided if none is supplied and none can be guessed
---------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In older versions, Libcloud would throw an exception when a content type is not
 supplied and none can't be automatically detected when uploading an object.
