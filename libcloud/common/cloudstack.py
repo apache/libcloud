@@ -22,6 +22,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import b
 
+from libcloud.common.types import ProviderError
 from libcloud.common.base import ConnectionUserAndKey, PollingConnection
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import MalformedResponseError
@@ -33,7 +34,17 @@ class CloudStackResponse(JsonResponse):
         if self.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError('Invalid provider credentials')
 
-        return self.body
+        body = self.parse_body()
+        values = list(body.values())[0]
+
+        if 'errortext' in values:
+            value = values['errortext']
+        else:
+            value = self.body
+
+        error = ProviderError(value=value, http_code=self.status,
+                              driver=self.connection.driver)
+        raise error
 
 
 class CloudStackConnection(ConnectionUserAndKey, PollingConnection):

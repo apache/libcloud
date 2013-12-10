@@ -62,6 +62,10 @@ Changes with Apache Libcloud in development
      This could happen if node is in an error state. (LIBCLOUD-455)
      [Dustin Spicuzza, Tomaz Muraus]
 
+   - Update CloudStack driver to better handle errors and throw ProviderError
+     instead of a generic Exception.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles

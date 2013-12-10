@@ -25,6 +25,7 @@ try:
 except ImportError:
     import json
 
+from libcloud.common.types import ProviderError
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
 from libcloud.compute.types import KeyPairDoesNotExistError
@@ -56,6 +57,17 @@ class CloudStackCommonTestCase(TestCaseMixin):
         driver = self.driver_klass('invalid', 'invalid', path='/test/path',
                                    host='api.dummy.com')
         self.assertRaises(InvalidCredsError, driver.list_nodes)
+
+    def test_import_keypair_from_string_api_error(self):
+        CloudStackMockHttp.type = 'api_error'
+
+        name = 'test-pair'
+        key_material = ''
+
+        expected_msg = 'Public key is invalid'
+        self.assertRaisesRegexp(ProviderError, expected_msg,
+                                self.driver.import_key_pair_from_string,
+                                name=name, key_material=key_material)
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
@@ -502,6 +514,11 @@ class CloudStackMockHttp(MockHttpTestCase):
         body = ''
         return (httplib.UNAUTHORIZED, body, {},
                 httplib.responses[httplib.UNAUTHORIZED])
+
+    def _test_path_api_error(self, method, url, body, headers):
+        body = self.fixtures.load('registerSSHKeyPair_error.json')
+        return (431, body, {},
+                httplib.responses[httplib.OK])
 
     def _test_path(self, method, url, body, headers):
         url = urlparse.urlparse(url)
