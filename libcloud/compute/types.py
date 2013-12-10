@@ -216,5 +216,25 @@ class DeploymentError(LibcloudError):
                 % (self.node.id, str(self.value), str(self.driver))))
 
 
+class KeyPairError(LibcloudError):
+    error_type = 'KeyPairError'
+
+    def __init__(self, name, driver):
+        self.name = name
+        self.value = 'Key pair with name %s does not exist' % (name)
+        super(KeyPairError, self).__init__(value=self.value, driver=driver)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return ('<%s name=%s, value=%s, driver=%s>' %
+                (self.error_type, self.name, self.value, self.driver.name))
+
+
+class KeyPairDoesNotExistError(KeyPairError):
+    error_type = 'KeyPairDoesNotExistError'
+
+
 """Deprecated alias of :class:`DeploymentException`"""
 DeploymentException = DeploymentError

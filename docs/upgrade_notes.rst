@@ -57,6 +57,35 @@ In this release, this variable has been fully removed. For more information
 on how SSL certificate validation works in Libcloud, see the :doc:`SSL
 Certificate Validation </other/ssl-certificate-validation>` page.
 
+SSH Key pair management functionality has been promoted to the base API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SSH key pair management functionality has been promoted to be a part of the
+base compute API.
+
+As such, the following new classes and methods have been added:
+
+* `libcloud.compute.base.KeyPair`
+* `libcloud.compute.base.NodeDriver.list_key_pairs`
+* `libcloud.compute.base.NodeDriver.create_key_pair`
+* `libcloud.compute.base.NodeDriver.import_key_pair_from_string`
+* `libcloud.compute.base.NodeDriver.import_key_pair_from_file`
+* `libcloud.compute.base.NodeDriver.delete_key_pair`
+
+Previously, this functionality was available in some of the provider drivers
+(CloudStack, EC2, OpenStack) via the following extension methods:
+
+* `ex_list_keypairs`
+* `ex_create_keypair`
+* `ex_import_keypair_from_string`
+* `ex_import_keypair`
+* `ex_delete_keypair`
+
+Existing extension methods will continue to work until the next major release,
+but you are strongly encouraged to start using new methods which are now part
+of the base compute API and are guaranteed to work the same across different
+providers.
+
 Cache busting functionality is now only enabled in Rackspace first-gen driver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

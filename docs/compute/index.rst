@@ -34,6 +34,7 @@ Compute
 * :class:`~libcloud.compute.types.NodeState` - represents a node state.
   Standard states are: ``running``, ``stopped``, ``rebooting``, ``terminated``,
   ``pending``, and ``unknown``.
+* :class:`~libcloud.compute.base.KeyPair` - represents an SSH key pair object.
 
 Block Storage
 ~~~~~~~~~~~~~
@@ -62,11 +63,19 @@ Deployment
 ----------
 
 Libcloud provides deployment functionality which makes bootstrapping a server
-easier. It allows you to create a server and runn shell commands on it once the
+easier. It allows you to create a server and run shell commands on it once the
 server has been created.
 
 For more information and examples, please see the :doc:`deployment page
 </compute/deployment>`.
+
+SSH key pair management
+-----------------------
+
+Compute API also allows you to manage your SSH key pairs.
+
+For more information and examples, please see the :doc:`key pair management
+page </compute/key_pair_management>`.
 
 Examples
 --------
