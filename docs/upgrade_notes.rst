@@ -42,21 +42,6 @@ If you are not using strict mode and you are uploading a binary object, we
 still encourage you to practice Python's "explicit is better than implicit"
 mantra and explicitly specify Content-Type of ``application/octet-stream``.
 
-libcloud.security.VERIFY_SSL_CERT_STRICT variable has been removed
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-``libcloud.security.VERIFY_SSL_CERT_STRICT`` variable has been introduced in
-version 0.4.2 when we initially added support for SSL certificate verification.
-This variable was added to ease the migration from older versions of Libcloud
-which didn't verify SSL certificates.
-
-In version 0.6.0, this variable has been set to ``True`` by default and
-deprecated.
-
-In this release, this variable has been fully removed. For more information
-on how SSL certificate validation works in Libcloud, see the :doc:`SSL
-Certificate Validation </other/ssl-certificate-validation>` page.
-
 SSH Key pair management functionality has been promoted to the base API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -85,24 +70,6 @@ Existing extension methods will continue to work until the next major release,
 but you are strongly encouraged to start using new methods which are now part
 of the base compute API and are guaranteed to work the same across different
 providers.
-
-Cache busting functionality is now only enabled in Rackspace first-gen driver
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Cache busting functionality has been disabled in the Rackspace next-gen driver
-and all of the OpenStack drivers. It's now only enabled in the Rackspace
-first-gen driver.
-
-Cache busting functionality works by appending a random query parameter to
-every GET HTTP request. It was originally added to the Rackspace first-gen
-driver a long time ago to avoid excessive HTTP caching on the provider side.
-This excessive caching some times caused list_nodes and other calls to return
-stale data.
-
-This approach should not be needed with Rackspace next-gen and OpenStack drivers
-so it has been disabled.
-
-No action is required on the user's side.
 
 New default kernel versions used when creating Linode servers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -631,6 +598,39 @@ Not OK:
     # ...
     record = driver.create_record(name=www, zone=zone, type=0,
                                   data='127.0.0.1')
+
+Cache busting functionality is now only enabled in Rackspace first-gen driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cache busting functionality has been disabled in the Rackspace next-gen driver
+and all of the OpenStack drivers. It's now only enabled in the Rackspace
+first-gen driver.
+
+Cache busting functionality works by appending a random query parameter to
+every GET HTTP request. It was originally added to the Rackspace first-gen
+driver a long time ago to avoid excessive HTTP caching on the provider side.
+This excessive caching some times caused list_nodes and other calls to return
+stale data.
+
+This approach should not be needed with Rackspace next-gen and OpenStack drivers
+so it has been disabled.
+
+No action is required on the user's side.
+
+libcloud.security.VERIFY_SSL_CERT_STRICT variable has been removed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``libcloud.security.VERIFY_SSL_CERT_STRICT`` variable has been introduced in
+version 0.4.2 when we initially added support for SSL certificate verification.
+This variable was added to ease the migration from older versions of Libcloud
+which didn't verify SSL certificates.
+
+In version 0.6.0, this variable has been set to ``True`` by default and
+deprecated.
+
+In this release, this variable has been fully removed. For more information
+on how SSL certificate validation works in Libcloud, see the :doc:`SSL
+Certificate Validation </other/ssl-certificate-validation>` page.
 
 Libcloud 0.8
 ------------
