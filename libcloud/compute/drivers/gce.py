@@ -2603,10 +2603,11 @@ class GCENodeDriver(NodeDriver):
         extra['description'] = region['description']
 
         quotas = region.get('quotas')
-        zones = [self.ex_get_zone(z) for z in region['zones']]
         # Work around a bug that will occasionally list missing zones in the
         # region output
-        zones = [z for z in zones if z is not None]
+        zones=None
+        if ('zones' in region):
+            zones = [self.ex_get_zone(z) for z in region['zones']]
         deprecated = region.get('deprecated')
 
         return GCERegion(id=region['id'], name=region['name'],
