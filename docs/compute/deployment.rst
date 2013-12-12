@@ -7,7 +7,7 @@ there to help you bootstrap a new server. It allows you to perform tasks such
 as:
 
 * Install your public SSH key on the server
-* Instal configuration management software
+* Install configuration management software
 * Add an initial user account
 * Install an initial set of SSL certificates and keys on the server
 
