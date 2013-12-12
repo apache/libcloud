@@ -545,8 +545,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype ``list`` of :class:`CloudStackNetwork`
         """
 
-        nets = self._sync_request(command='listNetworks',
-                                  method='GET')['network']
+        res = self._sync_request(command='listNetworks',
+                                 method='GET')
+        nets = res.get('network', [])
 
         networks = []
         for net in nets:

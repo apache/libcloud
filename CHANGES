@@ -66,6 +66,10 @@ Changes with Apache Libcloud in development
      instead of a generic Exception.
      [Tomaz Muraus]
 
+   - Modify ex_list_networks methods in CloudStack driver to not thrown if there
+     are no networks available.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
