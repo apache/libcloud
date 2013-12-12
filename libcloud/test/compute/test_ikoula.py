@@ -21,7 +21,7 @@ from libcloud.test.compute.test_cloudstack import CloudStackCommonTestCase
 from libcloud.test import unittest
 
 
-class ExoscaleNodeDriverTestCase(CloudStackCommonTestCase, unittest.TestCase):
+class IkoulaNodeDriverTestCase(CloudStackCommonTestCase, unittest.TestCase):
     driver_klass = IkoulaNodeDriver
 
 if __name__ == '__main__':
