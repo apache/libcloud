@@ -132,6 +132,26 @@ screenshot bellow.
    :width: 700px
    :align: center
 
+6. Verifying the release artifact check sums
+
+To verify that nothing went wrong doing the release process, run the
+``./dist/verify_checksums.sh`` script.
+
+This script downloads the release artifacts from the Apache and PyPi server and
+makes sure that the MD5 check sums of the both files match.
+
+Usage:
+
+.. sourcecode:: bash
+
+    ./dist/verify_checksums <version>
+
+For example
+
+.. sourcecode:: bash
+
+    ./dist/verify_checksums apache-libcloud-0.13.2
+
 7. Updating doap_libcloud.rdf file
 
 Add information about the new release to the ``doap_libcloud.rdf`` file in the
