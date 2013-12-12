@@ -114,7 +114,7 @@ For example:
 For consistency and security reasons packages are always uploaded to PyPi
 manually using the web interface and not using the ``setup.py upload`` command.
 
-* Run ``python setup.py register upload`` command. This will register a new
+* Run ``python setup.py register`` command. This will register a new
   version on PyPi, but it won't upload the actual release artifacts.
 
 * Go to the `PyPi release management page`_, find a new release and click on
