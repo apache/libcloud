@@ -1,5 +1,5 @@
-CloudStack Driver Documentation
-===============================
+CloudStack Compute Driver Documentation
+=======================================
 
 `CloudStack`_ is an Apache Software Foundation open source software designed to
 deploy and manage large networks of virtual machines, as a highly available,
@@ -179,7 +179,6 @@ To access the node via ssh you need you can create a port forwarding rule like s
 .. literalinclude:: /examples/compute/cloudstack/port_forwarding_management.py
    :language: python
 
-
 API Docs
 --------
 
@@ -189,5 +188,5 @@ API Docs
 
 .. _`CloudStack`: http://cloudstack.apache.org
 .. _`API`: http://cloudstack.apache.org/docs/api/
-.. _`exoscale`: http://exoscale.ch
-.. _`ikoula`: http://ikoula.com
+.. _`exoscale`: https://www.exoscale.ch/
+.. _`ikoula`: http://www.ikoula.com/
