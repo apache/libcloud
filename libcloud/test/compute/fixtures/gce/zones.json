@@ -15,8 +15,8 @@
         }
       ],
       "name": "europe-west1-a",
-      "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/europe-west1",
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a",
+      "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a",
       "status": "UP"
     },
     {
@@ -33,8 +33,8 @@
         }
       ],
       "name": "europe-west1-b",
-      "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/europe-west1",
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-b",
+      "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b",
       "status": "UP"
     },
     {
@@ -43,8 +43,8 @@
       "id": "13462829244527433283",
       "kind": "compute#zone",
       "name": "us-central1-a",
-      "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1",
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a",
+      "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
       "status": "UP"
     },
     {
@@ -52,24 +52,15 @@
       "description": "us-central1-b",
       "id": "1045862591201432620",
       "kind": "compute#zone",
-      "maintenanceWindows": [
-        {
-          "beginTime": "2013-11-02T12:00:00.000-07:00",
-          "description": "maintenance zone",
-          "endTime": "2013-11-10T12:00:00.000-08:00",
-          "name": "2013-11-02-planned-outage"
-        }
-      ],
       "name": "us-central1-b",
-      "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1",
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b",
+      "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b",
       "status": "UP"
     },
     {
       "creationTimestamp": "2013-02-05T16:19:23.257-08:00",
       "deprecated": {
-        "deprecated": "2013-10-24T10:46:00-00:00",
-        "replacement": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a",
+        "replacement": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b",
         "state": "DEPRECATED"
       },
       "description": "us-central2-a",
@@ -84,11 +75,11 @@
         }
       ],
       "name": "us-central2-a",
-      "region": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central2",
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a",
+      "region": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central2",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a",
       "status": "UP"
     }
   ],
   "kind": "compute#zoneList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones"
 }

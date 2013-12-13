@@ -96,7 +96,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
     def test_match_images(self):
         project = 'debian-cloud'
         image = self.driver._match_images(project, 'debian-7')
-        self.assertEqual(image.name, 'debian-7-wheezy-v20131014')
+        self.assertEqual(image.name, 'debian-7-wheezy-v20131120')
         image = self.driver._match_images(project, 'debian-6')
         self.assertEqual(image.name, 'debian-6-squeeze-v20130926')
 
@@ -113,7 +113,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_list_healthchecks(self):
         healthchecks = self.driver.ex_list_healthchecks()
-        self.assertEqual(len(healthchecks), 2)
+        self.assertEqual(len(healthchecks), 3)
         self.assertEqual(healthchecks[0].name, 'basic-check')
 
     def test_ex_list_firewalls(self):
@@ -137,7 +137,7 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         local_images = self.driver.list_images()
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         self.assertEqual(len(local_images), 2)
-        self.assertEqual(len(debian_images), 17)
+        self.assertEqual(len(debian_images), 19)
         self.assertEqual(local_images[0].name, 'debian-7-wheezy-v20130617')
         self.assertEqual(local_images[1].name, 'centos-6-v20131118')
 
@@ -155,9 +155,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         nodes_all = self.driver.list_nodes(ex_zone='all')
         nodes_uc1a = self.driver.list_nodes(ex_zone='us-central1-a')
-        self.assertEqual(len(nodes), 5)
+        self.assertEqual(len(nodes), 1)
         self.assertEqual(len(nodes_all), 8)
-        self.assertEqual(len(nodes_uc1a), 5)
+        self.assertEqual(len(nodes_uc1a), 1)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
         names = [n.name for n in nodes_all]
@@ -194,9 +194,9 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         volumes = self.driver.list_volumes()
         volumes_all = self.driver.list_volumes('all')
         volumes_uc1a = self.driver.list_volumes('us-central1-a')
-        self.assertEqual(len(volumes), 3)
-        self.assertEqual(len(volumes_all), 5)
-        self.assertEqual(len(volumes_uc1a), 3)
+        self.assertEqual(len(volumes), 2)
+        self.assertEqual(len(volumes_all), 10)
+        self.assertEqual(len(volumes_uc1a), 2)
         self.assertEqual(volumes[0].name, 'lcdisk')
         self.assertEqual(volumes_uc1a[0].name, 'lcdisk')
         names = [v.name for v in volumes_all]
@@ -544,12 +544,10 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_get_zone(self):
         zone_name = 'us-central1-b'
-        expected_time_until = datetime.timedelta(days=129)
-        expected_duration = datetime.timedelta(days=8, hours=1)
         zone = self.driver.ex_get_zone(zone_name)
         self.assertEqual(zone.name, zone_name)
-        self.assertEqual(zone.time_until_mw, expected_time_until)
-        self.assertEqual(zone.next_mw_duration, expected_duration)
+        self.assertFalse(zone.time_until_mw)
+        self.assertFalse(zone.next_mw_duration)
 
         zone_no_mw = self.driver.ex_get_zone('us-central1-a')
         self.assertEqual(zone_no_mw.time_until_mw, None)
@@ -970,6 +968,77 @@ class GCEMockHttp(MockHttpTestCase):
                 'zones_us-central1-a_disks_lcdisk_delete.json')
         else:
             body = self.fixtures.load('zones_us-central1-a_disks_lcdisk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_disks_node_name(self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_disks_lcnode_000(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_disks_lcnode_001(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_disks_libcloud_lb_demo_www_000(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_disks_libcloud_lb_demo_www_001(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_disks_libcloud_lb_demo_www_002(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central2_a_disks_libcloud_demo_boot_disk(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central2_a_disks_libcloud_demo_np_node(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central2_a_disks_libcloud_demo_multiple_nodes_000(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central2_a_disks_libcloud_demo_multiple_nodes_001(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_europe_west1_a_disks(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('zones_us-central1-a_disks_post.json')
+        else:
+            body = self.fixtures.load('zones_us-central1-a_disks.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_europe_west1_a_disks_libcloud_demo_europe_np_node(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_europe_west1_a_disks_libcloud_demo_europe_boot_disk(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_europe_west1_a_disks_libcloud_demo_europe_multiple_nodes_000(
+            self, method, url, body, headers):
+        body = self.fixtures.load('generic_disk.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_europe_west1_a_instances(self, method, url, body, headers):

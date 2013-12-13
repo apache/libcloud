@@ -24,9 +24,11 @@ import sys
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import ResourceNotFoundError
+from libcloud.common.google import ResourceExistsError
 
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
-from libcloud.compute.base import NodeSize, StorageVolume, UuidMixin
+from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
+from libcloud.compute.base import UuidMixin
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 
@@ -290,6 +292,13 @@ class GCERegion(UuidMixin):
     def __repr__(self):
         return '<GCERegion id="%s" name="%s", status="%s">' % (
             self.id, self.name, self.status)
+
+
+class GCESnapshot(VolumeSnapshot):
+    def __init__(self, id, name, size, status, driver, extra=None):
+        self.name = name
+        self.status = status
+        super(GCESnapshot, self).__init__(id, driver, size, extra)
 
 
 class GCETargetPool(UuidMixin):
@@ -953,6 +962,20 @@ class GCENodeDriver(NodeDriver):
                 list_sizes = [self._to_node_size(s) for s in response['items']]
         return list_sizes
 
+    def ex_list_snapshots(self):
+        """
+        Return the list of disk snapshots in the project.
+
+        :return:  A list of snapshot objects
+        :rtype:   ``list`` of :class:`GCESnapshot`
+        """
+        list_snapshots = []
+        request = '/global/snapshots'
+        response = self.connection.request(request, method='GET').object
+        list_snapshots = [self._to_snapshot(s) for s in
+                          response.get('items', [])]
+        return list_snapshots
+
     def ex_list_targetpools(self, region=None):
         """
         Return the list of target pools.
@@ -1310,7 +1333,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
-                    ex_boot_disk=None, use_existing_disk=False):
+                    ex_boot_disk=None, use_existing_disk=True):
         """
         Create a new node and return a node object for the node.
 
@@ -1374,7 +1397,7 @@ class GCENodeDriver(NodeDriver):
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
-                                 ignore_errors=True, use_existing_disk=False,
+                                 ignore_errors=True, use_existing_disk=True,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1394,6 +1417,8 @@ class GCENodeDriver(NodeDriver):
 
         :param  image: The image to use to create the nodes.
         :type   image: ``str`` or :class:`NodeImage`
+
+        return self.ex_get_snapshot(name)
 
         :param  number: The number of nodes to create.
         :type   number: ``int``
@@ -1489,6 +1514,7 @@ class GCENodeDriver(NodeDriver):
                         e = self._catch_error(ignore_errors=ignore_errors)
                         error = e.value
                         code = e.code
+                        response = {'status': 'DONE'}
                     if response['status'] == 'DONE':
                         status['disk_response'] = None
                         if error:
@@ -1517,6 +1543,7 @@ class GCENodeDriver(NodeDriver):
                             e = self._catch_error(ignore_errors=ignore_errors)
                             error = e.value
                             code = e.code
+                            response = {'status': 'DONE'}
                         if response['status'] == 'DONE':
                             status['node_response'] = None
                         if error:
@@ -1607,8 +1634,8 @@ class GCENodeDriver(NodeDriver):
         :keyword  image: Image to create disk from.
         :type     image: :class:`NodeImage` or ``str`` or ``None``
 
-        :keyword  snapshot: Snapshot to create image from (needs full URI)
-        :type     snapshot: ``str``
+        :keyword  snapshot: Snapshot to create image from
+        :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
 
         :return:  Tuple containg the request string, the data dictionary and
                   the URL parameters
@@ -1626,8 +1653,15 @@ class GCENodeDriver(NodeDriver):
             volume_data['description'] = 'Image: %s' % (
                 image.extra['selfLink'])
         if snapshot:
-            volume_data['sourceSnapshot'] = snapshot
-            volume_data['description'] = 'Snapshot: %s' % (snapshot)
+            # Check for full URI to not break backward-compatibility
+            if snapshot.startswith('https'):
+                snapshot_link = snapshot
+            else:
+                if not hasattr(snapshot, 'name'):
+                    snapshot = self.ex_get_snapshot(snapshot)
+                snapshot_link = snapshot.extra['selfLink']
+            volume_data['sourceSnapshot'] = snapshot_link
+            volume_data['description'] = 'Snapshot: %s' % (snapshot_link)
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -1636,7 +1670,7 @@ class GCENodeDriver(NodeDriver):
         return request, volume_data, params
 
     def create_volume(self, size, name, location=None, image=None,
-                      snapshot=None, use_existing=False):
+                      snapshot=None, use_existing=True):
         """
         Create a volume (disk).
 
@@ -1654,8 +1688,8 @@ class GCENodeDriver(NodeDriver):
         :keyword  image: Image to create disk from.
         :type     image: :class:`NodeImage` or ``str`` or ``None``
 
-        :keyword  snapshot: Snapshot to create image from (needs full URI)
-        :type     snapshot: ``str``
+        :keyword  snapshot: Snapshot to create image from
+        :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
 
         :keyword  use_existing: If True and a disk with the given name already
                                 exists, return an object for that disk instead
@@ -1666,19 +1700,36 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`StorageVolume`
         """
         vol = None
-        if use_existing:
-            try:
-                vol = self.ex_get_volume(name, location)
-            except:
-                pass
-        if vol:
-            return vol
         request, volume_data, params = self._create_vol_req(
             size, name, location, image, snapshot)
-        self.connection.async_request(request, method='POST', data=volume_data,
-                                      params=params)
+        try:
+            self.connection.async_request(request, method='POST',
+                                          data=volume_data, params=params)
+        except ResourceExistsError:
+            e = sys.exc_info()[1]
+            if not use_existing:
+                raise e
 
         return self.ex_get_volume(name, location)
+
+    def create_volume_snapshot(self, volume, name):
+        """
+        Create a snapshot of the provided Volume.
+
+        :param  volume: A StorageVolume object
+        :type   volume: :class:`StorageVolume`
+
+        :return:  A GCE Snapshot object
+        :rtype:   :class:`GCESnapshot`
+        """
+        snapshot_data = {}
+        snapshot_data['name'] = name
+        request = '/zones/%s/disks/%s/createSnapshot' % (
+            volume.extra['zone'].name, volume.name)
+        self.connection.async_request(request, method='POST',
+                                      data=snapshot_data)
+
+        return self.ex_get_snapshot(name)
 
     def ex_update_healthcheck(self, healthcheck):
         """
@@ -2093,12 +2144,18 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, destroy_boot_disk=False):
         """
         Destroy a node.
 
         :param  node: Node object to destroy
         :type   node: :class:`Node`
+
+        :keyword  destroy_boot_disk: If true, also destroy the node's
+                                     boot disk. (Note that this keyword is not
+                                     accessible from the node's .destroy()
+                                     method.)
+        :type     destroy_boot_disk: ``bool``
 
         :return:  True if successful
         :rtype:   ``bool``
@@ -2106,9 +2163,12 @@ class GCENodeDriver(NodeDriver):
         request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                               node.name)
         self.connection.async_request(request, method='DELETE')
+        if destroy_boot_disk and node.extra['boot_disk']:
+            node.extra['boot_disk'].destroy()
         return True
 
     def ex_destroy_multiple_nodes(self, nodelist, ignore_errors=True,
+                                  destroy_boot_disk=False,
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Destroy multiple nodes at once.
@@ -2119,6 +2179,10 @@ class GCENodeDriver(NodeDriver):
         :keyword  ignore_errors: If true, don't raise an exception if one or
                                  more nodes fails to be destroyed.
         :type     ignore_errors: ``bool``
+
+        :keyword  destroy_boot_disk: If true, also destroy the nodes' boot
+                                     disks.
+        :type     destroy_boot_disk: ``bool``
 
         :keyword  timeout: Number of seconds to wait for all nodes to be
                            destroyed.
@@ -2194,8 +2258,21 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
                                           volume.name)
-        self.connection.async_request(request,
-                                      method='DELETE')
+        self.connection.async_request(request, method='DELETE')
+        return True
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Destroy a snapshot.
+
+        :param  snapshot: Snapshot object to destroy
+        :type   snapshot: :class:`GCESnapshot`
+
+        :return:  True if successfull
+        :rtype:   ``bool``
+        """
+        request = '/global/snapshots/%s' % (snapshot.name)
+        self.connection.async_request(request, method='DELETE')
         return True
 
     def ex_get_address(self, name, region=None):
@@ -2356,6 +2433,20 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_node_size(response)
 
+    def ex_get_snapshot(self, name):
+        """
+        Return a Snapshot object based on snapshot name.
+
+        :param  name: The name of the snapshot
+        :type   name: ``str``
+
+        :return:  A GCESnapshot object for the snapshot
+        :rtype:   :class:`GCESnapshot`
+        """
+        request = '/global/snapshots/%s' % (name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_snapshot(response)
+
     def ex_get_volume(self, name, zone=None):
         """
         Return a Volume object based on a volume name and optional zone.
@@ -2460,9 +2551,9 @@ class GCENodeDriver(NodeDriver):
 
         region = self.ex_get_region(address['region'])
 
-        extra['selfLink'] = address['selfLink']
-        extra['status'] = address['status']
-        extra['creationTimestamp'] = address['creationTimestamp']
+        extra['selfLink'] = address.get('selfLink')
+        extra['status'] = address.get('status')
+        extra['creationTimestamp'] = address.get('creationTimestamp')
 
         return GCEAddress(id=address['id'], name=address['name'],
                           address=address['address'],
@@ -2479,18 +2570,18 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCEHealthCheck`
         """
         extra = {}
-        extra['selfLink'] = healthcheck['selfLink']
-        extra['creationTimestamp'] = healthcheck['creationTimestamp']
+        extra['selfLink'] = healthcheck.get('selfLink')
+        extra['creationTimestamp'] = healthcheck.get('creationTimestamp')
         extra['description'] = healthcheck.get('description')
         extra['host'] = healthcheck.get('host')
 
         return GCEHealthCheck(
             id=healthcheck['id'], name=healthcheck['name'],
-            path=healthcheck['requestPath'], port=healthcheck['port'],
-            interval=healthcheck['checkIntervalSec'],
-            timeout=healthcheck['timeoutSec'],
-            unhealthy_threshold=healthcheck['unhealthyThreshold'],
-            healthy_threshold=healthcheck['healthyThreshold'],
+            path=healthcheck.get('requestPath'), port=healthcheck.get('port'),
+            interval=healthcheck.get('checkIntervalSec'),
+            timeout=healthcheck.get('timeoutSec'),
+            unhealthy_threshold=healthcheck.get('unhealthyThreshold'),
+            healthy_threshold=healthcheck.get('healthyThreshold'),
             driver=self, extra=extra)
 
     def _to_firewall(self, firewall):
@@ -2504,8 +2595,8 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCEFirewall`
         """
         extra = {}
-        extra['selfLink'] = firewall['selfLink']
-        extra['creationTimestamp'] = firewall['creationTimestamp']
+        extra['selfLink'] = firewall.get('selfLink')
+        extra['creationTimestamp'] = firewall.get('creationTimestamp')
         extra['description'] = firewall.get('description')
         extra['network_name'] = self._get_components_from_path(
             firewall['network'])['name']
@@ -2515,7 +2606,7 @@ class GCENodeDriver(NodeDriver):
         source_tags = firewall.get('sourceTags')
 
         return GCEFirewall(id=firewall['id'], name=firewall['name'],
-                           allowed=firewall['allowed'], network=network,
+                           allowed=firewall.get('allowed'), network=network,
                            source_ranges=source_ranges,
                            source_tags=source_tags,
                            driver=self, extra=extra)
@@ -2531,10 +2622,9 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCEForwardingRule`
         """
         extra = {}
-        # Use .get to work around a current API bug.
         extra['selfLink'] = forwarding_rule.get('selfLink')
-        extra['portRange'] = forwarding_rule['portRange']
-        extra['creationTimestamp'] = forwarding_rule['creationTimestamp']
+        extra['portRange'] = forwarding_rule.get('portRange')
+        extra['creationTimestamp'] = forwarding_rule.get('creationTimestamp')
         extra['description'] = forwarding_rule.get('description')
 
         region = self.ex_get_region(forwarding_rule['region'])
@@ -2543,8 +2633,8 @@ class GCENodeDriver(NodeDriver):
 
         return GCEForwardingRule(id=forwarding_rule['id'],
                                  name=forwarding_rule['name'], region=region,
-                                 address=forwarding_rule['IPAddress'],
-                                 protocol=forwarding_rule['IPProtocol'],
+                                 address=forwarding_rule.get('IPAddress'),
+                                 protocol=forwarding_rule.get('IPProtocol'),
                                  targetpool=targetpool,
                                  driver=self, extra=extra)
 
@@ -2560,13 +2650,13 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
 
-        extra['selfLink'] = network['selfLink']
-        extra['gatewayIPv4'] = network['gatewayIPv4']
+        extra['selfLink'] = network.get('selfLink')
+        extra['gatewayIPv4'] = network.get('gatewayIPv4')
         extra['description'] = network.get('description')
-        extra['creationTimestamp'] = network['creationTimestamp']
+        extra['creationTimestamp'] = network.get('creationTimestamp')
 
         return GCENetwork(id=network['id'], name=network['name'],
-                          cidr=network['IPv4Range'],
+                          cidr=network.get('IPv4Range'),
                           driver=self, extra=extra)
 
     def _to_node_image(self, image):
@@ -2582,8 +2672,8 @@ class GCENodeDriver(NodeDriver):
         extra = {}
         extra['preferredKernel'] = image.get('preferredKernel', None)
         extra['description'] = image.get('description', None)
-        extra['creationTimestamp'] = image['creationTimestamp']
-        extra['selfLink'] = image['selfLink']
+        extra['creationTimestamp'] = image.get('creationTimestamp')
+        extra['selfLink'] = image.get('selfLink')
         return NodeImage(id=image['id'], name=image['name'], driver=self,
                          extra=extra)
 
@@ -2615,18 +2705,24 @@ class GCENodeDriver(NodeDriver):
         private_ips = []
         extra = {}
 
-        extra['status'] = node['status']
+        extra['status'] = node.get('status')
         extra['description'] = node.get('description')
         extra['zone'] = self.ex_get_zone(node['zone'])
         extra['image'] = node.get('image')
-        extra['machineType'] = node['machineType']
-        extra['disks'] = node['disks']
-        extra['networkInterfaces'] = node['networkInterfaces']
+        extra['machineType'] = node.get('machineType')
+        extra['disks'] = node.get('disks', [])
+        extra['networkInterfaces'] = node.get('networkInterfaces')
         extra['id'] = node['id']
-        extra['selfLink'] = node['selfLink']
+        extra['selfLink'] = node.get('selfLink')
         extra['name'] = node['name']
-        extra['metadata'] = node['metadata']
+        extra['metadata'] = node.get('metadata')
         extra['tags_fingerprint'] = node['tags']['fingerprint']
+
+        extra['boot_disk'] = None
+        for disk in extra['disks']:
+            if disk.get('boot') and disk.get('type') == 'PERSISTENT':
+                bd = self._get_components_from_path(disk['source'])
+                extra['boot_disk'] = self.ex_get_volume(bd['name'], bd['zone'])
 
         if 'items' in node['tags']:
             tags = node['tags']['items']
@@ -2634,10 +2730,10 @@ class GCENodeDriver(NodeDriver):
             tags = []
         extra['tags'] = tags
 
-        for network_interface in node['networkInterfaces']:
-            private_ips.append(network_interface['networkIP'])
-            for access_config in network_interface['accessConfigs']:
-                public_ips.append(access_config['natIP'])
+        for network_interface in node.get('networkInterfaces', []):
+            private_ips.append(network_interface.get('networkIP'))
+            for access_config in network_interface.get('accessConfigs'):
+                public_ips.append(access_config.get('natIP'))
 
         # For the node attributes, use just machine and image names, not full
         # paths.  Full paths are available in the "extra" dict.
@@ -2663,19 +2759,19 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCENodeSize`
         """
         extra = {}
-        extra['selfLink'] = machine_type['selfLink']
+        extra['selfLink'] = machine_type.get('selfLink')
         extra['zone'] = self.ex_get_zone(machine_type['zone'])
-        extra['description'] = machine_type['description']
-        extra['guestCpus'] = machine_type['guestCpus']
-        extra['creationTimestamp'] = machine_type['creationTimestamp']
+        extra['description'] = machine_type.get('description')
+        extra['guestCpus'] = machine_type.get('guestCpus')
+        extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         try:
             price = self._get_size_price(size_id=machine_type['name'])
         except KeyError:
             price = None
 
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],
-                           ram=machine_type['memoryMb'],
-                           disk=machine_type['imageSpaceGb'],
+                           ram=machine_type.get('memoryMb'),
+                           disk=machine_type.get('imageSpaceGb'),
                            bandwidth=0, price=price, driver=self, extra=extra)
 
     def _to_project(self, project):
@@ -2689,13 +2785,13 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCEProject`
         """
         extra = {}
-        extra['selfLink'] = project['selfLink']
-        extra['creationTimestamp'] = project['creationTimestamp']
-        extra['description'] = project['description']
+        extra['selfLink'] = project.get('selfLink')
+        extra['creationTimestamp'] = project.get('creationTimestamp')
+        extra['description'] = project.get('description')
         metadata = project['commonInstanceMetadata'].get('items')
 
         return GCEProject(id=project['id'], name=project['name'],
-                          metadata=metadata, quotas=project['quotas'],
+                          metadata=metadata, quotas=project.get('quotas'),
                           driver=self, extra=extra)
 
     def _to_region(self, region):
@@ -2709,9 +2805,9 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCERegion`
         """
         extra = {}
-        extra['selfLink'] = region['selfLink']
-        extra['creationTimestamp'] = region['creationTimestamp']
-        extra['description'] = region['description']
+        extra['selfLink'] = region.get('selfLink')
+        extra['creationTimestamp'] = region.get('creationTimestamp')
+        extra['description'] = region.get('description')
 
         quotas = region.get('quotas')
         zones = [self.ex_get_zone(z) for z in region.get('zones', [])]
@@ -2721,9 +2817,29 @@ class GCENodeDriver(NodeDriver):
         deprecated = region.get('deprecated')
 
         return GCERegion(id=region['id'], name=region['name'],
-                         status=region['status'], zones=zones,
+                         status=region.get('status'), zones=zones,
                          quotas=quotas, deprecated=deprecated,
                          driver=self, extra=extra)
+
+    def _to_snapshot(self, snapshot):
+        """
+        Return a Snapshot object from the json-response dictionary.
+
+        :param  snapshot: The dictionary describing the snapshot
+        :type   snapshot: ``dict``
+
+        :return:  Snapshot object
+        :rtype:   :class:`VolumeSnapshot`
+        """
+        extra = {}
+        extra['selfLink'] = snapshot.get('selfLink')
+        extra['creationTimestamp'] = snapshot.get('creationTimestamp')
+        extra['sourceDisk'] = snapshot.get('sourceDisk')
+
+        return GCESnapshot(id=snapshot['id'], name=snapshot['name'],
+                           size=snapshot['diskSizeGb'],
+                           status=snapshot.get('status'), driver=self,
+                           extra=extra)
 
     def _to_storage_volume(self, volume):
         """
@@ -2736,10 +2852,10 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`StorageVolume`
         """
         extra = {}
-        extra['selfLink'] = volume['selfLink']
+        extra['selfLink'] = volume.get('selfLink')
         extra['zone'] = self.ex_get_zone(volume['zone'])
-        extra['status'] = volume['status']
-        extra['creationTimestamp'] = volume['creationTimestamp']
+        extra['status'] = volume.get('status')
+        extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
 
         return StorageVolume(id=volume['id'], name=volume['name'],
@@ -2756,7 +2872,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:  :class:`GCETargetPool`
         """
         extra = {}
-        extra['selfLink'] = targetpool['selfLink']
+        extra['selfLink'] = targetpool.get('selfLink')
         extra['description'] = targetpool.get('description')
         region = self.ex_get_region(targetpool['region'])
         healthcheck_list = [self.ex_get_healthcheck(h.split('/')[-1]) for h
@@ -2788,9 +2904,9 @@ class GCENodeDriver(NodeDriver):
         :rtype: :class:`GCEZone`
         """
         extra = {}
-        extra['selfLink'] = zone['selfLink']
-        extra['creationTimestamp'] = zone['creationTimestamp']
-        extra['description'] = zone['description']
+        extra['selfLink'] = zone.get('selfLink')
+        extra['creationTimestamp'] = zone.get('creationTimestamp')
+        extra['description'] = zone.get('description')
 
         deprecated = zone.get('deprecated')
 
