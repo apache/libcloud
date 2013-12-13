@@ -23,7 +23,7 @@ sizes = driver.list_sizes()
 # Create the node
 # This returns a Node object
 node = driver.create_node(name='libcloud', image=images[0],
-                          size=sizes[0], network=[nets[0]])
+                          size=sizes[0], networks=[nets[0]])
 
 # The node has a private IP in the guest network used
 # No public IPs and no rules
