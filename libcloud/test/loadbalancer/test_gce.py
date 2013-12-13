@@ -50,7 +50,7 @@ class GCELoadBalancerTest(LibcloudTestCase):
         self.driver = GCELBDriver(*GCE_PARAMS, **kwargs)
 
     def test_get_node_from_ip(self):
-        ip = '8.35.197.91'
+        ip = '23.236.58.15'
         expected_name = 'node-name'
         node = self.driver._get_node_from_ip(ip)
         self.assertEqual(node.name, expected_name)
@@ -139,7 +139,7 @@ class GCELoadBalancerTest(LibcloudTestCase):
         members = balancer.list_members()
         self.assertEqual(len(members), 2)
         member_ips = [m.ip for m in members]
-        self.assertTrue('173.255.113.234' in member_ips)
+        self.assertTrue('23.236.58.15' in member_ips)
 
     def test_ex_create_healthcheck(self):
         healthcheck_name = 'lchealthcheck'
@@ -158,7 +158,7 @@ class GCELoadBalancerTest(LibcloudTestCase):
 
     def test_ex_list_healthchecks(self):
         healthchecks = self.driver.ex_list_healthchecks()
-        self.assertEqual(len(healthchecks), 2)
+        self.assertEqual(len(healthchecks), 3)
         self.assertEqual(healthchecks[0].name, 'basic-check')
 
     def test_ex_balancer_detach_attach_healthcheck(self):
