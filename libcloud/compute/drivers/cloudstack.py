@@ -1470,7 +1470,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             security_groups = [sg['name'] for sg in security_groups]
 
         created = data.get('created', False)
-
+        
         extra = {
             'zoneid': zone_id,
             'ip_addresses': [],
@@ -1479,7 +1479,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             'password': password,
             'keyname': keypair,
             'securitygroup': security_groups,
-            'created': created
+            'created': created,
+            'imageid': data.get('templateid', None),
+            'imagename': data.get('templatename', None),
+            'sizeid': data.get('serviceofferingid', None),
+            'sizename': data.get('serviceofferingname', None)
         }
 
         node = CloudStackNode(id=id, name=name, state=state,
