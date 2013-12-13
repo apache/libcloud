@@ -7,7 +7,7 @@ Provider                              Documentation                             
 `CloudFrames`_                        :doc:`Click </compute/drivers/cloudframes>` CLOUDFRAMES         :mod:`libcloud.compute.drivers.cloudframes`    :class:`CloudFramesNodeDriver`      
 `CloudSigma`_                                                                     CLOUDSIGMA          :mod:`libcloud.compute.drivers.cloudsigma`     :class:`CloudSigmaZrhNodeDriver`    
 `CloudSigma`_                                                                     CLOUDSIGMA_US       :mod:`libcloud.compute.drivers.cloudsigma`     :class:`CloudSigmaLvsNodeDriver`    
-`CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`  CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`
+`CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`  CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`       
 `Digital Ocean`_                                                                  DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
 `Dreamhost`_                                                                      DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
 `Amazon EC2`_                         :doc:`Click </compute/drivers/ec2>`         EC2                 :mod:`libcloud.compute.drivers.ec2`            :class:`EC2NodeDriver`              
