@@ -23,11 +23,11 @@ driver constructor:
 * ``key`` - Your CloudStack API key
 * ``secret`` - Your CloudStack secret key
 * ``host`` - The host of your CloudStack endpoint
-               (e.g `localhost` for http://localhost:8080/client/api)
+  (e.g ``localhost`` for ``http://localhost:8080/client/api``)
 * ``path`` - The path to your CloudStack endpoint
-               (e.g `/client/api` for http://localhost:8080/client/api)
-* ``url`` - The url to your CloudStack endpoint,
-               mutually exclusive with `host` and `path`
+  (e.g ``/client/api`` for ``http://localhost:8080/client/api``)
+* ``url`` - The url to your CloudStack endpoint, mutually exclusive with
+  ``host`` and ``path``
 * ``secure`` - True or False. True by default
 
 Typically this will lead to:
@@ -35,7 +35,7 @@ Typically this will lead to:
 .. literalinclude:: /examples/compute/cloudstack/instantiate_driver_host_path.py
    :language: python
 
-A complete `url` can be used instead:
+A complete ``url`` can be used instead:
 
 .. literalinclude:: /examples/compute/cloudstack/instantiate_driver_url.py
    :language: python
@@ -52,6 +52,9 @@ certificate, you will have to disable the SSL verification like so:
 
 .. literalinclude:: /examples/compute/cloudstack/turn_off_ssl_verification.py
    :language: python
+
+For more information on how SSL certificate validation works in Libcloud, see
+the :doc:`SSL Certificate Validation </other/ssl-certificate-validation>` page.
 
 `libcloud` now features CloudStack based drivers for the `exoscale`_ and
 `ikoula`_ public clouds. Instantiating drivers to those clouds is shown
@@ -91,9 +94,9 @@ Basic Zone Examples
 --------------------
 
 To start experimenting with libcloud, starting an ipython interactive shell can
- be very handy. Tab completion and shell history are available. Below is an
- example of starting such an interactive shell for the exoscale public cloud.
- Once started you can explore the libcloud API.
+be very handy. Tab completion and shell history are available. Below is an
+example of starting such an interactive shell for the exoscale public cloud.
+Once started you can explore the libcloud API.
 
 1. Start an interactive shell on Exoscale public cloud
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -135,7 +138,7 @@ Currently there is no security group class defined, hence the result of
 5. Deploying a node with a keypair
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Executing deployment scripts when creating node is currently only support in
+Executing deployment scripts when creating node is currently only supported in
 basic zones. The `deploy_node` method is used instead of the `create_node`,
 ssh key are passed as arguments as well as a list of scripts.
 
