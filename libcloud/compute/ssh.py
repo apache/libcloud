@@ -173,11 +173,8 @@ class ParamikoSSHClient(BaseSSHClient):
 
         if self.password:
             conninfo['password'] = self.password
-        elif self.key:
+        if self.key:
             conninfo['key_filename'] = self.key
-        else:
-            conninfo['allow_agent'] = True
-            conninfo['look_for_keys'] = True
 
         if self.timeout:
             conninfo['timeout'] = self.timeout
