@@ -9,11 +9,13 @@ cls = get_driver(Provider.EXOSCALE)
 driver = cls('api key', 'api secret key')
 
 # Define the scripts that you want to run during deployment
-script=ScriptDeployment("/bin/date")
+script = ScriptDeployment("/bin/date")
 msd = MultiStepDeployment([script])
 
-node=conn.deploy_node(name='test',image=image,size=size,ssh_key='~/.ssh/id_rsa_test',ex_keyname='test-keypair',deploy=msd)
+node = conn.deploy_node(name='test', image=image, size=size,
+                        ssh_key='~/.ssh/id_rsa_test',
+                        ex_keyname='test-keypair',
+                        deploy=msd)
 
 # The stdout of the deployment can be checked on the `script` object
 script.stdout
-
