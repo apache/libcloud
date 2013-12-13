@@ -1,3 +1,5 @@
+import os
+
 from IPython.terminal.embed import InteractiveShellEmbed
 
 from libcloud.compute.types import Provider
@@ -13,5 +15,5 @@ Driver = get_driver(Provider.IKOULA)
 
 conn = Driver(key=apikey, secret=secretkey)
 
-shell = InteractiveShellEmbed(banner1="Hello from Libcloud Shell !!")
+shell = InteractiveShellEmbed(banner1='Hello from Libcloud Shell !!')
 shell()

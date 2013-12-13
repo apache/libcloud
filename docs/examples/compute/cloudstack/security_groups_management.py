@@ -1,4 +1,3 @@
-import os
 from pprint import pprint
 
 from libcloud.compute.types import Provider

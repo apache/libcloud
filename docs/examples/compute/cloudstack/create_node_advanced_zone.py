@@ -1,4 +1,14 @@
-# List the guest networks
+from pprint import pprint
+
+from libcloud.compute.types import Provider
+from libcloud.compute.providers import get_driver
+
+apikey = 'your api key'
+secretkey = 'your secret key'
+
+Driver = get_driver(Provider.IKOULA)
+driver = Driver(key=apikey, secret=secretkey)
+
 # This returns a list of CloudStackNetwork objects
 nets = driver.ex_list_networks()
 
