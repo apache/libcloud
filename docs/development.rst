@@ -44,6 +44,37 @@ After you have installed this hook it will automatically check modified Python
 files for violations before a commit. If a violation is found, commit will be
 aborted.
 
+Docstring conventions
+---------------------
+
+For documenting the API we we use Sphinx and reStructuredText syntax. Docstring
+conventions to which you should adhere to are described bellow.
+
+* Docstrings should always be used to describe the purpose of methods,
+  functions, classes, and modules.
+* Method docstring should describe all the normal and keyword arguments. You
+  should describe all the available arguments even if you use ``*args`` and
+  ``**kwargs``.
+* All parameters must be documented using ``:param p:`` or ``:keyword p:``
+  and ``:type p:`` annotation.
+* ``:param p: ...`` -  A description of the parameter ``p`` for a function
+  or method.
+* ``:keyword p: ...`` - A description of the keyword parameter ``p``.
+* ``:type p: ...`` The expected type of the parameter ``p``.
+* Return values must be documented using ``:return:`` and ``:rtype``
+  annotation.
+* ``:return: ...`` A description of return value for a function or method.
+* ``:rtype: ...`` The type of the return value for a function or method.
+* Required keyword arguments must contain ``(required)`` notation in
+  description. For example: ``:keyword image:  OS Image to boot on node. (required)``
+*  Multiple types are separated with ``or``
+   For example: ``:type auth: :class:`.NodeAuthSSHKey` or :class:`.NodeAuthPassword```
+* For a description of the container types use the following notation:
+  ``<container_type> of <objects_type>``. For example:
+  ``:rtype: `list` of :class:`Node```
+
+You can find some examples in the following file: https://github.com/apache/libcloud/blob/trunk/libcloud/compute/base.py
+
 General guidelines
 ------------------
 
