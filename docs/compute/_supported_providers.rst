@@ -31,13 +31,13 @@ Provider                              Documentation                             
 `ElasticHosts (lax-p)`_                                                           ELASTICHOSTS_US2    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS2NodeDriver`  
 `ElasticHosts (sjc-c)`_                                                           ELASTICHOSTS_US3    :mod:`libcloud.compute.drivers.elastichosts`   :class:`ElasticHostsUS3NodeDriver`  
 `Eucalyptus`_                                                                     EUCALYPTUS          :mod:`libcloud.compute.drivers.ec2`            :class:`EucNodeDriver`              
-`Exoscale`_                                                                       EXOSCALE            :mod:`libcloud.compute.drivers.exoscale`       :class:`ExoscaleNodeDriver`         
+`Exoscale`_                           :doc:`Click </compute/drivers/exoscale>`    EXOSCALE            :mod:`libcloud.compute.drivers.exoscale`       :class:`ExoscaleNodeDriver`         
 `Gandi`_                                                                          GANDI               :mod:`libcloud.compute.drivers.gandi`          :class:`GandiNodeDriver`            
 `Google Compute Engine`_                                                          GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
 `GoGrid`_                                                                         GOGRID              :mod:`libcloud.compute.drivers.gogrid`         :class:`GoGridNodeDriver`           
 `HostVirtual`_                                                                    HOSTVIRTUAL         :mod:`libcloud.compute.drivers.hostvirtual`    :class:`HostVirtualNodeDriver`      
 `IBM SmartCloud Enterprise`_                                                      IBM                 :mod:`libcloud.compute.drivers.ibm_sce`        :class:`IBMNodeDriver`              
-`Ikoula`_                                                                         IKOULA              :mod:`libcloud.compute.drivers.ikoula`         :class:`IkoulaNodeDriver`           
+`Ikoula`_                             :doc:`Click </compute/drivers/ikoula>`      IKOULA              :mod:`libcloud.compute.drivers.ikoula`         :class:`IkoulaNodeDriver`           
 `Joyent`_                                                                         JOYENT              :mod:`libcloud.compute.drivers.joyent`         :class:`JoyentNodeDriver`           
 `KTUCloud`_                                                                       KTUCLOUD            :mod:`libcloud.compute.drivers.ktucloud`       :class:`KTUCloudNodeDriver`         
 `Libvirt`_                                                                        LIBVIRT             :mod:`libcloud.compute.drivers.libvirt_driver` :class:`LibvirtNodeDriver`          
