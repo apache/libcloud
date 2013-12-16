@@ -1653,13 +1653,12 @@ class GCENodeDriver(NodeDriver):
             volume_data['description'] = 'Image: %s' % (
                 image.extra['selfLink'])
         if snapshot:
-            # Check for full URI to not break backward-compatibility
-            if snapshot.startswith('https'):
-                snapshot_link = snapshot
-            else:
-                if not hasattr(snapshot, 'name'):
-                    snapshot = self.ex_get_snapshot(snapshot)
-                snapshot_link = snapshot.extra['selfLink']
+            if not hasattr(snapshot, 'name'):
+                # Check for full URI to not break backward-compatibility
+                if snapshot.startswith('https'):
+                    snapshot = self._get_components_from_path(snapshot)['name']
+                snapshot = self.ex_get_snapshot(snapshot)
+            snapshot_link = snapshot.extra['selfLink']
             volume_data['sourceSnapshot'] = snapshot_link
             volume_data['description'] = 'Snapshot: %s' % (snapshot_link)
         location = location or self.zone
