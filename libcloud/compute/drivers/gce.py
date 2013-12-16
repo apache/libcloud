@@ -1493,11 +1493,11 @@ class GCENodeDriver(NodeDriver):
                         disk_req, method='POST', data=disk_data,
                         params=disk_params).object
                 except:
-                     e = self._catch_error(ignore_errors=ignore_errors)
-                     error = e.value
-                     code = e.code
-                     disk_res = None
-                     status['disk'] = GCEFailedDisk(status['name'],
+                    e = self._catch_error(ignore_errors=ignore_errors)
+                    error = e.value
+                    code = e.code
+                    disk_res = None
+                    status['disk'] = GCEFailedDisk(status['name'],
                                                     error, code)
                 status['disk_response'] = disk_res
 
@@ -1717,7 +1717,6 @@ class GCENodeDriver(NodeDriver):
         :return:  Storage Volume object
         :rtype:   :class:`StorageVolume`
         """
-        vol = None
         request, volume_data, params = self._create_vol_req(
             size, name, location, image, snapshot)
         try:
