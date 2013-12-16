@@ -82,6 +82,8 @@ try:
     from Crypto.Hash import SHA256
     from Crypto.PublicKey import RSA
     from Crypto.Signature import PKCS1_v1_5
+    import Crypto.Random
+    Crypto.Random.atfork()
 except ImportError:
     # The pycrypto library is unavailable
     SHA256 = None
