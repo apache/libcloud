@@ -42,15 +42,35 @@ class CloudStackNode(Node):
         "Release a public IP that this node holds."
         return self.driver.ex_release_public_ip(self, address)
 
-    def ex_add_ip_forwarding_rule(self, address, protocol, start_port,
-                                  end_port=None):
+    def ex_create_ip_forwarding_rule(self, address, protocol,
+                                     start_port, end_port=None):
         "Add a NAT/firewall forwarding rule for a port or ports."
-        return self.driver.ex_add_ip_forwarding_rule(self, address, protocol,
-                                                     start_port, end_port)
+        return self.driver.ex_create_ip_forwarding_rule(self, address,
+                                                        protocol,
+                                                        start_port, end_port)
+
+    def ex_create_port_forwarding_rule(self, address,
+                                       private_port, public_port,
+                                       protocol,
+                                       public_end_port=None,
+                                       private_end_port=None,
+                                       openfirewall=True):
+        "Add a port forwarding rule for port or ports."
+        return self.driver.ex_create_port_forwarding_rule(self, address,
+                                                          private_port,
+                                                          public_port,
+                                                          protocol,
+                                                          public_end_port,
+                                                          private_end_port,
+                                                          openfirewall)
 
     def ex_delete_ip_forwarding_rule(self, rule):
-        "Delete a NAT/firewall rule."
+        "Delete a port forwarding rule."
         return self.driver.ex_delete_ip_forwarding_rule(self, rule)
+
+    def ex_delete_port_forwarding_rule(self, rule):
+        "Delete a NAT/firewall rule."
+        return self.driver.ex_delete_port_forwarding_rule(self, rule)
 
     def ex_start(self):
         "Starts a stopped virtual machine"
@@ -886,8 +906,9 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return rules
 
-    def ex_create_port_forwarding_rule(self, address, private_port,
-                                       public_port, protocol, node,
+    def ex_create_port_forwarding_rule(self, node, address,
+                                       private_port, public_port,
+                                       protocol,
                                        public_end_port=None,
                                        private_end_port=None,
                                        openfirewall=True):
@@ -960,8 +981,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   method='GET')
         return res['success']
 
-    def ex_add_ip_forwarding_rule(self, node, address, protocol,
-                                  start_port, end_port=None):
+    def ex_create_ip_forwarding_rule(self, node, address, protocol,
+                                     start_port, end_port=None):
         """
         "Add a NAT/firewall forwarding rule.
 
