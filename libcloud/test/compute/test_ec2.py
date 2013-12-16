@@ -701,6 +701,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(metadata['Num'], '42')
         self.assertEqual(len(metadata), 3)
 
+    def test_ex_get_limits(self):
+        limits = self.driver.ex_get_limits()
+
+        expected = {'max-instances': 20, 'vpc-max-elastic-ips': 5,
+                    'max-elastic-ips': 5}
+        self.assertEqual(limits['resource'], expected)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -966,6 +973,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _ModifyImageAttribute(self, method, url, body, headers):
         body = self.fixtures.load('modify_image_attribute.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeAccountAttributes(self, method, url, body, headers):
+        body = self.fixtures.load('describe_account_attributes.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

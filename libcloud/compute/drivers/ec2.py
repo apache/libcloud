@@ -793,6 +793,39 @@ class BaseEC2NodeDriver(NodeDriver):
         )
         return images
 
+    def ex_get_limits(self):
+        """
+        Retrieve account resource limits.
+
+        :rtype: ``dict``
+        """
+        attributes = ['max-instances', 'max-elastic-ips',
+                      'vpc-max-elastic-ips']
+        params = {}
+        params['Action'] = 'DescribeAccountAttributes'
+
+        for index, attribute in enumerate(attributes):
+            params['AttributeName.%s' % (index)] = attribute
+
+        response = self.connection.request(self.path, params=params)
+        data = response.object
+
+        elems = data.findall(fixxpath(xpath='accountAttributeSet/item',
+                                      namespace=NAMESPACE))
+
+        result = {'resource': {}}
+
+        for elem in elems:
+            name = findtext(element=elem, xpath='attributeName',
+                            namespace=NAMESPACE)
+            value = findtext(element=elem,
+                             xpath='attributeValueSet/item/attributeValue',
+                             namespace=NAMESPACE)
+
+            result['resource'][name] = int(value)
+
+        return result
+
     def list_locations(self):
         locations = []
         for index, availability_zone in \
