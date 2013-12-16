@@ -168,15 +168,20 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(regions), 3)
         self.assertEqual(regions[0].name, 'europe-west1')
 
-    def ex_list_targetpools(self):
+    def test_ex_list_snapshots(self):
+        snapshots = self.driver.ex_list_snapshots()
+        self.assertEqual(len(snapshots), 2)
+        self.assertEqual(snapshots[0].name, 'lcsnapshot')
+
+    def test_ex_list_targetpools(self):
         target_pools = self.driver.ex_list_targetpools()
         target_pools_all = self.driver.ex_list_targetpools('all')
         target_pools_uc1 = self.driver.ex_list_targetpools('us-central1')
-        self.assertEqual(len(target_pools), 3)
-        self.assertEqual(len(target_pools_all), 4)
-        self.assertEqual(len(target_pools_uc1), 3)
-        self.assertEqual(target_pools[0].name, 'www-pool')
-        self.assertEqual(target_pools_uc1[0].name, 'www-pool')
+        self.assertEqual(len(target_pools), 2)
+        self.assertEqual(len(target_pools_all), 3)
+        self.assertEqual(len(target_pools_uc1), 2)
+        self.assertEqual(target_pools[0].name, 'lctargetpool')
+        self.assertEqual(target_pools_uc1[0].name, 'lctargetpool')
         names = [t.name for t in target_pools_all]
         self.assertTrue('www-pool' in names)
 
@@ -319,6 +324,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(targetpool.nodes), len(nodes))
         self.assertEqual(targetpool.region.name, region)
 
+    def test_ex_create_volume_snapshot(self):
+        snapshot_name = 'lcsnapshot'
+        volume = self.driver.ex_get_volume('lcdisk')
+        snapshot = volume.snapshot(snapshot_name)
+        self.assertEqual(snapshot.name, snapshot_name)
+        self.assertEqual(snapshot.size, '1')
+
     def test_create_volume(self):
         volume_name = 'lcdisk'
         size = 1
@@ -442,6 +454,11 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         destroyed = disk.destroy()
         self.assertTrue(destroyed)
 
+    def test_destroy_volume_snapshot(self):
+        snapshot = self.driver.ex_get_snapshot('lcsnapshot')
+        destroyed = snapshot.destroy()
+        self.assertTrue(destroyed)
+
     def test_ex_get_address(self):
         address_name = 'lcaddress'
         address = self.driver.ex_get_address(address_name)
@@ -535,6 +552,13 @@ class GCENodeDriverTest(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(targetpool.nodes), 2)
         self.assertEqual(targetpool.region.name, 'us-central1')
 
+    def test_ex_get_snapshot(self):
+        snapshot_name = 'lcsnapshot'
+        snapshot = self.driver.ex_get_snapshot(snapshot_name)
+        self.assertEqual(snapshot.name, snapshot_name)
+        self.assertEqual(snapshot.size, '1')
+        self.assertEqual(snapshot.status, 'READY')
+
     def test_ex_get_volume(self):
         volume_name = 'lcdisk'
         volume = self.driver.ex_get_volume(volume_name)
@@ -591,6 +615,10 @@ class GCEMockHttp(MockHttpTestCase):
 
     def _aggregated_machineTypes(self, method, url, body, headers):
         body = self.fixtures.load('aggregated_machineTypes.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _aggregated_targetPools(self, method, url, body, headers):
+        body = self.fixtures.load('aggregated_targetPools.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_httpHealthChecks(self, method, url, body, headers):
@@ -673,6 +701,18 @@ class GCEMockHttp(MockHttpTestCase):
             body = self.fixtures.load('global_networks_lcnetwork.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_snapshots(self, method, url, body, headers):
+        body = self.fixtures.load('global_snapshots.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_snapshots_lcsnapshot(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = self.fixtures.load(
+                'global_snapshots_lcsnapshot_delete.json')
+        else:
+            body = self.fixtures.load('global_snapshots_lcsnapshot.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_operations_operation_global_httpHealthChecks_lchealthcheck_delete(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -719,6 +759,12 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_global_networks_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_global_snapshots_lcsnapshot_delete(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_global_snapshots_lcsnapshot_delete.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(
@@ -785,6 +831,12 @@ class GCEMockHttp(MockHttpTestCase):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_zones_us-central1-a_disks_lcdisk_delete.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_createSnapshot_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_disks_lcdisk_createSnapshot_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_post(
@@ -968,6 +1020,12 @@ class GCEMockHttp(MockHttpTestCase):
                 'zones_us-central1-a_disks_lcdisk_delete.json')
         else:
             body = self.fixtures.load('zones_us-central1-a_disks_lcdisk.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_disks_lcdisk_createSnapshot(self, method, url,
+                                                         body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_disks_lcdisk_createSnapshot_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_disks_node_name(self, method, url, body, headers):
