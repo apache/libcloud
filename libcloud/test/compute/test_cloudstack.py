@@ -421,11 +421,11 @@ class CloudStackCommonTestCase(TestCaseMixin):
         public_end_port = 34
         openfirewall = True
         protocol = 'TCP'
-        rule = self.driver.ex_create_port_forwarding_rule(address,
+        rule = self.driver.ex_create_port_forwarding_rule(node,
+                                                          address,
                                                           private_port,
                                                           public_port,
                                                           protocol,
-                                                          node,
                                                           public_end_port,
                                                           private_end_port,
                                                           openfirewall)
@@ -453,6 +453,37 @@ class CloudStackCommonTestCase(TestCaseMixin):
         rule = self.driver.ex_list_port_forwarding_rules()[0]
         res = self.driver.ex_delete_port_forwarding_rule(node, rule)
         self.assertTrue(res)
+
+    def test_node_ex_delete_port_forwarding_rule(self):
+        node = self.driver.list_nodes()[0]
+        self.assertEqual(len(node.extra['port_forwarding_rules']), 1)
+        node.extra['port_forwarding_rules'][0].delete()
+        self.assertEqual(len(node.extra['port_forwarding_rules']), 0)
+
+    def test_node_ex_create_port_forwarding_rule(self):
+        node = self.driver.list_nodes()[0]
+        self.assertEqual(len(node.extra['port_forwarding_rules']), 1)
+        address = self.driver.ex_list_public_ips()[0]
+        private_port = 33
+        private_end_port = 34
+        public_port = 33
+        public_end_port = 34
+        openfirewall = True
+        protocol = 'TCP'
+        rule = node.ex_create_port_forwarding_rule(address,
+                                                   private_port,
+                                                   public_port,
+                                                   protocol,
+                                                   public_end_port,
+                                                   private_end_port,
+                                                   openfirewall)
+        self.assertEqual(rule.address, address)
+        self.assertEqual(rule.protocol, protocol)
+        self.assertEqual(rule.public_port, public_port)
+        self.assertEqual(rule.public_end_port, public_end_port)
+        self.assertEqual(rule.private_port, private_port)
+        self.assertEqual(rule.private_end_port, private_end_port)
+        self.assertEqual(len(node.extra['port_forwarding_rules']), 2)
 
 
 class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
