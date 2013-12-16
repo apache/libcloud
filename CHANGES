@@ -70,6 +70,13 @@ Changes with Apache Libcloud in development
      are no networks available.
      [Tomaz Muraus]
 
+   - Bump API version used in the EC2 driver from 2010-08-21 to 2013-10-15.
+     [Tomaz Muraus]
+
+   - Add ex_get_limits method for retrieving account resource limits to the
+     EC2 driver.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
