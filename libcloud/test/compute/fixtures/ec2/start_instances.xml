@@ -1,4 +1,4 @@
-<StartInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<StartInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
     <requestId>322f78ee-967b-40c9-aecd-8d442022da20</requestId>
     <instancesSet>
         <item>

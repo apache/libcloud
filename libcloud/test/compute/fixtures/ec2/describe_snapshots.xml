@@ -1,4 +1,4 @@
-<DescribeSnapshotsResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<DescribeSnapshotsResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
    <requestId>and4xcasi-35bd-4e3c-89ab-cb183</requestId>
    <snapshotSet>
       <item>

@@ -1,4 +1,4 @@
-<DescribeAvailabilityZonesResponse xmlns="http://ec2.amazonaws.com/doc/2010-08-31/">
+<DescribeAvailabilityZonesResponse xmlns="http://ec2.amazonaws.com/doc/2013-10-15/">
     <requestId>cc0dfb29-efef-451c-974f-341b3edfb28f</requestId>
     <availabilityZoneInfo>
         <item>

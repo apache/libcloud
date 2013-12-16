@@ -40,7 +40,7 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
-API_VERSION = '2010-08-31'
+API_VERSION = '2013-10-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
 """
