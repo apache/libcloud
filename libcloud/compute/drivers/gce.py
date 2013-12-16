@@ -1498,7 +1498,7 @@ class GCENodeDriver(NodeDriver):
                     code = e.code
                     disk_res = None
                     status['disk'] = GCEFailedDisk(status['name'],
-                                                    error, code)
+                                                   error, code)
                 status['disk_response'] = disk_res
 
             status_list.append(status)
