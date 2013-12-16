@@ -1488,9 +1488,17 @@ class GCENodeDriver(NodeDriver):
             else:
                 disk_req, disk_data, disk_params = self._create_vol_req(
                     None, name, location=location, image=image)
-                disk_res = self.connection.request(disk_req, method='POST',
-                                                   data=disk_data,
-                                                   params=disk_params).object
+                try:
+                    disk_res = self.connection.request(
+                        disk_req, method='POST', data=disk_data,
+                        params=disk_params).object
+                except:
+                     e = self._catch_error(ignore_errors=ignore_errors)
+                     error = e.value
+                     code = e.code
+                     disk_res = None
+                     status['disk'] = GCEFailedDisk(status['name'],
+                                                    error, code)
                 status['disk_response'] = disk_res
 
             status_list.append(status)
@@ -1528,11 +1536,22 @@ class GCENodeDriver(NodeDriver):
                 # on its status if already in progress.
                 if status['disk'] and not status['node']:
                     if not status['node_response']:
+                        if hasattr(status['disk'], 'error'):
+                            status['node'] = status['disk']
+                            continue
                         request, node_data = self._create_node_req(
                             status['name'], size, image, location, ex_network,
                             ex_tags, ex_metadata, boot_disk=status['disk'])
-                        node_res = self.connection.request(
-                            request, method='POST', data=node_data).object
+                        try:
+                            node_res = self.connection.request(
+                                request, method='POST', data=node_data).object
+                        except:
+                            e = self._catch_error(ignore_errors=ignore_errors)
+                            error = e.value
+                            code = e.code
+                            node_res = None
+                            status['node'] = GCEFailedNode(status['name'],
+                                                           error, code)
                         status['node_response'] = node_res
                     else:
                         error = None
@@ -2191,8 +2210,7 @@ class GCENodeDriver(NodeDriver):
                   that the node was successfully destroyed.
         :rtype:   ``list`` of ``bool``
         """
-        responses = []
-        success = [False] * len(nodelist)
+        status_list = []
         complete = False
         start_time = time.time()
         for node in nodelist:
@@ -2204,29 +2222,69 @@ class GCENodeDriver(NodeDriver):
             except:
                 self._catch_error(ignore_errors=ignore_errors)
                 response = None
-            responses.append(response)
+
+            status = {'node': node,
+                      'node_success': False,
+                      'node_response': response,
+                      'disk_success': not destroy_boot_disk,
+                      'disk_response': None}
+
+            status_list.append(status)
 
         while not complete:
             if (time.time() - start_time >= timeout):
                 raise Exception("Timeout (%s sec) while waiting to delete "
                                 "multiple instances")
             complete = True
-            for i, operation in enumerate(responses):
-                if operation is None:
-                    continue
-                no_errors = True
-                try:
-                    response = self.connection.request(
-                        operation['selfLink']).object
-                except:
-                    self._catch_error(ignore_errors=ignore_errors)
-                    no_errors = False
-                if response['status'] == 'DONE':
-                    responses[i] = None
-                    success[i] = no_errors
-                else:
-                    complete = False
+            for status in status_list:
+                # If one of the operations is running, check the status
+                operation = status['node_response'] or status['disk_response']
+                delete_disk = False
+                if operation:
+                    no_errors = True
+                    try:
+                        response = self.connection.request(
+                            operation['selfLink']).object
+                    except:
+                        self._catch_error(ignore_errors=ignore_errors)
+                        no_errors = False
+                        response = {'status': 'DONE'}
+                    if response['status'] == 'DONE':
+                        # If a node was deleted, update status and indicate
+                        # that the disk is ready to be deleted.
+                        if status['node_response']:
+                            status['node_response'] = None
+                            status['node_success'] = no_errors
+                            delete_disk = True
+                        else:
+                            status['disk_response'] = None
+                            status['disk_success'] = no_errors
+                # If we are destroying disks, and the node has been deleted,
+                # destroy the disk.
+                if delete_disk and destroy_boot_disk:
+                    boot_disk = status['node'].extra['boot_disk']
+                    if boot_disk:
+                        request = '/zones/%s/disks/%s' % (
+                            boot_disk.extra['zone'].name, boot_disk.name)
+                        try:
+                            response = self.connection.request(
+                                request, method='DELETE').object
+                        except:
+                            self._catch_error(ignore_errors=ignore_errors)
+                            no_errors = False
+                            response = None
+                        status['disk_response'] = response
+                    else:  # If there is no boot disk, ignore
+                        status['disk_success'] = True
+                operation = status['node_response'] or status['disk_response']
+                if operation:
                     time.sleep(2)
+                    complete = False
+
+        success = []
+        for status in status_list:
+            s = status['node_success'] and status['disk_success']
+            success.append(s)
         return success
 
     def ex_destroy_targetpool(self, targetpool):
