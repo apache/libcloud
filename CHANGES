@@ -1894,208 +1894,209 @@ Changes with Apache Libcloud 0.5.2
 
 Changes with Apache Libcloud 0.5.0
 
-    *) Existing APIs directly on the libcloud.* module have been
-       deprecated and will be removed in version 0.6.0.  Most methods
-       were moved to the libcloud.compute.* module.
+    - Existing APIs directly on the libcloud.* module have been
+      deprecated and will be removed in version 0.6.0.  Most methods
+      were moved to the libcloud.compute.* module.
 
-    *) Add new libcloud.loadbalancers API, with initial support for:
-        - GoGrid Load Balancers
-        - Rackspace Load Balancers
+    - Add new libcloud.loadbalancers API, with initial support for:
+       - GoGrid Load Balancers
+       - Rackspace Load Balancers
+     [Roman Bogorodskiy]
+
+    - Add new libcloud.storage API, with initial support for:
+       - Amazon S3
+       - Rackspace CloudFiles
+      [Tomaz Muraus]
+
+    - Add new libcloud.compute drivers for:
+       - Bluebox [Christian Paredes]
+       - Gandi.net [Aymeric Barantal]
+       - Nimbus [David LaBissoniere]
+       - OpenStack [Roman Bogorodskiy]
+       - Opsource.net [Joe Miller]
+
+    - Added "pricing" module and improved pricing handling.
+      [Tomaz Muraus]
+
+    - Updates to the GoGrid compute driver:
+       - Use API version 1.0.
+       - Remove sandbox flag.
+       - Add ex_list_ips() to list IP addresses assigned to the account.
+       - Implement ex_edit_image method which allows changing image attributes
+         like name, description and make image public or private.
       [Roman Bogorodskiy]
 
-    *) Add new libcloud.storage API, with initial support for:
-        - Amazon S3
-        - Rackspace CloudFiles
-       [Tomaz Muraus]
+    - Updates to the Amazon EC2 compute driver:
+       - When creating a Node, use the name argument to set a Tag with the
+         value.  [Tomaz Muraus]
+       - Add extension method for modifying node attributes and changing the
+         node size. [Tomaz Muraus]
+       - Add support for the new Amazon Region (Tokyo). [Tomaz Muraus]
+       - Added ex_create_tags and ex_delete_tags. [Brandon Rhodes]
+       - Include node Elastic IP addresses in the node public_ip attribute
+         for the EC2 nodes. [Tomaz Muraus]
+       - Use ipAddress and privateIpAddress attribute for the EC 2node public
+         and private ip. [Tomaz Muraus]
+       - Add ex_describe_addresses method to the EC2 driver. [Tomaz Muraus]
 
-    *) Add new libcloud.compute drivers for:
-        - Bluebox [Christian Paredes]
-        - Gandi.net [Aymeric Barantal]
-        - Nimbus [David LaBissoniere]
-        - OpenStack [Roman Bogorodskiy]
-        - Opsource.net [Joe Miller]
+    - Updates to the Rackspace CloudServers compute driver:
+       - Add ex_rebuild() and ex_get_node_details() [Andrew Klochkov]
+       - Expose URI of a Rackspace node to the node meta data. [Paul Querna]
 
-    *) Added "pricing" module and improved pricing handling.
-       [Tomaz Muraus]
-
-    *) Updates to the GoGrid compute driver:
-        - Use API version 1.0.
-        - Remove sandbox flag.
-        - Add ex_list_ips() to list IP addresses assigned to the account.
-        - Implement ex_edit_image method which allows changing image attributes
-          like name, description and make image public or private.
-       [Roman Bogorodskiy]
-
-    *) Updates to the Amazon EC2 compute driver:
-        - When creating a Node, use the name argument to set a Tag with the
-          value.  [Tomaz Muraus]
-        - Add extension method for modifying node attributes and changing the
-          node size. [Tomaz Muraus]
-        - Add support for the new Amazon Region (Tokyo). [Tomaz Muraus]
-        - Added ex_create_tags and ex_delete_tags. [Brandon Rhodes]
-        - Include node Elastic IP addresses in the node public_ip attribute
-          for the EC2 nodes. [Tomaz Muraus]
-        - Use ipAddress and privateIpAddress attribute for the EC 2node public
-          and private ip. [Tomaz Muraus]
-        - Add ex_describe_addresses method to the EC2 driver. [Tomaz Muraus]
-
-    *) Updates to the Rackspace CloudServers compute driver:
-        - Add ex_rebuild() and ex_get_node_details() [Andrew Klochkov]
-        - Expose URI of a Rackspace node to the node meta data. [Paul Querna]
-
-    *) Minor fixes to get the library and tests working on Python 2.7 and PyPy.
-       [Tomaz Muraus]
+    - Minor fixes to get the library and tests working on Python 2.7 and PyPy.
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.4.2 (Released January 18, 2011)
 
-    *) Fix EC2 create_node to become backward compatible for
-       NodeLocation.
-       [Tomaž Muraus]
+    - Fix EC2 create_node to become backward compatible for
+      NodeLocation.
+      [Tomaz Muraus]
 
-    *) Update code for compatibility with CPython 2.5
-       [Jerry Chen]
+    - Update code for compatibility with CPython 2.5
+      [Jerry Chen]
 
-    *) Implement ex_edit_node method for GoGrid driver which allows
-       changing node attributes like amount of RAM or description.
-       [Roman Bogorodskiy]
+    - Implement ex_edit_node method for GoGrid driver which allows
+      changing node attributes like amount of RAM or description.
+      [Roman Bogorodskiy]
 
-    *) Add ex_set_password and ex_set_server_name to Rackspace driver.
-       [Peter Herndon, Paul Querna]
+    - Add ex_set_password and ex_set_server_name to Rackspace driver.
+      [Peter Herndon, Paul Querna]
 
-    *) Add Hard and Soft reboot methods to Rackspace driver.
-       [Peter Herndon]
+    - Add Hard and Soft reboot methods to Rackspace driver.
+      [Peter Herndon]
 
-    *) EC2 Driver availability zones, via ex_list_availability_zones;
-       list_locations rewrite to include availablity zones
-       [Tomaž Muraus]
+    - EC2 Driver availability zones, via ex_list_availability_zones;
+      list_locations rewrite to include availablity zones
+      [Tomaz Muraus]
 
-    *) EC2 Driver Idempotency capability in create_node; LIBCLOUD-69
-       [David LaBissoniere]
+    - EC2 Driver Idempotency capability in create_node; LIBCLOUD-69
+      [David LaBissoniere]
 
-    *) SSL Certificate Name Verification:
-       - libcloud.security module
-       - LibcloudHTTPSConnection, LibcloudHTTPConnection (alias)
-       - Emits warning when not verifying, or CA certs not found
+    - SSL Certificate Name Verification:
+      - libcloud.security module
+      - LibcloudHTTPSConnection, LibcloudHTTPConnection (alias)
+      - Emits warning when not verifying, or CA certs not found
 
-    *) Append ORD1 to available Rackspace location, but keep in the
-       same node as DFW1, because it's not readable or writeable from
-       the API.
-       [Per suggestion of Grig Gheorghiu]
+    - Append ORD1 to available Rackspace location, but keep in the
+      same node as DFW1, because it's not readable or writeable from
+      the API.
+      [Per suggestion of Grig Gheorghiu]
 
-    *) ex_create_ip_group, ex_list_ip_groups, ex_delete_ip_group,
-       ex_share_ip, ex_unshare_ip, ex_list_ip_addresses additions
-       to Rackspace driver
-       [Andrew Klochkov]
+    - ex_create_ip_group, ex_list_ip_groups, ex_delete_ip_group,
+      ex_share_ip, ex_unshare_ip, ex_list_ip_addresses additions
+      to Rackspace driver
+      [Andrew Klochkov]
 
-    *) New driver for CloudSigma.
-       [Tomaž Muraus]
+    - New driver for CloudSigma.
+      [Tomaz Muraus]
 
-    *) New driver for Brightbox Cloud. (LIBCLOUD-63)
-       [Tim Fletcher]
+    - New driver for Brightbox Cloud. (LIBCLOUD-63)
+      [Tim Fletcher]
 
-    *) Deployment capability to ElasticHosts
-       [Tomaž Muraus]
+    - Deployment capability to ElasticHosts
+      [Tomaz Muraus]
 
-    *) Allow deploy_node to use non-standard SSH username and port
-       [Tomaž Muraus]
+    - Allow deploy_node to use non-standard SSH username and port
+      [Tomaz Muraus]
 
-    *) Added Rackspace UK (London) support
-       [Chmouel Boudjnah]
+    - Added Rackspace UK (London) support
+      [Chmouel Boudjnah]
 
-    *) GoGrid driver: add support for locations, i.e. listing
-       of locations and creation of a node in specified
-       location
-       [Roman Bogorodskiy]
+    - GoGrid driver: add support for locations, i.e. listing
+      of locations and creation of a node in specified
+      location
+      [Roman Bogorodskiy]
 
-    *) GoGrid and Rackspace drivers: add ex_save_image() extra
-       call to convert running node to an image
-       [Roman Bogorodskiy]
+    - GoGrid and Rackspace drivers: add ex_save_image() extra
+      call to convert running node to an image
+      [Roman Bogorodskiy]
 
-    *) GoGrid driver: add support for creating 'sandbox' server
-       and populate isSandbox flag in node's extra information.
-       [Roman Bogorodskiy]
+    - GoGrid driver: add support for creating 'sandbox' server
+      and populate isSandbox flag in node's extra information.
+      [Roman Bogorodskiy]
 
-    *) Add ImportKeyPair and DescribeKeyPair to EC2. (LIBCLOUD-62)
-       [Philip Schwartz]
+    - Add ImportKeyPair and DescribeKeyPair to EC2. (LIBCLOUD-62)
+      [Philip Schwartz]
 
-    *) Update EC2 driver and test fixtures for new API.
-       [Philip Schwartz]
+    - Update EC2 driver and test fixtures for new API.
+      [Philip Schwartz]
 
 Changes with Apache Libcloud 0.4.0 [Released October 6, 2010]
 
-    *) Add create keypair functionality to EC2 Drivers. (LIBCLOUD-57)
-       [Grig Gheorghiu]
+    - Add create keypair functionality to EC2 Drivers. (LIBCLOUD-57)
+      [Grig Gheorghiu]
 
-    *) Improve handling of GoGrid accounts with limited access
-       API keys. [Paul Querna]
+    - Improve handling of GoGrid accounts with limited access
+      API keys.
+      [Paul Querna]
 
-    *) New Driver for ElasticHosts. (LIBCLOUD-45)
-       [Tomaz Muraus]
+    - New Driver for ElasticHosts. (LIBCLOUD-45)
+      [Tomaz Muraus]
 
-    *) Use more consistent name for GoGrid driver and use http
-       POST method for 'unsafe' operations
-       [Russell Haering]
+    - Use more consistent name for GoGrid driver and use http
+      POST method for 'unsafe' operations
+      [Russell Haering]
 
-    *) Implement password handling and add deployment support
-       for GoGrid nodes.
-       [Roman Bogorodskiy]
+    - Implement password handling and add deployment support
+      for GoGrid nodes.
+      [Roman Bogorodskiy]
 
-    *) Fix behavior of GoGrid's create_node to wait for a Node ID.
-       [Roman Bogorodskiy]
+    - Fix behavior of GoGrid's create_node to wait for a Node ID.
+      [Roman Bogorodskiy]
 
-    *) Add ex_create_node_nowait to GoGrid driver if you don't need to
-       wait for a Node ID when creating a node.
-       [Roman Bogorodskiy]
+    - Add ex_create_node_nowait to GoGrid driver if you don't need to
+      wait for a Node ID when creating a node.
+      [Roman Bogorodskiy]
 
-    *) Removed libcloud.interfaces module.
-       [Paul Querna]
+    - Removed libcloud.interfaces module.
+      [Paul Querna]
 
-    *) Removed dependency on zope.interfaces.
-       [Paul Querna]
+    - Removed dependency on zope.interfaces.
+      [Paul Querna]
 
-    *) RimuHosting moved API endpoint address.
-       [Paul Querna]
+    - RimuHosting moved API endpoint address.
+      [Paul Querna]
 
-    *) Fix regression and error in GoGrid driver for parsing node objects.
-       [Roman Bogorodskiy]
+    - Fix regression and error in GoGrid driver for parsing node objects.
+      [Roman Bogorodskiy]
 
-    *) Added more test cases for GoGrid driver. (LIBCLOUD-34)
-       [Roman Bogorodskiy, Jerry Chen]
+    - Added more test cases for GoGrid driver. (LIBCLOUD-34)
+      [Roman Bogorodskiy, Jerry Chen]
 
-    *) Fix parsing of Slicehost nodes with multiple Public IP addresses.
-       [Paul Querna]
+    - Fix parsing of Slicehost nodes with multiple Public IP addresses.
+      [Paul Querna]
 
-    *) Add exit_status to ScriptDeployment. (LIBCLOUD-36)
-       [Paul Querna]
+    - Add exit_status to ScriptDeployment. (LIBCLOUD-36)
+      [Paul Querna]
 
-    *) Update prices for several drivers.
+    - Update prices for several drivers.
        [Brad Morgan, Paul Querna]
 
-    *) Update Linode driver to reflect new plan sizes.
-       [Jed Smith]
+    - Update Linode driver to reflect new plan sizes.
+      [Jed Smith]
 
-    *) Change default of 'location' in Linode create_node. (LIBCLOUD-41)
+    - Change default of 'location' in Linode create_node. (LIBCLOUD-41)
        [Jed Smith, Steve Steiner]
 
-    *) Document the Linode driver.
-       [Jed Smith]
+    - Document the Linode driver.
+      [Jed Smith]
 
-    *) Request a private, LAN IP address at Linode creation.
-       [Jed Smith]
+    - Request a private, LAN IP address at Linode creation.
+      [Jed Smith]
 
 Changes with Apache Libcloud 0.3.1 [Released May 11, 2010]
 
-    *) Updates to Apache License blocks to correctly reflect status as an
+    - Updates to Apache License blocks to correctly reflect status as an
        Apache Project.
 
-    *) Fix NOTICE file to use 2010 copyright date.
+    - Fix NOTICE file to use 2010 copyright date.
 
-    *) Improve error messages for when running the test cases without
+    - Improve error messages for when running the test cases without
        first setting up a secrets.py
 
 Changes with Apache Libcloud 0.3.0 [Tagged May 6, 2010, not released]
 
-    *) New Drivers for:
+    - New Drivers for:
       - Dreamhost
       - Eucalyptus
       - Enomaly ECP
@@ -2103,22 +2104,22 @@ Changes with Apache Libcloud 0.3.0 [Tagged May 6, 2010, not released]
       - OpenNebula
       - SoftLayer
 
-    *) Added new deployment and bootstrap API.
+    - Added new deployment and bootstrap API.
 
-    *) Improved Voxel driver.
+    - Improved Voxel driver.
 
-    *) Added support for Amazon EC2 Asia Pacific (Singapore) Region.
+    - Added support for Amazon EC2 Asia Pacific (Singapore) Region.
 
-    *) Improved test coverage for all drivers.
+    - Improved test coverage for all drivers.
 
-    *) Add support for multiple security groups in EC2.
+    - Add support for multiple security groups in EC2.
 
-    *) Fixed bug in Rackspace and RimuHosting when using multiple threads.
+    - Fixed bug in Rackspace and RimuHosting when using multiple threads.
 
-    *) Improved debugging and logging of HTTP requests.
+    - Improved debugging and logging of HTTP requests.
 
-    *) Improved documentation for all classes and methods.
+    - Improved documentation for all classes and methods.
 
 Changes with Apache Libcloud 0.2.0 [Tagged February 2, 2010]
 
-    *) First public release.
+    - First public release.
