@@ -71,13 +71,15 @@ Changes with Apache Libcloud in development
      [Tomaz Muraus]
 
    - Bump API version used in the EC2 driver from 2010-08-21 to 2013-10-15.
+     (LIBCLOUD-454)
      [Tomaz Muraus]
 
    - Add ex_get_limits method for retrieving account resource limits to the
      EC2 driver.
      [Tomaz Muraus]
 
-   - Add c3 instance types to the us-west-1 region in the EC2 driver.
+   - Update us-west-1 region in the EC2 driver to include c3 instance types.
+     Also include pricing information.
      [Tomaz Muraus]
 
   *) Storage
