@@ -1470,7 +1470,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             security_groups = [sg['name'] for sg in security_groups]
 
         created = data.get('created', False)
-        
+
         extra = {
             'zone_id': zone_id,
             'ip_addresses': [],
