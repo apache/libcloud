@@ -105,7 +105,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(node.name, 'fred')
         self.assertEqual(node.public_ips, [])
         self.assertEqual(node.private_ips, ['192.168.1.2'])
-        self.assertEqual(node.extra['zoneid'], default_location.id)
+        self.assertEqual(node.extra['zone_id'], default_location.id)
 
     def test_create_node_ex_security_groups(self):
         size = self.driver.list_sizes()[0]
@@ -119,7 +119,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
                                        size=size,
                                        ex_security_groups=sg)
         self.assertEqual(node.name, 'test')
-        self.assertEqual(node.extra['securitygroup'], sg)
+        self.assertEqual(node.extra['security_group'], sg)
         self.assertEqual(node.id, 'fc4fd31a-16d3-49db-814a-56b39b9ef986')
 
     def test_create_node_ex_keyname(self):
@@ -247,7 +247,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual(2, len(nodes))
         self.assertEqual('test', nodes[0].name)
         self.assertEqual('2600', nodes[0].id)
-        self.assertEqual([], nodes[0].extra['securitygroup'])
+        self.assertEqual([], nodes[0].extra['security_group'])
         self.assertEqual(None, nodes[0].extra['keyname'])
 
     def test_list_locations(self):
