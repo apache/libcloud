@@ -1472,18 +1472,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         created = data.get('created', False)
         
         extra = {
-            'zoneid': zone_id,
+            'zone_id': zone_id,
             'ip_addresses': [],
             'ip_forwarding_rules': [],
             'port_forwarding_rules': [],
             'password': password,
             'keyname': keypair,
-            'securitygroup': security_groups,
+            'security_group': security_groups,
             'created': created,
-            'imageid': data.get('templateid', None),
-            'imagename': data.get('templatename', None),
-            'sizeid': data.get('serviceofferingid', None),
-            'sizename': data.get('serviceofferingname', None)
+            'image_id': data.get('templateid', None),
+            'image_name': data.get('templatename', None),
+            'size_id': data.get('serviceofferingid', None),
+            'size_name': data.get('serviceofferingname', None)
         }
 
         node = CloudStackNode(id=id, name=name, state=state,
