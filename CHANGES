@@ -82,6 +82,11 @@ Changes with Apache Libcloud in development
      Also include pricing information.
      [Tomaz Muraus]
 
+   - For consistency, rename "ex_add_ip_forwarding_rule" method to
+     "ex_create_ip_forwarding_rule".
+     (GITHUB-196)
+     [Oleg Suharev]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
