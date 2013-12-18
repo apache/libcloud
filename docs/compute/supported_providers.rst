@@ -17,6 +17,6 @@ Supported Methods (block storage)
 .. include:: _supported_methods_block_storage.rst
 
 Supported Methods (key pair management)
----------------------------------
+---------------------------------------
 
 .. include:: _supported_methods_key_pair_management.rst

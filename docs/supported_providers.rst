@@ -11,8 +11,8 @@ Provider Matrix
 
 .. include:: compute/_supported_providers.rst
 
-Supported Methods (Main)
-~~~~~~~~~~~~~~~~~~~~~~~~
+Supported Methods (Base compute)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: compute/_supported_methods_main.rst
 
@@ -20,6 +20,11 @@ Supported Methods (Block Storage)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: compute/_supported_methods_block_storage.rst
+
+Supported Methods (Key pair management)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: compute/_supported_methods_key_pair_management.rst
 
 Load Balancer
 -------------

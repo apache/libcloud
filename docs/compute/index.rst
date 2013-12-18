@@ -34,6 +34,10 @@ Compute
 * :class:`~libcloud.compute.types.NodeState` - represents a node state.
   Standard states are: ``running``, ``stopped``, ``rebooting``, ``terminated``,
   ``pending``, and ``unknown``.
+
+Key Pair Management
+~~~~~~~~~~~~~~~~~~~
+
 * :class:`~libcloud.compute.base.KeyPair` - represents an SSH key pair object.
 
 Block Storage
