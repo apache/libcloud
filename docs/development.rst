@@ -134,7 +134,7 @@ make sure the commit message contains the ticket number.
 
 For example:
 
-.. sourcode:: bash
+.. sourcecode:: bash
 
     git commit -a -m "[LIBCLOUD-123] Add a new compute driver for CloudStack based providers."
 

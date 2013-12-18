@@ -22,16 +22,17 @@ Available arguments:
 * ``ex_force_auth_version`` - API version of the authentication service. This
   argument determines how authentication is performed. Valid and supported
   versions are:
-    * ``1.0`` - authenticate against the keystone using the provided username
-      and API key (old and deprecated version which was used by Rackspace in
-      the past)
-    * ``1.1`` - authenticate against the keystone using the provided username
-      and API key (old and deprecated version which was used by Rackspace in
-      the past)
-    * ``2.0`` or ``2.0_apikey`` - authenticate against keystone with a username
-     and API key
-    * ``2.0_password`` - authenticate against keystone with a username and
-      password
+
+  * ``1.0`` - authenticate against the keystone using the provided username
+    and API key (old and deprecated version which was used by Rackspace in
+    the past)
+  * ``1.1`` - authenticate against the keystone using the provided username
+    and API key (old and deprecated version which was used by Rackspace in
+    the past)
+  * ``2.0`` or ``2.0_apikey`` - authenticate against keystone with a username
+    and API key
+  * ``2.0_password`` - authenticate against keystone with a username and
+    password
 
   Unless you are working with a very old version of OpenStack you will either
   want to use ``2.0_apikey`` or ``2.0_password``.

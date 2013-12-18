@@ -690,8 +690,8 @@ class VCloudNodeDriver(NodeDriver):
         return result
 
     def create_node(self, **kwargs):
-        """Creates and returns node.
-
+        """
+        Creates and returns node.
 
         @inherits: :class:`NodeDriver.create_node`
 
@@ -706,7 +706,7 @@ class VCloudNodeDriver(NodeDriver):
         :keyword    ex_cpus: number of virtual cpus (limit depends on provider)
         :type       ex_cpus: ``int``
 
-        :keyword    ex_row: ????
+        :keyword    ex_row: ???
         :type       ex_row: ``str``
 
         :keyword    ex_group: ????

@@ -67,7 +67,7 @@ Other
     :glob:
     :maxdepth: 3
 
-   security
+    security
 
 .. note::
 

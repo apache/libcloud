@@ -14,7 +14,7 @@ New committer guidelines
 First congratulations and welcome to the team!
 
 1. Subscribe to the public mailing lists
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you haven't yet, subscribe to {dev,users,commits}@apache.libcloud.org
 mailing lists. Committs mailing list is especially important because all of

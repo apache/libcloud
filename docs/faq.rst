@@ -80,7 +80,7 @@ there aren't enough common points which would allow us to build a
 cross-provider API which would still provide enough value to the end user.
 
 If the API matches the criteria defined above, you should send a proposal to
-our :ref:`mailing list <mailing-list>` where we can discuss it further.
+our :ref:`mailing list <mailing-lists>` where we can discuss it further.
 Ideally, the proposal should also contain a prototype of a driver for at least
 two different providers. This helps us make sure that the API you have designed
 is not biased towards a single provider.

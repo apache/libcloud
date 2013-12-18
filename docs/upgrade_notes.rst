@@ -642,7 +642,8 @@ Libcloud 0.8
 * ``ex_save_image`` method in the OpenStack driver now returns a ``NodeImage``
   instance.
 
-For a full list of changes, please see the `CHANGES file <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=fd1f9cd8917bf9d9c5f4d5344872dbccba894444;hb=b26812db71e6c36be3cc5f7fcb87f82b267bfddd>`_.
+For a full list of changes, please see the `CHANGES file 
+<https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=fd1f9cd8917bf9d9c5f4d5344872dbccba894444;hb=b26812db71e6c36be3cc5f7fcb87f82b267bfddd>`__.
 
 Libcloud 0.7
 ------------
@@ -673,7 +674,8 @@ Updated code:
                 driver=driver)
 
 * Old deprecated paths have been removed. If you still haven't updated your
-code you need to do it now, otherwise it won't work with 0.7 and future releases.
+  code you need to do it now, otherwise it won't work with 0.7 and future
+  releases.
 
 Bellow is a list of old paths and their new locations:
 
@@ -687,7 +689,8 @@ Bellow is a list of old paths and their new locations:
 In the ``contrib/`` directory you can also find a simple bash script which can
 perform a search and replace for you - `migrate_paths.py <https://svn.apache.org/repos/asf/libcloud/trunk/contrib/migrate_paths.sh>`_.
 
-For a full list of changes, please see the `CHANGES file <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=276948338c2581de1178e51f7f7cdbd4e7ba9286;hb=2ad8f3fa1f258d6c53d7b058cdc6cd9ab1fd579b>`_.
+For a full list of changes, please see the `CHANGES file 
+<https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=276948338c2581de1178e51f7f7cdbd4e7ba9286;hb=2ad8f3fa1f258d6c53d7b058cdc6cd9ab1fd579b>`__.
 
 Libcloud 0.6
 ------------
@@ -734,4 +737,4 @@ For example:
     Cls = get_provider(Provider.OPENNEBULA)
     driver = Cls('key', 'secret', api_version='1.4')
 
-For a full list of changes, please see the `CHANGES file <https://svn.apache.org/viewvc/libcloud/trunk/CHANGES?revision=1198753&view=markup>`_.
+For a full list of changes, please see the `CHANGES file <https://svn.apache.org/viewvc/libcloud/trunk/CHANGES?revision=1198753&view=markup>`__.
