@@ -238,6 +238,7 @@ setup(
         'apidocs': ApiDocsCommand,
         'coverage': CoverageCommand
     },
+    zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
