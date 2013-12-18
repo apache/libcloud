@@ -72,6 +72,7 @@ def parse_changes_file(file_path):
                     contributors = [name.strip() for name in contributors]
 
                     for name in contributors:
+                        name = name.title()
                         contributors_map[name].update(set(active_tickets))
 
     return contributors_map
