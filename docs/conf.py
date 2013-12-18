@@ -13,17 +13,10 @@
 
 import sys, os
 
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
-
-# Nasty hack, but RTD doesn't seem to re-create virtualenvs and we are stuck in
-# a bad state now :/
-if on_rtd:
-    sys.path.insert(0, '/var/build/user_builds/libcloud/envs/latest/src/sphinxcontrib-fulltoc')
 
 # -- General configuration -----------------------------------------------------
 
@@ -33,7 +26,7 @@ if on_rtd:
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
-              'sphinx.ext.viewcode', 'sphinxcontrib.fulltoc']
+              'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -99,6 +92,8 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
 if on_rtd:
     html_theme = 'default'
     RTD_NEW_THEME = True
