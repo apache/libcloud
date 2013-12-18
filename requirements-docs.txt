@@ -1,1 +1,2 @@
-sphinxcontrib-fulltoc==1.0
+-e git+https://github.com/Kami/sphinxcontrib-fulltoc.git@fix_for_rtd#egg=sphinxcontrib-fulltoc
+#sphinxcontrib-fulltoc==1.0
