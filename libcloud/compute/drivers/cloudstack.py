@@ -45,9 +45,11 @@ class CloudStackNode(Node):
     def ex_create_ip_forwarding_rule(self, address, protocol,
                                      start_port, end_port=None):
         "Add a NAT/firewall forwarding rule for a port or ports."
-        return self.driver.ex_create_ip_forwarding_rule(self, address,
-                                                        protocol,
-                                                        start_port, end_port)
+        return self.driver.ex_create_ip_forwarding_rule(node=self,
+                                                        address=address,
+                                                        protocol=protocol,
+                                                        start_port=start_port,
+                                                        end_port=end_port)
 
     def ex_create_port_forwarding_rule(self, address,
                                        private_port, public_port,
@@ -56,29 +58,36 @@ class CloudStackNode(Node):
                                        private_end_port=None,
                                        openfirewall=True):
         "Add a port forwarding rule for port or ports."
-        return self.driver.ex_create_port_forwarding_rule(self, address,
+        return self.driver.ex_create_port_forwarding_rule(node=self,
+                                                          address=
+                                                          address,
+                                                          private_port=
                                                           private_port,
+                                                          public_port=
                                                           public_port,
-                                                          protocol,
+                                                          protocol=protocol,
+                                                          public_end_port=
                                                           public_end_port,
+                                                          private_end_port=
                                                           private_end_port,
+                                                          openfirewall=
                                                           openfirewall)
 
     def ex_delete_ip_forwarding_rule(self, rule):
         "Delete a port forwarding rule."
-        return self.driver.ex_delete_ip_forwarding_rule(self, rule)
+        return self.driver.ex_delete_ip_forwarding_rule(node=self, rule=rule)
 
     def ex_delete_port_forwarding_rule(self, rule):
         "Delete a NAT/firewall rule."
-        return self.driver.ex_delete_port_forwarding_rule(self, rule)
+        return self.driver.ex_delete_port_forwarding_rule(node=self, rule=rule)
 
     def ex_start(self):
         "Starts a stopped virtual machine"
-        return self.driver.ex_start(self)
+        return self.driver.ex_start(node=self)
 
     def ex_stop(self):
         "Stops a running virtual machine"
-        return self.driver.ex_stop(self)
+        return self.driver.ex_stop(node=self)
 
 
 class CloudStackAddress(object):
@@ -90,7 +99,7 @@ class CloudStackAddress(object):
         self.driver = driver
 
     def release(self):
-        self.driver.ex_release_public_ip(self)
+        self.driver.ex_release_public_ip(address=self)
 
     def __str__(self):
         return self.address
@@ -111,7 +120,7 @@ class CloudStackIPForwardingRule(object):
         self.end_port = end_port
 
     def delete(self):
-        self.node.ex_delete_ip_forwarding_rule(self)
+        self.node.ex_delete_ip_forwarding_rule(rule=self)
 
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
@@ -165,7 +174,7 @@ class CloudStackPortForwardingRule(object):
         self.private_end_port = private_end_port
 
     def delete(self):
-        self.node.ex_delete_port_forwarding_rule(self)
+        self.node.ex_delete_port_forwarding_rule(rule=self)
 
     def __eq__(self, other):
         return self.__class__ is other.__class__ and self.id == other.id
