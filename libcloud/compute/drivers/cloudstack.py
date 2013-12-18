@@ -32,19 +32,27 @@ from libcloud.utils.networking import is_private_subnet
 
 
 class CloudStackNode(Node):
-    "Subclass of Node so we can expose our extension methods."
+    """
+    Subclass of Node so we can expose our extension methods.
+    """
 
     def ex_allocate_public_ip(self):
-        "Allocate a public IP and bind it to this node."
+        """
+        Allocate a public IP and bind it to this node.
+        """
         return self.driver.ex_allocate_public_ip(self)
 
     def ex_release_public_ip(self, address):
-        "Release a public IP that this node holds."
+        """
+        Release a public IP that this node holds.
+        """
         return self.driver.ex_release_public_ip(self, address)
 
     def ex_create_ip_forwarding_rule(self, address, protocol,
                                      start_port, end_port=None):
-        "Add a NAT/firewall forwarding rule for a port or ports."
+        """
+        Add a NAT/firewall forwarding rule for a port or ports.
+        """
         return self.driver.ex_create_ip_forwarding_rule(node=self,
                                                         address=address,
                                                         protocol=protocol,
@@ -57,7 +65,9 @@ class CloudStackNode(Node):
                                        public_end_port=None,
                                        private_end_port=None,
                                        openfirewall=True):
-        "Add a port forwarding rule for port or ports."
+        """
+        Add a port forwarding rule for port or ports.
+        """
         return self.driver.ex_create_port_forwarding_rule(node=self,
                                                           address=
                                                           address,
@@ -74,24 +84,34 @@ class CloudStackNode(Node):
                                                           openfirewall)
 
     def ex_delete_ip_forwarding_rule(self, rule):
-        "Delete a port forwarding rule."
+        """
+        Delete a port forwarding rule.
+        """
         return self.driver.ex_delete_ip_forwarding_rule(node=self, rule=rule)
 
     def ex_delete_port_forwarding_rule(self, rule):
-        "Delete a NAT/firewall rule."
+        """
+        Delete a NAT/firewall rule.
+        """
         return self.driver.ex_delete_port_forwarding_rule(node=self, rule=rule)
 
     def ex_start(self):
-        "Starts a stopped virtual machine"
+        """
+        Starts a stopped virtual machine.
+        """
         return self.driver.ex_start(node=self)
 
     def ex_stop(self):
-        "Stops a running virtual machine"
+        """
+        Stops a running virtual machine.
+        """
         return self.driver.ex_stop(node=self)
 
 
 class CloudStackAddress(object):
-    "A public IP address."
+    """
+    A public IP address.
+    """
 
     def __init__(self, id, address, driver):
         self.id = id
@@ -109,7 +129,9 @@ class CloudStackAddress(object):
 
 
 class CloudStackIPForwardingRule(object):
-    "A NAT/firewall forwarding rule."
+    """
+    A NAT/firewall forwarding rule.
+    """
 
     def __init__(self, node, id, address, protocol, start_port, end_port=None):
         self.node = node
@@ -127,7 +149,9 @@ class CloudStackIPForwardingRule(object):
 
 
 class CloudStackPortForwardingRule(object):
-    "A Port forwarding rule for Source NAT."
+    """
+    A Port forwarding rule for Source NAT.
+    """
 
     def __init__(self, node, rule_id, address, protocol, public_port,
                  private_port, public_end_port=None, private_end_port=None):
@@ -181,7 +205,9 @@ class CloudStackPortForwardingRule(object):
 
 
 class CloudStackDiskOffering(object):
-    """A disk offering within CloudStack."""
+    """
+    A disk offering within CloudStack.
+    """
 
     def __init__(self, id, name, size, customizable):
         self.id = id
@@ -194,7 +220,9 @@ class CloudStackDiskOffering(object):
 
 
 class CloudStackNetwork(object):
-    """Class representing a CloudStack Network"""
+    """
+    Class representing a CloudStack Network.
+    """
 
     def __init__(self, displaytext, name, networkofferingid, id, zoneid,
                  driver):
@@ -213,7 +241,8 @@ class CloudStackNetwork(object):
 
 
 class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
-    """Driver for the CloudStack API.
+    """
+    Driver for the CloudStack API.
 
     :cvar host: The host where the API can be reached.
     :cvar path: The path where the API can be reached.
