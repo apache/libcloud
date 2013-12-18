@@ -93,7 +93,7 @@ Changes with Apache Libcloud in development
       the CDN endpoint.
 
       This was broken in the 0.14.0-beta3 release when we migrated all the
-      Rackspace drivers to use auth 2.0 by default.
+      Rackspace drivers to use auth 2.0 by default. (GITHUB-186)
       [John Obelenus]
 
     - Update storage drivers to default to "application/octet-stream"
@@ -643,7 +643,7 @@ Changes with Apache Libcloud 0.13.0:
 
     - Correctly throw InvalidCredsError if user passes invalid credentials to
       the DigitalOcean driver.
-      [Tomaz muraus]
+      [Tomaz Muraus]
 
  *) Storage
 
@@ -1080,7 +1080,8 @@ Changes with Apache Libcloud 0.11.0:
 
     - Add force_ipv4 argument to _wait_until_running and default it to True.
       This will make Libcloud ignore IPv6 addresses when using deploy_node.
-      [Jay Doane, Tomaz muraus]
+      (LIBCLOUD-200)
+      [Jay Doane, Tomaz Muraus]
 
     - Include error text if a CloudStack async job returns an error code.
       (LIBCLOUD-207)
@@ -1728,12 +1729,12 @@ Changes with Apache Libcloud 0.6.1:
 
      - Increase a PollingConnection timeout in the CloudStack connection
        and fix the context dictionary creation in the _async_request method.
-       [gigimon]
+       [Oleg Suharev]
 
      - Fix networks retrieval in the CloudStack driver create_node method.
        Also only pass 'networkids' field to the API if there are any networks
        available.
-       [gigimon, Tomaz Muraus]
+       [Oleg Suharev, Tomaz Muraus]
 
      - Fix list_nodes in the CloudStack driver. Private IPs aren't always
        available.
