@@ -30,7 +30,7 @@ JIRA_URL = 'https://issues.apache.org/jira/browse/LIBCLOUD-%s'
 GITHUB_URL = 'https://github.com/apache/libcloud/pull/%s'
 
 
-def parse_changes_file(file_path):
+def parse_changes_file(file_path, version=None):
     """
     Parse CHANGES file and return a dictionary with contributors.
 
@@ -41,11 +41,21 @@ def parse_changes_file(file_path):
     contributors_map = defaultdict(set)
 
     in_entry = False
+    active_version = None
     active_tickets = []
 
     with open(file_path, 'r') as fp:
         for line in fp:
             line = line.strip()
+
+            match = re.search(r'Changes with Apache Libcloud '
+                              '(\d+\.\d+\.\d+(-\w+)?).*?$', line)
+
+            if match:
+                active_version = match.groups()[0]
+
+            if version and active_version != version:
+                continue
 
             if line.startswith('-') or line.startswith('*)'):
                 in_entry = True
@@ -124,9 +134,13 @@ if __name__ == '__main__':
                                                  ' in a single image')
     parser.add_argument('--changes-path', action='store',
                         help='Path to the changes file')
+    parser.add_argument('--version', action='store',
+                        help='Only return contributors for the provided '
+                             'version')
     args = parser.parse_args()
 
-    contributors_map = parse_changes_file(file_path=args.changes_path)
+    contributors_map = parse_changes_file(file_path=args.changes_path,
+                                          version=args.version)
     markdown = convert_to_markdown(contributors_map=contributors_map)
 
     print(markdown)
