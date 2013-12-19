@@ -71,7 +71,7 @@ Other
 
 .. note::
 
-    Unless noted otherwise, all of the examples and code snippters in the
+    Unless noted otherwise, all of the examples and code snippets in the
     documentation are licensed under the `Apache 2.0 license`_.
 
 .. _`Apache 2.0 license`: https://www.apache.org/licenses/LICENSE-2.0.html
