@@ -157,7 +157,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
     def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        records = []
         offset = 0
         limit = 100
         while True:
