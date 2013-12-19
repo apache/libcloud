@@ -30,13 +30,11 @@ Main
     :maxdepth: 3
 
     getting_started
-    changelog
     supported_providers
     compute/index
     storage/index
     loadbalancer/index
     dns/index
-    upgrade_notes
     troubleshooting
     faq
     other/*
@@ -67,6 +65,8 @@ Other
     :glob:
     :maxdepth: 3
 
+    changelog
+    upgrade_notes
     security
 
 .. note::
