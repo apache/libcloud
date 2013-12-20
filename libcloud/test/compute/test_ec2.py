@@ -220,6 +220,38 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                                        '0.0.0.0/0')
         self.assertTrue(resp)
 
+    def test_authorize_security_group_ingress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 23, group_pairs=groups)
+        self.assertTrue(resp)
+
+    def test_authorize_security_group_egress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, group_pairs=groups)
+        self.assertTrue(resp)
+
+    def test_revoke_security_group_ingress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, group_pairs=groups)
+        self.assertTrue(resp)
+
+    def test_revoke_security_group_egress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, group_pairs=groups)
+        self.assertTrue(resp)
+
     def test_reboot_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         ret = self.driver.reboot_node(node)

@@ -1318,6 +1318,282 @@ class BaseEC2NodeDriver(NodeDriver):
             if e.args[0].find('InvalidPermission.Duplicate') == -1:
                 raise e
 
+    def ex_authorize_security_group_ingress(self, id, from_port, to_port,
+                                            cidr_ips=None, group_pairs=None,
+                                            protocol='tcp'):
+        """
+        Edit a Security Group to allow specific ingress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: User/group pairs to allow traffic for.
+        :type       group_pairs: ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort':   from_port,
+                  'IpPermissions.1.ToPort':     to_port}
+
+        if cidr_ips is not None:
+            i = 1
+            ip_ranges = {}
+            for cidr_ip in cidr_ips:
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
+                i += 1
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            i = 1
+            user_groups = {}
+            for group_pair in group_pairs:
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (i)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (i)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (i)] = group_pair['user_id']
+                i += 1
+
+            params.update(user_groups)
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_authorize_security_group_egress(self, id, from_port, to_port,
+                                           cidr_ips=None, group_pairs=None,
+                                           protocol='tcp'):
+        """
+        Edit a Security Group to allow specific egress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+        This call is not supported for EC2 classic and only works for VPC
+        groups.
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: User/group pairs to allow traffic for.
+        :type       group_pairs: ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort':   from_port,
+                  'IpPermissions.1.ToPort':     to_port}
+
+        if cidr_ips is not None:
+            i = 1
+            ip_ranges = {}
+            for cidr_ip in cidr_ips:
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
+                i += 1
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            i = 1
+            user_groups = {}
+            for group_pair in group_pairs:
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (i)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (i)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (i)] = group_pair['user_id']
+                i += 1
+
+            params.update(user_groups)
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_revoke_security_group_ingress(self, id, from_port, to_port,
+                                         cidr_ips=None, group_pairs=None,
+                                         protocol='tcp'):
+        """
+        Edit a Security Group to revoke specific ingress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: User/group pairs to allow traffic for.
+        :type       group_pairs: ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort':   from_port,
+                  'IpPermissions.1.ToPort':     to_port}
+
+        if cidr_ips is not None:
+            i = 1
+            ip_ranges = {}
+            for cidr_ip in cidr_ips:
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
+                i += 1
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            i = 1
+            user_groups = {}
+            for group_pair in group_pairs:
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (i)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (i)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (i)] = group_pair['user_id']
+                i += 1
+
+            params.update(user_groups)
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_revoke_security_group_egress(self, id, from_port, to_port,
+                                        cidr_ips=None, group_pairs=None,
+                                        protocol='tcp'):
+        """
+        Edit a Security Group to revoke specific egress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+        This call is not supported for EC2 classic and only works for
+        VPC groups.
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: User/group pairs to allow traffic for.
+        :type       group_pairs: ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = {'Action': 'AuthorizeSecurityGroupIngress',
+                  'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort':   from_port,
+                  'IpPermissions.1.ToPort':     to_port}
+
+        if cidr_ips is not None:
+            i = 1
+            ip_ranges = {}
+            for cidr_ip in cidr_ips:
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
+                i += 1
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            i = 1
+            user_groups = {}
+            for group_pair in group_pairs:
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (i)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (i)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (i)] = group_pair['user_id']
+                i += 1
+
+            params.update(user_groups)
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def ex_authorize_security_group_permissive(self, name):
         """
         Edit a Security Group to allow all traffic.
