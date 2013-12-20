@@ -720,6 +720,55 @@ class BaseEC2NodeDriver(NodeDriver):
                                      'description': description,
                                      'state': state})
 
+    def _to_subnets(self, response):
+        return [self._to_subnet(el) for el in response.findall(
+            fixxpath(xpath='subnetSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_subnet(self, element):
+        subnet_id = findtext(element=element,
+                             xpath='subnetId',
+                             namespace=NAMESPACE)
+
+        tags = dict((findtext(element=item,
+                              xpath='key',
+                              namespace=NAMESPACE),
+                     findtext(element=item,
+                              xpath='value',
+                              namespace=NAMESPACE))
+                    for item in findall(element=element,
+                                        xpath='tagSet/item',
+                                        namespace=NAMESPACE))
+
+        name = tags.get('Name', subnet_id)
+
+        return {'subnet_id': subnet_id,
+                'state': findtext(element=element,
+                                  xpath='state',
+                                  namespace=NAMESPACE),
+                'vpc_id': findtext(element=element,
+                                   xpath='vpcId',
+                                   namespace=NAMESPACE),
+                'cidr_block': findtext(element=element,
+                                       xpath='cidrBlock',
+                                       namespace=NAMESPACE),
+                'name': name,
+                'available_ips': findtext(element=element,
+                                          xpath=
+                                          'availableIpAddressCount',
+                                          namespace=NAMESPACE),
+                'default_for_az': findtext(element=element,
+                                           xpath='defaultForAz',
+                                           namespace=NAMESPACE),
+                'zone': findtext(element=element,
+                                 xpath='availabilityZone',
+                                 namespace=NAMESPACE),
+                'tags': tags,
+                'map_public_ips': findtext(element=element,
+                                           xpath=
+                                           'mapPublicIpsOnLaunch',
+                                           namespace=NAMESPACE)}
+
     def list_nodes(self, ex_node_ids=None):
         """
         List all nodes
@@ -1235,6 +1284,101 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyName': key_name,
             'keyFingerprint': fingerprint
         }
+
+    def ex_list_subnets(self):
+        """
+        Return all private virtual private cloud (VPC) subnets
+
+        :return:    list of subnet dicts
+        :rtype:     ``list`` of ``dict``
+        """
+        params = {'Action': 'DescribeSubnets'}
+
+        response = self.connection.request(self.path,
+                                           params=params.copy()).object
+
+        subnets = self._to_subnets(response)
+        return subnets
+
+    def ex_create_subnet(self, vpc_id, cidr_block,
+                         availability_zone, name=None):
+        """
+        Create a network subnet within a VPC
+
+        :param      vpc_id: The ID of the VPC that the subnet should be
+                            associated with
+        :type       vpc_id: ``str``
+
+        :param      cidr_block: The CIDR block assigned to the network
+        :type       cidr_block: ``str``
+
+        :param      availability_zone: The availability zone where the subnet
+                                       should reside
+        :type       availability_zone: ``str``
+
+        :param      name: An optional name for the network
+        :type       name: ``str``
+
+        :return:    Dictionary of subnet properties
+        :rtype:     ``dict``
+        """
+        params = {'Action': 'CreateSubnet',
+                  'VpcId': vpc_id,
+                  'CidrBlock': cidr_block,
+                  'AvailabilityZone': availability_zone}
+
+        result = self.connection.request(self.path, params=params).object
+
+        # Get our properties
+        response = {'subnet_id': findtext(element=result,
+                                          xpath='subnet/subnetId',
+                                          namespace=NAMESPACE),
+                    'state': findtext(element=result,
+                                      xpath='subnet/state',
+                                      namespace=NAMESPACE),
+                    'vpc_id': findtext(element=result,
+                                       xpath='subnet/vpcId',
+                                       namespace=NAMESPACE),
+                    'cidr_block': findtext(element=result,
+                                           xpath='subnet/cidrBlock',
+                                           namespace=NAMESPACE),
+                    'available_ips': findtext(element=result,
+                                              xpath=
+                                              'subnet/availableIpAddressCount',
+                                              namespace=NAMESPACE),
+                    'zone': findtext(element=result,
+                                     xpath='subnet/availabilityZone',
+                                     namespace=NAMESPACE)}
+
+        # Attempt to tag our network if the name was provided
+        if name is not None:
+            # Build a resource object
+            class Resource:
+                pass
+
+            resource = Resource()
+            resource.id = response['subnet_id']
+            self.ex_create_tags(resource, {'Name': name})
+
+        return response
+
+    def ex_destroy_subnet(self, subnet_id):
+        """
+        Deletes a VPC subnet.
+
+        :param      subnet_id: The ID of the subnet
+        :type       subnet_id: ``str``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteSubnet', 'SubnetId': subnet_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
 
     def ex_list_security_groups(self):
         """

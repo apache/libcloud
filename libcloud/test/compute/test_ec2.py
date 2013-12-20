@@ -708,6 +708,34 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                     'max-elastic-ips': 5}
         self.assertEqual(limits['resource'], expected)
 
+    def test_ex_list_subnets(self):
+        subnets = self.driver.ex_list_subnets()
+
+        self.assertEqual(len(subnets), 2)
+
+        self.assertEqual('subnet-ce0e7ce5', subnets[0]['subnet_id'])
+        self.assertEqual('123', subnets[0]['available_ips'])
+        self.assertEqual('available', subnets[0]['state'])
+
+        self.assertEqual('subnet-ce0e7ce6', subnets[1]['subnet_id'])
+        self.assertEqual("59", subnets[1]['available_ips'])
+        self.assertEqual('available', subnets[1]['state'])
+
+    def test_ex_create_subnet(self):
+        subnet = self.driver.ex_create_subnet('vpc-532135d1',
+                                              '192.168.51.128/26',
+                                              'us-east-1b',
+                                              name='Test Subnet')
+        print subnet
+
+        self.assertEqual('subnet-ce0e7ce6', subnet['subnet_id'])
+        self.assertEqual('pending', subnet['state'])
+        self.assertEqual('vpc-532135d1', subnet['vpc_id'])
+
+    def test_ex_destroy_subnet(self):
+        resp = self.driver.ex_destroy_subnet('subnet-ce0e7ce6')
+        self.assertTrue(resp)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -977,6 +1005,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeAccountAttributes(self, method, url, body, headers):
         body = self.fixtures.load('describe_account_attributes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeSubnets(self, method, url, body, headers):
+        body = self.fixtures.load('describe_subnets.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateSubnet(self, method, url, body, headers):
+        body = self.fixtures.load('create_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteSubnet(self, method, url, body, headers):
+        body = self.fixtures.load('delete_subnet.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
