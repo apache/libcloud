@@ -19,6 +19,16 @@
 #
 # Script which generates markdown formatted list of contributors. It generates
 # this list by parsing the "CHANGES" file.
+#
+# Usage:
+#
+# 1. Generate a list of contributors with tickets for all versions:
+#
+# ./contrib/generate_contributor_list.py --changes-path=CHANGES \
+#                                         --include-tickets
+# 2. Generate a list of contributors for a release without tickets
+# ./contrib/generate_contributor_list.py --changes-path=CHANGES \
+#                                        --version=0.13.0
 
 from __future__ import with_statement
 
@@ -88,7 +98,7 @@ def parse_changes_file(file_path, version=None):
     return contributors_map
 
 
-def convert_to_markdown(contributors_map):
+def convert_to_markdown(contributors_map, include_tickets=False):
 
     # Contributors are sorted in ascending lexiographical order based on their
     # last name
@@ -122,8 +132,13 @@ def convert_to_markdown(contributors_map):
             tickets_string.append('[%(ticket)s](%(url)s)' % values)
 
         tickets_string = ', '.join(tickets_string)
-        line = '* %(name)s: %(tickets)s' % {'name': name,
-                                            'tickets': tickets_string}
+
+        if include_tickets:
+            line = '* %(name)s: %(tickets)s' % {'name': name,
+                                                'tickets': tickets_string}
+        else:
+            line = '* %(name)s' % {'name': name}
+
         result.append(line)
 
     result = '\n'.join(result)
@@ -137,10 +152,14 @@ if __name__ == '__main__':
     parser.add_argument('--version', action='store',
                         help='Only return contributors for the provided '
                              'version')
+    parser.add_argument('--include-tickets', action='store_true',
+                        default=False,
+                        help='Include ticket numbers')
     args = parser.parse_args()
 
     contributors_map = parse_changes_file(file_path=args.changes_path,
                                           version=args.version)
-    markdown = convert_to_markdown(contributors_map=contributors_map)
+    markdown = convert_to_markdown(contributors_map=contributors_map,
+                                   include_tickets=args.include_tickets)
 
     print(markdown)
