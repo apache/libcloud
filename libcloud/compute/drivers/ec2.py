@@ -1312,26 +1312,36 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return groups
 
-    def ex_create_security_group(self, name, description):
+    def ex_create_security_group(self, name, description, vpc_id=None):
         """
-        Creates a new Security Group
+        Creates a new Security Group in EC2-Classic or a targetted VPC
 
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :param      name: The name of the security group to Create.
-                          This must be unique.
-        :type       name: ``str``
+        :param      name:        The name of the security group to Create.
+                                 This must be unique.
+        :type       name:        ``str``
 
         :param      description: Human readable description of a Security
         Group.
         :type       description: ``str``
 
-        :rtype: ``str``
+        :param      description: Optional identifier for VPC networks
+        :type       description: ``str``
+
+        :rtype: ``dict``
         """
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
                   'GroupDescription': description}
-        return self.connection.request(self.path, params=params).object
+
+        if vpc_id is not None:
+            params['VpcId'] = vpc_id
+
+        response = self.connection.request(self.path, params=params).object
+        group_id = findattr(element=response, xpath='groupId',
+                            namespace=NAMESPACE)
+        return {
+            'group_id': group_id
+        }
 
     def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
                                     protocol='tcp'):
