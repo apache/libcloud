@@ -202,7 +202,36 @@ INSTANCE_TYPES = {
         'ram': 119808,
         'disk': 48000,
         'bandwidth': None
-    }
+    },
+    # i2 instances have up to eight SSD drives
+    'i2.xlarge': {
+        'id': 'i2.xlarge',
+        'name': 'High Storage Optimized Extra Large Instance',
+        'ram': 31232,
+        'disk': 800,
+        'bandwidth': None
+    },
+    'i2.2xlarge': {
+        'id': 'i2.2xlarge',
+        'name': 'High Storage Optimized Double Extra Large Instance',
+        'ram': 62464,
+        'disk': 1600,
+        'bandwidth': None
+    },
+    'i2.4xlarge': {
+        'id': 'i2.4xlarge',
+        'name': 'High Storage Optimized Quadruple Large Instance',
+        'ram': 124928,
+        'disk': 1600,
+        'bandwidth': None
+    },
+    'i2.8xlarge': {
+        'id': 'i2.8xlarge',
+        'name': 'High Storage Optimized Eight Extra Large Instance',
+        'ram': 249856,
+        'disk': 3200,
+        'bandwidth': None
+    },
 }
 
 REGION_DETAILS = {
@@ -232,7 +261,11 @@ REGION_DETAILS = {
             'c3.8xlarge',
             'cg1.4xlarge',
             'cr1.8xlarge',
-            'hs1.8xlarge'
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'us-west-1': {
@@ -256,7 +289,11 @@ REGION_DETAILS = {
             'c3.xlarge',
             'c3.2xlarge',
             'c3.4xlarge',
-            'c3.8xlarge'
+            'c3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'us-west-2': {
@@ -279,7 +316,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'cc2.8xlarge'
+            'cc2.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'eu-west-1': {
@@ -304,7 +345,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'cc2.8xlarge'
+            'cc2.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'ap-southeast-1': {
@@ -329,7 +374,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'hs1.8xlarge'
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'ap-northeast-1': {
@@ -353,7 +402,11 @@ REGION_DETAILS = {
             'c3.xlarge',
             'c3.2xlarge',
             'c3.4xlarge',
-            'c3.8xlarge'
+            'c3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'sa-east-1': {
@@ -373,7 +426,6 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
-
         ]
     },
     'ap-southeast-2': {
@@ -398,7 +450,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'hs1.8xlarge'
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'nimbus': {
