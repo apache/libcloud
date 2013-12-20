@@ -21,15 +21,17 @@ Information about setting up your Google OAUTH2 credentials:
 For libcloud, there are two basic methods for authenticating to Google using
 OAUTH2: Service Accounts and Client IDs for Installed Applications.
 
-Both are initially set up from the
-U{API Console<https://code.google.com/apis/console#access>}
+Both are initially set up from the Cloud Console_
+_Console: https://cloud.google.com/console
 
 Setting up Service Account authentication (note that you need the PyCrypto
 package installed to use this):
-    - Go to the API Console
-    - Click on "Create another client ID..."
-    - Select "Service account" and click on "Create client ID"
-    - Download the Private Key
+    - Go to the Console
+    - Go to your project and then to "APIs & auth" on the left
+    - Click on "Credentials"
+    - Click on "Create New Client ID..."
+    - Select "Service account" and click on "Create Client ID"
+    - Download the Private Key (should happen automatically).
     - The key that you download is a PKCS12 key.  It needs to be converted to
       the PEM format.
     - Convert the key using OpenSSL (the default password is 'notasecret'):
@@ -40,9 +42,11 @@ package installed to use this):
       address" in as the user_id and the path to the .pem file as the key.
 
 Setting up Installed Application authentication:
-    - Go to the API Connsole
-    - Click on "Create another client ID..."
-    - Select "Installed application" and click on "Create client ID"
+    - Go to the Connsole
+    - Go to your projcet and then to "APIs & auth" on the left
+    - Click on "Credentials"
+    - Select "Installed application" and "Other" then click on
+      "Create Client ID"
     - To Authenticate, pass in the "Client ID" as the user_id and the "Client
       secret" as the key
     - The first time that you do this, the libcloud will give you a URL to
@@ -108,6 +112,10 @@ class GoogleBaseError(ProviderError):
         super(GoogleBaseError, self).__init__(value, http_code, driver)
 
 
+class InvalidRequestError(GoogleBaseError):
+    pass
+
+
 class JsonParseError(GoogleBaseError):
     pass
 
@@ -159,9 +167,14 @@ class GoogleResponse(JsonResponse):
             err = body['error']['errors'][0]
         else:
             err = body['error']
+        
+        if 'code' in err:
+            code = err.get('code')
+            message = err.get('message')
+        else:
+            code = None
+            message = body.get('error_description', err)
 
-        code = err.get('code')
-        message = err.get('message')
         return (code, message)
 
     def parse_body(self):
@@ -208,6 +221,14 @@ class GoogleResponse(JsonResponse):
                 code = None
             raise ResourceNotFoundError(message, self.status, code)
 
+        elif self.status == httplib.BAD_REQUEST:
+            if (not json_error) and ('error' in body):
+                (code, message) = self._get_error(body)
+            else:
+                message = body
+                code = None
+            raise InvalidRequestError(message, self.status, code) 
+                
         else:
             if (not json_error) and ('error' in body):
                 (code, message) = self._get_error(body)
