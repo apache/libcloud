@@ -1277,30 +1277,51 @@ class BaseEC2NodeDriver(NodeDriver):
                   'GroupDescription': description}
         return self.connection.request(self.path, params=params).object
 
-    def ex_destroy_security_group(self, group_id=None, group_name=None):
+    def ex_destroy_security_group_by_id(self, group_id):
         """
-        Deletes a new Security Group using either the group_id or name.
+        Deletes a new Security Group using the group id.
 
-        :param      group_name: The name of the security group
-        :type       group_name: ``str``
-
-        :param      group_id:   The ID of the security group
+        :param      group_id: The ID of the security group
         :type       group_id: ``str``
 
         :rtype: ``bool``
         """
-        params = {'Action': 'DeleteSecurityGroup'}
-
-        if group_id is not None:
-            params['GroupId'] = group_id
-
-        if group_name is not None:
-            params['GroupName'] = group_name
+        params = {'Action': 'DeleteSecurityGroup', 'GroupId': group_id}
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
                            namespace=NAMESPACE)
+
         return element == 'true'
+
+    def ex_destroy_security_group_by_name(self, group_name):
+        """
+        Deletes a new Security Group using the group name.
+
+        :param      group_name: The name of the security group
+        :type       group_name: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeleteSecurityGroup', 'GroupName': group_name}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_destroy_security_group(self, name):
+        """
+        Wrapper method which calls ex_destroy_security_group_by_name
+
+        :param      name: The name of the security group
+        :type       name ``str``
+
+        :rtype: ``bool``
+        """
+
+        return self.ex_destroy_security_group_by_name(name)
 
     def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
                                     protocol='tcp'):

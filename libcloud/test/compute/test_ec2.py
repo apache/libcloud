@@ -215,12 +215,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         groups = self.driver.ex_list_security_groups()
         self.assertEqual(groups, ['WebServers', 'RangedPortsBySource'])
 
-    def test_ex_destroy_security_group(self):
-        group_id   = 'sg-443d0a12'
-        retValue = self.driver.ex_destroy_security_group(group_id=group_id)
+    def test_ex_destroy_security_group_by_id(self):
+        group_id = 'sg-443d0a12'
+        retValue = self.driver.ex_destroy_security_group_by_id(group_id)
+        self.assertTrue(retValue)
 
+    def text_ex_destroy_security_group_by_name(self):
         group_name = 'WebServers'
-        retValue = self.driver.ex_destroy_security_group(group_name=group_name)
+        retValue = self.driver.ex_destroy_security_group_by_name(group_name)
+        self.assertTrue(retValue)
+
+    def text_ex_destroy_security_group(self):
+        name = 'WebServers'
+        retValue = self.driver.ex_destroy_security_group(name)
         self.assertTrue(retValue)
 
     def test_authorize_security_group(self):
