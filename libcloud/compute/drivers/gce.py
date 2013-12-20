@@ -1632,8 +1632,8 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_targetpool(name, region)
 
-    def _create_vol_req(self, size, name, location=None, image=None,
-                        snapshot=None):
+    def _create_vol_req(self, size, name, location=None, snapshot=None,
+                        image=None):
         """
         Assemble the request/data for creating a volume.
 
@@ -1650,11 +1650,11 @@ class GCENodeDriver(NodeDriver):
         :type     location: ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
 
-        :keyword  image: Image to create disk from.
-        :type     image: :class:`NodeImage` or ``str`` or ``None``
-
         :keyword  snapshot: Snapshot to create image from
         :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
+
+        :keyword  image: Image to create disk from.
+        :type     image: :class:`NodeImage` or ``str`` or ``None``
 
         :return:  Tuple containg the request string, the data dictionary and
                   the URL parameters
@@ -1687,8 +1687,8 @@ class GCENodeDriver(NodeDriver):
 
         return request, volume_data, params
 
-    def create_volume(self, size, name, location=None, image=None,
-                      snapshot=None, use_existing=True):
+    def create_volume(self, size, name, location=None, snapshot=None,
+                      image=None, use_existing=True):
         """
         Create a volume (disk).
 
@@ -1703,11 +1703,11 @@ class GCENodeDriver(NodeDriver):
         :type     location: ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
 
-        :keyword  image: Image to create disk from.
-        :type     image: :class:`NodeImage` or ``str`` or ``None``
-
         :keyword  snapshot: Snapshot to create image from
         :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
+
+        :keyword  image: Image to create disk from.
+        :type     image: :class:`NodeImage` or ``str`` or ``None``
 
         :keyword  use_existing: If True and a disk with the given name already
                                 exists, return an object for that disk instead
@@ -1718,7 +1718,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`StorageVolume`
         """
         request, volume_data, params = self._create_vol_req(
-            size, name, location, image, snapshot)
+            size, name, location, snapshot, image)
         try:
             self.connection.async_request(request, method='POST',
                                           data=volume_data, params=params)
