@@ -91,6 +91,11 @@ Changes with Apache Libcloud in development
       update pricing file. (LIBCLOUD-465)
       [Chris DeRamus]
 
+    - Allow user to specify VPC id when creating a security group in the EC2
+      driver by passing "vpc_id" argument to ex_create_security_group method.
+      (LIBCLOUD-463)
+      [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
