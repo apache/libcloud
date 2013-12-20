@@ -4,6 +4,10 @@ Changes with Apache Libcloud in development
 
   *) Compute
 
+    - Add support for new "i2" instance types to Amazon EC2 driver. Also
+      update pricing file. (LIBCLOUD-465)
+      [Chris DeRamus]
+
     - Remove Slicehost driver.
 
       SliceHost API has been shut down in 2012 so it makes no sense to keep
