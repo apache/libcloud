@@ -1343,6 +1343,52 @@ class BaseEC2NodeDriver(NodeDriver):
             'group_id': group_id
         }
 
+    def ex_delete_security_group_by_id(self, group_id):
+        """
+        Deletes a new Security Group using the group id.
+
+        :param      group_id: The ID of the security group
+        :type       group_id: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeleteSecurityGroup', 'GroupId': group_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_delete_security_group_by_name(self, group_name):
+        """
+        Deletes a new Security Group using the group name.
+
+        :param      group_name: The name of the security group
+        :type       group_name: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeleteSecurityGroup', 'GroupName': group_name}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_delete_security_group(self, name):
+        """
+        Wrapper method which calls ex_delete_security_group_by_name
+
+        :param      name: The name of the security group
+        :type       name ``str``
+
+        :rtype: ``bool``
+        """
+
+        return self.ex_destroy_security_group_by_name(name)
+
     def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
                                     protocol='tcp'):
         """
