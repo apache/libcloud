@@ -708,6 +708,37 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                     'max-elastic-ips': 5}
         self.assertEqual(limits['resource'], expected)
 
+    def test_ex_list_networks(self):
+        vpcs = self.driver.ex_list_networks()
+
+        self.assertEqual(len(vpcs), 2)
+
+        self.assertEqual('vpc-532335e1', vpcs[0]['vpc_id'])
+        self.assertEqual('available', vpcs[0]['state'])
+        self.assertEqual('dopt-7eded312', vpcs[0]['dhcp_options_id'])
+        self.assertEqual('vpc-532335e1', vpcs[0]['name'])
+
+        self.assertEqual('vpc-62ded30e', vpcs[1]['vpc_id'])
+        self.assertEqual('available', vpcs[1]['state'])
+        self.assertEqual('dopt-7eded312', vpcs[1]['dhcp_options_id'])
+        self.assertEqual('Test VPC', vpcs[1]['name'])
+
+    def test_ex_create_network(self):
+        vpc = self.driver.ex_create_network('192.168.55.0/24',
+                                            name='Test VPC',
+                                            instance_tenancy='default')
+
+        self.assertEqual('vpc-ad3527cf', vpc['vpc_id'])
+        self.assertEqual('pending', vpc['state'])
+        self.assertEqual('192.168.55.0/24', vpc['cidr_block'])
+
+    def test_ex_destroy_network(self):
+        vpcs = self.driver.ex_list_networks()
+        vpc = vpcs[0]
+
+        resp = self.driver.ex_destroy_network(vpc['vpc_id'])
+        self.assertTrue(resp)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -977,6 +1008,18 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeAccountAttributes(self, method, url, body, headers):
         body = self.fixtures.load('describe_account_attributes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeVpcs(self, method, url, body, headers):
+        body = self.fixtures.load('describe_vpcs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateVpc(self, method, url, body, headers):
+        body = self.fixtures.load('create_vpc.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteVpc(self, method, url, body, headers):
+        body = self.fixtures.load('delete_vpc.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

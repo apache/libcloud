@@ -1236,6 +1236,131 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyFingerprint': fingerprint
         }
 
+    def ex_list_networks(self):
+        """
+        Return all private virtual private cloud (VPC) networks
+
+        :return:    list of network dicts
+        :rtype:     ``list``
+        """
+        params = {'Action': 'DescribeVpcs'}
+
+        result = self.connection.request(self.path,
+                                         params=params.copy()).object
+
+        # The list which we return
+        networks = []
+        for element in findall(element=result,
+                               xpath='vpcSet/item',
+                               namespace=NAMESPACE):
+
+            # Get the network id
+            vpc_id = findtext(element=element,
+                              xpath='vpcId',
+                              namespace=NAMESPACE)
+
+            # Get tags
+            tags = dict((findtext(element=item,
+                                  xpath='key',
+                                  namespace=NAMESPACE),
+                         findtext(element=item,
+                                  xpath='value',
+                                  namespace=NAMESPACE))
+                        for item in findall(element=element,
+                                            xpath='tagSet/item',
+                                            namespace=NAMESPACE))
+
+            # Set our name is the Name key/value if available
+            # If we don't get anything back then use the vpc_id
+            name = tags.get('Name', vpc_id)
+
+            networks.append({'vpc_id': vpc_id,
+                             'name': name,
+                             'state': findtext(element=element,
+                                               xpath='state',
+                                               namespace=NAMESPACE),
+                             'cidr_block': findtext(element=element,
+                                                    xpath='cidrBlock',
+                                                    namespace=NAMESPACE),
+                             'dhcp_options_id': findtext(element=element,
+                                                         xpath='dhcpOptionsId',
+                                                         namespace=NAMESPACE),
+                             'tags': tags,
+                             'instance_tenancy': findtext(element=element,
+                                                          xpath=
+                                                          'instance_tenancy',
+                                                          namespace=NAMESPACE),
+                             'is_default': findtext(element=element,
+                                                    xpath='isDefault',
+                                                    namespace=NAMESPACE)})
+
+        return networks
+
+    def ex_create_network(self, cidr_block, name=None,
+                          instance_tenancy='default'):
+        """
+        Create a network/VPC
+
+        :param      cidr_block: The CIDR block assigned to the network
+        :type       cidr_block: ``str``
+
+        :param      name: An optional name for the network
+        :type       name: ``str``
+
+        :param      instance_tenancy: The allowed tenancy of instances launched
+                                      into the VPC.
+                                      Valid values: default/dedicated
+        :type       instance_tenancy: ``str``
+
+        :return:    Dictionary of network properties
+        :rtype:     ``dict``
+        """
+        params = {'Action': 'CreateVpc',
+                  'CidrBlock': cidr_block,
+                  'InstanceTenancy':  instance_tenancy}
+
+        result = self.connection.request(self.path, params=params).object
+
+        # Get our properties
+        response = {'vpc_id': findtext(element=result,
+                                       xpath='vpc/vpcId',
+                                       namespace=NAMESPACE),
+                    'state': findtext(element=result,
+                                      xpath='vpc/state',
+                                      namespace=NAMESPACE),
+                    'cidr_block': findtext(element=result,
+                                           xpath='vpc/cidrBlock',
+                                           namespace=NAMESPACE)}
+
+        # Attempt to tag our network if the name was provided
+        if name is not None:
+            # Build a resource object
+            class Resource:
+                pass
+
+            resource = Resource()
+            resource.id = response['vpc_id']
+            self.ex_create_tags(resource, {'Name': name})
+
+        return response
+
+    def ex_destroy_network(self, vpc_id):
+        """
+        Deletes a network/VPC.
+
+        :param      vpc_id: The ID of the VPC
+        :type       vpc_id: ``str``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteVpc', 'VpcId': vpc_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
     def ex_list_security_groups(self):
         """
         List existing Security Groups.
