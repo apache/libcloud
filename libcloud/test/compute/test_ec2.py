@@ -708,6 +708,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                     'max-elastic-ips': 5}
         self.assertEqual(limits['resource'], expected)
 
+    def test_ex_create_security_group(self):
+        group = self.driver.ex_create_security_group("WebServers",
+                                                     "Rules to protect web nodes",
+                                                     "vpc-143cab4")
+
+        self.assertEqual(group["group_id"], "sg-52e2f530")
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -977,6 +984,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeAccountAttributes(self, method, url, body, headers):
         body = self.fixtures.load('describe_account_attributes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('create_security_group.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
