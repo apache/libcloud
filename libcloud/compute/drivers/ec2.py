@@ -720,6 +720,42 @@ class BaseEC2NodeDriver(NodeDriver):
                                      'description': description,
                                      'state': state})
 
+    def _get_common_security_group_params(self, group_id, protocol,
+                                          from_port, to_port, cidr_ips,
+                                          group_pairs):
+
+        params = {'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort': from_port,
+                  'IpPermissions.1.ToPort': to_port}
+
+        if cidr_ips is not None:
+            ip_ranges = {}
+            for index, cidr_ip in enumerate(cidr_ips, 1):
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
+                          % (index)] = cidr_ip
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            user_groups = {}
+            for index, group_pair in enumerate(group_pairs, 1):
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (index)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (index)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (index)] = group_pair['user_id']
+
+            params.update(user_groups)
+
+        return params
+
     def list_nodes(self, ex_node_ids=None):
         """
         List all nodes
@@ -1337,8 +1373,19 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      cidr_ips: The list of ip ranges to allow traffic for.
         :type       cidr_ips: ``list``
 
-        :param      group_pairs: User/group pairs to allow traffic for.
-        :type       group_pairs: ``dict``
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
 
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
@@ -1346,39 +1393,14 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        params = {'Action': 'AuthorizeSecurityGroupIngress',
-                  'GroupId': id,
-                  'IpPermissions.1.IpProtocol': protocol,
-                  'IpPermissions.1.FromPort':   from_port,
-                  'IpPermissions.1.ToPort':     to_port}
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
 
-        if cidr_ips is not None:
-            i = 1
-            ip_ranges = {}
-            for cidr_ip in cidr_ips:
-                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
-                i += 1
-
-            params.update(ip_ranges)
-
-        if group_pairs is not None:
-            i = 1
-            user_groups = {}
-            for group_pair in group_pairs:
-                if 'group_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupId'
-                                % (i)] = group_pair['group_id']
-
-                if 'group_name' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupName'
-                                % (i)] = group_pair['group_name']
-
-                if 'user_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.UserId'
-                                % (i)] = group_pair['user_id']
-                i += 1
-
-            params.update(user_groups)
+        params["Action"] = 'AuthorizeSecurityGroupIngress'
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
@@ -1407,8 +1429,19 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      cidr_ips: The list of ip ranges to allow traffic for.
         :type       cidr_ips: ``list``
 
-        :param      group_pairs: User/group pairs to allow traffic for.
-        :type       group_pairs: ``dict``
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
 
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
@@ -1416,39 +1449,14 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        params = {'Action': 'AuthorizeSecurityGroupIngress',
-                  'GroupId': id,
-                  'IpPermissions.1.IpProtocol': protocol,
-                  'IpPermissions.1.FromPort':   from_port,
-                  'IpPermissions.1.ToPort':     to_port}
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
 
-        if cidr_ips is not None:
-            i = 1
-            ip_ranges = {}
-            for cidr_ip in cidr_ips:
-                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
-                i += 1
-
-            params.update(ip_ranges)
-
-        if group_pairs is not None:
-            i = 1
-            user_groups = {}
-            for group_pair in group_pairs:
-                if 'group_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupId'
-                                % (i)] = group_pair['group_id']
-
-                if 'group_name' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupName'
-                                % (i)] = group_pair['group_name']
-
-                if 'user_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.UserId'
-                                % (i)] = group_pair['user_id']
-                i += 1
-
-            params.update(user_groups)
+        params["Action"] = 'AuthorizeSecurityGroupEgress'
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
@@ -1475,8 +1483,19 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      cidr_ips: The list of ip ranges to allow traffic for.
         :type       cidr_ips: ``list``
 
-        :param      group_pairs: User/group pairs to allow traffic for.
-        :type       group_pairs: ``dict``
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
 
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
@@ -1484,39 +1503,14 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        params = {'Action': 'AuthorizeSecurityGroupIngress',
-                  'GroupId': id,
-                  'IpPermissions.1.IpProtocol': protocol,
-                  'IpPermissions.1.FromPort':   from_port,
-                  'IpPermissions.1.ToPort':     to_port}
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
 
-        if cidr_ips is not None:
-            i = 1
-            ip_ranges = {}
-            for cidr_ip in cidr_ips:
-                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
-                i += 1
-
-            params.update(ip_ranges)
-
-        if group_pairs is not None:
-            i = 1
-            user_groups = {}
-            for group_pair in group_pairs:
-                if 'group_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupId'
-                                % (i)] = group_pair['group_id']
-
-                if 'group_name' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupName'
-                                % (i)] = group_pair['group_name']
-
-                if 'user_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.UserId'
-                                % (i)] = group_pair['user_id']
-                i += 1
-
-            params.update(user_groups)
+        params["Action"] = 'RevokeSecurityGroupIngress'
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
@@ -1545,8 +1539,19 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      cidr_ips: The list of ip ranges to allow traffic for.
         :type       cidr_ips: ``list``
 
-        :param      group_pairs: User/group pairs to allow traffic for.
-        :type       group_pairs: ``dict``
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
 
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
@@ -1554,39 +1559,14 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        params = {'Action': 'AuthorizeSecurityGroupIngress',
-                  'GroupId': id,
-                  'IpPermissions.1.IpProtocol': protocol,
-                  'IpPermissions.1.FromPort':   from_port,
-                  'IpPermissions.1.ToPort':     to_port}
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
 
-        if cidr_ips is not None:
-            i = 1
-            ip_ranges = {}
-            for cidr_ip in cidr_ips:
-                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp' % (i)] = cidr_ip
-                i += 1
-
-            params.update(ip_ranges)
-
-        if group_pairs is not None:
-            i = 1
-            user_groups = {}
-            for group_pair in group_pairs:
-                if 'group_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupId'
-                                % (i)] = group_pair['group_id']
-
-                if 'group_name' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.GroupName'
-                                % (i)] = group_pair['group_name']
-
-                if 'user_id' in group_pair.keys():
-                    user_groups['IpPermissions.1.Groups.%s.UserId'
-                                % (i)] = group_pair['user_id']
-                i += 1
-
-            params.update(user_groups)
+        params['Action'] = 'RevokeSecurityGroupEgress'
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
