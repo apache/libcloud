@@ -167,7 +167,7 @@ class GoogleResponse(JsonResponse):
             err = body['error']['errors'][0]
         else:
             err = body['error']
-        
+
         if 'code' in err:
             code = err.get('code')
             message = err.get('message')
@@ -227,8 +227,8 @@ class GoogleResponse(JsonResponse):
             else:
                 message = body
                 code = None
-            raise InvalidRequestError(message, self.status, code) 
-                
+            raise InvalidRequestError(message, self.status, code)
+
         else:
             if (not json_error) and ('error' in body):
                 (code, message) = self._get_error(body)
