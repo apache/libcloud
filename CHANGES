@@ -96,6 +96,12 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-463)
       [Chris DeRamus]
 
+    - Add extension methods for managing security group rules
+      (ex_authorize_security_group_ingress, ex_authorize_security_group_egress,
+      ex_revoke_security_group_ingress, ex_revoke_security_group_egress) to the
+      EC2 driver. (LIBCLOUD-466)
+      [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
