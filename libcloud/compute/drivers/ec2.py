@@ -1277,7 +1277,7 @@ class BaseEC2NodeDriver(NodeDriver):
                   'GroupDescription': description}
         return self.connection.request(self.path, params=params).object
 
-    def ex_destroy_security_group_by_id(self, group_id):
+    def ex_delete_security_group_by_id(self, group_id):
         """
         Deletes a new Security Group using the group id.
 
@@ -1294,7 +1294,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
-    def ex_destroy_security_group_by_name(self, group_name):
+    def ex_delete_security_group_by_name(self, group_name):
         """
         Deletes a new Security Group using the group name.
 
@@ -1311,9 +1311,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
-    def ex_destroy_security_group(self, name):
+    def ex_delete_security_group(self, name):
         """
-        Wrapper method which calls ex_destroy_security_group_by_name
+        Wrapper method which calls ex_delete_security_group_by_name
 
         :param      name: The name of the security group
         :type       name ``str``
