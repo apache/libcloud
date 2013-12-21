@@ -215,6 +215,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         groups = self.driver.ex_list_security_groups()
         self.assertEqual(groups, ['WebServers', 'RangedPortsBySource'])
 
+    def test_ex_delete_security_group_by_id(self):
+        group_id = 'sg-443d0a12'
+        retValue = self.driver.ex_delete_security_group_by_id(group_id)
+        self.assertTrue(retValue)
+
+    def text_ex_delete_security_group_by_name(self):
+        group_name = 'WebServers'
+        retValue = self.driver.ex_delete_security_group_by_name(group_name)
+        self.assertTrue(retValue)
+
+    def text_ex_delete_security_group(self):
+        name = 'WebServers'
+        retValue = self.driver.ex_delete_security_group(name)
+        self.assertTrue(retValue)
+
     def test_authorize_security_group(self):
         resp = self.driver.ex_authorize_security_group('TestGroup', '22', '22',
                                                        '0.0.0.0/0')
@@ -846,6 +861,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeSecurityGroups(self, method, url, body, headers):
         body = self.fixtures.load('describe_security_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('delete_security_group.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _AuthorizeSecurityGroupIngress(self, method, url, body, headers):
