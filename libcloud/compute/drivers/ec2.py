@@ -2241,7 +2241,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if cidr_ips is not None:
             ip_ranges = {}
-            for index, cidr_ip in enumerate(cidr_ips, 1):
+            for index, cidr_ip in enumerate(cidr_ips):
+                index += 1
+
                 ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
                           % (index)] = cidr_ip
 
@@ -2249,7 +2251,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if group_pairs is not None:
             user_groups = {}
-            for index, group_pair in enumerate(group_pairs, 1):
+            for index, group_pair in enumerate(group_pairs):
+                index += 1
+
                 if 'group_id' in group_pair.keys():
                     user_groups['IpPermissions.1.Groups.%s.GroupId'
                                 % (index)] = group_pair['group_id']
