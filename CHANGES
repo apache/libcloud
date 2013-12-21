@@ -87,20 +87,20 @@ Changes with Apache Libcloud in development
      (GITHUB-196)
      [Oleg Suharev]
 
-    - Add support for new "i2" instance types to Amazon EC2 driver. Also
-      update pricing file. (LIBCLOUD-465)
-      [Chris DeRamus]
+   - Add support for new "i2" instance types to Amazon EC2 driver. Also
+     update pricing file. (LIBCLOUD-465)
+     [Chris DeRamus]
 
-    - Allow user to specify VPC id when creating a security group in the EC2
-      driver by passing "vpc_id" argument to ex_create_security_group method.
-      (LIBCLOUD-463)
-      [Chris DeRamus]
+   - Allow user to specify VPC id when creating a security group in the EC2
+     driver by passing "vpc_id" argument to ex_create_security_group method.
+     (LIBCLOUD-463)
+     [Chris DeRamus]
 
-    - Add extension methods for managing security group rules
-      (ex_authorize_security_group_ingress, ex_authorize_security_group_egress,
-      ex_revoke_security_group_ingress, ex_revoke_security_group_egress) to the
-      EC2 driver. (LIBCLOUD-466)
-      [Chris DeRamus]
+   - Add extension methods for managing security group rules
+     (ex_authorize_security_group_ingress, ex_authorize_security_group_egress,
+     ex_revoke_security_group_ingress, ex_revoke_security_group_egress) to the
+     EC2 driver. (LIBCLOUD-466)
+     [Chris DeRamus]
 
   *) Storage
 
