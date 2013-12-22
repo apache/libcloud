@@ -559,6 +559,22 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
+class ExEC2ReservedNode(object):
+    """
+    Extension class which stores information about EC2
+    Reserved Instances/Nodes
+    """
+    def __init__(self, id, type, state, driver, extra=None):
+        self.id = str(id) if id else None
+        self.type = type
+        self.state = state
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<ExEC2ReservedNode: id=%s>') % (self.id))
+
+
 class BaseEC2NodeDriver(NodeDriver):
     """
     Base Amazon EC2 node driver.
@@ -607,6 +623,55 @@ class BaseEC2NodeDriver(NodeDriver):
         return any([term_status == status
                     for term_status
                     in ('shutting-down', 'terminated')])
+
+    def _to_reserved_nodes(self, object, xpath):
+        return [self._to_reserved_node(el)
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
+    def _to_reserved_node(self, element):
+        reservation = ExEC2ReservedNode(
+            id=findtext(element=element,
+                        xpath='reservedInstancesId',
+                        namespace=NAMESPACE),
+            type=findtext(element=element,
+                          xpath='instanceType',
+                          namespace=NAMESPACE),
+            state=findattr(element=element,
+                           xpath="state",
+                           namespace=NAMESPACE),
+            driver=self.connection.driver,
+            extra={'availability': findattr(element=element,
+                                            xpath="availabilityZone",
+                                            namespace=NAMESPACE),
+                   'start': findattr(element=element,
+                                     xpath="start",
+                                     namespace=NAMESPACE),
+                   'duration': findattr(element=element,
+                                        xpath="duration",
+                                        namespace=NAMESPACE),
+                   'usage_price': findattr(element=element,
+                                           xpath="usagePrice",
+                                           namespace=NAMESPACE),
+                   'fixed_price': findattr(element=element,
+                                           xpath="fixedPrice",
+                                           namespace=NAMESPACE),
+                   'instance_count': findattr(element=element,
+                                              xpath="instanceCount",
+                                              namespace=NAMESPACE),
+                   'description': findattr(element=element,
+                                           xpath="productDescription",
+                                           namespace=NAMESPACE),
+                   'instance_tenancy': findattr(element=element,
+                                                xpath="instanceTenancy",
+                                                namespace=NAMESPACE),
+                   'currency_code': findattr(element=element,
+                                             xpath="currencyCode",
+                                             namespace=NAMESPACE),
+                   'offering_type': findattr(element=element,
+                                             xpath='offeringType',
+                                             namespace=NAMESPACE)})
+        return reservation
 
     def _to_nodes(self, object, xpath, groups=None):
         return [self._to_node(el, groups=groups)
@@ -775,6 +840,18 @@ class BaseEC2NodeDriver(NodeDriver):
                               extra={'volume_id': volId,
                                      'description': description,
                                      'state': state})
+
+    def list_reserved_nodes(self):
+        """
+        List all reserved instances/nodes
+
+        :rtype: ``list`` of :class:`ExEC2ReservedNode`
+        """
+        params = {'Action': 'DescribeReservedInstances'}
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_reserved_nodes(response, 'reservedInstancesSet/item')
 
     def list_nodes(self, ex_node_ids=None):
         """
