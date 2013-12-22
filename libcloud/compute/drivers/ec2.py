@@ -1386,8 +1386,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-
-        return self.ex_destroy_security_group_by_name(name)
+        return self.ex_delete_security_group_by_name(name)
 
     def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
                                     protocol='tcp'):
