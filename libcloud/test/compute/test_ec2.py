@@ -215,9 +215,56 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         groups = self.driver.ex_list_security_groups()
         self.assertEqual(groups, ['WebServers', 'RangedPortsBySource'])
 
+    def test_ex_delete_security_group_by_id(self):
+        group_id = 'sg-443d0a12'
+        retValue = self.driver.ex_delete_security_group_by_id(group_id)
+        self.assertTrue(retValue)
+
+    def test_delete_security_group_by_name(self):
+        group_name = 'WebServers'
+        retValue = self.driver.ex_delete_security_group_by_name(group_name)
+        self.assertTrue(retValue)
+
+    def test_ex_delete_security_group(self):
+        name = 'WebServers'
+        retValue = self.driver.ex_delete_security_group(name)
+        self.assertTrue(retValue)
+
     def test_authorize_security_group(self):
         resp = self.driver.ex_authorize_security_group('TestGroup', '22', '22',
                                                        '0.0.0.0/0')
+        self.assertTrue(resp)
+
+    def test_authorize_security_group_ingress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 23, group_pairs=groups)
+        self.assertTrue(resp)
+
+    def test_authorize_security_group_egress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, group_pairs=groups)
+        self.assertTrue(resp)
+
+    def test_revoke_security_group_ingress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, group_pairs=groups)
+        self.assertTrue(resp)
+
+    def test_revoke_security_group_egress(self):
+        ranges = ['1.1.1.1/32', '2.2.2.2/32']
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        self.assertTrue(resp)
+        groups = [{'group_id': 'sg-949265ff'}]
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, group_pairs=groups)
         self.assertTrue(resp)
 
     def test_reboot_node(self):
@@ -305,18 +352,18 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 22)
+                self.assertEqual(len(sizes), 26)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
             elif region_name in ['eu-west-1', 'ap-southeast-1',
                                  'ap-southeast-2']:
-                self.assertEqual(len(sizes), 18)
+                self.assertEqual(len(sizes), 22)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 17)
+                self.assertEqual(len(sizes), 21)
             else:
-                self.assertEqual(len(sizes), 17)
+                self.assertEqual(len(sizes), 21)
 
         self.driver.region_name = region_old
 
@@ -708,6 +755,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                     'max-elastic-ips': 5}
         self.assertEqual(limits['resource'], expected)
 
+    def test_ex_create_security_group(self):
+        group = self.driver.ex_create_security_group("WebServers",
+                                                     "Rules to protect web nodes",
+                                                     "vpc-143cab4")
+
+        self.assertEqual(group["group_id"], "sg-52e2f530")
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -807,6 +861,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeSecurityGroups(self, method, url, body, headers):
         body = self.fixtures.load('describe_security_groups.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('delete_security_group.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _AuthorizeSecurityGroupIngress(self, method, url, body, headers):
@@ -977,6 +1035,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeAccountAttributes(self, method, url, body, headers):
         body = self.fixtures.load('describe_account_attributes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateSecurityGroup(self, method, url, body, headers):
+        body = self.fixtures.load('create_security_group.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

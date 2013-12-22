@@ -13,7 +13,7 @@ Libcloud is available on PyPi. You can install latest stable version using pip:
 Installation (development version)
 ----------------------------------
 
-You can install latest development version from out Git repository:
+You can install latest development version from our Git repository:
 
 .. sourcecode:: bash
 

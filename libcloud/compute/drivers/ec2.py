@@ -202,7 +202,36 @@ INSTANCE_TYPES = {
         'ram': 119808,
         'disk': 48000,
         'bandwidth': None
-    }
+    },
+    # i2 instances have up to eight SSD drives
+    'i2.xlarge': {
+        'id': 'i2.xlarge',
+        'name': 'High Storage Optimized Extra Large Instance',
+        'ram': 31232,
+        'disk': 800,
+        'bandwidth': None
+    },
+    'i2.2xlarge': {
+        'id': 'i2.2xlarge',
+        'name': 'High Storage Optimized Double Extra Large Instance',
+        'ram': 62464,
+        'disk': 1600,
+        'bandwidth': None
+    },
+    'i2.4xlarge': {
+        'id': 'i2.4xlarge',
+        'name': 'High Storage Optimized Quadruple Large Instance',
+        'ram': 124928,
+        'disk': 1600,
+        'bandwidth': None
+    },
+    'i2.8xlarge': {
+        'id': 'i2.8xlarge',
+        'name': 'High Storage Optimized Eight Extra Large Instance',
+        'ram': 249856,
+        'disk': 3200,
+        'bandwidth': None
+    },
 }
 
 REGION_DETAILS = {
@@ -232,7 +261,11 @@ REGION_DETAILS = {
             'c3.8xlarge',
             'cg1.4xlarge',
             'cr1.8xlarge',
-            'hs1.8xlarge'
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'us-west-1': {
@@ -256,7 +289,11 @@ REGION_DETAILS = {
             'c3.xlarge',
             'c3.2xlarge',
             'c3.4xlarge',
-            'c3.8xlarge'
+            'c3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'us-west-2': {
@@ -279,7 +316,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'cc2.8xlarge'
+            'cc2.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'eu-west-1': {
@@ -304,7 +345,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'cc2.8xlarge'
+            'cc2.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'ap-southeast-1': {
@@ -329,7 +374,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'hs1.8xlarge'
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'ap-northeast-1': {
@@ -353,7 +402,11 @@ REGION_DETAILS = {
             'c3.xlarge',
             'c3.2xlarge',
             'c3.4xlarge',
-            'c3.8xlarge'
+            'c3.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'sa-east-1': {
@@ -373,7 +426,6 @@ REGION_DETAILS = {
             'm3.2xlarge',
             'c1.medium',
             'c1.xlarge'
-
         ]
     },
     'ap-southeast-2': {
@@ -398,7 +450,11 @@ REGION_DETAILS = {
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'hs1.8xlarge'
+            'hs1.8xlarge',
+            'i2.xlarge',
+            'i2.2xlarge',
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
     },
     'nimbus': {
@@ -1256,26 +1312,81 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return groups
 
-    def ex_create_security_group(self, name, description):
+    def ex_create_security_group(self, name, description, vpc_id=None):
         """
-        Creates a new Security Group
+        Creates a new Security Group in EC2-Classic or a targetted VPC
 
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :param      name: The name of the security group to Create.
-                          This must be unique.
-        :type       name: ``str``
+        :param      name:        The name of the security group to Create.
+                                 This must be unique.
+        :type       name:        ``str``
 
         :param      description: Human readable description of a Security
         Group.
         :type       description: ``str``
 
-        :rtype: ``str``
+        :param      description: Optional identifier for VPC networks
+        :type       description: ``str``
+
+        :rtype: ``dict``
         """
         params = {'Action': 'CreateSecurityGroup',
                   'GroupName': name,
                   'GroupDescription': description}
-        return self.connection.request(self.path, params=params).object
+
+        if vpc_id is not None:
+            params['VpcId'] = vpc_id
+
+        response = self.connection.request(self.path, params=params).object
+        group_id = findattr(element=response, xpath='groupId',
+                            namespace=NAMESPACE)
+        return {
+            'group_id': group_id
+        }
+
+    def ex_delete_security_group_by_id(self, group_id):
+        """
+        Deletes a new Security Group using the group id.
+
+        :param      group_id: The ID of the security group
+        :type       group_id: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeleteSecurityGroup', 'GroupId': group_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_delete_security_group_by_name(self, group_name):
+        """
+        Deletes a new Security Group using the group name.
+
+        :param      group_name: The name of the security group
+        :type       group_name: ``str``
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'DeleteSecurityGroup', 'GroupName': group_name}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_delete_security_group(self, name):
+        """
+        Wrapper method which calls ex_delete_security_group_by_name
+
+        :param      name: The name of the security group
+        :type       name ``str``
+
+        :rtype: ``bool``
+        """
+        return self.ex_delete_security_group_by_name(name)
 
     def ex_authorize_security_group(self, name, from_port, to_port, cidr_ip,
                                     protocol='tcp'):
@@ -1317,6 +1428,226 @@ class BaseEC2NodeDriver(NodeDriver):
             e = sys.exc_info()[1]
             if e.args[0].find('InvalidPermission.Duplicate') == -1:
                 raise e
+
+    def ex_authorize_security_group_ingress(self, id, from_port, to_port,
+                                            cidr_ips=None, group_pairs=None,
+                                            protocol='tcp'):
+        """
+        Edit a Security Group to allow specific ingress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
+
+        params["Action"] = 'AuthorizeSecurityGroupIngress'
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_authorize_security_group_egress(self, id, from_port, to_port,
+                                           cidr_ips=None, group_pairs=None,
+                                           protocol='tcp'):
+        """
+        Edit a Security Group to allow specific egress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+        This call is not supported for EC2 classic and only works for VPC
+        groups.
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
+
+        params["Action"] = 'AuthorizeSecurityGroupEgress'
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_revoke_security_group_ingress(self, id, from_port, to_port,
+                                         cidr_ips=None, group_pairs=None,
+                                         protocol='tcp'):
+        """
+        Edit a Security Group to revoke specific ingress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
+
+        params["Action"] = 'RevokeSecurityGroupIngress'
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_revoke_security_group_egress(self, id, from_port, to_port,
+                                        cidr_ips=None, group_pairs=None,
+                                        protocol='tcp'):
+        """
+        Edit a Security Group to revoke specific egress traffic using
+        CIDR blocks or either a group ID, group name or user ID (account).
+        This call is not supported for EC2 classic and only works for
+        VPC groups.
+
+        :param      id: The id of the security group to edit
+        :type       id: ``str``
+
+        :param      from_port: The beginning of the port range to open
+        :type       from_port: ``int``
+
+        :param      to_port: The end of the port range to open
+        :type       to_port: ``int``
+
+        :param      cidr_ips: The list of ip ranges to allow traffic for.
+        :type       cidr_ips: ``list``
+
+        :param      group_pairs: Source user/group pairs to allow traffic for.
+                    More info can be found at http://goo.gl/stBHJF
+
+                    EC2 Classic Example: To allow access from any system
+                    associated with the default group on account 1234567890
+
+                    [{'group_name': 'default', 'user_id': '1234567890'}]
+
+                    VPC Example: Allow access from any system associated with
+                    security group sg-47ad482e on your own account
+
+                    [{'group_id': ' sg-47ad482e'}]
+        :type       group_pairs: ``list`` of ``dict``
+
+        :param      protocol: tcp/udp/icmp
+        :type       protocol: ``str``
+
+        :rtype: ``bool``
+        """
+
+        params = self._get_common_security_group_params(id,
+                                                        protocol,
+                                                        from_port,
+                                                        to_port,
+                                                        cidr_ips,
+                                                        group_pairs)
+
+        params['Action'] = 'RevokeSecurityGroupEgress'
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
 
     def ex_authorize_security_group_permissive(self, name):
         """
@@ -1938,6 +2269,51 @@ class BaseEC2NodeDriver(NodeDriver):
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
+
+    def _get_common_security_group_params(self, group_id, protocol,
+                                          from_port, to_port, cidr_ips,
+                                          group_pairs):
+        """
+        Return a dictionary with common query parameters which are used when
+        operating on security groups.
+
+        :rtype: ``dict``
+        """
+        params = {'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort': from_port,
+                  'IpPermissions.1.ToPort': to_port}
+
+        if cidr_ips is not None:
+            ip_ranges = {}
+            for index, cidr_ip in enumerate(cidr_ips):
+                index += 1
+
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
+                          % (index)] = cidr_ip
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            user_groups = {}
+            for index, group_pair in enumerate(group_pairs):
+                index += 1
+
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (index)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (index)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (index)] = group_pair['user_id']
+
+            params.update(user_groups)
+
+        return params
 
 
 class EC2NodeDriver(BaseEC2NodeDriver):
