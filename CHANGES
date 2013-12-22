@@ -102,6 +102,11 @@ Changes with Apache Libcloud in development
      EC2 driver. (LIBCLOUD-466)
      [Chris DeRamus]
 
+   - Add extension methods for deleting security groups
+     (ex_delete_security_group, ex_delete_security_group_by_id,
+     ex_delete_security_group_by_name) to the EC2 driver. (LIBCLOUD-464)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
