@@ -776,6 +776,42 @@ class BaseEC2NodeDriver(NodeDriver):
                                      'description': description,
                                      'state': state})
 
+    def _get_common_security_group_params(self, group_id, protocol,
+                                          from_port, to_port, cidr_ips,
+                                          group_pairs):
+
+        params = {'GroupId': id,
+                  'IpPermissions.1.IpProtocol': protocol,
+                  'IpPermissions.1.FromPort': from_port,
+                  'IpPermissions.1.ToPort': to_port}
+
+        if cidr_ips is not None:
+            ip_ranges = {}
+            for index, cidr_ip in enumerate(cidr_ips, 1):
+                ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
+                          % (index)] = cidr_ip
+
+            params.update(ip_ranges)
+
+        if group_pairs is not None:
+            user_groups = {}
+            for index, group_pair in enumerate(group_pairs, 1):
+                if 'group_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupId'
+                                % (index)] = group_pair['group_id']
+
+                if 'group_name' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.GroupName'
+                                % (index)] = group_pair['group_name']
+
+                if 'user_id' in group_pair.keys():
+                    user_groups['IpPermissions.1.Groups.%s.UserId'
+                                % (index)] = group_pair['user_id']
+
+            params.update(user_groups)
+
+        return params
+
     def list_nodes(self, ex_node_ids=None):
         """
         List all nodes
