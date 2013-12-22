@@ -220,12 +220,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         retValue = self.driver.ex_delete_security_group_by_id(group_id)
         self.assertTrue(retValue)
 
-    def text_ex_delete_security_group_by_name(self):
+    def test_delete_security_group_by_name(self):
         group_name = 'WebServers'
         retValue = self.driver.ex_delete_security_group_by_name(group_name)
         self.assertTrue(retValue)
 
-    def text_ex_delete_security_group(self):
+    def test_ex_delete_security_group(self):
         name = 'WebServers'
         retValue = self.driver.ex_delete_security_group(name)
         self.assertTrue(retValue)
