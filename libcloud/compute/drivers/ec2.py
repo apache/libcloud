@@ -559,6 +559,24 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
+class EC2ReservedNode(Node):
+    """
+    Class which stores information about EC2 reserved instances/nodes
+    Inherits from Node and passes in None for name and private/public IPs
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, state, driver, size=None, image=None, extra=None):
+        super(EC2ReservedNode, self).__init__(id=id, name=None, state=state,
+                                              public_ips=None,
+                                              private_ips=None,
+                                              driver=driver, extra=extra)
+
+    def __repr__(self):
+        return (('<EC2ReservedNode: id=%s>') % (self.id))
+
+
 class BaseEC2NodeDriver(NodeDriver):
     """
     Base Amazon EC2 node driver.
@@ -607,6 +625,88 @@ class BaseEC2NodeDriver(NodeDriver):
         return any([term_status == status
                     for term_status
                     in ('shutting-down', 'terminated')])
+
+    def _to_reserved_nodes(self, object, xpath):
+        return [self._to_reserved_node(el)
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
+    def _to_reserved_node(self, element):
+        """
+        Build an EC2ReservedNode object using the reserved instance properties.
+        Information on these properties can be found at http://goo.gl/ulXCC7.
+        """
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'instance_type': {
+                'xpath': 'instanceType',
+                'type': str
+            },
+            'availability': {
+                'xpath': 'availabilityZone',
+                'type': str
+            },
+            'start': {
+                'xpath': 'start',
+                'type': str
+            },
+            'duration': {
+                'xpath': 'duration',
+                'type': int
+            },
+            'usage_price': {
+                'xpath': 'usagePrice',
+                'type': float
+            },
+            'fixed_price': {
+                'xpath': 'fixedPrice',
+                'type': float
+            },
+            'instance_count': {
+                'xpath': 'instanceCount',
+                'type': int
+            },
+            'description': {
+                'xpath': 'productDescription',
+                'type': str
+            },
+            'instance_tenancy': {
+                'xpath': 'instanceTenancy',
+                'type': str
+            },
+            'currency_code': {
+                'xpath': 'currencyCode',
+                'type': str
+            },
+            'offering_type': {
+                'xpath': 'offeringType',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            extra[attribute] = type_func(value)
+
+        try:
+            size = [size for size in self.list_sizes() if
+                    size.id == extra['instance_type']][0]
+        except IndexError:
+            size = None
+
+        return EC2ReservedNode(id=findtext(element=element,
+                                           xpath='reservedInstancesId',
+                                           namespace=NAMESPACE),
+                               state=findattr(element=element,
+                                              xpath='state',
+                                              namespace=NAMESPACE),
+                               driver=self,
+                               size=size,
+                               extra=extra)
 
     def _to_nodes(self, object, xpath, groups=None):
         return [self._to_node(el, groups=groups)
@@ -775,6 +875,22 @@ class BaseEC2NodeDriver(NodeDriver):
                               extra={'volume_id': volId,
                                      'description': description,
                                      'state': state})
+
+    def ex_list_reserved_nodes(self):
+        """
+        List all reserved instances/nodes which can be purchased from Amazon
+        for one or three year terms. Reservations are made at a region level
+        and reduce the hourly charge for instances.
+
+        More information can be found at http://goo.gl/ulXCC7.
+
+        :rtype: ``list`` of :class:`.EC2ReservedNode`
+        """
+        params = {'Action': 'DescribeReservedInstances'}
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_reserved_nodes(response, 'reservedInstancesSet/item')
 
     def list_nodes(self, ex_node_ids=None):
         """

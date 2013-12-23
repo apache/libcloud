@@ -197,6 +197,22 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                          '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in ret_node2.extra)
 
+    def test_ex_list_reserved_nodes(self):
+        node = self.driver.ex_list_reserved_nodes()[0]
+        self.assertEqual(node.id, '93bbbca2-c500-49d0-9ede-9d8737400498')
+        self.assertEqual(node.state, 'active')
+        self.assertEqual(node.extra['instance_type'], 't1.micro')
+        self.assertEqual(node.extra['availability'], 'us-east-1b')
+        self.assertEqual(node.extra['start'], '2013-06-18T12:07:53.161Z')
+        self.assertEqual(node.extra['duration'], 31536000)
+        self.assertEqual(node.extra['usage_price'], 0.012)
+        self.assertEqual(node.extra['fixed_price'], 23.0)
+        self.assertEqual(node.extra['instance_count'], 1)
+        self.assertEqual(node.extra['description'], 'Linux/UNIX')
+        self.assertEqual(node.extra['instance_tenancy'], 'default')
+        self.assertEqual(node.extra['currency_code'], 'USD')
+        self.assertEqual(node.extra['offering_type'], 'Light Utilization')
+
     def test_list_nodes_with_name_tag(self):
         EC2MockHttp.type = 'WITH_TAGS'
         node = self.driver.list_nodes()[0]
@@ -841,6 +857,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _WITH_TAGS_DescribeInstances(self, method, url, body, headers):
         body = self.fixtures.load('describe_instances_with_tags.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeReservedInstances(self, method, url, body, headers):
+        body = self.fixtures.load('describe_reserved_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeAvailabilityZones(self, method, url, body, headers):
