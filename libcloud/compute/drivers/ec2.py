@@ -692,6 +692,12 @@ class BaseEC2NodeDriver(NodeDriver):
                              namespace=NAMESPACE)
             extra[attribute] = type_func(value)
 
+        try:
+            size = [size for size in self.list_sizes() if
+                    size.id == extra['instance_type']][0]
+        except IndexError:
+            size = None
+
         return EC2ReservedNode(id=findtext(element=element,
                                            xpath='reservedInstancesId',
                                            namespace=NAMESPACE),
@@ -699,6 +705,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                               xpath='state',
                                               namespace=NAMESPACE),
                                driver=self,
+                               size=size,
                                extra=extra)
 
     def _to_nodes(self, object, xpath, groups=None):
