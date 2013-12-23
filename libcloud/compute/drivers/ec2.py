@@ -567,15 +567,11 @@ class EC2ReservedNode(Node):
     Note: This class is EC2 specific.
     """
 
-    def __init__(self, id, name, state, public_ips, private_ips,
-                 driver, size=None, image=None, extra=None):
-        self.id = str(id) if id else None
-        self.name = name
-        self.state = state
-        self.public_ips = public_ips
-        self.private_ips = private_ips
-        self.driver = driver
-        self.extra = extra or {}
+    def __init__(self, id, state, driver, size=None, image=None, extra=None):
+        super(EC2ReservedNode, self).__init__(id=id, name=None, state=state,
+                                              public_ips=None,
+                                              private_ips=None,
+                                              driver=driver, extra=extra)
 
     def __repr__(self):
         return (('<EC2ReservedNode: id=%s>') % (self.id))
@@ -699,12 +695,9 @@ class BaseEC2NodeDriver(NodeDriver):
         return EC2ReservedNode(id=findtext(element=element,
                                            xpath='reservedInstancesId',
                                            namespace=NAMESPACE),
-                               name=None,
                                state=findattr(element=element,
                                               xpath='state',
                                               namespace=NAMESPACE),
-                               public_ips=None,
-                               private_ips=None,
                                driver=self,
                                extra=extra)
 
