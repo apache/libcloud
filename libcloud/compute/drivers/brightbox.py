@@ -20,6 +20,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
 from libcloud.common.brightbox import BrightboxConnection
+from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
@@ -63,7 +64,7 @@ class BrightboxNodeDriver(NodeDriver):
                                                   **kwargs)
 
     def _to_node(self, data):
-        if data is not None:
+        if data:
             extra_data = _extract(data, ['fqdn', 'account', 'status',
                                      'interfaces', 'snapshots',
                                      'server_groups', 'hostname',
@@ -90,6 +91,8 @@ class BrightboxNodeDriver(NodeDriver):
                 image=self._to_image(data['image']),
                 extra=extra_data
             )
+        else:
+            raise LibcloudError('No data was provided.')
 
     def _to_image(self, data):
         extra_data = _extract(data, ['arch', 'compatibility_mode',
@@ -123,7 +126,7 @@ class BrightboxNodeDriver(NodeDriver):
     def _to_location(self, data):
         if data:
             return NodeLocation(
-               id=data['id'],
+                id=data['id'],
                 name=data['handle'],
                 country='GB',
                 driver=self
