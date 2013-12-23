@@ -13,7 +13,7 @@
         <item>
             <vpcId>vpc-62ded30e</vpcId>
             <state>available</state>
-            <cidrBlock>192.168.51.1/24</cidrBlock>
+            <cidrBlock>192.168.52.0/24</cidrBlock>
             <dhcpOptionsId>dopt-7eded312</dhcpOptionsId>
             <tagSet>
                 <item>
