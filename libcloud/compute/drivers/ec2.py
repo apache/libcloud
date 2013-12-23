@@ -876,7 +876,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                      'description': description,
                                      'state': state})
 
-    def list_reserved_nodes(self):
+    def ex_list_reserved_nodes(self):
         """
         List all reserved instances/nodes which can be purchased from Amazon
         for one or three year terms. Reservations are made at a region level
@@ -884,7 +884,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         More information can be found at http://goo.gl/ulXCC7.
 
-        :rtype: ``list`` of :class:`ExEC2ReservedNode`
+        :rtype: ``list`` of :class:`.EC2ReservedNode`
         """
         params = {'Action': 'DescribeReservedInstances'}
 

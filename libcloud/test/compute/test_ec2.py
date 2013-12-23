@@ -197,8 +197,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                          '2009-08-07T05:47:04.000Z')
         self.assertTrue('instancetype' in ret_node2.extra)
 
-    def test_list_reserved_nodes(self):
-        node = self.driver.list_reserved_nodes()[0]
+    def test_ex_list_reserved_nodes(self):
+        node = self.driver.ex_list_reserved_nodes()[0]
         self.assertEqual(node.id, '93bbbca2-c500-49d0-9ede-9d8737400498')
         self.assertEqual(node.state, 'active')
         self.assertEqual(node.extra['instance_type'], 't1.micro')
