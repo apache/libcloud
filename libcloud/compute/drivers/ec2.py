@@ -559,20 +559,26 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
-class ExEC2ReservedNode(object):
+class EC2ReservedNode(Node):
     """
-    Extension class which stores information about EC2
-    Reserved Instances/Nodes
+    Class which stores information about EC2 reserved instances/nodes
+    Inherits from Node and passes in None for name and private/public IPs
+
+    Note: This class is EC2 specific.
     """
-    def __init__(self, id, type, state, driver, extra=None):
+
+    def __init__(self, id, name, state, public_ips, private_ips,
+                 driver, size=None, image=None, extra=None):
         self.id = str(id) if id else None
-        self.type = type
+        self.name = name
         self.state = state
+        self.public_ips = public_ips
+        self.private_ips = private_ips
         self.driver = driver
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ExEC2ReservedNode: id=%s>') % (self.id))
+        return (('<EC2ReservedNode: id=%s>') % (self.id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -630,48 +636,77 @@ class BaseEC2NodeDriver(NodeDriver):
                                                   namespace=NAMESPACE))]
 
     def _to_reserved_node(self, element):
-        reservation = ExEC2ReservedNode(
-            id=findtext(element=element,
-                        xpath='reservedInstancesId',
-                        namespace=NAMESPACE),
-            type=findtext(element=element,
-                          xpath='instanceType',
-                          namespace=NAMESPACE),
-            state=findattr(element=element,
-                           xpath="state",
-                           namespace=NAMESPACE),
-            driver=self.connection.driver,
-            extra={'availability': findattr(element=element,
-                                            xpath="availabilityZone",
-                                            namespace=NAMESPACE),
-                   'start': findattr(element=element,
-                                     xpath="start",
-                                     namespace=NAMESPACE),
-                   'duration': findattr(element=element,
-                                        xpath="duration",
-                                        namespace=NAMESPACE),
-                   'usage_price': findattr(element=element,
-                                           xpath="usagePrice",
+        """
+        Build an EC2ReservedNode object using the reserved instance properties.
+        Information on these properties can be found at http://goo.gl/ulXCC7.
+        """
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'instance_type': {
+                'xpath': 'instanceType',
+                'type': str
+            },
+            'availability': {
+                'xpath': 'availabilityZone',
+                'type': str
+            },
+            'start': {
+                'xpath': 'start',
+                'type': str
+            },
+            'duration': {
+                'xpath': 'duration',
+                'type': int
+            },
+            'usage_price': {
+                'xpath': 'usagePrice',
+                'type': float
+            },
+            'fixed_price': {
+                'xpath': 'fixedPrice',
+                'type': float
+            },
+            'instance_count': {
+                'xpath': 'instanceCount',
+                'type': int
+            },
+            'description': {
+                'xpath': 'productDescription',
+                'type': str
+            },
+            'instance_tenancy': {
+                'xpath': 'instanceTenancy',
+                'type': str
+            },
+            'currency_code': {
+                'xpath': 'currencyCode',
+                'type': str
+            },
+            'offering_type': {
+                'xpath': 'offeringType',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            extra[attribute] = type_func(value)
+
+        return EC2ReservedNode(id=findtext(element=element,
+                                           xpath='reservedInstancesId',
                                            namespace=NAMESPACE),
-                   'fixed_price': findattr(element=element,
-                                           xpath="fixedPrice",
-                                           namespace=NAMESPACE),
-                   'instance_count': findattr(element=element,
-                                              xpath="instanceCount",
+                               name=None,
+                               state=findattr(element=element,
+                                              xpath='state',
                                               namespace=NAMESPACE),
-                   'description': findattr(element=element,
-                                           xpath="productDescription",
-                                           namespace=NAMESPACE),
-                   'instance_tenancy': findattr(element=element,
-                                                xpath="instanceTenancy",
-                                                namespace=NAMESPACE),
-                   'currency_code': findattr(element=element,
-                                             xpath="currencyCode",
-                                             namespace=NAMESPACE),
-                   'offering_type': findattr(element=element,
-                                             xpath='offeringType',
-                                             namespace=NAMESPACE)})
-        return reservation
+                               public_ips=None,
+                               private_ips=None,
+                               driver=self,
+                               extra=extra)
 
     def _to_nodes(self, object, xpath, groups=None):
         return [self._to_node(el, groups=groups)
@@ -843,7 +878,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def list_reserved_nodes(self):
         """
-        List all reserved instances/nodes
+        List all reserved instances/nodes which can be purchased from Amazon
+        for one or three year terms. Reservations are made at a region level
+        and reduce the hourly charge for instances.
+
+        More information can be found at http://goo.gl/ulXCC7.
 
         :rtype: ``list`` of :class:`ExEC2ReservedNode`
         """
