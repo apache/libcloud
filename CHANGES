@@ -107,6 +107,10 @@ Changes with Apache Libcloud in development
      ex_delete_security_group_by_name) to the EC2 driver. (LIBCLOUD-464)
      [Chris DeRamus]
 
+   - Add extension method for listing reserved instances
+     (ex_list_reserved_nodes) to the EC2 driver. (LIBCLOUD-469)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
