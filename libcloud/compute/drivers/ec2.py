@@ -503,6 +503,23 @@ class ExEC2AvailabilityZone(object):
                 % (self.name, self.zone_state, self.region_name))
 
 
+class EC2NetworkSubnet(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) subnet
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, name, state, extra=None):
+        self.id = id
+        self.name = name
+        self.state = state
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2NetworkSubnet: id=%s, name=%s') % (self.id, self.name))
+
+
 class BaseEC2NodeDriver(NodeDriver):
     """
     Base Amazon EC2 node driver.
@@ -726,48 +743,73 @@ class BaseEC2NodeDriver(NodeDriver):
         ]
 
     def _to_subnet(self, element):
+        # Get the subnet ID
         subnet_id = findtext(element=element,
                              xpath='subnetId',
                              namespace=NAMESPACE)
 
-        tags = dict((findtext(element=item,
-                              xpath='key',
-                              namespace=NAMESPACE),
-                     findtext(element=item,
-                              xpath='value',
-                              namespace=NAMESPACE))
-                    for item in findall(element=element,
-                                        xpath='tagSet/item',
-                                        namespace=NAMESPACE))
+        # Get our tag items
+        tag_items = findall(element=element,
+                            xpath='tagSet/item',
+                            namespace=NAMESPACE)
 
+        # Loop through all tag items to build our dictionary
+        tags = {}
+        for tag in tag_items:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NAMESPACE)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NAMESPACE)
+
+            tags[key] = value
+
+        # Set our name if the Name key/value if available
+        # If we don't get anything back then use the subnet_id
         name = tags.get('Name', subnet_id)
 
-        return {'subnet_id': subnet_id,
-                'state': findtext(element=element,
-                                  xpath='state',
-                                  namespace=NAMESPACE),
-                'vpc_id': findtext(element=element,
-                                   xpath='vpcId',
-                                   namespace=NAMESPACE),
-                'cidr_block': findtext(element=element,
-                                       xpath='cidrBlock',
-                                       namespace=NAMESPACE),
-                'name': name,
-                'available_ips': findtext(element=element,
-                                          xpath=
-                                          'availableIpAddressCount',
-                                          namespace=NAMESPACE),
-                'default_for_az': findtext(element=element,
-                                           xpath='defaultForAz',
-                                           namespace=NAMESPACE),
-                'zone': findtext(element=element,
-                                 xpath='availabilityZone',
-                                 namespace=NAMESPACE),
-                'tags': tags,
-                'map_public_ips': findtext(element=element,
-                                           xpath=
-                                           'mapPublicIpsOnLaunch',
-                                           namespace=NAMESPACE)}
+        state = findtext(element=element,
+                         xpath='state',
+                         namespace=NAMESPACE)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'cidr_block': {
+                'xpath': 'cidrBlock',
+                'type': str
+            },
+            'available_ips': {
+                'xpath': 'availableIpAddressCount',
+                'type': int
+            },
+            'default_for_az': {
+                'xpath': 'defaultForAz',
+                'type': str
+            },
+            'zone': {
+                'xpath': 'availabilityZone',
+                'type': str
+            },
+            'map_public_ips': {
+                'xpath': 'mapPublicIpsOnLaunch',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            extra[attribute] = type_func(value)
+
+        # Also include our tags
+        extra['tags'] = tags
+
+        return EC2NetworkSubnet(subnet_id, name, state, extra=extra)
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -1287,18 +1329,16 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_list_subnets(self):
         """
-        Return all private virtual private cloud (VPC) subnets
+        Return a list of :class:`EC2NetworkSubnet` objects for the
+        current region.
 
-        :return:    list of subnet dicts
-        :rtype:     ``list`` of ``dict``
+        :rtype:     ``list`` of :class:`EC2NetworkSubnet`
         """
         params = {'Action': 'DescribeSubnets'}
 
-        response = self.connection.request(self.path,
-                                           params=params.copy()).object
-
-        subnets = self._to_subnets(response)
-        return subnets
+        return self._to_subnets(
+            self.connection.request(self.path, params=params).object
+        )
 
     def ex_create_subnet(self, vpc_id, cidr_block,
                          availability_zone, name=None):

@@ -713,20 +713,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(subnets), 2)
 
-        self.assertEqual('subnet-ce0e7ce5', subnets[0]['subnet_id'])
-        self.assertEqual('123', subnets[0]['available_ips'])
-        self.assertEqual('available', subnets[0]['state'])
+        self.assertEqual('subnet-ce0e7ce5', subnets[0].id)
+        self.assertEqual('available', subnets[0].state)
+        self.assertEqual(123, subnets[0].extra['available_ips'])
 
-        self.assertEqual('subnet-ce0e7ce6', subnets[1]['subnet_id'])
-        self.assertEqual("59", subnets[1]['available_ips'])
-        self.assertEqual('available', subnets[1]['state'])
+        self.assertEqual('subnet-ce0e7ce6', subnets[1].id)
+        self.assertEqual('available', subnets[1].state)
+        self.assertEqual(59, subnets[1].extra['available_ips'])
 
     def test_ex_create_subnet(self):
         subnet = self.driver.ex_create_subnet('vpc-532135d1',
                                               '192.168.51.128/26',
                                               'us-east-1b',
                                               name='Test Subnet')
-        print subnet
 
         self.assertEqual('subnet-ce0e7ce6', subnet['subnet_id'])
         self.assertEqual('pending', subnet['state'])
