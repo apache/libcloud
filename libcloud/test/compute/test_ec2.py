@@ -778,6 +778,66 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(group["group_id"], "sg-52e2f530")
 
+    def test_ex_list_networks(self):
+        vpcs = self.driver.ex_list_networks()
+
+        self.assertEqual(len(vpcs), 2)
+
+        self.assertEqual('vpc-532335e1', vpcs[0].id)
+        self.assertEqual('vpc-532335e1', vpcs[0].name)
+        self.assertEqual('192.168.51.0/24', vpcs[0].cidr_block)
+        self.assertEqual('available', vpcs[0].extra['state'])
+        self.assertEqual('dopt-7eded312', vpcs[0].extra['dhcp_options_id'])
+
+        self.assertEqual('vpc-62ded30e', vpcs[1].id)
+        self.assertEqual('Test VPC', vpcs[1].name)
+        self.assertEqual('192.168.52.0/24', vpcs[1].cidr_block)
+        self.assertEqual('available', vpcs[1].extra['state'])
+        self.assertEqual('dopt-7eded312', vpcs[1].extra['dhcp_options_id'])
+
+    def test_ex_create_network(self):
+        vpc = self.driver.ex_create_network('192.168.55.0/24',
+                                            name='Test VPC',
+                                            instance_tenancy='default')
+
+        self.assertEqual('vpc-ad3527cf', vpc.id)
+        self.assertEqual('192.168.55.0/24', vpc.cidr_block)
+        self.assertEqual('pending', vpc.extra['state'])
+
+    def test_ex_destroy_network(self):
+        vpcs = self.driver.ex_list_networks()
+        vpc = vpcs[0]
+
+        resp = self.driver.ex_destroy_network(vpc.id)
+        self.assertTrue(resp)
+
+    def test_ex_list_subnets(self):
+        subnets = self.driver.ex_list_subnets()
+
+        self.assertEqual(len(subnets), 2)
+
+        self.assertEqual('subnet-ce0e7ce5', subnets[0].id)
+        self.assertEqual('available', subnets[0].state)
+        self.assertEqual(123, subnets[0].extra['available_ips'])
+
+        self.assertEqual('subnet-ce0e7ce6', subnets[1].id)
+        self.assertEqual('available', subnets[1].state)
+        self.assertEqual(59, subnets[1].extra['available_ips'])
+
+    def test_ex_create_subnet(self):
+        subnet = self.driver.ex_create_subnet('vpc-532135d1',
+                                              '192.168.51.128/26',
+                                              'us-east-1b',
+                                              name='Test Subnet')
+
+        self.assertEqual('subnet-ce0e7ce6', subnet.id)
+        self.assertEqual('pending', subnet.state)
+        self.assertEqual('vpc-532135d1', subnet.extra['vpc_id'])
+
+    def test_ex_delete_subnet(self):
+        resp = self.driver.ex_delete_subnet('subnet-ce0e7ce6')
+        self.assertTrue(resp)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -1059,6 +1119,30 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _CreateSecurityGroup(self, method, url, body, headers):
         body = self.fixtures.load('create_security_group.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeVpcs(self, method, url, body, headers):
+        body = self.fixtures.load('describe_vpcs.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateVpc(self, method, url, body, headers):
+        body = self.fixtures.load('create_vpc.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteVpc(self, method, url, body, headers):
+        body = self.fixtures.load('delete_vpc.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeSubnets(self, method, url, body, headers):
+        body = self.fixtures.load('describe_subnets.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateSubnet(self, method, url, body, headers):
+        body = self.fixtures.load('create_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteSubnet(self, method, url, body, headers):
+        body = self.fixtures.load('delete_subnet.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
