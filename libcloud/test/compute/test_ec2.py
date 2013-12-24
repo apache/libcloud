@@ -804,11 +804,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('192.168.55.0/24', vpc.cidr_block)
         self.assertEqual('pending', vpc.extra['state'])
 
-    def test_ex_destroy_network(self):
+    def test_ex_delete_network(self):
         vpcs = self.driver.ex_list_networks()
         vpc = vpcs[0]
 
-        resp = self.driver.ex_destroy_network(vpc.id)
+        resp = self.driver.ex_delete_network(vpc.id)
         self.assertTrue(resp)
 
 

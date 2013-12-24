@@ -1538,7 +1538,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return network
 
-    def ex_destroy_network(self, vpc_id):
+    def ex_delete_network(self, vpc_id):
         """
         Deletes a network/VPC.
 
