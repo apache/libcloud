@@ -830,12 +830,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                               'us-east-1b',
                                               name='Test Subnet')
 
-        self.assertEqual('subnet-ce0e7ce6', subnet['subnet_id'])
-        self.assertEqual('pending', subnet['state'])
-        self.assertEqual('vpc-532135d1', subnet['vpc_id'])
+        self.assertEqual('subnet-ce0e7ce6', subnet.id)
+        self.assertEqual('pending', subnet.state)
+        self.assertEqual('vpc-532135d1', subnet.extra['vpc_id'])
 
-    def test_ex_destroy_subnet(self):
-        resp = self.driver.ex_destroy_subnet('subnet-ce0e7ce6')
+    def test_ex_delete_subnet(self):
+        resp = self.driver.ex_delete_subnet('subnet-ce0e7ce6')
         self.assertTrue(resp)
 
 

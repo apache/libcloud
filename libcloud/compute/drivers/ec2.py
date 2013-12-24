@@ -1020,16 +1020,12 @@ class BaseEC2NodeDriver(NodeDriver):
                 'xpath': 'availableIpAddressCount',
                 'type': int
             },
-            'default_for_az': {
-                'xpath': 'defaultForAz',
-                'type': str
-            },
             'zone': {
                 'xpath': 'availabilityZone',
                 'type': str
             },
-            'map_public_ips': {
-                'xpath': 'mapPublicIpsOnLaunch',
+            'vpc_id': {
+                'xpath': 'vpcId',
                 'type': str
             }
         }
@@ -1689,7 +1685,7 @@ class BaseEC2NodeDriver(NodeDriver):
         subnet = self._to_subnet(element)
 
         if name is not None:
-            self.ex_create_tags(network, {'Name': name})
+            self.ex_create_tags(subnet, {'Name': name})
 
         return subnet
 
