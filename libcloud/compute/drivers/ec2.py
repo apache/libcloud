@@ -563,8 +563,6 @@ class EC2ReservedNode(Node):
     """
     Class which stores information about EC2 reserved instances/nodes
     Inherits from Node and passes in None for name and private/public IPs
-
-    Note: This class is EC2 specific.
     """
 
     def __init__(self, id, state, driver, size=None, image=None, extra=None):
@@ -575,6 +573,24 @@ class EC2ReservedNode(Node):
 
     def __repr__(self):
         return (('<EC2ReservedNode: id=%s>') % (self.id))
+
+
+class EC2Network(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) network
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, name, cidr_block, extra=None):
+        self.id = id
+        self.name = name
+        self.cidr_block = cidr_block
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2Network: id=%s, name=%s')
+                % (self.id, self.name))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -875,6 +891,73 @@ class BaseEC2NodeDriver(NodeDriver):
                               extra={'volume_id': volId,
                                      'description': description,
                                      'state': state})
+
+    def _to_networks(self, response):
+        return [self._to_network(el) for el in response.findall(
+            fixxpath(xpath='vpcSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_network(self, element):
+        # Get the network id
+        vpc_id = findtext(element=element,
+                          xpath='vpcId',
+                          namespace=NAMESPACE)
+
+        # Get our tag items
+        tag_items = findall(element=element,
+                            xpath='tagSet/item',
+                            namespace=NAMESPACE)
+
+        # Loop through all tag items to build our dictionary
+        tags = {}
+        for tag in tag_items:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NAMESPACE)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NAMESPACE)
+
+            tags[key] = value
+
+        # Set our name if the Name key/value if available
+        # If we don't get anything back then use the vpc_id
+        name = tags.get('Name', vpc_id)
+
+        cidr_block = findtext(element=element,
+                              xpath='cidrBlock',
+                              namespace=NAMESPACE)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'state': {
+                'xpath': 'state',
+                'type': str
+            },
+            'dhcp_options_id': {
+                'xpath': 'dhcpOptionsId',
+                'type': str
+            },
+            'instance_tenancy': {
+                'xpath': 'instanceTenancy',
+                'type': str
+            },
+            'is_default': {
+                'xpath': 'isDefault',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            extra[attribute] = type_func(value)
+
+        return EC2Network(vpc_id, name, cidr_block, extra=extra)
 
     def ex_list_reserved_nodes(self):
         """
@@ -1407,6 +1490,70 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyName': key_name,
             'keyFingerprint': fingerprint
         }
+
+    def ex_list_networks(self):
+        """
+        Return a list of :class:`EC2Network` objects for the
+        current region.
+
+        :rtype:     ``list`` of :class:`EC2Network`
+        """
+        params = {'Action': 'DescribeVpcs'}
+
+        return self._to_networks(
+            self.connection.request(self.path, params=params).object
+        )
+
+    def ex_create_network(self, cidr_block, name=None,
+                          instance_tenancy='default'):
+        """
+        Create a network/VPC
+
+        :param      cidr_block: The CIDR block assigned to the network
+        :type       cidr_block: ``str``
+
+        :param      name: An optional name for the network
+        :type       name: ``str``
+
+        :param      instance_tenancy: The allowed tenancy of instances launched
+                                      into the VPC.
+                                      Valid values: default/dedicated
+        :type       instance_tenancy: ``str``
+
+        :return:    Dictionary of network properties
+        :rtype:     ``dict``
+        """
+        params = {'Action': 'CreateVpc',
+                  'CidrBlock': cidr_block,
+                  'InstanceTenancy':  instance_tenancy}
+
+        response = self.connection.request(self.path, params=params).object
+        element = response.findall(fixxpath(xpath='vpc',
+                                            namespace=NAMESPACE))[0]
+
+        network = self._to_network(element)
+
+        if name is not None:
+            self.ex_create_tags(network, {'Name': name})
+
+        return network
+
+    def ex_destroy_network(self, vpc_id):
+        """
+        Deletes a network/VPC.
+
+        :param      vpc_id: The ID of the VPC
+        :type       vpc_id: ``str``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteVpc', 'VpcId': vpc_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
 
     def ex_list_security_groups(self):
         """
