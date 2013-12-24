@@ -800,9 +800,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                             name='Test VPC',
                                             instance_tenancy='default')
 
-        self.assertEqual('vpc-ad3527cf', vpc['vpc_id'])
-        self.assertEqual('pending', vpc['state'])
-        self.assertEqual('192.168.55.0/24', vpc['cidr_block'])
+        self.assertEqual('vpc-ad3527cf', vpc.id)
+        self.assertEqual('192.168.55.0/24', vpc.cidr_block)
+        self.assertEqual('pending', vpc.extra['state'])
 
     def test_ex_destroy_network(self):
         vpcs = self.driver.ex_list_networks()
@@ -1090,10 +1090,10 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('describe_account_attributes.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-<<<<<<< HEAD
     def _CreateSecurityGroup(self, method, url, body, headers):
         body = self.fixtures.load('create_security_group.xml')
-=======
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _DescribeVpcs(self, method, url, body, headers):
         body = self.fixtures.load('describe_vpcs.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1104,7 +1104,6 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DeleteVpc(self, method, url, body, headers):
         body = self.fixtures.load('delete_vpc.xml')
->>>>>>> LIBCLOUD-467_Add_VPC_Lifecycle_Support
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

@@ -1527,30 +1527,16 @@ class BaseEC2NodeDriver(NodeDriver):
                   'CidrBlock': cidr_block,
                   'InstanceTenancy':  instance_tenancy}
 
-        result = self.connection.request(self.path, params=params).object
+        response = self.connection.request(self.path, params=params).object
+        element = response.findall(fixxpath(xpath='vpc',
+                                            namespace=NAMESPACE))[0]
 
-        # Get our properties
-        response = {'vpc_id': findtext(element=result,
-                                       xpath='vpc/vpcId',
-                                       namespace=NAMESPACE),
-                    'state': findtext(element=result,
-                                      xpath='vpc/state',
-                                      namespace=NAMESPACE),
-                    'cidr_block': findtext(element=result,
-                                           xpath='vpc/cidrBlock',
-                                           namespace=NAMESPACE)}
+        network = self._to_network(element)
 
-        # Attempt to tag our network if the name was provided
         if name is not None:
-            # Build a resource object
-            class Resource:
-                pass
+            self.ex_create_tags(network, {'Name': name})
 
-            resource = Resource()
-            resource.id = response['vpc_id']
-            self.ex_create_tags(resource, {'Name': name})
-
-        return response
+        return network
 
     def ex_destroy_network(self, vpc_id):
         """
