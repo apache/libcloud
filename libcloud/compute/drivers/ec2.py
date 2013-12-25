@@ -563,8 +563,6 @@ class EC2ReservedNode(Node):
     """
     Class which stores information about EC2 reserved instances/nodes
     Inherits from Node and passes in None for name and private/public IPs
-
-    Note: This class is EC2 specific.
     """
 
     def __init__(self, id, state, driver, size=None, image=None, extra=None):
@@ -575,6 +573,39 @@ class EC2ReservedNode(Node):
 
     def __repr__(self):
         return (('<EC2ReservedNode: id=%s>') % (self.id))
+
+
+class EC2Network(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) network
+    """
+
+    def __init__(self, id, name, cidr_block, extra=None):
+        self.id = id
+        self.name = name
+        self.cidr_block = cidr_block
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2Network: id=%s, name=%s')
+                % (self.id, self.name))
+
+
+class EC2NetworkSubnet(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) subnet
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, name, state, extra=None):
+        self.id = id
+        self.name = name
+        self.state = state
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2NetworkSubnet: id=%s, name=%s') % (self.id, self.name))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -875,6 +906,197 @@ class BaseEC2NodeDriver(NodeDriver):
                               extra={'volume_id': volId,
                                      'description': description,
                                      'state': state})
+
+    def _to_networks(self, response):
+        return [self._to_network(el) for el in response.findall(
+            fixxpath(xpath='vpcSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_network(self, element):
+        # Get the network id
+        vpc_id = findtext(element=element,
+                          xpath='vpcId',
+                          namespace=NAMESPACE)
+
+        # Get our tag items
+        tag_items = findall(element=element,
+                            xpath='tagSet/item',
+                            namespace=NAMESPACE)
+
+        # Loop through all tag items to build our dictionary
+        tags = {}
+        for tag in tag_items:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NAMESPACE)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NAMESPACE)
+
+            tags[key] = value
+
+        # Set our name if the Name key/value if available
+        # If we don't get anything back then use the vpc_id
+        name = tags.get('Name', vpc_id)
+
+        cidr_block = findtext(element=element,
+                              xpath='cidrBlock',
+                              namespace=NAMESPACE)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'state': {
+                'xpath': 'state',
+                'type': str
+            },
+            'dhcp_options_id': {
+                'xpath': 'dhcpOptionsId',
+                'type': str
+            },
+            'instance_tenancy': {
+                'xpath': 'instanceTenancy',
+                'type': str
+            },
+            'is_default': {
+                'xpath': 'isDefault',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            extra[attribute] = type_func(value)
+
+        return EC2Network(vpc_id, name, cidr_block, extra=extra)
+
+    def _to_subnets(self, response):
+        return [self._to_subnet(el) for el in response.findall(
+            fixxpath(xpath='subnetSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_subnet(self, element):
+        # Get the subnet ID
+        subnet_id = findtext(element=element,
+                             xpath='subnetId',
+                             namespace=NAMESPACE)
+
+        # Get our tag items
+        tag_items = findall(element=element,
+                            xpath='tagSet/item',
+                            namespace=NAMESPACE)
+
+        # Loop through all tag items to build our dictionary
+        tags = {}
+        for tag in tag_items:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NAMESPACE)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NAMESPACE)
+
+            tags[key] = value
+
+        # If we don't get anything back then use the subnet_id
+        name = tags.get('Name', subnet_id)
+
+        state = findtext(element=element,
+                         xpath='state',
+                         namespace=NAMESPACE)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'cidr_block': {
+                'xpath': 'cidrBlock',
+                'type': str
+            },
+            'available_ips': {
+                'xpath': 'availableIpAddressCount',
+                'type': int
+            },
+            'zone': {
+                'xpath': 'availabilityZone',
+                'type': str
+            },
+            'vpc_id': {
+                'xpath': 'vpcId',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            extra[attribute] = type_func(value)
+
+        # Also include our tags
+        extra['tags'] = tags
+
+        return EC2NetworkSubnet(subnet_id, name, state, extra=extra)
+
+    def _to_addresses(self, response, only_allocated, all_properties):
+        addresses = []
+        for el in response.findall(fixxpath(xpath='addressesSet/item',
+                                            namespace=NAMESPACE)):
+            addr = self._to_address(el, only_allocated, all_properties)
+            if addr is not None:
+                addresses.append(addr)
+
+        return addresses
+
+    def _to_address(self, element, only_allocated, all_properties):
+        """
+        Return a dictionary with EC2/VPC elastic IP address properties.
+
+        :rtype: ``dict``
+        """
+
+        instance_id = findtext(element=element, xpath='instanceId',
+                               namespace=NAMESPACE)
+
+        # Return NoneType if only allocated IPs are requested
+        if only_allocated and not instance_id:
+            return None
+
+        # If all properties are not requested, only send back the IP
+        if not all_properties:
+            ip_address = findtext(element=element,
+                                  xpath='publicIp',
+                                  namespace=NAMESPACE)
+
+            return ip_address
+
+        return {'instance_id': instance_id,
+                'public_ip': findtext(element=element,
+                                      xpath='publicIp',
+                                      namespace=NAMESPACE),
+                'allocation_id': findtext(element=element,
+                                          xpath='allocationId',
+                                          namespace=NAMESPACE),
+                'association_id': findtext(element=element,
+                                           xpath='associationId',
+                                           namespace=NAMESPACE),
+                'domain': findtext(element=element,
+                                   xpath='domain',
+                                   namespace=NAMESPACE),
+                'interface_id': findtext(element=element,
+                                         xpath='networkInterfaceId',
+                                         namespace=NAMESPACE),
+                'owner_id': findtext(element=element,
+                                     xpath='networkInterfaceOwnerId',
+                                     namespace=NAMESPACE),
+                'private_ip': findtext(element=element,
+                                       xpath='privateIp',
+                                       namespace=NAMESPACE)}
 
     def ex_list_reserved_nodes(self):
         """
@@ -1407,6 +1629,138 @@ class BaseEC2NodeDriver(NodeDriver):
             'keyName': key_name,
             'keyFingerprint': fingerprint
         }
+
+    def ex_list_networks(self):
+        """
+        Return a list of :class:`EC2Network` objects for the
+        current region.
+
+        :rtype:     ``list`` of :class:`EC2Network`
+        """
+        params = {'Action': 'DescribeVpcs'}
+
+        return self._to_networks(
+            self.connection.request(self.path, params=params).object
+        )
+
+    def ex_create_network(self, cidr_block, name=None,
+                          instance_tenancy='default'):
+        """
+        Create a network/VPC
+
+        :param      cidr_block: The CIDR block assigned to the network
+        :type       cidr_block: ``str``
+
+        :param      name: An optional name for the network
+        :type       name: ``str``
+
+        :param      instance_tenancy: The allowed tenancy of instances launched
+                                      into the VPC.
+                                      Valid values: default/dedicated
+        :type       instance_tenancy: ``str``
+
+        :return:    Dictionary of network properties
+        :rtype:     ``dict``
+        """
+        params = {'Action': 'CreateVpc',
+                  'CidrBlock': cidr_block,
+                  'InstanceTenancy':  instance_tenancy}
+
+        response = self.connection.request(self.path, params=params).object
+        element = response.findall(fixxpath(xpath='vpc',
+                                            namespace=NAMESPACE))[0]
+
+        network = self._to_network(element)
+
+        if name is not None:
+            self.ex_create_tags(network, {'Name': name})
+
+        return network
+
+    def ex_destroy_network(self, vpc_id):
+        """
+        Deletes a network/VPC.
+
+        :param      vpc_id: The ID of the VPC
+        :type       vpc_id: ``str``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteVpc', 'VpcId': vpc_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_list_subnets(self):
+        """
+        Return a list of :class:`EC2NetworkSubnet` objects for the
+        current region.
+
+        :rtype:     ``list`` of :class:`EC2NetworkSubnet`
+        """
+        params = {'Action': 'DescribeSubnets'}
+
+        return self._to_subnets(
+            self.connection.request(self.path, params=params).object
+        )
+
+    def ex_create_subnet(self, vpc_id, cidr_block,
+                         availability_zone, name=None):
+        """
+        Create a network subnet within a VPC
+
+        :param      vpc_id: The ID of the VPC that the subnet should be
+                            associated with
+        :type       vpc_id: ``str``
+
+        :param      cidr_block: The CIDR block assigned to the subnet
+        :type       cidr_block: ``str``
+
+        :param      availability_zone: The availability zone where the subnet
+                                       should reside
+        :type       availability_zone: ``str``
+
+        :param      name: An optional name for the network
+        :type       name: ``str``
+
+        :rtype:     :class: `EC2NetworkSubnet`
+        """
+        params = {'Action': 'CreateSubnet',
+                  'VpcId': vpc_id,
+                  'CidrBlock': cidr_block,
+                  'AvailabilityZone': availability_zone}
+
+        response = self.connection.request(self.path, params=params).object
+        element = response.findall(fixxpath(xpath='subnet',
+                                            namespace=NAMESPACE))[0]
+
+        subnet = self._to_subnet(element)
+
+        if name is not None:
+            self.ex_create_tags(subnet, {'Name': name})
+
+        return subnet
+
+    def ex_delete_subnet(self, subnet_id):
+        """
+        Deletes a VPC subnet.
+
+        :param      subnet_id: The ID of the subnet
+        :type       subnet_id: ``str``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteSubnet', 'SubnetId': subnet_id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result,
+                           xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
 
     def ex_list_security_groups(self):
         """
@@ -1970,113 +2324,166 @@ class BaseEC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
-    def ex_allocate_address(self):
+    def ex_allocate_address(self, domain='standard'):
         """
-        Allocate a new Elastic IP address
+        Allocate a new Elastic IP address for EC2 classic or VPC
 
-        :return: String representation of allocated IP address
-        :rtype: ``str``
+        :param      domain: The domain to allocate the new address in
+                            (standard/vpc)
+        :type       domain: ``str``
+
+        :return:    Dictionary of elastic IP properties
+        :rtype:     ``dict``
         """
-        params = {'Action': 'AllocateAddress'}
+        params = {'Action': 'AllocateAddress', 'Domain': domain}
 
         response = self.connection.request(self.path, params=params).object
-        public_ip = findtext(element=response, xpath='publicIp',
-                             namespace=NAMESPACE)
-        return public_ip
 
-    def ex_release_address(self, elastic_ip_address):
+        public_ip = findtext(element=response,
+                             xpath='publicIp',
+                             namespace=NAMESPACE)
+
+        domain = findtext(element=response,
+                          xpath='domain',
+                          namespace=NAMESPACE)
+
+        allocation_id = findtext(element=response,
+                                 xpath='allocationId',
+                                 namespace=NAMESPACE)
+
+        return {
+            'public_ip':     public_ip,
+            'domain':        domain,
+            'allocation_id': allocation_id
+        }
+
+    def ex_release_address(self, elastic_ip_address=None, allocation_id=None):
         """
-        Release an Elastic IP address
+        Release an Elastic IP address using the IP (EC2-Classic) or
+        using the allocation ID (VPC)
 
         :param      elastic_ip_address: Elastic IP address which should be used
+                                        (EC2 only)
         :type       elastic_ip_address: ``str``
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      allocation_id: The allocation ID of the elastic IP (VPC)
+        :type       allocation_id: ``str``
+
+        :return:    True on success, False otherwise.
+        :rtype:     ``bool``
         """
         params = {'Action': 'ReleaseAddress'}
 
-        params.update({'PublicIp': elastic_ip_address})
+        if elastic_ip_address:
+            params.update({'PublicIp': elastic_ip_address})
+
+        if allocation_id:
+            params.update({'AllocationId': allocation_id})
+
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def ex_describe_all_addresses(self, only_allocated=False):
+    def ex_describe_all_addresses(self, only_allocated=False,
+                                  all_properties=False):
         """
         Return all the Elastic IP addresses for this account
         optionally, return only the allocated addresses
 
         :param    only_allocated: If true, return only those addresses
-                                  that are associated with an instance
-        :type     only_allocated: ``str``
+                                  that are associated with an instance.
+        :type     only_allocated: ``bool``
 
-        :return:   list list of elastic ips for this particular account.
-        :rtype: ``list`` of ``str``
+        :param    all_properties: If true, return all properties associated
+                                  with the elastic IP. IF false, return only
+                                  a list of elastic IPs.
+        :type     only_allocated: ``bool``
+
+        :return:  list of elastic ips/properties for this particular account.
+        :rtype:   ``list`` of ``dict`` or ``list`` of ``str``
         """
         params = {'Action': 'DescribeAddresses'}
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        response = self.connection.request(self.path, params=params).object
 
-        # the list which we return
-        elastic_ip_addresses = []
-        for element in findall(element=result, xpath='addressesSet/item',
-                               namespace=NAMESPACE):
-            instance_id = findtext(element=element, xpath='instanceId',
-                                   namespace=NAMESPACE)
+        # We will send our only_allocated/all_properties booleans over to
+        # shape how the return data is sent back
+        return self._to_addresses(response, only_allocated, all_properties)
 
-            # if only allocated addresses are requested
-            if only_allocated and not instance_id:
-                continue
-
-            ip_address = findtext(element=element, xpath='publicIp',
-                                  namespace=NAMESPACE)
-
-            elastic_ip_addresses.append(ip_address)
-
-        return elastic_ip_addresses
-
-    def ex_associate_address_with_node(self, node, elastic_ip_address):
+    def ex_associate_address_with_node(self, node, elastic_ip_address=None,
+                                       allocation_id=None):
         """
         Associate an Elastic IP address with a particular node.
 
         :param      node: Node instance
         :type       node: :class:`Node`
 
-        :param      elastic_ip_address: IP address which should be used
+        :param      elastic_ip_address: Elastic IP address which should be used
+                                        (EC2 only)
         :type       elastic_ip_address: ``str``
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      allocation_id: The allocation ID of the elastic IP
+                                   (VPC only)
+        :type       allocation_id: ``str``
+
+        :return:    A string representation of the association ID which is
+                    required for VPC disassociation. EC2/standard
+                    addresses return None
+        :rtype:     ``NoneType`` or ``str``
         """
-        params = {'Action': 'AssociateAddress'}
+        params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        params.update({'InstanceId': node.id})
-        params.update({'PublicIp': elastic_ip_address})
-        res = self.connection.request(self.path, params=params).object
-        return self._get_boolean(res)
+        if elastic_ip_address:
+            params.update({'PublicIp': elastic_ip_address})
 
-    def ex_associate_addresses(self, node, elastic_ip_address):
+        if allocation_id:
+            params.update({'AllocationId': allocation_id})
+
+        response = self.connection.request(self.path, params=params).object
+        association_id = findtext(element=response,
+                                  xpath='associationId',
+                                  namespace=NAMESPACE)
+        return association_id
+
+    def ex_associate_addresses(self, node, elastic_ip_address=None,
+                               allocation_id=None):
         """
         Note: This method has been deprecated in favor of
         the ex_associate_address_with_node method.
         """
-        return self.ex_associate_address_with_node(node=node,
-                                                   elastic_ip_address=
-                                                   elastic_ip_address)
+        if elastic_ip_address is not None:
+            return self.ex_associate_address_with_node(node=node,
+                                                       elastic_ip_address=
+                                                       elastic_ip_address)
+        if allocation_id is not None:
+            return self.ex_associate_address_with_node(node=node,
+                                                       allocation_id=
+                                                       allocation_id)
 
-    def ex_disassociate_address(self, elastic_ip_address):
+    def ex_disassociate_address(self, elastic_ip_address=None,
+                                association_id=None):
         """
-        Disassociate an Elastic IP address
+        Disassociate an Elastic IP address using the IP (EC2-Classic)
+        or the association ID (VPC)
 
         :param      elastic_ip_address: Elastic IP address which should be used
+                                        (EC2 only)
         :type       elastic_ip_address: ``str``
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      association_id: The association ID of the elastic IP
+                                        (VPC only)
+        :type       association_id: ``str``
+
+        :return:    True on success, False otherwise.
+        :rtype:     ``bool``
         """
         params = {'Action': 'DisassociateAddress'}
 
-        params.update({'PublicIp': elastic_ip_address})
+        if elastic_ip_address:
+            params.update({'PublicIp': elastic_ip_address})
+
+        if association_id:
+            params.update({'AssociationId': association_id})
+
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
 
@@ -2099,25 +2506,29 @@ class BaseEC2NodeDriver(NodeDriver):
         if len(nodes) == 1:
             self._add_instance_filter(params, nodes[0])
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        result = self.connection.request(self.path, params=params).object
 
         node_instance_ids = [node.id for node in nodes]
         nodes_elastic_ip_mappings = {}
 
+        # We will set only_allocated and all_properties to True
+        # so that we only get back public IPs which are associated with
+        # and instance properties which will includet the instance id
+        only_allocated = True
+        all_properties = True
+
         for node_id in node_instance_ids:
             nodes_elastic_ip_mappings.setdefault(node_id, [])
-        for element in findall(element=result, xpath='addressesSet/item',
-                               namespace=NAMESPACE):
-            instance_id = findtext(element=element, xpath='instanceId',
-                                   namespace=NAMESPACE)
-            ip_address = findtext(element=element, xpath='publicIp',
-                                  namespace=NAMESPACE)
+            for addr in self._to_addresses(result,
+                                           only_allocated,
+                                           all_properties):
 
-            if instance_id not in node_instance_ids:
-                continue
+                instance_id = addr['instance_id']
 
-            nodes_elastic_ip_mappings[instance_id].append(ip_address)
+                if node_id == instance_id:
+                    nodes_elastic_ip_mappings[instance_id].append(
+                        addr['public_ip'])
+
         return nodes_elastic_ip_mappings
 
     def ex_describe_addresses_for_node(self, node):
