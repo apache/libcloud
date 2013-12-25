@@ -1538,16 +1538,16 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return network
 
-    def ex_delete_network(self, vpc_id):
+    def ex_delete_network(self, vpc):
         """
         Deletes a network/VPC.
 
-        :param      vpc_id: The ID of the VPC
-        :type       vpc_id: ``str``
+        :param      vpc: VPC to delete.
+        :type       vpc: :class:`.EC2Network`
 
         :rtype:     ``bool``
         """
-        params = {'Action': 'DeleteVpc', 'VpcId': vpc_id}
+        params = {'Action': 'DeleteVpc', 'VpcId': vpc.id}
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',

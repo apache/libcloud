@@ -808,7 +808,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         vpcs = self.driver.ex_list_networks()
         vpc = vpcs[0]
 
-        resp = self.driver.ex_delete_network(vpc.id)
+        resp = self.driver.ex_delete_network(vpc)
         self.assertTrue(resp)
 
 
