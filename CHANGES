@@ -111,6 +111,10 @@ Changes with Apache Libcloud in development
      (ex_list_reserved_nodes) to the EC2 driver. (LIBCLOUD-469)
      [Chris DeRamus]
 
+   - Add extension methods for VPC management (ex_list_networks,
+     ex_create_network, ex_delete_network) to the EC2 driver. (LIBCLOUD-477)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
