@@ -563,6 +563,8 @@ class EC2ReservedNode(Node):
     """
     Class which stores information about EC2 reserved instances/nodes
     Inherits from Node and passes in None for name and private/public IPs
+
+    Note: This class is EC2 specific.
     """
 
     def __init__(self, id, state, driver, size=None, image=None, extra=None):
