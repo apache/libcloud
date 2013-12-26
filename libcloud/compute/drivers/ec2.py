@@ -859,19 +859,89 @@ class BaseEC2NodeDriver(NodeDriver):
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
-        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
-        create_time = findtext(element=element, xpath='createTime',
-                               namespace=NAMESPACE)
-        device = findtext(element=element, xpath='attachmentSet/item/device',
-                          namespace=NAMESPACE)
+
+        # Get our tag items
+        tag_items = findall(element=element,
+                            xpath='tagSet/item',
+                            namespace=NAMESPACE)
+
+        # Loop through all tag items to build our dictionary
+        tags = {}
+        for tag in tag_items:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NAMESPACE)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NAMESPACE)
+
+            tags[key] = value
+
+        # Set our name if the Name key/value if available
+        # If we don't get anything back then use the volume id
+        name = tags.get('Name', volId)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'device': {
+                'xpath': 'device',
+                'type': str
+            },
+            'iops': {
+                'xpath': 'iops',
+                'type': int
+            },
+            'zone': {
+                'xpath': 'availabilityZone',
+                'type': str
+            },
+            'create_time': {
+                'xpath': 'createTime',
+                'type': str
+            },
+            'state': {
+                'xpath': 'status',
+                'type': str
+            },
+            'attach_time': {
+                'xpath': 'attachmentSet/item/attachTime',
+                'type': str
+            },
+            'attachment_status': {
+                'xpath': 'attachmentSet/item/status',
+                'type': str
+            },
+            'instance_id': {
+                'xpath': 'attachmentSet/item/instanceId',
+                'type': str
+            },
+            'delete': {
+                'xpath': 'attachmentSet/item/deleteOnTermination',
+                'type': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            type_func = values['type']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            if value is not None:
+                # Convert our create/attach time to ISO 8601
+                if attribute == 'create_time' or attribute == 'attach_time':
+                    extra[attribute] = parse_date(type_func(value))
+                else:
+                    extra[attribute] = type_func(value)
+            else:
+                extra[attribute] = None
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
                              driver=self,
-                             extra={'state': state,
-                                    'device': device,
-                                    'create-time': parse_date(create_time)})
+                             extra=extra)
 
     def _to_snapshots(self, response):
         return [self._to_snapshot(el) for el in response.findall(
