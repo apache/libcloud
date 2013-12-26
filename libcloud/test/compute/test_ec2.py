@@ -814,7 +814,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_ex_get_console_output(self):
         node = self.driver.list_nodes()[0]
         resp = self.driver.ex_get_console_output(node)
-        self.assertEqual('Test String', resp)
+        self.assertEqual('Test String', resp['output'])
 
 
 class EC2USWest1Tests(EC2Tests):
