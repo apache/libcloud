@@ -112,7 +112,11 @@ Changes with Apache Libcloud in development
      [Chris DeRamus]
 
    - Add extension methods for VPC management (ex_list_networks,
-     ex_create_network, ex_delete_network) to the EC2 driver. (LIBCLOUD-477)
+     ex_create_network, ex_delete_network) to the EC2 driver. (LIBCLOUD-467)
+     [Chris DeRamus]
+
+   - Add extension methods for VPC subnet management (ex_list_subnets,
+     ex_create_subnet, ex_delete_subnet) to the EC2 driver. (LIBCLOUD-468)
      [Chris DeRamus]
 
   *) Storage
