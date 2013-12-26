@@ -2718,9 +2718,12 @@ class BaseEC2NodeDriver(NodeDriver):
                                   xpath='output',
                                   namespace=NAMESPACE)
 
+        timestamp = parse_date(timestamp)
+        output = base64.b64decode(b(encoded_string)).decode('utf-8')
+
         return {'instance_id': node.id,
-                'timestamp': parse_date(timestamp),
-                'output': base64.b64decode(b(encoded_string))}
+                'timestamp': timestamp,
+                'output': output}
 
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
