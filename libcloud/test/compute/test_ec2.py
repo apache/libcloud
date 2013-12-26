@@ -839,6 +839,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_delete_subnet(subnet=subnet)
         self.assertTrue(resp)
 
+    def test_ex_get_console_output(self):
+        node = self.driver.list_nodes()[0]
+        resp = self.driver.ex_get_console_output(node)
+        self.assertEqual('Test String', resp['output'])
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -1144,6 +1149,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DeleteSubnet(self, method, url, body, headers):
         body = self.fixtures.load('delete_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _GetConsoleOutput(self, method, url, body, headers):
+        body = self.fixtures.load('get_console_output.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
