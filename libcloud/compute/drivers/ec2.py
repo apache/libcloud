@@ -759,13 +759,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         instance_id = findtext(element=element, xpath='instanceId',
                                namespace=NAMESPACE)
-        tags = dict((findtext(element=item, xpath='key', namespace=NAMESPACE),
-                     findtext(element=item, xpath='value',
-                              namespace=NAMESPACE))
-                    for item in findall(element=element,
-                                        xpath='tagSet/item',
-                                        namespace=NAMESPACE)
-                    )
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
 
         name = tags.get('Name', instance_id)
 
@@ -872,23 +868,83 @@ class BaseEC2NodeDriver(NodeDriver):
         )
         return n
 
-    def _to_volume(self, element, name):
+    def _to_volume(self, element, name=None):
+        """
+        Parse the XML element and return a StorageVolume object.
+
+        :param      name: An optional name for the volume. If not provided
+                          then the ID of the volume will be used in its place.
+        :type       name: ``str``
+
+        :rtype:     :class:`StorageVolume`
+        """
         volId = findtext(element=element, xpath='volumeId',
                          namespace=NAMESPACE)
         size = findtext(element=element, xpath='size', namespace=NAMESPACE)
-        state = findtext(element=element, xpath='status', namespace=NAMESPACE)
-        create_time = findtext(element=element, xpath='createTime',
-                               namespace=NAMESPACE)
-        device = findtext(element=element, xpath='attachmentSet/item/device',
-                          namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # If name was not passed into the method then
+        # fall back then use the volume id
+        name = name if name else tags.get('Name', volId)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'device': {
+                'xpath': 'device',
+                'cast_func': str
+            },
+            'iops': {
+                'xpath': 'iops',
+                'cast_func': int
+            },
+            'zone': {
+                'xpath': 'availabilityZone',
+                'cast_func': str
+            },
+            'create_time': {
+                'xpath': 'createTime',
+                'cast_func': parse_date
+            },
+            'state': {
+                'xpath': 'status',
+                'cast_func': str
+            },
+            'attach_time': {
+                'xpath': 'attachmentSet/item/attachTime',
+                'cast_func': parse_date
+            },
+            'attachment_status': {
+                'xpath': 'attachmentSet/item/status',
+                'cast_func': str
+            },
+            'instance_id': {
+                'xpath': 'attachmentSet/item/instanceId',
+                'cast_func': str
+            },
+            'delete': {
+                'xpath': 'attachmentSet/item/deleteOnTermination',
+                'cast_func': str
+            }
+        }
+
+        # Define and build our extra dictionary
+        extra = {}
+        for attribute, values in extra_attributes_map.items():
+            cast_func = values['cast_func']
+            value = findattr(element=element, xpath=values['xpath'],
+                             namespace=NAMESPACE)
+            if value is not None:
+                extra[attribute] = cast_func(value)
+            else:
+                extra[attribute] = None
 
         return StorageVolume(id=volId,
                              name=name,
                              size=int(size),
                              driver=self,
-                             extra={'state': state,
-                                    'device': device,
-                                    'create-time': parse_date(create_time)})
+                             extra=extra)
 
     def _to_snapshots(self, response):
         return [self._to_snapshot(el) for el in response.findall(
@@ -922,23 +978,8 @@ class BaseEC2NodeDriver(NodeDriver):
                           xpath='vpcId',
                           namespace=NAMESPACE)
 
-        # Get our tag items
-        tag_items = findall(element=element,
-                            xpath='tagSet/item',
-                            namespace=NAMESPACE)
-
-        # Loop through all tag items to build our dictionary
-        tags = {}
-        for tag in tag_items:
-            key = findtext(element=tag,
-                           xpath='key',
-                           namespace=NAMESPACE)
-
-            value = findtext(element=tag,
-                             xpath='value',
-                             namespace=NAMESPACE)
-
-            tags[key] = value
+        # Get our tags
+        tags = self._get_resource_tags(element)
 
         # Set our name if the Name key/value if available
         # If we don't get anything back then use the vpc_id
@@ -976,6 +1017,9 @@ class BaseEC2NodeDriver(NodeDriver):
                              namespace=NAMESPACE)
             extra[attribute] = type_func(value)
 
+        # Add tags to the extra dict
+        extra['tags'] = tags
+
         return EC2Network(vpc_id, name, cidr_block, extra=extra)
 
     def _to_subnets(self, response):
@@ -989,23 +1033,8 @@ class BaseEC2NodeDriver(NodeDriver):
                              xpath='subnetId',
                              namespace=NAMESPACE)
 
-        # Get our tag items
-        tag_items = findall(element=element,
-                            xpath='tagSet/item',
-                            namespace=NAMESPACE)
-
-        # Loop through all tag items to build our dictionary
-        tags = {}
-        for tag in tag_items:
-            key = findtext(element=tag,
-                           xpath='key',
-                           namespace=NAMESPACE)
-
-            value = findtext(element=tag,
-                             xpath='value',
-                             namespace=NAMESPACE)
-
-            tags[key] = value
+        # Get our tags
+        tags = self._get_resource_tags(element)
 
         # If we don't get anything back then use the subnet_id
         name = tags.get('Name', subnet_id)
@@ -1194,7 +1223,7 @@ class BaseEC2NodeDriver(NodeDriver):
                 'Filter.1.Value': node.id,
             })
         response = self.connection.request(self.path, params=params).object
-        volumes = [self._to_volume(el, '') for el in response.findall(
+        volumes = [self._to_volume(el) for el in response.findall(
             fixxpath(xpath='volumeSet/item', namespace=NAMESPACE))
         ]
         return volumes
@@ -2182,18 +2211,9 @@ class BaseEC2NodeDriver(NodeDriver):
                   'Filter.1.Value.0': 'instance',
                   }
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        result = self.connection.request(self.path, params=params).object
 
-        tags = {}
-        for element in findall(element=result, xpath='tagSet/item',
-                               namespace=NAMESPACE):
-            key = findtext(element=element, xpath='key', namespace=NAMESPACE)
-            value = findtext(element=element,
-                             xpath='value', namespace=NAMESPACE)
-
-            tags[key] = value
-        return tags
+        return self._get_resource_tags(result)
 
     def ex_create_tags(self, resource, tags):
         """
@@ -2724,6 +2744,31 @@ class BaseEC2NodeDriver(NodeDriver):
         return {'instance_id': node.id,
                 'timestamp': timestamp,
                 'output': output}
+    def _get_resource_tags(self, element):
+        """
+        Return a dictionary with key/value pairs.
+
+        :rtype: ``dict``
+        """
+        tags = {}
+
+        # Get our tag set by parsing the element
+        tag_set = findall(element=element,
+                          xpath='tagSet/item',
+                          namespace=NAMESPACE)
+
+        for tag in tag_set:
+            key = findtext(element=tag,
+                           xpath='key',
+                           namespace=NAMESPACE)
+
+            value = findtext(element=tag,
+                             xpath='value',
+                             namespace=NAMESPACE)
+
+            tags[key] = value
+
+        return tags
 
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
