@@ -835,7 +835,8 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vpc-532135d1', subnet.extra['vpc_id'])
 
     def test_ex_delete_subnet(self):
-        resp = self.driver.ex_delete_subnet('subnet-ce0e7ce6')
+        subnet = self.driver.ex_list_subnets()[0]
+        resp = self.driver.ex_delete_subnet(subnet=subnet)
         self.assertTrue(resp)
 
 

@@ -1693,16 +1693,16 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return subnet
 
-    def ex_delete_subnet(self, subnet_id):
+    def ex_delete_subnet(self, subnet):
         """
         Deletes a VPC subnet.
 
-        :param      subnet_id: The ID of the subnet
-        :type       subnet_id: ``str``
+        :param      subnet: The subnet to delete
+        :type       subnet: :class:`.EC2NetworkSubnet`
 
         :rtype:     ``bool``
         """
-        params = {'Action': 'DeleteSubnet', 'SubnetId': subnet_id}
+        params = {'Action': 'DeleteSubnet', 'SubnetId': subnet.id}
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result,
