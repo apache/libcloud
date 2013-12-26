@@ -2535,6 +2535,32 @@ class BaseEC2NodeDriver(NodeDriver):
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
 
+    def ex_get_console_output(self, node):
+        """
+        Get console output for the node. This returns a base64 encoded string
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``dict``
+        """
+        params = {
+            'Action': 'GetConsoleOutput',
+            'InstanceId': node.id
+        }
+
+        response = self.connection.request(self.path, params=params).object
+
+        return {'instance_id': findattr(element=response,
+                                        xpath='instanceId',
+                                        namespace=NAMESPACE),
+                'timestamp': findattr(element=response,
+                                      xpath='timestamp',
+                                      namespace=NAMESPACE),
+                'output': findattr(element=response,
+                                   xpath='output',
+                                   namespace=NAMESPACE)}
+
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
                                           group_pairs):
