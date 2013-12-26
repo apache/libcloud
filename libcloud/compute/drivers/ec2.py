@@ -2542,7 +2542,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      node: Node which should be used
         :type       node: :class:`Node`
 
-        :rtype: ``dict``
+        :rtype:     ``str``
         """
         params = {
             'Action': 'GetConsoleOutput',
@@ -2551,15 +2551,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
 
-        return {'instance_id': findattr(element=response,
-                                        xpath='instanceId',
-                                        namespace=NAMESPACE),
-                'timestamp': findattr(element=response,
-                                      xpath='timestamp',
-                                      namespace=NAMESPACE),
-                'output': findattr(element=response,
-                                   xpath='output',
-                                   namespace=NAMESPACE)}
+        encoded_string = findattr(element=response,
+                                  xpath='output',
+                                  namespace=NAMESPACE)
+
+        return base64.b64decode(b(encoded_string))
 
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
