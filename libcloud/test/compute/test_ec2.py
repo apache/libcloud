@@ -641,7 +641,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
 
-        self.assertEqual(len(volumes), 2)
+        self.assertEqual(len(volumes), 3)
 
         self.assertEqual('vol-10ae5e2b', volumes[0].id)
         self.assertEqual(1, volumes[0].size)
@@ -651,14 +651,19 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(11, volumes[1].size)
         self.assertEqual('available', volumes[1].extra['state'])
 
+        self.assertEqual('vol-b6c851ec', volumes[2].id)
+        self.assertEqual(8, volumes[2].size)
+        self.assertEqual('in-use', volumes[2].extra['state'])
+        self.assertEqual('i-d334b4b3', volumes[2].extra['instance_id'])
+
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
 
         self.assertEqual(10, vol.size)
-        self.assertEqual('vol', vol.name)
+        self.assertEqual('vol-4d826724', vol.name)
         self.assertEqual('creating', vol.extra['state'])
-        self.assertTrue(isinstance(vol.extra['create-time'], datetime))
+        self.assertTrue(isinstance(vol.extra['create_time'], datetime))
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
