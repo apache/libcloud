@@ -119,6 +119,14 @@ Changes with Apache Libcloud in development
      ex_create_subnet, ex_delete_subnet) to the EC2 driver. (LIBCLOUD-468)
      [Chris DeRamus]
 
+   - Add ex_get_console_output extension method to the EC2 driver.
+     (LIBCLOUD-471)
+     [Chris DeRamus]
+
+   - Include additional provider-specific attributes in the 'extra' dictionary
+     of the StorageVolume class in the EC2 driver. (LIBCLOUD-473)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
