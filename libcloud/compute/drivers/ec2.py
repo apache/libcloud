@@ -840,6 +840,26 @@ class EC2NetworkSubnet(object):
         return (('<EC2NetworkSubnet: id=%s, name=%s') % (self.id, self.name))
 
 
+class EC2NetworkInterface(object):
+    """
+    Represents information about a VPC network interface
+
+    Note: This class is EC2 specific. The state parameter denotes the current
+    status of the interface. Valid values for state are attaching, attached,
+    detaching and detached.
+    """
+
+    def __init__(self, id, name, state, extra=None):
+        self.id = id
+        self.name = name
+        self.state = state
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<EC2NetworkInterface: id=%s, name=%s')
+                % (self.id, self.name))
+
+
 class BaseEC2NodeDriver(NodeDriver):
     """
     Base Amazon EC2 node driver.
@@ -1181,6 +1201,148 @@ class BaseEC2NodeDriver(NodeDriver):
         extra['tags'] = tags
 
         return EC2NetworkSubnet(subnet_id, name, state, extra=extra)
+
+    def _to_interfaces(self, response):
+        return [self._to_interface(el) for el in response.findall(
+            fixxpath(xpath='networkInterfaceSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_interface(self, element, name=None):
+        """
+        Parse the XML element and return a EC2NetworkInterface object.
+
+        :param      name: An optional name for the interface. If not provided
+                          then either tag with a key "Name" or the interface ID
+                          will be used (whichever is available first in that
+                          order).
+        :type       name: ``str``
+
+        :rtype:     :class: `EC2NetworkInterface`
+        """
+
+        interface_id = findtext(element=element,
+                                xpath='networkInterfaceId',
+                                namespace=NAMESPACE)
+
+        state = findtext(element=element,
+                         xpath='status',
+                         namespace=NAMESPACE)
+
+        # Get tags
+        tags = self._get_resource_tags(element)
+
+        name = name if name else tags.get('Name', interface_id)
+
+        # Build security groups
+        groups = []
+        for item in findall(element=element,
+                            xpath='groupSet/item',
+                            namespace=NAMESPACE):
+
+            groups.append({'group_id': findtext(element=item,
+                                                xpath='groupId',
+                                                namespace=NAMESPACE),
+                           'group_name': findtext(element=item,
+                                                  xpath='groupName',
+                                                  namespace=NAMESPACE)})
+
+        # Build private IPs
+        priv_ips = []
+        for item in findall(element=element,
+                            xpath='privateIpAddressesSet/item',
+                            namespace=NAMESPACE):
+
+            priv_ips.append({'private_ip': findtext(element=item,
+                                                    xpath='privateIpAddress',
+                                                    namespace=NAMESPACE),
+                            'private_dns': findtext(element=item,
+                                                    xpath='privateDnsName',
+                                                    namespace=NAMESPACE),
+                            'primary': findtext(element=item,
+                                                xpath='primary',
+                                                namespace=NAMESPACE)})
+
+        # Build our attachment extra attributes map
+        attachment_attributes_map = {
+            'attachment_id': {
+                'xpath': 'attachment/attachmentId',
+                'transform_func': str
+            },
+            'instance_id': {
+                'xpath': 'attachment/instanceId',
+                'transform_func': str
+            },
+            'owner_id': {
+                'xpath': 'attachment/instanceOwnerId',
+                'transform_func': str
+            },
+            'device_index': {
+                'xpath': 'attachment/deviceIndex',
+                'transform_func': int
+            },
+            'status': {
+                'xpath': 'attachment/status',
+                'transform_func': str
+            },
+            'attach_time': {
+                'xpath': 'attachment/attachTime',
+                'transform_func': parse_date
+            },
+            'delete': {
+                'xpath': 'attachment/deleteOnTermination',
+                'transform_func': str
+            },
+        }
+
+        # Build our attachment dictionary which we will add into extra later
+        attachment = self._get_extra_dict(element, attachment_attributes_map)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'subnet_id': {
+                'xpath': 'subnetId',
+                'transform_func': str
+            },
+            'vpc_id': {
+                'xpath': 'vpcId',
+                'transform_func': str
+            },
+            'zone': {
+                'xpath': 'availabilityZone',
+                'transform_func': str
+            },
+            'description': {
+                'xpath': 'description',
+                'transform_func': str
+            },
+            'owner_id': {
+                'xpath': 'ownerId',
+                'transform_func': str
+            },
+            'mac_address': {
+                'xpath': 'macAddress',
+                'transform_func': str
+            },
+            'private_dns_name': {
+                'xpath': 'privateIpAddressesSet/privateDnsName',
+                'transform_func': str
+            },
+            'source_dest_check': {
+                'xpath': 'sourceDestCheck',
+                'transform_func': str
+            }
+        }
+
+        # Build our extra dict
+        extra = self._get_extra_dict(element, extra_attributes_map)
+
+        # Include our previously built items as well
+        extra['tags'] = tags
+        extra['attachment'] = attachment
+        extra['private_ips'] = priv_ips
+        extra['groups'] = groups
+
+        return EC2NetworkInterface(interface_id, name, state, extra=extra)
 
     def ex_list_reserved_nodes(self):
         """
@@ -2583,6 +2745,141 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         node_elastic_ips = self.ex_describe_addresses([node])
         return node_elastic_ips[node.id]
+
+    def ex_list_network_interfaces(self):
+        """
+        Return all network interfaces
+
+        :return:    List of EC2NetworkInterface instances
+        :rtype:     ``list`` of :class `EC2NetworkInterface`
+        """
+        params = {'Action': 'DescribeNetworkInterfaces'}
+
+        return self._to_interfaces(
+            self.connection.request(self.path, params=params).object
+        )
+
+    def ex_create_network_interface(self, subnet, name=None,
+                                    description=None,
+                                    private_ip_address=None):
+        """
+        Create a network interface within a VPC subnet.
+
+        :param      node: EC2NetworkSubnet instance
+        :type       node: :class:`EC2NetworkSubnet`
+
+        :param      name:  Optional name of the interface
+        :type       name:  ``str``
+
+        :param      description:  Optional description of the network interface
+        :type       description:  ``str``
+
+        :param      private_ip_address: Optional address to assign as the
+                                        primary private IP address of the
+                                        interface. If one is not provided then
+                                        Amazon will automatically auto-assign
+                                        an available IP. EC2 allows assignment
+                                        of multiple IPs, but this will be
+                                        the primary.
+        :type       private_ip_address: ``str``
+
+        :return:    EC2NetworkInterface instance
+        :rtype:     :class `EC2NetworkInterface`
+        """
+        params = {'Action': 'CreateNetworkInterface',
+                  'SubnetId': subnet.id}
+
+        if description:
+            params['Description'] = description
+
+        if private_ip_address:
+            params['PrivateIpAddress'] = private_ip_address
+
+        response = self.connection.request(self.path, params=params).object
+
+        element = response.findall(fixxpath(xpath='networkInterface',
+                                            namespace=NAMESPACE))[0]
+
+        interface = self._to_interface(element, name)
+
+        if name is not None:
+            tags = {'Name': name}
+            self.ex_create_tags(resource=interface, tags=tags)
+
+        return interface
+
+    def ex_delete_network_interface(self, network_interface):
+        """
+        Deletes a network interface.
+
+        :param      network_interface: EC2NetworkInterface instance
+        :type       network_interface: :class:`EC2NetworkInterface`
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DeleteNetworkInterface',
+                  'NetworkInterfaceId': network_interface.id}
+
+        result = self.connection.request(self.path, params=params).object
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+
+        return element == 'true'
+
+    def ex_attach_network_interface_to_node(self, network_interface,
+                                            node, device_index):
+        """
+        Attatch a network interface to an instance.
+
+        :param      network_interface: EC2NetworkInterface instance
+        :type       network_interface: :class:`EC2NetworkInterface`
+
+        :param      node: Node instance
+        :type       node: :class:`Node`
+
+        :param      device_index: The interface device index
+        :type       device_index: ``int``
+
+        :return:    String representation of the attachment id.
+                    This is required to detach the interface.
+        :rtype:     ``str``
+        """
+        params = {'Action': 'AttachNetworkInterface',
+                  'NetworkInterfaceId': network_interface.id,
+                  'InstanceId': node.id,
+                  'DeviceIndex': device_index}
+
+        response = self.connection.request(self.path, params=params).object
+        attachment_id = findattr(element=response, xpath='attachmentId',
+                                 namespace=NAMESPACE)
+
+        return attachment_id
+
+    def ex_detach_network_interface(self, attachment_id, force=False):
+        """
+        Detatch a network interface from an instance.
+
+        :param      attachment_id: The attachment ID associated with the
+                                   interface
+        :type       attachment_id: ``str``
+
+        :param      force: Forces the detachment.
+        :type       force: ``bool``
+
+        :return:    ``True`` on successful detachment, ``False`` otherwise.
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'DetachNetworkInterface',
+                  'AttachmentId': attachment_id}
+
+        if force:
+            params['Force'] = True
+
+        result = self.connection.request(self.path, params=params).object
+
+        element = findtext(element=result, xpath='return',
+                           namespace=NAMESPACE)
+        return element == 'true'
 
     def ex_modify_instance_attribute(self, node, attributes):
         """
