@@ -2608,14 +2608,14 @@ class BaseEC2NodeDriver(NodeDriver):
             self.connection.request(self.path, params=params).object
         )
 
-    def ex_create_network_interface(self, subnet_id, name=None,
+    def ex_create_network_interface(self, subnet, name=None,
                                     description=None,
                                     private_ip_address=None):
         """
         Create a network interface within a VPC subnet.
 
-        :param      subnet_id:  ID of the VPC subnet
-        :type       subnet_id:  ``str``
+        :param      node: EC2NetworkSubnet instance
+        :type       node: :class:`EC2NetworkSubnet`
 
         :param      name:  Optional name of the interface
         :type       name:  ``str``
@@ -2632,7 +2632,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype:     :class `EC2NetworkInterface`
         """
         params = {'Action': 'CreateNetworkInterface',
-                  'SubnetId': subnet_id}
+                  'SubnetId': subnet.id}
 
         if description:
             params['Description'] = description
@@ -2653,17 +2653,17 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return interface
 
-    def ex_delete_network_interface(self, network_interface_id):
+    def ex_delete_network_interface(self, network_interface):
         """
         Deletes a network interface.
 
-        :param      network_interface_id: The ID of the network interface
-        :type       network_interface_id: ``str``
+        :param      network_interface: EC2NetworkInterface instance
+        :type       network_interface: :class:`EC2NetworkInterface`
 
         :rtype:     ``bool``
         """
         params = {'Action': 'DeleteNetworkInterface',
-                  'NetworkInterfaceId': network_interface_id}
+                  'NetworkInterfaceId': network_interface.id}
 
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
@@ -2671,13 +2671,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return element == 'true'
 
-    def ex_attach_network_interface(self, network_interface_id,
-                                    node, device_index):
+    def ex_attach_network_interface_to_node(self, network_interface,
+                                            node, device_index):
         """
         Attatch a network interface to an instance.
 
-        :param      network_interface_id: The ID of the interface
-        :type       network_interface_id: ``str``
+        :param      network_interface: EC2NetworkInterface instance
+        :type       network_interface: :class:`EC2NetworkInterface`
 
         :param      node: Node instance
         :type       node: :class:`Node`
@@ -2685,10 +2685,12 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      device_index: The interface device index
         :type       device_index: ``int``
 
+        :return:    String representation of the attachment id.
+                    This is required to detach the interface.
         :rtype:     ``str``
         """
         params = {'Action': 'AttachNetworkInterface',
-                  'NetworkInterfaceId': network_interface_id,
+                  'NetworkInterfaceId': network_interface.id,
                   'InstanceId': node.id,
                   'DeviceIndex': device_index}
 
@@ -2704,7 +2706,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      attachment_id: The attachment ID associated with the
                                    interface
-        :type       attahcment_id: ``str``
+        :type       attachment_id: ``str``
 
         :param      force: Forces the detachment.
         :type       force: ``bool``

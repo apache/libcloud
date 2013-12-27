@@ -866,8 +866,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                          interfaces[1].extra['mac_address'])
 
     def test_ex_create_network_interface(self):
+        subnet = self.driver.ex_list_subnets()[0]
         interface = self.driver.ex_create_network_interface(
-            'subnet-1ec9e433',
+            subnet,
             name='Test Interface',
             description='My Test')
 
@@ -876,12 +877,15 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('0e:bd:49:3e:11:74', interface.extra['mac_address'])
 
     def test_ex_delete_network_interface(self):
-        resp = self.driver.ex_delete_network_interface('eni-fd3709bb')
+        interface = self.driver.ex_list_network_interfaces()[0]
+        resp = self.driver.ex_delete_network_interface(interface)
         self.assertTrue(resp)
 
-    def test_ex_attach_network_interface(self):
+    def test_ex_attach_network_interface_to_node(self):
         node = self.driver.list_nodes()[0]
-        resp = self.driver.ex_attach_network_interface('eni-fd3709bb', node, 1)
+        interface = self.driver.ex_list_network_interfaces()[0]
+        resp = self.driver.ex_attach_network_interface_to_node(interface,
+                                                               node, 1)
         self.assertTrue(resp)
 
     def test_ex_detach_network_interface(self):
