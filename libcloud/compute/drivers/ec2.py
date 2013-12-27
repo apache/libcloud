@@ -2726,7 +2726,11 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _get_extra_dict(self, element, mapping):
         """
-        Build the extra dictionary based on an attribute mapping
+        Extract attributes from the element based on rules provided in the
+        mapping dictionary.
+
+        :param      element: Element to parse the values from.
+        :type       element: xml.etree.ElementTree.Element.
 
         :param      mapping: Dictionary with the extra layout
         :type       node: :class:`Node`
