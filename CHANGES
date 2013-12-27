@@ -127,6 +127,10 @@ Changes with Apache Libcloud in development
      of the StorageVolume class in the EC2 driver. (LIBCLOUD-473)
      [Chris DeRamus]
 
+   - Change attribute name in the 'extra' dictionary of EC2 and CloudStack
+     Node object from "keyname" to "key_name". (LIBCLOUD-475)
+     [Oleg Suharev]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles

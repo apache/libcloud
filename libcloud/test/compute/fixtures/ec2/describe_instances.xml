@@ -20,6 +20,7 @@
           <privateDnsName/>
           <dnsName/>
           <reason/>
+          <keyName>my-key-pair</keyName>
           <privateIpAddress>1.2.3.5</privateIpAddress>
           <ipAddress>1.2.3.5</ipAddress>
           <amiLaunchIndex>0</amiLaunchIndex>
@@ -43,6 +44,7 @@
           <privateDnsName/>
           <dnsName/>
           <reason/>
+          <keyName>my-key-pair2</keyName>
           <privateIpAddress>1.2.3.5</privateIpAddress>
           <ipAddress>1.2.3.5</ipAddress>
           <amiLaunchIndex>0</amiLaunchIndex>

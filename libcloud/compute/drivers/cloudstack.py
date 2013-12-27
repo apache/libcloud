@@ -1536,7 +1536,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             'ip_forwarding_rules': [],
             'port_forwarding_rules': [],
             'password': password,
-            'keyname': keypair,
+            'key_name': keypair,
             'security_group': security_groups,
             'created': created,
             'image_id': data.get('templateid', None),
