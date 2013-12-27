@@ -962,6 +962,21 @@ class BaseEC2NodeDriver(NodeDriver):
         return EC2Network(vpc_id, name, cidr_block, extra=extra)
 
     def _to_addresses(self, response, only_allocated, all_properties):
+        """
+        Builds a list of dictionaries containing elastic IP properties.
+
+        :param    only_allocated: If true, return only those addresses
+                                  that are associated with an instance.
+                                  If false, return all addresses.
+        :type     only_allocated: ``bool``
+
+        :param    all_properties: If true, return all properties associated
+                                  with the elastic IP. If false, return only
+                                  a list of elastic IPs.
+        :type     only_allocated: ``bool``
+
+        :rtype: ``dict``
+        """
         addresses = []
         for el in response.findall(fixxpath(xpath='addressesSet/item',
                                             namespace=NAMESPACE)):
@@ -2185,7 +2200,10 @@ class BaseEC2NodeDriver(NodeDriver):
         :return:    Dictionary of elastic IP properties
         :rtype:     ``dict``
         """
-        params = {'Action': 'AllocateAddress', 'Domain': domain}
+        params = {'Action': 'AllocateAddress'}
+
+        if domain == 'vpc':
+            params['Domain'] = domain
 
         response = self.connection.request(self.path, params=params).object
 
@@ -2244,7 +2262,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type     only_allocated: ``bool``
 
         :param    all_properties: If true, return all properties associated
-                                  with the elastic IP. IF false, return only
+                                  with the elastic IP. If false, return only
                                   a list of elastic IPs.
         :type     only_allocated: ``bool``
 
@@ -2278,9 +2296,12 @@ class BaseEC2NodeDriver(NodeDriver):
         :return:    A string representation of the association ID which is
                     required for VPC disassociation. EC2/standard
                     addresses return None
-        :rtype:     ``NoneType`` or ``str``
+        :rtype:     ``None`` or ``str``
         """
         params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
+
+        if elastic_ip_address is not None and allocation_id is not None:
+            raise AttributeError('Cannot specify both IP and allocation ID')
 
         if elastic_ip_address:
             params.update({'PublicIp': elastic_ip_address})
@@ -2300,14 +2321,11 @@ class BaseEC2NodeDriver(NodeDriver):
         Note: This method has been deprecated in favor of
         the ex_associate_address_with_node method.
         """
-        if elastic_ip_address is not None:
-            return self.ex_associate_address_with_node(node=node,
-                                                       elastic_ip_address=
-                                                       elastic_ip_address)
-        if allocation_id is not None:
-            return self.ex_associate_address_with_node(node=node,
-                                                       allocation_id=
-                                                       allocation_id)
+
+        return self.ex_associate_address_with_node(node=node,
+                                                   elastic_ip_address=
+                                                   elastic_ip_address,
+                                                   allocation_id=allocation_id)
 
     def ex_disassociate_address(self, elastic_ip_address=None,
                                 association_id=None):
