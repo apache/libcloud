@@ -675,47 +675,47 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'instance_type': {
                 'xpath': 'instanceType',
-                'cast_func': str
+                'transform_func': str
             },
             'availability': {
                 'xpath': 'availabilityZone',
-                'cast_func': str
+                'transform_func': str
             },
             'start': {
                 'xpath': 'start',
-                'cast_func': str
+                'transform_func': str
             },
             'duration': {
                 'xpath': 'duration',
-                'cast_func': int
+                'transform_func': int
             },
             'usage_price': {
                 'xpath': 'usagePrice',
-                'cast_func': float
+                'transform_func': float
             },
             'fixed_price': {
                 'xpath': 'fixedPrice',
-                'cast_func': float
+                'transform_func': float
             },
             'instance_count': {
                 'xpath': 'instanceCount',
-                'cast_func': int
+                'transform_func': int
             },
             'description': {
                 'xpath': 'productDescription',
-                'cast_func': str
+                'transform_func': str
             },
             'instance_tenancy': {
                 'xpath': 'instanceTenancy',
-                'cast_func': str
+                'transform_func': str
             },
             'currency_code': {
                 'xpath': 'currencyCode',
-                'cast_func': str
+                'transform_func': str
             },
             'offering_type': {
                 'xpath': 'offeringType',
-                'cast_func': str
+                'transform_func': str
             }
         }
 
@@ -890,39 +890,39 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'device': {
                 'xpath': 'device',
-                'cast_func': str
+                'transform_func': str
             },
             'iops': {
                 'xpath': 'iops',
-                'cast_func': int
+                'transform_func': int
             },
             'zone': {
                 'xpath': 'availabilityZone',
-                'cast_func': str
+                'transform_func': str
             },
             'create_time': {
                 'xpath': 'createTime',
-                'cast_func': parse_date
+                'transform_func': parse_date
             },
             'state': {
                 'xpath': 'status',
-                'cast_func': str
+                'transform_func': str
             },
             'attach_time': {
                 'xpath': 'attachmentSet/item/attachTime',
-                'cast_func': parse_date
+                'transform_func': parse_date
             },
             'attachment_status': {
                 'xpath': 'attachmentSet/item/status',
-                'cast_func': str
+                'transform_func': str
             },
             'instance_id': {
                 'xpath': 'attachmentSet/item/instanceId',
-                'cast_func': str
+                'transform_func': str
             },
             'delete': {
                 'xpath': 'attachmentSet/item/deleteOnTermination',
-                'cast_func': str
+                'transform_func': str
             }
         }
 
@@ -982,19 +982,19 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'state': {
                 'xpath': 'state',
-                'cast_func': str
+                'transform_func': str
             },
             'dhcp_options_id': {
                 'xpath': 'dhcpOptionsId',
-                'cast_func': str
+                'transform_func': str
             },
             'instance_tenancy': {
                 'xpath': 'instanceTenancy',
-                'cast_func': str
+                'transform_func': str
             },
             'is_default': {
                 'xpath': 'isDefault',
-                'cast_func': str
+                'transform_func': str
             }
         }
 
@@ -1031,19 +1031,19 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'cidr_block': {
                 'xpath': 'cidrBlock',
-                'cast_func': str
+                'transform_func': str
             },
             'available_ips': {
                 'xpath': 'availableIpAddressCount',
-                'cast_func': int
+                'transform_func': int
             },
             'zone': {
                 'xpath': 'availabilityZone',
-                'cast_func': str
+                'transform_func': str
             },
             'vpc_id': {
                 'xpath': 'vpcId',
-                'cast_func': str
+                'transform_func': str
             }
         }
 
@@ -2739,13 +2739,13 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         extra = {}
         for attribute, values in mapping.items():
-            cast_func = values['cast_func']
+            transform_func = values['transform_func']
             value = findattr(element=element,
                              xpath=values['xpath'],
                              namespace=NAMESPACE)
 
             if value is not None:
-                extra[attribute] = cast_func(value)
+                extra[attribute] = transform_func(value)
             else:
                 extra[attribute] = None
 
