@@ -873,7 +873,9 @@ class BaseEC2NodeDriver(NodeDriver):
         Parse the XML element and return a StorageVolume object.
 
         :param      name: An optional name for the volume. If not provided
-                          then the ID of the volume will be used in its place.
+                          then either tag with a key "Name" or volume ID
+                          will be used (which ever is available first in that
+                          order).
         :type       name: ``str``
 
         :rtype:     :class:`StorageVolume`
@@ -2744,9 +2746,11 @@ class BaseEC2NodeDriver(NodeDriver):
         return {'instance_id': node.id,
                 'timestamp': timestamp,
                 'output': output}
+
     def _get_resource_tags(self, element):
         """
-        Return a dictionary with key/value pairs.
+        Parse tags from the provided element and return a dictionary with
+        key/value pairs.
 
         :rtype: ``dict``
         """
