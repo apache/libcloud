@@ -626,6 +626,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             node, allocation_id='eipalloc-666d7f04')
         self.assertEqual('eipassoc-167a8073', ret3)
         self.assertEqual('eipassoc-167a8073', ret4)
+        self.assertRaises(AttributeError,
+                          self.driver.ex_associate_address_with_node,
+                          node,
+                          elastic_ip_address='1.2.3.4',
+                          allocation_id='eipalloc-666d7f04')
 
     def test_ex_disassociate_address(self):
         ret = self.driver.ex_disassociate_address(elastic_ip_address=
@@ -635,6 +640,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         ret = self.driver.ex_disassociate_address(association_id=
                                                   'eipassoc-fb306892')
         self.assertTrue(ret)
+        self.assertRaises(AttributeError,
+                          self.driver.ex_disassociate_address,
+                          elastic_ip_address='1.2.3.4',
+                          association_id='eipassoc-fb306892')
 
     def test_ex_change_node_size_same_size(self):
         size = NodeSize('m1.small', 'Small Instance',

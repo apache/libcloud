@@ -2346,6 +2346,9 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DisassociateAddress'}
 
+        if elastic_ip_address is not None and association_id is not None:
+            raise AttributeError('Cannot specify both IP and association ID')
+
         if elastic_ip_address:
             params.update({'PublicIp': elastic_ip_address})
 
