@@ -792,7 +792,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                         namespace=NAMESPACE),
                 'status': findattr(element=element, xpath="instanceState/name",
                                    namespace=NAMESPACE),
-                'keyname': findattr(element=element, xpath="keyName",
+                'key_name': findattr(element=element, xpath="keyName",
                                     namespace=NAMESPACE),
                 'launchindex': findattr(element=element,
                                         xpath="amiLaunchIndex",

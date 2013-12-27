@@ -133,7 +133,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
                                        size=size,
                                        ex_keyname='foobar')
         self.assertEqual(node.name, 'test')
-        self.assertEqual(node.extra['keyname'], 'foobar')
+        self.assertEqual(node.extra['key_name'], 'foobar')
 
     def test_list_images_no_images_available(self):
         CloudStackMockHttp.fixture_tag = 'notemplates'
@@ -248,7 +248,7 @@ class CloudStackCommonTestCase(TestCaseMixin):
         self.assertEqual('test', nodes[0].name)
         self.assertEqual('2600', nodes[0].id)
         self.assertEqual([], nodes[0].extra['security_group'])
-        self.assertEqual(None, nodes[0].extra['keyname'])
+        self.assertEqual(None, nodes[0].extra['key_name'])
 
     def test_list_locations(self):
         location = self.driver.list_locations()[0]
