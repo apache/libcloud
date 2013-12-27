@@ -24,7 +24,7 @@ Style guide
   Second command fill run flake8 on all the files in the repository.
 
 And most importantly, follow the existing style in the files you are editing and
-be consistent.
+**be consistent**.
 
 Git pre-commit hook
 -------------------
@@ -153,16 +153,28 @@ pull request description contains link to the JIRA ticket.
 
 Wait for your changes to be reviewed and address any outstanding comments.
 
-10. Attach a final patch with your changes to the corresponding JIRA ticket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+10. Squash the committs and generate the patch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the changes has been reviewed, all the outstanding issues have been
-addressed and the pull request has been +1'ed, close the pull request,
-generate a patch and attach it to the JIRA issue you have created earlier.
+addressed and the pull request has been +1'ed, close the pull request, squash
+the commits (if necessary) and generate a patch.
 
 .. sourcecode:: bash
 
     git format-patch --stdout trunk > patch_name.patch
+
+Make sure to use ``git format-patch`` and not ``git diff`` so we can preserve
+the commit authorship.
+
+Note: If you have never used rebase and squashed the commits before, you can
+find instructions on how to do that in the following guide:
+`squashing commits with rebase`_.
+
+11. Attach a final patch with your changes to the corresponding JIRA ticket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Attach the generated patch to the JIRA issue you have created earlier.
 
 Note about Github
 ~~~~~~~~~~~~~~~~~
@@ -289,3 +301,4 @@ code work with multiple versions on the following link -
 .. _`Github git repository`: https://github.com/apache/libcloud
 .. _`Apache website`: https://www.apache.org/licenses/#clas
 .. _`Lessons learned while porting Libcloud to Python 3`: http://www.tomaz.me/2011/12/03/lessons-learned-while-porting-libcloud-to-python-3.html
+.. _`squashing commits with rebase`: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
