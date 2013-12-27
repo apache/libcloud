@@ -256,7 +256,7 @@ pull request description contains link to the JIRA ticket.
 
 Wait for your changes to be reviewed and address any outstanding comments.
 
-10. Squash the committs and generate the patch
+10. Squash the commits and generate the patch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the changes has been reviewed, all the outstanding issues have been
@@ -270,7 +270,11 @@ the commits (if necessary) and generate a patch.
 Make sure to use ``git format-patch`` and not ``git diff`` so we can preserve
 the commit authorship.
 
-Note: If you have never used rebase and squashed the commits before, you can
+Note #1: Before you generate the patch and squash the commits, make sure to
+synchronize your branch with the latest trunk (run ``git pull upstream trunk``
+in your branch), otherwise we might have problems applying it cleanly.
+
+Note #2: If you have never used rebase and squashed the commits before, you can
 find instructions on how to do that in the following guide:
 `squashing commits with rebase`_.
 
