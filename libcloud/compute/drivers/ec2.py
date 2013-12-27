@@ -675,57 +675,52 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'instance_type': {
                 'xpath': 'instanceType',
-                'type': str
+                'cast_func': str
             },
             'availability': {
                 'xpath': 'availabilityZone',
-                'type': str
+                'cast_func': str
             },
             'start': {
                 'xpath': 'start',
-                'type': str
+                'cast_func': str
             },
             'duration': {
                 'xpath': 'duration',
-                'type': int
+                'cast_func': int
             },
             'usage_price': {
                 'xpath': 'usagePrice',
-                'type': float
+                'cast_func': float
             },
             'fixed_price': {
                 'xpath': 'fixedPrice',
-                'type': float
+                'cast_func': float
             },
             'instance_count': {
                 'xpath': 'instanceCount',
-                'type': int
+                'cast_func': int
             },
             'description': {
                 'xpath': 'productDescription',
-                'type': str
+                'cast_func': str
             },
             'instance_tenancy': {
                 'xpath': 'instanceTenancy',
-                'type': str
+                'cast_func': str
             },
             'currency_code': {
                 'xpath': 'currencyCode',
-                'type': str
+                'cast_func': str
             },
             'offering_type': {
                 'xpath': 'offeringType',
-                'type': str
+                'cast_func': str
             }
         }
 
-        # Define and build our extra dictionary
-        extra = {}
-        for attribute, values in extra_attributes_map.items():
-            type_func = values['type']
-            value = findattr(element=element, xpath=values['xpath'],
-                             namespace=NAMESPACE)
-            extra[attribute] = type_func(value)
+        # Get our extra dictionary
+        extra = self._get_extra_dict(element, extra_attributes_map)
 
         try:
             size = [size for size in self.list_sizes() if
@@ -931,16 +926,8 @@ class BaseEC2NodeDriver(NodeDriver):
             }
         }
 
-        # Define and build our extra dictionary
-        extra = {}
-        for attribute, values in extra_attributes_map.items():
-            cast_func = values['cast_func']
-            value = findattr(element=element, xpath=values['xpath'],
-                             namespace=NAMESPACE)
-            if value is not None:
-                extra[attribute] = cast_func(value)
-            else:
-                extra[attribute] = None
+        # Get our extra dictionary
+        extra = self._get_extra_dict(element, extra_attributes_map)
 
         return StorageVolume(id=volId,
                              name=name,
@@ -995,29 +982,24 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'state': {
                 'xpath': 'state',
-                'type': str
+                'cast_func': str
             },
             'dhcp_options_id': {
                 'xpath': 'dhcpOptionsId',
-                'type': str
+                'cast_func': str
             },
             'instance_tenancy': {
                 'xpath': 'instanceTenancy',
-                'type': str
+                'cast_func': str
             },
             'is_default': {
                 'xpath': 'isDefault',
-                'type': str
+                'cast_func': str
             }
         }
 
-        # Define and build our extra dictionary
-        extra = {}
-        for attribute, values in extra_attributes_map.items():
-            type_func = values['type']
-            value = findattr(element=element, xpath=values['xpath'],
-                             namespace=NAMESPACE)
-            extra[attribute] = type_func(value)
+        # Get our extra dictionary
+        extra = self._get_extra_dict(element, extra_attributes_map)
 
         # Add tags to the extra dict
         extra['tags'] = tags
@@ -1049,29 +1031,24 @@ class BaseEC2NodeDriver(NodeDriver):
         extra_attributes_map = {
             'cidr_block': {
                 'xpath': 'cidrBlock',
-                'type': str
+                'cast_func': str
             },
             'available_ips': {
                 'xpath': 'availableIpAddressCount',
-                'type': int
+                'cast_func': int
             },
             'zone': {
                 'xpath': 'availabilityZone',
-                'type': str
+                'cast_func': str
             },
             'vpc_id': {
                 'xpath': 'vpcId',
-                'type': str
+                'cast_func': str
             }
         }
 
-        # Define and build our extra dictionary
-        extra = {}
-        for attribute, values in extra_attributes_map.items():
-            type_func = values['type']
-            value = findattr(element=element, xpath=values['xpath'],
-                             namespace=NAMESPACE)
-            extra[attribute] = type_func(value)
+        # Get our extra dictionary
+        extra = self._get_extra_dict(element, extra_attributes_map)
 
         # Also include our tags
         extra['tags'] = tags
@@ -2746,6 +2723,29 @@ class BaseEC2NodeDriver(NodeDriver):
         return {'instance_id': node.id,
                 'timestamp': timestamp,
                 'output': output}
+
+    def _get_extra_dict(self, element, mapping):
+        """
+        Build the extra dictionary based on an attribute mapping
+
+        :param      mapping: Dictionary with the extra layout
+        :type       node: :class:`Node`
+
+        :rtype: ``dict``
+        """
+        extra = {}
+        for attribute, values in mapping.items():
+            cast_func = values['cast_func']
+            value = findattr(element=element,
+                             xpath=values['xpath'],
+                             namespace=NAMESPACE)
+
+            if value is not None:
+                extra[attribute] = cast_func(value)
+            else:
+                extra[attribute] = None
+
+        return extra
 
     def _get_resource_tags(self, element):
         """
