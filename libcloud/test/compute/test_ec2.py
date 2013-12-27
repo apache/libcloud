@@ -661,7 +661,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         vol = self.driver.create_volume(10, 'vol', location)
 
         self.assertEqual(10, vol.size)
-        self.assertEqual('vol-4d826724', vol.name)
+        self.assertEqual('vol', vol.name)
         self.assertEqual('creating', vol.extra['state'])
         self.assertTrue(isinstance(vol.extra['create_time'], datetime))
 
