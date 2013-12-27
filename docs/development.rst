@@ -44,6 +44,109 @@ After you have installed this hook it will automatically check modified Python
 files for violations before a commit. If a violation is found, commit will be
 aborted.
 
+Code conventions
+----------------
+
+This section contains some conventions you should follow when writing a
+Libcloud code.
+
+1. Import ordering
+~~~~~~~~~~~~~~~~~~
+
+Organize the imports in the following order:
+
+1. Standard library imports
+2. Third-party library imports
+3. Local libray (Libcloud) imports
+
+Each section should be separated with a blank line. For example:
+
+.. sourcecode:: python
+
+    import sys
+    import base64
+
+    import paramiko
+
+    from libcloud.compute.base import Node, NodeDriver
+    from libcloud.compute.providers import Provider
+
+2. Function and method ordering
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Functions in a module and methods on a class should be organized in the
+following order:
+
+1. "Public" functions / methods
+2. "Private" functions / methods (methods prefixed with an underscore)
+3. "Internal" methods (methods prefixed and suffixed with a double underscore)
+
+For example:
+
+.. sourcecode:: python
+
+    class Unicorn(object):
+        def __init__(self, name='fluffy'):
+            self._name = name
+
+        def make_a_rainbow(self):
+            pass
+
+        def _get_rainbow_colors(self):
+            pass
+
+        def __eq__(self, other):
+            return self.name == other.name
+
+3. Prefer keyword over regular arguments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For better readability and understanding of the code, prefer keyword over
+regular arguments.
+
+Good:
+
+.. sourcecode:: python
+
+    some_method(public_ips=public_ips, private_ips=private_ips)
+
+Bad:
+
+.. sourcecode:: python
+
+    some_method(public_ips, private_ips)
+
+4. When returning a dictionary, document it's structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dynamic nature of Python can be very nice and useful, but if (ab)use it in a
+wrong way it can also make it hard for the API consumer to understand what is
+going on and what kind of values are being returned.
+
+If you have a function or a method which returns a dictionary, make sure to
+explicitly document in the docstring which keys the returned dictionary
+contains.
+
+4. Prefer to use "is not None" when checking if a variable is provided or defined
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When checking if a variable is provided or defined, prefer to use
+``is foo is not None`` instead of ``if foo``.
+
+If you use ``if foo`` approach, it's easy to make a mistake when a valid value
+can also be falsy (e.g. a number ``0``).
+
+For example:
+
+.. sourcecode:: python
+
+    class SomeClass(object):
+        def some_method(self, domain=None):
+            params = {}
+
+            if domain is not None:
+                params['Domain'] = domain
+
 Docstring conventions
 ---------------------
 
