@@ -36,6 +36,11 @@ from os.path import split as psplit
 from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
+from libcloud.utils.py3 import StringIO
+
+
+# Maximum number of bytes to read at once from a socket
+CHUNK_SIZE = 1024
 
 
 class BaseSSHClient(object):
@@ -254,24 +259,53 @@ class ParamikoSSHClient(BaseSSHClient):
 
         chan.exec_command(cmd)
 
-        stdin = chan.makefile('wb', bufsize)
-        stdout = chan.makefile('rb', bufsize)
-        stderr = chan.makefile_stderr('rb', bufsize)
+        stdout = StringIO()
+        stderr = StringIO()
 
+        # Create a stdin file and immediately close it to prevent any
+        # interactive script from hanging the process.
+        stdin = chan.makefile('wb', bufsize)
         stdin.close()
 
+        # Receive all the output
+        # Note: This is used instead of chan.makefile approach to prevent
+        # buffering issues and hanging if the executed command produces a lot
+        # of output.
+        while not chan.exit_status_ready():
+            if chan.recv_ready():
+                data = chan.recv(CHUNK_SIZE)
+
+                while data:
+                    stdout.write(data)
+                    ready = chan.recv_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv(CHUNK_SIZE)
+
+            if chan.recv_stderr_ready():
+                data = chan.recv_stderr(CHUNK_SIZE)
+
+                while data:
+                    stderr.write(data)
+                    ready = chan.recv_stderr_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv_stderr(CHUNK_SIZE)
+
         # Receive the exit status code of the command we ran.
-        # Note: If the command hasn't finished yet, this method will block
-        # until it does
         status = chan.recv_exit_status()
 
-        so = stdout.read()
-        se = stderr.read()
+        stdout = stdout.getvalue()
+        stderr = stderr.getvalue()
 
-        extra = {'_status': status, '_stdout': so, '_stderr': se}
+        extra = {'_status': status, '_stdout': stdout, '_stderr': stderr}
         self.logger.debug('Command finished', extra=extra)
 
-        return [so, se, status]
+        return [stdout, stderr, status]
 
     def close(self):
         self.logger.debug('Closing server connection')
