@@ -239,20 +239,32 @@ class ParamikoSSHClient(BaseSSHClient):
         return True
 
     def run(self, cmd):
+        """
+        Note: This function is based on paramiko's exec_command()
+        method.
+        """
         extra = {'_cmd': cmd}
         self.logger.debug('Executing command', extra=extra)
 
-        # based on exec_command()
+        # Use the system default buffer size
         bufsize = -1
-        t = self.client.get_transport()
-        chan = t.open_session()
+
+        transport = self.client.get_transport()
+        chan = transport.open_session()
+
         chan.exec_command(cmd)
+
         stdin = chan.makefile('wb', bufsize)
         stdout = chan.makefile('rb', bufsize)
         stderr = chan.makefile_stderr('rb', bufsize)
-        #stdin, stdout, stderr = self.client.exec_command(cmd)
+
         stdin.close()
+
+        # Receive the exit status code of the command we ran.
+        # Note: If the command hasn't finished yet, this method will block
+        # until it does
         status = chan.recv_exit_status()
+
         so = stdout.read()
         se = stderr.read()
 
