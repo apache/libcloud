@@ -135,6 +135,14 @@ Changes with Apache Libcloud in development
      the executed deployment script printed a lot of output to stdout or stderr.
      [Tomaz Muraus]
 
+   - Add additional attributes to the "extra" dictionary of the VolumeSnapshot
+     object in the EC2 driver.
+
+     Also modify create_volume_snapshot method to correctly handle "name"
+     argument. Previous, "name" argument was used as a snapshot description,
+     now it's used as a Tag with a key "Name". (LIBCLOUD-480)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
