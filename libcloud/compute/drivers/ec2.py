@@ -940,21 +940,52 @@ class BaseEC2NodeDriver(NodeDriver):
             fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
         ]
 
-    def _to_snapshot(self, element):
+    def _to_snapshot(self, element, name=None):
         snapId = findtext(element=element, xpath='snapshotId',
                           namespace=NAMESPACE)
-        volId = findtext(element=element, xpath='volumeId',
-                         namespace=NAMESPACE)
         size = findtext(element=element, xpath='volumeSize',
                         namespace=NAMESPACE)
-        state = findtext(element=element, xpath='status',
-                         namespace=NAMESPACE)
-        description = findtext(element=element, xpath='description',
-                               namespace=NAMESPACE)
-        return VolumeSnapshot(snapId, size=int(size), driver=self,
-                              extra={'volume_id': volId,
-                                     'description': description,
-                                     'state': state})
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # If name was not passed into the method then
+        # fall back then use the snapshot id
+        name = name if name else tags.get('Name', snapId)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'volume_id': {
+                'xpath': 'volumeId',
+                'transform_func': str
+            },
+            'state': {
+                'xpath': 'status',
+                'transform_func': str
+            },
+            'description': {
+                'xpath': 'description',
+                'transform_func': str
+            },
+            'progress': {
+                'xpath': 'progress',
+                'transform_func': str
+            },
+            'start_time': {
+                'xpath': 'startTime',
+                'transform_func': parse_date
+            }
+        }
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(element, extra_attributes_map)
+
+        # Add tags and name to the extra dict
+        extra['tags'] = tags
+        extra['name'] = name
+
+        return VolumeSnapshot(snapId, size=int(size),
+                              driver=self, extra=extra)
 
     def _to_networks(self, response):
         return [self._to_network(el) for el in response.findall(
@@ -1257,7 +1288,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      volume: Instance of ``StorageVolume``
         :type       volume: ``StorageVolume``
 
-        :param      name: Description for snapshot
+        :param      name: Name of snapshot
         :type       name: ``str``
 
         :rtype: :class:`VolumeSnapshot`
@@ -1266,12 +1297,17 @@ class BaseEC2NodeDriver(NodeDriver):
             'Action': 'CreateSnapshot',
             'VolumeId': volume.id,
         }
+
         if name:
             params.update({
                 'Description': name,
             })
         response = self.connection.request(self.path, params=params).object
-        snapshot = self._to_snapshot(response)
+        snapshot = self._to_snapshot(response, name)
+
+        if name:
+            self.ex_create_tags(snapshot, {'Name': name})
+
         return snapshot
 
     def list_volume_snapshots(self, snapshot):
