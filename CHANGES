@@ -93,38 +93,41 @@ Changes with Apache Libcloud in development
 
    - Allow user to specify VPC id when creating a security group in the EC2
      driver by passing "vpc_id" argument to ex_create_security_group method.
-     (LIBCLOUD-463)
+     (LIBCLOUD-463, GITHUB-201)
      [Chris DeRamus]
 
    - Add extension methods for managing security group rules
      (ex_authorize_security_group_ingress, ex_authorize_security_group_egress,
      ex_revoke_security_group_ingress, ex_revoke_security_group_egress) to the
-     EC2 driver. (LIBCLOUD-466)
+     EC2 driver. (LIBCLOUD-466, GITHUB-202)
      [Chris DeRamus]
 
    - Add extension methods for deleting security groups
      (ex_delete_security_group, ex_delete_security_group_by_id,
-     ex_delete_security_group_by_name) to the EC2 driver. (LIBCLOUD-464)
+     ex_delete_security_group_by_name) to the EC2 driver.
+     (LIBCLOUD-464, GITHUB-199)
      [Chris DeRamus]
 
    - Add extension method for listing reserved instances
-     (ex_list_reserved_nodes) to the EC2 driver. (LIBCLOUD-469)
+     (ex_list_reserved_nodes) to the EC2 driver. (LIBCLOUD-469, GITHUB-205)
      [Chris DeRamus]
 
    - Add extension methods for VPC management (ex_list_networks,
-     ex_create_network, ex_delete_network) to the EC2 driver. (LIBCLOUD-467)
+     ex_create_network, ex_delete_network) to the EC2 driver.
+     (LIBCLOUD-467, GITHUB-203)
      [Chris DeRamus]
 
    - Add extension methods for VPC subnet management (ex_list_subnets,
-     ex_create_subnet, ex_delete_subnet) to the EC2 driver. (LIBCLOUD-468)
+     ex_create_subnet, ex_delete_subnet) to the EC2 driver.
+     (LIBCLOUD-468, GITHUB-207)
      [Chris DeRamus]
 
    - Add ex_get_console_output extension method to the EC2 driver.
-     (LIBCLOUD-471)
+     (LIBCLOUD-471, GITHUB-209)
      [Chris DeRamus]
 
    - Include additional provider-specific attributes in the 'extra' dictionary
-     of the StorageVolume class in the EC2 driver. (LIBCLOUD-473)
+     of the StorageVolume class in the EC2 driver. (LIBCLOUD-473, GITHUB-210)
      [Chris DeRamus]
 
    - Change attribute name in the 'extra' dictionary of EC2 and CloudStack
@@ -140,7 +143,7 @@ Changes with Apache Libcloud in development
 
      Also modify create_volume_snapshot method to correctly handle "name"
      argument. Previous, "name" argument was used as a snapshot description,
-     now it's used as a Tag with a key "Name". (LIBCLOUD-480)
+     now it's used as a Tag with a key "Name". (LIBCLOUD-480, GITHUB-214)
      [Chris DeRamus]
 
   *) Storage
