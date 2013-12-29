@@ -1281,7 +1281,7 @@ class BaseEC2NodeDriver(NodeDriver):
         self.connection.request(self.path, params=params)
         return True
 
-    def create_volume_snapshot(self, volume, name=None, description=None):
+    def create_volume_snapshot(self, volume, name=None):
         """
         Create snapshot from volume
 
@@ -1291,9 +1291,6 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      name: Name of snapshot
         :type       name: ``str``
 
-        :param      description: Description of snapshot
-        :type       description: ``str``
-
         :rtype: :class:`VolumeSnapshot`
         """
         params = {
@@ -1301,9 +1298,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'VolumeId': volume.id,
         }
 
-        if description:
+        if name:
             params.update({
-                'Description': description,
+                'Description': name,
             })
         response = self.connection.request(self.path, params=params).object
         snapshot = self._to_snapshot(response, name)

@@ -693,11 +693,10 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         vol = StorageVolume(id='vol-4282672b', name='test',
                             size=10, driver=self.driver)
         snap = self.driver.create_volume_snapshot(
-            vol, 'Test snapshot', 'Test description')
+            vol, 'Test snapshot')
         self.assertEqual('snap-a7cb2hd9', snap.id)
         self.assertEqual(vol.size, snap.size)
         self.assertEqual('Test snapshot', snap.extra['name'])
-        self.assertEqual('Test description', snap.extra['description'])
         self.assertEqual(vol.id, snap.extra['volume_id'])
         self.assertEqual('pending', snap.extra['state'])
 
