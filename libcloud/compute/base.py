@@ -1143,7 +1143,7 @@ class NodeDriver(BaseDriver):
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):
         """
-        Block until the provided nodes are considered running
+        Block until the provided nodes are considered running.
 
         Node is considered running when it's state is "running" and when it has
         at least one IP address assigned.
@@ -1173,7 +1173,7 @@ class NodeDriver(BaseDriver):
         """
         def is_supported(address):
             """
-            Return True for supported address
+            Return True for supported address.
             """
             if force_ipv4 and not is_valid_ip_address(address=address,
                                                       family=socket.AF_INET):
@@ -1182,32 +1182,36 @@ class NodeDriver(BaseDriver):
 
         def filter_addresses(addresses):
             """
-            Return list of supported addresses
+            Return list of supported addresses.
             """
-            return [a for a in addresses if is_supported(a)]
-
-        start = time.time()
-        end = start + timeout
+            return [address for address in addresses if is_supported(address)]
 
         if ssh_interface not in ['public_ips', 'private_ips']:
             raise ValueError('ssh_interface argument must either be' +
                              'public_ips or private_ips')
 
-        uuids = set([n.uuid for n in nodes])
-        while time.time() < end:
-            nodes = self.list_nodes()
-            nodes = list([n for n in nodes if n.uuid in uuids])
+        start = time.time()
+        end = start + timeout
 
-            if len(nodes) > len(uuids):
-                found_uuids = [n.uuid for n in nodes]
+        uuids = set([node.uuid for node in nodes])
+
+        while time.time() < end:
+            all_nodes = self.list_nodes()
+            matching_nodes = list([node for node in all_nodes
+                                   if node.uuid in uuids])
+
+            if len(matching_nodes) > len(uuids):
+                found_uuids = [node.uuid for node in matching_nodes]
                 msg = ('Unable to match specified uuids ' +
                        '(%s) with existing nodes. Found ' % (uuids) +
                        'multiple nodes with same uuid: (%s)' % (found_uuids))
                 raise LibcloudError(value=msg, driver=self)
 
-            running_nodes = [n for n in nodes if n.state == NodeState.RUNNING]
-            addresses = [filter_addresses(getattr(n, ssh_interface)) for n in
-                         running_nodes]
+            running_nodes = [node for node in matching_nodes
+                             if node.state == NodeState.RUNNING]
+            addresses = [filter_addresses(getattr(node, ssh_interface))
+                         for node in running_nodes]
+
             if len(running_nodes) == len(uuids) == len(addresses):
                 return list(zip(running_nodes, addresses))
             else:
