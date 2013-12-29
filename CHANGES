@@ -131,6 +131,10 @@ Changes with Apache Libcloud in development
      Node object from "keyname" to "key_name". (LIBCLOUD-475)
      [Oleg Suharev]
 
+   - Fix a deployment issue which would some times cause a process to hang if
+     the executed deployment script printed a lot of output to stdout or stderr.
+     [Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles

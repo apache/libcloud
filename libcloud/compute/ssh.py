@@ -29,6 +29,7 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 import os
+import time
 import subprocess
 import logging
 
@@ -36,6 +37,11 @@ from os.path import split as psplit
 from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
+from libcloud.utils.py3 import StringIO
+
+
+# Maximum number of bytes to read at once from a socket
+CHUNK_SIZE = 1024
 
 
 class BaseSSHClient(object):
@@ -239,27 +245,71 @@ class ParamikoSSHClient(BaseSSHClient):
         return True
 
     def run(self, cmd):
+        """
+        Note: This function is based on paramiko's exec_command()
+        method.
+        """
         extra = {'_cmd': cmd}
         self.logger.debug('Executing command', extra=extra)
 
-        # based on exec_command()
+        # Use the system default buffer size
         bufsize = -1
-        t = self.client.get_transport()
-        chan = t.open_session()
-        chan.exec_command(cmd)
-        stdin = chan.makefile('wb', bufsize)
-        stdout = chan.makefile('rb', bufsize)
-        stderr = chan.makefile_stderr('rb', bufsize)
-        #stdin, stdout, stderr = self.client.exec_command(cmd)
-        stdin.close()
-        status = chan.recv_exit_status()
-        so = stdout.read()
-        se = stderr.read()
 
-        extra = {'_status': status, '_stdout': so, '_stderr': se}
+        transport = self.client.get_transport()
+        chan = transport.open_session()
+
+        chan.exec_command(cmd)
+
+        stdout = StringIO()
+        stderr = StringIO()
+
+        # Create a stdin file and immediately close it to prevent any
+        # interactive script from hanging the process.
+        stdin = chan.makefile('wb', bufsize)
+        stdin.close()
+
+        # Receive all the output
+        # Note: This is used instead of chan.makefile approach to prevent
+        # buffering issues and hanging if the executed command produces a lot
+        # of output.
+        while not chan.exit_status_ready():
+            if chan.recv_ready():
+                data = chan.recv(CHUNK_SIZE)
+
+                while data:
+                    stdout.write(data)
+                    ready = chan.recv_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv(CHUNK_SIZE)
+
+            if chan.recv_stderr_ready():
+                data = chan.recv_stderr(CHUNK_SIZE)
+
+                while data:
+                    stderr.write(data)
+                    ready = chan.recv_stderr_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv_stderr(CHUNK_SIZE)
+
+            # Short sleep to prevent busy waiting
+            time.sleep(1.5)
+
+        # Receive the exit status code of the command we ran.
+        status = chan.recv_exit_status()
+
+        stdout = stdout.getvalue()
+        stderr = stderr.getvalue()
+
+        extra = {'_status': status, '_stdout': stdout, '_stderr': stderr}
         self.logger.debug('Command finished', extra=extra)
 
-        return [so, se, status]
+        return [stdout, stderr, status]
 
     def close(self):
         self.logger.debug('Closing server connection')
