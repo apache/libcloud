@@ -29,6 +29,7 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 import os
+import time
 import subprocess
 import logging
 
@@ -295,6 +296,9 @@ class ParamikoSSHClient(BaseSSHClient):
                         break
 
                     data = chan.recv_stderr(CHUNK_SIZE)
+
+            # Short sleep to prevent busy waiting
+            time.sleep(1.5)
 
         # Receive the exit status code of the command we ran.
         status = chan.recv_exit_status()
