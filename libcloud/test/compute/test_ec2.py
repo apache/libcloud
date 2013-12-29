@@ -715,6 +715,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vol-b5a2c1v9', snaps[1].extra['volume_id'])
         self.assertEqual(15, snaps[1].size)
         self.assertEqual('Weekly backup', snaps[1].extra['description'])
+        self.assertEqual('DB Backup 1', snaps[1].extra['name'])
 
     def test_destroy_snapshot(self):
         snap = VolumeSnapshot(id='snap-428abd35', size=10, driver=self.driver)

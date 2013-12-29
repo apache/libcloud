@@ -30,6 +30,10 @@
          <description>Weekly backup</description>
          <tagSet>
             <item>
+               <key>Name</key>
+               <value>DB Backup 1</value>
+            </item>
+            <item>
                <key>Key2</key>
                <value>db_backup</value>
             </item>
