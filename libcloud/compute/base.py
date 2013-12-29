@@ -1305,6 +1305,9 @@ class NodeDriver(BaseDriver):
         """
         Establish an SSH connection to the node and run the provided deployment
         task.
+
+        :rtype: :class:`.Node`:
+        :return: Node instance on success.
         """
         ssh_client = SSHClient(hostname=ssh_hostname,
                                port=ssh_port, username=ssh_username,
@@ -1317,9 +1320,10 @@ class NodeDriver(BaseDriver):
                                               timeout=timeout)
 
         # Execute the deployment task
-        self._run_deployment_script(task=task, node=node,
-                                    ssh_client=ssh_client,
-                                    max_tries=max_tries)
+        node = self._run_deployment_script(task=task, node=node,
+                                           ssh_client=ssh_client,
+                                           max_tries=max_tries)
+        return node
 
     def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
         """
@@ -1339,6 +1343,7 @@ class NodeDriver(BaseDriver):
                           before giving up. (default is 3)
         :type max_tries: ``int``
 
+        :rtype: :class:`.Node`
         :return: ``Node`` Node instance on success.
         """
         tries = 0
