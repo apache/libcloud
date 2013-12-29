@@ -819,49 +819,145 @@ class BaseEC2NodeDriver(NodeDriver):
         )
         return n
 
+    def _to_device_mappings(self, object):
+        return [self._to_device_mapping(el) for el in object.findall(
+            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
+        ]
+
+    def _to_device_mapping(self, element):
+        """
+        Parse the XML element and return a dictionary of device properties.
+        Additional information can be found at http://goo.gl/GjWYBf.
+
+        @note: EBS volumes do not have a virtual name. Only ephemeral
+               disks use this property.
+        :rtype:     ``dict``
+        """
+        mapping = {}
+
+        mapping['device_name'] = findattr(element=element,
+                                          xpath='deviceName',
+                                          namespace=NAMESPACE)
+
+        mapping['virtual_name'] = findattr(element=element,
+                                           xpath='virtualName',
+                                           namespace=NAMESPACE)
+
+        # If virtual name does not exist then this is an EBS volume.
+        # Build the EBS dictionary leveraging the _get_extra_dict method.
+        if mapping['virtual_name'] is None:
+            # Build our attributes map
+            attributes_map = {
+                'snapshot_id': {
+                    'xpath': 'ebs/snapshotId',
+                    'transform_func': str
+                },
+                'volume_size': {
+                    'xpath': 'ebs/volumeSize',
+                    'transform_func': int
+                },
+                'delete': {
+                    'xpath': 'ebs/deleteOnTermination',
+                    'transform_func': str
+                },
+                'volume_type': {
+                    'xpath': 'ebs/volumeType',
+                    'transform_func': str
+                },
+                'iops': {
+                    'xpath': 'ebs/iops',
+                    'transform_func': int
+                }
+            }
+
+            mapping['ebs'] = self._get_extra_dict(element, attributes_map)
+
+        return mapping
+
     def _to_images(self, object):
         return [self._to_image(el) for el in object.findall(
             fixxpath(xpath='imagesSet/item', namespace=NAMESPACE))
         ]
 
     def _to_image(self, element):
-        n = NodeImage(
-            id=findtext(element=element, xpath='imageId', namespace=NAMESPACE),
-            name=findtext(element=element, xpath='imageLocation',
-                          namespace=NAMESPACE),
-            driver=self.connection.driver,
-            extra={
-                'state': findattr(element=element, xpath="imageState",
-                                  namespace=NAMESPACE),
-                'ownerid': findattr(element=element, xpath="imageOwnerId",
-                                    namespace=NAMESPACE),
-                'owneralias': findattr(element=element,
-                                       xpath="imageOwnerAlias",
-                                       namespace=NAMESPACE),
-                'ispublic': findattr(element=element,
-                                     xpath="isPublic",
-                                     namespace=NAMESPACE),
-                'architecture': findattr(element=element,
-                                         xpath="architecture",
-                                         namespace=NAMESPACE),
-                'imagetype': findattr(element=element,
-                                      xpath="imageType",
-                                      namespace=NAMESPACE),
-                'platform': findattr(element=element,
-                                     xpath="platform",
-                                     namespace=NAMESPACE),
-                'rootdevicetype': findattr(element=element,
-                                           xpath="rootDeviceType",
-                                           namespace=NAMESPACE),
-                'virtualizationtype': findattr(
-                    element=element, xpath="virtualizationType",
-                    namespace=NAMESPACE),
-                'hypervisor': findattr(element=element,
-                                       xpath="hypervisor",
-                                       namespace=NAMESPACE)
+
+        id = findtext(element=element, xpath='imageId', namespace=NAMESPACE)
+        name = findtext(element=element, xpath='name', namespace=NAMESPACE)
+
+        # Build block device mapping
+        block_device_mapping = self._to_device_mappings(element)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # Build our extra attributes map
+        extra_attributes_map = {
+            'state': {
+                'xpath': 'imageState',
+                'transform_func': str
+            },
+            'owner_id': {
+                'xpath': 'imageOwnerId',
+                'transform_func': str
+            },
+            'owner_alias': {
+                'xpath': 'imageOwnerAlias',
+                'transform_func': str
+            },
+            'is_public': {
+                'xpath': 'isPublic',
+                'transform_func': str
+            },
+            'architecture': {
+                'xpath': 'architecture',
+                'transform_func': str
+            },
+            'image_type': {
+                'xpath': 'imageType',
+                'transform_func': str
+            },
+            'image_location': {
+                'xpath': 'imageLocation',
+                'transform_func': str
+            },
+            'platform': {
+                'xpath': 'platform',
+                'transform_func': str
+            },
+            'description': {
+                'xpath': 'description',
+                'transform_func': str
+            },
+            'root_device_type': {
+                'xpath': 'rootDeviceType',
+                'transform_func': str
+            },
+            'virtualization_type': {
+                'xpath': 'virtualizationType',
+                'transform_func': str
+            },
+            'hypervisor': {
+                'xpath': 'hypervisor',
+                'transform_func': str
+            },
+            'kernel_id': {
+                'xpath': 'kernelId',
+                'transform_func': str
+            },
+            'ramdisk_id': {
+                'xpath': 'ramdisk_id',
+                'transform_func': str
             }
-        )
-        return n
+        }
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(element, extra_attributes_map)
+
+        # Add our tags and block device mapping
+        extra['tags'] = tags
+        extra['block_device_mapping'] = block_device_mapping
+
+        return NodeImage(id=id, name=name, driver=self, extra=extra)
 
     def _to_volume(self, element, name=None):
         """
@@ -1115,7 +1211,8 @@ class BaseEC2NodeDriver(NodeDriver):
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
-    def list_images(self, location=None, ex_image_ids=None, ex_owner=None):
+    def list_images(self, location=None, ex_image_ids=None, ex_owner=None,
+                    ex_executableby=None):
         """
         List all images
 
@@ -1128,11 +1225,22 @@ class BaseEC2NodeDriver(NodeDriver):
         with the corresponding owner will be returned.
         Valid values: amazon|aws-marketplace|self|all|aws id
 
+        Ex_executableby parameter describes images for which
+        the specified user has explicit launch permissions.
+        The user can be an AWS account ID, self to return
+        images for which the sender of the request has
+        explicit launch permissions, or all to return
+        images with public launch permissions.
+        Valid values: all|self|aws id
+
         :param      ex_image_ids: List of ``NodeImage.id``
         :type       ex_image_ids: ``list`` of ``str``
 
         :param      ex_owner: Owner name
-        :type       ex_image_ids: ``str``
+        :type       ex_owner: ``str``
+
+        :param      ex_executableby: Executable by
+        :type       ex_executableby: ``str``
 
         :rtype: ``list`` of :class:`NodeImage`
         """
@@ -1141,8 +1249,13 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_owner:
             params.update({'Owner.1': ex_owner})
 
+        if ex_executableby:
+            params.update({'ExecutableBy.1': ex_executableby})
+
         if ex_image_ids:
-            params.update(self._pathlist('ImageId', ex_image_ids))
+            for index, image_id in enumerate(ex_image_ids):
+                index += 1
+                params.update({'ImageId.%s' % (index): image_id})
 
         images = self._to_images(
             self.connection.request(self.path, params=params).object

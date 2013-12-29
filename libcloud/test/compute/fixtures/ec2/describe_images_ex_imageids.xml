@@ -32,31 +32,5 @@
             <virtualizationType>paravirtual</virtualizationType>
             <hypervisor>xen</hypervisor>
         </item>
-        <item>
-            <imageId>ami-85b2a8ae</imageId>
-            <imageLocation>123456788908/Test Image 2</imageLocation>
-            <imageState>available</imageState>
-            <imageOwnerId>123456788908</imageOwnerId>
-            <isPublic>false</isPublic>
-            <architecture>x86_64</architecture>
-            <imageType>machine</imageType>
-            <kernelId>aki-88aa75e1</kernelId>
-            <name>Test Image 2</name>
-            <rootDeviceType>ebs</rootDeviceType>
-            <rootDeviceName>/dev/sda1</rootDeviceName>
-            <blockDeviceMapping>
-                <item>
-                    <deviceName>/dev/sda1</deviceName>
-                    <ebs>
-                        <snapshotId>snap-c0bfbbdb</snapshotId>
-                        <volumeSize>20</volumeSize>
-                        <deleteOnTermination>false</deleteOnTermination>
-                        <volumeType>standard</volumeType>
-                    </ebs>
-                </item>
-            </blockDeviceMapping>
-            <virtualizationType>paravirtual</virtualizationType>
-            <hypervisor>xen</hypervisor>
-        </item>
     </imagesSet>
 </DescribeImagesResponse>
