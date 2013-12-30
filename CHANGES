@@ -146,7 +146,7 @@ Changes with Apache Libcloud in development
      now it's used as a Tag with a key "Name". (LIBCLOUD-480, GITHUB-214)
      [Chris DeRamus]
 
-   - Store additional attributes (iops, tags, block_device_mapping) in the 
+   - Store additional attributes (iops, tags, block_device_mapping) in the
      "extra" dictionary of the NodeImage object in the EC2 driver.
 
      Also fix ex_image_ids filtering in the list_images method.
@@ -178,6 +178,13 @@ Changes with Apache Libcloud in development
       correctly if there are more results which can fit on a single page.
       Previously, only first 100 results were returned. (LIBCLOUD-434)
       [Chris Clarke]
+
+    - Update HostVirtual driver constructor to only take "key" and other valid
+      arguments. Previously it also took "secret" argument which it silently
+      ignored. (LIBCLOUD-483)
+
+      Reported by  Andrew Udvare.
+      [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.14.0-beta3
 
