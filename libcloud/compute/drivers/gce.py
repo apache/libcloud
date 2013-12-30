@@ -2322,14 +2322,14 @@ class GCENodeDriver(NodeDriver):
             node.extra['boot_disk'].destroy()
         return True
 
-    def ex_destroy_multiple_nodes(self, nodelist, ignore_errors=True,
+    def ex_destroy_multiple_nodes(self, node_list, ignore_errors=True,
                                   destroy_boot_disk=False, poll_interval=2,
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Destroy multiple nodes at once.
 
-        :param  nodelist: List of nodes to destroy
-        :type   nodelist: ``list`` of :class:`Node`
+        :param  node_list: List of nodes to destroy
+        :type   node_list: ``list`` of :class:`Node`
 
         :keyword  ignore_errors: If true, don't raise an exception if one or
                                  more nodes fails to be destroyed.
@@ -2353,7 +2353,7 @@ class GCENodeDriver(NodeDriver):
         status_list = []
         complete = False
         start_time = time.time()
-        for node in nodelist:
+        for node in node_list:
             request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                                   node.name)
             try:
