@@ -411,19 +411,36 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_list_images(self):
         images = self.driver.list_images()
-        image = images[0]
 
-        name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
-        self.assertEqual(len(images), 1)
-        self.assertEqual(image.name, name)
-        self.assertEqual(image.id, 'ami-be3adfd7')
+        self.assertEqual(len(images), 2)
+        location = '123456788908/Test Image'
+        self.assertEqual(images[0].id, 'ami-57ba933a')
+        self.assertEqual(images[0].name, 'Test Image')
+        self.assertEqual(images[0].extra['image_location'], location)
+        self.assertEqual(images[0].extra['architecture'], 'x86_64')
+        self.assertEqual(len(images[0].extra['block_device_mapping']), 2)
+        ephemeral = images[0].extra['block_device_mapping'][1]['virtual_name']
+        self.assertEqual(ephemeral, 'ephemeral0')
+
+        location = '123456788908/Test Image 2'
+        self.assertEqual(images[1].id, 'ami-85b2a8ae')
+        self.assertEqual(images[1].name, 'Test Image 2')
+        self.assertEqual(images[1].extra['image_location'], location)
+        self.assertEqual(images[1].extra['architecture'], 'x86_64')
+        size = images[1].extra['block_device_mapping'][0]['ebs']['volume_size']
+        self.assertEqual(size, 20)
 
     def test_list_images_with_image_ids(self):
-        images = self.driver.list_images(ex_image_ids=['ami-be3adfd7'])
+        EC2MockHttp.type = 'ex_imageids'
+        images = self.driver.list_images(ex_image_ids=['ami-57ba933a'])
 
-        name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
         self.assertEqual(len(images), 1)
-        self.assertEqual(images[0].name, name)
+        self.assertEqual(images[0].name, 'Test Image')
+
+    def test_list_images_with_executable_by(self):
+        images = self.driver.list_images(ex_executableby='self')
+
+        self.assertEqual(len(images), 2)
 
     def ex_destroy_image(self):
         images = self.driver.list_images()
@@ -966,6 +983,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeImages(self, method, url, body, headers):
         body = self.fixtures.load('describe_images.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_imageids_DescribeImages(self, method, url, body, headers):
+        body = self.fixtures.load('describe_images_ex_imageids.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RunInstances(self, method, url, body, headers):
