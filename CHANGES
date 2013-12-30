@@ -146,6 +146,13 @@ Changes with Apache Libcloud in development
      now it's used as a Tag with a key "Name". (LIBCLOUD-480, GITHUB-214)
      [Chris DeRamus]
 
+   - Store additional attributes (iops, tags, block_device_mapping) in the 
+     "extra" dictionary of the NodeImage object in the EC2 driver.
+
+     Also fix ex_image_ids filtering in the list_images method.
+     (LIBCLOUD-481, GITHUB-215)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
