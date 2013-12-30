@@ -122,7 +122,9 @@ class DigitalOceanNodeDriver(NodeDriver):
         return res.status == httplib.OK
 
     def destroy_node(self, node):
-        res = self.connection.request('/droplets/%s/destroy/' % (node.id))
+        params = {'scrub_data': 'true'}
+        res = self.connection.request('/droplets/%s/destroy/' % (node.id),
+                                      params=params)
         return res.status == httplib.OK
 
     def ex_list_ssh_keys(self):

@@ -25,7 +25,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
-from libcloud.test import MockHttp
+from libcloud.test import MockHttpTestCase
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITAL_OCEAN_PARAMS
 
@@ -103,7 +103,7 @@ class DigitalOceanTests(unittest.TestCase):
         self.assertTrue(result)
 
 
-class DigitalOceanMockHttp(MockHttp):
+class DigitalOceanMockHttp(MockHttpTestCase):
     fixtures = ComputeFileFixtures('digitalocean')
 
     def _regions(self, method, url, body, headers):
@@ -129,6 +129,7 @@ class DigitalOceanMockHttp(MockHttp):
 
     def _droplets_119461_destroy(self, method, url, body, headers):
         # destroy_node
+        self.assertUrlContainsQueryParams(url, {'scrub_data': 'true'})
         body = self.fixtures.load('destroy_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

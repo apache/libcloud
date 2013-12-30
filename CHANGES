@@ -153,6 +153,11 @@ Changes with Apache Libcloud in development
      (LIBCLOUD-481, GITHUB-215)
      [Chris DeRamus]
 
+   - Send "scrub_data" query parameter when destroying a DigitalOcean node.
+     This will cause disk to be scrubbed (overwritten with 0's) when destroying
+     a node. (LIBCLOUD-487)
+     [Tomaz Muraus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
