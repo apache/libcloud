@@ -1143,26 +1143,28 @@ class NodeDriver(BaseDriver):
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface='public_ips', force_ipv4=True):
         """
-        Block until the given nodes are fully booted and have an IP address
-        assigned.
+        Block until the provided nodes are considered running.
 
-        :param nodes: list of node instances.
-        :type nodes: ``List`` of :class:`.Node`
+        Node is considered running when it's state is "running" and when it has
+        at least one IP address assigned.
 
-        :param wait_period: How many seconds to between each loop
-                                 iteration (default is 3)
+        :param nodes: List of nodes to wait for.
+        :type nodes: ``list`` of :class:`.Node`
+
+        :param wait_period: How many seconds to wait between each loop
+                            iteration. (default is 3)
         :type wait_period: ``int``
 
-        :param timeout: How many seconds to wait before timing out
-                             (default is 600)
+        :param timeout: How many seconds to wait before giving up.
+                        (default is 600)
         :type timeout: ``int``
 
-        :param ssh_interface: The interface to wait for.
-                                   Default is 'public_ips', other option is
-                                   'private_ips'.
+        :param ssh_interface: Which attribute on the node to use to obtain
+                              an IP address. Valid options: public_ips,
+                              private_ips. Default is public_ips.
         :type ssh_interface: ``str``
 
-        :param force_ipv4: Ignore ipv6 IP addresses (default is True).
+        :param force_ipv4: Ignore IPv6 addresses (default is True).
         :type force_ipv4: ``bool``
 
         :return: ``[(Node, ip_addresses)]`` list of tuple of Node instance and
@@ -1170,38 +1172,46 @@ class NodeDriver(BaseDriver):
         :rtype: ``list`` of ``tuple``
         """
         def is_supported(address):
-            """Return True for supported address"""
+            """
+            Return True for supported address.
+            """
             if force_ipv4 and not is_valid_ip_address(address=address,
                                                       family=socket.AF_INET):
                 return False
             return True
 
         def filter_addresses(addresses):
-            """Return list of supported addresses"""
-            return [a for a in addresses if is_supported(a)]
-
-        start = time.time()
-        end = start + timeout
+            """
+            Return list of supported addresses.
+            """
+            return [address for address in addresses if is_supported(address)]
 
         if ssh_interface not in ['public_ips', 'private_ips']:
             raise ValueError('ssh_interface argument must either be' +
                              'public_ips or private_ips')
 
-        uuids = set([n.uuid for n in nodes])
-        while time.time() < end:
-            nodes = self.list_nodes()
-            nodes = list([n for n in nodes if n.uuid in uuids])
+        start = time.time()
+        end = start + timeout
 
-            if len(nodes) > len(uuids):
-                found_uuids = [n.uuid for n in nodes]
+        uuids = set([node.uuid for node in nodes])
+
+        while time.time() < end:
+            all_nodes = self.list_nodes()
+            matching_nodes = list([node for node in all_nodes
+                                   if node.uuid in uuids])
+
+            if len(matching_nodes) > len(uuids):
+                found_uuids = [node.uuid for node in matching_nodes]
                 msg = ('Unable to match specified uuids ' +
                        '(%s) with existing nodes. Found ' % (uuids) +
                        'multiple nodes with same uuid: (%s)' % (found_uuids))
                 raise LibcloudError(value=msg, driver=self)
 
-            running_nodes = [n for n in nodes if n.state == NodeState.RUNNING]
-            addresses = [filter_addresses(getattr(n, ssh_interface)) for n in
-                         running_nodes]
+            running_nodes = [node for node in matching_nodes
+                             if node.state == NodeState.RUNNING]
+            addresses = [filter_addresses(getattr(node, ssh_interface))
+                         for node in running_nodes]
+
             if len(running_nodes) == len(uuids) == len(addresses):
                 return list(zip(running_nodes, addresses))
             else:
@@ -1265,11 +1275,11 @@ class NodeDriver(BaseDriver):
         :type ssh_client: ``SSHClient``
 
         :param wait_period: How many seconds to wait between each loop
-                                 iteration (default is 1.5)
+                            iteration. (default is 1.5)
         :type wait_period: ``int``
 
-        :param timeout: How many seconds to wait before timing out
-                             (default is 600)
+        :param timeout: How many seconds to wait before giving up.
+                        (default is 300)
         :type timeout: ``int``
 
         :return: ``SSHClient`` on success
@@ -1296,6 +1306,13 @@ class NodeDriver(BaseDriver):
                                            ssh_port, ssh_username,
                                            ssh_password, ssh_key_file,
                                            ssh_timeout, timeout, max_tries):
+        """
+        Establish an SSH connection to the node and run the provided deployment
+        task.
+
+        :rtype: :class:`.Node`:
+        :return: Node instance on success.
+        """
         ssh_client = SSHClient(hostname=ssh_hostname,
                                port=ssh_port, username=ssh_username,
                                password=ssh_password,
@@ -1307,46 +1324,53 @@ class NodeDriver(BaseDriver):
                                               timeout=timeout)
 
         # Execute the deployment task
-        self._run_deployment_script(task=task, node=node,
-                                    ssh_client=ssh_client,
-                                    max_tries=max_tries)
+        node = self._run_deployment_script(task=task, node=node,
+                                           ssh_client=ssh_client,
+                                           max_tries=max_tries)
+        return node
 
     def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
         """
         Run the deployment script on the provided node. At this point it is
         assumed that SSH connection has already been established.
 
-        :param task: Deployment task to run on the node.
-        :type task: ``Deployment``
+        :param task: Deployment task to run.
+        :type task: :class:`Deployment`
 
-        :param node: Node to operate one
+        :param node: Node to run the task on.
         :type node: ``Node``
 
-        :param ssh_client: A configured and connected SSHClient instance
-        :type ssh_client: ``SSHClient``
+        :param ssh_client: A configured and connected SSHClient instance.
+        :type ssh_client: :class:`SSHClient`
 
         :param max_tries: How many times to retry if a deployment fails
-                               before giving up (default is 3)
+                          before giving up. (default is 3)
         :type max_tries: ``int``
 
+        :rtype: :class:`.Node`
         :return: ``Node`` Node instance on success.
         """
         tries = 0
+
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
             except Exception:
-                e = sys.exc_info()[1]
                 tries += 1
+
                 if tries >= max_tries:
                     e = sys.exc_info()[1]
                     raise LibcloudError(value='Failed after %d tries: %s'
                                         % (max_tries, str(e)), driver=self)
             else:
+                # Deployment succeeded
                 ssh_client.close()
                 return node
 
     def _get_size_price(self, size_id):
+        """
+        Return pricing information for the provided size id.
+        """
         return get_size_price(driver_type='compute',
                               driver_name=self.api_name,
                               size_id=size_id)
