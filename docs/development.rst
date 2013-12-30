@@ -116,7 +116,36 @@ Bad:
 
     some_method(public_ips, private_ips)
 
-4. When returning a dictionary, document it's structure
+4. Don't abuse **kwargs
+~~~~~~~~~~~~~~~~~~~~~~~
+
+You should always explicitly declare arguments in a function or a method
+signature and only use ``**kwargs`` and ``*args`` respectively when there is a
+valid use case for it.
+
+Using ``**kwargs`` in many contexts is against Python's "explicit is better
+than implicit" mantra and makes it for a bad and a confusing API. On top of
+that, it makes many useful things such as programmatic API introspection hard
+or impossible.
+
+A use case when it might be valid to use ``**kwargs`` is a decorator.
+
+Good:
+
+.. sourcecode:: python
+
+    def my_method(self, name, description=None, public_ips=None):
+        pass
+
+Bad (please avoid):
+
+.. sourcecode:: python
+
+    def my_method(self, name, **kwargs):
+        description = kwargs.get('description', None)
+        public_ips = kwargs.get('public_ips', None)
+
+5. When returning a dictionary, document it's structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dynamic nature of Python can be very nice and useful, but if (ab)use it in a
@@ -127,7 +156,7 @@ If you have a function or a method which returns a dictionary, make sure to
 explicitly document in the docstring which keys the returned dictionary
 contains.
 
-4. Prefer to use "is not None" when checking if a variable is provided or defined
+6. Prefer to use "is not None" when checking if a variable is provided or defined
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When checking if a variable is provided or defined, prefer to use
