@@ -70,6 +70,10 @@ class HostVirtualDNSDriver(DNSDriver):
         RecordType.SRV: 'SRV',
     }
 
+    def __init__(self, key, secure=True, host=None, port=None):
+        super(HostVirtualDNSDriver, self).__init__(key=key, secure=secure,
+                                                   host=host, port=port)
+
     def _to_zones(self, items):
         zones = []
         for item in items:
