@@ -64,9 +64,10 @@ class HostVirtualNodeDriver(NodeDriver):
     connectionCls = HostVirtualComputeConnection
     features = {'create_node': ['ssh_key', 'password']}
 
-    def __init__(self, key):
+    def __init__(self, key, secure=True, host=None, port=None):
         self.location = None
-        NodeDriver.__init__(self, key)
+        super(HostVirtualNodeDriver, self).__init__(key=key, secure=secure,
+                                                    host=host, port=port)
 
     def _to_node(self, data):
         state = NODE_STATE_MAP[data['status']]
