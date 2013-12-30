@@ -23,6 +23,7 @@ import sys
 
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
+from libcloud.common.google import GoogleBaseError
 from libcloud.common.google import ResourceNotFoundError
 from libcloud.common.google import ResourceExistsError
 
@@ -1394,10 +1395,144 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_node(name, location.name)
 
+    def _multi_create_disk(self, status, node_attrs):
+        """Create disk for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        disk = None
+        # Check for existing disk
+        if node_attrs['use_existing_disk']:
+            try:
+                disk = self.ex_get_volume(status['name'],
+                                          node_attrs['location'])
+            except ResourceNotFoundError:
+                pass
+
+        if disk:
+            status['disk'] = disk
+        else:
+            # Create disk and return response object back in the status dict.
+            # Or, if there is an error, mark as failed.
+            disk_req, disk_data, disk_params = self._create_vol_req(
+                None, status['name'], location=node_attrs['location'],
+                image=node_attrs['image'])
+            try:
+                disk_res = self.connection.request(
+                    disk_req, method='POST', data=disk_data,
+                    params=disk_params).object
+            except GoogleBaseError:
+                e = self._catch_error(
+                    ignore_errors=node_attrs['ignore_errors'])
+                error = e.value
+                code = e.code
+                disk_res = None
+                status['disk'] = GCEFailedDisk(status['name'],
+                                               error, code)
+            status['disk_response'] = disk_res
+
+    def _multi_check_disk(self, status, node_attrs):
+        """Check disk status for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        error = None
+        try:
+            response = self.connection.request(
+                status['disk_response']['selfLink']).object
+        except GoogleBaseError:
+            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
+            error = e.value
+            code = e.code
+            response = {'status': 'DONE'}
+        if response['status'] == 'DONE':
+            status['disk_response'] = None
+            if error:
+                status['disk'] = GCEFailedDisk(status['name'], error, code)
+            else:
+                status['disk'] = self.ex_get_volume(status['name'],
+                                                    node_attrs['location'])
+
+    def _multi_create_node(self, status, node_attrs):
+        """Create node for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        # If disk has an error, set the node as failed and return
+        if hasattr(status['disk'], 'error'):
+            status['node'] = status['disk']
+            return
+
+        # Create node and return response object in status dictionary.
+        # Or, if there is an error, mark as failed.
+        request, node_data = self._create_node_req(
+            status['name'], node_attrs['size'], node_attrs['image'],
+            node_attrs['location'], node_attrs['network'], node_attrs['tags'],
+            node_attrs['metadata'], boot_disk=status['disk'])
+        try:
+            node_res = self.connection.request(
+                request, method='POST', data=node_data).object
+        except GoogleBaseError:
+            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
+            error = e.value
+            code = e.code
+            node_res = None
+            status['node'] = GCEFailedNode(status['name'],
+                                           error, code)
+        status['node_response'] = node_res
+
+    def _multi_check_node(self, status, node_attrs):
+        """Check node status for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        error = None
+        try:
+            response = self.connection.request(
+                status['node_response']['selfLink']).object
+        except GoogleBaseError:
+            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
+            error = e.value
+            code = e.code
+            response = {'status': 'DONE'}
+        if response['status'] == 'DONE':
+            status['node_response'] = None
+        if error:
+            status['node'] = GCEFailedNode(status['name'],
+                                           error, code)
+        else:
+            status['node'] = self.ex_get_node(status['name'],
+                                              node_attrs['location'])
+
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
                                  ignore_errors=True, use_existing_disk=True,
+                                 poll_interval=2,
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1417,8 +1552,6 @@ class GCENodeDriver(NodeDriver):
 
         :param  image: The image to use to create the nodes.
         :type   image: ``str`` or :class:`NodeImage`
-
-        return self.ex_get_snapshot(name)
 
         :param  number: The number of nodes to create.
         :type   number: ``int``
@@ -1445,6 +1578,9 @@ class GCENodeDriver(NodeDriver):
                                      disk instead of creating a new one.
         :type     use_existing_disk: ``bool``
 
+        :keyword  poll_interval: Number of seconds between status checks.
+        :type	  poll_interval: ``int``
+
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
         :type     timeout: ``int``
@@ -1452,7 +1588,6 @@ class GCENodeDriver(NodeDriver):
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
         """
-        node_data = {}
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
@@ -1462,6 +1597,15 @@ class GCENodeDriver(NodeDriver):
             ex_network = self.ex_get_network(ex_network)
         if not hasattr(image, 'name'):
             image = self.ex_get_image(image)
+
+        node_attrs = {'size': size,
+                      'image': image,
+                      'location': location,
+                      'network': ex_network,
+                      'tags': ex_tags,
+                      'metadata': ex_metadata,
+                      'ignore_errors': ignore_errors,
+                      'use_existing_disk': use_existing_disk}
 
         # List for holding the status information for disk/node creation.
         status_list = []
@@ -1475,33 +1619,11 @@ class GCENodeDriver(NodeDriver):
                       'disk_response': None,
                       'disk': None}
 
-            # Create disks for nodes
-            disk = None
-            if use_existing_disk:
-                try:
-                    disk = self.ex_get_volume(name, location)
-                except:
-                    pass
-
-            if disk:
-                status['disk'] = disk
-            else:
-                disk_req, disk_data, disk_params = self._create_vol_req(
-                    None, name, location=location, image=image)
-                try:
-                    disk_res = self.connection.request(
-                        disk_req, method='POST', data=disk_data,
-                        params=disk_params).object
-                except:
-                    e = self._catch_error(ignore_errors=ignore_errors)
-                    error = e.value
-                    code = e.code
-                    disk_res = None
-                    status['disk'] = GCEFailedDisk(status['name'],
-                                                   error, code)
-                status['disk_response'] = disk_res
-
             status_list.append(status)
+
+        # Create disks for nodes
+        for status in status_list:
+            self._multi_create_disk(status, node_attrs)
 
         start_time = time.time()
         complete = False
@@ -1510,73 +1632,25 @@ class GCENodeDriver(NodeDriver):
                 raise Exception("Timeout (%s sec) while waiting for multiple "
                                 "instances")
             complete = True
-            time.sleep(2)
-            for i, status in enumerate(status_list):
+            time.sleep(poll_interval)
+            for status in status_list:
                 # If disk does not yet exist, check on its status
                 if not status['disk']:
-                    error = None
-                    try:
-                        response = self.connection.request(
-                            status['disk_response']['selfLink']).object
-                    except:
-                        e = self._catch_error(ignore_errors=ignore_errors)
-                        error = e.value
-                        code = e.code
-                        response = {'status': 'DONE'}
-                    if response['status'] == 'DONE':
-                        status['disk_response'] = None
-                        if error:
-                            status['disk'] = GCEFailedDisk(status['name'],
-                                                           error, code)
-                        else:
-                            status['disk'] = self.ex_get_volume(status['name'],
-                                                                location)
+                    self._multi_check_disk(status, node_attrs)
 
                 # If disk exists, but node does not, create the node or check
                 # on its status if already in progress.
                 if status['disk'] and not status['node']:
                     if not status['node_response']:
-                        if hasattr(status['disk'], 'error'):
-                            status['node'] = status['disk']
-                            continue
-                        request, node_data = self._create_node_req(
-                            status['name'], size, image, location, ex_network,
-                            ex_tags, ex_metadata, boot_disk=status['disk'])
-                        try:
-                            node_res = self.connection.request(
-                                request, method='POST', data=node_data).object
-                        except:
-                            e = self._catch_error(ignore_errors=ignore_errors)
-                            error = e.value
-                            code = e.code
-                            node_res = None
-                            status['node'] = GCEFailedNode(status['name'],
-                                                           error, code)
-                        status['node_response'] = node_res
+                        self._multi_create_node(status, node_attrs)
                     else:
-                        error = None
-                        try:
-                            response = self.connection.request(
-                                status['node_response']['selfLink']).object
-                        except:
-                            e = self._catch_error(ignore_errors=ignore_errors)
-                            error = e.value
-                            code = e.code
-                            response = {'status': 'DONE'}
-                        if response['status'] == 'DONE':
-                            status['node_response'] = None
-                        if error:
-                            status['node'] = GCEFailedNode(status['name'],
-                                                           error, code)
-                        else:
-                            status['node'] = self.ex_get_node(status['name'],
-                                                              location)
-
+                        self._multi_check_node(status, node_attrs)
                 # If any of the nodes have not been created (or failed) we are
                 # not done yet.
                 if not status['node']:
                     complete = False
 
+        # Return list of nodes
         node_list = []
         for status in status_list:
             node_list.append(status['node'])
@@ -2249,7 +2323,7 @@ class GCENodeDriver(NodeDriver):
         return True
 
     def ex_destroy_multiple_nodes(self, nodelist, ignore_errors=True,
-                                  destroy_boot_disk=False,
+                                  destroy_boot_disk=False, poll_interval=2,
                                   timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Destroy multiple nodes at once.
@@ -2264,6 +2338,9 @@ class GCENodeDriver(NodeDriver):
         :keyword  destroy_boot_disk: If true, also destroy the nodes' boot
                                      disks.
         :type     destroy_boot_disk: ``bool``
+
+        :keyword  poll_interval: Number of seconds between status checks.
+        :type     poll_interval: ``int``
 
         :keyword  timeout: Number of seconds to wait for all nodes to be
                            destroyed.
@@ -2282,7 +2359,7 @@ class GCENodeDriver(NodeDriver):
             try:
                 response = self.connection.request(request,
                                                    method='DELETE').object
-            except:
+            except GoogleBaseError:
                 self._catch_error(ignore_errors=ignore_errors)
                 response = None
 
@@ -2308,7 +2385,7 @@ class GCENodeDriver(NodeDriver):
                     try:
                         response = self.connection.request(
                             operation['selfLink']).object
-                    except:
+                    except GoogleBaseError:
                         self._catch_error(ignore_errors=ignore_errors)
                         no_errors = False
                         response = {'status': 'DONE'}
@@ -2332,7 +2409,7 @@ class GCENodeDriver(NodeDriver):
                         try:
                             response = self.connection.request(
                                 request, method='DELETE').object
-                        except:
+                        except GoogleBaseError:
                             self._catch_error(ignore_errors=ignore_errors)
                             no_errors = False
                             response = None
@@ -2341,7 +2418,7 @@ class GCENodeDriver(NodeDriver):
                         status['disk_success'] = True
                 operation = status['node_response'] or status['disk_response']
                 if operation:
-                    time.sleep(2)
+                    time.sleep(poll_interval)
                     complete = False
 
         success = []
