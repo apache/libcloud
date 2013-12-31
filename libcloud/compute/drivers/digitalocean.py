@@ -123,7 +123,7 @@ class DigitalOceanNodeDriver(NodeDriver):
         return res.status == httplib.OK
 
     def destroy_node(self, node):
-        params = {'scrub_data': 'true'}
+        params = {'scrub_data': '1'}
         res = self.connection.request('/droplets/%s/destroy/' % (node.id),
                                       params=params)
         return res.status == httplib.OK
