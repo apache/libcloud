@@ -111,8 +111,9 @@ For example:
 
 5. Publishing package to PyPi
 
-For consistency and security reasons packages are always uploaded to PyPi
-manually using the web interface and not using the ``setup.py upload`` command.
+**For consistency and security reasons packages are always uploaded to PyPi
+manually using the web interface and not using the ``setup.py upload``
+command.**
 
 * Run ``python setup.py register`` command. This will register a new
   version on PyPi, but it won't upload the actual release artifacts.
