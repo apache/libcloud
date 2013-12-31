@@ -1393,6 +1393,28 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_snapshot(name)
 
+    def list_volume_snapshots(self, volume):
+        """
+        List snapshots created from the provided volume.
+
+        For GCE, snapshots are global, but while the volume they were
+        created from still exists, the source disk for the snapshot is
+        tracked.
+
+        :param  volume: A StorageVolume object
+        :type   volume: :class:`StorageVolume`
+
+        :return:  A list of Snapshot objects
+        :rtype:   ``list`` of :class:`GCESnapshot`
+        """
+        volume_snapshots = []
+        volume_link = volume.extra['selfLink']
+        all_snapshots = self.ex_list_snapshots()
+        for snapshot in all_snapshots:
+            if snapshot.extra['sourceDisk'] == volume_link:
+                volume_snapshots.append(snapshot)
+        return volume_snapshots
+
     def ex_update_healthcheck(self, healthcheck):
         """
         Update a health check with new values.
