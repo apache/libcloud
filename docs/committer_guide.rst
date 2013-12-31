@@ -144,7 +144,7 @@ Usage:
 
 .. sourcecode:: bash
 
-    ./dist/verify_checksums <version>
+    ./dist/verify_checksums.sh <version>
 
 For example
 
