@@ -57,8 +57,18 @@ do
     echo "Downloading file from Apache mirror..."
     wget --quiet "${apache_url}" -O "${file_path_apache}"
 
+    if [ $? -ne 0 ]; then
+        echo "[ERR] Failed to download file: ${apache_url}"
+        exit 2
+    fi
+
     echo "Downloading file from PyPi mirror..."
     wget --quiet "${pypi_url}" -O "${file_path_pypi}"
+
+    if [ $? -ne 0 ]; then
+        echo "[ERR] Failed to download file: ${pypi_url}"
+        exit 2
+    fi
 
     md5sum_apache=$(md5sum "${file_path_apache}" | awk '{ print $1 }')
     md5sum_pypi=$(md5sum "${file_path_pypi}"| awk '{ print $1 }')
