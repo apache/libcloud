@@ -129,7 +129,7 @@ class DigitalOceanMockHttp(MockHttpTestCase):
 
     def _droplets_119461_destroy(self, method, url, body, headers):
         # destroy_node
-        self.assertUrlContainsQueryParams(url, {'scrub_data': 'true'})
+        self.assertUrlContainsQueryParams(url, {'scrub_data': '1'})
         body = self.fixtures.load('destroy_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
