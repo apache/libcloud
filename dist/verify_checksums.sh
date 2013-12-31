@@ -29,6 +29,7 @@ TMP_DIR=`mktemp -d`
 
 EXTENSIONS[0]="tar.gz"
 EXTENSIONS[1]="tar.bz2"
+EXTENSIONS[2]="zip"
 
 APACHE_MIRROR_URL="http://www.apache.org/dist/libcloud"
 PYPI_MIRROR_URL="https://pypi.python.org/packages/source/a/apache-libcloud"
