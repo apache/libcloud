@@ -9,7 +9,7 @@ Changes with Apache Libcloud 0.13.3
       a node. (LIBCLOUD-487)
 
       Note: This fixes a security issue with a potential leak of data contained
-      on the destroyed node.
+      on the destroyed node which only affects users of the DigitalOcean driver.
       [Tomaz Muraus]
 
 Changes with Apache Libcloud 0.13.2
