@@ -88,10 +88,6 @@ class GCEAddress(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
-    def __repr__(self):
-        return '<GCEAddress id="%s" name="%s" address="%s">' % (
-            self.id, self.name, self.address)
-
     def destroy(self):
         """
         Destroy this address.
@@ -100,6 +96,10 @@ class GCEAddress(UuidMixin):
         :rtype:  ``bool``
         """
         return self.driver.ex_destroy_address(address=self)
+
+    def __repr__(self):
+        return '<GCEAddress id="%s" name="%s" address="%s">' % (
+            self.id, self.name, self.address)
 
 
 class GCEFailedDisk(object):
@@ -142,10 +142,6 @@ class GCEHealthCheck(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
-    def __repr__(self):
-        return '<GCEHealthCheck id="%s" name="%s" path="%s" port="%s">' % (
-            self.id, self.name, self.path, self.port)
-
     def destroy(self):
         """
         Destroy this Health Check.
@@ -164,6 +160,10 @@ class GCEHealthCheck(UuidMixin):
         """
         return self.driver.ex_update_healthcheck(healthcheck=self)
 
+    def __repr__(self):
+        return '<GCEHealthCheck id="%s" name="%s" path="%s" port="%s">' % (
+            self.id, self.name, self.path, self.port)
+
 
 class GCEFirewall(UuidMixin):
     """A GCE Firewall rule class."""
@@ -178,10 +178,6 @@ class GCEFirewall(UuidMixin):
         self.driver = driver
         self.extra = extra
         UuidMixin.__init__(self)
-
-    def __repr__(self):
-        return '<GCEFirewall id="%s" name="%s" network="%s">' % (
-            self.id, self.name, self.network.name)
 
     def destroy(self):
         """
@@ -201,6 +197,10 @@ class GCEFirewall(UuidMixin):
         """
         return self.driver.ex_update_firewall(firewall=self)
 
+    def __repr__(self):
+        return '<GCEFirewall id="%s" name="%s" network="%s">' % (
+            self.id, self.name, self.network.name)
+
 
 class GCEForwardingRule(UuidMixin):
     def __init__(self, id, name, region, address, protocol, targetpool, driver,
@@ -215,10 +215,6 @@ class GCEForwardingRule(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
-    def __repr__(self):
-        return '<GCEForwardingRule id="%s" name="%s" address="%s">' % (
-            self.id, self.name, self.address)
-
     def destroy(self):
         """
         Destroy this Forwarding Rule
@@ -227,6 +223,10 @@ class GCEForwardingRule(UuidMixin):
         :rtype:   ``bool``
         """
         return self.driver.ex_destroy_forwarding_rule(forwarding_rule=self)
+
+    def __repr__(self):
+        return '<GCEForwardingRule id="%s" name="%s" address="%s">' % (
+            self.id, self.name, self.address)
 
 
 class GCENetwork(UuidMixin):
@@ -239,10 +239,6 @@ class GCENetwork(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
-    def __repr__(self):
-        return '<GCENetwork id="%s" name="%s" cidr="%s">' % (
-            self.id, self.name, self.cidr)
-
     def destroy(self):
         """
         Destroy this newtwork
@@ -251,6 +247,10 @@ class GCENetwork(UuidMixin):
         :rtype:  ``bool``
         """
         return self.driver.ex_destroy_network(network=self)
+
+    def __repr__(self):
+        return '<GCENetwork id="%s" name="%s" cidr="%s">' % (
+            self.id, self.name, self.cidr)
 
 
 class GCENodeSize(NodeSize):
@@ -314,10 +314,6 @@ class GCETargetPool(UuidMixin):
         self.extra = extra
         UuidMixin.__init__(self)
 
-    def __repr__(self):
-        return '<GCETargetPool id="%s" name="%s" region="%s">' % (
-            self.id, self.name, self.region.name)
-
     def add_node(self, node):
         """
         Add a node to this target pool.
@@ -378,6 +374,10 @@ class GCETargetPool(UuidMixin):
         """
         return self.driver.ex_destroy_targetpool(targetpool=self)
 
+    def __repr__(self):
+        return '<GCETargetPool id="%s" name="%s" region="%s">' % (
+            self.id, self.name, self.region.name)
+
 
 class GCEZone(NodeLocation):
     """Subclass of NodeLocation to provide additional information."""
@@ -390,6 +390,22 @@ class GCEZone(NodeLocation):
         country = name.split('-')[0]
         super(GCEZone, self).__init__(id=str(id), name=name, country=country,
                                       driver=driver)
+
+    @property
+    def time_until_mw(self):
+        """
+        Returns the time until the next Maintenance Window as a
+        datetime.timedelta object.
+        """
+        return self._get_time_until_mw()
+
+    @property
+    def next_mw_duration(self):
+        """
+        Returns the duration of the next Maintenance Window as a
+        datetime.timedelta object.
+        """
+        return self._get_next_mw_duration()
 
     def _now(self):
         """
@@ -454,22 +470,6 @@ class GCEZone(NodeLocation):
         next_begin = timestamp_to_datetime(next_window['beginTime'])
         next_end = timestamp_to_datetime(next_window['endTime'])
         return next_end - next_begin
-
-    @property
-    def time_until_mw(self):
-        """
-        Returns the time until the next Maintenance Window as a
-        datetime.timedelta object.
-        """
-        return self._get_time_until_mw()
-
-    @property
-    def next_mw_duration(self):
-        """
-        Returns the duration of the next Maintenance Window as a
-        datetime.timedelta object.
-        """
-        return self._get_next_mw_duration()
 
     def __repr__(self):
         return '<GCEZone id="%s" name="%s" status="%s">' % (self.id, self.name,
@@ -557,182 +557,6 @@ class GCENodeDriver(NodeDriver):
             self.region = self._get_region_from_zone(self.zone)
         else:
             self.region = None
-
-    def _ex_connection_class_kwargs(self):
-        return {'auth_type': self.auth_type,
-                'project': self.project}
-
-    def _catch_error(self, ignore_errors=False):
-        """
-        Catch an exception and raise it unless asked to ignore it.
-
-        :keyword  ignore_errors: If true, just return the error.  Otherwise,
-                                 raise the error.
-        :type     ignore_errors: ``bool``
-
-        :return:  The exception that was raised.
-        :rtype:   :class:`Exception`
-        """
-        e = sys.exc_info()[1]
-        if ignore_errors:
-            return e
-        else:
-            raise e
-
-    def _get_components_from_path(self, path):
-        """
-        Return a dictionary containing name & zone/region from a request path.
-
-        :param  path: HTTP request path (e.g.
-                      '/project/pjt-name/zones/us-central1-a/instances/mynode')
-        :type   path: ``str``
-
-        :return:  Dictionary containing name and zone/region of resource
-        :rtype    ``dict``
-        """
-        region = None
-        zone = None
-        glob = False
-        components = path.split('/')
-        name = components[-1]
-        if components[-4] == 'regions':
-            region = components[-3]
-        elif components[-4] == 'zones':
-            zone = components[-3]
-        elif components[-3] == 'global':
-            glob = True
-
-        return {'name': name, 'region': region, 'zone': zone, 'global': glob}
-
-    def _get_region_from_zone(self, zone):
-        """
-        Return the Region object that contains the given Zone object.
-
-        :param  zone: Zone object
-        :type   zone: :class:`GCEZone`
-
-        :return:  Region object that contains the zone
-        :rtype:   :class:`GCERegion`
-        """
-        for region in self.region_list:
-            zones = [z.name for z in region.zones]
-            if zone.name in zones:
-                return region
-
-    def _find_zone_or_region(self, name, res_type, region=False,
-                             res_name=None):
-        """
-        Find the zone or region for a named resource.
-
-        :param  name: Name of resource to find
-        :type   name: ``str``
-
-        :param  res_type: Type of resource to find.
-                          Examples include: 'disks', 'instances' or 'addresses'
-        :type   res_type: ``str``
-
-        :keyword  region: If True, search regions instead of zones
-        :type     region: ``bool``
-
-        :keyword  res_name: The name of the resource type for error messages.
-                            Examples: 'Volume', 'Node', 'Address'
-        :keyword  res_name: ``str``
-
-        :return:  Zone/Region object for the zone/region for the resource.
-        :rtype:   :class:`GCEZone` or :class:`GCERegion`
-        """
-        if region:
-            rz = 'region'
-        else:
-            rz = 'zone'
-        rz_name = None
-        res_name = res_name or res_type
-        request = '/aggregated/%s' % (res_type)
-        res_list = self.connection.request(request).object
-        for k, v in res_list['items'].items():
-            for res in v.get(res_type, []):
-                if res['name'] == name:
-                    rz_name = k.replace('%ss/' % (rz), '')
-                    break
-        if not rz_name:
-            raise ResourceNotFoundError(
-                '%s \'%s\' not found in any %s.' % (res_name, name, rz),
-                None, None)
-        else:
-            getrz = getattr(self, 'ex_get_%s' % (rz))
-            return getrz(rz_name)
-
-    def _match_images(self, project, partial_name):
-        """
-        Find the latest image, given a partial name.
-
-        For example, providing 'debian-7' will return the image object for the
-        most recent image with a name that starts with 'debian-7' in the
-        supplied project.  If no project is given, it will search your own
-        project.
-
-        :param  project:  The name of the project to search for images.
-                          Examples include: 'debian-cloud' and 'centos-cloud'.
-        :type   project:  ``str`` or ``None``
-
-        :param  partial_name: The full name or beginning of a name for an
-                              image.
-        :type   partial_name: ``str``
-
-        :return:  The latest image object that maches the partial name or None
-                  if no matching image is found.
-        :rtype:   :class:`NodeImage` or ``None``
-        """
-        project_images = self.list_images(project)
-        partial_match = []
-        for image in project_images:
-            if image.name == partial_name:
-                return image
-            if image.name.startswith(partial_name):
-                ts = timestamp_to_datetime(image.extra['creationTimestamp'])
-                if not partial_match or partial_match[0] < ts:
-                    partial_match = [ts, image]
-
-        if partial_match:
-            return partial_match[1]
-
-    def _set_region(self, region):
-        """
-        Return the region to use for listing resources.
-
-        :param  region: A name, region object, None, or 'all'
-        :type   region: ``str`` or :class:`GCERegion` or ``None``
-
-        :return:  A region object or None if all regions should be considered
-        :rtype:   :class:`GCERegion` or ``None``
-        """
-        region = region or self.region
-
-        if region == 'all' or region is None:
-            return None
-
-        if not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
-        return region
-
-    def _set_zone(self, zone):
-        """
-        Return the zone to use for listing resources.
-
-        :param  zone: A name, zone object, None, or 'all'
-        :type   region: ``str`` or :class:`GCEZone` or ``None``
-
-        :return:  A zone object or None if all zones should be considered
-        :rtype:   :class:`GCEZone` or ``None``
-        """
-        zone = zone or self.zone
-
-        if zone == 'all' or zone is None:
-            return None
-
-        if not hasattr(zone, 'name'):
-            zone = self.ex_get_zone(zone)
-        return zone
 
     def ex_list_addresses(self, region=None):
         """
@@ -1267,71 +1091,6 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_network(name)
 
-    def _create_node_req(self, name, size, image, location, network,
-                         tags=None, metadata=None, boot_disk=None):
-        """
-        Returns a request and body to create a new node.  This is a helper
-        method to suppor both :class:`create_node` and
-        :class:`ex_create_multiple_nodes`.
-
-        :param  name: The name of the node to create.
-        :type   name: ``str``
-
-        :param  size: The machine type to use.
-        :type   size: :class:`GCENodeSize`
-
-        :param  image: The image to use to create the node (or, if using a
-                       persistent disk, the image the disk was created from).
-        :type   image: :class:`NodeImage`
-
-        :param  location: The location (zone) to create the node in.
-        :type   location: :class:`NodeLocation` or :class:`GCEZone`
-
-        :param  network: The network to associate with the node.
-        :type   network: :class:`GCENetwork`
-
-        :keyword  tags: A list of tags to assiciate with the node.
-        :type     tags: ``list`` of ``str``
-
-        :keyword  metadata: Metadata dictionary for instance.
-        :type     metadata: ``dict``
-
-        :keyword  boot_disk:  Persistent boot disk to attach.
-        :type     :class:`StorageVolume`
-
-        :return:  A tuple containing a request string and a node_data dict.
-        :rtype:   ``tuple`` of ``str`` and ``dict``
-        """
-        node_data = {}
-        node_data['machineType'] = size.extra['selfLink']
-        node_data['name'] = name
-        if tags:
-            node_data['tags'] = {'items': tags}
-        if metadata:
-            node_data['metadata'] = metadata
-
-        if boot_disk:
-            disks = [{'kind': 'compute#attachedDisk',
-                      'boot': True,
-                      'type': 'PERSISTENT',
-                      'mode': 'READ_WRITE',
-                      'deviceName': boot_disk.name,
-                      'zone': boot_disk.extra['zone'].extra['selfLink'],
-                      'source': boot_disk.extra['selfLink']}]
-            node_data['disks'] = disks
-        else:
-            node_data['image'] = image.extra['selfLink']
-
-        ni = [{'kind': 'compute#instanceNetworkInterface',
-               'accessConfigs': [{'name': 'External NAT',
-                                  'type': 'ONE_TO_ONE_NAT'}],
-               'network': network.extra['selfLink']}]
-        node_data['networkInterfaces'] = ni
-
-        request = '/zones/%s/instances' % (location.name)
-
-        return request, node_data
-
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
                     ex_boot_disk=None, use_existing_disk=True):
@@ -1394,139 +1153,6 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=node_data)
 
         return self.ex_get_node(name, location.name)
-
-    def _multi_create_disk(self, status, node_attrs):
-        """Create disk for ex_create_multiple_nodes.
-
-        :param  status: Dictionary for holding node/disk creation status.
-                        (This dictionary is modified by this method)
-        :type   status: ``dict``
-
-        :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, etc.)
-        :type   node_attrs: ``dict``
-        """
-        disk = None
-        # Check for existing disk
-        if node_attrs['use_existing_disk']:
-            try:
-                disk = self.ex_get_volume(status['name'],
-                                          node_attrs['location'])
-            except ResourceNotFoundError:
-                pass
-
-        if disk:
-            status['disk'] = disk
-        else:
-            # Create disk and return response object back in the status dict.
-            # Or, if there is an error, mark as failed.
-            disk_req, disk_data, disk_params = self._create_vol_req(
-                None, status['name'], location=node_attrs['location'],
-                image=node_attrs['image'])
-            try:
-                disk_res = self.connection.request(
-                    disk_req, method='POST', data=disk_data,
-                    params=disk_params).object
-            except GoogleBaseError:
-                e = self._catch_error(
-                    ignore_errors=node_attrs['ignore_errors'])
-                error = e.value
-                code = e.code
-                disk_res = None
-                status['disk'] = GCEFailedDisk(status['name'],
-                                               error, code)
-            status['disk_response'] = disk_res
-
-    def _multi_check_disk(self, status, node_attrs):
-        """Check disk status for ex_create_multiple_nodes.
-
-        :param  status: Dictionary for holding node/disk creation status.
-                        (This dictionary is modified by this method)
-        :type   status: ``dict``
-
-        :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, etc.)
-        :type   node_attrs: ``dict``
-        """
-        error = None
-        try:
-            response = self.connection.request(
-                status['disk_response']['selfLink']).object
-        except GoogleBaseError:
-            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
-            error = e.value
-            code = e.code
-            response = {'status': 'DONE'}
-        if response['status'] == 'DONE':
-            status['disk_response'] = None
-            if error:
-                status['disk'] = GCEFailedDisk(status['name'], error, code)
-            else:
-                status['disk'] = self.ex_get_volume(status['name'],
-                                                    node_attrs['location'])
-
-    def _multi_create_node(self, status, node_attrs):
-        """Create node for ex_create_multiple_nodes.
-
-        :param  status: Dictionary for holding node/disk creation status.
-                        (This dictionary is modified by this method)
-        :type   status: ``dict``
-
-        :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, etc.)
-        :type   node_attrs: ``dict``
-        """
-        # If disk has an error, set the node as failed and return
-        if hasattr(status['disk'], 'error'):
-            status['node'] = status['disk']
-            return
-
-        # Create node and return response object in status dictionary.
-        # Or, if there is an error, mark as failed.
-        request, node_data = self._create_node_req(
-            status['name'], node_attrs['size'], node_attrs['image'],
-            node_attrs['location'], node_attrs['network'], node_attrs['tags'],
-            node_attrs['metadata'], boot_disk=status['disk'])
-        try:
-            node_res = self.connection.request(
-                request, method='POST', data=node_data).object
-        except GoogleBaseError:
-            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
-            error = e.value
-            code = e.code
-            node_res = None
-            status['node'] = GCEFailedNode(status['name'],
-                                           error, code)
-        status['node_response'] = node_res
-
-    def _multi_check_node(self, status, node_attrs):
-        """Check node status for ex_create_multiple_nodes.
-
-        :param  status: Dictionary for holding node/disk creation status.
-                        (This dictionary is modified by this method)
-        :type   status: ``dict``
-
-        :param  node_attrs: Dictionary for holding node attribute information.
-                            (size, image, location, etc.)
-        :type   node_attrs: ``dict``
-        """
-        error = None
-        try:
-            response = self.connection.request(
-                status['node_response']['selfLink']).object
-        except GoogleBaseError:
-            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
-            error = e.value
-            code = e.code
-            response = {'status': 'DONE'}
-        if response['status'] == 'DONE':
-            status['node_response'] = None
-        if error:
-            status['node'] = GCEFailedNode(status['name'],
-                                           error, code)
-        else:
-            status['node'] = self.ex_get_node(status['name'],
-                                              node_attrs['location'])
 
     def ex_create_multiple_nodes(self, base_name, size, image, number,
                                  location=None, ex_network='default',
@@ -1705,61 +1331,6 @@ class GCENodeDriver(NodeDriver):
                                       data=targetpool_data)
 
         return self.ex_get_targetpool(name, region)
-
-    def _create_vol_req(self, size, name, location=None, snapshot=None,
-                        image=None):
-        """
-        Assemble the request/data for creating a volume.
-
-        Used by create_volume and ex_create_multiple_nodes
-
-        :param  size: Size of volume to create (in GB). Can be None if image
-                      or snapshot is supplied.
-        :type   size: ``int`` or ``str`` or ``None``
-
-        :param  name: Name of volume to create
-        :type   name: ``str``
-
-        :keyword  location: Location (zone) to create the volume in
-        :type     location: ``str`` or :class:`GCEZone` or
-                            :class:`NodeLocation` or ``None``
-
-        :keyword  snapshot: Snapshot to create image from
-        :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
-
-        :keyword  image: Image to create disk from.
-        :type     image: :class:`NodeImage` or ``str`` or ``None``
-
-        :return:  Tuple containg the request string, the data dictionary and
-                  the URL parameters
-        :rtype:   ``tuple``
-        """
-        volume_data = {}
-        params = None
-        volume_data['name'] = name
-        if size:
-            volume_data['sizeGb'] = str(size)
-        if image:
-            if not hasattr(image, 'name'):
-                image = self.ex_get_image(image)
-            params = {'sourceImage': image.extra['selfLink']}
-            volume_data['description'] = 'Image: %s' % (
-                image.extra['selfLink'])
-        if snapshot:
-            if not hasattr(snapshot, 'name'):
-                # Check for full URI to not break backward-compatibility
-                if snapshot.startswith('https'):
-                    snapshot = self._get_components_from_path(snapshot)['name']
-                snapshot = self.ex_get_snapshot(snapshot)
-            snapshot_link = snapshot.extra['selfLink']
-            volume_data['sourceSnapshot'] = snapshot_link
-            volume_data['description'] = 'Snapshot: %s' % (snapshot_link)
-        location = location or self.zone
-        if not hasattr(location, 'name'):
-            location = self.ex_get_zone(location)
-        request = '/zones/%s/disks' % (location.name)
-
-        return request, volume_data, params
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True):
@@ -2733,6 +2304,435 @@ class GCENodeDriver(NodeDriver):
         except ResourceNotFoundError:
             return None
         return self._to_zone(response)
+
+    def _ex_connection_class_kwargs(self):
+        return {'auth_type': self.auth_type,
+                'project': self.project}
+
+    def _catch_error(self, ignore_errors=False):
+        """
+        Catch an exception and raise it unless asked to ignore it.
+
+        :keyword  ignore_errors: If true, just return the error.  Otherwise,
+                                 raise the error.
+        :type     ignore_errors: ``bool``
+
+        :return:  The exception that was raised.
+        :rtype:   :class:`Exception`
+        """
+        e = sys.exc_info()[1]
+        if ignore_errors:
+            return e
+        else:
+            raise e
+
+    def _get_components_from_path(self, path):
+        """
+        Return a dictionary containing name & zone/region from a request path.
+
+        :param  path: HTTP request path (e.g.
+                      '/project/pjt-name/zones/us-central1-a/instances/mynode')
+        :type   path: ``str``
+
+        :return:  Dictionary containing name and zone/region of resource
+        :rtype    ``dict``
+        """
+        region = None
+        zone = None
+        glob = False
+        components = path.split('/')
+        name = components[-1]
+        if components[-4] == 'regions':
+            region = components[-3]
+        elif components[-4] == 'zones':
+            zone = components[-3]
+        elif components[-3] == 'global':
+            glob = True
+
+        return {'name': name, 'region': region, 'zone': zone, 'global': glob}
+
+    def _get_region_from_zone(self, zone):
+        """
+        Return the Region object that contains the given Zone object.
+
+        :param  zone: Zone object
+        :type   zone: :class:`GCEZone`
+
+        :return:  Region object that contains the zone
+        :rtype:   :class:`GCERegion`
+        """
+        for region in self.region_list:
+            zones = [z.name for z in region.zones]
+            if zone.name in zones:
+                return region
+
+    def _find_zone_or_region(self, name, res_type, region=False,
+                             res_name=None):
+        """
+        Find the zone or region for a named resource.
+
+        :param  name: Name of resource to find
+        :type   name: ``str``
+
+        :param  res_type: Type of resource to find.
+                          Examples include: 'disks', 'instances' or 'addresses'
+        :type   res_type: ``str``
+
+        :keyword  region: If True, search regions instead of zones
+        :type     region: ``bool``
+
+        :keyword  res_name: The name of the resource type for error messages.
+                            Examples: 'Volume', 'Node', 'Address'
+        :keyword  res_name: ``str``
+
+        :return:  Zone/Region object for the zone/region for the resource.
+        :rtype:   :class:`GCEZone` or :class:`GCERegion`
+        """
+        if region:
+            rz = 'region'
+        else:
+            rz = 'zone'
+        rz_name = None
+        res_name = res_name or res_type
+        request = '/aggregated/%s' % (res_type)
+        res_list = self.connection.request(request).object
+        for k, v in res_list['items'].items():
+            for res in v.get(res_type, []):
+                if res['name'] == name:
+                    rz_name = k.replace('%ss/' % (rz), '')
+                    break
+        if not rz_name:
+            raise ResourceNotFoundError(
+                '%s \'%s\' not found in any %s.' % (res_name, name, rz),
+                None, None)
+        else:
+            getrz = getattr(self, 'ex_get_%s' % (rz))
+            return getrz(rz_name)
+
+    def _match_images(self, project, partial_name):
+        """
+        Find the latest image, given a partial name.
+
+        For example, providing 'debian-7' will return the image object for the
+        most recent image with a name that starts with 'debian-7' in the
+        supplied project.  If no project is given, it will search your own
+        project.
+
+        :param  project:  The name of the project to search for images.
+                          Examples include: 'debian-cloud' and 'centos-cloud'.
+        :type   project:  ``str`` or ``None``
+
+        :param  partial_name: The full name or beginning of a name for an
+                              image.
+        :type   partial_name: ``str``
+
+        :return:  The latest image object that maches the partial name or None
+                  if no matching image is found.
+        :rtype:   :class:`NodeImage` or ``None``
+        """
+        project_images = self.list_images(project)
+        partial_match = []
+        for image in project_images:
+            if image.name == partial_name:
+                return image
+            if image.name.startswith(partial_name):
+                ts = timestamp_to_datetime(image.extra['creationTimestamp'])
+                if not partial_match or partial_match[0] < ts:
+                    partial_match = [ts, image]
+
+        if partial_match:
+            return partial_match[1]
+
+    def _set_region(self, region):
+        """
+        Return the region to use for listing resources.
+
+        :param  region: A name, region object, None, or 'all'
+        :type   region: ``str`` or :class:`GCERegion` or ``None``
+
+        :return:  A region object or None if all regions should be considered
+        :rtype:   :class:`GCERegion` or ``None``
+        """
+        region = region or self.region
+
+        if region == 'all' or region is None:
+            return None
+
+        if not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
+        return region
+
+    def _set_zone(self, zone):
+        """
+        Return the zone to use for listing resources.
+
+        :param  zone: A name, zone object, None, or 'all'
+        :type   region: ``str`` or :class:`GCEZone` or ``None``
+
+        :return:  A zone object or None if all zones should be considered
+        :rtype:   :class:`GCEZone` or ``None``
+        """
+        zone = zone or self.zone
+
+        if zone == 'all' or zone is None:
+            return None
+
+        if not hasattr(zone, 'name'):
+            zone = self.ex_get_zone(zone)
+        return zone
+
+    def _create_node_req(self, name, size, image, location, network,
+                         tags=None, metadata=None, boot_disk=None):
+        """
+        Returns a request and body to create a new node.  This is a helper
+        method to suppor both :class:`create_node` and
+        :class:`ex_create_multiple_nodes`.
+
+        :param  name: The name of the node to create.
+        :type   name: ``str``
+
+        :param  size: The machine type to use.
+        :type   size: :class:`GCENodeSize`
+
+        :param  image: The image to use to create the node (or, if using a
+                       persistent disk, the image the disk was created from).
+        :type   image: :class:`NodeImage`
+
+        :param  location: The location (zone) to create the node in.
+        :type   location: :class:`NodeLocation` or :class:`GCEZone`
+
+        :param  network: The network to associate with the node.
+        :type   network: :class:`GCENetwork`
+
+        :keyword  tags: A list of tags to assiciate with the node.
+        :type     tags: ``list`` of ``str``
+
+        :keyword  metadata: Metadata dictionary for instance.
+        :type     metadata: ``dict``
+
+        :keyword  boot_disk:  Persistent boot disk to attach.
+        :type     :class:`StorageVolume`
+
+        :return:  A tuple containing a request string and a node_data dict.
+        :rtype:   ``tuple`` of ``str`` and ``dict``
+        """
+        node_data = {}
+        node_data['machineType'] = size.extra['selfLink']
+        node_data['name'] = name
+        if tags:
+            node_data['tags'] = {'items': tags}
+        if metadata:
+            node_data['metadata'] = metadata
+
+        if boot_disk:
+            disks = [{'kind': 'compute#attachedDisk',
+                      'boot': True,
+                      'type': 'PERSISTENT',
+                      'mode': 'READ_WRITE',
+                      'deviceName': boot_disk.name,
+                      'zone': boot_disk.extra['zone'].extra['selfLink'],
+                      'source': boot_disk.extra['selfLink']}]
+            node_data['disks'] = disks
+        else:
+            node_data['image'] = image.extra['selfLink']
+
+        ni = [{'kind': 'compute#instanceNetworkInterface',
+               'accessConfigs': [{'name': 'External NAT',
+                                  'type': 'ONE_TO_ONE_NAT'}],
+               'network': network.extra['selfLink']}]
+        node_data['networkInterfaces'] = ni
+
+        request = '/zones/%s/instances' % (location.name)
+
+        return request, node_data
+
+    def _multi_create_disk(self, status, node_attrs):
+        """Create disk for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        disk = None
+        # Check for existing disk
+        if node_attrs['use_existing_disk']:
+            try:
+                disk = self.ex_get_volume(status['name'],
+                                          node_attrs['location'])
+            except ResourceNotFoundError:
+                pass
+
+        if disk:
+            status['disk'] = disk
+        else:
+            # Create disk and return response object back in the status dict.
+            # Or, if there is an error, mark as failed.
+            disk_req, disk_data, disk_params = self._create_vol_req(
+                None, status['name'], location=node_attrs['location'],
+                image=node_attrs['image'])
+            try:
+                disk_res = self.connection.request(
+                    disk_req, method='POST', data=disk_data,
+                    params=disk_params).object
+            except GoogleBaseError:
+                e = self._catch_error(
+                    ignore_errors=node_attrs['ignore_errors'])
+                error = e.value
+                code = e.code
+                disk_res = None
+                status['disk'] = GCEFailedDisk(status['name'],
+                                               error, code)
+            status['disk_response'] = disk_res
+
+    def _multi_check_disk(self, status, node_attrs):
+        """Check disk status for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        error = None
+        try:
+            response = self.connection.request(
+                status['disk_response']['selfLink']).object
+        except GoogleBaseError:
+            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
+            error = e.value
+            code = e.code
+            response = {'status': 'DONE'}
+        if response['status'] == 'DONE':
+            status['disk_response'] = None
+            if error:
+                status['disk'] = GCEFailedDisk(status['name'], error, code)
+            else:
+                status['disk'] = self.ex_get_volume(status['name'],
+                                                    node_attrs['location'])
+
+    def _multi_create_node(self, status, node_attrs):
+        """Create node for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        # If disk has an error, set the node as failed and return
+        if hasattr(status['disk'], 'error'):
+            status['node'] = status['disk']
+            return
+
+        # Create node and return response object in status dictionary.
+        # Or, if there is an error, mark as failed.
+        request, node_data = self._create_node_req(
+            status['name'], node_attrs['size'], node_attrs['image'],
+            node_attrs['location'], node_attrs['network'], node_attrs['tags'],
+            node_attrs['metadata'], boot_disk=status['disk'])
+        try:
+            node_res = self.connection.request(
+                request, method='POST', data=node_data).object
+        except GoogleBaseError:
+            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
+            error = e.value
+            code = e.code
+            node_res = None
+            status['node'] = GCEFailedNode(status['name'],
+                                           error, code)
+        status['node_response'] = node_res
+
+    def _multi_check_node(self, status, node_attrs):
+        """Check node status for ex_create_multiple_nodes.
+
+        :param  status: Dictionary for holding node/disk creation status.
+                        (This dictionary is modified by this method)
+        :type   status: ``dict``
+
+        :param  node_attrs: Dictionary for holding node attribute information.
+                            (size, image, location, etc.)
+        :type   node_attrs: ``dict``
+        """
+        error = None
+        try:
+            response = self.connection.request(
+                status['node_response']['selfLink']).object
+        except GoogleBaseError:
+            e = self._catch_error(ignore_errors=node_attrs['ignore_errors'])
+            error = e.value
+            code = e.code
+            response = {'status': 'DONE'}
+        if response['status'] == 'DONE':
+            status['node_response'] = None
+        if error:
+            status['node'] = GCEFailedNode(status['name'],
+                                           error, code)
+        else:
+            status['node'] = self.ex_get_node(status['name'],
+                                              node_attrs['location'])
+
+    def _create_vol_req(self, size, name, location=None, snapshot=None,
+                        image=None):
+        """
+        Assemble the request/data for creating a volume.
+
+        Used by create_volume and ex_create_multiple_nodes
+
+        :param  size: Size of volume to create (in GB). Can be None if image
+                      or snapshot is supplied.
+        :type   size: ``int`` or ``str`` or ``None``
+
+        :param  name: Name of volume to create
+        :type   name: ``str``
+
+        :keyword  location: Location (zone) to create the volume in
+        :type     location: ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation` or ``None``
+
+        :keyword  snapshot: Snapshot to create image from
+        :type     snapshot: :class:`GCESnapshot` or ``str`` or ``None``
+
+        :keyword  image: Image to create disk from.
+        :type     image: :class:`NodeImage` or ``str`` or ``None``
+
+        :return:  Tuple containg the request string, the data dictionary and
+                  the URL parameters
+        :rtype:   ``tuple``
+        """
+        volume_data = {}
+        params = None
+        volume_data['name'] = name
+        if size:
+            volume_data['sizeGb'] = str(size)
+        if image:
+            if not hasattr(image, 'name'):
+                image = self.ex_get_image(image)
+            params = {'sourceImage': image.extra['selfLink']}
+            volume_data['description'] = 'Image: %s' % (
+                image.extra['selfLink'])
+        if snapshot:
+            if not hasattr(snapshot, 'name'):
+                # Check for full URI to not break backward-compatibility
+                if snapshot.startswith('https'):
+                    snapshot = self._get_components_from_path(snapshot)['name']
+                snapshot = self.ex_get_snapshot(snapshot)
+            snapshot_link = snapshot.extra['selfLink']
+            volume_data['sourceSnapshot'] = snapshot_link
+            volume_data['description'] = 'Snapshot: %s' % (snapshot_link)
+        location = location or self.zone
+        if not hasattr(location, 'name'):
+            location = self.ex_get_zone(location)
+        request = '/zones/%s/disks' % (location.name)
+
+        return request, volume_data, params
 
     def _to_address(self, address):
         """
