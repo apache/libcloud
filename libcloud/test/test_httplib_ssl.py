@@ -68,6 +68,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.assertEqual(libcloud.security.CA_CERTS_PATH, [file_path])
 
     def test_verify_hostname(self):
+        # commonName
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -76,6 +77,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
                              (('organizationalUnitName', 'SSL'),),
                              (('commonName', 'somemachine.python.org'),))}
 
+        # commonName
         cert2 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -86,6 +88,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
                  'subjectAltName': ((('DNS', 'foo.alt.name')),
                                     (('DNS', 'foo.alt.name.1')))}
 
+        # commonName
         cert3 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -94,6 +97,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
                              (('organizationalUnitName', 'SSL'),),
                              (('commonName', 'python.org'),))}
 
+        # wildcard commonName
         cert4 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
                  'subject': ((('countryName', 'US'),),
                              (('stateOrProvinceName', 'Delaware'),),
@@ -141,6 +145,12 @@ class TestHttpLibSSLTests(unittest.TestCase):
                         hostname='us-east-1.api.joyentcloud.com', cert=cert4))
         self.assertTrue(self.httplib_object._verify_hostname(
                         hostname='useast-1.api.joyentcloud.com', cert=cert4))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='t1.useast-1.api.joyentcloud.com', cert=cert4))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='ponies.useast-1.api.joyentcloud.com', cert=cert4))
+        self.assertFalse(self.httplib_object._verify_hostname(
+                         hostname='api.useast-1.api.joyentcloud.com', cert=cert4))
 
     def test_get_subject_alt_names(self):
         cert1 = {'notAfter': 'Feb 16 16:54:50 2013 GMT',
