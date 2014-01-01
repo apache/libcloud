@@ -156,6 +156,10 @@ Changes with Apache Libcloud in development
    - Send "scrub_data" query parameter when destroying a DigitalOcean node.
      This will cause disk to be scrubbed (overwritten with 0's) when destroying
      a node. (LIBCLOUD-487)
+
+     Note: This fixes a security issue with a potential leak of data contained
+     on the destroyed node which only affects users of the DigitalOcean driver.
+     (CVE-2013-6480)
      [Tomaz Muraus]
 
   *) Storage
