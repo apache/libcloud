@@ -60,13 +60,18 @@ After the patch has been applied, make sure to update ``CHANGES`` file.
 Making a release (for release managers)
 ---------------------------------------
 
-1. Pre-release check list
+This section contains information a release manager should follow when
+preparing a release.
 
-- Make sure tests pass on all the supported Python versions (``tox``)
-- Make sure ``CHANGES`` file is up to date
-- Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
+1. Pre-release check list
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Make sure tests pass on all the supported Python versions (``tox``)
+* Make sure ``CHANGES`` file is up to date
+* Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 
 2. Creating release artifacts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We have a script that runs the required setup.py commands and then hashes
 and signs the files. To run it:
@@ -84,6 +89,7 @@ This should result in a set of
 are suitable to be uploaded for a release.
 
 3. Uploading release artifacts to Apache servers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Add release artifacts to the dist SVN repository at
   https://dist.apache.org/repos/dist/release/libcloud/
@@ -98,10 +104,11 @@ are suitable to be uploaded for a release.
   https://dist.apache.org/repos/dist/release/libcloud/.
 
 4. Tagging a release
+~~~~~~~~~~~~~~~~~~~~
 
 .. sourcecode:: bash
 
-    git tag <tag> <commit hash>
+    git tag <version> <commit hash>
 
 For example:
 
@@ -110,9 +117,10 @@ For example:
     git tag v0.13.0 105b9610835f99704996d861d613c5a9a8b3f8b1
 
 5. Publishing package to PyPi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **For consistency and security reasons packages are always uploaded to PyPi
-manually using the web interface and not using the ``setup.py upload``
+manually using the web interface and not using the setup.py upload
 command.**
 
 * Run ``python setup.py register`` command. This will register a new
@@ -134,6 +142,7 @@ screenshot bellow.
    :align: center
 
 6. Verifying the release artifact check sums
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To verify that nothing went wrong doing the release process, run the
 ``./dist/verify_checksums.sh`` script.
@@ -151,24 +160,37 @@ For example
 
 .. sourcecode:: bash
 
-    ./dist/verify_checksums apache-libcloud-0.13.2
+    ./dist/verify_checksums.sh apache-libcloud-0.13.2
 
 7. Updating doap_libcloud.rdf file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add information about the new release to the ``doap_libcloud.rdf`` file in the
 root of the main code repository.
 
 8. Updating website
+~~~~~~~~~~~~~~~~~~~
 
 * Update "News" page (``content/news.mdtext`` file)
 * Update "Downloads" page (``content/downloads.mdtext`` file)
 * Update "Get it" section in the sidebar (``templates/blocks/other.html`` file)
 
 9. Sending announcements
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Send a release announcement to {dev,users}@libcloud.apache.org. If it's a
   major release also send it to announce@apache.org.
 * Send a release announcement to Twitter and Google+
+
+Note: If the release fixes a security vulnerability, you should also send
+information about a vulnerability to the following full disclosure mailing
+lists:
+
+* full-disclosure@lists.grok.org.uk
+* bugtraq@securityfocus.com
+
+The email you send should also be signed using your GPG key. You can find
+an example of such announcement on the `following url <http://seclists.org/fulldisclosure/2014/Jan/11>`_.
 
 If needed, use Apache URL shortening service - http://s.apache.org/
 
