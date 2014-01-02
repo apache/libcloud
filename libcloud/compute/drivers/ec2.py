@@ -1539,13 +1539,19 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
-    def ex_destroy_image(self, image):
+    def ex_delete_image(self, image):
         params = {
             'Action': 'DeregisterImage',
             'ImageId': image.id
         }
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
+
+    def ex_destroy_image(self, image):
+        warnings.warn('This method has been deprecated in favor of '
+                       'ex_delete_image method')
+
+        return self.ex_delete_image(image)
 
     def ex_create_keypair(self, name):
         """

@@ -442,10 +442,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(images), 2)
 
-    def ex_destroy_image(self):
+    def test_ex_delete_image(self):
         images = self.driver.list_images()
         image = images[0]
 
+        resp = self.driver.ex_delete_image(image)
+        self.assertTrue(resp)
         resp = self.driver.ex_destroy_image(image)
         self.assertTrue(resp)
 
