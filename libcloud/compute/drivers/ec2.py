@@ -1549,7 +1549,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_destroy_image(self, image):
         warnings.warn('This method has been deprecated in favor of '
-                       'ex_delete_image method')
+                      'ex_delete_image method')
 
         return self.ex_delete_image(image)
 
