@@ -41,6 +41,8 @@ class HostVirtualException(LibcloudError):
 class HostVirtualConnection(ConnectionKey):
     host = API_HOST
 
+    allow_insecure = False
+
     def add_default_params(self, params):
         params['key'] = self.key
         return params

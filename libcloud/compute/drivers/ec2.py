@@ -469,6 +469,234 @@ REGION_DETAILS = {
     }
 }
 
+"""
+Define the extra dictionary for specific resources
+"""
+RESOURCE_EXTRA_ATTRIBUTES_MAP = {
+    'ebs_volume': {
+        'snapshot_id': {
+            'xpath': 'ebs/snapshotId',
+            'transform_func': str
+        },
+        'volume_size': {
+            'xpath': 'ebs/volumeSize',
+            'transform_func': int
+        },
+        'delete': {
+            'xpath': 'ebs/deleteOnTermination',
+            'transform_func': str
+        },
+        'volume_type': {
+            'xpath': 'ebs/volumeType',
+            'transform_func': str
+        },
+        'iops': {
+            'xpath': 'ebs/iops',
+            'transform_func': int
+        }
+    },
+    'image': {
+        'state': {
+            'xpath': 'imageState',
+            'transform_func': str
+        },
+        'owner_id': {
+            'xpath': 'imageOwnerId',
+            'transform_func': str
+        },
+        'owner_alias': {
+            'xpath': 'imageOwnerAlias',
+            'transform_func': str
+        },
+        'is_public': {
+            'xpath': 'isPublic',
+            'transform_func': str
+        },
+        'architecture': {
+            'xpath': 'architecture',
+            'transform_func': str
+        },
+        'image_type': {
+            'xpath': 'imageType',
+            'transform_func': str
+        },
+        'image_location': {
+            'xpath': 'imageLocation',
+            'transform_func': str
+        },
+        'platform': {
+            'xpath': 'platform',
+            'transform_func': str
+        },
+        'description': {
+            'xpath': 'description',
+            'transform_func': str
+        },
+        'root_device_type': {
+            'xpath': 'rootDeviceType',
+            'transform_func': str
+        },
+        'virtualization_type': {
+            'xpath': 'virtualizationType',
+            'transform_func': str
+        },
+        'hypervisor': {
+            'xpath': 'hypervisor',
+            'transform_func': str
+        },
+        'kernel_id': {
+            'xpath': 'kernelId',
+            'transform_func': str
+        },
+        'ramdisk_id': {
+            'xpath': 'ramdisk_id',
+            'transform_func': str
+        }
+    },
+    'network': {
+        'state': {
+            'xpath': 'state',
+            'transform_func': str
+        },
+        'dhcp_options_id': {
+            'xpath': 'dhcpOptionsId',
+            'transform_func': str
+        },
+        'instance_tenancy': {
+            'xpath': 'instanceTenancy',
+            'transform_func': str
+        },
+        'is_default': {
+            'xpath': 'isDefault',
+            'transform_func': str
+        }
+    },
+    'reserved_node': {
+        'instance_type': {
+            'xpath': 'instanceType',
+            'transform_func': str
+        },
+        'availability': {
+            'xpath': 'availabilityZone',
+            'transform_func': str
+        },
+        'start': {
+            'xpath': 'start',
+            'transform_func': str
+        },
+        'duration': {
+            'xpath': 'duration',
+            'transform_func': int
+        },
+        'usage_price': {
+            'xpath': 'usagePrice',
+            'transform_func': float
+        },
+        'fixed_price': {
+            'xpath': 'fixedPrice',
+            'transform_func': float
+        },
+        'instance_count': {
+            'xpath': 'instanceCount',
+            'transform_func': int
+        },
+        'description': {
+            'xpath': 'productDescription',
+            'transform_func': str
+        },
+        'instance_tenancy': {
+            'xpath': 'instanceTenancy',
+            'transform_func': str
+        },
+        'currency_code': {
+            'xpath': 'currencyCode',
+            'transform_func': str
+        },
+        'offering_type': {
+            'xpath': 'offeringType',
+            'transform_func': str
+        }
+    },
+    'snapshot': {
+        'volume_id': {
+            'xpath': 'volumeId',
+            'transform_func': str
+        },
+        'state': {
+            'xpath': 'status',
+            'transform_func': str
+        },
+        'description': {
+            'xpath': 'description',
+            'transform_func': str
+        },
+        'progress': {
+            'xpath': 'progress',
+            'transform_func': str
+        },
+        'start_time': {
+            'xpath': 'startTime',
+            'transform_func': parse_date
+        }
+    },
+    'subnet': {
+        'cidr_block': {
+            'xpath': 'cidrBlock',
+            'transform_func': str
+        },
+        'available_ips': {
+            'xpath': 'availableIpAddressCount',
+            'transform_func': int
+        },
+        'zone': {
+            'xpath': 'availabilityZone',
+            'transform_func': str
+        },
+        'vpc_id': {
+            'xpath': 'vpcId',
+            'transform_func': str
+        }
+    },
+    'volume': {
+        'device': {
+            'xpath': 'device',
+            'transform_func': str
+        },
+        'iops': {
+            'xpath': 'iops',
+            'transform_func': int
+        },
+        'zone': {
+            'xpath': 'availabilityZone',
+            'transform_func': str
+        },
+        'create_time': {
+            'xpath': 'createTime',
+            'transform_func': parse_date
+        },
+        'state': {
+            'xpath': 'status',
+            'transform_func': str
+        },
+        'attach_time': {
+            'xpath': 'attachmentSet/item/attachTime',
+            'transform_func': parse_date
+        },
+        'attachment_status': {
+            'xpath': 'attachmentSet/item/status',
+            'transform_func': str
+        },
+        'instance_id': {
+            'xpath': 'attachmentSet/item/instanceId',
+            'transform_func': str
+        },
+        'delete': {
+            'xpath': 'attachmentSet/item/deleteOnTermination',
+            'transform_func': str
+        }
+    }
+}
+
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
 VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 
@@ -671,56 +899,10 @@ class BaseEC2NodeDriver(NodeDriver):
         Build an EC2ReservedNode object using the reserved instance properties.
         Information on these properties can be found at http://goo.gl/ulXCC7.
         """
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'instance_type': {
-                'xpath': 'instanceType',
-                'transform_func': str
-            },
-            'availability': {
-                'xpath': 'availabilityZone',
-                'transform_func': str
-            },
-            'start': {
-                'xpath': 'start',
-                'transform_func': str
-            },
-            'duration': {
-                'xpath': 'duration',
-                'transform_func': int
-            },
-            'usage_price': {
-                'xpath': 'usagePrice',
-                'transform_func': float
-            },
-            'fixed_price': {
-                'xpath': 'fixedPrice',
-                'transform_func': float
-            },
-            'instance_count': {
-                'xpath': 'instanceCount',
-                'transform_func': int
-            },
-            'description': {
-                'xpath': 'productDescription',
-                'transform_func': str
-            },
-            'instance_tenancy': {
-                'xpath': 'instanceTenancy',
-                'transform_func': str
-            },
-            'currency_code': {
-                'xpath': 'currencyCode',
-                'transform_func': str
-            },
-            'offering_type': {
-                'xpath': 'offeringType',
-                'transform_func': str
-            }
-        }
 
         # Get our extra dictionary
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['reserved_node'])
 
         try:
             size = [size for size in self.list_sizes() if
@@ -846,31 +1028,8 @@ class BaseEC2NodeDriver(NodeDriver):
         # If virtual name does not exist then this is an EBS volume.
         # Build the EBS dictionary leveraging the _get_extra_dict method.
         if mapping['virtual_name'] is None:
-            # Build our attributes map
-            attributes_map = {
-                'snapshot_id': {
-                    'xpath': 'ebs/snapshotId',
-                    'transform_func': str
-                },
-                'volume_size': {
-                    'xpath': 'ebs/volumeSize',
-                    'transform_func': int
-                },
-                'delete': {
-                    'xpath': 'ebs/deleteOnTermination',
-                    'transform_func': str
-                },
-                'volume_type': {
-                    'xpath': 'ebs/volumeType',
-                    'transform_func': str
-                },
-                'iops': {
-                    'xpath': 'ebs/iops',
-                    'transform_func': int
-                }
-            }
-
-            mapping['ebs'] = self._get_extra_dict(element, attributes_map)
+            mapping['ebs'] = self._get_extra_dict(
+                element, RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_volume'])
 
         return mapping
 
@@ -890,68 +1049,9 @@ class BaseEC2NodeDriver(NodeDriver):
         # Get our tags
         tags = self._get_resource_tags(element)
 
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'state': {
-                'xpath': 'imageState',
-                'transform_func': str
-            },
-            'owner_id': {
-                'xpath': 'imageOwnerId',
-                'transform_func': str
-            },
-            'owner_alias': {
-                'xpath': 'imageOwnerAlias',
-                'transform_func': str
-            },
-            'is_public': {
-                'xpath': 'isPublic',
-                'transform_func': str
-            },
-            'architecture': {
-                'xpath': 'architecture',
-                'transform_func': str
-            },
-            'image_type': {
-                'xpath': 'imageType',
-                'transform_func': str
-            },
-            'image_location': {
-                'xpath': 'imageLocation',
-                'transform_func': str
-            },
-            'platform': {
-                'xpath': 'platform',
-                'transform_func': str
-            },
-            'description': {
-                'xpath': 'description',
-                'transform_func': str
-            },
-            'root_device_type': {
-                'xpath': 'rootDeviceType',
-                'transform_func': str
-            },
-            'virtualization_type': {
-                'xpath': 'virtualizationType',
-                'transform_func': str
-            },
-            'hypervisor': {
-                'xpath': 'hypervisor',
-                'transform_func': str
-            },
-            'kernel_id': {
-                'xpath': 'kernelId',
-                'transform_func': str
-            },
-            'ramdisk_id': {
-                'xpath': 'ramdisk_id',
-                'transform_func': str
-            }
-        }
-
         # Get our extra dictionary
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['image'])
 
         # Add our tags and block device mapping
         extra['tags'] = tags
@@ -982,48 +1082,9 @@ class BaseEC2NodeDriver(NodeDriver):
         # fall back then use the volume id
         name = name if name else tags.get('Name', volId)
 
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'device': {
-                'xpath': 'device',
-                'transform_func': str
-            },
-            'iops': {
-                'xpath': 'iops',
-                'transform_func': int
-            },
-            'zone': {
-                'xpath': 'availabilityZone',
-                'transform_func': str
-            },
-            'create_time': {
-                'xpath': 'createTime',
-                'transform_func': parse_date
-            },
-            'state': {
-                'xpath': 'status',
-                'transform_func': str
-            },
-            'attach_time': {
-                'xpath': 'attachmentSet/item/attachTime',
-                'transform_func': parse_date
-            },
-            'attachment_status': {
-                'xpath': 'attachmentSet/item/status',
-                'transform_func': str
-            },
-            'instance_id': {
-                'xpath': 'attachmentSet/item/instanceId',
-                'transform_func': str
-            },
-            'delete': {
-                'xpath': 'attachmentSet/item/deleteOnTermination',
-                'transform_func': str
-            }
-        }
-
         # Get our extra dictionary
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['volume'])
 
         return StorageVolume(id=volId,
                              name=name,
@@ -1049,32 +1110,9 @@ class BaseEC2NodeDriver(NodeDriver):
         # fall back then use the snapshot id
         name = name if name else tags.get('Name', snapId)
 
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'volume_id': {
-                'xpath': 'volumeId',
-                'transform_func': str
-            },
-            'state': {
-                'xpath': 'status',
-                'transform_func': str
-            },
-            'description': {
-                'xpath': 'description',
-                'transform_func': str
-            },
-            'progress': {
-                'xpath': 'progress',
-                'transform_func': str
-            },
-            'start_time': {
-                'xpath': 'startTime',
-                'transform_func': parse_date
-            }
-        }
-
         # Get our extra dictionary
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['snapshot'])
 
         # Add tags and name to the extra dict
         extra['tags'] = tags
@@ -1105,28 +1143,9 @@ class BaseEC2NodeDriver(NodeDriver):
                               xpath='cidrBlock',
                               namespace=NAMESPACE)
 
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'state': {
-                'xpath': 'state',
-                'transform_func': str
-            },
-            'dhcp_options_id': {
-                'xpath': 'dhcpOptionsId',
-                'transform_func': str
-            },
-            'instance_tenancy': {
-                'xpath': 'instanceTenancy',
-                'transform_func': str
-            },
-            'is_default': {
-                'xpath': 'isDefault',
-                'transform_func': str
-            }
-        }
-
         # Get our extra dictionary
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['network'])
 
         # Add tags to the extra dict
         extra['tags'] = tags
@@ -1154,28 +1173,9 @@ class BaseEC2NodeDriver(NodeDriver):
                          xpath='state',
                          namespace=NAMESPACE)
 
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'cidr_block': {
-                'xpath': 'cidrBlock',
-                'transform_func': str
-            },
-            'available_ips': {
-                'xpath': 'availableIpAddressCount',
-                'transform_func': int
-            },
-            'zone': {
-                'xpath': 'availabilityZone',
-                'transform_func': str
-            },
-            'vpc_id': {
-                'xpath': 'vpcId',
-                'transform_func': str
-            }
-        }
-
         # Get our extra dictionary
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['subnet'])
 
         # Also include our tags
         extra['tags'] = tags
