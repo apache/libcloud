@@ -5,69 +5,21 @@
       "instances": [
         {
           "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:45:44.186-07:00",
+          "creationTimestamp": "2013-12-13T10:43:58.782-08:00",
           "disks": [
             {
               "boot": true,
-              "deviceName": "libcloud-demo-europe-boot-disk",
+              "deviceName": "libcloud-demo-europe-multiple-nodes-000",
               "index": 0,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "source": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-boot-disk",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-multiple-nodes-000",
               "type": "PERSISTENT"
             }
           ],
-          "id": "8051468456709756069",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
+          "id": "10947706194464948790",
           "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
-          "metadata": {
-            "fingerprint": "42WmSpB8rSM=",
-            "kind": "compute#metadata"
-          },
-          "name": "libcloud-demo-europe-persist-node",
-          "networkInterfaces": [
-            {
-              "accessConfigs": [
-                {
-                  "kind": "compute#accessConfig",
-                  "name": "External NAT",
-                  "natIP": "8.34.211.23",
-                  "type": "ONE_TO_ONE_NAT"
-                }
-              ],
-              "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.188.108"
-            }
-          ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-persist-node",
-          "status": "RUNNING",
-          "tags": {
-            "fingerprint": "EbZdwVRtKyg=",
-            "items": [
-              "libcloud",
-              "newtag"
-            ]
-          },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a"
-        },
-        {
-          "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:46:02.933-07:00",
-          "disks": [
-            {
-              "index": 0,
-              "kind": "compute#attachedDisk",
-              "mode": "READ_WRITE",
-              "type": "SCRATCH"
-            }
-          ],
-          "id": "04184465693678804555",
-          "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
-          "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
           "metadata": {
             "fingerprint": "42WmSpB8rSM=",
             "kind": "compute#metadata"
@@ -79,16 +31,20 @@
                 {
                   "kind": "compute#accessConfig",
                   "name": "External NAT",
-                  "natIP": "8.34.211.48",
+                  "natIP": "192.158.28.252",
                   "type": "ONE_TO_ONE_NAT"
                 }
               ],
               "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.141.92"
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.122.85"
             }
           ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-multiple-nodes-000",
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-multiple-nodes-000",
           "status": "RUNNING",
           "tags": {
             "fingerprint": "W7t6ZyTyIrc=",
@@ -96,32 +52,85 @@
               "libcloud"
             ]
           },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a"
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a"
         },
         {
           "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:44:57.127-07:00",
+          "creationTimestamp": "2013-12-13T10:43:37.267-08:00",
           "disks": [
             {
+              "boot": true,
+              "deviceName": "libcloud-demo-europe-boot-disk",
               "index": 0,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "type": "SCRATCH"
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-boot-disk",
+              "type": "PERSISTENT"
+            }
+          ],
+          "id": "517678477070693411",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-europe-persist-node",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "23.251.128.32",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.240.204"
+            }
+          ],
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-persist-node",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "EbZdwVRtKyg=",
+            "items": [
+              "libcloud",
+              "newtag"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-12-13T10:43:12.706-08:00",
+          "disks": [
+            {
+              "boot": true,
+              "deviceName": "libcloud-demo-europe-np-node",
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-np-node",
+              "type": "PERSISTENT"
             },
             {
               "deviceName": "libcloud-demo-europe-attach-disk",
               "index": 1,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "source": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-attach-disk",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/disks/libcloud-demo-europe-attach-disk",
               "type": "PERSISTENT"
             }
           ],
-          "id": "4450078356274958103",
-          "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
+          "id": "3421745795082776097",
           "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/machineTypes/n1-standard-1",
           "metadata": {
             "fingerprint": "42WmSpB8rSM=",
             "kind": "compute#metadata"
@@ -133,16 +142,20 @@
                 {
                   "kind": "compute#accessConfig",
                   "name": "External NAT",
-                  "natIP": "8.34.208.52",
+                  "natIP": "23.251.128.10",
                   "type": "ONE_TO_ONE_NAT"
                 }
               ],
               "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.48.164"
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.221.125"
             }
           ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-np-node",
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a/instances/libcloud-demo-europe-np-node",
           "status": "RUNNING",
           "tags": {
             "fingerprint": "W7t6ZyTyIrc=",
@@ -150,7 +163,7 @@
               "libcloud"
             ]
           },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a"
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a"
         }
       ]
     },
@@ -170,20 +183,21 @@
       "instances": [
         {
           "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:47:29.154-07:00",
+          "creationTimestamp": "2013-12-13T10:45:23.351-08:00",
           "disks": [
             {
+              "boot": true,
+              "deviceName": "persistent-disk-0",
               "index": 0,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "type": "SCRATCH"
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/node-name",
+              "type": "PERSISTENT"
             }
           ],
-          "id": "10348912619288589086",
-          "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20130617",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-v20130603",
+          "id": "4006034190819017667",
           "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/machineTypes/n1-standard-1",
           "metadata": {
             "fingerprint": "42WmSpB8rSM=",
             "kind": "compute#metadata"
@@ -195,21 +209,25 @@
                 {
                   "kind": "compute#accessConfig",
                   "name": "External NAT",
-                  "natIP": "8.35.197.91",
+                  "natIP": "23.236.58.15",
                   "type": "ONE_TO_ONE_NAT"
                 }
               ],
               "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.123.204"
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.72.75"
             }
           ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a/instances/node-name",
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instances/node-name",
           "status": "RUNNING",
           "tags": {
             "fingerprint": "42WmSpB8rSM="
           },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a"
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a"
         }
       ]
     },
@@ -229,53 +247,7 @@
       "instances": [
         {
           "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:44:03.801-07:00",
-          "disks": [
-            {
-              "index": 0,
-              "kind": "compute#attachedDisk",
-              "mode": "READ_WRITE",
-              "type": "SCRATCH"
-            }
-          ],
-          "id": "8843444782291050664",
-          "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
-          "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
-          "metadata": {
-            "fingerprint": "42WmSpB8rSM=",
-            "kind": "compute#metadata"
-          },
-          "name": "libcloud-demo-multiple-nodes-001",
-          "networkInterfaces": [
-            {
-              "accessConfigs": [
-                {
-                  "kind": "compute#accessConfig",
-                  "name": "External NAT",
-                  "natIP": "173.255.121.180",
-                  "type": "ONE_TO_ONE_NAT"
-                }
-              ],
-              "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.167.120"
-            }
-          ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/instances/libcloud-demo-multiple-nodes-001",
-          "status": "RUNNING",
-          "tags": {
-            "fingerprint": "W7t6ZyTyIrc=",
-            "items": [
-              "libcloud"
-            ]
-          },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
-        },
-        {
-          "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:43:49.457-07:00",
+          "creationTimestamp": "2013-12-13T10:42:03.180-08:00",
           "disks": [
             {
               "boot": true,
@@ -283,14 +255,13 @@
               "index": 0,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "source": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/disks/libcloud-demo-boot-disk",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/disks/libcloud-demo-boot-disk",
               "type": "PERSISTENT"
             }
           ],
-          "id": "2278280472037226745",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
+          "id": "2184470466384636715",
           "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
           "metadata": {
             "fingerprint": "42WmSpB8rSM=",
             "kind": "compute#metadata"
@@ -302,16 +273,20 @@
                 {
                   "kind": "compute#accessConfig",
                   "name": "External NAT",
-                  "natIP": "173.255.121.109",
+                  "natIP": "173.255.120.70",
                   "type": "ONE_TO_ONE_NAT"
                 }
               ],
               "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.102.153"
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.235.148"
             }
           ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/instances/libcloud-demo-persist-node",
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/instances/libcloud-demo-persist-node",
           "status": "RUNNING",
           "tags": {
             "fingerprint": "EbZdwVRtKyg=",
@@ -320,78 +295,33 @@
               "newtag"
             ]
           },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a"
         },
         {
           "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:44:03.256-07:00",
+          "creationTimestamp": "2013-12-13T10:41:47.059-08:00",
           "disks": [
             {
+              "boot": true,
+              "deviceName": "libcloud-demo-np-node",
               "index": 0,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "type": "SCRATCH"
-            }
-          ],
-          "id": "0994482023759804723",
-          "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
-          "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
-          "metadata": {
-            "fingerprint": "42WmSpB8rSM=",
-            "kind": "compute#metadata"
-          },
-          "name": "libcloud-demo-multiple-nodes-000",
-          "networkInterfaces": [
-            {
-              "accessConfigs": [
-                {
-                  "kind": "compute#accessConfig",
-                  "name": "External NAT",
-                  "natIP": "173.255.121.133",
-                  "type": "ONE_TO_ONE_NAT"
-                }
-              ],
-              "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.164.41"
-            }
-          ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/instances/libcloud-demo-multiple-nodes-000",
-          "status": "RUNNING",
-          "tags": {
-            "fingerprint": "W7t6ZyTyIrc=",
-            "items": [
-              "libcloud"
-            ]
-          },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
-        },
-        {
-          "canIpForward": false,
-          "creationTimestamp": "2013-11-01T14:43:15.485-07:00",
-          "disks": [
-            {
-              "index": 0,
-              "kind": "compute#attachedDisk",
-              "mode": "READ_WRITE",
-              "type": "SCRATCH"
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/disks/libcloud-demo-np-node",
+              "type": "PERSISTENT"
             },
             {
               "deviceName": "libcloud-demo-attach-disk",
               "index": 1,
               "kind": "compute#attachedDisk",
               "mode": "READ_WRITE",
-              "source": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/disks/libcloud-demo-attach-disk",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/disks/libcloud-demo-attach-disk",
               "type": "PERSISTENT"
             }
           ],
-          "id": "08480381647283539833",
-          "image": "https://www.googleapis.com/compute/v1beta16/projects/debian-cloud/global/images/debian-7-wheezy-v20131014",
-          "kernel": "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
+          "id": "18059053700460342373",
           "kind": "compute#instance",
-          "machineType": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
           "metadata": {
             "fingerprint": "42WmSpB8rSM=",
             "kind": "compute#metadata"
@@ -403,16 +333,20 @@
                 {
                   "kind": "compute#accessConfig",
                   "name": "External NAT",
-                  "natIP": "173.255.121.95",
+                  "natIP": "173.255.120.58",
                   "type": "ONE_TO_ONE_NAT"
                 }
               ],
               "name": "nic0",
-              "network": "https://www.googleapis.com/compute/v1beta16/projects/project_name/global/networks/default",
-              "networkIP": "10.240.37.226"
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.45.206"
             }
           ],
-          "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a/instances/libcloud-demo-np-node",
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/instances/libcloud-demo-np-node",
           "status": "RUNNING",
           "tags": {
             "fingerprint": "W7t6ZyTyIrc=",
@@ -420,11 +354,113 @@
               "libcloud"
             ]
           },
-          "zone": "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-12-13T10:42:24.841-08:00",
+          "disks": [
+            {
+              "boot": true,
+              "deviceName": "libcloud-demo-multiple-nodes-000",
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/disks/libcloud-demo-multiple-nodes-000",
+              "type": "PERSISTENT"
+            }
+          ],
+          "id": "4196532528539285480",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-multiple-nodes-000",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "173.255.120.211",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.218.251"
+            }
+          ],
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/instances/libcloud-demo-multiple-nodes-000",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a"
+        },
+        {
+          "canIpForward": false,
+          "creationTimestamp": "2013-12-13T10:42:19.041-08:00",
+          "disks": [
+            {
+              "boot": true,
+              "deviceName": "libcloud-demo-multiple-nodes-001",
+              "index": 0,
+              "kind": "compute#attachedDisk",
+              "mode": "READ_WRITE",
+              "source": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/disks/libcloud-demo-multiple-nodes-001",
+              "type": "PERSISTENT"
+            }
+          ],
+          "id": "1066146046261788296",
+          "kind": "compute#instance",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/machineTypes/n1-standard-1",
+          "metadata": {
+            "fingerprint": "42WmSpB8rSM=",
+            "kind": "compute#metadata"
+          },
+          "name": "libcloud-demo-multiple-nodes-001",
+          "networkInterfaces": [
+            {
+              "accessConfigs": [
+                {
+                  "kind": "compute#accessConfig",
+                  "name": "External NAT",
+                  "natIP": "173.255.120.207",
+                  "type": "ONE_TO_ONE_NAT"
+                }
+              ],
+              "name": "nic0",
+              "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+              "networkIP": "10.240.24.29"
+            }
+          ],
+          "scheduling": {
+            "automaticRestart": true,
+            "onHostMaintenance": "MIGRATE"
+          },
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/instances/libcloud-demo-multiple-nodes-001",
+          "status": "RUNNING",
+          "tags": {
+            "fingerprint": "W7t6ZyTyIrc=",
+            "items": [
+              "libcloud"
+            ]
+          },
+          "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a"
         }
       ]
     }
   },
   "kind": "compute#instanceAggregatedList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/aggregated/instances"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/aggregated/instances"
 }

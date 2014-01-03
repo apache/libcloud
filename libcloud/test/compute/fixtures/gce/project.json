@@ -55,5 +55,5 @@
       "usage": 1.0
     }
   ],
-  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name"
 }

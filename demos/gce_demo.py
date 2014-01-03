@@ -180,14 +180,17 @@ def main():
     zones = gce.ex_list_zones()
     display('Zones', zones)
 
+    snapshots = gce.ex_list_snapshots()
+    display('Snapshots', snapshots)
+
     # == Clean up any old demo resources ==
     print('Cleaning up any "%s" resources:' % DEMO_BASE_NAME)
     clean_up(gce, DEMO_BASE_NAME, all_nodes,
-             all_addresses + all_volumes + firewalls + networks)
+             all_addresses + all_volumes + firewalls + networks + snapshots)
 
-    # == Create Node with non-persistent disk ==
+    # == Create Node with disk auto-created ==
     if MAX_NODES > 1:
-        print('Creating Node with non-persistent disk:')
+        print('Creating Node with auto-created disk:')
         name = '%s-np-node' % DEMO_BASE_NAME
         node_1 = gce.create_node(name, 'n1-standard-1', 'debian-7',
                                  ex_tags=['libcloud'])
@@ -205,17 +208,29 @@ def main():
             if gce.detach_volume(volume, ex_node=node_1):
                 print('   Detached %s from %s' % (volume.name, node_1.name))
 
-    # == Create Node with persistent disk ==
-    print('Creating Node with Persistent disk:')
+    # == Create Snapshot ==
+    print('Creating a snapshot from existing disk:')
+    # Create a disk to snapshot
+    vol_name = '%s-snap-template' % DEMO_BASE_NAME
+    image = gce.ex_get_image('debian-7')
+    vol = gce.create_volume(None, vol_name, image=image)
+    print('   Created disk %s to shapshot' % DEMO_BASE_NAME)
+    # Snapshot volume
+    snapshot = vol.snapshot('%s-snapshot' % DEMO_BASE_NAME)
+    print('   Snapshot %s created' % snapshot.name)
+
+    # == Create Node with existing disk ==
+    print('Creating Node with existing disk:')
     name = '%s-persist-node' % DEMO_BASE_NAME
     # Use objects this time instead of names
     # Get latest Debian 7 image
     image = gce.ex_get_image('debian-7')
     # Get Machine Size
     size = gce.ex_get_size('n1-standard-1')
-    # Create Disk.  Size is None to just take default of image
+    # Create Disk from Snapshot created above
     volume_name = '%s-boot-disk' % DEMO_BASE_NAME
-    volume = gce.create_volume(None, volume_name, image=image)
+    volume = gce.create_volume(None, volume_name, snapshot=snapshot)
+    print('   Created %s from snapshot' % volume.name)
     # Create Node with Disk
     node_2 = gce.create_node(name, size, image, ex_tags=['libcloud'],
                              ex_boot_disk=volume)
@@ -282,10 +297,13 @@ def main():
     networks = gce.ex_list_networks()
     display('Networks', networks)
 
+    snapshots = gce.ex_list_snapshots()
+    display('Snapshots', snapshots)
+
     if CLEANUP:
         print('Cleaning up %s resources created.' % DEMO_BASE_NAME)
         clean_up(gce, DEMO_BASE_NAME, nodes,
-                 addresses + volumes + firewalls + networks)
+                 addresses + volumes + firewalls + networks + snapshots)
 
 if __name__ == '__main__':
     main()
