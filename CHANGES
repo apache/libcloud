@@ -168,6 +168,10 @@ Changes with Apache Libcloud in development
      ex_delete_network_interface) to the EC2 driver. (LIBCLOUD-474)
      [Chris DeRamus]
 
+   - Update Google Compute Engine driver to use and work with API v1.
+     (LIBCLOUD-450)
+     [Rick Wright]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
