@@ -33,7 +33,7 @@ from libcloud.compute.base import Node, NodeDriver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import NodeAuthSSHKey, NodeAuthPassword
 
-API_ROOT = '/vapi'
+API_ROOT = ''
 
 NODE_STATE_MAP = {
     'BUILDING': NodeState.PENDING,

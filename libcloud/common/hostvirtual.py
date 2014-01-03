@@ -22,7 +22,7 @@ from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 
-API_HOST = 'www.vr.org'
+API_HOST = 'vapi.vr.org'
 
 
 class HostVirtualException(LibcloudError):
