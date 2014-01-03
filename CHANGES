@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud in development
 
+  *) General
+
+    - Update API endpoints which are used in the HostVirtual drivers.
+      (LIBCLOUD-489)
+      [Dinesh Bhoopathy]
+
   *) Compute
 
     - Remove Slicehost driver.
