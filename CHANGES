@@ -201,6 +201,12 @@ Changes with Apache Libcloud in development
       Reported by  Andrew Udvare.
       [Tomaz Muraus]
 
+    - Fix list_records method in the HostVirtual driver.
+      (LIBCLOUD-484, GITHUB-218)
+
+      Reported by Andrew Udvare.
+      [Dinesh Bhoopathy]
+
 Changes with Apache Libcloud 0.14.0-beta3
 
   *) General
