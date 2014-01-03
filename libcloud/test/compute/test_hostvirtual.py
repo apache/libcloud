@@ -141,51 +141,51 @@ class HostVirtualTest(unittest.TestCase):
 class HostVirtualMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('hostvirtual')
 
-    def _vapi_cloud_servers(self, method, url, body, headers):
+    def _cloud_servers(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server(self, method, url, body, headers):
+    def _cloud_server(self, method, url, body, headers):
         body = self.fixtures.load('get_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_sizes(self, method, url, body, headers):
+    def _cloud_sizes(self, method, url, body, headers):
         body = self.fixtures.load('list_sizes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_images(self, method, url, body, headers):
+    def _cloud_images(self, method, url, body, headers):
         body = self.fixtures.load('list_images.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_locations(self, method, url, body, headers):
+    def _cloud_locations(self, method, url, body, headers):
         body = self.fixtures.load('list_locations.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_cancel(self, method, url, body, headers):
+    def _cloud_cancel(self, method, url, body, headers):
         body = self.fixtures.load('node_destroy.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server_reboot(self, method, url, body, headers):
+    def _cloud_server_reboot(self, method, url, body, headers):
         body = self.fixtures.load('node_reboot.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server_shutdown(self, method, url, body, headers):
+    def _cloud_server_shutdown(self, method, url, body, headers):
         body = self.fixtures.load('node_stop.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server_start(self, method, url, body, headers):
+    def _cloud_server_start(self, method, url, body, headers):
         body = self.fixtures.load('node_start.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_buy(self, method, url, body, headers):
+    def _cloud_buy(self, method, url, body, headers):
         body = self.fixtures.load('create_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server_build(self, method, url, body, headers):
+    def _cloud_server_build(self, method, url, body, headers):
         body = self.fixtures.load('create_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_cloud_server_delete(self, method, url, body, headers):
+    def _cloud_server_delete(self, method, url, body, headers):
         body = self.fixtures.load('node_destroy.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
