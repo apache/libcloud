@@ -162,6 +162,12 @@ Changes with Apache Libcloud in development
      (CVE-2013-6480)
      [Tomaz Muraus]
 
+   - Add extension methods for network interface management
+     (ex_list_network_interfaces, ex_create_network_interface,
+     ex_attach_network_interface_to_node, ex_detach_network_interface,
+     ex_delete_network_interface) to the EC2 driver. (LIBCLOUD-474)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
