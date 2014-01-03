@@ -230,25 +230,25 @@ class HostVirtualMockHttp(MockHttp):
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _dns_record_ZONE_DOES_NOT_EXIST(self, method,
-                                             url, body, headers):
+                                        url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _dns_record_RECORD_DOES_NOT_EXIST(self, method,
-                                               url, body, headers):
+                                          url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _dns_records_ZONE_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                         url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
     def _dns_zones_RECORD_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+                                         url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
