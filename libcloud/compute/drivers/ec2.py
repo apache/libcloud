@@ -616,7 +616,9 @@ class EC2NetworkInterface(object):
     """
     Represents information about a VPC network interface
 
-    Note: This class is EC2 specific.
+    Note: This class is EC2 specific. The state parameter denotes the current
+    status of the interface. Valid values for state are attaching, attached,
+    detaching and detached.
     """
 
     def __init__(self, id, name, state, extra=None):
@@ -2623,10 +2625,14 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      description:  Optional description of the network interface
         :type       description:  ``str``
 
-        :param      private_ip_address:  Optional IP address assigned. If not
-                                         provided an address will be
-                                         auto-assigned
-        :type       private_ip_address:  ``str``
+        :param      private_ip_address: Optional address to assign as the
+                                        primary private IP address of the
+                                        interface. If one is not provided then
+                                        Amazon will automatically auto-assign
+                                        an available IP. EC2 allows assignment
+                                        of multiple IPs, but this will be
+                                        the primary.
+        :type       private_ip_address: ``str``
 
         :return:    EC2NetworkInterface instance
         :rtype:     :class `EC2NetworkInterface`
@@ -2711,6 +2717,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      force: Forces the detachment.
         :type       force: ``bool``
 
+        :return:    ``True`` on successful detachment, ``False`` otherwise.
         :rtype:     ``bool``
         """
         params = {'Action': 'DetachNetworkInterface',
