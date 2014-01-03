@@ -868,6 +868,48 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         resp = self.driver.ex_get_console_output(node)
         self.assertEqual('Test String', resp['output'])
 
+    def test_ex_list_network_interfaces(self):
+        interfaces = self.driver.ex_list_network_interfaces()
+
+        self.assertEqual(len(interfaces), 2)
+
+        self.assertEqual('eni-18e6c05e', interfaces[0].id)
+        self.assertEqual('in-use', interfaces[0].state)
+        self.assertEqual('0e:6e:df:72:78:af',
+                         interfaces[0].extra['mac_address'])
+
+        self.assertEqual('eni-83e3c5c5', interfaces[1].id)
+        self.assertEqual('in-use', interfaces[1].state)
+        self.assertEqual('0e:93:0b:e9:e9:c4',
+                         interfaces[1].extra['mac_address'])
+
+    def test_ex_create_network_interface(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        interface = self.driver.ex_create_network_interface(
+            subnet,
+            name='Test Interface',
+            description='My Test')
+
+        self.assertEqual('eni-2b36086d', interface.id)
+        self.assertEqual('pending', interface.state)
+        self.assertEqual('0e:bd:49:3e:11:74', interface.extra['mac_address'])
+
+    def test_ex_delete_network_interface(self):
+        interface = self.driver.ex_list_network_interfaces()[0]
+        resp = self.driver.ex_delete_network_interface(interface)
+        self.assertTrue(resp)
+
+    def test_ex_attach_network_interface_to_node(self):
+        node = self.driver.list_nodes()[0]
+        interface = self.driver.ex_list_network_interfaces()[0]
+        resp = self.driver.ex_attach_network_interface_to_node(interface,
+                                                               node, 1)
+        self.assertTrue(resp)
+
+    def test_ex_detach_network_interface(self):
+        resp = self.driver.ex_detach_network_interface('eni-attach-2b588b47')
+        self.assertTrue(resp)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
@@ -1181,6 +1223,26 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _GetConsoleOutput(self, method, url, body, headers):
         body = self.fixtures.load('get_console_output.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeNetworkInterfaces(self, method, url, body, headers):
+        body = self.fixtures.load('describe_network_interfaces.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('create_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('delete_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _AttachNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('attach_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DetachNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('detach_network_interface.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
