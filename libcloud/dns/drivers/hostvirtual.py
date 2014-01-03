@@ -113,10 +113,10 @@ class HostVirtualDNSDriver(DNSDriver):
         return zones
 
     def list_records(self, zone):
-        params = {'zone_id': zone.id}
+        params = {'id': zone.id}
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
         result = self.connection.request(
-            API_ROOT + '/dns/records/', data=json.dumps(params)).object
+            API_ROOT + '/dns/records/', params=params).object
         records = self._to_records(items=result, zone=zone)
         return records
 
