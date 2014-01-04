@@ -571,6 +571,70 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': str
         }
     },
+    'network_interface': {
+        'subnet_id': {
+            'xpath': 'subnetId',
+            'transform_func': str
+        },
+        'vpc_id': {
+            'xpath': 'vpcId',
+            'transform_func': str
+        },
+        'zone': {
+            'xpath': 'availabilityZone',
+            'transform_func': str
+        },
+        'description': {
+            'xpath': 'description',
+            'transform_func': str
+        },
+        'owner_id': {
+            'xpath': 'ownerId',
+            'transform_func': str
+        },
+        'mac_address': {
+            'xpath': 'macAddress',
+            'transform_func': str
+        },
+        'private_dns_name': {
+            'xpath': 'privateIpAddressesSet/privateDnsName',
+            'transform_func': str
+        },
+        'source_dest_check': {
+            'xpath': 'sourceDestCheck',
+            'transform_func': str
+        }
+    },
+    'network_interface_attachment': {
+        'attachment_id': {
+            'xpath': 'attachment/attachmentId',
+            'transform_func': str
+        },
+        'instance_id': {
+            'xpath': 'attachment/instanceId',
+            'transform_func': str
+        },
+        'owner_id': {
+            'xpath': 'attachment/instanceOwnerId',
+            'transform_func': str
+        },
+        'device_index': {
+            'xpath': 'attachment/deviceIndex',
+            'transform_func': int
+        },
+        'status': {
+            'xpath': 'attachment/status',
+            'transform_func': str
+        },
+        'attach_time': {
+            'xpath': 'attachment/attachTime',
+            'transform_func': parse_date
+        },
+        'delete': {
+            'xpath': 'attachment/deleteOnTermination',
+            'transform_func': str
+        }
+    },
     'reserved_node': {
         'instance_type': {
             'xpath': 'instanceType',
@@ -1262,79 +1326,14 @@ class BaseEC2NodeDriver(NodeDriver):
                                                 xpath='primary',
                                                 namespace=NAMESPACE)})
 
-        # Build our attachment extra attributes map
-        attachment_attributes_map = {
-            'attachment_id': {
-                'xpath': 'attachment/attachmentId',
-                'transform_func': str
-            },
-            'instance_id': {
-                'xpath': 'attachment/instanceId',
-                'transform_func': str
-            },
-            'owner_id': {
-                'xpath': 'attachment/instanceOwnerId',
-                'transform_func': str
-            },
-            'device_index': {
-                'xpath': 'attachment/deviceIndex',
-                'transform_func': int
-            },
-            'status': {
-                'xpath': 'attachment/status',
-                'transform_func': str
-            },
-            'attach_time': {
-                'xpath': 'attachment/attachTime',
-                'transform_func': parse_date
-            },
-            'delete': {
-                'xpath': 'attachment/deleteOnTermination',
-                'transform_func': str
-            },
-        }
-
         # Build our attachment dictionary which we will add into extra later
-        attachment = self._get_extra_dict(element, attachment_attributes_map)
-
-        # Build our extra attributes map
-        extra_attributes_map = {
-            'subnet_id': {
-                'xpath': 'subnetId',
-                'transform_func': str
-            },
-            'vpc_id': {
-                'xpath': 'vpcId',
-                'transform_func': str
-            },
-            'zone': {
-                'xpath': 'availabilityZone',
-                'transform_func': str
-            },
-            'description': {
-                'xpath': 'description',
-                'transform_func': str
-            },
-            'owner_id': {
-                'xpath': 'ownerId',
-                'transform_func': str
-            },
-            'mac_address': {
-                'xpath': 'macAddress',
-                'transform_func': str
-            },
-            'private_dns_name': {
-                'xpath': 'privateIpAddressesSet/privateDnsName',
-                'transform_func': str
-            },
-            'source_dest_check': {
-                'xpath': 'sourceDestCheck',
-                'transform_func': str
-            }
-        }
+        attributes_map = \
+            RESOURCE_EXTRA_ATTRIBUTES_MAP['network_interface_attachment']
+        attachment = self._get_extra_dict(element, attributes_map)
 
         # Build our extra dict
-        extra = self._get_extra_dict(element, extra_attributes_map)
+        attributes_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network_interface']
+        extra = self._get_extra_dict(element, attributes_map)
 
         # Include our previously built items as well
         extra['tags'] = tags
