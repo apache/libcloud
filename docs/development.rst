@@ -132,8 +132,8 @@ Bad:
 
     some_method(public_ips, private_ips)
 
-4. Don't abuse **kwargs
-~~~~~~~~~~~~~~~~~~~~~~~
+4. Don't abuse \*\*kwargs
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You should always explicitly declare arguments in a function or a method
 signature and only use ``**kwargs`` and ``*args`` respectively when there is a
