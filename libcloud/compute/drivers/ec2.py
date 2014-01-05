@@ -2051,14 +2051,14 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_create_security_group(self, name, description, vpc_id=None):
         """
-        Creates a new Security Group in EC2-Classic or a targetted VPC
+        Creates a new Security Group in EC2-Classic or a targetted VPC.
 
         :param      name:        The name of the security group to Create.
                                  This must be unique.
         :type       name:        ``str``
 
         :param      description: Human readable description of a Security
-        Group.
+                                 Group.
         :type       description: ``str``
 
         :param      description: Optional identifier for VPC networks
@@ -2116,10 +2116,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_delete_security_group(self, name):
         """
-        Wrapper method which calls ex_delete_security_group_by_name
+        Wrapper method which calls ex_delete_security_group_by_name.
 
         :param      name: The name of the security group
-        :type       name ``str``
+        :type       name: ``str``
 
         :rtype: ``bool``
         """
@@ -2956,7 +2956,8 @@ class BaseEC2NodeDriver(NodeDriver):
         return self.ex_modify_instance_attribute(node, attributes)
 
     def create_node(self, **kwargs):
-        """Create a new EC2 node
+        """
+        Create a new EC2 node.
 
         Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
 
@@ -2985,9 +2986,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type       ex_clienttoken: ``str``
 
         :keyword    ex_blockdevicemappings: ``list`` of ``dict`` block device
-                    mappings. Example:
-                    [{'DeviceName': '/dev/sda1', 'Ebs.VolumeSize': 10},
-                     {'DeviceName': '/dev/sdb', 'VirtualName': 'ephemeral0'}]
+                    mappings.
         :type       ex_blockdevicemappings: ``list`` of ``dict``
 
         :keyword    ex_iamprofile: Name or ARN of IAM profile
@@ -3142,8 +3141,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :return:    Dictionary with the following keys:
                     - instance_id (``str``)
-                    - timestamp (``datetime.datetime``) - timestamp of the last
-                      output
+                    - timestamp (``datetime.datetime``) - ts of the last output
                     - output (``str``) - console output
         :rtype:     ``dict``
         """

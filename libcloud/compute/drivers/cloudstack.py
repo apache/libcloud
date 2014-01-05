@@ -557,18 +557,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         """
         Stops/Suspends a running virtual machine
 
+        :param node: Node to stop.
         :type node: :class:`CloudStackNode`
 
-        :param id: The ID of the virtual machine
-        :type  id: ``str``
-
-        :param forced: Force stop the VM
-                       (vm is marked as Stopped even when command
-                        fails to be send to the backend).
-                       The caller knows the VM is stopped.
-        :type  forced: ``bool``
-
-        :rtype ``str``
+        :rtype: ``str``
         """
         res = self._async_request(command='stopVirtualMachine',
                                   params={'id': node.id},
@@ -844,11 +836,11 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :param     projectid: The project associated with keypair
         :type      projectid: ``str``
 
-        :param     domainid : The domain ID associated with the keypair
+        :param     domainid: The domain ID associated with the keypair
         :type      domainid: ``str``
 
-        :param     account : The account associated with the keypair.
-                             Must be used with the domainId parameter.
+        :param     account: The account associated with the keypair.
+                            Must be used with the domainId parameter.
         :type      account: ``str``
 
         :return:   True of False based on success of Keypair deletion
@@ -1240,10 +1232,10 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :param     projectid: The project associated with keypair
         :type      projectid: ``str``
 
-        :param     domainid : The domain ID associated with the keypair
+        :param     domainid: The domain ID associated with the keypair
         :type      domainid: ``str``
 
-        :param     account : The account associated with the keypair.
+        :param     account: The account associated with the keypair.
                              Must be used with the domainId parameter.
         :type      account: ``str``
 
