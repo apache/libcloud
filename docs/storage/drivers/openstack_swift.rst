@@ -17,7 +17,7 @@ the driver constructor:
 
 For more information about other keyword arguments you can pass to the
 constructor, please refer to the :ref:`Connecting to the OpenStack installation
-section <connecting-to-openstack-installation>` of our documentation.
+<connecting-to-openstack-installation>` section of our documentation.
 
 Examples
 --------
@@ -26,7 +26,8 @@ Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example shows how to connect to a Swift installation which uses a
-non-default value for the service name attribute in the service catalog.
+non-default value (``Object Storage Service``) for the service name attribute
+in the service catalog.
 
 .. literalinclude:: /examples/storage/swift/connect_to_swift.py
    :language: python
