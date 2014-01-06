@@ -161,13 +161,13 @@ class CloudFilesConnection(OpenStackBaseConnection):
             raw=raw)
 
 
-class CloudFilesSwiftConnection(CloudFilesConnection):
+class OpenStackSwiftConnection(CloudFilesConnection):
     """
-    Connection class for the Cloudfiles Swift endpoint.
+    Connection class for the OpenStack Swift endpoint.
     """
 
     def __init__(self, *args, **kwargs):
-        super(CloudFilesSwiftConnection, self).__init__(*args, **kwargs)
+        super(OpenStackSwiftConnection, self).__init__(*args, **kwargs)
         self._service_type = self._ex_force_service_type or 'object-store'
         self._service_name = self._ex_force_service_name or 'swift'
         self._service_region = self._ex_force_service_region.upper()
@@ -836,16 +836,16 @@ class CloudFilesUSStorageDriver(CloudFilesStorageDriver):
         super(CloudFilesUSStorageDriver, self).__init__(*args, **kwargs)
 
 
-class CloudFilesSwiftStorageDriver(CloudFilesStorageDriver):
+class OpenStackSwiftStorageDriver(CloudFilesStorageDriver):
     """
-    Cloudfiles storage driver for the OpenStack Swift.
+    Storage driver for the OpenStack Swift.
     """
     type = Provider.CLOUDFILES_SWIFT
-    name = 'CloudFiles (SWIFT)'
-    connectionCls = CloudFilesSwiftConnection
+    name = 'OpenStack Swift'
+    connectionCls = OpenStackSwiftConnection
 
     def __init__(self, *args, **kwargs):
-        super(CloudFilesSwiftStorageDriver, self).__init__(*args, **kwargs)
+        super(OpenStackSwiftStorageDriver, self).__init__(*args, **kwargs)
 
 
 class CloudFilesUKStorageDriver(CloudFilesStorageDriver):
