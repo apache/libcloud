@@ -1,6 +1,8 @@
 OpenStack Compute Driver Documentation
 ======================================
 
+.. _connecting-to-openstack-installation:
+
 Connecting to the OpenStack installation
 ----------------------------------------
 
