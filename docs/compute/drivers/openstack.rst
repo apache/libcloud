@@ -1,6 +1,16 @@
 OpenStack Compute Driver Documentation
 ======================================
 
+`OpenStack`_ is an open-source project which allows you to build and run your
+own public or a private cloud.
+
+.. figure:: /_static/images/provider_logos/openstack.png
+    :align: center
+    :width: 200
+    :target: http://www.openstack.org/
+
+Among many other private clouds, it also powers Rackspace's Public Cloud.
+
 .. _connecting-to-openstack-installation:
 
 Connecting to the OpenStack installation
@@ -181,3 +191,5 @@ API Docs
 .. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_0_NodeDriver
     :members:
     :inherited-members:
+
+.. _`OpenStack`: http://www.openstack.org/
