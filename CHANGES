@@ -203,6 +203,14 @@ Changes with Apache Libcloud in development
       Reported by Noah Kantrowitz.
       [Tomaz Muraus]
 
+    - Update OpenStack Swift driver constructor so it accepts "region",
+      "ex_force_service_type" and "ex_force_service_name" argument.
+      [Tomaz Muraus]
+
+    - Deprecate "CLOUDFILES_SWIFT" provider constant in favor of new
+      "OPENSTACK_SWIFT" one.
+      [Tomaz Muraus]
+
   *) DNS
 
     - Implement iterate_* methods in the Route53 driver and makes it work
