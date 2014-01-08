@@ -167,15 +167,15 @@ class ParamikoSSHClient(BaseSSHClient):
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, timeout=None):
         """
-        Note #1: Authentication is always attempted in the following order:
+        Authentication is always attempted in the following order:
 
-        - The key passed in (if provided)
-        - Any key we can find through an SSH agent
-        - Any "id_rsa" or "id_dsa" key discoverable in ~/.ssh/
-        - Plain username/password auth, if a password was given (if provided)
-
-        Note #2: If a password protected key is used, `password` argument
-        represents a password which will be used to unlock the key file.
+        - The key passed in (if key is provided)
+        - Any key we can find through an SSH agent (only if no password and
+          key is provided)
+        - Any "id_rsa" or "id_dsa" key discoverable in ~/.ssh/ (only if no
+          password and key is provided)
+        - Plain username/password auth, if a password was given (if password is
+          provided)
         """
         super(ParamikoSSHClient, self).__init__(hostname, port, username,
                                                 password, key, timeout)
@@ -187,14 +187,18 @@ class ParamikoSSHClient(BaseSSHClient):
         conninfo = {'hostname': self.hostname,
                     'port': self.port,
                     'username': self.username,
-                    'allow_agent': True,
-                    'look_for_keys': True}
+                    'allow_agent': False,
+                    'look_for_keys': False}
 
         if self.password:
             conninfo['password'] = self.password
 
         if self.key:
             conninfo['key_filename'] = self.key
+
+        if not self.password and not self.key:
+            conninfo['allow_agent'] = True
+            conninfo['look_for_keys'] = True
 
         if self.timeout:
             conninfo['timeout'] = self.timeout

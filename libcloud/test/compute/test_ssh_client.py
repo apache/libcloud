@@ -60,9 +60,9 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         expected_conn = {'username': 'ubuntu',
                          'password': 'ubuntu',
-                         'allow_agent': True,
+                         'allow_agent': False,
                          'hostname': 'dummy.host.org',
-                         'look_for_keys': True,
+                         'look_for_keys': False,
                          'port': 22}
         mock.client.connect.assert_called_once_with(**expected_conn)
         self.assertLogMsg('Connecting to server')
@@ -76,9 +76,9 @@ class ParamikoSSHClientTests(unittest.TestCase):
         mock.connect()
 
         expected_conn = {'username': 'ubuntu',
-                         'allow_agent': True,
+                         'allow_agent': False,
                          'hostname': 'dummy.host.org',
-                         'look_for_keys': True,
+                         'look_for_keys': False,
                          'key_filename': 'id_rsa',
                          'port': 22}
         mock.client.connect.assert_called_once_with(**expected_conn)
@@ -95,9 +95,9 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
         expected_conn = {'username': 'ubuntu',
                          'password': 'ubuntu',
-                         'allow_agent': True,
+                         'allow_agent': False,
                          'hostname': 'dummy.host.org',
-                         'look_for_keys': True,
+                         'look_for_keys': False,
                          'key_filename': 'id_rsa',
                          'port': 22}
         mock.client.connect.assert_called_once_with(**expected_conn)
@@ -136,9 +136,9 @@ class ParamikoSSHClientTests(unittest.TestCase):
         mock_cli = mock.client  # The actual mocked object: SSHClient
         expected_conn = {'username': 'ubuntu',
                          'key_filename': '~/.ssh/ubuntu_ssh',
-                         'allow_agent': True,
+                         'allow_agent': False,
                          'hostname': 'dummy.host.org',
-                         'look_for_keys': True,
+                         'look_for_keys': False,
                          'timeout': '600',
                          'port': 8822}
         mock_cli.connect.assert_called_once_with(**expected_conn)
