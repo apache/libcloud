@@ -187,11 +187,12 @@ class ParamikoSSHClient(BaseSSHClient):
         conninfo = {'hostname': self.hostname,
                     'port': self.port,
                     'username': self.username,
-                    'allow_agent': False,
-                    'look_for_keys': False}
+                    'allow_agent': True,
+                    'look_for_keys': True}
 
         if self.password:
             conninfo['password'] = self.password
+
         if self.key:
             conninfo['key_filename'] = self.key
 
