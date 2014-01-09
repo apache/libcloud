@@ -178,6 +178,10 @@ Changes with Apache Libcloud in development
      (LIBCLOUD-450)
      [Rick Wright]
 
+   - Modify ParamikoSSHClient so that "password" and "key" arguments are not
+     mutually exclusive and both can be provided. (LIBCLOUD-461, GITHUB-194)
+     [Markos Gogoulos]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
