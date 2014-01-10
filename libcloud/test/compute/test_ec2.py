@@ -611,60 +611,75 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(elastic_ips1), 4)
         self.assertEqual('1.2.3.7', elastic_ips1[3].ip)
-        self.assertEqual('standard', elastic_ips1[3].domain)
+        self.assertEqual('vpc', elastic_ips1[3].domain)
+        self.assertEqual('eipalloc-992a5cf8', elastic_ips1[3].extra['allocation_id'])
 
         self.assertEqual(len(elastic_ips2), 2)
         self.assertEqual('1.2.3.5', elastic_ips2[1].ip)
         self.assertEqual('vpc', elastic_ips2[1].domain)
-        self.assertEqual('eipalloc-998195fb', elastic_ips2[1].extra['allocation_id'])
 
     def test_ex_allocate_address(self):
-        ret = self.driver.ex_allocate_address()
-        self.assertEqual('192.0.2.1', ret['public_ip'])
+        elastic_ip = self.driver.ex_allocate_address()
+        self.assertEqual('192.0.2.1', elastic_ip.ip)
+        self.assertEqual('standard', elastic_ip.domain)
         EC2MockHttp.type = 'vpc'
-        ret = self.driver.ex_allocate_address()
-        self.assertEqual('eipalloc-666d7f04', ret['allocation_id'])
+        elastic_ip = self.driver.ex_allocate_address(domain='vpc')
+        self.assertEqual('192.0.2.2', elastic_ip.ip)
+        self.assertEqual('vpc', elastic_ip.domain)
+        self.assertEqual('eipalloc-666d7f04', elastic_ip.extra['allocation_id'])
 
     def test_ex_release_address(self):
-        ret = self.driver.ex_release_address(elastic_ip_address='1.2.3.4')
+        EC2MockHttp.type = 'all_addresses'
+        elastic_ips = self.driver.ex_describe_all_addresses(
+            all_properties=True)
+        EC2MockHttp.type = ''
+        ret = self.driver.ex_release_address(elastic_ips[2])
         self.assertTrue(ret)
-        ret = self.driver.ex_release_address(allocation_id='eipalloc-30f0a859')
+        ret = self.driver.ex_release_address(elastic_ips[0], domain='vpc')
         self.assertTrue(ret)
+        self.assertRaises(AttributeError,
+                          self.driver.ex_release_address,
+                          elastic_ips[0],
+                          domain='bogus')
 
     def test_ex_associate_address_with_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
-
+        EC2MockHttp.type = 'all_addresses'
+        elastic_ips = self.driver.ex_describe_all_addresses(all_properties=True)
+        EC2MockHttp.type = ''
         ret1 = self.driver.ex_associate_address_with_node(
-            node, elastic_ip_address='1.2.3.4')
+            node, elastic_ips[2])
         ret2 = self.driver.ex_associate_addresses(
-            node, elastic_ip_address='1.2.3.4')
+            node, elastic_ips[2])
         self.assertEqual(None, ret1)
         self.assertEqual(None, ret2)
         EC2MockHttp.type = 'vpc'
         ret3 = self.driver.ex_associate_address_with_node(
-            node, allocation_id='eipalloc-666d7f04')
+            node, elastic_ips[3], domain='vpc')
         ret4 = self.driver.ex_associate_addresses(
-            node, allocation_id='eipalloc-666d7f04')
+            node, elastic_ips[3], domain='vpc')
         self.assertEqual('eipassoc-167a8073', ret3)
         self.assertEqual('eipassoc-167a8073', ret4)
         self.assertRaises(AttributeError,
                           self.driver.ex_associate_address_with_node,
                           node,
-                          elastic_ip_address='1.2.3.4',
-                          allocation_id='eipalloc-666d7f04')
+                          elastic_ips[1],
+                          domain='bogus')
 
     def test_ex_disassociate_address(self):
-        ret = self.driver.ex_disassociate_address(elastic_ip_address=
-                                                  '1.2.3.4')
+        EC2MockHttp.type = 'all_addresses'
+        elastic_ips = self.driver.ex_describe_all_addresses(all_properties=True)
+        EC2MockHttp.type = ''
+        ret = self.driver.ex_disassociate_address(elastic_ips[2])
         self.assertTrue(ret)
-        # Test a VPC disassociation using the assosication ID
-        ret = self.driver.ex_disassociate_address(association_id=
-                                                  'eipassoc-fb306892')
+        # Test a VPC disassociation
+        ret = self.driver.ex_disassociate_address(elastic_ips[1],
+                                                  domain='vpc')
         self.assertTrue(ret)
         self.assertRaises(AttributeError,
                           self.driver.ex_disassociate_address,
-                          elastic_ip_address='1.2.3.4',
-                          association_id='eipassoc-fb306892')
+                          elastic_ips[1],
+                          domain='bogus')
 
     def test_ex_change_node_size_same_size(self):
         size = NodeSize('m1.small', 'Small Instance',

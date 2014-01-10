@@ -29,7 +29,7 @@
         <item>
             <publicIp>1.2.3.7</publicIp>
             <allocationId>eipalloc-992a5cf8</allocationId>
-            <domain>standard</domain>
+            <domain>vpc</domain>
         </item>
     </addressesSet>
 </DescribeAddressesResponse>

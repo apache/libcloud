@@ -962,7 +962,7 @@ class ElasticIp(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ElasticIp: ip=%s, domain=%s instance_id=%s>')
+        return (('<ElasticIp: ip=%s, domain=%s, instance_id=%s>')
                 % (self.ip, self.domain, self.instance_id))
 
 
@@ -2693,46 +2693,34 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
 
-        public_ip = findtext(element=response,
-                             xpath='publicIp',
-                             namespace=NAMESPACE)
+        return self._to_address(response,
+                                only_associated=False,
+                                all_properties=True)
 
-        domain = findtext(element=response,
-                          xpath='domain',
-                          namespace=NAMESPACE)
-
-        allocation_id = findtext(element=response,
-                                 xpath='allocationId',
-                                 namespace=NAMESPACE)
-
-        return {
-            'public_ip':     public_ip,
-            'domain':        domain,
-            'allocation_id': allocation_id
-        }
-
-    def ex_release_address(self, elastic_ip_address=None, allocation_id=None):
+    def ex_release_address(self, elastic_ip, domain=None):
         """
         Release an Elastic IP address using the IP (EC2-Classic) or
         using the allocation ID (VPC)
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-                                        (EC2 only)
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: Elastic IP instance
+        :type       elastic_ip: :class:`ElasticIp`
 
-        :param      allocation_id: The allocation ID of the elastic IP (VPC)
-        :type       allocation_id: ``str``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
 
         :return:    True on success, False otherwise.
         :rtype:     ``bool``
         """
         params = {'Action': 'ReleaseAddress'}
 
-        if elastic_ip_address:
-            params.update({'PublicIp': elastic_ip_address})
+        if domain is not None and domain is not 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
 
-        if allocation_id:
-            params.update({'AllocationId': allocation_id})
+        if domain is None:
+            params['PublicIp'] = elastic_ip.ip
+
+        else:
+            params['AllocationId'] = elastic_ip.extra['allocation_id']
 
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
@@ -2763,21 +2751,18 @@ class BaseEC2NodeDriver(NodeDriver):
         # shape how the return data is sent back
         return self._to_addresses(response, only_associated, all_properties)
 
-    def ex_associate_address_with_node(self, node, elastic_ip_address=None,
-                                       allocation_id=None):
+    def ex_associate_address_with_node(self, node, elastic_ip, domain=None):
         """
         Associate an Elastic IP address with a particular node.
 
         :param      node: Node instance
         :type       node: :class:`Node`
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-                                        (EC2 only)
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: Elastic IP instance
+        :type       elastic_ip: :class:`ElasticIp`
 
-        :param      allocation_id: The allocation ID of the elastic IP
-                                   (VPC only)
-        :type       allocation_id: ``str``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
 
         :return:    A string representation of the association ID which is
                     required for VPC disassociation. EC2/standard
@@ -2786,14 +2771,14 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        if elastic_ip_address is not None and allocation_id is not None:
-            raise AttributeError('Cannot specify both IP and allocation ID')
+        if domain is not None and domain is not 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
 
-        if elastic_ip_address:
-            params.update({'PublicIp': elastic_ip_address})
+        if domain is None:
+            params.update({'PublicIp': elastic_ip.ip})
 
-        if allocation_id:
-            params.update({'AllocationId': allocation_id})
+        else:
+            params.update({'AllocationId': elastic_ip.extra['allocation_id']})
 
         response = self.connection.request(self.path, params=params).object
         association_id = findtext(element=response,
@@ -2801,45 +2786,40 @@ class BaseEC2NodeDriver(NodeDriver):
                                   namespace=NAMESPACE)
         return association_id
 
-    def ex_associate_addresses(self, node, elastic_ip_address=None,
-                               allocation_id=None):
+    def ex_associate_addresses(self, node, elastic_ip, domain=None):
         """
         Note: This method has been deprecated in favor of
         the ex_associate_address_with_node method.
         """
 
         return self.ex_associate_address_with_node(node=node,
-                                                   elastic_ip_address=
-                                                   elastic_ip_address,
-                                                   allocation_id=allocation_id)
+                                                   elastic_ip=elastic_ip,
+                                                   domain=domain)
 
-    def ex_disassociate_address(self, elastic_ip_address=None,
-                                association_id=None):
+    def ex_disassociate_address(self, elastic_ip, domain=None):
         """
         Disassociate an Elastic IP address using the IP (EC2-Classic)
         or the association ID (VPC)
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-                                        (EC2 only)
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: ElasticIp instance
+        :type       elastic_ip: :class:`ElasticIp`
 
-        :param      association_id: The association ID of the elastic IP
-                                        (VPC only)
-        :type       association_id: ``str``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
 
         :return:    True on success, False otherwise.
         :rtype:     ``bool``
         """
         params = {'Action': 'DisassociateAddress'}
 
-        if elastic_ip_address is not None and association_id is not None:
-            raise AttributeError('Cannot specify both IP and association ID')
+        if domain is not None and domain is not 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
 
-        if elastic_ip_address:
-            params.update({'PublicIp': elastic_ip_address})
+        if domain is None:
+            params['PublicIp'] = elastic_ip.ip
 
-        if association_id:
-            params.update({'AssociationId': association_id})
+        else:
+            params['AssociationId'] = elastic_ip.extra['association_id']
 
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
