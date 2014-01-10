@@ -950,6 +950,18 @@ class ElasticIp(object):
     """
     Represents information about an elastic IP adddress
 
+    :param      ip: The elastic IP address
+    :type       ip: ``str``
+
+    :param      domain: The domain that the IP resides in (EC2-Classic/VPC).
+                        EC2 classic is represented with standard and VPC
+                        is represented with vpc.
+    :type       domain: ``str``
+
+    :param      instance_id: The identifier of the instance which currently
+                             has the IP associated.
+    :type       instance_id: ``str``
+
     Note: This class is used to support both EC2 and VPC IPs.
           For VPC specific attributes are stored in the extra
           dict to make promotion to the base API easier.
@@ -1278,7 +1290,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return EC2Network(vpc_id, name, cidr_block, extra=extra)
 
-    def _to_addresses(self, response, only_associated, all_properties):
+    def _to_addresses(self, response, only_associated):
         """
         Builds a list of dictionaries containing elastic IP properties.
 
@@ -1287,23 +1299,18 @@ class BaseEC2NodeDriver(NodeDriver):
                                    If false, return all addresses.
         :type     only_associated: ``bool``
 
-        :param    all_properties: If true, return all properties associated
-                                  with the elastic IP. If false, return only
-                                  a list of elastic IPs.
-        :type     all_properties: ``bool``
-
         :rtype:   ``list`` of :class:`ElasticIp`
         """
         addresses = []
         for el in response.findall(fixxpath(xpath='addressesSet/item',
                                             namespace=NAMESPACE)):
-            addr = self._to_address(el, only_associated, all_properties)
+            addr = self._to_address(el, only_associated)
             if addr is not None:
                 addresses.append(addr)
 
         return addresses
 
-    def _to_address(self, element, only_associated, all_properties):
+    def _to_address(self, element, only_associated):
         instance_id = findtext(element=element, xpath='instanceId',
                                namespace=NAMESPACE)
 
@@ -1322,10 +1329,6 @@ class BaseEC2NodeDriver(NodeDriver):
         # Return NoneType if only associated IPs are requested
         if only_associated and not instance_id:
             return None
-
-        # If all properties are not requested, only send back the IP
-        if not all_properties:
-            return ElasticIp(public_ip, domain, instance_id)
 
         return ElasticIp(public_ip, domain, instance_id, extra=extra)
 
@@ -2693,9 +2696,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
 
-        return self._to_address(response,
-                                only_associated=False,
-                                all_properties=True)
+        return self._to_address(response, only_associated=False)
 
     def ex_release_address(self, elastic_ip, domain=None):
         """
@@ -2713,7 +2714,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'ReleaseAddress'}
 
-        if domain is not None and domain is not 'vpc':
+        if domain is not None and domain != 'vpc':
             raise AttributeError('Domain can only be set to vpc')
 
         if domain is None:
@@ -2725,8 +2726,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def ex_describe_all_addresses(self, only_associated=False,
-                                  all_properties=False):
+    def ex_describe_all_addresses(self, only_associated=False):
         """
         Return all the Elastic IP addresses for this account
         optionally, return only addresses associated with nodes
@@ -2735,11 +2735,6 @@ class BaseEC2NodeDriver(NodeDriver):
                                    that are associated with an instance.
         :type     only_associated: ``bool``
 
-        :param    all_properties: If true, return all properties associated
-                                  with the elastic IP. If false, return only
-                                  a list of elastic IPs.
-        :type     all_properties: ``bool``
-
         :return:  list of elastic ips/properties for this particular account.
         :rtype:   ``list`` of ``dict`` or ``list`` of ``str``
         """
@@ -2747,9 +2742,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         response = self.connection.request(self.path, params=params).object
 
-        # We will send our only_associated/all_properties booleans over to
+        # We will send our only_associated boolean over to
         # shape how the return data is sent back
-        return self._to_addresses(response, only_associated, all_properties)
+        return self._to_addresses(response, only_associated)
 
     def ex_associate_address_with_node(self, node, elastic_ip, domain=None):
         """
@@ -2771,7 +2766,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        if domain is not None and domain is not 'vpc':
+        if domain is not None and domain != 'vpc':
             raise AttributeError('Domain can only be set to vpc')
 
         if domain is None:
@@ -2812,7 +2807,7 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         params = {'Action': 'DisassociateAddress'}
 
-        if domain is not None and domain is not 'vpc':
+        if domain is not None and domain != 'vpc':
             raise AttributeError('Domain can only be set to vpc')
 
         if domain is None:
@@ -2848,17 +2843,14 @@ class BaseEC2NodeDriver(NodeDriver):
         node_instance_ids = [node.id for node in nodes]
         nodes_elastic_ip_mappings = {}
 
-        # We will set only_associated and all_properties to True
-        # so that we only get back public IPs which are associated with
-        # and instance properties which will includet the instance id
+        # We will set only_associated to True so that we only get back
+        # IPs which are associated with instances
         only_associated = True
-        all_properties = True
 
         for node_id in node_instance_ids:
             nodes_elastic_ip_mappings.setdefault(node_id, [])
             for addr in self._to_addresses(result,
-                                           only_associated,
-                                           all_properties):
+                                           only_associated):
 
                 instance_id = addr.instance_id
 

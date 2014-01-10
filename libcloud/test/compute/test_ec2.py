@@ -604,10 +604,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_describe_all_addresses(self):
         EC2MockHttp.type = 'all_addresses'
-        elastic_ips1 = self.driver.ex_describe_all_addresses(
-            all_properties=True)
+        elastic_ips1 = self.driver.ex_describe_all_addresses()
         elastic_ips2 = self.driver.ex_describe_all_addresses(
-            only_associated=True, all_properties=True)
+            only_associated=True)
 
         self.assertEqual(len(elastic_ips1), 4)
         self.assertEqual('1.2.3.7', elastic_ips1[3].ip)
@@ -630,8 +629,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_release_address(self):
         EC2MockHttp.type = 'all_addresses'
-        elastic_ips = self.driver.ex_describe_all_addresses(
-            all_properties=True)
+        elastic_ips = self.driver.ex_describe_all_addresses()
         EC2MockHttp.type = ''
         ret = self.driver.ex_release_address(elastic_ips[2])
         self.assertTrue(ret)
@@ -645,7 +643,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_ex_associate_address_with_node(self):
         node = Node('i-4382922a', None, None, None, None, self.driver)
         EC2MockHttp.type = 'all_addresses'
-        elastic_ips = self.driver.ex_describe_all_addresses(all_properties=True)
+        elastic_ips = self.driver.ex_describe_all_addresses()
         EC2MockHttp.type = ''
         ret1 = self.driver.ex_associate_address_with_node(
             node, elastic_ips[2])
@@ -668,7 +666,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_disassociate_address(self):
         EC2MockHttp.type = 'all_addresses'
-        elastic_ips = self.driver.ex_describe_all_addresses(all_properties=True)
+        elastic_ips = self.driver.ex_describe_all_addresses()
         EC2MockHttp.type = ''
         ret = self.driver.ex_disassociate_address(elastic_ips[2])
         self.assertTrue(ret)
