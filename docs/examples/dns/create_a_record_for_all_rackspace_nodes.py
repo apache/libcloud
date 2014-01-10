@@ -3,16 +3,17 @@ from pprint import pprint
 from libcloud.compute.providers import get_driver as get_compute_driver
 from libcloud.compute.types import Provider as ComputeProvider
 from libcloud.dns.providers import get_driver as get_dns_driver
-from libcloud.dns.types import Provider as DNSProvider, RecordType
+from libcloud.dns.types import Provider as DNSProvider
+from libcloud.dns.types import RecordType
 
 CREDENTIALS_RACKSPACE = ('username', 'api key')
 CREDENTIALS_ZERIGO = ('email', 'api key')
 
-Cls = get_compute_driver(ComputeProvider.RACKSPACE)
-compute_driver = Cls(*CREDENTIALS_RACKSPACE)
+cls = get_compute_driver(ComputeProvider.RACKSPACE)
+compute_driver = cls(*CREDENTIALS_RACKSPACE)
 
-Cls = get_dns_driver(DNSProvider.ZERIGO)
-dns_driver = Cls(*CREDENTIALS_ZERIGO)
+cls = get_dns_driver(DNSProvider.ZERIGO)
+dns_driver = cls(*CREDENTIALS_ZERIGO)
 
 # Retrieve all the nodes
 nodes = compute_driver.list_nodes()
@@ -21,17 +22,16 @@ nodes = compute_driver.list_nodes()
 zone = dns_driver.create_zone(domain='mydomain2.com')
 
 created = []
+
 for node in nodes:
     name = node.name
 
-    ips = node.public_ip
+    ip = node.public_ips[0] if node.public_ips else None
 
-    if not ips:
+    if not ip:
         continue
 
-    ip = ips[0]
-
-    print 'Creating %s record (data=%s) for node %s' % ('A', ip, name)
+    print('Creating %s record (data=%s) for node %s' % ('A', ip, name))
     record = zone.create_record(name=name, type=RecordType.A, data=ip)
     created.append(record)
 
