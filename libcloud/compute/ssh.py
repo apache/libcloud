@@ -284,9 +284,13 @@ class ParamikoSSHClient(BaseSSHClient):
         stdin.close()
 
         # Receive all the output
-        # Note: This is used instead of chan.makefile approach to prevent
+        # Note #1: This is used instead of chan.makefile approach to prevent
         # buffering issues and hanging if the executed command produces a lot
         # of output.
+        #
+        # Note #2: If you are going to remove "ready" checks inside the loop
+        # you are going to have a bad time. Trying to consume from a channel
+        # which is not ready will block for indefinitely.
         exit_status_ready = chan.exit_status_ready()
 
         while not exit_status_ready:
