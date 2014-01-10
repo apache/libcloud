@@ -202,7 +202,8 @@ def main():
                            'value': startup_script}]}
     lb_nodes = gce.ex_create_multiple_nodes(base_name, size, image,
                                             number, ex_tags=[tag],
-                                            ex_metadata=metadata)
+                                            ex_metadata=metadata,
+                                            ignore_errors=False)
     display('Created Nodes', lb_nodes)
 
     # == Create a Firewall for instances ==

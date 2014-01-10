@@ -1,18 +1,32 @@
 Development
 ===========
 
+This page describes Libcloud development process and contains general
+guidelines and information on how to contribute to the project.
+
 Contributing
 ------------
 
 We welcome contributions of any kind (ideas, code, tests, documentation,
 examples, ...).
 
-This page explains how you can contribute to the Libcloud project. If you get
-stuck at any point during this process, stop by on our IRC channel (#libcloud
-on freenode) and we will do our best to assist you.
+If you need help or get stuck at any point during this process, stop by on our
+IRC channel (:ref:`#libcloud on freenode <irc>`) and we will do our best to
+assist you.
 
-Style guide
------------
+General contribution guidelines
+-------------------------------
+
+* Any non-trivial change must contain tests. For more information, refer to the
+  :doc:`Testing page </testing>`.
+* All the functions and methods must contain Sphinx docstrings which are used
+  to generate the API documentation. For more information, refer to the
+  :ref:`Docstring conventions <docstring-conventions>` section bellow.
+* If you are adding a new feature, make sure to add a corresponding
+  documentation.
+
+Code style guide
+----------------
 
 * We follow `PEP8 Python Style Guide`_
 * Use 4 spaces for a tab
@@ -23,7 +37,7 @@ Style guide
   ``tox -e lint``.
   Second command fill run flake8 on all the files in the repository.
 
-And most importantly, follow the existing style in the files you are editing and
+And most importantly, follow the existing style in the file you are editing and
 **be consistent**.
 
 Git pre-commit hook
@@ -44,11 +58,13 @@ After you have installed this hook it will automatically check modified Python
 files for violations before a commit. If a violation is found, commit will be
 aborted.
 
+.. _code-conventions:
+
 Code conventions
 ----------------
 
-This section contains some conventions you should follow when writing a
-Libcloud code.
+This section describes some general code conventions you should follow when
+writing a Libcloud code.
 
 1. Import ordering
 ~~~~~~~~~~~~~~~~~~
@@ -57,7 +73,7 @@ Organize the imports in the following order:
 
 1. Standard library imports
 2. Third-party library imports
-3. Local libray (Libcloud) imports
+3. Local library (Libcloud) imports
 
 Each section should be separated with a blank line. For example:
 
@@ -116,8 +132,8 @@ Bad:
 
     some_method(public_ips, private_ips)
 
-4. Don't abuse **kwargs
-~~~~~~~~~~~~~~~~~~~~~~~
+4. Don't abuse \*\*kwargs
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You should always explicitly declare arguments in a function or a method
 signature and only use ``**kwargs`` and ``*args`` respectively when there is a
@@ -176,6 +192,8 @@ For example:
             if domain is not None:
                 params['Domain'] = domain
 
+.. _docstring-conventions:
+
 Docstring conventions
 ---------------------
 
@@ -205,16 +223,10 @@ conventions to which you should adhere to are described bellow.
   ``<container_type> of <objects_type>``. For example:
   ``:rtype: `list` of :class:`Node```
 
-You can find some examples in the following file: https://github.com/apache/libcloud/blob/trunk/libcloud/compute/base.py
+For more information and examples, please refer to the following links:
 
-General guidelines
-------------------
-
-* Any non-trivial change must contain tests
-* All the functions and methods must contain Sphinx docstrings which are used
-  to generate API documentation. You can find a lot of examples of docstrings
-  in the existing code e.g. - ``libcloud/compute/base.py``
-* If you are adding a new feature, make sure to add corresponding documentation
+* Sphinx Documentation - http://sphinx-doc.org/markup/desc.html#info-field-lists
+* Example Libcloud module with documentation - https://github.com/apache/libcloud/blob/trunk/libcloud/compute/base.py
 
 Contribution workflow
 ---------------------

@@ -8,6 +8,11 @@ CloudStack is used by a number of service providers to offer public cloud
 services, and by many companies to provide an on-premises (private) cloud
 offering, or as part of a hybrid cloud solution.
 
+.. figure:: /_static/images/provider_logos/cloudstack.png
+    :align: center
+    :width: 300
+    :target: http://cloudstack.apache.org
+
 `CloudStack`_ has its own non-standard `API`_ , `libcloud` provides a Python
 wrapper on top of this `API`_ with common methods with other IaaS solutions and
 Public cloud providers. Therefore, you can use use the `CloudStack` libcloud

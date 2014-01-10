@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud in development
 
+  *) General
+
+    - Update API endpoints which are used in the HostVirtual drivers.
+      (LIBCLOUD-489)
+      [Dinesh Bhoopathy]
+
   *) Compute
 
     - Remove Slicehost driver.
@@ -162,6 +168,20 @@ Changes with Apache Libcloud in development
      (CVE-2013-6480)
      [Tomaz Muraus]
 
+   - Add extension methods for network interface management
+     (ex_list_network_interfaces, ex_create_network_interface,
+     ex_attach_network_interface_to_node, ex_detach_network_interface,
+     ex_delete_network_interface) to the EC2 driver. (LIBCLOUD-474)
+     [Chris DeRamus]
+
+   - Update Google Compute Engine driver to use and work with API v1.
+     (LIBCLOUD-450)
+     [Rick Wright]
+
+   - Modify ParamikoSSHClient so that "password" and "key" arguments are not
+     mutually exclusive and both can be provided. (LIBCLOUD-461, GITHUB-194)
+     [Markos Gogoulos]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
@@ -181,6 +201,20 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-433)
       [Michael Farrell]
 
+    - Fix a bug so you can now upload 0 bytes sized objects using multipart
+      upload in the S3 driver. (LIBCLOUD-490)
+
+      Reported by Noah Kantrowitz.
+      [Tomaz Muraus]
+
+    - Update OpenStack Swift driver constructor so it accepts "region",
+      "ex_force_service_type" and "ex_force_service_name" argument.
+      [Tomaz Muraus]
+
+    - Deprecate "CLOUDFILES_SWIFT" provider constant in favor of new
+      "OPENSTACK_SWIFT" one.
+      [Tomaz Muraus]
+
   *) DNS
 
     - Implement iterate_* methods in the Route53 driver and makes it work
@@ -194,6 +228,12 @@ Changes with Apache Libcloud in development
 
       Reported by  Andrew Udvare.
       [Tomaz Muraus]
+
+    - Fix list_records method in the HostVirtual driver.
+      (LIBCLOUD-484, GITHUB-218)
+
+      Reported by Andrew Udvare.
+      [Dinesh Bhoopathy]
 
 Changes with Apache Libcloud 0.14.0-beta3
 

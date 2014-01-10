@@ -62,10 +62,12 @@ class BaseSSHClient(object):
         :keyword username: Username to use, defaults to root.
 
         :type password: ``str``
-        :keyword password: Password to authenticate with.
+        :keyword password: Password to authenticate with or a password used
+                           to unlock a private key if a password protected key
+                           is used.
 
-        :type key: ``list``
-        :keyword key: Private SSH keys to authenticate with.
+        :type key: ``str`` or ``list``
+        :keyword key: A list of paths to the private key files to use.
         """
         self.hostname = hostname
         self.port = port
@@ -164,6 +166,17 @@ class ParamikoSSHClient(BaseSSHClient):
     """
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, timeout=None):
+        """
+        Authentication is always attempted in the following order:
+
+        - The key passed in (if key is provided)
+        - Any key we can find through an SSH agent (only if no password and
+          key is provided)
+        - Any "id_rsa" or "id_dsa" key discoverable in ~/.ssh/ (only if no
+          password and key is provided)
+        - Plain username/password auth, if a password was given (if password is
+          provided)
+        """
         super(ParamikoSSHClient, self).__init__(hostname, port, username,
                                                 password, key, timeout)
         self.client = paramiko.SSHClient()
@@ -179,9 +192,11 @@ class ParamikoSSHClient(BaseSSHClient):
 
         if self.password:
             conninfo['password'] = self.password
-        elif self.key:
+
+        if self.key:
             conninfo['key_filename'] = self.key
-        else:
+
+        if not self.password and not self.key:
             conninfo['allow_agent'] = True
             conninfo['look_for_keys'] = True
 

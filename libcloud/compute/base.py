@@ -148,11 +148,10 @@ class Node(UuidMixin):
 
     Althrough Node objects can be subclassed, this isn't normally
     done.  Instead, any driver specific information is stored in the
-    "extra" proproperty of the node.
+    "extra" attribute of the node.
 
     >>> node.extra
     {'foo': 'bar'}
-
     """
 
     def __init__(self, id, name, state, public_ips, private_ips,
@@ -177,10 +176,10 @@ class Node(UuidMixin):
         :type driver: :class:`.NodeDriver`
 
         :param size: Size of this node. (optional)
-        :type size: :class:`.NodeSize:
+        :type size: :class:`.NodeSize`
 
         :param image: Image of this node. (optional)
-        :type size: :class:`.NodeImage:
+        :type size: :class:`.NodeImage`
 
         :param extra: Optional provider specific attributes associated with
                       this node.
@@ -380,7 +379,7 @@ class NodeLocation(object):
         :type name: ``str``
 
         :param country: Location country.
-        :type country : ``str``
+        :type country: ``str``
 
         :param driver: Driver this location belongs to.
         :type driver: :class:`.NodeDriver`
