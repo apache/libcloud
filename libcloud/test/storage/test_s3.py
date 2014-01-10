@@ -244,6 +244,9 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
                 self.assertEqual(part_no, str(count))
                 self.assertEqual(etag, headers['etag'])
 
+            # Make sure that manifest contains at least one part
+            self.assertTrue(count >= 1)
+
             body = self.fixtures.load('complete_multipart.xml')
             return (httplib.OK,
                     body,
@@ -747,8 +750,28 @@ class S3Tests(unittest.TestCase):
         self.assertTrue('some-value' in obj.meta_data)
         self.driver_type._upload_file = old_func
 
-    def test_upload_small_object_via_stream(self):
+    def test_upload_empty_object_via_stream(self):
+        if self.driver.supports_s3_multipart_upload:
+            self.mock_raw_response_klass.type = 'MULTIPART'
+            self.mock_response_klass.type = 'MULTIPART'
+        else:
+            self.mock_raw_response_klass.type = None
+            self.mock_response_klass.type = None
 
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_stream_data'
+        iterator = DummyIterator(data=[''])
+        extra = {'content_type': 'text/plain'}
+        obj = self.driver.upload_object_via_stream(container=container,
+                                                   object_name=object_name,
+                                                   iterator=iterator,
+                                                   extra=extra)
+
+        self.assertEqual(obj.name, object_name)
+        self.assertEqual(obj.size, 0)
+
+    def test_upload_small_object_via_stream(self):
         if self.driver.supports_s3_multipart_upload:
             self.mock_raw_response_klass.type = 'MULTIPART'
             self.mock_response_klass.type = 'MULTIPART'
@@ -770,7 +793,6 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.size, 3)
 
     def test_upload_big_object_via_stream(self):
-
         if self.driver.supports_s3_multipart_upload:
             self.mock_raw_response_klass.type = 'MULTIPART'
             self.mock_response_klass.type = 'MULTIPART'

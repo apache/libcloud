@@ -22,7 +22,7 @@ from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 
-API_HOST = 'www.vr.org'
+API_HOST = 'vapi.vr.org'
 
 
 class HostVirtualException(LibcloudError):
@@ -40,6 +40,8 @@ class HostVirtualException(LibcloudError):
 
 class HostVirtualConnection(ConnectionKey):
     host = API_HOST
+
+    allow_insecure = False
 
     def add_default_params(self, params):
         params['key'] = self.key

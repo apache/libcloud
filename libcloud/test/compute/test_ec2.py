@@ -176,6 +176,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(len(node.public_ips), 2)
         self.assertEqual(node.extra['launchdatetime'],
                          '2009-08-07T05:47:04.000Z')
+        self.assertEqual(node.extra['key_name'], 'my-key-pair')
         self.assertTrue('instancetype' in node.extra)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
@@ -410,19 +411,36 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_list_images(self):
         images = self.driver.list_images()
-        image = images[0]
 
-        name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
-        self.assertEqual(len(images), 1)
-        self.assertEqual(image.name, name)
-        self.assertEqual(image.id, 'ami-be3adfd7')
+        self.assertEqual(len(images), 2)
+        location = '123456788908/Test Image'
+        self.assertEqual(images[0].id, 'ami-57ba933a')
+        self.assertEqual(images[0].name, 'Test Image')
+        self.assertEqual(images[0].extra['image_location'], location)
+        self.assertEqual(images[0].extra['architecture'], 'x86_64')
+        self.assertEqual(len(images[0].extra['block_device_mapping']), 2)
+        ephemeral = images[0].extra['block_device_mapping'][1]['virtual_name']
+        self.assertEqual(ephemeral, 'ephemeral0')
+
+        location = '123456788908/Test Image 2'
+        self.assertEqual(images[1].id, 'ami-85b2a8ae')
+        self.assertEqual(images[1].name, 'Test Image 2')
+        self.assertEqual(images[1].extra['image_location'], location)
+        self.assertEqual(images[1].extra['architecture'], 'x86_64')
+        size = images[1].extra['block_device_mapping'][0]['ebs']['volume_size']
+        self.assertEqual(size, 20)
 
     def test_list_images_with_image_ids(self):
-        images = self.driver.list_images(ex_image_ids=['ami-be3adfd7'])
+        EC2MockHttp.type = 'ex_imageids'
+        images = self.driver.list_images(ex_image_ids=['ami-57ba933a'])
 
-        name = 'ec2-public-images/fedora-8-i386-base-v1.04.manifest.xml'
         self.assertEqual(len(images), 1)
-        self.assertEqual(images[0].name, name)
+        self.assertEqual(images[0].name, 'Test Image')
+
+    def test_list_images_with_executable_by(self):
+        images = self.driver.list_images(ex_executableby='self')
+
+        self.assertEqual(len(images), 2)
 
     def ex_destroy_image(self):
         images = self.driver.list_images()
@@ -589,13 +607,16 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         elastic_ips1 = self.driver.ex_describe_all_addresses(
             all_properties=True)
         elastic_ips2 = self.driver.ex_describe_all_addresses(
-            only_allocated=True, all_properties=True)
+            only_associated=True, all_properties=True)
 
         self.assertEqual(len(elastic_ips1), 4)
-        self.assertEqual('1.2.3.7', elastic_ips1[3]['public_ip'])
+        self.assertEqual('1.2.3.7', elastic_ips1[3].ip)
+        self.assertEqual('standard', elastic_ips1[3].domain)
 
         self.assertEqual(len(elastic_ips2), 2)
-        self.assertEqual('1.2.3.5', elastic_ips2[1]['public_ip'])
+        self.assertEqual('1.2.3.5', elastic_ips2[1].ip)
+        self.assertEqual('vpc', elastic_ips2[1].domain)
+        self.assertEqual('eipalloc-998195fb', elastic_ips2[1].extra['allocation_id'])
 
     def test_ex_allocate_address(self):
         ret = self.driver.ex_allocate_address()
@@ -670,7 +691,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
 
-        self.assertEqual(len(volumes), 2)
+        self.assertEqual(len(volumes), 3)
 
         self.assertEqual('vol-10ae5e2b', volumes[0].id)
         self.assertEqual(1, volumes[0].size)
@@ -680,6 +701,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(11, volumes[1].size)
         self.assertEqual('available', volumes[1].extra['state'])
 
+        self.assertEqual('vol-b6c851ec', volumes[2].id)
+        self.assertEqual(8, volumes[2].size)
+        self.assertEqual('in-use', volumes[2].extra['state'])
+        self.assertEqual('i-d334b4b3', volumes[2].extra['instance_id'])
+
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
@@ -687,7 +713,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(10, vol.size)
         self.assertEqual('vol', vol.name)
         self.assertEqual('creating', vol.extra['state'])
-        self.assertTrue(isinstance(vol.extra['create-time'], datetime))
+        self.assertTrue(isinstance(vol.extra['create_time'], datetime))
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
@@ -715,11 +741,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_create_volume_snapshot(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
                             size=10, driver=self.driver)
-        snap = self.driver.create_volume_snapshot(vol, 'Test description')
-
+        snap = self.driver.create_volume_snapshot(
+            vol, 'Test snapshot')
         self.assertEqual('snap-a7cb2hd9', snap.id)
         self.assertEqual(vol.size, snap.size)
-        self.assertEqual('Test description', snap.extra['description'])
+        self.assertEqual('Test snapshot', snap.extra['name'])
         self.assertEqual(vol.id, snap.extra['volume_id'])
         self.assertEqual('pending', snap.extra['state'])
 
@@ -737,6 +763,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vol-b5a2c1v9', snaps[1].extra['volume_id'])
         self.assertEqual(15, snaps[1].size)
         self.assertEqual('Weekly backup', snaps[1].extra['description'])
+        self.assertEqual('DB Backup 1', snaps[1].extra['name'])
 
     def test_destroy_snapshot(self):
         snap = VolumeSnapshot(id='snap-428abd35', size=10, driver=self.driver)
@@ -838,6 +865,81 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         vpc = vpcs[0]
 
         resp = self.driver.ex_delete_network(vpc)
+        self.assertTrue(resp)
+
+    def test_ex_list_subnets(self):
+        subnets = self.driver.ex_list_subnets()
+
+        self.assertEqual(len(subnets), 2)
+
+        self.assertEqual('subnet-ce0e7ce5', subnets[0].id)
+        self.assertEqual('available', subnets[0].state)
+        self.assertEqual(123, subnets[0].extra['available_ips'])
+
+        self.assertEqual('subnet-ce0e7ce6', subnets[1].id)
+        self.assertEqual('available', subnets[1].state)
+        self.assertEqual(59, subnets[1].extra['available_ips'])
+
+    def test_ex_create_subnet(self):
+        subnet = self.driver.ex_create_subnet('vpc-532135d1',
+                                              '192.168.51.128/26',
+                                              'us-east-1b',
+                                              name='Test Subnet')
+
+        self.assertEqual('subnet-ce0e7ce6', subnet.id)
+        self.assertEqual('pending', subnet.state)
+        self.assertEqual('vpc-532135d1', subnet.extra['vpc_id'])
+
+    def test_ex_delete_subnet(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        resp = self.driver.ex_delete_subnet(subnet=subnet)
+        self.assertTrue(resp)
+
+    def test_ex_get_console_output(self):
+        node = self.driver.list_nodes()[0]
+        resp = self.driver.ex_get_console_output(node)
+        self.assertEqual('Test String', resp['output'])
+
+    def test_ex_list_network_interfaces(self):
+        interfaces = self.driver.ex_list_network_interfaces()
+
+        self.assertEqual(len(interfaces), 2)
+
+        self.assertEqual('eni-18e6c05e', interfaces[0].id)
+        self.assertEqual('in-use', interfaces[0].state)
+        self.assertEqual('0e:6e:df:72:78:af',
+                         interfaces[0].extra['mac_address'])
+
+        self.assertEqual('eni-83e3c5c5', interfaces[1].id)
+        self.assertEqual('in-use', interfaces[1].state)
+        self.assertEqual('0e:93:0b:e9:e9:c4',
+                         interfaces[1].extra['mac_address'])
+
+    def test_ex_create_network_interface(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        interface = self.driver.ex_create_network_interface(
+            subnet,
+            name='Test Interface',
+            description='My Test')
+
+        self.assertEqual('eni-2b36086d', interface.id)
+        self.assertEqual('pending', interface.state)
+        self.assertEqual('0e:bd:49:3e:11:74', interface.extra['mac_address'])
+
+    def test_ex_delete_network_interface(self):
+        interface = self.driver.ex_list_network_interfaces()[0]
+        resp = self.driver.ex_delete_network_interface(interface)
+        self.assertTrue(resp)
+
+    def test_ex_attach_network_interface_to_node(self):
+        node = self.driver.list_nodes()[0]
+        interface = self.driver.ex_list_network_interfaces()[0]
+        resp = self.driver.ex_attach_network_interface_to_node(interface,
+                                                               node, 1)
+        self.assertTrue(resp)
+
+    def test_ex_detach_network_interface(self):
+        resp = self.driver.ex_detach_network_interface('eni-attach-2b588b47')
         self.assertTrue(resp)
 
 
@@ -955,6 +1057,10 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DescribeImages(self, method, url, body, headers):
         body = self.fixtures.load('describe_images.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_imageids_DescribeImages(self, method, url, body, headers):
+        body = self.fixtures.load('describe_images_ex_imageids.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RunInstances(self, method, url, body, headers):
@@ -1141,6 +1247,42 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DeleteVpc(self, method, url, body, headers):
         body = self.fixtures.load('delete_vpc.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeSubnets(self, method, url, body, headers):
+        body = self.fixtures.load('describe_subnets.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateSubnet(self, method, url, body, headers):
+        body = self.fixtures.load('create_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteSubnet(self, method, url, body, headers):
+        body = self.fixtures.load('delete_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _GetConsoleOutput(self, method, url, body, headers):
+        body = self.fixtures.load('get_console_output.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DescribeNetworkInterfaces(self, method, url, body, headers):
+        body = self.fixtures.load('describe_network_interfaces.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('create_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DeleteNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('delete_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _AttachNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('attach_network_interface.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _DetachNetworkInterface(self, method, url, body, headers):
+        body = self.fixtures.load('detach_network_interface.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 

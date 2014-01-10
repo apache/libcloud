@@ -52,12 +52,6 @@ class ParamikoSSHClientTests(unittest.TestCase):
 
     @patch('paramiko.SSHClient', Mock)
     def test_create_with_password(self):
-        """
-        Initialize object with password.
-
-        Just to have better coverage, initialize the object
-        with the 'password' value instead of the 'key'.
-        """
         conn_params = {'hostname': 'dummy.host.org',
                        'username': 'ubuntu',
                        'password': 'ubuntu'}
@@ -69,6 +63,42 @@ class ParamikoSSHClientTests(unittest.TestCase):
                          'allow_agent': False,
                          'hostname': 'dummy.host.org',
                          'look_for_keys': False,
+                         'port': 22}
+        mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_create_with_key(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key': 'id_rsa'}
+        mock = ParamikoSSHClient(**conn_params)
+        mock.connect()
+
+        expected_conn = {'username': 'ubuntu',
+                         'allow_agent': False,
+                         'hostname': 'dummy.host.org',
+                         'look_for_keys': False,
+                         'key_filename': 'id_rsa',
+                         'port': 22}
+        mock.client.connect.assert_called_once_with(**expected_conn)
+        self.assertLogMsg('Connecting to server')
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_create_with_password_and_key(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'password': 'ubuntu',
+                       'key': 'id_rsa'}
+        mock = ParamikoSSHClient(**conn_params)
+        mock.connect()
+
+        expected_conn = {'username': 'ubuntu',
+                         'password': 'ubuntu',
+                         'allow_agent': False,
+                         'hostname': 'dummy.host.org',
+                         'look_for_keys': False,
+                         'key_filename': 'id_rsa',
                          'port': 22}
         mock.client.connect.assert_called_once_with(**expected_conn)
         self.assertLogMsg('Connecting to server')

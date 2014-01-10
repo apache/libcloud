@@ -4,6 +4,11 @@ Rackspace Compute Driver Documentation
 `Rackspace`_ is a public and private cloud provider based in San Antonio, Texas
 with data centers in United States, United Kingdom, China and Australia.
 
+.. figure:: /_static/images/provider_logos/rackspace.png
+    :align: center
+    :width: 300
+    :target: http://www.rackspace.com/cloud/
+
 Rackspace driver supports working with legacy, first-gen cloud servers and
 next-gen OpenStack based cloud servers.
 

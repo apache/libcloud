@@ -138,7 +138,10 @@ FRIENDLY_METHODS_NAMES = {
 
 IGNORED_PROVIDERS = [
     'dummy',
-    'local'
+    'local',
+
+    # Deprecated constants
+    'cloudfiles_swift'
 ]
 
 

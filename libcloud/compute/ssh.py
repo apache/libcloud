@@ -29,6 +29,7 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 import os
+import time
 import subprocess
 import logging
 
@@ -36,6 +37,11 @@ from os.path import split as psplit
 from os.path import join as pjoin
 
 from libcloud.utils.logging import ExtraLogFormatter
+from libcloud.utils.py3 import StringIO
+
+
+# Maximum number of bytes to read at once from a socket
+CHUNK_SIZE = 1024
 
 
 class BaseSSHClient(object):
@@ -56,10 +62,12 @@ class BaseSSHClient(object):
         :keyword username: Username to use, defaults to root.
 
         :type password: ``str``
-        :keyword password: Password to authenticate with.
+        :keyword password: Password to authenticate with or a password used
+                           to unlock a private key if a password protected key
+                           is used.
 
-        :type key: ``list``
-        :keyword key: Private SSH keys to authenticate with.
+        :type key: ``str`` or ``list``
+        :keyword key: A list of paths to the private key files to use.
         """
         self.hostname = hostname
         self.port = port
@@ -158,6 +166,17 @@ class ParamikoSSHClient(BaseSSHClient):
     """
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, timeout=None):
+        """
+        Authentication is always attempted in the following order:
+
+        - The key passed in (if key is provided)
+        - Any key we can find through an SSH agent (only if no password and
+          key is provided)
+        - Any "id_rsa" or "id_dsa" key discoverable in ~/.ssh/ (only if no
+          password and key is provided)
+        - Plain username/password auth, if a password was given (if password is
+          provided)
+        """
         super(ParamikoSSHClient, self).__init__(hostname, port, username,
                                                 password, key, timeout)
         self.client = paramiko.SSHClient()
@@ -173,9 +192,11 @@ class ParamikoSSHClient(BaseSSHClient):
 
         if self.password:
             conninfo['password'] = self.password
-        elif self.key:
+
+        if self.key:
             conninfo['key_filename'] = self.key
-        else:
+
+        if not self.password and not self.key:
             conninfo['allow_agent'] = True
             conninfo['look_for_keys'] = True
 
@@ -239,27 +260,71 @@ class ParamikoSSHClient(BaseSSHClient):
         return True
 
     def run(self, cmd):
+        """
+        Note: This function is based on paramiko's exec_command()
+        method.
+        """
         extra = {'_cmd': cmd}
         self.logger.debug('Executing command', extra=extra)
 
-        # based on exec_command()
+        # Use the system default buffer size
         bufsize = -1
-        t = self.client.get_transport()
-        chan = t.open_session()
-        chan.exec_command(cmd)
-        stdin = chan.makefile('wb', bufsize)
-        stdout = chan.makefile('rb', bufsize)
-        stderr = chan.makefile_stderr('rb', bufsize)
-        #stdin, stdout, stderr = self.client.exec_command(cmd)
-        stdin.close()
-        status = chan.recv_exit_status()
-        so = stdout.read()
-        se = stderr.read()
 
-        extra = {'_status': status, '_stdout': so, '_stderr': se}
+        transport = self.client.get_transport()
+        chan = transport.open_session()
+
+        chan.exec_command(cmd)
+
+        stdout = StringIO()
+        stderr = StringIO()
+
+        # Create a stdin file and immediately close it to prevent any
+        # interactive script from hanging the process.
+        stdin = chan.makefile('wb', bufsize)
+        stdin.close()
+
+        # Receive all the output
+        # Note: This is used instead of chan.makefile approach to prevent
+        # buffering issues and hanging if the executed command produces a lot
+        # of output.
+        while not chan.exit_status_ready():
+            if chan.recv_ready():
+                data = chan.recv(CHUNK_SIZE)
+
+                while data:
+                    stdout.write(data)
+                    ready = chan.recv_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv(CHUNK_SIZE)
+
+            if chan.recv_stderr_ready():
+                data = chan.recv_stderr(CHUNK_SIZE)
+
+                while data:
+                    stderr.write(data)
+                    ready = chan.recv_stderr_ready()
+
+                    if not ready:
+                        break
+
+                    data = chan.recv_stderr(CHUNK_SIZE)
+
+            # Short sleep to prevent busy waiting
+            time.sleep(1.5)
+
+        # Receive the exit status code of the command we ran.
+        status = chan.recv_exit_status()
+
+        stdout = stdout.getvalue()
+        stderr = stderr.getvalue()
+
+        extra = {'_status': status, '_stdout': stdout, '_stderr': stderr}
         self.logger.debug('Command finished', extra=extra)
 
-        return [so, se, status]
+        return [stdout, stderr, status]
 
     def close(self):
         self.logger.debug('Closing server connection')

@@ -33,7 +33,7 @@ Provider                              list volumes create volume destroy volume 
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
 `Exoscale`_                           yes          yes           yes            yes           yes           no             no             
 `Gandi`_                              yes          yes           yes            yes           yes           no             no             
-`Google Compute Engine`_              yes          yes           yes            yes           yes           no             no             
+`Google Compute Engine`_              yes          yes           yes            yes           yes           yes            yes            
 `GoGrid`_                             no           no            no             no            no            no             no             
 `HostVirtual`_                        no           no            no             no            no            no             no             
 `IBM SmartCloud Enterprise`_          yes          yes           yes            yes           yes           no             no             

@@ -29,11 +29,11 @@
           "usage": 0.0
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/europe-west1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/europe-west1",
       "status": "UP",
       "zones": [
-        "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-a",
-        "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/europe-west1-b"
+        "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-a",
+        "https://www.googleapis.com/compute/v1/projects/project_name/zones/europe-west1-b"
       ]
     },
     {
@@ -64,11 +64,11 @@
           "usage": 4.0
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1",
       "status": "UP",
       "zones": [
-        "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-a",
-        "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central1-b"
+        "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+        "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-b"
       ]
     },
     {
@@ -99,13 +99,13 @@
           "usage": 0.0
         }
       ],
-      "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions/us-central2",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central2",
       "status": "UP",
       "zones": [
-        "https://www.googleapis.com/compute/v1beta16/projects/project_name/zones/us-central2-a"
+        "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a"
       ]
     }
   ],
   "kind": "compute#regionList",
-  "selfLink": "https://www.googleapis.com/compute/v1beta16/projects/project_name/regions"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/regions"
 }

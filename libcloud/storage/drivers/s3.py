@@ -64,7 +64,7 @@ RESPONSES_PER_REQUEST = 100
 
 
 class S3Response(AWSBaseResponse):
-
+    namespace = None
     valid_response_codes = [httplib.NOT_FOUND, httplib.CONFLICT,
                             httplib.BAD_REQUEST]
 
@@ -522,7 +522,7 @@ class S3StorageDriver(StorageDriver):
 
         # Read the input data in chunk sizes suitable for AWS
         for data in read_in_chunks(iterator, chunk_size=CHUNK_SIZE,
-                                   fill_size=True):
+                                   fill_size=True, yield_empty=True):
             bytes_transferred += len(data)
 
             if calculate_hash:
@@ -588,7 +588,10 @@ class S3StorageDriver(StorageDriver):
                                            method='POST')
 
         if response.status != httplib.OK:
-            raise LibcloudError('Error in multipart commit', driver=self)
+            element = response.object
+            code, message = response._parse_error_details(element=element)
+            msg = 'Error in multipart commit: %s (%s)' % (message, code)
+            raise LibcloudError(msg, driver=self)
 
         # Get the server's etag to be passed back to the caller
         body = response.parse_body()

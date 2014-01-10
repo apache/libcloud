@@ -26,7 +26,21 @@ from libcloud.utils.xml import findtext, findall
 
 
 class AWSBaseResponse(XmlResponse):
-    pass
+    namespace = None
+
+    def _parse_error_details(self, element):
+        """
+        Parse code and message from the provided error element.
+
+        :return: ``tuple`` with two elements: (code, message)
+        :rtype: ``tuple``
+        """
+        code = findtext(element=element, xpath='Code',
+                        namespace=self.namespace)
+        message = findtext(element=element, xpath='Message',
+                           namespace=self.namespace)
+
+        return code, message
 
 
 class AWSGenericResponse(AWSBaseResponse):
@@ -71,11 +85,7 @@ class AWSGenericResponse(AWSBaseResponse):
 
         msgs = []
         for err in errs:
-            code = findtext(element=err, xpath='Code',
-                            namespace=self.namespace)
-            message = findtext(element=err, xpath='Message',
-                               namespace=self.namespace)
-
+            code, message = self._parse_error_details(element=err)
             exceptionCls = self.exceptions.get(code, None)
 
             if exceptionCls is None:

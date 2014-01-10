@@ -29,9 +29,34 @@ TMP_DIR=`mktemp -d`
 
 EXTENSIONS[0]="tar.gz"
 EXTENSIONS[1]="tar.bz2"
+EXTENSIONS[2]="zip"
 
 APACHE_MIRROR_URL="http://www.apache.org/dist/libcloud"
 PYPI_MIRROR_URL="https://pypi.python.org/packages/source/a/apache-libcloud"
+
+# From http://tldp.org/LDP/abs/html/debugging.html#ASSERT
+function assert ()                 #  If condition false,
+{                         #+ exit from script
+                          #+ with appropriate error message.
+  E_PARAM_ERR=98
+  E_ASSERT_FAILED=99
+
+
+  if [ -z "$2" ]          #  Not enough parameters passed
+  then                    #+ to assert() function.
+    return $E_PARAM_ERR   #  No damage done.
+  fi
+
+  lineno=$2
+
+  if [ ! $1 ]
+  then
+    echo "Assertion failed:  \"$1\""
+    echo "File \"$0\", line $lineno"    # Give name of file and line number.
+    exit $E_ASSERT_FAILED
+  fi
+}
+
 
 echo "Comparing checksums for version: ${VERSION}"
 echo "Downloaded files will be stored in: ${TMP_DIR}"
@@ -45,8 +70,12 @@ do
     apache_url="${APACHE_MIRROR_URL}/${file_name}"
     pypi_url="${PYPI_MIRROR_URL}/${file_name}"
 
+    assert "${apache_url} != ${pypi_url}", "URLs must be different"
+
     file_name_apache="${file_name}-apache"
     file_name_pypi="${file_name}-pypi"
+
+    assert "${file_name_apache} != ${file_name_pypi}", "file names must be different"
 
     file_path_apache="${TMP_DIR}/${file_name_apache}"
     file_path_pypi="${TMP_DIR}/${file_name_pypi}"
@@ -56,8 +85,18 @@ do
     echo "Downloading file from Apache mirror..."
     wget --quiet "${apache_url}" -O "${file_path_apache}"
 
+    if [ $? -ne 0 ]; then
+        echo "[ERR] Failed to download file: ${apache_url}"
+        exit 2
+    fi
+
     echo "Downloading file from PyPi mirror..."
     wget --quiet "${pypi_url}" -O "${file_path_pypi}"
+
+    if [ $? -ne 0 ]; then
+        echo "[ERR] Failed to download file: ${pypi_url}"
+        exit 2
+    fi
 
     md5sum_apache=$(md5sum "${file_path_apache}" | awk '{ print $1 }')
     md5sum_pypi=$(md5sum "${file_path_pypi}"| awk '{ print $1 }')

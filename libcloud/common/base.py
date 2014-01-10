@@ -861,7 +861,7 @@ class PollingConnection(Connection):
 
 class ConnectionKey(Connection):
     """
-    A Base Connection class to derive from, which includes a
+    Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None):
@@ -877,7 +877,7 @@ class ConnectionKey(Connection):
 
 class ConnectionUserAndKey(ConnectionKey):
     """
-    Base connection which accepts a user_id and key.
+    Base connection class which accepts a ``user_id`` and ``key`` argument.
     """
 
     user_id = None

@@ -199,56 +199,56 @@ class HostVirtualTests(unittest.TestCase):
 class HostVirtualMockHttp(MockHttp):
     fixtures = DNSFileFixtures('hostvirtual')
 
-    def _vapi_dns_zone(self, method, url, body, headers):
+    def _dns_zone(self, method, url, body, headers):
         body = self.fixtures.load('get_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_dns_zones(self, method, url, body, headers):
+    def _dns_zones(self, method, url, body, headers):
         body = self.fixtures.load('list_zones.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_dns_record(self, method, url, body, headers):
+    def _dns_record(self, method, url, body, headers):
         body = self.fixtures.load('get_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_dns_records(self, method, url, body, headers):
+    def _dns_records(self, method, url, body, headers):
         body = self.fixtures.load('list_records.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_dns_zone_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _dns_zone_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _vapi_dns_zone_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _dns_zone_RECORD_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load('get_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _vapi_dns_zones_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
+    def _dns_zones_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _vapi_dns_record_ZONE_DOES_NOT_EXIST(self, method,
-                                             url, body, headers):
+    def _dns_record_ZONE_DOES_NOT_EXIST(self, method,
+                                        url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _vapi_dns_record_RECORD_DOES_NOT_EXIST(self, method,
-                                               url, body, headers):
+    def _dns_record_RECORD_DOES_NOT_EXIST(self, method,
+                                          url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _vapi_dns_records_ZONE_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+    def _dns_records_ZONE_DOES_NOT_EXIST(self, method,
+                                         url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])
 
-    def _vapi_dns_zones_RECORD_DOES_NOT_EXIST(self, method,
-                                              url, body, headers):
+    def _dns_zones_RECORD_DOES_NOT_EXIST(self, method,
+                                         url, body, headers):
         body = self.fixtures.load('zone_does_not_exist.json')
         return (httplib.NOT_FOUND, body,
                 {}, httplib.responses[httplib.NOT_FOUND])

@@ -2,6 +2,12 @@
 
 Changes with Apache Libcloud in development
 
+  *) General
+
+    - Update API endpoints which are used in the HostVirtual drivers.
+      (LIBCLOUD-489)
+      [Dinesh Bhoopathy]
+
   *) Compute
 
     - Remove Slicehost driver.
@@ -93,27 +99,88 @@ Changes with Apache Libcloud in development
 
    - Allow user to specify VPC id when creating a security group in the EC2
      driver by passing "vpc_id" argument to ex_create_security_group method.
-     (LIBCLOUD-463)
+     (LIBCLOUD-463, GITHUB-201)
      [Chris DeRamus]
 
    - Add extension methods for managing security group rules
      (ex_authorize_security_group_ingress, ex_authorize_security_group_egress,
      ex_revoke_security_group_ingress, ex_revoke_security_group_egress) to the
-     EC2 driver. (LIBCLOUD-466)
+     EC2 driver. (LIBCLOUD-466, GITHUB-202)
      [Chris DeRamus]
 
    - Add extension methods for deleting security groups
      (ex_delete_security_group, ex_delete_security_group_by_id,
-     ex_delete_security_group_by_name) to the EC2 driver. (LIBCLOUD-464)
+     ex_delete_security_group_by_name) to the EC2 driver.
+     (LIBCLOUD-464, GITHUB-199)
      [Chris DeRamus]
 
    - Add extension method for listing reserved instances
-     (ex_list_reserved_nodes) to the EC2 driver. (LIBCLOUD-469)
+     (ex_list_reserved_nodes) to the EC2 driver. (LIBCLOUD-469, GITHUB-205)
      [Chris DeRamus]
 
    - Add extension methods for VPC management (ex_list_networks,
-     ex_create_network, ex_delete_network) to the EC2 driver. (LIBCLOUD-477)
+     ex_create_network, ex_delete_network) to the EC2 driver.
+     (LIBCLOUD-467, GITHUB-203)
      [Chris DeRamus]
+
+   - Add extension methods for VPC subnet management (ex_list_subnets,
+     ex_create_subnet, ex_delete_subnet) to the EC2 driver.
+     (LIBCLOUD-468, GITHUB-207)
+     [Chris DeRamus]
+
+   - Add ex_get_console_output extension method to the EC2 driver.
+     (LIBCLOUD-471, GITHUB-209)
+     [Chris DeRamus]
+
+   - Include additional provider-specific attributes in the 'extra' dictionary
+     of the StorageVolume class in the EC2 driver. (LIBCLOUD-473, GITHUB-210)
+     [Chris DeRamus]
+
+   - Change attribute name in the 'extra' dictionary of EC2 and CloudStack
+     Node object from "keyname" to "key_name". (LIBCLOUD-475)
+     [Oleg Suharev]
+
+   - Fix a deployment issue which would some times cause a process to hang if
+     the executed deployment script printed a lot of output to stdout or stderr.
+     [Tomaz Muraus]
+
+   - Add additional attributes to the "extra" dictionary of the VolumeSnapshot
+     object in the EC2 driver.
+
+     Also modify create_volume_snapshot method to correctly handle "name"
+     argument. Previous, "name" argument was used as a snapshot description,
+     now it's used as a Tag with a key "Name". (LIBCLOUD-480, GITHUB-214)
+     [Chris DeRamus]
+
+   - Store additional attributes (iops, tags, block_device_mapping) in the
+     "extra" dictionary of the NodeImage object in the EC2 driver.
+
+     Also fix ex_image_ids filtering in the list_images method.
+     (LIBCLOUD-481, GITHUB-215)
+     [Chris DeRamus]
+
+   - Send "scrub_data" query parameter when destroying a DigitalOcean node.
+     This will cause disk to be scrubbed (overwritten with 0's) when destroying
+     a node. (LIBCLOUD-487)
+
+     Note: This fixes a security issue with a potential leak of data contained
+     on the destroyed node which only affects users of the DigitalOcean driver.
+     (CVE-2013-6480)
+     [Tomaz Muraus]
+
+   - Add extension methods for network interface management
+     (ex_list_network_interfaces, ex_create_network_interface,
+     ex_attach_network_interface_to_node, ex_detach_network_interface,
+     ex_delete_network_interface) to the EC2 driver. (LIBCLOUD-474)
+     [Chris DeRamus]
+
+   - Update Google Compute Engine driver to use and work with API v1.
+     (LIBCLOUD-450)
+     [Rick Wright]
+
+   - Modify ParamikoSSHClient so that "password" and "key" arguments are not
+     mutually exclusive and both can be provided. (LIBCLOUD-461, GITHUB-194)
+     [Markos Gogoulos]
 
   *) Storage
 
@@ -134,12 +201,39 @@ Changes with Apache Libcloud in development
       (LIBCLOUD-433)
       [Michael Farrell]
 
+    - Fix a bug so you can now upload 0 bytes sized objects using multipart
+      upload in the S3 driver. (LIBCLOUD-490)
+
+      Reported by Noah Kantrowitz.
+      [Tomaz Muraus]
+
+    - Update OpenStack Swift driver constructor so it accepts "region",
+      "ex_force_service_type" and "ex_force_service_name" argument.
+      [Tomaz Muraus]
+
+    - Deprecate "CLOUDFILES_SWIFT" provider constant in favor of new
+      "OPENSTACK_SWIFT" one.
+      [Tomaz Muraus]
+
   *) DNS
 
     - Implement iterate_* methods in the Route53 driver and makes it work
       correctly if there are more results which can fit on a single page.
       Previously, only first 100 results were returned. (LIBCLOUD-434)
       [Chris Clarke]
+
+    - Update HostVirtual driver constructor to only take "key" and other valid
+      arguments. Previously it also took "secret" argument which it silently
+      ignored. (LIBCLOUD-483)
+
+      Reported by  Andrew Udvare.
+      [Tomaz Muraus]
+
+    - Fix list_records method in the HostVirtual driver.
+      (LIBCLOUD-484, GITHUB-218)
+
+      Reported by Andrew Udvare.
+      [Dinesh Bhoopathy]
 
 Changes with Apache Libcloud 0.14.0-beta3
 

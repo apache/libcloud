@@ -40,6 +40,7 @@ from libcloud.utils.misc import get_secure_random_string
 from libcloud.utils.networking import is_public_subnet
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
+from libcloud.storage.drivers.dummy import DummyIterator
 
 
 WARNINGS_BUFFER = []
@@ -147,6 +148,29 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(WARNINGS_BUFFER), 0)
         libcloud.utils.in_development_warning('test_module')
         self.assertEqual(len(WARNINGS_BUFFER), 1)
+
+    def test_read_in_chunks_iterator_no_data(self):
+        iterator = DummyIterator()
+        generator1 = libcloud.utils.files.read_in_chunks(iterator=iterator,
+                                                         yield_empty=False)
+        generator2 = libcloud.utils.files.read_in_chunks(iterator=iterator,
+                                                         yield_empty=True)
+
+        # yield_empty=False
+        count = 0
+        for data in generator1:
+            count += 1
+            self.assertEqual(data, b(''))
+
+        self.assertEqual(count, 0)
+
+        # yield_empty=True
+        count = 0
+        for data in generator2:
+            count += 1
+            self.assertEqual(data, b(''))
+
+        self.assertEqual(count, 1)
 
     def test_read_in_chunks_iterator(self):
         def iterator():
