@@ -10,7 +10,7 @@ Provider                      Documentation                                   Pr
 `Nimbus.io`_                                                                  NIMBUS            :mod:`libcloud.storage.drivers.nimbus`         :class:`NimbusStorageDriver`        
 `Ninefold`_                                                                   NINEFOLD          :mod:`libcloud.storage.drivers.ninefold`       :class:`NinefoldStorageDriver`      
 `OpenStack Swift`_            :doc:`Click </storage/drivers/openstack_swift>` OPENSTACK_SWIFT   :mod:`libcloud.storage.drivers.cloudfiles`     :class:`OpenStackSwiftStorageDriver`
-`Amazon S3 (standard)`_                                                       S3                :mod:`libcloud.storage.drivers.s3`             :class:`S3StorageDriver`            
+`Amazon S3 (standard)`_       :doc:`Click </storage/drivers/s3>`              S3                :mod:`libcloud.storage.drivers.s3`             :class:`S3StorageDriver`            
 `Amazon S3 (ap-northeast-1)`_                                                 S3_AP_NORTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APNEStorageDriver`        
 `Amazon S3 (ap-southeast-1)`_                                                 S3_AP_SOUTHEAST   :mod:`libcloud.storage.drivers.s3`             :class:`S3APSEStorageDriver`        
 `Amazon S3 (eu-west-1)`_                                                      S3_EU_WEST        :mod:`libcloud.storage.drivers.s3`             :class:`S3EUWestStorageDriver`      
