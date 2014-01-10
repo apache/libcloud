@@ -287,7 +287,9 @@ class ParamikoSSHClient(BaseSSHClient):
         # Note: This is used instead of chan.makefile approach to prevent
         # buffering issues and hanging if the executed command produces a lot
         # of output.
-        while not chan.exit_status_ready():
+        exit_status_ready = chan.exit_status_ready()
+
+        while not exit_status_ready:
             if chan.recv_ready():
                 data = chan.recv(CHUNK_SIZE)
 
@@ -311,6 +313,13 @@ class ParamikoSSHClient(BaseSSHClient):
                         break
 
                     data = chan.recv_stderr(CHUNK_SIZE)
+
+            # We need to check the exist status here, because the command could
+            # print some output and exit during this sleep bellow.
+            exit_status_ready = chan.exit_status_ready()
+
+            if exit_status_ready:
+                break
 
             # Short sleep to prevent busy waiting
             time.sleep(1.5)
