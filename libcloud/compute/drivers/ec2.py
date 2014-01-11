@@ -495,6 +495,28 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': int
         }
     },
+    'elastic_ip': {
+        'allocation_id': {
+            'xpath': 'allocationId',
+            'transform_func': str,
+        },
+        'association_id': {
+            'xpath': 'associationId',
+            'transform_func': str,
+        },
+        'interface_id': {
+            'xpath': 'networkInterfaceId',
+            'transform_func': str,
+        },
+        'owner_id': {
+            'xpath': 'networkInterfaceOwnerId',
+            'transform_func': str,
+        },
+        'private_ip': {
+            'xpath': 'privateIp',
+            'transform_func': str,
+        }
+    },
     'image': {
         'state': {
             'xpath': 'imageState',
@@ -883,7 +905,7 @@ class EC2Network(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<EC2Network: id=%s, name=%s')
+        return (('<EC2Network: id=%s, name=%s>')
                 % (self.id, self.name))
 
 
@@ -901,7 +923,7 @@ class EC2NetworkSubnet(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<EC2NetworkSubnet: id=%s, name=%s') % (self.id, self.name))
+        return (('<EC2NetworkSubnet: id=%s, name=%s>') % (self.id, self.name))
 
 
 class EC2NetworkInterface(object):
@@ -920,8 +942,40 @@ class EC2NetworkInterface(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<EC2NetworkInterface: id=%s, name=%s')
+        return (('<EC2NetworkInterface: id=%s, name=%s>')
                 % (self.id, self.name))
+
+
+class ElasticIP(object):
+    """
+    Represents information about an elastic IP adddress
+
+    :param      ip: The elastic IP address
+    :type       ip: ``str``
+
+    :param      domain: The domain that the IP resides in (EC2-Classic/VPC).
+                        EC2 classic is represented with standard and VPC
+                        is represented with vpc.
+    :type       domain: ``str``
+
+    :param      instance_id: The identifier of the instance which currently
+                             has the IP associated.
+    :type       instance_id: ``str``
+
+    Note: This class is used to support both EC2 and VPC IPs.
+          For VPC specific attributes are stored in the extra
+          dict to make promotion to the base API easier.
+    """
+
+    def __init__(self, ip, domain, instance_id, extra=None):
+        self.ip = ip
+        self.domain = domain
+        self.instance_id = instance_id
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<ElasticIP: ip=%s, domain=%s, instance_id=%s>')
+                % (self.ip, self.domain, self.instance_id))
 
 
 class BaseEC2NodeDriver(NodeDriver):
@@ -1235,6 +1289,48 @@ class BaseEC2NodeDriver(NodeDriver):
         extra['tags'] = tags
 
         return EC2Network(vpc_id, name, cidr_block, extra=extra)
+
+    def _to_addresses(self, response, only_associated):
+        """
+        Builds a list of dictionaries containing elastic IP properties.
+
+        :param    only_associated: If true, return only those addresses
+                                   that are associated with an instance.
+                                   If false, return all addresses.
+        :type     only_associated: ``bool``
+
+        :rtype:   ``list`` of :class:`ElasticIP`
+        """
+        addresses = []
+        for el in response.findall(fixxpath(xpath='addressesSet/item',
+                                            namespace=NAMESPACE)):
+            addr = self._to_address(el, only_associated)
+            if addr is not None:
+                addresses.append(addr)
+
+        return addresses
+
+    def _to_address(self, element, only_associated):
+        instance_id = findtext(element=element, xpath='instanceId',
+                               namespace=NAMESPACE)
+
+        public_ip = findtext(element=element,
+                             xpath='publicIp',
+                             namespace=NAMESPACE)
+
+        domain = findtext(element=element,
+                          xpath='domain',
+                          namespace=NAMESPACE)
+
+        # Build our extra dict
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['elastic_ip'])
+
+        # Return NoneType if only associated IPs are requested
+        if only_associated and not instance_id:
+            return None
+
+        return ElasticIP(public_ip, domain, instance_id, extra=extra)
 
     def _to_subnets(self, response):
         return [self._to_subnet(el) for el in response.findall(
@@ -2582,113 +2678,144 @@ class BaseEC2NodeDriver(NodeDriver):
             'Filter.0.Value.0': node.id
         })
 
-    def ex_allocate_address(self):
+    def ex_allocate_address(self, domain='standard'):
         """
-        Allocate a new Elastic IP address
+        Allocate a new Elastic IP address for EC2 classic or VPC
 
-        :return: String representation of allocated IP address
-        :rtype: ``str``
+        :param      domain: The domain to allocate the new address in
+                            (standard/vpc)
+        :type       domain: ``str``
+
+        :return:    Dictionary of elastic IP properties
+        :rtype:     ``dict``
         """
         params = {'Action': 'AllocateAddress'}
 
+        if domain == 'vpc':
+            params['Domain'] = domain
+
         response = self.connection.request(self.path, params=params).object
-        public_ip = findtext(element=response, xpath='publicIp',
-                             namespace=NAMESPACE)
-        return public_ip
 
-    def ex_release_address(self, elastic_ip_address):
+        return self._to_address(response, only_associated=False)
+
+    def ex_release_address(self, elastic_ip, domain=None):
         """
-        Release an Elastic IP address
+        Release an Elastic IP address using the IP (EC2-Classic) or
+        using the allocation ID (VPC)
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: Elastic IP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
+
+        :return:    True on success, False otherwise.
+        :rtype:     ``bool``
         """
         params = {'Action': 'ReleaseAddress'}
 
-        params.update({'PublicIp': elastic_ip_address})
+        if domain is not None and domain != 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
+
+        if domain is None:
+            params['PublicIp'] = elastic_ip.ip
+
+        else:
+            params['AllocationId'] = elastic_ip.extra['allocation_id']
+
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def ex_describe_all_addresses(self, only_allocated=False):
+    def ex_describe_all_addresses(self, only_associated=False):
         """
         Return all the Elastic IP addresses for this account
-        optionally, return only the allocated addresses
+        optionally, return only addresses associated with nodes
 
-        :param    only_allocated: If true, return only those addresses
-                                  that are associated with an instance
-        :type     only_allocated: ``str``
+        :param    only_associated: If true, return only those addresses
+                                   that are associated with an instance.
+        :type     only_associated: ``bool``
 
-        :return:   list list of elastic ips for this particular account.
-        :rtype: ``list`` of ``str``
+        :return:  list of elastic ips/properties for this particular account.
+        :rtype:   ``list`` of ``dict`` or ``list`` of ``str``
         """
         params = {'Action': 'DescribeAddresses'}
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        response = self.connection.request(self.path, params=params).object
 
-        # the list which we return
-        elastic_ip_addresses = []
-        for element in findall(element=result, xpath='addressesSet/item',
-                               namespace=NAMESPACE):
-            instance_id = findtext(element=element, xpath='instanceId',
-                                   namespace=NAMESPACE)
+        # We will send our only_associated boolean over to
+        # shape how the return data is sent back
+        return self._to_addresses(response, only_associated)
 
-            # if only allocated addresses are requested
-            if only_allocated and not instance_id:
-                continue
-
-            ip_address = findtext(element=element, xpath='publicIp',
-                                  namespace=NAMESPACE)
-
-            elastic_ip_addresses.append(ip_address)
-
-        return elastic_ip_addresses
-
-    def ex_associate_address_with_node(self, node, elastic_ip_address):
+    def ex_associate_address_with_node(self, node, elastic_ip, domain=None):
         """
         Associate an Elastic IP address with a particular node.
 
         :param      node: Node instance
         :type       node: :class:`Node`
 
-        :param      elastic_ip_address: IP address which should be used
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: Elastic IP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
+
+        :return:    A string representation of the association ID which is
+                    required for VPC disassociation. EC2/standard
+                    addresses return None
+        :rtype:     ``None`` or ``str``
         """
-        params = {'Action': 'AssociateAddress'}
+        params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        params.update({'InstanceId': node.id})
-        params.update({'PublicIp': elastic_ip_address})
-        res = self.connection.request(self.path, params=params).object
-        return self._get_boolean(res)
+        if domain is not None and domain != 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
 
-    def ex_associate_addresses(self, node, elastic_ip_address):
+        if domain is None:
+            params.update({'PublicIp': elastic_ip.ip})
+
+        else:
+            params.update({'AllocationId': elastic_ip.extra['allocation_id']})
+
+        response = self.connection.request(self.path, params=params).object
+        association_id = findtext(element=response,
+                                  xpath='associationId',
+                                  namespace=NAMESPACE)
+        return association_id
+
+    def ex_associate_addresses(self, node, elastic_ip, domain=None):
         """
         Note: This method has been deprecated in favor of
         the ex_associate_address_with_node method.
         """
+
         return self.ex_associate_address_with_node(node=node,
-                                                   elastic_ip_address=
-                                                   elastic_ip_address)
+                                                   elastic_ip=elastic_ip,
+                                                   domain=domain)
 
-    def ex_disassociate_address(self, elastic_ip_address):
+    def ex_disassociate_address(self, elastic_ip, domain=None):
         """
-        Disassociate an Elastic IP address
+        Disassociate an Elastic IP address using the IP (EC2-Classic)
+        or the association ID (VPC)
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: ElasticIP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
+
+        :return:    True on success, False otherwise.
+        :rtype:     ``bool``
         """
         params = {'Action': 'DisassociateAddress'}
 
-        params.update({'PublicIp': elastic_ip_address})
+        if domain is not None and domain != 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
+
+        if domain is None:
+            params['PublicIp'] = elastic_ip.ip
+
+        else:
+            params['AssociationId'] = elastic_ip.extra['association_id']
+
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
 
@@ -2711,25 +2838,26 @@ class BaseEC2NodeDriver(NodeDriver):
         if len(nodes) == 1:
             self._add_instance_filter(params, nodes[0])
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        result = self.connection.request(self.path, params=params).object
 
         node_instance_ids = [node.id for node in nodes]
         nodes_elastic_ip_mappings = {}
 
+        # We will set only_associated to True so that we only get back
+        # IPs which are associated with instances
+        only_associated = True
+
         for node_id in node_instance_ids:
             nodes_elastic_ip_mappings.setdefault(node_id, [])
-        for element in findall(element=result, xpath='addressesSet/item',
-                               namespace=NAMESPACE):
-            instance_id = findtext(element=element, xpath='instanceId',
-                                   namespace=NAMESPACE)
-            ip_address = findtext(element=element, xpath='publicIp',
-                                  namespace=NAMESPACE)
+            for addr in self._to_addresses(result,
+                                           only_associated):
 
-            if instance_id not in node_instance_ids:
-                continue
+                instance_id = addr.instance_id
 
-            nodes_elastic_ip_mappings[instance_id].append(ip_address)
+                if node_id == instance_id:
+                    nodes_elastic_ip_mappings[instance_id].append(
+                        addr.ip)
+
         return nodes_elastic_ip_mappings
 
     def ex_describe_addresses_for_node(self, node):
