@@ -114,6 +114,54 @@ For example:
         def __eq__(self, other):
             return self.name == other.name
 
+Methods on a driver class should be organized in the following order:
+
+1. Methods which are part of the standard API
+2. Extension methods
+3. "Private" methods (methods prefixed with an underscore)
+4. "Internal" methods (methods prefixed and suffixed with a double underscore)
+
+Methods which perform a similar functionality should be grouped together and
+defined one after another.
+
+For example:
+
+.. sourcecode:: python
+
+    class MyDriver(object):
+        def __init__(self):
+            pass
+
+        def list_nodes(self):
+            pass
+
+        def list_images(self):
+            pass
+
+        def create_node(self):
+            pass
+
+        def reboot_node(self):
+            pass
+
+        def ex_create_image(self):
+            pass
+
+        def _to_nodes(self):
+            pass
+
+        def _to_node(self):
+            pass
+
+        def _to_images(self):
+            pass
+
+        def _to_image(self):
+            pass
+
+Methods should be ordered this way for the consistency reasons and to make
+reading and following the generated API documentation easier.
+
 3. Prefer keyword over regular arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
