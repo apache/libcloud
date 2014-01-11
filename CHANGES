@@ -182,6 +182,12 @@ Changes with Apache Libcloud in development
      mutually exclusive and both can be provided. (LIBCLOUD-461, GITHUB-194)
      [Markos Gogoulos]
 
+   - Add extension methods for the Elastic IP management to the EC2 driver.
+     Also modify "ex_allocate_address" and "ex_release_address" method to
+     take "domain" argument so it also works with VPC.
+     (LIBCLOUD-470, GITHUB-208, GITHUB-220)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
