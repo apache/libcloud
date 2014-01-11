@@ -946,7 +946,7 @@ class EC2NetworkInterface(object):
                 % (self.id, self.name))
 
 
-class ElasticIp(object):
+class ElasticIP(object):
     """
     Represents information about an elastic IP adddress
 
@@ -974,7 +974,7 @@ class ElasticIp(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<ElasticIp: ip=%s, domain=%s, instance_id=%s>')
+        return (('<ElasticIP: ip=%s, domain=%s, instance_id=%s>')
                 % (self.ip, self.domain, self.instance_id))
 
 
@@ -1299,7 +1299,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                    If false, return all addresses.
         :type     only_associated: ``bool``
 
-        :rtype:   ``list`` of :class:`ElasticIp`
+        :rtype:   ``list`` of :class:`ElasticIP`
         """
         addresses = []
         for el in response.findall(fixxpath(xpath='addressesSet/item',
@@ -1330,7 +1330,7 @@ class BaseEC2NodeDriver(NodeDriver):
         if only_associated and not instance_id:
             return None
 
-        return ElasticIp(public_ip, domain, instance_id, extra=extra)
+        return ElasticIP(public_ip, domain, instance_id, extra=extra)
 
     def _to_subnets(self, response):
         return [self._to_subnet(el) for el in response.findall(
@@ -2704,7 +2704,7 @@ class BaseEC2NodeDriver(NodeDriver):
         using the allocation ID (VPC)
 
         :param      elastic_ip: Elastic IP instance
-        :type       elastic_ip: :class:`ElasticIp`
+        :type       elastic_ip: :class:`ElasticIP`
 
         :param      domain: The domain where the IP resides (vpc only)
         :type       domain: ``str``
@@ -2754,7 +2754,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type       node: :class:`Node`
 
         :param      elastic_ip: Elastic IP instance
-        :type       elastic_ip: :class:`ElasticIp`
+        :type       elastic_ip: :class:`ElasticIP`
 
         :param      domain: The domain where the IP resides (vpc only)
         :type       domain: ``str``
@@ -2796,8 +2796,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Disassociate an Elastic IP address using the IP (EC2-Classic)
         or the association ID (VPC)
 
-        :param      elastic_ip: ElasticIp instance
-        :type       elastic_ip: :class:`ElasticIp`
+        :param      elastic_ip: ElasticIP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
         :param      domain: The domain where the IP resides (vpc only)
         :type       domain: ``str``
