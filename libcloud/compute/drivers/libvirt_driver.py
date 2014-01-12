@@ -37,22 +37,21 @@ class LibvirtNodeDriver(NodeDriver):
     website = 'http://libvirt.org/'
 
     NODE_STATE_MAP = {
-        0: NodeState.TERMINATED,
-        1: NodeState.RUNNING,
-        2: NodeState.PENDING,
-        3: NodeState.TERMINATED,  # paused
-        4: NodeState.TERMINATED,  # shutting down
-        5: NodeState.TERMINATED,
-        6: NodeState.UNKNOWN,  # crashed
-        7: NodeState.UNKNOWN,  # last
+        0: NodeState.TERMINATED,  # no state
+        1: NodeState.RUNNING,  # domain is running
+        2: NodeState.PENDING,  # domain is blocked on resource
+        3: NodeState.TERMINATED,  # domain is paused by user
+        4: NodeState.TERMINATED,  # domain is being shut down
+        5: NodeState.TERMINATED,  # domain is shut off
+        6: NodeState.UNKNOWN,  # domain is crashed
+        7: NodeState.UNKNOWN,  # domain is suspended by guest power management
     }
 
     def __init__(self, uri):
         """
-        :param  uri: URI (required)
+        :param  uri: Hypervisor URI (e.g. vbox:///session, qemu:///system,
+                     etc.).
         :type   uri: ``str``
-
-        :rtype: ``None``
         """
         if not have_libvirt:
             raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
@@ -94,7 +93,7 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.destroy() == 0
 
-    def ex_start(self, node):
+    def ex_start_node(self, node):
         """
         Start a stopped node.
 
@@ -106,7 +105,7 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.create() == 0
 
-    def ex_shutdown(self, node):
+    def ex_shutdown_node(self, node):
         """
         Shutdown a running node.
 
@@ -118,7 +117,7 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.shutdown() == 0
 
-    def ex_suspend(self, node):
+    def ex_suspend_node(self, node):
         """
         Suspend a running node.
 
@@ -130,7 +129,7 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.suspend() == 0
 
-    def ex_resume(self, node):
+    def ex_resume_node(self, node):
         """
         Resume a suspended node.
 
