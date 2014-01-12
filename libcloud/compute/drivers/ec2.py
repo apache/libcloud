@@ -1615,12 +1615,13 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      description: An optional description for the new image
         :type       description: ``str``
 
-        @note       An example block device mapping dictionary is included:
-                    mapping = [{'VirtualName': None,
-                                'Ebs': {'VolumeSize': 10,
-                                        'VolumeType': 'standard',
-                                        'DeleteOnTermination': 'true'},
-                                'DeviceName': '/dev/sda1'}]
+        An example block device mapping dictionary is included:
+
+        mapping = [{'VirtualName': None,
+                    'Ebs': {'VolumeSize': 10,
+                            'VolumeType': 'standard',
+                            'DeleteOnTermination': 'true'},
+                            'DeviceName': '/dev/sda1'}]
 
         :return:    Instance of class ``NodeImage``
         :rtype:     :class:`NodeImage`
