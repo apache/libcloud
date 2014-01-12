@@ -442,6 +442,28 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(len(images), 2)
 
+    def test_ex_copy_image(self):
+        image = self.driver.list_images()[0]
+        resp = self.driver.ex_copy_image('us-east-1', image,
+                                         name='Faux Image',
+                                         description='Test Image Copy')
+        self.assertEqual(resp.id, 'ami-4db38224')
+
+    def test_ex_create_image_from_node(self):
+        node = self.driver.list_nodes()[0]
+
+        mapping = [{'VirtualName': None,
+                    'Ebs': {'VolumeSize': 10,
+                            'VolumeType': 'standard',
+                            'DeleteOnTermination': 'true'},
+                    'DeviceName': '/dev/sda1'}]
+
+        resp = self.driver.ex_create_image_from_node(node,
+                                                     'New Image',
+                                                     mapping,
+                                                     description='New EBS Image')
+        self.assertEqual(resp.id, 'ami-e9b38280')
+
     def ex_destroy_image(self):
         images = self.driver.list_images()
         image = images[0]
@@ -1220,6 +1242,14 @@ class EC2MockHttp(MockHttpTestCase):
 
     def _DeleteSnapshot(self, method, url, body, headers):
         body = self.fixtures.load('delete_snapshot.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CopyImage(self, method, url, body, headers):
+        body = self.fixtures.load('copy_image.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _CreateImage(self, method, url, body, headers):
+        body = self.fixtures.load('create_image.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeregisterImage(self, method, url, body, headers):

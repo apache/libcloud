@@ -1566,6 +1566,105 @@ class BaseEC2NodeDriver(NodeDriver):
                            namespace=NAMESPACE)
         return element == 'true'
 
+    def ex_copy_image(self, source_region, image, name=None, description=None):
+        """
+        Copy an Amazon Machine Image from one region to another.
+
+        :param      source_region: The region where the image resides
+        :type       source_region: ``str``
+
+        :param      image: Instance of class NodeImage
+        :type       image: :class:`NodeImage`
+
+        :param      name: The name of the new image
+        :type       name: ``str``
+
+        :param      description: The description of the new image
+        :type       description: ``str``
+
+        :return:    Instance of class ``NodeImage``
+        :rtype:     :class:`NodeImage`
+        """
+        params = {'Action': 'CopyImage',
+                  'SourceRegion': source_region,
+                  'SourceImageId':    image.id}
+
+        if name is not None:
+            params['Name'] = name
+
+        if description is not None:
+            params['Description'] = description
+
+        image = self._to_image(
+            self.connection.request(self.path, params=params).object)
+
+        return image
+
+    def ex_create_image_from_node(self, instance, name, block_device_mapping,
+                                  no_reboot=False, description=None):
+        """
+        Create an Amazon Machine Image based off of an EBS-backed instance.
+
+        :param      instance: Instance of ``Node``
+        :type       instance: ``str``
+
+        :param      name: The name for the new image
+        :type       name: ``str``
+
+        :param      block_device_mapping: A dictionary of the disk layout
+                                          An example of this dict is included
+                                          below.
+        :type       block_device_mapping: ``list`` of ``dict``
+
+        :param      no_reboot: Whether or not to shutdown the instance before
+                               creation. By default Amazon sets this to false
+                               to ensure a clean image.
+        :type       no_reboot: ``bool``
+
+        :param      description: An optional description for the new image
+        :type       description: ``str``
+
+        @note       An example block device mapping dictionary is included:
+                    mapping = [{'VirtualName': None,
+                                'Ebs': {'VolumeSize': 10,
+                                        'VolumeType': 'standard',
+                                        'DeleteOnTermination': 'true'},
+                                'DeviceName': '/dev/sda1'}]
+
+        :return:    Instance of class ``NodeImage``
+        :rtype:     :class:`NodeImage`
+        """
+        params = {'Action': 'CreateImage',
+                  'InstanceId': instance.id,
+                  'Name': name,
+                  'NoReboot': no_reboot}
+
+        if description is not None:
+            params['Description'] = description
+
+        if not isinstance(block_device_mapping, (list, tuple)):
+            raise AttributeError(
+                'block_device_mapping not list or tuple')
+
+        for idx, mapping in enumerate(block_device_mapping):
+            idx += 1  # We want 1-based indexes
+            if not isinstance(mapping, dict):
+                raise AttributeError(
+                    'mapping %s in block_device_mapping '
+                    'not a dict' % mapping)
+            for k, v in mapping.items():
+                if not isinstance(v, dict):
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+                else:
+                    for key, value in v.items():
+                        params['BlockDeviceMapping.%d.%s.%s'
+                               % (idx, k, key)] = str(value)
+
+        image = self._to_image(
+            self.connection.request(self.path, params=params).object)
+
+        return image
+
     def ex_destroy_image(self, image):
         params = {
             'Action': 'DeregisterImage',
