@@ -678,6 +678,120 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': str
         }
     },
+    'node': {
+        'availability': {
+            'xpath': 'placement/availabilityZone',
+            'transform_func': str
+        },
+        'architecture': {
+            'xpath': 'architecture',
+            'transform_func': str
+        },
+        'client_token': {
+            'xpath': 'clientToken',
+            'transform_func': str
+        },
+        'dns_name': {
+            'xpath': 'dnsName',
+            'transform_func': str
+        },
+        'hypervisor': {
+            'xpath': 'hypervisor',
+            'transform_func': str
+        },
+        'iam_profile': {
+            'xpath': 'iamInstanceProfile/id',
+            'transform_func': str
+        },
+        'image_id': {
+            'xpath': 'imageId',
+            'transform_func': str
+        },
+        'instance_id': {
+            'xpath': 'instanceId',
+            'transform_func': str
+        },
+        'instance_lifecycle': {
+            'xpath': 'instanceLifecycle',
+            'transform_func': str
+        },
+        'instance_tenancy': {
+            'xpath': 'placement/tenancy',
+            'transform_func': str
+        },
+        'instance_type': {
+            'xpath': 'instanceType',
+            'transform_func': str
+        },
+        'key_name': {
+            'xpath': 'keyName',
+            'transform_func': str
+        },
+        'launch_index': {
+            'xpath': 'amiLaunchIndex',
+            'transform_func': int
+        },
+        'launch_time': {
+            'xpath': 'launchTime',
+            'transform_func': str
+        },
+        'kernel_id': {
+            'xpath': 'kernelId',
+            'transform_func': str
+        },
+        'monitoring': {
+            'xpath': 'monitoring/state',
+            'transform_func': str
+        },
+        'platform': {
+            'xpath': 'platform',
+            'transform_func': str
+        },
+        'private_dns': {
+            'xpath': 'privateDnsName',
+            'transform_func': str
+        },
+        'ramdisk_id': {
+            'xpath': 'ramdiskId',
+            'transform_func': str
+        },
+        'root_device_type': {
+            'xpath': 'rootDeviceType',
+            'transform_func': str
+        },
+        'root_device_name': {
+            'xpath': 'rootDeviceName',
+            'transform_func': str
+        },
+        'reason': {
+            'xpath': 'reason',
+            'transform_func': str
+        },
+        'source_dest_check': {
+            'xpath': 'sourceDestCheck',
+            'transform_func': str
+        },
+        'status': {
+            'xpath': 'instanceState/name',
+            'transform_func': str
+        },
+        'subnet_id': {
+            'xpath': 'subnetId',
+            'transform_func': str
+        },
+        'virtualization_type': {
+            'xpath': 'virtualizationType',
+            'transform_func': str
+        },
+        'ebs_optimized': {
+            'xpath': 'ebsOptimized',
+            'transform_func': str
+        },
+        'vpc_id': {
+            'xpath': 'vpcId',
+            'transform_func': str
+        }
+    },
     'reserved_node': {
         'instance_type': {
             'xpath': 'instanceType',
@@ -1037,11 +1151,7 @@ class BaseEC2NodeDriver(NodeDriver):
         nodes = []
         for rs in findall(element=elem, xpath='reservationSet/item',
                           namespace=NAMESPACE):
-            groups = [g.findtext('')
-                      for g in findall(element=rs,
-                                       xpath='groupSet/item/groupId',
-                                       namespace=NAMESPACE)]
-            nodes += self._to_nodes(rs, 'instancesSet/item', groups)
+            nodes += self._to_nodes(rs, 'instancesSet/item')
 
         nodes_elastic_ips_mappings = self.ex_describe_addresses(nodes)
         for node in nodes:
@@ -2853,12 +2963,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return result
 
-    def _to_nodes(self, object, xpath, groups=None):
-        return [self._to_node(el, groups=groups)
+    def _to_nodes(self, object, xpath):
+        return [self._to_node(el)
                 for el in object.findall(fixxpath(xpath=xpath,
                                                   namespace=NAMESPACE))]
 
-    def _to_node(self, element, groups=None):
+    def _to_node(self, element):
         try:
             state = self.NODE_STATE_MAP[findattr(element=element,
                                                  xpath="instanceState/name",
@@ -2869,70 +2979,36 @@ class BaseEC2NodeDriver(NodeDriver):
 
         instance_id = findtext(element=element, xpath='instanceId',
                                namespace=NAMESPACE)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        name = tags.get('Name', instance_id)
-
         public_ip = findtext(element=element, xpath='ipAddress',
                              namespace=NAMESPACE)
         public_ips = [public_ip] if public_ip else []
         private_ip = findtext(element=element, xpath='privateIpAddress',
                               namespace=NAMESPACE)
         private_ips = [private_ip] if private_ip else []
+        product_codes = []
+        for p in findall(element=element,
+                         xpath="productCodesSet/item/productCode",
+                         namespace=NAMESPACE):
+            product_codes.append(p)
 
-        n = Node(
-            id=findtext(element=element, xpath='instanceId',
-                        namespace=NAMESPACE),
-            name=name,
-            state=state,
-            public_ips=public_ips,
-            private_ips=private_ips,
-            driver=self.connection.driver,
-            extra={
-                'dns_name': findattr(element=element, xpath="dnsName",
-                                     namespace=NAMESPACE),
-                'instanceId': findattr(element=element, xpath="instanceId",
-                                       namespace=NAMESPACE),
-                'imageId': findattr(element=element, xpath="imageId",
-                                    namespace=NAMESPACE),
-                'private_dns': findattr(element=element,
-                                        xpath="privateDnsName",
-                                        namespace=NAMESPACE),
-                'status': findattr(element=element, xpath="instanceState/name",
-                                   namespace=NAMESPACE),
-                'key_name': findattr(element=element, xpath="keyName",
-                                     namespace=NAMESPACE),
-                'launchindex': findattr(element=element,
-                                        xpath="amiLaunchIndex",
-                                        namespace=NAMESPACE),
-                'productcode': [
-                    p.text for p in findall(
-                        element=element,
-                        xpath="productCodesSet/item/productCode",
-                        namespace=NAMESPACE
-                    )],
-                'instancetype': findattr(element=element, xpath="instanceType",
-                                         namespace=NAMESPACE),
-                'launchdatetime': findattr(element=element, xpath="launchTime",
-                                           namespace=NAMESPACE),
-                'availability': findattr(element,
-                                         xpath="placement/availabilityZone",
-                                         namespace=NAMESPACE),
-                'kernelid': findattr(element=element, xpath="kernelId",
-                                     namespace=NAMESPACE),
-                'ramdiskid': findattr(element=element, xpath="ramdiskId",
-                                      namespace=NAMESPACE),
-                'clienttoken': findattr(element=element, xpath="clientToken",
-                                        namespace=NAMESPACE),
-                'groups': groups,
-                'tags': tags,
-                'iam_profile': findattr(element, xpath="iamInstanceProfile/id",
-                                        namespace=NAMESPACE)
-            }
-        )
-        return n
+        # Get our tags
+        tags = self._get_resource_tags(element)
+        name = tags.get('Name', instance_id)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
+
+        # Add additional properties to our extra dictionary
+        extra['block_device_mapping'] = self._to_device_mappings(element)
+        extra['groups'] = self._get_security_groups(element)
+        extra['network_interfaces'] = self._to_interfaces(element)
+        extra['product_codes'] = product_codes
+        extra['tags'] = tags
+
+        return Node(id=instance_id, name=name, state=state,
+                    public_ips=public_ips, private_ips=private_ips,
+                    driver=self.connection.driver, extra=extra)
 
     def _to_images(self, object):
         return [self._to_image(el) for el in object.findall(
@@ -3175,17 +3251,7 @@ class BaseEC2NodeDriver(NodeDriver):
         name = name if name else tags.get('Name', interface_id)
 
         # Build security groups
-        groups = []
-        for item in findall(element=element,
-                            xpath='groupSet/item',
-                            namespace=NAMESPACE):
-
-            groups.append({'group_id': findtext(element=item,
-                                                xpath='groupId',
-                                                namespace=NAMESPACE),
-                           'group_name': findtext(element=item,
-                                                  xpath='groupName',
-                                                  namespace=NAMESPACE)})
+        groups = self._get_security_groups(element)
 
         # Build private IPs
         priv_ips = []
@@ -3425,6 +3491,29 @@ class BaseEC2NodeDriver(NodeDriver):
             params.update(user_groups)
 
         return params
+
+    def _get_security_groups(self, element):
+        """
+        Parse security groups from the provided element and return a
+        list of security groups with the id ane name key/value pairs.
+
+        :rtype: ``list`` of ``dict``
+        """
+        groups = []
+
+        for item in findall(element=element,
+                            xpath='groupSet/item',
+                            namespace=NAMESPACE):
+            groups.append({
+                'group_id':   findtext(element=item,
+                                       xpath='groupId',
+                                       namespace=NAMESPACE),
+                'group_name': findtext(element=item,
+                                       xpath='groupName',
+                                       namespace=NAMESPACE)
+            })
+
+        return groups
 
 
 class EC2NodeDriver(BaseEC2NodeDriver):
