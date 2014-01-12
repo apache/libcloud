@@ -61,8 +61,7 @@ class LibvirtNodeDriver(NodeDriver):
         self.connection = libvirt.open(uri)
 
     def list_nodes(self):
-        domain_ids = self.connection.listDomainsID()
-        domains = [self.connection.lookupByID(id) for id in domain_ids]
+        domains = self.connection.listAllDomains()
 
         nodes = []
         for domain in domains:
@@ -78,9 +77,11 @@ class LibvirtNodeDriver(NodeDriver):
                      'types': self.connection.getType(),
                      'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
                      'used_cpu_time': used_cpu_time}
+
             node = Node(id=domain.ID(), name=domain.name(), state=state,
                         public_ips=[], private_ips=[], driver=self,
                         extra=extra)
+            node._uuid = domain.UUIDString()  # we want to use a custom UUID
             nodes.append(node)
 
         return nodes
@@ -142,5 +143,8 @@ class LibvirtNodeDriver(NodeDriver):
         return domain.resume() == 0
 
     def _get_domain_for_node(self, node):
-        domain = self.connection.lookupByID(int(node.id))
+        """
+        Return libvirt domain object for the provided node.
+        """
+        domain = self.connection.lookupByUUIDString(node.uuid)
         return domain
