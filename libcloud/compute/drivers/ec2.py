@@ -40,6 +40,27 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
+__all__ = [
+    'API_VERSION',
+    'NAMESPACE',
+    'INSTANCE_TYPES',
+
+    'EC2NodeDriver',
+    'BaseEC2NodeDriver',
+
+    'NimbusNodeDriver',
+    'EucNodeDriver',
+
+    'EC2NodeLocation',
+    'EC2ReservedNode',
+    'EC2Network',
+    'EC2NetworkSubnet',
+    'EC2NetworkInterface',
+    'ExEC2AvailabilityZone',
+
+    'IdempotentParamError'
+]
+
 API_VERSION = '2013-10-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
