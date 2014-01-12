@@ -133,7 +133,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node = self.driver.create_node(name='foo', image=image, size=size,
                                        ex_clienttoken=token)
         self.assertEqual(node.id, 'i-2ba64342')
-        self.assertEqual(node.extra['clienttoken'], token)
+        self.assertEqual(node.extra['client_token'], token)
 
         # from: http://docs.amazonwebservices.com/AWSEC2/latest/DeveloperGuide/index.html?Run_Instance_Idempotency.html
         #    If you repeat the request with the same client token, but change
@@ -174,13 +174,17 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(node.name, node.id)
         self.assertEqual(len(node.public_ips), 2)
-        self.assertEqual(node.extra['launchdatetime'],
-                         '2009-08-07T05:47:04.000Z')
-        self.assertEqual(node.extra['key_name'], 'my-key-pair')
-        self.assertTrue('instancetype' in node.extra)
+        self.assertEqual(node.extra['launch_time'],
+                         '2013-12-02T11:58:11.000Z')
+        self.assertTrue('instance_type' in node.extra)
+        self.assertEqual(node.extra['availability'], 'us-east-1d')
+        self.assertEqual(node.extra['key_name'], 'fauxkey')
+        self.assertEqual(node.extra['monitoring'], 'disabled')
+        self.assertEqual(node.extra['image_id'], 'ami-3215fe5a')
+        self.assertEqual(len(node.extra['groups']), 2)
+        self.assertEqual(len(node.extra['block_device_mapping']), 1)
 
         self.assertEqual(public_ips[0], '1.2.3.4')
-        self.assertEqual(public_ips[1], '1.2.3.5')
 
         nodes = self.driver.list_nodes(ex_node_ids=['i-4382922a',
                                                     'i-8474834a'])
@@ -189,14 +193,16 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
         self.assertEqual(ret_node1.id, 'i-4382922a')
         self.assertEqual(ret_node2.id, 'i-8474834a')
-
-        self.assertEqual(ret_node1.extra['launchdatetime'],
-                         '2009-08-07T05:47:04.000Z')
-        self.assertTrue('instancetype' in ret_node1.extra)
-
-        self.assertEqual(ret_node2.extra['launchdatetime'],
-                         '2009-08-07T05:47:04.000Z')
-        self.assertTrue('instancetype' in ret_node2.extra)
+        self.assertEqual(ret_node2.name, 'Test Server 2')
+        self.assertEqual(ret_node2.extra['subnet_id'], 'subnet-5fd9d412')
+        self.assertEqual(ret_node2.extra['vpc_id'], 'vpc-61dcd30e')
+        self.assertEqual(ret_node2.extra['tags']['Group'], 'VPC Test')
+        self.assertEqual(ret_node1.extra['launch_time'],
+                         '2013-12-02T11:58:11.000Z')
+        self.assertTrue('instance_type' in ret_node1.extra)
+        self.assertEqual(ret_node2.extra['launch_time'],
+                         '2013-12-02T15:58:29.000Z')
+        self.assertTrue('instance_type' in ret_node2.extra)
 
     def test_ex_list_reserved_nodes(self):
         node = self.driver.ex_list_reserved_nodes()[0]
@@ -213,12 +219,6 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['instance_tenancy'], 'default')
         self.assertEqual(node.extra['currency_code'], 'USD')
         self.assertEqual(node.extra['offering_type'], 'Light Utilization')
-
-    def test_list_nodes_with_name_tag(self):
-        EC2MockHttp.type = 'WITH_TAGS'
-        node = self.driver.list_nodes()[0]
-        self.assertEqual(node.id, 'i-8474834a')
-        self.assertEqual(node.name, 'foobar1')
 
     def test_list_location(self):
         locations = self.driver.list_locations()
@@ -1030,10 +1030,6 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('describe_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _WITH_TAGS_DescribeInstances(self, method, url, body, headers):
-        body = self.fixtures.load('describe_instances_with_tags.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
     def _DescribeReservedInstances(self, method, url, body, headers):
         body = self.fixtures.load('describe_reserved_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1367,7 +1363,7 @@ class NimbusTests(EC2Tests):
         public_ips = node.public_ips
         self.assertEqual(node.id, 'i-4382922a')
         self.assertEqual(len(node.public_ips), 1)
-        self.assertEqual(public_ips[0], '1.2.3.5')
+        self.assertEqual(public_ips[0], '1.2.3.4')
         self.assertEqual(node.extra['tags'], {})
 
         node = self.driver.list_nodes()[1]
@@ -1376,8 +1372,8 @@ class NimbusTests(EC2Tests):
         self.assertEqual(node.id, 'i-8474834a')
         self.assertEqual(len(node.public_ips), 1)
         self.assertEqual(public_ips[0], '1.2.3.5')
-        self.assertEqual(node.extra['tags'], {
-                         'user_key0': 'user_val0', 'user_key1': 'user_val1'})
+        self.assertEqual(node.extra['tags'],
+                         {'Name': 'Test Server 2', 'Group': 'VPC Test'})
 
     def test_ex_create_tags(self):
         # Nimbus doesn't support creating tags so this one should be a
