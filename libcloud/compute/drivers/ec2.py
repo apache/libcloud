@@ -40,6 +40,27 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
+__all__ = [
+    'API_VERSION',
+    'NAMESPACE',
+    'INSTANCE_TYPES',
+
+    'EC2NodeDriver',
+    'BaseEC2NodeDriver',
+
+    'NimbusNodeDriver',
+    'EucNodeDriver',
+
+    'EC2NodeLocation',
+    'EC2ReservedNode',
+    'EC2Network',
+    'EC2NetworkSubnet',
+    'EC2NetworkInterface',
+    'ExEC2AvailabilityZone',
+
+    'IdempotentParamError'
+]
+
 API_VERSION = '2013-10-15'
 NAMESPACE = 'http://ec2.amazonaws.com/doc/%s/' % (API_VERSION)
 
@@ -495,6 +516,28 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'transform_func': int
         }
     },
+    'elastic_ip': {
+        'allocation_id': {
+            'xpath': 'allocationId',
+            'transform_func': str,
+        },
+        'association_id': {
+            'xpath': 'associationId',
+            'transform_func': str,
+        },
+        'interface_id': {
+            'xpath': 'networkInterfaceId',
+            'transform_func': str,
+        },
+        'owner_id': {
+            'xpath': 'networkInterfaceOwnerId',
+            'transform_func': str,
+        },
+        'private_ip': {
+            'xpath': 'privateIp',
+            'transform_func': str,
+        }
+    },
     'image': {
         'state': {
             'xpath': 'imageState',
@@ -924,6 +967,38 @@ class EC2NetworkInterface(object):
                 % (self.id, self.name))
 
 
+class ElasticIP(object):
+    """
+    Represents information about an elastic IP adddress
+
+    :param      ip: The elastic IP address
+    :type       ip: ``str``
+
+    :param      domain: The domain that the IP resides in (EC2-Classic/VPC).
+                        EC2 classic is represented with standard and VPC
+                        is represented with vpc.
+    :type       domain: ``str``
+
+    :param      instance_id: The identifier of the instance which currently
+                             has the IP associated.
+    :type       instance_id: ``str``
+
+    Note: This class is used to support both EC2 and VPC IPs.
+          For VPC specific attributes are stored in the extra
+          dict to make promotion to the base API easier.
+    """
+
+    def __init__(self, ip, domain, instance_id, extra=None):
+        self.ip = ip
+        self.domain = domain
+        self.instance_id = instance_id
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<ElasticIP: ip=%s, domain=%s, instance_id=%s>')
+                % (self.ip, self.domain, self.instance_id))
+
+
 class BaseEC2NodeDriver(NodeDriver):
     """
     Base Amazon EC2 node driver.
@@ -941,423 +1016,6 @@ class BaseEC2NodeDriver(NodeDriver):
         'shutting-down': NodeState.UNKNOWN,
         'terminated': NodeState.TERMINATED
     }
-
-    def _pathlist(self, key, arr):
-        """
-        Converts a key and an array of values into AWS query param format.
-        """
-        params = {}
-        i = 0
-        for value in arr:
-            i += 1
-            params["%s.%s" % (key, i)] = value
-        return params
-
-    def _get_boolean(self, element):
-        tag = "{%s}%s" % (NAMESPACE, 'return')
-        return element.findtext(tag) == 'true'
-
-    def _get_state_boolean(self, element):
-        """
-        Checks for the instances's state
-        """
-        state = findall(element=element,
-                        xpath='instancesSet/item/currentState/name',
-                        namespace=NAMESPACE)[0].text
-
-        return state in ('stopping', 'pending', 'starting')
-
-    def _get_terminate_boolean(self, element):
-        status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
-        return any([term_status == status
-                    for term_status
-                    in ('shutting-down', 'terminated')])
-
-    def _to_reserved_nodes(self, object, xpath):
-        return [self._to_reserved_node(el)
-                for el in object.findall(fixxpath(xpath=xpath,
-                                                  namespace=NAMESPACE))]
-
-    def _to_reserved_node(self, element):
-        """
-        Build an EC2ReservedNode object using the reserved instance properties.
-        Information on these properties can be found at http://goo.gl/ulXCC7.
-        """
-
-        # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['reserved_node'])
-
-        try:
-            size = [size for size in self.list_sizes() if
-                    size.id == extra['instance_type']][0]
-        except IndexError:
-            size = None
-
-        return EC2ReservedNode(id=findtext(element=element,
-                                           xpath='reservedInstancesId',
-                                           namespace=NAMESPACE),
-                               state=findattr(element=element,
-                                              xpath='state',
-                                              namespace=NAMESPACE),
-                               driver=self,
-                               size=size,
-                               extra=extra)
-
-    def _to_nodes(self, object, xpath, groups=None):
-        return [self._to_node(el, groups=groups)
-                for el in object.findall(fixxpath(xpath=xpath,
-                                                  namespace=NAMESPACE))]
-
-    def _to_node(self, element, groups=None):
-        try:
-            state = self.NODE_STATE_MAP[findattr(element=element,
-                                                 xpath="instanceState/name",
-                                                 namespace=NAMESPACE)
-                                        ]
-        except KeyError:
-            state = NodeState.UNKNOWN
-
-        instance_id = findtext(element=element, xpath='instanceId',
-                               namespace=NAMESPACE)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        name = tags.get('Name', instance_id)
-
-        public_ip = findtext(element=element, xpath='ipAddress',
-                             namespace=NAMESPACE)
-        public_ips = [public_ip] if public_ip else []
-        private_ip = findtext(element=element, xpath='privateIpAddress',
-                              namespace=NAMESPACE)
-        private_ips = [private_ip] if private_ip else []
-
-        n = Node(
-            id=findtext(element=element, xpath='instanceId',
-                        namespace=NAMESPACE),
-            name=name,
-            state=state,
-            public_ips=public_ips,
-            private_ips=private_ips,
-            driver=self.connection.driver,
-            extra={
-                'dns_name': findattr(element=element, xpath="dnsName",
-                                     namespace=NAMESPACE),
-                'instanceId': findattr(element=element, xpath="instanceId",
-                                       namespace=NAMESPACE),
-                'imageId': findattr(element=element, xpath="imageId",
-                                    namespace=NAMESPACE),
-                'private_dns': findattr(element=element,
-                                        xpath="privateDnsName",
-                                        namespace=NAMESPACE),
-                'status': findattr(element=element, xpath="instanceState/name",
-                                   namespace=NAMESPACE),
-                'key_name': findattr(element=element, xpath="keyName",
-                                     namespace=NAMESPACE),
-                'launchindex': findattr(element=element,
-                                        xpath="amiLaunchIndex",
-                                        namespace=NAMESPACE),
-                'productcode': [
-                    p.text for p in findall(
-                        element=element,
-                        xpath="productCodesSet/item/productCode",
-                        namespace=NAMESPACE
-                    )],
-                'instancetype': findattr(element=element, xpath="instanceType",
-                                         namespace=NAMESPACE),
-                'launchdatetime': findattr(element=element, xpath="launchTime",
-                                           namespace=NAMESPACE),
-                'availability': findattr(element,
-                                         xpath="placement/availabilityZone",
-                                         namespace=NAMESPACE),
-                'kernelid': findattr(element=element, xpath="kernelId",
-                                     namespace=NAMESPACE),
-                'ramdiskid': findattr(element=element, xpath="ramdiskId",
-                                      namespace=NAMESPACE),
-                'clienttoken': findattr(element=element, xpath="clientToken",
-                                        namespace=NAMESPACE),
-                'groups': groups,
-                'tags': tags,
-                'iam_profile': findattr(element, xpath="iamInstanceProfile/id",
-                                        namespace=NAMESPACE)
-            }
-        )
-        return n
-
-    def _to_device_mappings(self, object):
-        return [self._to_device_mapping(el) for el in object.findall(
-            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
-        ]
-
-    def _to_device_mapping(self, element):
-        """
-        Parse the XML element and return a dictionary of device properties.
-        Additional information can be found at http://goo.gl/GjWYBf.
-
-        @note: EBS volumes do not have a virtual name. Only ephemeral
-               disks use this property.
-        :rtype:     ``dict``
-        """
-        mapping = {}
-
-        mapping['device_name'] = findattr(element=element,
-                                          xpath='deviceName',
-                                          namespace=NAMESPACE)
-
-        mapping['virtual_name'] = findattr(element=element,
-                                           xpath='virtualName',
-                                           namespace=NAMESPACE)
-
-        # If virtual name does not exist then this is an EBS volume.
-        # Build the EBS dictionary leveraging the _get_extra_dict method.
-        if mapping['virtual_name'] is None:
-            mapping['ebs'] = self._get_extra_dict(
-                element, RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_volume'])
-
-        return mapping
-
-    def _to_images(self, object):
-        return [self._to_image(el) for el in object.findall(
-            fixxpath(xpath='imagesSet/item', namespace=NAMESPACE))
-        ]
-
-    def _to_image(self, element):
-
-        id = findtext(element=element, xpath='imageId', namespace=NAMESPACE)
-        name = findtext(element=element, xpath='name', namespace=NAMESPACE)
-
-        # Build block device mapping
-        block_device_mapping = self._to_device_mappings(element)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['image'])
-
-        # Add our tags and block device mapping
-        extra['tags'] = tags
-        extra['block_device_mapping'] = block_device_mapping
-
-        return NodeImage(id=id, name=name, driver=self, extra=extra)
-
-    def _to_volume(self, element, name=None):
-        """
-        Parse the XML element and return a StorageVolume object.
-
-        :param      name: An optional name for the volume. If not provided
-                          then either tag with a key "Name" or volume ID
-                          will be used (which ever is available first in that
-                          order).
-        :type       name: ``str``
-
-        :rtype:     :class:`StorageVolume`
-        """
-        volId = findtext(element=element, xpath='volumeId',
-                         namespace=NAMESPACE)
-        size = findtext(element=element, xpath='size', namespace=NAMESPACE)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        # If name was not passed into the method then
-        # fall back then use the volume id
-        name = name if name else tags.get('Name', volId)
-
-        # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['volume'])
-
-        return StorageVolume(id=volId,
-                             name=name,
-                             size=int(size),
-                             driver=self,
-                             extra=extra)
-
-    def _to_snapshots(self, response):
-        return [self._to_snapshot(el) for el in response.findall(
-            fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
-        ]
-
-    def _to_snapshot(self, element, name=None):
-        snapId = findtext(element=element, xpath='snapshotId',
-                          namespace=NAMESPACE)
-        size = findtext(element=element, xpath='volumeSize',
-                        namespace=NAMESPACE)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        # If name was not passed into the method then
-        # fall back then use the snapshot id
-        name = name if name else tags.get('Name', snapId)
-
-        # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['snapshot'])
-
-        # Add tags and name to the extra dict
-        extra['tags'] = tags
-        extra['name'] = name
-
-        return VolumeSnapshot(snapId, size=int(size),
-                              driver=self, extra=extra)
-
-    def _to_networks(self, response):
-        return [self._to_network(el) for el in response.findall(
-            fixxpath(xpath='vpcSet/item', namespace=NAMESPACE))
-        ]
-
-    def _to_network(self, element):
-        # Get the network id
-        vpc_id = findtext(element=element,
-                          xpath='vpcId',
-                          namespace=NAMESPACE)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        # Set our name if the Name key/value if available
-        # If we don't get anything back then use the vpc_id
-        name = tags.get('Name', vpc_id)
-
-        cidr_block = findtext(element=element,
-                              xpath='cidrBlock',
-                              namespace=NAMESPACE)
-
-        # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['network'])
-
-        # Add tags to the extra dict
-        extra['tags'] = tags
-
-        return EC2Network(vpc_id, name, cidr_block, extra=extra)
-
-    def _to_subnets(self, response):
-        return [self._to_subnet(el) for el in response.findall(
-            fixxpath(xpath='subnetSet/item', namespace=NAMESPACE))
-        ]
-
-    def _to_subnet(self, element):
-        # Get the subnet ID
-        subnet_id = findtext(element=element,
-                             xpath='subnetId',
-                             namespace=NAMESPACE)
-
-        # Get our tags
-        tags = self._get_resource_tags(element)
-
-        # If we don't get anything back then use the subnet_id
-        name = tags.get('Name', subnet_id)
-
-        state = findtext(element=element,
-                         xpath='state',
-                         namespace=NAMESPACE)
-
-        # Get our extra dictionary
-        extra = self._get_extra_dict(
-            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['subnet'])
-
-        # Also include our tags
-        extra['tags'] = tags
-
-        return EC2NetworkSubnet(subnet_id, name, state, extra=extra)
-
-    def _to_interfaces(self, response):
-        return [self._to_interface(el) for el in response.findall(
-            fixxpath(xpath='networkInterfaceSet/item', namespace=NAMESPACE))
-        ]
-
-    def _to_interface(self, element, name=None):
-        """
-        Parse the XML element and return a EC2NetworkInterface object.
-
-        :param      name: An optional name for the interface. If not provided
-                          then either tag with a key "Name" or the interface ID
-                          will be used (whichever is available first in that
-                          order).
-        :type       name: ``str``
-
-        :rtype:     :class: `EC2NetworkInterface`
-        """
-
-        interface_id = findtext(element=element,
-                                xpath='networkInterfaceId',
-                                namespace=NAMESPACE)
-
-        state = findtext(element=element,
-                         xpath='status',
-                         namespace=NAMESPACE)
-
-        # Get tags
-        tags = self._get_resource_tags(element)
-
-        name = name if name else tags.get('Name', interface_id)
-
-        # Build security groups
-        groups = []
-        for item in findall(element=element,
-                            xpath='groupSet/item',
-                            namespace=NAMESPACE):
-
-            groups.append({'group_id': findtext(element=item,
-                                                xpath='groupId',
-                                                namespace=NAMESPACE),
-                           'group_name': findtext(element=item,
-                                                  xpath='groupName',
-                                                  namespace=NAMESPACE)})
-
-        # Build private IPs
-        priv_ips = []
-        for item in findall(element=element,
-                            xpath='privateIpAddressesSet/item',
-                            namespace=NAMESPACE):
-
-            priv_ips.append({'private_ip': findtext(element=item,
-                                                    xpath='privateIpAddress',
-                                                    namespace=NAMESPACE),
-                            'private_dns': findtext(element=item,
-                                                    xpath='privateDnsName',
-                                                    namespace=NAMESPACE),
-                            'primary': findtext(element=item,
-                                                xpath='primary',
-                                                namespace=NAMESPACE)})
-
-        # Build our attachment dictionary which we will add into extra later
-        attributes_map = \
-            RESOURCE_EXTRA_ATTRIBUTES_MAP['network_interface_attachment']
-        attachment = self._get_extra_dict(element, attributes_map)
-
-        # Build our extra dict
-        attributes_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network_interface']
-        extra = self._get_extra_dict(element, attributes_map)
-
-        # Include our previously built items as well
-        extra['tags'] = tags
-        extra['attachment'] = attachment
-        extra['private_ips'] = priv_ips
-        extra['groups'] = groups
-
-        return EC2NetworkInterface(interface_id, name, state, extra=extra)
-
-    def ex_list_reserved_nodes(self):
-        """
-        List all reserved instances/nodes which can be purchased from Amazon
-        for one or three year terms. Reservations are made at a region level
-        and reduce the hourly charge for instances.
-
-        More information can be found at http://goo.gl/ulXCC7.
-
-        :rtype: ``list`` of :class:`.EC2ReservedNode`
-        """
-        params = {'Action': 'DescribeReservedInstances'}
-
-        response = self.connection.request(self.path, params=params).object
-
-        return self._to_reserved_nodes(response, 'reservedInstancesSet/item')
 
     def list_nodes(self, ex_node_ids=None):
         """
@@ -1454,39 +1112,6 @@ class BaseEC2NodeDriver(NodeDriver):
         )
         return images
 
-    def ex_get_limits(self):
-        """
-        Retrieve account resource limits.
-
-        :rtype: ``dict``
-        """
-        attributes = ['max-instances', 'max-elastic-ips',
-                      'vpc-max-elastic-ips']
-        params = {}
-        params['Action'] = 'DescribeAccountAttributes'
-
-        for index, attribute in enumerate(attributes):
-            params['AttributeName.%s' % (index)] = attribute
-
-        response = self.connection.request(self.path, params=params)
-        data = response.object
-
-        elems = data.findall(fixxpath(xpath='accountAttributeSet/item',
-                                      namespace=NAMESPACE))
-
-        result = {'resource': {}}
-
-        for elem in elems:
-            name = findtext(element=elem, xpath='attributeName',
-                            namespace=NAMESPACE)
-            value = findtext(element=elem,
-                             xpath='attributeValueSet/item/attributeValue',
-                             namespace=NAMESPACE)
-
-            result['resource'][name] = int(value)
-
-        return result
-
     def list_locations(self):
         locations = []
         for index, availability_zone in \
@@ -1512,6 +1137,153 @@ class BaseEC2NodeDriver(NodeDriver):
         ]
         return volumes
 
+    def create_node(self, **kwargs):
+        """
+        Create a new EC2 node.
+
+        Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
+
+        @inherits: :class:`NodeDriver.create_node`
+
+        :keyword    ex_keyname: The name of the key pair
+        :type       ex_keyname: ``str``
+
+        :keyword    ex_userdata: User data
+        :type       ex_userdata: ``str``
+
+        :keyword    ex_security_groups: A list of names of security groups to
+                                        assign to the node.
+        :type       ex_security_groups:   ``list``
+
+        :keyword    ex_metadata: Key/Value metadata to associate with a node
+        :type       ex_metadata: ``dict``
+
+        :keyword    ex_mincount: Minimum number of instances to launch
+        :type       ex_mincount: ``int``
+
+        :keyword    ex_maxcount: Maximum number of instances to launch
+        :type       ex_maxcount: ``int``
+
+        :keyword    ex_clienttoken: Unique identifier to ensure idempotency
+        :type       ex_clienttoken: ``str``
+
+        :keyword    ex_blockdevicemappings: ``list`` of ``dict`` block device
+                    mappings.
+        :type       ex_blockdevicemappings: ``list`` of ``dict``
+
+        :keyword    ex_iamprofile: Name or ARN of IAM profile
+        :type       ex_iamprofile: ``str``
+        """
+        image = kwargs["image"]
+        size = kwargs["size"]
+        params = {
+            'Action': 'RunInstances',
+            'ImageId': image.id,
+            'MinCount': str(kwargs.get('ex_mincount', '1')),
+            'MaxCount': str(kwargs.get('ex_maxcount', '1')),
+            'InstanceType': size.id
+        }
+
+        if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
+            raise ValueError('You can only supply ex_security_groups or'
+                             ' ex_securitygroup')
+
+        # ex_securitygroup is here for backward compatibility
+        ex_security_groups = kwargs.get('ex_security_groups', None)
+        ex_securitygroup = kwargs.get('ex_securitygroup', None)
+        security_groups = ex_security_groups or ex_securitygroup
+
+        if security_groups:
+            if not isinstance(security_groups, (tuple, list)):
+                security_groups = [security_groups]
+
+            for sig in range(len(security_groups)):
+                params['SecurityGroup.%d' % (sig + 1,)] =\
+                    security_groups[sig]
+
+        if 'location' in kwargs:
+            availability_zone = getattr(kwargs['location'],
+                                        'availability_zone', None)
+            if availability_zone:
+                if availability_zone.region_name != self.region_name:
+                    raise AttributeError('Invalid availability zone: %s'
+                                         % (availability_zone.name))
+                params['Placement.AvailabilityZone'] = availability_zone.name
+
+        if 'auth' in kwargs and 'ex_keyname' in kwargs:
+            raise AttributeError('Cannot specify auth and ex_keyname together')
+
+        if 'auth' in kwargs:
+            auth = self._get_and_check_auth(kwargs['auth'])
+            params['KeyName'] = \
+                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+
+        if 'ex_keyname' in kwargs:
+            params['KeyName'] = kwargs['ex_keyname']
+
+        if 'ex_userdata' in kwargs:
+            params['UserData'] = base64.b64encode(b(kwargs['ex_userdata']))\
+                .decode('utf-8')
+
+        if 'ex_clienttoken' in kwargs:
+            params['ClientToken'] = kwargs['ex_clienttoken']
+
+        if 'ex_blockdevicemappings' in kwargs:
+            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
+                raise AttributeError(
+                    'ex_blockdevicemappings not list or tuple')
+
+            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
+                idx += 1  # we want 1-based indexes
+                if not isinstance(mapping, dict):
+                    raise AttributeError(
+                        'mapping %s in ex_blockdevicemappings '
+                        'not a dict' % mapping)
+                for k, v in mapping.items():
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+
+        if 'ex_iamprofile' in kwargs:
+            if not isinstance(kwargs['ex_iamprofile'], basestring):
+                raise AttributeError('ex_iamprofile not string')
+
+            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
+                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
+            else:
+                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
+
+        object = self.connection.request(self.path, params=params).object
+        nodes = self._to_nodes(object, 'instancesSet/item')
+
+        for node in nodes:
+            tags = {'Name': kwargs['name']}
+            if 'ex_metadata' in kwargs:
+                tags.update(kwargs['ex_metadata'])
+
+            try:
+                self.ex_create_tags(resource=node, tags=tags)
+            except Exception:
+                continue
+
+            node.name = kwargs['name']
+            node.extra.update({'tags': tags})
+
+        if len(nodes) == 1:
+            return nodes[0]
+        else:
+            return nodes
+
+    def reboot_node(self, node):
+        params = {'Action': 'RebootInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_boolean(res)
+
+    def destroy_node(self, node):
+        params = {'Action': 'TerminateInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_terminate_boolean(res)
+
     def create_volume(self, size, name, location=None, snapshot=None):
         """
         :param location: Datacenter in which to create a volume in.
@@ -1530,13 +1302,6 @@ class BaseEC2NodeDriver(NodeDriver):
         self.ex_create_tags(volume, {'Name': name})
         return volume
 
-    def destroy_volume(self, volume):
-        params = {
-            'Action': 'DeleteVolume',
-            'VolumeId': volume.id}
-        response = self.connection.request(self.path, params=params).object
-        return self._get_boolean(response)
-
     def attach_volume(self, node, volume, device):
         params = {
             'Action': 'AttachVolume',
@@ -1554,6 +1319,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         self.connection.request(self.path, params=params)
         return True
+
+    def destroy_volume(self, volume):
+        params = {
+            'Action': 'DeleteVolume',
+            'VolumeId': volume.id}
+        response = self.connection.request(self.path, params=params).object
+        return self._get_boolean(response)
 
     def create_volume_snapshot(self, volume, name=None):
         """
@@ -1622,23 +1394,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def _to_key_pairs(self, elems):
-        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
-        return key_pairs
-
-    def _to_key_pair(self, elem):
-        name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
-        fingerprint = findtext(element=elem, xpath='keyFingerprint',
-                               namespace=NAMESPACE).strip()
-        private_key = findtext(element=elem, xpath='keyMaterial',
-                               namespace=NAMESPACE)
-
-        key_pair = KeyPair(name=name,
-                           public_key=None,
-                           fingerprint=fingerprint,
-                           private_key=private_key,
-                           driver=self)
-        return key_pair
+    # Key pair management methods
 
     def list_key_pairs(self):
         params = {
@@ -1707,195 +1463,6 @@ class BaseEC2NodeDriver(NodeDriver):
         }
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
-
-    def ex_create_keypair(self, name):
-        """
-        Creates a new keypair
-
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :param      name: The name of the keypair to Create. This must be
-            unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        :type       name: ``str``
-
-        :rtype: ``dict``
-        """
-        warnings.warn('This method has been deprecated in favor of '
-                      'create_key_pair method')
-
-        key_pair = self.create_key_pair(name=name)
-
-        result = {
-            'keyMaterial': key_pair.private_key,
-            'keyFingerprint': key_pair.fingerprint
-        }
-
-        return result
-
-    def ex_delete_keypair(self, keypair):
-        """
-        Delete a key pair by name.
-
-        @note: This is a non-standard extension API, and only works with EC2.
-
-        :param      keypair: The name of the keypair to delete.
-        :type       keypair: ``str``
-
-        :rtype: ``bool``
-        """
-        warnings.warn('This method has been deprecated in favor of '
-                      'delete_key_pair method')
-
-        return self.delete_key_pair(name=keypair)
-
-    def ex_import_keypair_from_string(self, name, key_material):
-        """
-        imports a new public key where the public key is passed in as a string
-
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :param      name: The name of the public key to import. This must be
-         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        :type       name: ``str``
-
-        :param     key_material: The contents of a public key file.
-        :type      key_material: ``str``
-
-        :rtype: ``dict``
-        """
-        warnings.warn('This method has been deprecated in favor of '
-                      'import_key_pair_from_string method')
-
-        key_pair = self.import_key_pair_from_string(name=name,
-                                                    key_material=key_material)
-
-        result = {
-            'keyName': key_pair.name,
-            'keyFingerprint': key_pair.fingerprint
-        }
-        return result
-
-    def ex_import_keypair(self, name, keyfile):
-        """
-        imports a new public key where the public key is passed via a filename
-
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :param      name: The name of the public key to import. This must be
-         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
-        :type       name: ``str``
-
-        :param     keyfile: The filename with path of the public key to import.
-        :type      keyfile: ``str``
-
-        :rtype: ``dict``
-        """
-        warnings.warn('This method has been deprecated in favor of '
-                      'import_key_pair_from_file method')
-
-        key_pair = self.import_key_pair_from_file(name=name,
-                                                  key_file_path=keyfile)
-
-        result = {
-            'keyName': key_pair.name,
-            'keyFingerprint': key_pair.fingerprint
-        }
-        return result
-
-    def ex_find_or_import_keypair_by_key_material(self, pubkey):
-        """
-        Given a public key, look it up in the EC2 KeyPair database. If it
-        exists, return any information we have about it. Otherwise, create it.
-
-        Keys that are created are named based on their comment and fingerprint.
-
-        :rtype: ``dict``
-        """
-        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
-        key_comment = get_pubkey_comment(pubkey, default='unnamed')
-        key_name = '%s-%s' % (key_comment, key_fingerprint)
-
-        key_pairs = self.list_key_pairs()
-        key_pairs = [key_pair for key_pair in key_pairs if
-                     key_pair.fingerprint == key_fingerprint]
-
-        if len(key_pairs) >= 1:
-            key_pair = key_pairs[0]
-            result = {
-                'keyName': key_pair.name,
-                'keyFingerprint': key_pair.fingerprint
-            }
-        else:
-            result = self.ex_import_keypair_from_string(key_name, pubkey)
-
-        return result
-
-    def ex_list_keypairs(self):
-        """
-        Lists all the keypair names and fingerprints.
-
-        :rtype: ``list`` of ``dict``
-        """
-        warnings.warn('This method has been deprecated in favor of '
-                      'list_key_pairs method')
-
-        key_pairs = self.list_key_pairs()
-
-        result = []
-
-        for key_pair in key_pairs:
-            item = {
-                'keyName': key_pair.name,
-                'keyFingerprint': key_pair.fingerprint,
-            }
-            result.append(item)
-
-        return result
-
-    def ex_describe_all_keypairs(self):
-        """
-        Return names for all the available key pairs.
-
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :rtype: ``list`` of ``str``
-        """
-        names = [key_pair.name for key_pair in self.list_key_pairs()]
-        return names
-
-    def ex_describe_keypairs(self, name):
-        """
-        Here for backward compatibility.
-        """
-        return self.ex_describe_keypair(name=name)
-
-    def ex_describe_keypair(self, name):
-        """
-        Describes a keypair by name.
-
-        @note: This is a non-standard extension API, and only works for EC2.
-
-        :param      name: The name of the keypair to describe.
-        :type       name: ``str``
-
-        :rtype: ``dict``
-        """
-
-        params = {
-            'Action': 'DescribeKeyPairs',
-            'KeyName.1': name
-        }
-
-        response = self.connection.request(self.path, params=params).object
-        key_name = findattr(element=response, xpath='keySet/item/keyName',
-                            namespace=NAMESPACE)
-        fingerprint = findattr(element=response,
-                               xpath='keySet/item/keyFingerprint',
-                               namespace=NAMESPACE).strip()
-        return {
-            'keyName': key_name,
-            'keyFingerprint': fingerprint
-        }
 
     def ex_list_networks(self):
         """
@@ -2573,122 +2140,142 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         return node.extra['tags']
 
-    def _add_instance_filter(self, params, node):
+    def ex_allocate_address(self, domain='standard'):
         """
-        Add instance filter to the provided params dictionary.
-        """
-        params.update({
-            'Filter.0.Name': 'instance-id',
-            'Filter.0.Value.0': node.id
-        })
+        Allocate a new Elastic IP address for EC2 classic or VPC
 
-    def ex_allocate_address(self):
-        """
-        Allocate a new Elastic IP address
+        :param      domain: The domain to allocate the new address in
+                            (standard/vpc)
+        :type       domain: ``str``
 
-        :return: String representation of allocated IP address
-        :rtype: ``str``
+        :return:    Instance of ElasticIP
+        :rtype:     :class:`ElasticIP`
         """
         params = {'Action': 'AllocateAddress'}
 
+        if domain == 'vpc':
+            params['Domain'] = domain
+
         response = self.connection.request(self.path, params=params).object
-        public_ip = findtext(element=response, xpath='publicIp',
-                             namespace=NAMESPACE)
-        return public_ip
 
-    def ex_release_address(self, elastic_ip_address):
+        return self._to_address(response, only_associated=False)
+
+    def ex_release_address(self, elastic_ip, domain=None):
         """
-        Release an Elastic IP address
+        Release an Elastic IP address using the IP (EC2-Classic) or
+        using the allocation ID (VPC)
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: Elastic IP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
+
+        :return:    True on success, False otherwise.
+        :rtype:     ``bool``
         """
         params = {'Action': 'ReleaseAddress'}
 
-        params.update({'PublicIp': elastic_ip_address})
+        if domain is not None and domain != 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
+
+        if domain is None:
+            params['PublicIp'] = elastic_ip.ip
+        else:
+            params['AllocationId'] = elastic_ip.extra['allocation_id']
+
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def ex_describe_all_addresses(self, only_allocated=False):
+    def ex_describe_all_addresses(self, only_associated=False):
         """
         Return all the Elastic IP addresses for this account
-        optionally, return only the allocated addresses
+        optionally, return only addresses associated with nodes
 
-        :param    only_allocated: If true, return only those addresses
-                                  that are associated with an instance
-        :type     only_allocated: ``str``
+        :param    only_associated: If true, return only those addresses
+                                   that are associated with an instance.
+        :type     only_associated: ``bool``
 
-        :return:   list list of elastic ips for this particular account.
-        :rtype: ``list`` of ``str``
+        :return:  List of ElasticIP instances.
+        :rtype:   ``list`` of :class:`ElasticIP`
         """
         params = {'Action': 'DescribeAddresses'}
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        response = self.connection.request(self.path, params=params).object
 
-        # the list which we return
-        elastic_ip_addresses = []
-        for element in findall(element=result, xpath='addressesSet/item',
-                               namespace=NAMESPACE):
-            instance_id = findtext(element=element, xpath='instanceId',
-                                   namespace=NAMESPACE)
+        # We will send our only_associated boolean over to
+        # shape how the return data is sent back
+        return self._to_addresses(response, only_associated)
 
-            # if only allocated addresses are requested
-            if only_allocated and not instance_id:
-                continue
-
-            ip_address = findtext(element=element, xpath='publicIp',
-                                  namespace=NAMESPACE)
-
-            elastic_ip_addresses.append(ip_address)
-
-        return elastic_ip_addresses
-
-    def ex_associate_address_with_node(self, node, elastic_ip_address):
+    def ex_associate_address_with_node(self, node, elastic_ip, domain=None):
         """
         Associate an Elastic IP address with a particular node.
 
         :param      node: Node instance
         :type       node: :class:`Node`
 
-        :param      elastic_ip_address: IP address which should be used
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: Elastic IP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
+
+        :return:    A string representation of the association ID which is
+                    required for VPC disassociation. EC2/standard
+                    addresses return None
+        :rtype:     ``None`` or ``str``
         """
-        params = {'Action': 'AssociateAddress'}
+        params = {'Action': 'AssociateAddress', 'InstanceId': node.id}
 
-        params.update({'InstanceId': node.id})
-        params.update({'PublicIp': elastic_ip_address})
-        res = self.connection.request(self.path, params=params).object
-        return self._get_boolean(res)
+        if domain is not None and domain != 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
 
-    def ex_associate_addresses(self, node, elastic_ip_address):
+        if domain is None:
+            params.update({'PublicIp': elastic_ip.ip})
+        else:
+            params.update({'AllocationId': elastic_ip.extra['allocation_id']})
+
+        response = self.connection.request(self.path, params=params).object
+        association_id = findtext(element=response,
+                                  xpath='associationId',
+                                  namespace=NAMESPACE)
+        return association_id
+
+    def ex_associate_addresses(self, node, elastic_ip, domain=None):
         """
         Note: This method has been deprecated in favor of
         the ex_associate_address_with_node method.
         """
+
         return self.ex_associate_address_with_node(node=node,
-                                                   elastic_ip_address=
-                                                   elastic_ip_address)
+                                                   elastic_ip=elastic_ip,
+                                                   domain=domain)
 
-    def ex_disassociate_address(self, elastic_ip_address):
+    def ex_disassociate_address(self, elastic_ip, domain=None):
         """
-        Disassociate an Elastic IP address
+        Disassociate an Elastic IP address using the IP (EC2-Classic)
+        or the association ID (VPC)
 
-        :param      elastic_ip_address: Elastic IP address which should be used
-        :type       elastic_ip_address: ``str``
+        :param      elastic_ip: ElasticIP instance
+        :type       elastic_ip: :class:`ElasticIP`
 
-        :return: True on success, False otherwise.
-        :rtype: ``bool``
+        :param      domain: The domain where the IP resides (vpc only)
+        :type       domain: ``str``
+
+        :return:    True on success, False otherwise.
+        :rtype:     ``bool``
         """
         params = {'Action': 'DisassociateAddress'}
 
-        params.update({'PublicIp': elastic_ip_address})
+        if domain is not None and domain != 'vpc':
+            raise AttributeError('Domain can only be set to vpc')
+
+        if domain is None:
+            params['PublicIp'] = elastic_ip.ip
+
+        else:
+            params['AssociationId'] = elastic_ip.extra['association_id']
+
         res = self.connection.request(self.path, params=params).object
         return self._get_boolean(res)
 
@@ -2699,9 +2286,10 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      nodes: List of :class:`Node` instances
         :type       nodes: ``list`` of :class:`Node`
 
-        :return: Dictionary where a key is a node ID and the value is a
-            list with the Elastic IP addresses associated with this node.
-        :rtype: ``dict``
+        :return:    Dictionary where a key is a node ID and the value is a
+                    list with the Elastic IP addresses associated with
+                    this node.
+        :rtype:     ``dict``
         """
         if not nodes:
             return {}
@@ -2711,25 +2299,26 @@ class BaseEC2NodeDriver(NodeDriver):
         if len(nodes) == 1:
             self._add_instance_filter(params, nodes[0])
 
-        result = self.connection.request(self.path,
-                                         params=params.copy()).object
+        result = self.connection.request(self.path, params=params).object
 
         node_instance_ids = [node.id for node in nodes]
         nodes_elastic_ip_mappings = {}
 
+        # We will set only_associated to True so that we only get back
+        # IPs which are associated with instances
+        only_associated = True
+
         for node_id in node_instance_ids:
             nodes_elastic_ip_mappings.setdefault(node_id, [])
-        for element in findall(element=result, xpath='addressesSet/item',
-                               namespace=NAMESPACE):
-            instance_id = findtext(element=element, xpath='instanceId',
-                                   namespace=NAMESPACE)
-            ip_address = findtext(element=element, xpath='publicIp',
-                                  namespace=NAMESPACE)
+            for addr in self._to_addresses(result,
+                                           only_associated):
 
-            if instance_id not in node_instance_ids:
-                continue
+                instance_id = addr.instance_id
 
-            nodes_elastic_ip_mappings[instance_id].append(ip_address)
+                if node_id == instance_id:
+                    nodes_elastic_ip_mappings[instance_id].append(
+                        addr.ip)
+
         return nodes_elastic_ip_mappings
 
     def ex_describe_addresses_for_node(self, node):
@@ -2744,6 +2333,8 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         node_elastic_ips = self.ex_describe_addresses([node])
         return node_elastic_ips[node.id]
+
+    # Network interface management methods
 
     def ex_list_network_interfaces(self):
         """
@@ -2955,147 +2546,6 @@ class BaseEC2NodeDriver(NodeDriver):
         attributes = {'InstanceType.Value': new_size.id}
         return self.ex_modify_instance_attribute(node, attributes)
 
-    def create_node(self, **kwargs):
-        """
-        Create a new EC2 node.
-
-        Reference: http://bit.ly/8ZyPSy [docs.amazonwebservices.com]
-
-        @inherits: :class:`NodeDriver.create_node`
-
-        :keyword    ex_keyname: The name of the key pair
-        :type       ex_keyname: ``str``
-
-        :keyword    ex_userdata: User data
-        :type       ex_userdata: ``str``
-
-        :keyword    ex_security_groups: A list of names of security groups to
-                                        assign to the node.
-        :type       ex_security_groups:   ``list``
-
-        :keyword    ex_metadata: Key/Value metadata to associate with a node
-        :type       ex_metadata: ``dict``
-
-        :keyword    ex_mincount: Minimum number of instances to launch
-        :type       ex_mincount: ``int``
-
-        :keyword    ex_maxcount: Maximum number of instances to launch
-        :type       ex_maxcount: ``int``
-
-        :keyword    ex_clienttoken: Unique identifier to ensure idempotency
-        :type       ex_clienttoken: ``str``
-
-        :keyword    ex_blockdevicemappings: ``list`` of ``dict`` block device
-                    mappings.
-        :type       ex_blockdevicemappings: ``list`` of ``dict``
-
-        :keyword    ex_iamprofile: Name or ARN of IAM profile
-        :type       ex_iamprofile: ``str``
-        """
-        image = kwargs["image"]
-        size = kwargs["size"]
-        params = {
-            'Action': 'RunInstances',
-            'ImageId': image.id,
-            'MinCount': str(kwargs.get('ex_mincount', '1')),
-            'MaxCount': str(kwargs.get('ex_maxcount', '1')),
-            'InstanceType': size.id
-        }
-
-        if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
-            raise ValueError('You can only supply ex_security_groups or'
-                             ' ex_securitygroup')
-
-        # ex_securitygroup is here for backward compatibility
-        ex_security_groups = kwargs.get('ex_security_groups', None)
-        ex_securitygroup = kwargs.get('ex_securitygroup', None)
-        security_groups = ex_security_groups or ex_securitygroup
-
-        if security_groups:
-            if not isinstance(security_groups, (tuple, list)):
-                security_groups = [security_groups]
-
-            for sig in range(len(security_groups)):
-                params['SecurityGroup.%d' % (sig + 1,)] =\
-                    security_groups[sig]
-
-        if 'location' in kwargs:
-            availability_zone = getattr(kwargs['location'],
-                                        'availability_zone', None)
-            if availability_zone:
-                if availability_zone.region_name != self.region_name:
-                    raise AttributeError('Invalid availability zone: %s'
-                                         % (availability_zone.name))
-                params['Placement.AvailabilityZone'] = availability_zone.name
-
-        if 'auth' in kwargs and 'ex_keyname' in kwargs:
-            raise AttributeError('Cannot specify auth and ex_keyname together')
-
-        if 'auth' in kwargs:
-            auth = self._get_and_check_auth(kwargs['auth'])
-            params['KeyName'] = \
-                self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
-
-        if 'ex_keyname' in kwargs:
-            params['KeyName'] = kwargs['ex_keyname']
-
-        if 'ex_userdata' in kwargs:
-            params['UserData'] = base64.b64encode(b(kwargs['ex_userdata']))\
-                .decode('utf-8')
-
-        if 'ex_clienttoken' in kwargs:
-            params['ClientToken'] = kwargs['ex_clienttoken']
-
-        if 'ex_blockdevicemappings' in kwargs:
-            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
-                raise AttributeError(
-                    'ex_blockdevicemappings not list or tuple')
-
-            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                idx += 1  # we want 1-based indexes
-                if not isinstance(mapping, dict):
-                    raise AttributeError(
-                        'mapping %s in ex_blockdevicemappings '
-                        'not a dict' % mapping)
-                for k, v in mapping.items():
-                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
-
-        if 'ex_iamprofile' in kwargs:
-            if not isinstance(kwargs['ex_iamprofile'], basestring):
-                raise AttributeError('ex_iamprofile not string')
-
-            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
-                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
-            else:
-                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
-
-        object = self.connection.request(self.path, params=params).object
-        nodes = self._to_nodes(object, 'instancesSet/item')
-
-        for node in nodes:
-            tags = {'Name': kwargs['name']}
-            if 'ex_metadata' in kwargs:
-                tags.update(kwargs['ex_metadata'])
-
-            try:
-                self.ex_create_tags(resource=node, tags=tags)
-            except Exception:
-                continue
-
-            node.name = kwargs['name']
-            node.extra.update({'tags': tags})
-
-        if len(nodes) == 1:
-            return nodes[0]
-        else:
-            return nodes
-
-    def reboot_node(self, node):
-        params = {'Action': 'RebootInstances'}
-        params.update(self._pathlist('InstanceId', [node.id]))
-        res = self.connection.request(self.path, params=params).object
-        return self._get_boolean(res)
-
     def ex_start_node(self, node):
         """
         Start the node by passing in the node object, does not work with
@@ -3125,12 +2575,6 @@ class BaseEC2NodeDriver(NodeDriver):
         params.update(self._pathlist('InstanceId', [node.id]))
         res = self.connection.request(self.path, params=params).object
         return self._get_state_boolean(res)
-
-    def destroy_node(self, node):
-        params = {'Action': 'TerminateInstances'}
-        params.update(self._pathlist('InstanceId', [node.id]))
-        res = self.connection.request(self.path, params=params).object
-        return self._get_terminate_boolean(res)
 
     def ex_get_console_output(self, node):
         """
@@ -3166,6 +2610,722 @@ class BaseEC2NodeDriver(NodeDriver):
         return {'instance_id': node.id,
                 'timestamp': timestamp,
                 'output': output}
+
+    def ex_list_reserved_nodes(self):
+        """
+        List all reserved instances/nodes which can be purchased from Amazon
+        for one or three year terms. Reservations are made at a region level
+        and reduce the hourly charge for instances.
+
+        More information can be found at http://goo.gl/ulXCC7.
+
+        :rtype: ``list`` of :class:`.EC2ReservedNode`
+        """
+        params = {'Action': 'DescribeReservedInstances'}
+
+        response = self.connection.request(self.path, params=params).object
+
+        return self._to_reserved_nodes(response, 'reservedInstancesSet/item')
+
+    # Account specific methods
+
+    def ex_get_limits(self):
+        """
+        Retrieve account resource limits.
+
+        :rtype: ``dict``
+        """
+        attributes = ['max-instances', 'max-elastic-ips',
+                      'vpc-max-elastic-ips']
+        params = {}
+        params['Action'] = 'DescribeAccountAttributes'
+
+        for index, attribute in enumerate(attributes):
+            params['AttributeName.%s' % (index)] = attribute
+
+        response = self.connection.request(self.path, params=params)
+        data = response.object
+
+        elems = data.findall(fixxpath(xpath='accountAttributeSet/item',
+                                      namespace=NAMESPACE))
+
+        result = {'resource': {}}
+
+        for elem in elems:
+            name = findtext(element=elem, xpath='attributeName',
+                            namespace=NAMESPACE)
+            value = findtext(element=elem,
+                             xpath='attributeValueSet/item/attributeValue',
+                             namespace=NAMESPACE)
+
+            result['resource'][name] = int(value)
+
+        return result
+
+    # Deprecated extension methods
+
+    def ex_list_keypairs(self):
+        """
+        Lists all the keypair names and fingerprints.
+
+        :rtype: ``list`` of ``dict``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'list_key_pairs method')
+
+        key_pairs = self.list_key_pairs()
+
+        result = []
+
+        for key_pair in key_pairs:
+            item = {
+                'keyName': key_pair.name,
+                'keyFingerprint': key_pair.fingerprint,
+            }
+            result.append(item)
+
+        return result
+
+    def ex_describe_all_keypairs(self):
+        """
+        Return names for all the available key pairs.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :rtype: ``list`` of ``str``
+        """
+        names = [key_pair.name for key_pair in self.list_key_pairs()]
+        return names
+
+    def ex_describe_keypairs(self, name):
+        """
+        Here for backward compatibility.
+        """
+        return self.ex_describe_keypair(name=name)
+
+    def ex_describe_keypair(self, name):
+        """
+        Describes a keypair by name.
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      name: The name of the keypair to describe.
+        :type       name: ``str``
+
+        :rtype: ``dict``
+        """
+
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'KeyName.1': name
+        }
+
+        response = self.connection.request(self.path, params=params).object
+        key_name = findattr(element=response, xpath='keySet/item/keyName',
+                            namespace=NAMESPACE)
+        fingerprint = findattr(element=response,
+                               xpath='keySet/item/keyFingerprint',
+                               namespace=NAMESPACE).strip()
+        return {
+            'keyName': key_name,
+            'keyFingerprint': fingerprint
+        }
+
+    def ex_create_keypair(self, name):
+        """
+        Creates a new keypair
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      name: The name of the keypair to Create. This must be
+            unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        :type       name: ``str``
+
+        :rtype: ``dict``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'create_key_pair method')
+
+        key_pair = self.create_key_pair(name=name)
+
+        result = {
+            'keyMaterial': key_pair.private_key,
+            'keyFingerprint': key_pair.fingerprint
+        }
+
+        return result
+
+    def ex_delete_keypair(self, keypair):
+        """
+        Delete a key pair by name.
+
+        @note: This is a non-standard extension API, and only works with EC2.
+
+        :param      keypair: The name of the keypair to delete.
+        :type       keypair: ``str``
+
+        :rtype: ``bool``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'delete_key_pair method')
+
+        return self.delete_key_pair(name=keypair)
+
+    def ex_import_keypair_from_string(self, name, key_material):
+        """
+        imports a new public key where the public key is passed in as a string
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      name: The name of the public key to import. This must be
+         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        :type       name: ``str``
+
+        :param     key_material: The contents of a public key file.
+        :type      key_material: ``str``
+
+        :rtype: ``dict``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_string method')
+
+        key_pair = self.import_key_pair_from_string(name=name,
+                                                    key_material=key_material)
+
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+        return result
+
+    def ex_import_keypair(self, name, keyfile):
+        """
+        imports a new public key where the public key is passed via a filename
+
+        @note: This is a non-standard extension API, and only works for EC2.
+
+        :param      name: The name of the public key to import. This must be
+         unique, otherwise an InvalidKeyPair.Duplicate exception is raised.
+        :type       name: ``str``
+
+        :param     keyfile: The filename with path of the public key to import.
+        :type      keyfile: ``str``
+
+        :rtype: ``dict``
+        """
+        warnings.warn('This method has been deprecated in favor of '
+                      'import_key_pair_from_file method')
+
+        key_pair = self.import_key_pair_from_file(name=name,
+                                                  key_file_path=keyfile)
+
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+        return result
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+
+        :rtype: ``dict``
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default='unnamed')
+        key_name = '%s-%s' % (key_comment, key_fingerprint)
+
+        key_pairs = self.list_key_pairs()
+        key_pairs = [key_pair for key_pair in key_pairs if
+                     key_pair.fingerprint == key_fingerprint]
+
+        if len(key_pairs) >= 1:
+            key_pair = key_pairs[0]
+            result = {
+                'keyName': key_pair.name,
+                'keyFingerprint': key_pair.fingerprint
+            }
+        else:
+            result = self.ex_import_keypair_from_string(key_name, pubkey)
+
+        return result
+
+    def _to_nodes(self, object, xpath, groups=None):
+        return [self._to_node(el, groups=groups)
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
+    def _to_node(self, element, groups=None):
+        try:
+            state = self.NODE_STATE_MAP[findattr(element=element,
+                                                 xpath="instanceState/name",
+                                                 namespace=NAMESPACE)
+                                        ]
+        except KeyError:
+            state = NodeState.UNKNOWN
+
+        instance_id = findtext(element=element, xpath='instanceId',
+                               namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        name = tags.get('Name', instance_id)
+
+        public_ip = findtext(element=element, xpath='ipAddress',
+                             namespace=NAMESPACE)
+        public_ips = [public_ip] if public_ip else []
+        private_ip = findtext(element=element, xpath='privateIpAddress',
+                              namespace=NAMESPACE)
+        private_ips = [private_ip] if private_ip else []
+
+        n = Node(
+            id=findtext(element=element, xpath='instanceId',
+                        namespace=NAMESPACE),
+            name=name,
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self.connection.driver,
+            extra={
+                'dns_name': findattr(element=element, xpath="dnsName",
+                                     namespace=NAMESPACE),
+                'instanceId': findattr(element=element, xpath="instanceId",
+                                       namespace=NAMESPACE),
+                'imageId': findattr(element=element, xpath="imageId",
+                                    namespace=NAMESPACE),
+                'private_dns': findattr(element=element,
+                                        xpath="privateDnsName",
+                                        namespace=NAMESPACE),
+                'status': findattr(element=element, xpath="instanceState/name",
+                                   namespace=NAMESPACE),
+                'key_name': findattr(element=element, xpath="keyName",
+                                     namespace=NAMESPACE),
+                'launchindex': findattr(element=element,
+                                        xpath="amiLaunchIndex",
+                                        namespace=NAMESPACE),
+                'productcode': [
+                    p.text for p in findall(
+                        element=element,
+                        xpath="productCodesSet/item/productCode",
+                        namespace=NAMESPACE
+                    )],
+                'instancetype': findattr(element=element, xpath="instanceType",
+                                         namespace=NAMESPACE),
+                'launchdatetime': findattr(element=element, xpath="launchTime",
+                                           namespace=NAMESPACE),
+                'availability': findattr(element,
+                                         xpath="placement/availabilityZone",
+                                         namespace=NAMESPACE),
+                'kernelid': findattr(element=element, xpath="kernelId",
+                                     namespace=NAMESPACE),
+                'ramdiskid': findattr(element=element, xpath="ramdiskId",
+                                      namespace=NAMESPACE),
+                'clienttoken': findattr(element=element, xpath="clientToken",
+                                        namespace=NAMESPACE),
+                'groups': groups,
+                'tags': tags,
+                'iam_profile': findattr(element, xpath="iamInstanceProfile/id",
+                                        namespace=NAMESPACE)
+            }
+        )
+        return n
+
+    def _to_images(self, object):
+        return [self._to_image(el) for el in object.findall(
+            fixxpath(xpath='imagesSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_image(self, element):
+
+        id = findtext(element=element, xpath='imageId', namespace=NAMESPACE)
+        name = findtext(element=element, xpath='name', namespace=NAMESPACE)
+
+        # Build block device mapping
+        block_device_mapping = self._to_device_mappings(element)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['image'])
+
+        # Add our tags and block device mapping
+        extra['tags'] = tags
+        extra['block_device_mapping'] = block_device_mapping
+
+        return NodeImage(id=id, name=name, driver=self, extra=extra)
+
+    def _to_volume(self, element, name=None):
+        """
+        Parse the XML element and return a StorageVolume object.
+
+        :param      name: An optional name for the volume. If not provided
+                          then either tag with a key "Name" or volume ID
+                          will be used (which ever is available first in that
+                          order).
+        :type       name: ``str``
+
+        :rtype:     :class:`StorageVolume`
+        """
+        volId = findtext(element=element, xpath='volumeId',
+                         namespace=NAMESPACE)
+        size = findtext(element=element, xpath='size', namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # If name was not passed into the method then
+        # fall back then use the volume id
+        name = name if name else tags.get('Name', volId)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['volume'])
+
+        return StorageVolume(id=volId,
+                             name=name,
+                             size=int(size),
+                             driver=self,
+                             extra=extra)
+
+    def _to_snapshots(self, response):
+        return [self._to_snapshot(el) for el in response.findall(
+            fixxpath(xpath='snapshotSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_snapshot(self, element, name=None):
+        snapId = findtext(element=element, xpath='snapshotId',
+                          namespace=NAMESPACE)
+        size = findtext(element=element, xpath='volumeSize',
+                        namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # If name was not passed into the method then
+        # fall back then use the snapshot id
+        name = name if name else tags.get('Name', snapId)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['snapshot'])
+
+        # Add tags and name to the extra dict
+        extra['tags'] = tags
+        extra['name'] = name
+
+        return VolumeSnapshot(snapId, size=int(size),
+                              driver=self, extra=extra)
+
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        name = findtext(element=elem, xpath='keyName', namespace=NAMESPACE)
+        fingerprint = findtext(element=elem, xpath='keyFingerprint',
+                               namespace=NAMESPACE).strip()
+        private_key = findtext(element=elem, xpath='keyMaterial',
+                               namespace=NAMESPACE)
+
+        key_pair = KeyPair(name=name,
+                           public_key=None,
+                           fingerprint=fingerprint,
+                           private_key=private_key,
+                           driver=self)
+        return key_pair
+
+    def _to_networks(self, response):
+        return [self._to_network(el) for el in response.findall(
+            fixxpath(xpath='vpcSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_network(self, element):
+        # Get the network id
+        vpc_id = findtext(element=element,
+                          xpath='vpcId',
+                          namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # Set our name if the Name key/value if available
+        # If we don't get anything back then use the vpc_id
+        name = tags.get('Name', vpc_id)
+
+        cidr_block = findtext(element=element,
+                              xpath='cidrBlock',
+                              namespace=NAMESPACE)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['network'])
+
+        # Add tags to the extra dict
+        extra['tags'] = tags
+
+        return EC2Network(vpc_id, name, cidr_block, extra=extra)
+
+    def _to_addresses(self, response, only_associated):
+        """
+        Builds a list of dictionaries containing elastic IP properties.
+
+        :param    only_associated: If true, return only those addresses
+                                   that are associated with an instance.
+                                   If false, return all addresses.
+        :type     only_associated: ``bool``
+
+        :rtype:   ``list`` of :class:`ElasticIP`
+        """
+        addresses = []
+        for el in response.findall(fixxpath(xpath='addressesSet/item',
+                                            namespace=NAMESPACE)):
+            addr = self._to_address(el, only_associated)
+            if addr is not None:
+                addresses.append(addr)
+
+        return addresses
+
+    def _to_address(self, element, only_associated):
+        instance_id = findtext(element=element, xpath='instanceId',
+                               namespace=NAMESPACE)
+
+        public_ip = findtext(element=element,
+                             xpath='publicIp',
+                             namespace=NAMESPACE)
+
+        domain = findtext(element=element,
+                          xpath='domain',
+                          namespace=NAMESPACE)
+
+        # Build our extra dict
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['elastic_ip'])
+
+        # Return NoneType if only associated IPs are requested
+        if only_associated and not instance_id:
+            return None
+
+        return ElasticIP(public_ip, domain, instance_id, extra=extra)
+
+    def _to_subnets(self, response):
+        return [self._to_subnet(el) for el in response.findall(
+            fixxpath(xpath='subnetSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_subnet(self, element):
+        # Get the subnet ID
+        subnet_id = findtext(element=element,
+                             xpath='subnetId',
+                             namespace=NAMESPACE)
+
+        # Get our tags
+        tags = self._get_resource_tags(element)
+
+        # If we don't get anything back then use the subnet_id
+        name = tags.get('Name', subnet_id)
+
+        state = findtext(element=element,
+                         xpath='state',
+                         namespace=NAMESPACE)
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['subnet'])
+
+        # Also include our tags
+        extra['tags'] = tags
+
+        return EC2NetworkSubnet(subnet_id, name, state, extra=extra)
+
+    def _to_interfaces(self, response):
+        return [self._to_interface(el) for el in response.findall(
+            fixxpath(xpath='networkInterfaceSet/item', namespace=NAMESPACE))
+        ]
+
+    def _to_interface(self, element, name=None):
+        """
+        Parse the XML element and return a EC2NetworkInterface object.
+
+        :param      name: An optional name for the interface. If not provided
+                          then either tag with a key "Name" or the interface ID
+                          will be used (whichever is available first in that
+                          order).
+        :type       name: ``str``
+
+        :rtype:     :class: `EC2NetworkInterface`
+        """
+
+        interface_id = findtext(element=element,
+                                xpath='networkInterfaceId',
+                                namespace=NAMESPACE)
+
+        state = findtext(element=element,
+                         xpath='status',
+                         namespace=NAMESPACE)
+
+        # Get tags
+        tags = self._get_resource_tags(element)
+
+        name = name if name else tags.get('Name', interface_id)
+
+        # Build security groups
+        groups = []
+        for item in findall(element=element,
+                            xpath='groupSet/item',
+                            namespace=NAMESPACE):
+
+            groups.append({'group_id': findtext(element=item,
+                                                xpath='groupId',
+                                                namespace=NAMESPACE),
+                           'group_name': findtext(element=item,
+                                                  xpath='groupName',
+                                                  namespace=NAMESPACE)})
+
+        # Build private IPs
+        priv_ips = []
+        for item in findall(element=element,
+                            xpath='privateIpAddressesSet/item',
+                            namespace=NAMESPACE):
+
+            priv_ips.append({'private_ip': findtext(element=item,
+                                                    xpath='privateIpAddress',
+                                                    namespace=NAMESPACE),
+                            'private_dns': findtext(element=item,
+                                                    xpath='privateDnsName',
+                                                    namespace=NAMESPACE),
+                            'primary': findtext(element=item,
+                                                xpath='primary',
+                                                namespace=NAMESPACE)})
+
+        # Build our attachment dictionary which we will add into extra later
+        attributes_map = \
+            RESOURCE_EXTRA_ATTRIBUTES_MAP['network_interface_attachment']
+        attachment = self._get_extra_dict(element, attributes_map)
+
+        # Build our extra dict
+        attributes_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network_interface']
+        extra = self._get_extra_dict(element, attributes_map)
+
+        # Include our previously built items as well
+        extra['tags'] = tags
+        extra['attachment'] = attachment
+        extra['private_ips'] = priv_ips
+        extra['groups'] = groups
+
+        return EC2NetworkInterface(interface_id, name, state, extra=extra)
+
+    def _to_reserved_nodes(self, object, xpath):
+        return [self._to_reserved_node(el)
+                for el in object.findall(fixxpath(xpath=xpath,
+                                                  namespace=NAMESPACE))]
+
+    def _to_reserved_node(self, element):
+        """
+        Build an EC2ReservedNode object using the reserved instance properties.
+        Information on these properties can be found at http://goo.gl/ulXCC7.
+        """
+
+        # Get our extra dictionary
+        extra = self._get_extra_dict(
+            element, RESOURCE_EXTRA_ATTRIBUTES_MAP['reserved_node'])
+
+        try:
+            size = [size for size in self.list_sizes() if
+                    size.id == extra['instance_type']][0]
+        except IndexError:
+            size = None
+
+        return EC2ReservedNode(id=findtext(element=element,
+                                           xpath='reservedInstancesId',
+                                           namespace=NAMESPACE),
+                               state=findattr(element=element,
+                                              xpath='state',
+                                              namespace=NAMESPACE),
+                               driver=self,
+                               size=size,
+                               extra=extra)
+
+    def _to_device_mappings(self, object):
+        return [self._to_device_mapping(el) for el in object.findall(
+            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
+        ]
+
+    def _to_device_mapping(self, element):
+        """
+        Parse the XML element and return a dictionary of device properties.
+        Additional information can be found at http://goo.gl/GjWYBf.
+
+        @note: EBS volumes do not have a virtual name. Only ephemeral
+               disks use this property.
+        :rtype:     ``dict``
+        """
+        mapping = {}
+
+        mapping['device_name'] = findattr(element=element,
+                                          xpath='deviceName',
+                                          namespace=NAMESPACE)
+
+        mapping['virtual_name'] = findattr(element=element,
+                                           xpath='virtualName',
+                                           namespace=NAMESPACE)
+
+        # If virtual name does not exist then this is an EBS volume.
+        # Build the EBS dictionary leveraging the _get_extra_dict method.
+        if mapping['virtual_name'] is None:
+            mapping['ebs'] = self._get_extra_dict(
+                element, RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_volume'])
+
+        return mapping
+
+    def _pathlist(self, key, arr):
+        """
+        Converts a key and an array of values into AWS query param format.
+        """
+        params = {}
+        i = 0
+
+        for value in arr:
+            i += 1
+            params['%s.%s' % (key, i)] = value
+
+        return params
+
+    def _get_boolean(self, element):
+        tag = '{%s}%s' % (NAMESPACE, 'return')
+        return element.findtext(tag) == 'true'
+
+    def _get_terminate_boolean(self, element):
+        status = element.findtext(".//{%s}%s" % (NAMESPACE, 'name'))
+        return any([term_status == status
+                    for term_status
+                    in ('shutting-down', 'terminated')])
+
+    def _add_instance_filter(self, params, node):
+        """
+        Add instance filter to the provided params dictionary.
+        """
+        params.update({
+            'Filter.0.Name': 'instance-id',
+            'Filter.0.Value.0': node.id
+        })
+
+        return params
+
+    def _get_state_boolean(self, element):
+        """
+        Checks for the instances's state
+        """
+        state = findall(element=element,
+                        xpath='instancesSet/item/currentState/name',
+                        namespace=NAMESPACE)[0].text
+
+        return state in ('stopping', 'pending', 'starting')
 
     def _get_extra_dict(self, element, mapping):
         """
@@ -3401,7 +3561,7 @@ class EucNodeDriver(BaseEC2NodeDriver):
         """
         super(EucNodeDriver, self).__init__(key, secret, secure, host, port)
         if path is None:
-            path = "/services/Eucalyptus"
+            path = '/services/Eucalyptus'
         self.path = path
 
     def list_locations(self):
@@ -3440,7 +3600,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
 
     def ex_describe_addresses(self, nodes):
         """
-        Nimbus doesn't support elastic IPs, so this is a passthrough.
+        Nimbus doesn't support elastic IPs, so this is a pass-through.
 
         @inherits: :class:`EC2NodeDriver.ex_describe_addresses`
         """
@@ -3452,7 +3612,7 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
 
     def ex_create_tags(self, resource, tags):
         """
-        Nimbus doesn't support creating tags, so this is a passthrough.
+        Nimbus doesn't support creating tags, so this is a pass-through.
 
         @inherits: :class:`EC2NodeDriver.ex_create_tags`
         """
