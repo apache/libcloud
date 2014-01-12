@@ -1339,18 +1339,8 @@ class BaseEC2NodeDriver(NodeDriver):
             params['ClientToken'] = kwargs['ex_clienttoken']
 
         if 'ex_blockdevicemappings' in kwargs:
-            if not isinstance(kwargs['ex_blockdevicemappings'], (list, tuple)):
-                raise AttributeError(
-                    'ex_blockdevicemappings not list or tuple')
-
-            for idx, mapping in enumerate(kwargs['ex_blockdevicemappings']):
-                idx += 1  # we want 1-based indexes
-                if not isinstance(mapping, dict):
-                    raise AttributeError(
-                        'mapping %s in ex_blockdevicemappings '
-                        'not a dict' % mapping)
-                for k, v in mapping.items():
-                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+            params.update(self._get_block_device_mapping_params(
+                          kwargs['ex_blockdevicemappings']))
 
         if 'ex_iamprofile' in kwargs:
             if not isinstance(kwargs['ex_iamprofile'], basestring):
@@ -1568,7 +1558,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_copy_image(self, source_region, image, name=None, description=None):
         """
-        Copy an Amazon Machine Image from one region to another.
+        Copy an Amazon Machine Image from the specified source region
+        to the current region.
 
         :param      source_region: The region where the image resides
         :type       source_region: ``str``
@@ -1600,13 +1591,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return image
 
-    def ex_create_image_from_node(self, instance, name, block_device_mapping,
-                                  no_reboot=False, description=None):
+    def ex_create_image_from_node(self, node, name, block_device_mapping,
+                                  reboot=False, description=None):
         """
         Create an Amazon Machine Image based off of an EBS-backed instance.
 
-        :param      instance: Instance of ``Node``
-        :type       instance: ``str``
+        :param      node: Instance of ``Node``
+        :type       node: :class: `Node`
 
         :param      name: The name for the new image
         :type       name: ``str``
@@ -1616,10 +1607,10 @@ class BaseEC2NodeDriver(NodeDriver):
                                           below.
         :type       block_device_mapping: ``list`` of ``dict``
 
-        :param      no_reboot: Whether or not to shutdown the instance before
+        :param      reboot: Whether or not to shutdown the instance before
                                creation. By default Amazon sets this to false
                                to ensure a clean image.
-        :type       no_reboot: ``bool``
+        :type       reboot: ``bool``
 
         :param      description: An optional description for the new image
         :type       description: ``str``
@@ -1635,30 +1626,15 @@ class BaseEC2NodeDriver(NodeDriver):
         :rtype:     :class:`NodeImage`
         """
         params = {'Action': 'CreateImage',
-                  'InstanceId': instance.id,
+                  'InstanceId': node.id,
                   'Name': name,
-                  'NoReboot': no_reboot}
+                  'Reboot': reboot}
 
         if description is not None:
             params['Description'] = description
 
-        if not isinstance(block_device_mapping, (list, tuple)):
-            raise AttributeError(
-                'block_device_mapping not list or tuple')
-
-        for idx, mapping in enumerate(block_device_mapping):
-            idx += 1  # We want 1-based indexes
-            if not isinstance(mapping, dict):
-                raise AttributeError(
-                    'mapping %s in block_device_mapping '
-                    'not a dict' % mapping)
-            for k, v in mapping.items():
-                if not isinstance(v, dict):
-                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
-                else:
-                    for key, value in v.items():
-                        params['BlockDeviceMapping.%d.%s.%s'
-                               % (idx, k, key)] = str(value)
+        params.update(self._get_block_device_mapping_params(
+                      block_device_mapping))
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object)
@@ -3545,6 +3521,39 @@ class BaseEC2NodeDriver(NodeDriver):
             tags[key] = value
 
         return tags
+
+    def _get_block_device_mapping_params(self, block_device_mapping):
+        """
+        Return a list of dictionaries with query parameters for
+        a valid block device mapping.
+
+        :param      mapping: List of dictionaries with the drive layout
+        :type       mapping: ``list`` or ``dict``
+
+        :return:    Dictionary representation of the drive mapping
+        :rtype:     ``dict``
+        """
+
+        if not isinstance(block_device_mapping, (list, tuple)):
+            raise AttributeError(
+                'block_device_mapping not list or tuple')
+
+        params = {}
+
+        for idx, mapping in enumerate(block_device_mapping):
+            idx += 1  # We want 1-based indexes
+            if not isinstance(mapping, dict):
+                raise AttributeError(
+                    'mapping %s in block_device_mapping '
+                    'not a dict' % mapping)
+            for k, v in mapping.items():
+                if not isinstance(v, dict):
+                    params['BlockDeviceMapping.%d.%s' % (idx, k)] = str(v)
+                else:
+                    for key, value in v.items():
+                        params['BlockDeviceMapping.%d.%s.%s'
+                               % (idx, k, key)] = str(value)
+        return params
 
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
