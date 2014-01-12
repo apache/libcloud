@@ -192,6 +192,10 @@ Changes with Apache Libcloud in development
      the Node object in the EC2 driver. (LIBCLOUD-493, GITHUB-221)
      [Chris DeRamus]
 
+   - Add ex_copy_image and ex_create_image_from_node method to the EC2 driver.
+     (LIBCLOUD-494, GITHUB-222)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
