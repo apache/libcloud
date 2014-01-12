@@ -62,28 +62,7 @@ class LibvirtNodeDriver(NodeDriver):
 
     def list_nodes(self):
         domains = self.connection.listAllDomains()
-
-        nodes = []
-        for domain in domains:
-            state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
-
-            if state in self.NODE_STATE_MAP:
-                state = self.NODE_STATE_MAP[state]
-            else:
-                state = NodeState.UNKNOWN
-
-            # TODO: Use XML config to get Mac address and then parse ips
-            extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
-                     'types': self.connection.getType(),
-                     'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
-                     'used_cpu_time': used_cpu_time}
-
-            node = Node(id=domain.ID(), name=domain.name(), state=state,
-                        public_ips=[], private_ips=[], driver=self,
-                        extra=extra)
-            node._uuid = domain.UUIDString()  # we want to use a custom UUID
-            nodes.append(node)
-
+        nodes = self._to_nodes(domains=domains)
         return nodes
 
     def reboot_node(self, node):
@@ -141,6 +120,26 @@ class LibvirtNodeDriver(NodeDriver):
         """
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0
+
+    def _to_nodes(self, domains):
+        nodes = [self._to_node(domain=domain) for domain in domains]
+        return nodes
+
+    def _to_node(self, domain):
+        state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
+        state = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
+
+        # TODO: Use XML config to get Mac address and then parse ips
+        extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
+                 'types': self.connection.getType(),
+                 'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
+                 'used_cpu_time': used_cpu_time}
+
+        node = Node(id=domain.ID(), name=domain.name(), state=state,
+                    public_ips=[], private_ips=[], driver=self,
+                    extra=extra)
+        node._uuid = domain.UUIDString()  # we want to use a custom UUID
+        return node
 
     def _get_domain_for_node(self, node):
         """
