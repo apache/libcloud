@@ -40,7 +40,7 @@ Provider                              Documentation                             
 `Ikoula`_                             :doc:`Click </compute/drivers/ikoula>`      IKOULA              :mod:`libcloud.compute.drivers.ikoula`         :class:`IkoulaNodeDriver`           
 `Joyent`_                                                                         JOYENT              :mod:`libcloud.compute.drivers.joyent`         :class:`JoyentNodeDriver`           
 `KTUCloud`_                                                                       KTUCLOUD            :mod:`libcloud.compute.drivers.ktucloud`       :class:`KTUCloudNodeDriver`         
-`Libvirt`_                                                                        LIBVIRT             :mod:`libcloud.compute.drivers.libvirt_driver` :class:`LibvirtNodeDriver`          
+`Libvirt`_                            :doc:`Click </compute/drivers/libvirt>`     LIBVIRT             :mod:`libcloud.compute.drivers.libvirt_driver` :class:`LibvirtNodeDriver`          
 `Linode`_                                                                         LINODE              :mod:`libcloud.compute.drivers.linode`         :class:`LinodeNodeDriver`           
 `NephoScale`_                                                                     NEPHOSCALE          :mod:`libcloud.compute.drivers.nephoscale`     :class:`NephoscaleNodeDriver`       
 `Nimbus`_                             :doc:`Click </compute/drivers/nimbus>`      NIMBUS              :mod:`libcloud.compute.drivers.ec2`            :class:`NimbusNodeDriver`           
