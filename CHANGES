@@ -188,6 +188,10 @@ Changes with Apache Libcloud in development
      (LIBCLOUD-470, GITHUB-208, GITHUB-220)
      [Chris DeRamus]
 
+   - Add additional provider specific attributes to the "extra" dictionary of
+     the Node object in the EC2 driver. (LIBCLOUD-493, GITHUB-221)
+     [Chris DeRamus]
+
   *) Storage
 
     - Allow user to specify 'Content-Disposition' header in the CloudFiles
