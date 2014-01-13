@@ -13,9 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+import platform
+import subprocess
+
+from collections import defaultdict
+from xml.etree import ElementTree as ET
+
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
+from libcloud.utils.networking import is_public_subnet
 
 try:
     import libvirt
@@ -129,17 +137,73 @@ class LibvirtNodeDriver(NodeDriver):
         state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
         state = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
 
-        # TODO: Use XML config to get Mac address and then parse ips
+        public_ips, private_ips = [], []
+
+        ip_addresses = self._get_ip_addresses_for_domain(domain)
+
+        for ip_address in ip_addresses:
+            if is_public_subnet(ip_address):
+                public_ips.append(ip_address)
+            else:
+                private_ips.append(ip_address)
+
         extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
                  'types': self.connection.getType(),
                  'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
                  'used_cpu_time': used_cpu_time}
 
         node = Node(id=domain.ID(), name=domain.name(), state=state,
-                    public_ips=[], private_ips=[], driver=self,
-                    extra=extra)
+                    public_ips=public_ips, private_ips=private_ips,
+                    driver=self, extra=extra)
         node._uuid = domain.UUIDString()  # we want to use a custom UUID
         return node
+
+    def _get_ip_addresses_for_domain(self, domain):
+        """
+        Retrieve IP addresses for the provided domain.
+
+        Note: This functionality is currently only supported on Linux and
+        only works if this code is run on the same machine as the VMs run
+        on.
+
+        :return: IP addresses for the provided domain.
+        :rtype: ``list``
+        """
+        result = []
+
+        if platform.system() != 'Linux':
+            # Only Linux is supported atm
+            return result
+
+        mac_addresses = self._get_mac_addresses_for_domain(domain=domain)
+
+        cmd = ['arp', '-an']
+        child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        stdout, _ = child.communicate()
+        arp_table = self._parse_arp_table(arp_output=stdout)
+
+        for mac_address in mac_addresses:
+            if mac_address in arp_table:
+                ip_addresses = arp_table[mac_address]
+                result.extend(ip_addresses)
+
+        return result
+
+    def _get_mac_addresses_for_domain(self, domain):
+        """
+        Parses network interface MAC addresses from the provided domain.
+        """
+        xml = domain.XMLDesc()
+        etree = ET.XML(xml)
+        elems = etree.findall("devices/interface[@type='network']/mac")
+
+        result = []
+        for elem in elems:
+            mac_address = elem.get('address')
+            result.append(mac_address)
+
+        return result
 
     def _get_domain_for_node(self, node):
         """
@@ -147,3 +211,27 @@ class LibvirtNodeDriver(NodeDriver):
         """
         domain = self.connection.lookupByUUIDString(node.uuid)
         return domain
+
+    def _parse_arp_table(self, arp_output):
+        """
+        Parse arp command output and return a dictionary which maps mac address
+        to an IP address.
+
+        :return: Dictionary which maps mac address to IP address.
+        :rtype: ``dict``
+        """
+        lines = arp_output.split('\n')
+
+        arp_table = defaultdict(list)
+        for line in lines:
+            match = re.match('.*?\((.*?)\) at (.*?)\s+', line)
+
+            if not match:
+                continue
+
+            groups = match.groups()
+            ip_address = groups[0]
+            mac_address = groups[1]
+            arp_table[mac_address].append(ip_address)
+
+        return arp_table
