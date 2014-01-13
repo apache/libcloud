@@ -14,9 +14,13 @@
 # limitations under the License.
 
 import re
+import os
+import time
 import platform
 import subprocess
+import mimetypes
 
+from os.path import join as pjoin
 from collections import defaultdict
 from xml.etree import ElementTree as ET
 
@@ -36,7 +40,6 @@ class LibvirtNodeDriver(NodeDriver):
     """
     Libvirt (http://libvirt.org/) node driver.
 
-    Usage: LibvirtNodeDriver(uri='vbox:///session').
     To enable debug mode, set LIBVIR_DEBUG environment variable.
     """
 
@@ -97,6 +100,8 @@ class LibvirtNodeDriver(NodeDriver):
         """
         Shutdown a running node.
 
+        Note: Usually this will result in sending an ACPI event to the node.
+
         :param  node: Node which should be used
         :type   node: :class:`Node`
 
@@ -128,6 +133,78 @@ class LibvirtNodeDriver(NodeDriver):
         """
         domain = self._get_domain_for_node(node=node)
         return domain.resume() == 0
+
+    def ex_take_node_screenshot(self, node, directory, screen=0):
+        """
+        Take a screenshot of a monitoring of a running instance.
+
+        :param node: Node to take the screenshot of.
+        :type node: :class:`libcloud.compute.base.Node`
+
+        :param directory: Path where the screenshot will be saved.
+        :type directory: ``str``
+
+        :param screen: ID of the monitor to take the screenshot of.
+        :type screen: ``int``
+
+        :return: Full path where the screenshot has been saved.
+        :rtype: ``str``
+        """
+        if not os.path.exists(directory) or not os.path.isdir(directory):
+            raise ValueError('Invalid value for directory argument')
+
+        domain = self._get_domain_for_node(node=node)
+        stream = self.connection.newStream()
+        mime_type = domain.screenshot(stream=stream, screen=0)
+        extensions = mimetypes.guess_all_extensions(type=mime_type)
+
+        if extensions:
+            extension = extensions[0]
+        else:
+            extension = '.png'
+
+        name = 'screenshot-%s%s' % (int(time.time()), extension)
+        file_path = pjoin(directory, name)
+
+        with open(file_path, 'wb') as fp:
+            def write(stream, buf, opaque):
+                fp.write(buf)
+
+            stream.recvAll(write, None)
+
+        try:
+            stream.finish()
+        except Exception:
+            # Finish is not supported by all backends
+            pass
+
+        return file_path
+
+    def ex_get_hypervisor_hostname(self):
+        """
+        Return a system hostname on which the hypervisor is running.
+        """
+        hostname = self.connection.getHostname()
+        return hostname
+
+    def ex_get_hypervisor_sysinfo(self):
+        """
+        Retrieve hypervisor system information.
+
+        :rtype: ``dict``
+        """
+        xml = self.connection.getSysinfo()
+        etree = ET.XML(xml)
+
+        attributes = ['bios', 'system', 'processor', 'memory_device']
+
+        sysinfo = {}
+        for attribute in attributes:
+            element = etree.find(attribute)
+            entries = self._get_entries(element=element)
+            sysinfo[attribute] = entries
+
+        return sysinfo
 
     def _to_nodes(self, domains):
         nodes = [self._to_node(domain=domain) for domain in domains]
@@ -211,6 +288,22 @@ class LibvirtNodeDriver(NodeDriver):
         """
         domain = self.connection.lookupByUUIDString(node.uuid)
         return domain
+
+    def _get_entries(self, element):
+        """
+        Parse entries dictionary.
+
+        :rtype: ``dict``
+        """
+        elements = element.findall('entry')
+
+        result = {}
+        for element in elements:
+            name = element.get('name')
+            value = element.text
+            result[name] = value
+
+        return result
 
     def _parse_arp_table(self, arp_output):
         """
