@@ -79,3 +79,25 @@ see `VirtualBox hypervisor driver <http://libvirt.org/drvvbox.html>`_ page.
 
 .. _`libvirt`: http://libvirt.org
 .. _`libvirt-python`: https://pypi.python.org/pypi/libvirt-python
+
+Enabling libvirt debug mode
+---------------------------
+
+To enable libvirt debug mode, simply set ``LIBVIRT_DEBUG`` environment
+variable.
+
+For example:
+
+.. sourcecode:: bash
+
+    LIBVIRT_DEBUG=1 python my_script.py
+
+When debug mode is enabled, libvirt client will print all kind of debugging
+information to the standard error.
+
+API Docs
+--------
+
+.. autoclass:: libcloud.compute.drivers.libvirt_driver.LibvirtNodeDriver
+    :members:
+    :inherited-members:
