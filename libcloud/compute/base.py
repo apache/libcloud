@@ -243,9 +243,9 @@ class Node(UuidMixin):
 
     def __repr__(self):
         return (('<Node: uuid=%s, name=%s, state=%s, public_ips=%s, '
-                 'provider=%s ...>')
+                 'private_ips=%s, provider=%s ...>')
                 % (self.uuid, self.name, self.state, self.public_ips,
-                   self.driver.name))
+                   self.private_ips, self.driver.name))
 
 
 class NodeSize(UuidMixin):
