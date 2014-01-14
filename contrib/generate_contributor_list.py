@@ -26,9 +26,16 @@
 #
 # ./contrib/generate_contributor_list.py --changes-path=CHANGES.rst \
 #                                         --include-tickets
+#
 # 2. Generate a list of contributors for a release without tickets
+#
 # ./contrib/generate_contributor_list.py --changes-path=CHANGES.rst \
-#                                        --version=0.13.0
+#                                        --versions=0.13.0
+# 3. Generate a list of contributors with tickets for multiple versions
+#
+# ./contrib/generate_contributor_list.py --changes-path=CHANGES.rst \
+#                                         --include-tickets
+#                                         --versions 0.11.0 0.12.0
 
 from __future__ import with_statement
 
@@ -40,7 +47,7 @@ JIRA_URL = 'https://issues.apache.org/jira/browse/LIBCLOUD-%s'
 GITHUB_URL = 'https://github.com/apache/libcloud/pull/%s'
 
 
-def parse_changes_file(file_path, version=None):
+def parse_changes_file(file_path, versions=None):
     """
     Parse CHANGES file and return a dictionary with contributors.
 
@@ -64,7 +71,7 @@ def parse_changes_file(file_path, version=None):
             if match:
                 active_version = match.groups()[0]
 
-            if version and active_version != version:
+            if versions and active_version not in versions:
                 continue
 
             if line.startswith('-') or line.startswith('*)'):
@@ -149,16 +156,17 @@ if __name__ == '__main__':
                                                  ' in a single image')
     parser.add_argument('--changes-path', action='store',
                         help='Path to the changes file')
-    parser.add_argument('--version', action='store',
+    parser.add_argument('--versions', action='store', nargs='+',
+                        type=str,
                         help='Only return contributors for the provided '
-                             'version')
+                             'versions')
     parser.add_argument('--include-tickets', action='store_true',
                         default=False,
                         help='Include ticket numbers')
     args = parser.parse_args()
 
     contributors_map = parse_changes_file(file_path=args.changes_path,
-                                          version=args.version)
+                                          versions=args.versions)
     markdown = convert_to_markdown(contributors_map=contributors_map,
                                    include_tickets=args.include_tickets)
 
