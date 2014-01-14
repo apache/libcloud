@@ -2955,7 +2955,8 @@ class BaseEC2NodeDriver(NodeDriver):
         warnings.warn('This method has been deprecated in favor of '
                       'delete_key_pair method')
 
-        keypair = KeyPair(name=keypair, driver=self, public_key='', fingerprint='')
+        keypair = KeyPair(name=keypair, public_key=None, fingerprint=None,
+                          driver=self)
 
         return self.delete_key_pair(keypair)
 
