@@ -1,7 +1,7 @@
 include LICENSE
 include NOTICE
 include example_*.py
-include CHANGES
+include CHANGES.rst
 include README.rst
 include tox.ini
 include libcloud/data/pricing.json
