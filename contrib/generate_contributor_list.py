@@ -24,10 +24,10 @@
 #
 # 1. Generate a list of contributors with tickets for all versions:
 #
-# ./contrib/generate_contributor_list.py --changes-path=CHANGES \
+# ./contrib/generate_contributor_list.py --changes-path=CHANGES.rst \
 #                                         --include-tickets
 # 2. Generate a list of contributors for a release without tickets
-# ./contrib/generate_contributor_list.py --changes-path=CHANGES \
+# ./contrib/generate_contributor_list.py --changes-path=CHANGES.rst \
 #                                        --version=0.13.0
 
 from __future__ import with_statement
