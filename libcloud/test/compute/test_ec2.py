@@ -524,23 +524,26 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         keys = self.driver.ex_describe_all_keypairs()
         self.assertEqual(keys, ['gsg-keypair'])
 
-    def test_ex_describe_keypairs(self):
-        keypair1 = self.driver.ex_describe_keypair('gsg-keypair')
+    def test_list_key_pairs(self):
+        keypair1 = self.driver.list_key_pairs()[0]
+
+        self.assertEqual(keypair1.name, 'gsg-keypair')
+        self.assertEqual(keypair1.fingerprint, null_fingerprint)
 
         # Test backward compatibility
         keypair2 = self.driver.ex_describe_keypairs('gsg-keypair')
 
-        self.assertEqual(keypair1['keyName'], 'gsg-keypair')
-        self.assertEqual(keypair1['keyFingerprint'], null_fingerprint)
         self.assertEqual(keypair2['keyName'], 'gsg-keypair')
         self.assertEqual(keypair2['keyFingerprint'], null_fingerprint)
 
-    def ex_delete_key_pair(self):
-        success = self.driver.delete_key_pair('testkey')
+    def test_delete_key_pair(self):
+        keypair = self.driver.list_key_pairs()[0]
+        success = self.driver.delete_key_pair(keypair)
+
         self.assertTrue(success)
 
         # Test old and deprecated method
-        resp = self.driver.ex_delete_keypair('testkey')
+        resp = self.driver.ex_delete_keypair('gsg-keypair')
         self.assertTrue(resp)
 
     def test_ex_describe_tags(self):
@@ -1256,10 +1259,10 @@ class EC2MockHttp(MockHttpTestCase):
         body = self.fixtures.load('deregister_image.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _DeleteKeypair(self, method, url, body, headers):
-        self.assertUrlContainsQueryParams(url, {'KeyPair': 'testkey'})
+    def _DeleteKeyPair(self, method, url, body, headers):
+        self.assertUrlContainsQueryParams(url, {'KeyName': 'gsg-keypair'})
 
-        body = self.fixtures.load('delete_keypair.xml')
+        body = self.fixtures.load('delete_key_pair.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _ModifyImageAttribute(self, method, url, body, headers):

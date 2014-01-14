@@ -1549,7 +1549,7 @@ class BaseEC2NodeDriver(NodeDriver):
     def delete_key_pair(self, key_pair):
         params = {
             'Action': 'DeleteKeyPair',
-            'KeyName': key_pair
+            'KeyName': key_pair.name
         }
         result = self.connection.request(self.path, params=params).object
         element = findtext(element=result, xpath='return',
@@ -2955,7 +2955,9 @@ class BaseEC2NodeDriver(NodeDriver):
         warnings.warn('This method has been deprecated in favor of '
                       'delete_key_pair method')
 
-        return self.delete_key_pair(name=keypair)
+        keypair = KeyPair(name=keypair, driver=self, public_key='', fingerprint='')
+
+        return self.delete_key_pair(keypair)
 
     def ex_import_keypair_from_string(self, name, key_material):
         """
