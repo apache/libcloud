@@ -55,7 +55,7 @@ class Object(object):
     """
 
     def __init__(self, name, size, hash, extra, meta_data, container,
-                 driver, acl=None):
+                 driver):
         """
         :param name: Object name (must be unique per container).
         :type  name: ``str``
@@ -77,9 +77,6 @@ class Object(object):
 
         :param driver: StorageDriver instance.
         :type  driver: :class:`StorageDriver`
-
-        :param acl: ACL information.
-        :type  acl: ``str``
         """
 
         self.name = name
@@ -89,7 +86,6 @@ class Object(object):
         self.extra = extra or {}
         self.meta_data = meta_data or {}
         self.driver = driver
-        self.acl = acl
 
     def get_cdn_url(self):
         return self.driver.get_object_cdn_url(obj=self)

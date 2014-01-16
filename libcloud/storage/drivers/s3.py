@@ -831,8 +831,8 @@ class S3StorageDriver(AWSDriver, StorageDriver):
         elif response.status == httplib.OK:
             obj = Object(
                 name=object_name, size=bytes_transferred, hash=server_hash,
-                extra=None, meta_data=meta_data, container=container,
-                driver=self, acl=acl)
+                extra={'acl': acl}, meta_data=meta_data, container=container,
+                driver=self)
 
             return obj
         else:

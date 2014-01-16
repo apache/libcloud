@@ -775,7 +775,7 @@ class S3Tests(unittest.TestCase):
                                         verify_hash=True)
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, 1000)
-        self.assertEqual(obj.acl, 'public-read')
+        self.assertEqual(obj.extra['acl'], 'public-read')
         self.driver_type._upload_file = old_func
 
     def test_upload_empty_object_via_stream(self):
