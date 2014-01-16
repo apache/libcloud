@@ -32,7 +32,7 @@ from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import AWSBaseResponse, AWSDriver
+from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerIsNotEmptyError
@@ -87,24 +87,18 @@ class S3RawResponse(S3Response, RawResponse):
     pass
 
 
-class S3Connection(ConnectionUserAndKey):
+class BaseS3Connection(ConnectionUserAndKey):
     """
-    Repersents a single connection to the EC2 Endpoint
+    Repersents a single connection to the S3 Endpoint
     """
 
     host = 's3.amazonaws.com'
     responseCls = S3Response
     rawResponseCls = S3RawResponse
 
-    def __init__(self, *args, **kwargs):
-        self.token = kwargs.pop('token', None)
-        super(S3Connection, self).__init__(*args, **kwargs)
-
     def add_default_params(self, params):
         expires = str(int(time.time()) + EXPIRATION_SECONDS)
         params['AWSAccessKeyId'] = self.user_id
-        if self.token:
-            params['x-amz-security-token'] = self.token
         params['Expires'] = expires
         return params
 
@@ -178,6 +172,14 @@ class S3Connection(ConnectionUserAndKey):
         return b64_hmac.decode('utf-8')
 
 
+class S3Connection(AWSTokenConnection, BaseS3Connection):
+    """
+    Represents a single connection to the S3 endpoint, with AWS-specific
+    features.
+    """
+    pass
+
+
 class S3MultipartUpload(object):
     """
     Class representing an amazon s3 multipart upload
@@ -212,7 +214,7 @@ class S3MultipartUpload(object):
         return ('<S3MultipartUpload: key=%s>' % (self.key))
 
 
-class S3StorageDriver(AWSDriver, StorageDriver):
+class BaseS3StorageDriver(StorageDriver):
     name = 'Amazon S3 (standard)'
     website = 'http://aws.amazon.com/s3/'
     connectionCls = S3Connection
@@ -912,6 +914,10 @@ class S3StorageDriver(AWSDriver, StorageDriver):
                      )
 
         return obj
+
+
+class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
+    pass
 
 
 class S3USWestConnection(S3Connection):
