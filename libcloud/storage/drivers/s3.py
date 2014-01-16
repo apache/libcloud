@@ -89,7 +89,7 @@ class S3RawResponse(S3Response, RawResponse):
 
 class BaseS3Connection(ConnectionUserAndKey):
     """
-    Repersents a single connection to the S3 Endpoint
+    Represents a single connection to the S3 Endpoint
     """
 
     host = 's3.amazonaws.com'
