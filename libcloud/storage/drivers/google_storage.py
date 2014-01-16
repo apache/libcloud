@@ -134,3 +134,9 @@ class GoogleStorageDriver(S3StorageDriver):
     namespace = NAMESPACE
     supports_chunked_encoding = False
     supports_s3_multipart_upload = False
+
+    # Security tokens are not actually a feature of Google Storage
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(GoogleStorageDriver, self)._ex_connection_class_kwargs()
+        kwargs.pop('token', None)
+        return kwargs

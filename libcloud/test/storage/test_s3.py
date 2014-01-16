@@ -415,6 +415,12 @@ class S3Tests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    def test_token(self):
+        self.mock_response_klass.type = 'list_containers'
+        self.driver = self.driver_type(*self.driver_args, token='asdf')
+        self.driver.list_containers()
+        # Something here to confirm the header was sent correctly
+
     def test_bucket_is_located_in_different_region(self):
         self.mock_response_klass.type = 'DIFFERENT_REGION'
         try:

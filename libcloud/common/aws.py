@@ -19,7 +19,7 @@ import time
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
@@ -106,10 +106,16 @@ class AWSGenericResponse(AWSBaseResponse):
 
 
 class SignedAWSConnection(ConnectionUserAndKey):
+    def __init__(self, *args, **kwargs):
+        self.token = kwargs.pop('token', None)
+        super(SignedAWSConnection, self).__init__(*args, **kwargs)
+
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
         params['AWSAccessKeyId'] = self.user_id
+        if self.token:
+            params['x-amz-security-token'] = self.token
         params['Version'] = self.version
         params['Timestamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                             time.gmtime())
@@ -150,3 +156,14 @@ class SignedAWSConnection(ConnectionUserAndKey):
         )
 
         return b64_hmac.decode('utf-8')
+
+
+class AWSDriver(BaseDriver):
+    def __init__(self, *args, **kwargs):
+        self.token = kwargs.pop('token', None)
+        super(AWSDriver, self).__init__(*args, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(AWSDriver, self)._ex_connection_class_kwargs()
+        kwargs['token'] = self.token
+        return kwargs
