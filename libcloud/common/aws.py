@@ -110,7 +110,8 @@ class AWSTokenConnection(ConnectionUserAndKey):
                  host=None, port=None, url=None, timeout=None, token=None):
         self.token = token
         super(AWSTokenConnection, self).__init__(user_id, key, secure=secure,
-            host=host, port=port, url=url, timeout=timeout)
+                                                 host=host, port=port, url=url,
+                                                 timeout=timeout)
 
     def add_default_params(self, params):
         # Even though we are adding it to the headers, we need it here too
@@ -178,8 +179,9 @@ class AWSDriver(BaseDriver):
                  api_version=None, region=None, token=None, **kwargs):
         self.token = token
         super(AWSDriver, self).__init__(key, secret=secret, secure=secure,
-            host=host, port=port, api_version=api_version, region=region,
-            token=token, **kwargs)
+                                        host=host, port=port,
+                                        api_version=api_version, region=region,
+                                        token=token, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AWSDriver, self)._ex_connection_class_kwargs()
