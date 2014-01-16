@@ -19,7 +19,7 @@ import time
 from hashlib import sha256
 from xml.etree import ElementTree as ET
 
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
@@ -105,7 +105,29 @@ class AWSGenericResponse(AWSBaseResponse):
         return "\n".join(msgs)
 
 
-class SignedAWSConnection(ConnectionUserAndKey):
+class AWSTokenConnection(ConnectionUserAndKey):
+    def __init__(self, user_id, key, secure=True,
+                 host=None, port=None, url=None, timeout=None, token=None):
+        self.token = token
+        super(AWSTokenConnection, self).__init__(user_id, key, secure=secure,
+                                                 host=host, port=port, url=url,
+                                                 timeout=timeout)
+
+    def add_default_params(self, params):
+        # Even though we are adding it to the headers, we need it here too
+        # so that the token is added to the signature.
+        if self.token:
+            params['x-amz-security-token'] = self.token
+        return super(AWSTokenConnection, self).add_default_params(params)
+
+    def add_default_headers(self, headers):
+        if self.token:
+            headers['x-amz-security-token'] = self.token
+        return super(AWSTokenConnection, self).add_default_headers(headers)
+
+
+class SignedAWSConnection(AWSTokenConnection):
+
     def add_default_params(self, params):
         params['SignatureVersion'] = '2'
         params['SignatureMethod'] = 'HmacSHA256'
@@ -150,3 +172,18 @@ class SignedAWSConnection(ConnectionUserAndKey):
         )
 
         return b64_hmac.decode('utf-8')
+
+
+class AWSDriver(BaseDriver):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 api_version=None, region=None, token=None, **kwargs):
+        self.token = token
+        super(AWSDriver, self).__init__(key, secret=secret, secure=secure,
+                                        host=host, port=port,
+                                        api_version=api_version, region=region,
+                                        token=token, **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(AWSDriver, self)._ex_connection_class_kwargs()
+        kwargs['token'] = self.token
+        return kwargs

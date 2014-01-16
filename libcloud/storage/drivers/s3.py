@@ -32,7 +32,7 @@ from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
-from libcloud.common.aws import AWSBaseResponse
+from libcloud.common.aws import AWSBaseResponse, AWSDriver, AWSTokenConnection
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerIsNotEmptyError
@@ -87,9 +87,9 @@ class S3RawResponse(S3Response, RawResponse):
     pass
 
 
-class S3Connection(ConnectionUserAndKey):
+class BaseS3Connection(ConnectionUserAndKey):
     """
-    Repersents a single connection to the EC2 Endpoint
+    Represents a single connection to the S3 Endpoint
     """
 
     host = 's3.amazonaws.com'
@@ -172,6 +172,14 @@ class S3Connection(ConnectionUserAndKey):
         return b64_hmac.decode('utf-8')
 
 
+class S3Connection(AWSTokenConnection, BaseS3Connection):
+    """
+    Represents a single connection to the S3 endpoint, with AWS-specific
+    features.
+    """
+    pass
+
+
 class S3MultipartUpload(object):
     """
     Class representing an amazon s3 multipart upload
@@ -206,10 +214,10 @@ class S3MultipartUpload(object):
         return ('<S3MultipartUpload: key=%s>' % (self.key))
 
 
-class S3StorageDriver(StorageDriver):
+class BaseS3StorageDriver(StorageDriver):
     name = 'Amazon S3 (standard)'
     website = 'http://aws.amazon.com/s3/'
-    connectionCls = S3Connection
+    connectionCls = BaseS3Connection
     hash_type = 'md5'
     supports_chunked_encoding = False
     supports_s3_multipart_upload = True
@@ -286,16 +294,17 @@ class S3StorageDriver(StorageDriver):
                 yield obj
 
     def get_container(self, container_name):
-        # This is very inefficient, but afaik it's the only way to do it
-        containers = self.list_containers()
-
         try:
-            container = [c for c in containers if c.name == container_name][0]
-        except IndexError:
-            raise ContainerDoesNotExistError(value=None, driver=self,
-                                             container_name=container_name)
-
-        return container
+            response = self.connection.request('/%s' % container_name,
+                                               method='HEAD')
+            if response.status == httplib.NOT_FOUND:
+                raise ContainerDoesNotExistError(value=None, driver=self,
+                                                 container_name=container_name)
+        except InvalidCredsError:
+            # This just means the user doesn't have IAM permissions to do a
+            # HEAD request but other requests might work.
+            pass
+        return Container(name=container_name, extra=None, driver=self)
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
@@ -787,11 +796,15 @@ class S3StorageDriver(StorageDriver):
 
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
+        acl = extra.get('acl', None)
 
         if meta_data:
             for key, value in list(meta_data.items()):
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
+
+        if acl:
+            headers['x-amz-acl'] = acl
 
         request_path = self._get_object_path(container, object_name)
 
@@ -821,7 +834,7 @@ class S3StorageDriver(StorageDriver):
         elif response.status == httplib.OK:
             obj = Object(
                 name=object_name, size=bytes_transferred, hash=server_hash,
-                extra=None, meta_data=meta_data, container=container,
+                extra={'acl': acl}, meta_data=meta_data, container=container,
                 driver=self)
 
             return obj
@@ -902,6 +915,10 @@ class S3StorageDriver(StorageDriver):
                      )
 
         return obj
+
+
+class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
+    connectionCls = S3Connection
 
 
 class S3USWestConnection(S3Connection):

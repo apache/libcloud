@@ -36,6 +36,10 @@ class GoogleStorageTests(S3Tests):
         # TODO
         pass
 
+    def test_token(self):
+        # Not supported on Google Storage
+        pass
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
