@@ -294,16 +294,16 @@ class BaseS3StorageDriver(StorageDriver):
                 yield obj
 
     def get_container(self, container_name):
-        # This is very inefficient, but afaik it's the only way to do it
-        containers = self.list_containers()
-
         try:
-            container = [c for c in containers if c.name == container_name][0]
-        except IndexError:
-            raise ContainerDoesNotExistError(value=None, driver=self,
-                                             container_name=container_name)
-
-        return container
+            response = self.connection.request('/%s'%container_name, method='HEAD')
+            if response.status == httplib.NOT_FOUND:
+                raise ContainerDoesNotExistError(value=None, driver=self,
+                                                 container_name=container_name)
+        except InvalidCredsError:
+            # This just means the user doesn't have IAM permissions to do a HEAD
+            # but other requests might work.
+            pass
+        return Container(name=container_name, extra=None, driver=self)
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name=container_name)
