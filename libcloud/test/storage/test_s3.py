@@ -750,6 +750,28 @@ class S3Tests(unittest.TestCase):
         self.assertTrue('some-value' in obj.meta_data)
         self.driver_type._upload_file = old_func
 
+    def test_upload_object_with_acl(self):
+        def upload_file(self, response, file_path, chunked=False,
+                        calculate_hash=True):
+            return True, '0cc175b9c0f1b6a831c399e269772661', 1000
+
+        old_func = self.driver_type._upload_file
+        self.driver_type._upload_file = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
+        extra = {'acl': 'public-read'}
+        obj = self.driver.upload_object(file_path=file_path,
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=True)
+        self.assertEqual(obj.name, 'foo_test_upload')
+        self.assertEqual(obj.size, 1000)
+        self.assertEqual(obj.acl, 'public-read')
+        self.driver_type._upload_file = old_func
+
     def test_upload_empty_object_via_stream(self):
         if self.driver.supports_s3_multipart_upload:
             self.mock_raw_response_klass.type = 'MULTIPART'

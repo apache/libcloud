@@ -787,11 +787,15 @@ class S3StorageDriver(StorageDriver):
 
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
+        acl = extra.get('acl', None)
 
         if meta_data:
             for key, value in list(meta_data.items()):
                 key = 'x-amz-meta-%s' % (key)
                 headers[key] = value
+
+        if acl:
+            headers['x-amz-acl'] = acl
 
         request_path = self._get_object_path(container, object_name)
 
@@ -822,7 +826,7 @@ class S3StorageDriver(StorageDriver):
             obj = Object(
                 name=object_name, size=bytes_transferred, hash=server_hash,
                 extra=None, meta_data=meta_data, container=container,
-                driver=self)
+                driver=self, acl=acl)
 
             return obj
         else:
