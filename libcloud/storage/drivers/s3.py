@@ -217,7 +217,7 @@ class S3MultipartUpload(object):
 class BaseS3StorageDriver(StorageDriver):
     name = 'Amazon S3 (standard)'
     website = 'http://aws.amazon.com/s3/'
-    connectionCls = S3Connection
+    connectionCls = BaseS3Connection
     hash_type = 'md5'
     supports_chunked_encoding = False
     supports_s3_multipart_upload = True
@@ -917,7 +917,7 @@ class BaseS3StorageDriver(StorageDriver):
 
 
 class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
-    pass
+    connectionCls = S3Connection
 
 
 class S3USWestConnection(S3Connection):
