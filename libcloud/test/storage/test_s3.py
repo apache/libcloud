@@ -67,6 +67,14 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
                 self.base_headers,
                 httplib.responses[httplib.OK])
 
+    def _list_containers_TOKEN(self, method, url, body, headers):
+        self.assertEqual(headers['x-amz-security-token'], 'asdf')
+        body = self.fixtures.load('list_containers_empty.xml')
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
     def _list_containers(self, method, url, body, headers):
         body = self.fixtures.load('list_containers.xml')
         return (httplib.OK,
@@ -416,10 +424,9 @@ class S3Tests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_token(self):
-        self.mock_response_klass.type = 'list_containers'
+        self.mock_response_klass.type = 'list_containers_TOKEN'
         self.driver = self.driver_type(*self.driver_args, token='asdf')
         self.driver.list_containers()
-        # Something here to confirm the header was sent correctly
 
     def test_bucket_is_located_in_different_region(self):
         self.mock_response_klass.type = 'DIFFERENT_REGION'
