@@ -109,7 +109,14 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
                 self.base_headers,
                 httplib.responses[httplib.OK])
 
-    def _test2_test_list_containers(self, method, url, body, headers):
+    def _test2_get_object(self, method, url, body, headers):
+        body = self.fixtures.load('list_container_objects.xml')
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
+    def _test2_test_get_object(self, method, url, body, headers):
         # test_get_object
         body = self.fixtures.load('list_containers.xml')
         headers = {'content-type': 'application/zip',
@@ -164,6 +171,25 @@ class S3MockHttp(StorageMockHttp, MockHttpTestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _test1_get_container(self, method, url, body, headers):
+        body = self.fixtures.load('list_container_objects.xml')
+        return (httplib.OK,
+                body,
+                self.base_headers,
+                httplib.responses[httplib.OK])
+
+    def _container1_get_container(self, method, url, body, headers):
+        return (httplib.NOT_FOUND,
+                '',
+                self.base_headers,
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _test_inexistent_get_object(self, method, url, body, headers):
+        return (httplib.NOT_FOUND,
+                '',
+                self.base_headers,
+                httplib.responses[httplib.NOT_FOUND])
 
     def _foo_bar_container(self, method, url, body, headers):
         # test_delete_container
@@ -500,7 +526,7 @@ class S3Tests(unittest.TestCase):
         self.assertTrue('owner' in obj.meta_data)
 
     def test_get_container_doesnt_exist(self):
-        self.mock_response_klass.type = 'list_containers'
+        self.mock_response_klass.type = 'get_container'
         try:
             self.driver.get_container(container_name='container1')
         except ContainerDoesNotExistError:
@@ -509,14 +535,14 @@ class S3Tests(unittest.TestCase):
             self.fail('Exception was not thrown')
 
     def test_get_container_success(self):
-        self.mock_response_klass.type = 'list_containers'
+        self.mock_response_klass.type = 'get_container'
         container = self.driver.get_container(container_name='test1')
         self.assertTrue(container.name, 'test1')
 
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
         # trickier
-        self.mock_response_klass.type = 'list_containers'
+        self.mock_response_klass.type = 'get_object'
         try:
             self.driver.get_object(container_name='test-inexistent',
                                    object_name='test')
@@ -528,7 +554,7 @@ class S3Tests(unittest.TestCase):
     def test_get_object_success(self):
         # This method makes two requests which makes mocking the response a bit
         # trickier
-        self.mock_response_klass.type = 'list_containers'
+        self.mock_response_klass.type = 'get_object'
         obj = self.driver.get_object(container_name='test2',
                                      object_name='test')
 
