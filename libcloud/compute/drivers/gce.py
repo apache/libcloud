@@ -1093,7 +1093,8 @@ class GCENodeDriver(NodeDriver):
 
     def create_node(self, name, size, image, location=None,
                     ex_network='default', ex_tags=None, ex_metadata=None,
-                    ex_boot_disk=None, use_existing_disk=True):
+                    ex_boot_disk=None, use_existing_disk=True,
+                    external_ip='ephemeral'):
         """
         Create a new node and return a node object for the node.
 
@@ -1128,6 +1129,13 @@ class GCENodeDriver(NodeDriver):
                                      disk instead of creating a new one.
         :type     use_existing_disk: ``bool``
 
+        :keyword  external_ip: The external IP address to use.  If 'ephemeral'
+                               (default), a new non-static address will be
+                               used.  If 'None', then no external address will
+                               be used.  To use an existing static IP address,
+                               a GCEAddress object should be passed in.
+        :type     external_ip: :class:`GCEAddress` or ``str`` or None
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -1149,7 +1157,7 @@ class GCENodeDriver(NodeDriver):
         request, node_data = self._create_node_req(name, size, image,
                                                    location, ex_network,
                                                    ex_tags, ex_metadata,
-                                                   ex_boot_disk)
+                                                   ex_boot_disk, external_ip)
         self.connection.async_request(request, method='POST', data=node_data)
 
         return self.ex_get_node(name, location.name)
@@ -1158,7 +1166,7 @@ class GCENodeDriver(NodeDriver):
                                  location=None, ex_network='default',
                                  ex_tags=None, ex_metadata=None,
                                  ignore_errors=True, use_existing_disk=True,
-                                 poll_interval=2,
+                                 poll_interval=2, external_ip='ephemeral',
                                  timeout=DEFAULT_TASK_COMPLETION_TIMEOUT):
         """
         Create multiple nodes and return a list of Node objects.
@@ -1207,6 +1215,13 @@ class GCENodeDriver(NodeDriver):
         :keyword  poll_interval: Number of seconds between status checks.
         :type	  poll_interval: ``int``
 
+        :keyword  external_ip: The external IP address to use.  If 'ephemeral'
+                               (default), a new non-static address will be
+                               used. If 'None', then no external address will
+                               be used. (Static addresses are not supported for
+                               multiple node creation.)
+        :type     external_ip: ``str`` or None
+
         :keyword  timeout: The number of seconds to wait for all nodes to be
                            created before timing out.
         :type     timeout: ``int``
@@ -1231,7 +1246,8 @@ class GCENodeDriver(NodeDriver):
                       'tags': ex_tags,
                       'metadata': ex_metadata,
                       'ignore_errors': ignore_errors,
-                      'use_existing_disk': use_existing_disk}
+                      'use_existing_disk': use_existing_disk,
+                      'external_ip': external_ip}
 
         # List for holding the status information for disk/node creation.
         status_list = []
@@ -2504,7 +2520,8 @@ class GCENodeDriver(NodeDriver):
         return zone
 
     def _create_node_req(self, name, size, image, location, network,
-                         tags=None, metadata=None, boot_disk=None):
+                         tags=None, metadata=None, boot_disk=None,
+                         external_ip='ephemeral'):
         """
         Returns a request and body to create a new node.  This is a helper
         method to suppor both :class:`create_node` and
@@ -2535,6 +2552,13 @@ class GCENodeDriver(NodeDriver):
         :keyword  boot_disk:  Persistent boot disk to attach.
         :type     :class:`StorageVolume`
 
+        :keyword  external_ip: The external IP address to use.  If 'ephemeral'
+                               (default), a new non-static address will be
+                               used.  If 'None', then no external address will
+                               be used.  To use an existing static IP address,
+                               a GCEAddress object should be passed in.
+        :type     external_ip: :class:`GCEAddress` or ``str`` or None
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -2559,9 +2583,13 @@ class GCENodeDriver(NodeDriver):
             node_data['image'] = image.extra['selfLink']
 
         ni = [{'kind': 'compute#instanceNetworkInterface',
-               'accessConfigs': [{'name': 'External NAT',
-                                  'type': 'ONE_TO_ONE_NAT'}],
                'network': network.extra['selfLink']}]
+        if external_ip:
+            access_configs = [{'name': 'External NAT',
+                               'type': 'ONE_TO_ONE_NAT'}]
+            if hasattr(external_ip, 'address'):
+                access_configs[0]['natIP'] = external_ip.address
+            ni[0]['accessConfigs'] = access_configs
         node_data['networkInterfaces'] = ni
 
         request = '/zones/%s/instances' % (location.name)
@@ -2659,7 +2687,8 @@ class GCENodeDriver(NodeDriver):
         request, node_data = self._create_node_req(
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
-            node_attrs['metadata'], boot_disk=status['disk'])
+            node_attrs['metadata'], boot_disk=status['disk'],
+            external_ip=node_attrs['external_ip'])
         try:
             node_res = self.connection.request(
                 request, method='POST', data=node_data).object
@@ -2952,7 +2981,7 @@ class GCENodeDriver(NodeDriver):
 
         for network_interface in node.get('networkInterfaces', []):
             private_ips.append(network_interface.get('networkIP'))
-            for access_config in network_interface.get('accessConfigs'):
+            for access_config in network_interface.get('accessConfigs', []):
                 public_ips.append(access_config.get('natIP'))
 
         # For the node attributes, use just machine and image names, not full
