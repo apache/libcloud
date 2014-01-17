@@ -11,6 +11,10 @@ General
   (LIBCLOUD-489)
   [Dinesh Bhoopathy]
 
+- Add support for Amazon security token to the Amazon drivers.
+  (LIBCLOUD-498, GITHUB-223)
+  [Noah Kantrowitz]
+
 Compute
 ~~~~~~~
 
@@ -224,6 +228,16 @@ Storage
 - Deprecate "CLOUDFILES_SWIFT" provider constant in favor of new
   "OPENSTACK_SWIFT" one.
   [Tomaz Muraus]
+
+- Add support for setting an ACL when uploading and object.
+  (LIBCLOUD-497, GITHUB-223)
+  [Noah Kantrowitz]
+
+- Modify get_container method to use a more efficient "HEAD"
+  approach instead of calling list_containers + doing late
+  filterting.
+  (LIBCLOUD-498, GITHUB-223)
+  [Noah Kantrowitz]
 
 DNS
 ~~~
