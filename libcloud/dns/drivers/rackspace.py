@@ -154,13 +154,26 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         zones = self._to_zones(data=response.object['domains'])
         return zones
 
-    def list_records(self, zone):
+    def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        response = self.connection.request(action='/domains/%s' % (zone.id),
-                                           params={'showRecord': True}).object
-        records = self._to_records(data=response['recordsList']['records'],
-                                   zone=zone)
-        return records
+        offset = 0
+        limit = 100
+        while True:
+            params = {
+                'showRecord': True,
+                'limit': limit,
+                'offset': offset,
+            }
+            response = self.connection.request(
+                action='/domains/%s' % (zone.id), params=params).object
+            response_data = response['recordsList']['records']
+            for item in response_data:
+                record = self._to_record(data=item, zone=zone)
+                yield record
+            if len(response_data) < limit:
+                break
+            else:
+                offset += limit
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
@@ -328,14 +341,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl),
                     driver=self, extra=extra)
         return zone
-
-    def _to_records(self, data, zone):
-        records = []
-        for item in data:
-            record = self._to_record(data=item, zone=zone)
-            records.append(record)
-
-        return records
 
     def _to_record(self, data, zone):
         id = data['id']
