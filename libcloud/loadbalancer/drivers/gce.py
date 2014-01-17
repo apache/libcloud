@@ -97,7 +97,7 @@ class GCELBDriver(Driver):
         pool, then adding the members to the target pool.
 
         :param  name: Name of the new load balancer (required)
-        :type   ``str``
+        :type   name: ``str``
 
         :param  port: Port or range of ports the load balancer should listen
                       on, defaults to all ports.  Examples: '80', '5000-5999'
