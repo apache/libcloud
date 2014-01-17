@@ -632,6 +632,21 @@ In this release, this variable has been fully removed. For more information
 on how SSL certificate validation works in Libcloud, see the :doc:`SSL
 Certificate Validation </other/ssl-certificate-validation>` page.
 
+get_container method changes in the S3 driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Previously, the ``get_container`` method in the S3 driver used a very
+inefficient approach of using ``list_containers`` + late filterting.
+
+The code was changed to use a more efficient approach which means using
+a single HTTP ``HEAD`` request.
+
+The only downside of this approach is that it doesn't return container
+creation date.
+
+If you need the container creation date, you should use ``list_containers``
+method and do the later filtering yourself.
+
 Libcloud 0.8
 ------------
 
