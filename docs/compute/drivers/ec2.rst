@@ -21,6 +21,25 @@ It allows users to rent virtual servers in more than 8 regions such as:
 * Asia Pacific (Tokyo) Region
 * South America (Sao Paulo) Region
 
+Using temporary security credentials
+------------------------------------
+
+Since Libcloud 0.14.0 above, all the Amazon drivers support using temporary
+security credentials.
+
+Temporary credentials can be used by passing ``token`` argument to the driver
+constructor in addition to the access and secret key. In this case ``token``
+represents a temporary session token, access key represents temporary
+access key and secret key represents a temporary secret key.
+
+For example:
+
+.. literalinclude:: /examples/compute/ec2/temporary_credentials.py
+   :language: python
+
+For more information, please refer to the `Using Temporary Security
+Credentials`_ section of the official documentation.
+
 Examples
 --------
 
@@ -38,3 +57,4 @@ API Docs
     :inherited-members:
 
 .. _`Amazon Elastic Compute Cloud (EC2)`: https://aws.amazon.com/ec2/
+.. _`Using Temporary Security Credentials`: http://docs.aws.amazon.com/STS/latest/UsingSTS/using-temp-creds.html

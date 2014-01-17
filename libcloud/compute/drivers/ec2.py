@@ -243,14 +243,14 @@ INSTANCE_TYPES = {
         'id': 'i2.4xlarge',
         'name': 'High Storage Optimized Quadruple Large Instance',
         'ram': 124928,
-        'disk': 1600,
+        'disk': 3200,
         'bandwidth': None
     },
     'i2.8xlarge': {
         'id': 'i2.8xlarge',
         'name': 'High Storage Optimized Eight Extra Large Instance',
         'ram': 249856,
-        'disk': 3200,
+        'disk': 6400,
         'bandwidth': None
     },
 }
