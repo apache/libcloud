@@ -492,7 +492,7 @@ class GCENodeDriver(NodeDriver):
     api_name = 'googleapis'
     name = "Google Compute Engine"
     type = Provider.GCE
-    website = 'https://www.googleapis.com/'
+    website = 'https://cloud.google.com/'
 
     NODE_STATE_MAP = {
         "PROVISIONING": NodeState.PENDING,
@@ -962,16 +962,19 @@ class GCENodeDriver(NodeDriver):
 
         Firewall rules should be supplied in the "allowed" field.  This is a
         list of dictionaries formated like so ("ports" is optional)::
+
             [{"IPProtocol": "<protocol string or number>",
-              "ports": [ "<port_numbers or ranges>"}]
+              "ports": "<port_numbers or ranges>"}]
 
         For example, to allow tcp on port 8080 and udp on all ports, 'allowed'
         would be::
+
             [{"IPProtocol": "tcp",
               "ports": ["8080"]},
              {"IPProtocol": "udp"}]
-        See U{Firewall Reference<https://developers.google.com/compute/docs/
-        reference/latest/firewalls/insert>} for more information.
+
+        See `Firewall Reference <https://developers.google.com/compute/docs/
+        reference/latest/firewalls/insert>`_ for more information.
 
         :param  name: Name of the firewall to be created
         :type   name: ``str``
@@ -1174,6 +1177,7 @@ class GCENodeDriver(NodeDriver):
         Nodes will be named with the base name and a number.  For example, if
         the base name is 'libcloud' and you create 3 nodes, they will be
         named::
+
             libcloud-000
             libcloud-001
             libcloud-002
@@ -1213,7 +1217,7 @@ class GCENodeDriver(NodeDriver):
         :type     use_existing_disk: ``bool``
 
         :keyword  poll_interval: Number of seconds between status checks.
-        :type	  poll_interval: ``int``
+        :type     poll_interval: ``int``
 
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
                                (default), a new non-static address will be
@@ -1665,9 +1669,8 @@ class GCENodeDriver(NodeDriver):
                                automatic_restart=None):
         """Set the maintenance behavior for the node.
 
-        See Scheduling_ documentation for more info.
-        _Scheduling:
-        https://developers.google.com/compute/docs/instances#onhostmaintenance
+        See `Scheduling <https://developers.google.com/compute/
+        docs/instances#onhostmaintenance>`_ documentation for more info.
 
         :param  node: Node object
         :type   node: :class:`Node`
