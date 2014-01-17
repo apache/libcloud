@@ -33,7 +33,7 @@ Provider                              Documentation                             
 `Eucalyptus`_                                                                     EUCALYPTUS          :mod:`libcloud.compute.drivers.ec2`            :class:`EucNodeDriver`              
 `Exoscale`_                           :doc:`Click </compute/drivers/exoscale>`    EXOSCALE            :mod:`libcloud.compute.drivers.exoscale`       :class:`ExoscaleNodeDriver`         
 `Gandi`_                                                                          GANDI               :mod:`libcloud.compute.drivers.gandi`          :class:`GandiNodeDriver`            
-`Google Compute Engine`_                                                          GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
+`Google Compute Engine`_              :doc:`Click </compute/drivers/gce>`         GCE                 :mod:`libcloud.compute.drivers.gce`            :class:`GCENodeDriver`              
 `GoGrid`_                                                                         GOGRID              :mod:`libcloud.compute.drivers.gogrid`         :class:`GoGridNodeDriver`           
 `HostVirtual`_                                                                    HOSTVIRTUAL         :mod:`libcloud.compute.drivers.hostvirtual`    :class:`HostVirtualNodeDriver`      
 `IBM SmartCloud Enterprise`_                                                      IBM                 :mod:`libcloud.compute.drivers.ibm_sce`        :class:`IBMNodeDriver`              
@@ -93,7 +93,7 @@ Provider                              Documentation                             
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
-.. _`Google Compute Engine`: https://www.googleapis.com/
+.. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/

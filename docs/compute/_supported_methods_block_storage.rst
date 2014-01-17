@@ -93,7 +93,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.ch/
 .. _`Gandi`: http://www.gandi.net/
-.. _`Google Compute Engine`: https://www.googleapis.com/
+.. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`HostVirtual`: http://www.vr.org
 .. _`IBM SmartCloud Enterprise`: http://ibm.com/services/us/en/cloud-enterprise/
