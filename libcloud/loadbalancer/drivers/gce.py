@@ -30,8 +30,8 @@ DEFAULT_ALGORITHM = Algorithm.RANDOM
 class GCELBDriver(Driver):
     connectionCls = GCEConnection
     apiname = 'googleapis'
-    name = 'Google Compute Engine'
-    website = 'https://www.googleapis.com/'
+    name = 'Google Compute Engine Load Balancer'
+    website = 'https://cloud.google.com/'
 
     _VALUE_TO_ALGORITHM_MAP = {
         'RANDOM': Algorithm.RANDOM
