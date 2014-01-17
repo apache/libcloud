@@ -39,4 +39,28 @@ you can even upload / create empty objects.
 .. literalinclude:: /examples/storage/s3/multipart_large_file_upload.py
    :language: python
 
+2. Specifying canned ACL when uploading an object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to specify custom ACL when uploading an object, you can do so by
+passing ``extra`` argument with the ``acl`` attribute to the upload methods.
+
+Valid values for this attribute are:
+
+* ``private`` (default)
+* ``public-read``
+* ``public-read-write``
+* ``authenticated-read``
+* ``bucket-owner-read``
+* ``bucket-owner-full-control``
+
+For example:
+
+.. literalinclude:: /examples/storage/s3/upload_object_acls.py
+   :language: python
+
+For more information about the canned ACLs, please refer to the `Canned ACL`
+section of the Amazon S3 documentation.
+
 .. _`Amazon Simple Storage Service (Amazon S3)`: http://aws.amazon.com/s3/
+.. _`Canned ACL`: http://docs.aws.amazon.com/AmazonS3/latest/dev/ACLOverview.html#CannedACL
