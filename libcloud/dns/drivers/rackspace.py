@@ -147,6 +147,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.NS: 'NS',
         RecordType.TXT: 'TXT',
         RecordType.SRV: 'SRV',
+        RecordType.PTR: 'PTR',
     }
 
     def list_zones(self):
