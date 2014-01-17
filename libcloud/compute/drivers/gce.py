@@ -1130,9 +1130,9 @@ class GCENodeDriver(NodeDriver):
         :type     use_existing_disk: ``bool``
 
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
-                               (default), a new non-static address will be used.
-                               If 'None', then no external address will be
-                               created.  To use an existing static IP address,
+                               (default), a new non-static address will be
+                               used.  If 'None', then no external address will
+                               be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
@@ -1216,9 +1216,9 @@ class GCENodeDriver(NodeDriver):
         :type	  poll_interval: ``int``
 
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
-                               (default), a new non-static address will be used.
-                               If 'None', then no external address will be
-                               created. (Static addresses are not supported for
+                               (default), a new non-static address will be
+                               used. If 'None', then no external address will
+                               be used. (Static addresses are not supported for
                                multiple node creation.)
         :type     external_ip: ``str`` or None
 
@@ -2553,9 +2553,9 @@ class GCENodeDriver(NodeDriver):
         :type     :class:`StorageVolume`
 
         :keyword  external_ip: The external IP address to use.  If 'ephemeral'
-                               (default), a new non-static address will be used.
-                               If 'None', then no external address will be
-                               created.  To use an existing static IP address,
+                               (default), a new non-static address will be
+                               used.  If 'None', then no external address will
+                               be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
 
