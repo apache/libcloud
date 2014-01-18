@@ -425,6 +425,9 @@ class ZerigoDNSDriver(DNSDriver):
         priority = findtext(element=elem, xpath='priority', no_text_value=None)
         ttl = findtext(element=elem, xpath='ttl', no_text_value=None)
 
+        if not name:
+            name = None
+
         if ttl:
             ttl = int(ttl)
 
