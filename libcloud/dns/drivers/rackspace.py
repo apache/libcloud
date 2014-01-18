@@ -373,7 +373,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
 
     def _to_partial_record_name(self, domain, name):
         """
-        Strip domain portion from the record name.
+        Remove domain portion from the record name.
 
         :param domain: Domain name.
         :type domain: ``str``
@@ -381,6 +381,12 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         :param name: Full record name (fqdn).
         :type name: ``str``
         """
+        if name == domain:
+            # Map "root" record names to None to be consistent with other
+            # drivers
+            return None
+
+        # Strip domain portion
         name = name.replace('.%s' % (domain), '')
         return name
 

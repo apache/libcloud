@@ -309,6 +309,17 @@ class RackspaceUSTests(unittest.TestCase):
         self.assertEqual(self.driver._to_full_record_name(domain, name),
                          'foo.bar')
 
+    def test_to_partial_record_name(self):
+        domain = 'example.com'
+        names = ['test.example.com', 'foo.bar.example.com',
+                 'example.com.example.com', 'example.com']
+        expected_values = ['test', 'foo.bar', 'example.com', None]
+
+        for name, expected_value in zip(names, expected_values):
+            value = self.driver._to_partial_record_name(domain=domain,
+                                                        name=name)
+            self.assertEqual(value, expected_value)
+
 
 class RackspaceUKTests(RackspaceUSTests):
     klass = RackspaceUKDNSDriver
