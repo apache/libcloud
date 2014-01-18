@@ -1,6 +1,24 @@
 Changelog
 =========
 
+Changes with Apache Libcloud in development
+-------------------------------------------
+
+DNS
+~~~
+
+- Add PTR to the supported record types in the Rackspace driver.
+  [Tomaz Muraus]
+
+- Fix Zerigo driver to set Record.name attribute for records which refer
+  to the bare domain to "None" instead of an empty string.
+  [Tomaz Muraus]
+
+- For consistency with other drivers, update Rackspace driver to set
+  Record.name attribute for the records which refer to the bare domain
+  to "None" instead of setting them to FQDN.
+  [Tomaz Muraus]
+
 Changes with Apache Libcloud 0.14.0
 -----------------------------------
 
