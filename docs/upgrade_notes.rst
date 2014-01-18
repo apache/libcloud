@@ -5,6 +5,25 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud in development
+-----------------------
+
+Fix record name inconsistencies in the Rackspace DNS driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Record.name`` attribute is now correctly set to ``None`` for records which
+refer to the bare domain name. Previously, ``Record.name`` attribute for such
+records was set to the domain name.
+
+For example, lets have a look at a record which points to the domain
+``example.com``.
+
+New ``Record.name`` attribute value for such record: ``None``
+
+Old ``Record.name`` attribute value for such record: ``example.com``
+
+This was done to make the Rackspace driver consistent with the other ones.
+
 Libcloud 0.14.0
 ---------------
 
@@ -657,7 +676,7 @@ Libcloud 0.8
 * ``ex_save_image`` method in the OpenStack driver now returns a ``NodeImage``
   instance.
 
-For a full list of changes, please see the `CHANGES file 
+For a full list of changes, please see the `CHANGES file
 <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=fd1f9cd8917bf9d9c5f4d5344872dbccba894444;hb=b26812db71e6c36be3cc5f7fcb87f82b267bfddd>`__.
 
 Libcloud 0.7
@@ -704,7 +723,7 @@ Bellow is a list of old paths and their new locations:
 In the ``contrib/`` directory you can also find a simple bash script which can
 perform a search and replace for you - `migrate_paths.py <https://svn.apache.org/repos/asf/libcloud/trunk/contrib/migrate_paths.sh>`_.
 
-For a full list of changes, please see the `CHANGES file 
+For a full list of changes, please see the `CHANGES file
 <https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob;f=CHANGES;h=276948338c2581de1178e51f7f7cdbd4e7ba9286;hb=2ad8f3fa1f258d6c53d7b058cdc6cd9ab1fd579b>`__.
 
 Libcloud 0.6
