@@ -190,7 +190,7 @@ class ParamikoSSHClientTests(unittest.TestCase):
     @patch('paramiko.SSHClient', Mock)
     @patch('paramiko.ProxyCommand', Mock)
     def test_create_with_ssh_config(self):
-        filename = os.path.join(self.fixtures.root,'ssh_config')
+        filename = os.path.join(self.fixtures.root, 'ssh_config')
         ssh.SSH_CONFIG_FILES = [filename]
 
         conn_params = {'hostname': 'dummy.host.org'}
@@ -211,7 +211,7 @@ class ParamikoSSHClientTests(unittest.TestCase):
     @patch('paramiko.SSHClient', Mock)
     @patch('paramiko.ProxyCommand', Mock)
     def test_create_with_ssh_config_and_forced_cred(self):
-        filename = os.path.join(self.fixtures.root,'ssh_config')
+        filename = os.path.join(self.fixtures.root, 'ssh_config')
         ssh.SSH_CONFIG_FILES = [filename]
 
         conn_params = {'hostname': 'dummy.host.org',

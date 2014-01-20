@@ -22,7 +22,7 @@ paramiko_1_10 = False
 try:
     import paramiko
     have_paramiko = True
-    if tuple([ int(d) for d in paramiko.__version__.split(".") ]) > (1,10):
+    if tuple([int(d) for d in paramiko.__version__.split(".")]) > (1, 10):
         paramiko_1_10 = True
 except ImportError:
     pass
@@ -47,6 +47,7 @@ from libcloud.utils.py3 import StringIO
 CHUNK_SIZE = 1024
 
 SSH_CONFIG_FILES = ['/etc/ssh/ssh_config', '~/.ssh/config']
+
 
 class BaseSSHClient(object):
     """
