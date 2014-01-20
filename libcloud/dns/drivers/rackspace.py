@@ -179,6 +179,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                 for item in records_list['links']:
                     if item['rel'] == 'next':
                         more = True
+                        break
 
             if not more:
                 break
