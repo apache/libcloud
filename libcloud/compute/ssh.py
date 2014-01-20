@@ -17,10 +17,13 @@
 Wraps multiple ways to communicate over SSH
 """
 have_paramiko = False
+paramiko_1_10 = False
 
 try:
     import paramiko
     have_paramiko = True
+    if tuple([ int(d) for d in paramiko.__version__.split(".") ]) > (1,10):
+        paramiko_1_10 = True
 except ImportError:
     pass
 
@@ -43,6 +46,7 @@ from libcloud.utils.py3 import StringIO
 # Maximum number of bytes to read at once from a socket
 CHUNK_SIZE = 1024
 
+SSH_CONFIG_FILES = ['/etc/ssh/ssh_config', '~/.ssh/config']
 
 class BaseSSHClient(object):
     """
@@ -164,8 +168,7 @@ class ParamikoSSHClient(BaseSSHClient):
     """
     A SSH Client powered by Paramiko.
     """
-    def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
+    def __init__(self, hostname, **kwargs):
         """
         Authentication is always attempted in the following order:
 
@@ -177,8 +180,12 @@ class ParamikoSSHClient(BaseSSHClient):
         - Plain username/password auth, if a password was given (if password is
           provided)
         """
-        super(ParamikoSSHClient, self).__init__(hostname, port, username,
-                                                password, key, timeout)
+        if paramiko_1_10:
+            #keep what was explicitly asked
+            self.forced_param = kwargs.keys()
+            self.sock = None
+
+        super(ParamikoSSHClient, self).__init__(hostname, **kwargs)
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = self._get_and_setup_logger()
@@ -202,6 +209,9 @@ class ParamikoSSHClient(BaseSSHClient):
 
         if self.timeout:
             conninfo['timeout'] = self.timeout
+
+        if paramiko_1_10:
+            self._add_ssh_config(conninfo)
 
         extra = {'_hostname': self.hostname, '_port': self.port,
                  '_username': self.username, '_timeout': self.timeout}
@@ -345,6 +355,41 @@ class ParamikoSSHClient(BaseSSHClient):
         self.client.close()
         return True
 
+    def _add_ssh_config(self, conninfo):
+        """
+        override connection informations with ssh_config files
+        """
+
+        for filepath in SSH_CONFIG_FILES:
+            filename = os.path.expanduser(filepath)
+            if not os.path.exists(filename):
+                continue
+            config = paramiko.SSHConfig()
+            f = open(filename)
+            config.parse(f)
+            f.close()
+
+            host = conninfo['hostname']
+            newconf = config.lookup(host)
+
+            for param in newconf:
+                if param == 'proxycommand' and not self.sock:
+                    proxycommand = newconf[param]
+                    if proxycommand.lower() in ['', 'none']:
+                        continue
+                    self.sock = paramiko.ProxyCommand(proxycommand)
+                    conninfo['sock'] = self.sock
+                elif param == 'identityfile' and conninfo['look_for_keys']:
+                    conninfo['key_filename'] = newconf[param]
+                elif param == 'user' and 'username' not in self.forced_param:
+                    conninfo['username'] == newconf[param]
+                elif param == 'port' and 'port' not in self.forced_param:
+                    conninfo['username'] == newconf[param]
+                elif param in conninfo:
+                    conninfo[param] = newconf[param]
+                else:
+                    self.logger.debug('Unused conf from ssh_config %s' % param)
+
 
 class ShellOutSSHClient(BaseSSHClient):
     """
@@ -354,10 +399,8 @@ class ShellOutSSHClient(BaseSSHClient):
     Note: This client should not be used in production.
     """
 
-    def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, timeout=None):
-        super(ShellOutSSHClient, self).__init__(hostname, port, username,
-                                                password, key, timeout)
+    def __init__(self, hostname, **kwargs):
+        super(ShellOutSSHClient, self).__init__(hostname, **kwargs)
         if self.password:
             raise ValueError('ShellOutSSHClient only supports key auth')
 
