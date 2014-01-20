@@ -354,13 +354,13 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         return locations
 
-    def list_nodes(self):
+    def list_nodes(self, **extra_args):
         """
         @inherits: :class:`NodeDriver.list_nodes`
         :rtype: ``list`` of :class:`CloudStackNode`
         """
-        vms = self._sync_request('listVirtualMachines')
-        addrs = self._sync_request('listPublicIpAddresses')
+        vms = self._sync_request('listVirtualMachines', **extra_args)
+        addrs = self._sync_request('listPublicIpAddresses', **extra_args)
 
         public_ips_map = {}
         for addr in addrs.get('publicipaddress', []):
