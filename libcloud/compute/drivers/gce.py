@@ -1517,7 +1517,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(node, 'name'):
             node = self.ex_get_node(node, 'all')
 
-        targetpool_data = {'instance': node.extra['selfLink']}
+        targetpool_data = {'instances': [{'instance': node.extra['selfLink']}]}
 
         request = '/regions/%s/targetPools/%s/addInstance' % (
             targetpool.region.name, targetpool.name)
@@ -1571,7 +1571,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(node, 'name'):
             node = self.ex_get_node(node, 'all')
 
-        targetpool_data = {'instance': node.extra['selfLink']}
+        targetpool_data = {'instances': [{'instance': node.extra['selfLink']}]}
 
         request = '/regions/%s/targetPools/%s/removeInstance' % (
             targetpool.region.name, targetpool.name)
