@@ -150,18 +150,46 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.PTR: 'PTR',
     }
 
-    def list_zones(self):
-        response = self.connection.request(action='/domains')
-        zones = self._to_zones(data=response.object['domains'])
-        return zones
+    def iterate_zones(self):
+        offset = 0
+        limit = 100
+        while True:
+            params = {
+                'limit': limit,
+                'offset': offset,
+            }
+            response = self.connection.request(
+                action='/domains', params=params).object
+            zones_list = response['domains']
+            for item in zones_list:
+                yield self._to_zone(item)
 
-    def list_records(self, zone):
+            if _rackspace_result_has_more(response):
+                offset += limit
+            else:
+                break
+
+    def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        response = self.connection.request(action='/domains/%s' % (zone.id),
-                                           params={'showRecord': True}).object
-        records = self._to_records(data=response['recordsList']['records'],
-                                   zone=zone)
-        return records
+        offset = 0
+        limit = 100
+        while True:
+            params = {
+                'showRecord': True,
+                'limit': limit,
+                'offset': offset,
+            }
+            response = self.connection.request(
+                action='/domains/%s' % (zone.id), params=params).object
+            records_list = response['recordsList']
+            for item in records_list['records']:
+                record = self._to_record(data=item, zone=zone)
+                yield record
+
+            if _rackspace_result_has_more(records_list):
+                offset += limit
+            else:
+                break
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
@@ -305,14 +333,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                                       method='DELETE')
         return True
 
-    def _to_zones(self, data):
-        zones = []
-        for item in data:
-            zone = self._to_zone(data=item)
-            zones.append(zone)
-
-        return zones
-
     def _to_zone(self, data):
         id = data['id']
         domain = data['name']
@@ -329,14 +349,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         zone = Zone(id=str(id), domain=domain, type=type, ttl=int(ttl),
                     driver=self, extra=extra)
         return zone
-
-    def _to_records(self, data, zone):
-        records = []
-        for item in data:
-            record = self._to_record(data=item, zone=zone)
-            records.append(record)
-
-        return records
 
     def _to_record(self, data, zone):
         id = data['id']
@@ -394,6 +406,15 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         kwargs = self.openstack_connection_kwargs()
         kwargs['region'] = self.region
         return kwargs
+
+
+def _rackspace_result_has_more(obj):
+    # Paginated results return links to the previous and next sets of data, but
+    # 'next' only exists when there is more to get.
+    for item in obj.get('links', ()):
+        if item['rel'] == 'next':
+            return True
+    return False
 
 
 class RackspaceUSDNSDriver(RackspaceDNSDriver):
