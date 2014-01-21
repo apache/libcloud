@@ -4,6 +4,13 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+Load Balancer
+~~~~~~~~~~~~~
+
+- Fix a bug in the ex_targetpool_add_node and ex_targetpool_remove_node method
+  in the GCE driver.
+  [Rick Wright]
+
 DNS
 ~~~
 
