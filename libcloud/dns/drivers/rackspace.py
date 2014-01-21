@@ -172,19 +172,10 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                 record = self._to_record(data=item, zone=zone)
                 yield record
 
-            more = False
-            # Paginated results return links to the previous and next
-            # sets of data, but 'next' only exists when there is more to get.
-            if 'links' in records_list:
-                for item in records_list['links']:
-                    if item['rel'] == 'next':
-                        more = True
-                        break
-
-            if not more:
-                break
-            else:
+            if _rackspace_result_has_more(records_list):
                 offset += limit
+            else:
+                break
 
     def get_zone(self, zone_id):
         self.connection.set_context({'resource': 'zone', 'id': zone_id})
@@ -409,6 +400,15 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         kwargs = self.openstack_connection_kwargs()
         kwargs['region'] = self.region
         return kwargs
+
+
+def _rackspace_result_has_more(obj):
+    # Paginated results return links to the previous and next sets of data, but
+    # 'next' only exists when there is more to get.
+    for item in obj.get('links', ()):
+        if item['rel'] == 'next':
+            return True
+    return False
 
 
 class RackspaceUSDNSDriver(RackspaceDNSDriver):
