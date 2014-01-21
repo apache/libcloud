@@ -149,10 +149,24 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         RecordType.SRV: 'SRV',
     }
 
-    def list_zones(self):
-        response = self.connection.request(action='/domains')
-        zones = self._to_zones(data=response.object['domains'])
-        return zones
+    def iterate_zones(self):
+        offset = 0
+        limit = 100
+        while True:
+            params = {
+                'limit': limit,
+                'offset': offset,
+            }
+            response = self.connection.request(
+                action='/domains', params=params).object
+            zones_list = response['domains']
+            for item in zones_list:
+                yield self._to_zone(item)
+
+            if _rackspace_result_has_more(response):
+                offset += limit
+            else:
+                break
 
     def iterate_records(self, zone):
         self.connection.set_context({'resource': 'zone', 'id': zone.id})
@@ -317,14 +331,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
                                       (record.zone.id, record.id),
                                       method='DELETE')
         return True
-
-    def _to_zones(self, data):
-        zones = []
-        for item in data:
-            zone = self._to_zone(data=item)
-            zones.append(zone)
-
-        return zones
 
     def _to_zone(self, data):
         id = data['id']
