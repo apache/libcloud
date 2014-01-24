@@ -164,7 +164,7 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
             for item in zones_list:
                 yield self._to_zone(item)
 
-            if _rackspace_result_has_more(response):
+            if _rackspace_result_has_more(response, len(zones_list), limit):
                 offset += limit
             else:
                 break
@@ -182,11 +182,12 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
             response = self.connection.request(
                 action='/domains/%s' % (zone.id), params=params).object
             records_list = response['recordsList']
-            for item in records_list['records']:
+            records = records_list['records']
+            for item in records:
                 record = self._to_record(data=item, zone=zone)
                 yield record
 
-            if _rackspace_result_has_more(records_list):
+            if _rackspace_result_has_more(records_list, len(records), limit):
                 offset += limit
             else:
                 break
@@ -408,7 +409,11 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         return kwargs
 
 
-def _rackspace_result_has_more(obj):
+def _rackspace_result_has_more(obj, result_length, limit):
+    # If rackspace returns less than the limit, then we've reached the end of
+    # the result set.
+    if result_length < limit:
+        return False
     # Paginated results return links to the previous and next sets of data, but
     # 'next' only exists when there is more to get.
     for item in obj.get('links', ()):
