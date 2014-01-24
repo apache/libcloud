@@ -409,19 +409,6 @@ class RackspaceDNSDriver(DNSDriver, OpenStackDriverMixin):
         return kwargs
 
 
-def _rackspace_result_has_more(obj, result_length, limit):
-    # If rackspace returns less than the limit, then we've reached the end of
-    # the result set.
-    if result_length < limit:
-        return False
-    # Paginated results return links to the previous and next sets of data, but
-    # 'next' only exists when there is more to get.
-    for item in obj.get('links', ()):
-        if item['rel'] == 'next':
-            return True
-    return False
-
-
 class RackspaceUSDNSDriver(RackspaceDNSDriver):
     name = 'Rackspace DNS (US)'
     type = Provider.RACKSPACE_US
@@ -438,3 +425,17 @@ class RackspaceUKDNSDriver(RackspaceDNSDriver):
     def __init__(self, *args, **kwargs):
         kwargs['region'] = 'uk'
         super(RackspaceUKDNSDriver, self).__init__(*args, **kwargs)
+
+
+def _rackspace_result_has_more(response, result_length, limit):
+    # If rackspace returns less than the limit, then we've reached the end of
+    # the result set.
+    if result_length < limit:
+        return False
+
+    # Paginated results return links to the previous and next sets of data, but
+    # 'next' only exists when there is more to get.
+    for item in response.get('links', ()):
+        if item['rel'] == 'next':
+            return True
+    return False
