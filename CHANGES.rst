@@ -26,6 +26,10 @@ DNS
   to "None" instead of setting them to FQDN.
   [Tomaz Muraus]
 
+- Update Rackspace driver to support paginating through zones and records.
+  (GITHUB-230)
+  [Roy Wellington]
+
 Changes with Apache Libcloud 0.14.0
 -----------------------------------
 
