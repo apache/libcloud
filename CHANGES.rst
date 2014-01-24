@@ -11,6 +11,14 @@ Load Balancer
   in the GCE driver.
   [Rick Wright]
 
+Storage
+~~~~~~~
+
+- Allow user to use an internal endpoint in the CloudFiles driver by passing
+  "use_internal_url" argument to the driver constructor.
+  (GITHUB-229)
+  [John Obelenus]
+
 DNS
 ~~~
 
