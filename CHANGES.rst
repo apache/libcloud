@@ -4,6 +4,12 @@ Changelog
 Changes with Apache Libcloud in development
 -------------------------------------------
 
+Compute
+~~~~~~~
+
+- Add new m3.medium and m3.large instance information to the EC2 driver.
+  [Tomaz Muraus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
