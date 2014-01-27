@@ -17,7 +17,7 @@ You can install latest development version from our Git repository:
 
 .. sourcecode:: bash
 
-    pip install -e https://git-wip-us.apache.org/repos/asf/libcloud.git@trunk#egg=apache-libcloud
+    pip install -e git+https://git-wip-us.apache.org/repos/asf/libcloud.git@trunk#egg=apache-libcloud
 
 Upgrading
 ---------
