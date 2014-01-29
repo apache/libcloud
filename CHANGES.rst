@@ -13,6 +13,11 @@ Compute
 - Add a new driver for CloudSigma API v2.0.
   [Tomaz Muraus]
 
+- Add "volume_id" attribute to the Node "extra" dictionary in the EC2 driver.
+  Also fix the value of the "device" extra attribute in the StorageVolume
+  object. (LIBCLOUD-501)
+  [Oleg Suharev]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
