@@ -183,6 +183,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['image_id'], 'ami-3215fe5a')
         self.assertEqual(len(node.extra['groups']), 2)
         self.assertEqual(len(node.extra['block_device_mapping']), 1)
+        self.assertEqual(node.extra['block_device_mapping'][0]['device_name'], '/dev/sda1')
+        self.assertEqual(node.extra['block_device_mapping'][0]['ebs']['volume_id'], 'vol-5e312311')
+        self.assertTrue(node.extra['block_device_mapping'][0]['ebs']['delete'])
 
         self.assertEqual(public_ips[0], '1.2.3.4')
 
@@ -741,6 +744,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(8, volumes[2].size)
         self.assertEqual('in-use', volumes[2].extra['state'])
         self.assertEqual('i-d334b4b3', volumes[2].extra['instance_id'])
+        self.assertEqual('/dev/sda1', volumes[2].extra['device'])
 
     def test_create_volume(self):
         location = self.driver.list_locations()[0]

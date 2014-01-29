@@ -527,6 +527,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'ebs/snapshotId',
             'transform_func': str
         },
+        'volume_id': {
+            'xpath': 'ebs/volumeId',
+            'transform_func': str
+        },
         'volume_size': {
             'xpath': 'ebs/volumeSize',
             'transform_func': int
@@ -908,7 +912,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     },
     'volume': {
         'device': {
-            'xpath': 'device',
+            'xpath': 'attachmentSet/item/device',
             'transform_func': str
         },
         'iops': {
@@ -3519,7 +3523,6 @@ class BaseEC2NodeDriver(NodeDriver):
             value = findattr(element=element,
                              xpath=values['xpath'],
                              namespace=NAMESPACE)
-
             if value is not None:
                 extra[attribute] = transform_func(value)
             else:
