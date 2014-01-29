@@ -10,6 +10,9 @@ Compute
 - Add new m3.medium and m3.large instance information to the EC2 driver.
   [Tomaz Muraus]
 
+- Add a new driver for CloudSigma API v2.0.
+  [Tomaz Muraus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
