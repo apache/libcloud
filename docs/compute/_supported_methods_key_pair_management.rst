@@ -6,7 +6,6 @@ Provider                              list key pairs get key pair create key pai
 `Brightbox`_                          no             no           no              no                            no                          no             
 `CloudFrames`_                        no             no           no              no                            no                          no             
 `CloudSigma`_                         no             no           no              no                            no                          no             
-`CloudSigma`_                         no             no           no              no                            no                          no             
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Digital Ocean`_                      no             no           no              no                            no                          no             
 `Dreamhost`_                          no             no           no              no                            no                          no             
@@ -65,7 +64,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
-.. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com

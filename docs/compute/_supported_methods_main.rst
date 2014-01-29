@@ -5,8 +5,7 @@ Provider                              list nodes create node reboot node destroy
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
 `Brightbox`_                          yes        yes         no          yes          yes         yes        no         
 `CloudFrames`_                        yes        yes         yes         yes          yes         yes        no         
-`CloudSigma`_                         yes        yes         yes         yes          yes         yes        no         
-`CloudSigma`_                         yes        yes         yes         yes          yes         yes        no         
+`CloudSigma`_                         no         no          no          no           no          no         no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
 `Digital Ocean`_                      yes        yes         yes         yes          yes         yes        no         
 `Dreamhost`_                          yes        yes         yes         yes          yes         yes        no         
@@ -65,7 +64,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
-.. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudSigma`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com
