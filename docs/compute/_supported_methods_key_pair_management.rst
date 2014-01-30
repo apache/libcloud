@@ -44,7 +44,7 @@ Provider                              list key pairs get key pair create key pai
 `NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
 `Ninefold`_                           yes            yes          yes             yes                           no                          yes            
-`OpenNebula`_                         no             no           no              no                            no                          no             
+`OpenNebula (v3.8)`_                  no             no           no              no                            no                          no             
 `OpenStack`_                          no             no           no              no                            no                          no             
 `Opsource`_                           no             no           no              no                            no                          no             
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
@@ -103,7 +103,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
-.. _`OpenNebula`: http://opennebula.org/
+.. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com

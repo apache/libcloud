@@ -44,7 +44,7 @@ Provider                              Documentation                             
 `NephoScale`_                                                                     NEPHOSCALE          :mod:`libcloud.compute.drivers.nephoscale`     :class:`NephoscaleNodeDriver`       
 `Nimbus`_                             :doc:`Click </compute/drivers/nimbus>`      NIMBUS              :mod:`libcloud.compute.drivers.ec2`            :class:`NimbusNodeDriver`           
 `Ninefold`_                                                                       NINEFOLD            :mod:`libcloud.compute.drivers.ninefold`       :class:`NinefoldNodeDriver`         
-`OpenNebula`_                                                                     OPENNEBULA          :mod:`libcloud.compute.drivers.opennebula`     :class:`OpenNebulaNodeDriver`       
+`OpenNebula (v3.8)`_                                                              OPENNEBULA          :mod:`libcloud.compute.drivers.opennebula`     :class:`OpenNebulaNodeDriver`       
 `OpenStack`_                          :doc:`Click </compute/drivers/openstack>`   OPENSTACK           :mod:`libcloud.compute.drivers.openstack`      :class:`OpenStackNodeDriver`        
 `Opsource`_                                                                       OPSOURCE            :mod:`libcloud.compute.drivers.opsource`       :class:`OpsourceNodeDriver`         
 `Rackspace Cloud (Next Gen)`_         :doc:`Click </compute/drivers/rackspace>`   RACKSPACE           :mod:`libcloud.compute.drivers.rackspace`      :class:`RackspaceNodeDriver`        
@@ -103,7 +103,7 @@ Provider                              Documentation                             
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
-.. _`OpenNebula`: http://opennebula.org/
+.. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com

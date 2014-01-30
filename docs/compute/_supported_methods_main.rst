@@ -44,7 +44,7 @@ Provider                              list nodes create node reboot node destroy
 `NephoScale`_                         yes        yes         yes         yes          yes         yes        yes        
 `Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
 `Ninefold`_                           yes        yes         yes         yes          yes         yes        yes        
-`OpenNebula`_                         yes        yes         yes         yes          yes         yes        no         
+`OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes         yes        no         
 `Opsource`_                           yes        yes         yes         yes          yes         yes        yes        
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
@@ -103,7 +103,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`Ninefold`: http://ninefold.com/
-.. _`OpenNebula`: http://opennebula.org/
+.. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Opsource`: http://www.opsource.net/
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
