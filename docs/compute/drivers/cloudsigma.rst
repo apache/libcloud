@@ -171,6 +171,18 @@ in the same availability group as an avoid resource.
 .. literalinclude:: /examples/compute/cloudsigma/create_node_ex_avoid.py
    :language: python
 
+To check which servers and drives share the same physical compute / storage
+host, you can use the
+:meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_servers_availability_groups`
+and :meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_drives_availability_groups`
+method as displayed bellow.
+
+.. literalinclude:: /examples/compute/cloudsigma/check_avail_groups.py
+   :language: python
+
+Both of those methods return a ``list``. Servers and drives which share the same
+physical host will be stored under the same index in the returned list.
+
 10. Retrieving the account balance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
