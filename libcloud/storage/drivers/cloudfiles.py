@@ -52,6 +52,8 @@ from libcloud.common.rackspace import AUTH_URL
 
 CDN_HOST = 'cdn.clouddrive.com'
 API_VERSION = 'v1.0'
+INTERNAL_ENDPOINT_KEY = 'internalURL'
+PUBLIC_ENDPOINT_KEY = 'publicURL'
 
 
 class CloudFilesResponse(Response):
@@ -105,8 +107,6 @@ class CloudFilesConnection(OpenStackBaseConnection):
 
     auth_url = AUTH_URL
     _auth_version = '2.0'
-    INTERNAL_URL = 'internalURL'
-    PUBLIC_URL = 'publicURL'
 
     def __init__(self, user_id, key, secure=True,
                  use_internal_url=False, **kwargs):
@@ -117,11 +117,11 @@ class CloudFilesConnection(OpenStackBaseConnection):
         self.cdn_request = False
         self.use_internal_url = use_internal_url
 
-    def _get_endpoint_url(self):
-        endpoint_url = self.INTERNAL_URL if self.use_internal_url else self.PUBLIC_URL
+    def _get_endpoint_key(self):
+        endpoint_key = INTERNAL_ENDPOINT_KEY if self.use_internal_url else PUBLIC_ENDPOINT_KEY
         if self.cdn_request:
-            endpoint_url = self.PUBLIC_URL  # cdn endpoints don't have internal urls
-        return endpoint_url
+            endpoint_key = PUBLIC_ENDPOINT_KEY  # cdn endpoints don't have internal urls
+        return endpoint_key
 
     def get_endpoint(self):
         region = self._ex_force_service_region.upper()
@@ -142,7 +142,7 @@ class CloudFilesConnection(OpenStackBaseConnection):
         # if this is a CDN request, return the cdn url instead
         if self.cdn_request:
             ep = cdn_ep
-        endpoint_url = self._get_endpoint_url()
+        endpoint_url = self._get_endpoint_key()
 
         if not ep:
             raise LibcloudError('Could not find specified endpoint')
