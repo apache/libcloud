@@ -91,6 +91,8 @@ class CloudSigmaAPI20BaseTestCase(object):
         node = self.driver.create_node(name='test node', size=size, image=image,
                                        ex_metadata=metadata)
         self.assertEqual(node.name, 'test node')
+        self.assertEqual(len(node.extra['nics']), 1)
+        self.assertEqual(node.extra['nics'][0]['ip_v4_conf']['conf'], 'dhcp')
 
     def test_destroy_node(self):
         status = self.driver.destroy_node(node=self.node)
