@@ -5,7 +5,7 @@ Provider                              list volumes create volume destroy volume 
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
 `CloudFrames`_                        no           no            no             no            no            no             no             
-`CloudSigma`_                         no           no            no             no            no            no             no             
+`CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             no             
 `Digital Ocean`_                      no           no            no             no            no            no             no             
 `Dreamhost`_                          no           no            no             no            no            no             no             
@@ -44,7 +44,7 @@ Provider                              list volumes create volume destroy volume 
 `NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
 `Ninefold`_                           yes          yes           yes            yes           yes           no             no             
-`OpenNebula`_                         no           no            no             no            no            no             no             
+`OpenNebula`_                         yes          yes           yes            yes           yes           no             no             
 `OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Opsource`_                           no           no            no             no            no            no             no             
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           no             no             
@@ -64,7 +64,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
-.. _`CloudSigma`: http://www.cloudsigma.com/
+.. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/

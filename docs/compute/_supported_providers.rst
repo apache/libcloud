@@ -5,7 +5,7 @@ Provider                              Documentation                             
 `Bluebox Blocks`_                                                                 BLUEBOX             :mod:`libcloud.compute.drivers.bluebox`        :class:`BlueboxNodeDriver`          
 `Brightbox`_                                                                      BRIGHTBOX           :mod:`libcloud.compute.drivers.brightbox`      :class:`BrightboxNodeDriver`        
 `CloudFrames`_                        :doc:`Click </compute/drivers/cloudframes>` CLOUDFRAMES         :mod:`libcloud.compute.drivers.cloudframes`    :class:`CloudFramesNodeDriver`      
-`CloudSigma`_                         :doc:`Click </compute/drivers/cloudsigma>`  CLOUDSIGMA          :mod:`libcloud.compute.drivers.cloudsigma`     :class:`CloudSigmaNodeDriver`       
+`CloudSigma (API v2.0)`_              :doc:`Click </compute/drivers/cloudsigma>`  CLOUDSIGMA          :mod:`libcloud.compute.drivers.cloudsigma`     :class:`CloudSigmaNodeDriver`       
 `CloudStack`_                         :doc:`Click </compute/drivers/cloudstack>`  CLOUDSTACK          :mod:`libcloud.compute.drivers.cloudstack`     :class:`CloudStackNodeDriver`       
 `Digital Ocean`_                                                                  DIGITAL_OCEAN       :mod:`libcloud.compute.drivers.digitalocean`   :class:`DigitalOceanNodeDriver`     
 `Dreamhost`_                                                                      DREAMHOST           :mod:`libcloud.compute.drivers.dreamhost`      :class:`DreamhostNodeDriver`        
@@ -64,7 +64,7 @@ Provider                              Documentation                             
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`CloudFrames`: http://www.cloudframes.net/
-.. _`CloudSigma`: http://www.cloudsigma.com/
+.. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Digital Ocean`: https://www.digitalocean.com
 .. _`Dreamhost`: http://dreamhost.com/

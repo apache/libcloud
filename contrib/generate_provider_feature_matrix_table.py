@@ -192,6 +192,19 @@ def generate_providers_table(api):
             # Deprecated providers throw an exception
             continue
 
+        # Hack for providers which expose multiple classes and support multiple
+        # API versions
+        # TODO: Make entry per version
+
+        if name.lower() == 'cloudsigma':
+            from libcloud.compute.drivers.cloudsigma import \
+                CloudSigma_2_0_NodeDriver
+            cls = CloudSigma_2_0_NodeDriver
+        elif name.lower() == 'opennebula':
+            from libcloud.compute.drivers.opennebula import \
+                OpenNebula_3_8_NodeDriver
+            cls = OpenNebula_3_8_NodeDriver
+
         if name.lower() in IGNORED_PROVIDERS:
             continue
 
