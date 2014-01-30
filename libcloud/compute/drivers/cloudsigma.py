@@ -1479,6 +1479,34 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         response = self.connection.request(action=action, method='DELETE')
         return response.status == httplib.NO_CONTENT
 
+    # Availability groups extension methods
+
+    def ex_list_servers_availability_groups(self):
+        """
+        Return which running servers share the same physical compute host.
+
+        :return: A list of server UUIDs which share the same physical compute
+                 host. Servers which share the same host will be stored under
+                 the same list index.
+        :rtype: ``list`` of ``list``
+        """
+        action = '/servers/availability_groups/'
+        response = self.connection.request(action=action, method='GET')
+        return response.object
+
+    def ex_list_drives_availability_groups(self):
+        """
+        Return which drives share the same physical storage host.
+
+        :return: A list of drive UUIDs which share the same physical storage
+                 host. Drives which share the same host will be stored under
+                 the same list index.
+        :rtype: ``list`` of ``list``
+        """
+        action = '/drives/availability_groups/'
+        response = self.connection.request(action=action, method='GET')
+        return response.object
+
     # Tag extension methods
 
     def ex_list_tags(self):

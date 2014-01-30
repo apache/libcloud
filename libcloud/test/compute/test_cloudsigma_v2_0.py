@@ -356,6 +356,17 @@ class CloudSigmaAPI20BaseTestCase(object):
         capabilities = self.driver.ex_list_capabilities()
         self.assertEqual(capabilities['servers']['cpu']['min'], 250)
 
+    def test_ex_list_servers_availability_groups(self):
+        groups = self.driver.ex_list_servers_availability_groups()
+        self.assertEqual(len(groups), 3)
+        self.assertEqual(len(groups[0]), 2)
+        self.assertEqual(len(groups[2]), 1)
+
+    def test_ex_list_drives_availability_groups(self):
+        groups = self.driver.ex_list_drives_availability_groups()
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(len(groups[0]), 11)
+
     def test_wait_for_drive_state_transition_timeout(self):
         drive = self.driver.ex_list_drives()[0]
         state = 'timeout'
@@ -568,6 +579,14 @@ class CloudSigmaMockHttp(MockHttpTestCase):
 
     def _api_2_0_capabilities(self, method, url, body, headers):
         body = self.fixtures.load('capabilities.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_2_0_servers_availability_groups(self, method, url, body, headers):
+        body = self.fixtures.load('servers_avail_groups.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_2_0_drives_availability_groups(self, method, url, body, headers):
+        body = self.fixtures.load('drives_avail_groups.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
