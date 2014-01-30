@@ -120,10 +120,15 @@ class CloudFilesConnection(OpenStackBaseConnection):
         self.use_internal_url = use_internal_url
 
     def _get_endpoint_key(self):
-        endpoint_key = INTERNAL_ENDPOINT_KEY if self.use_internal_url else PUBLIC_ENDPOINT_KEY
+        if self.use_internal_url:
+            endpoint_key = INTERNAL_ENDPOINT_KEY
+        else:
+            endpoint_key = PUBLIC_ENDPOINT_KEY
 
         if self.cdn_request:
-            endpoint_key = PUBLIC_ENDPOINT_KEY  # cdn endpoints don't have internal urls
+            # cdn endpoints don't have internal urls
+            endpoint_key = PUBLIC_ENDPOINT_KEY
+
         return endpoint_key
 
     def get_endpoint(self):
