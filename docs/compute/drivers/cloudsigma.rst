@@ -125,6 +125,37 @@ servers tagged with ``database-server``.
 .. literalinclude:: /examples/compute/cloudsigma/attach_firewall_policy.py
    :language: python
 
+7. Starting a server in a different availability group using avoid functionality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CloudSigma allows you to specify a list of server UUIDs which to avoid when
+starting a server.
+
+This helps make your infrastructure more highly available and is useful when
+you want to create a server in a different availability zone than the existing
+server.
+
+The example bellow shows how to create a new server in a different availability
+zone from all the existing servers.
+
+Keep in mind that `as noted in the CloudSigma documentation
+<https://zrh.cloudsigma.com/docs/availability_groups.html#general-notes-on-avoid-functionality>`_,
+this functionality uses the best effort mode. This means that the request might
+succeed even if the avoid can not be satisfied and the requested resource ends
+in the same availability group as an avoid resource.
+
+.. literalinclude:: /examples/compute/cloudsigma/create_node_ex_avoid.py
+   :language: python
+
+8. Retrieving the account balance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example shows how to retrieve the account balance. The method returns a
+dictionary with two keys - ``balance`` and ``currency``.
+
+.. literalinclude:: /examples/compute/cloudsigma/get_account_balance.py
+   :language: python
+
 API Docs
 --------
 
