@@ -42,7 +42,31 @@ here for completeness.
 .. literalinclude:: /examples/compute/cloudsigma/connect_to_api_1_0.py
    :language: python
 
-3. Create a server using a custom node size
+3. Listing available sizes, images and drives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In Libcloud, a :class:`libcloud.compute.base.NodeSize` represents a physical
+configuration of a server and a :class:`libcloud.compute.base.NodeImage`
+represents an operating system.
+
+To comply with a standard Libcloud API,
+:class:`libcloud.compute.base.NodeDriver.list_images` method only returns
+available pre-installed library images. Those images can be passed directly
+to
+:class:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.create_node`
+method and used to create a server.
+
+If you want to list all the available images and drives, you should use
+:class:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_drives`
+method.
+
+The example bellow shows how to list all the available sizes, images and
+drives.
+
+.. literalinclude:: /examples/compute/cloudsigma/list_sizes_images_drives.py
+   :language: python
+
+4. Create a server using a custom node size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Unlike most of the other cloud providers out there, CloudSigma is not limited
@@ -72,7 +96,7 @@ You can find exact limits and free capacity for your account's location using
 :meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_capabilities`
 method.
 
-4. Associate metadata with a server upon creation
+5. Associate metadata with a server upon creation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to associate arbitrary key / value pairs with each
@@ -81,7 +105,7 @@ server. This examples shows how to do that upon server creation.
 .. literalinclude:: /examples/compute/cloudsigma/create_server_with_metadata.py
    :language: python
 
-4. Add a tag to the server
+6. Add a tag to the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to ogranize resources such as servers and drivers by
@@ -90,7 +114,7 @@ tagging them. This example shows how to do that.
 .. literalinclude:: /examples/compute/cloudsigma/tag_server.py
    :language: python
 
-5. Open a VNC tunnel to the server
+7. Open a VNC tunnel to the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to connect and manage your server using `VNC`_. To
@@ -115,7 +139,7 @@ method.
 .. literalinclude:: /examples/compute/cloudsigma/open_vnc_tunnel.py
    :language: python
 
-6. Attach firewall policy to the server
+8. Attach firewall policy to the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to restrict access to your servers by using firewall
@@ -125,7 +149,7 @@ servers tagged with ``database-server``.
 .. literalinclude:: /examples/compute/cloudsigma/attach_firewall_policy.py
    :language: python
 
-7. Starting a server in a different availability group using avoid functionality
+9. Starting a server in a different availability group using avoid functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to specify a list of server UUIDs which to avoid when
@@ -147,8 +171,8 @@ in the same availability group as an avoid resource.
 .. literalinclude:: /examples/compute/cloudsigma/create_node_ex_avoid.py
    :language: python
 
-8. Retrieving the account balance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+10. Retrieving the account balance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example shows how to retrieve the account balance. The method returns a
 dictionary with two keys - ``balance`` and ``currency``.
