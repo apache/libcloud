@@ -647,7 +647,7 @@ class OpenNebula_1_4_NodeDriver(OpenNebulaNodeDriver):
     OpenNebula.org node driver for OpenNebula.org v1.4.
     """
 
-    pass
+    name = 'OpenNebula (v1.4)'
 
 
 class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
@@ -655,6 +655,8 @@ class OpenNebula_2_0_NodeDriver(OpenNebulaNodeDriver):
     OpenNebula.org node driver for OpenNebula.org v2.0 through OpenNebula.org
     v2.2.
     """
+
+    name = 'OpenNebula (v2.0 - v2.2)'
 
     def create_node(self, **kwargs):
         """
@@ -951,6 +953,8 @@ class OpenNebula_3_0_NodeDriver(OpenNebula_2_0_NodeDriver):
     OpenNebula.org node driver for OpenNebula.org v3.0.
     """
 
+    name = 'OpenNebula (v3.0)'
+
     def ex_node_set_save_name(self, node, name):
         """
         Build action representation and instruct node to commit action.
@@ -1020,6 +1024,8 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
     OpenNebula.org node driver for OpenNebula.org v3.2.
     """
 
+    name = 'OpenNebula (v3.2)'
+
     def reboot_node(self, node):
         return self.ex_node_action(node, ACTION.REBOOT)
 
@@ -1085,6 +1091,8 @@ class OpenNebula_3_6_NodeDriver(OpenNebula_3_2_NodeDriver):
     """
     OpenNebula.org node driver for OpenNebula.org v3.6.
     """
+
+    name = 'OpenNebula (v3.6)'
 
     def create_volume(self, size, name, location=None, snapshot=None):
         storage = ET.Element('STORAGE')
@@ -1205,6 +1213,7 @@ class OpenNebula_3_8_NodeDriver(OpenNebula_3_6_NodeDriver):
     OpenNebula.org node driver for OpenNebula.org v3.8.
     """
 
+    name = 'OpenNebula (v3.8)'
     plain_auth = API_PLAIN_AUTH
 
     def _to_sizes(self, object):
