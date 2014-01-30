@@ -30,7 +30,7 @@ Storage
 
 - Allow user to use an internal endpoint in the CloudFiles driver by passing
   "use_internal_url" argument to the driver constructor.
-  (GITHUB-229)
+  (GITHUB-229, GITHUB-231)
   [John Obelenus]
 
 DNS
