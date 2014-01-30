@@ -1294,7 +1294,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         drives = [self._to_drive(data=item) for item in response['objects']]
         return drives
 
-    def ex_create_drive(self, name, size, media='disk'):
+    def ex_create_drive(self, name, size, media='disk', ex_avoid=None):
         """
         Create a new drive.
 
@@ -1306,20 +1306,34 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         :param media: Drive media type (cdrom, disk).
         :type media: ``str``
+
+        :param ex_avoid: A list of other drive uuids to avoid when
+                         creating this drive. If provided, drive will
+                         attempt to be created on a different
+                         physical infrastructure from other drives
+                         specified using this argument. (optional)
+        :type ex_avoid: ``list``
+
+        :return: Created drive object.
+        :rtype: :class:`.CloudSigmaDrive`
         """
+        params = {}
         data = {
             'name': name,
             'size': size,
             'media': media
         }
 
+        if ex_avoid:
+            params['avoid'] = ','.join(ex_avoid)
+
         action = '/drives/'
         response = self.connection.request(action=action, method='POST',
-                                           data=data).object
+                                           params=params, data=data).object
         drive = self._to_drive(data=response['objects'][0])
         return drive
 
-    def ex_clone_drive(self, drive, name=None):
+    def ex_clone_drive(self, drive, name=None, ex_avoid=None):
         """
         Clone a library or a standard drive.
 
@@ -1330,17 +1344,29 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         :param name: Optional name for the cloned drive.
         :type name: ``str``
 
+        :param ex_avoid: A list of other drive uuids to avoid when
+                         creating this drive. If provided, drive will
+                         attempt to be created on a different
+                         physical infrastructure from other drives
+                         specified using this argument. (optional)
+        :type ex_avoid: ``list``
+
         :return: New cloned drive.
         :rtype: :class:`.CloudSigmaDrive`
         """
+        params = {}
         data = {}
+
+        if ex_avoid:
+            params['avoid'] = ','.join(ex_avoid)
 
         if name:
             data['name'] = name
 
         path = '/drives/%s/action/' % (drive.id)
         response = self._perform_action(path=path, action='clone',
-                                        method='POST', data=data)
+                                        params=params, data=data,
+                                        method='POST')
         drive = self._to_drive(data=response.object['objects'][0])
         return drive
 
