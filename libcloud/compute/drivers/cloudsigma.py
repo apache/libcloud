@@ -1060,7 +1060,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         return images
 
     def create_node(self, name, size, image, ex_metadata=None,
-                    ex_vnc_password=None, ex_avoid=None):
+                    ex_vnc_password=None, ex_avoid=None, ex_vlan=None):
         """
         Create a new server.
 
@@ -1082,6 +1082,11 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         :param ex_avoid: A list of server UUIDs to avoid when starting this
                          node. (optional)
         :type ex_avoid: ``list``
+
+        :param ex_vlan: Optional UUID of a VLAN network to use. If specified,
+        server will have two nics assigned - 1 with a public ip and 1 with the
+        provided VLAN.
+        :type ex_vlan: ``str``
         """
         # Only pre-installed images can be used with create_node
 
@@ -1123,24 +1128,37 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             data['meta'] = ex_metadata
 
         # Assign 1 public interface (DHCP) to the node
-        data['nics'] = [
-            {
-                'boot_order': None,
-                'ip_v4_conf': {
-                    'conf': 'dhcp',
-                },
-                'ip_v6_conf': None
-            }
-        ]
+        nic = {
+            'boot_order': None,
+            'ip_v4_conf': {
+                'conf': 'dhcp',
+            },
+            'ip_v6_conf': None
+        }
 
-        data['drives'] = [
-            {
-                'boot_order': 1,
-                'dev_channel': '0:0',
-                'device': 'ide',
-                'drive': drive.id
+        nics = [nic]
+
+        if ex_vlan:
+            # Assign another interface for VLAN
+            nic = {
+                'boot_order': None,
+                'ip_v4_conf': None,
+                'ip_v6_conf': None,
+                'vlan': ex_vlan
             }
-        ]
+            nics.append(nic)
+
+        drive = {
+            'boot_order': 1,
+            'dev_channel': '0:0',
+            'device': 'ide',
+            'drive': drive.id
+        }
+
+        drives = [drive]
+
+        data['nics'] = nics
+        data['drives'] = drives
 
         action = '/servers/'
         response = self.connection.request(action=action, method='POST',
