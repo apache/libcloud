@@ -288,9 +288,6 @@ Body::
 
     pip install apache-libcloud
 
-    It is possible that the file hasn't been synced to all the mirrors yet. If this
-    is the case, please use the main Apache mirror - http://www.apache.org/dist/libcloud.
-
     Upgrading
 
     If you have installed Libcloud using pip you can also use it to upgrade it:
@@ -348,9 +345,6 @@ Body::
     or installed using pip:
 
     pip install apache-libcloud
-
-    It is possible that the file hasn't been synced to all the mirrors yet. If this
-    is the case, please use the main Apache mirror - http://www.apache.org/dist/libcloud.
 
     Upgrading
 
