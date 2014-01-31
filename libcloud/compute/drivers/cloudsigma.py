@@ -1110,7 +1110,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         # 2. Resize drive to the desired disk size if the desired disk size is
         # larger than the cloned drive size.
         if drive_size > drive.size:
-            drive = self.ex_resize_drive(drive=drive, size=drive_size)
+            pass
+            #drive = self.ex_resize_drive(drive=drive, size=drive_size)
 
         # Wait for drive resize to finish
         drive = self._wait_for_drive_state_transition(drive=drive,
@@ -1151,9 +1152,11 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         drive = {
             'boot_order': 1,
             'dev_channel': '0:0',
-            'device': 'ide',
+            'device': 'virtio',
             'drive': drive.id
         }
+
+        # ide for cdrom
 
         drives = [drive]
 
