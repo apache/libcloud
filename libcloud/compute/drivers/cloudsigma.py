@@ -1084,8 +1084,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         :type ex_avoid: ``list``
 
         :param ex_vlan: Optional UUID of a VLAN network to use. If specified,
-        server will have two nics assigned - 1 with a public ip and 1 with the
-        provided VLAN.
+                        server will have two nics assigned - 1 with a public ip
+                        and 1 with the provided VLAN.
         :type ex_vlan: ``str``
         """
         # Only pre-installed images can be used with create_node
