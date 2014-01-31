@@ -165,6 +165,15 @@ class CloudSigmaAPI20BaseTestCase(object):
         status = self.driver.ex_close_vnc_tunnel(node=node)
         self.assertTrue(status)
 
+    def test_ex_list_library_drives(self):
+        drives = self.driver.ex_list_library_drives()
+
+        drive = drives[0]
+        self.assertEqual(drive.name, 'IPCop 2.0.2')
+        self.assertEqual(drive.size, 1000000000)
+        self.assertEqual(drive.media, 'cdrom')
+        self.assertEqual(drive.status, 'unmounted')
+
     def test_ex_list_user_drives(self):
         drives = self.driver.ex_list_user_drives()
 
