@@ -57,7 +57,7 @@ to
 method and used to create a server.
 
 If you want to list all the available images and drives, you should use
-:class:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_drives`
+:class:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_library_drives`
 method.
 
 The example bellow shows how to list all the available sizes, images and
@@ -114,6 +114,23 @@ and one with the provided VLAN.
 .. literalinclude:: /examples/compute/cloudsigma/create_server_with_vlan.py
    :language: python
 
+Create a server using an installation CD
+----------------------------------------
+
+This example shows how to create a server using an installation CD instead
+of a pre-installed drive (all the other create server examples in this section
+assume you are using a pre-installed drive).
+
+Creating a server using an installation CD means that you can't directly use
+the server after it has been created. Instead, you need to connect to the
+server using VNC and walk-through the installation process.
+
+The example bellow shows how to create a server using FreeBSD 8.2 installation
+CD.
+
+.. literalinclude:: /examples/compute/cloudsigma/create_server_using_installation_cd.py
+   :language: python
+
 Associate metadata with a server upon creation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -157,8 +174,8 @@ method.
 .. literalinclude:: /examples/compute/cloudsigma/open_vnc_tunnel.py
    :language: python
 
-8. Attach firewall policy to the server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Attach firewall policy to the server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to restrict access to your servers by using firewall
 policies. This example shows how to attach an existing policy to all your
@@ -167,8 +184,8 @@ servers tagged with ``database-server``.
 .. literalinclude:: /examples/compute/cloudsigma/attach_firewall_policy.py
    :language: python
 
-9. Starting a server in a different availability group using avoid functionality
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Starting a server in a different availability group using avoid functionality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to specify a list of server UUIDs which to avoid when
 starting a server.
