@@ -1089,7 +1089,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
                         and 1 with the provided VLAN.
         :type ex_vlan: ``str``
         """
-        # Only pre-installed images can be used with create_node
+        is_installation_cd = self._is_installation_cd(image=image)
 
         if ex_vnc_password:
             vnc_password = ex_vnc_password
@@ -1111,8 +1111,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         # 2. Resize drive to the desired disk size if the desired disk size is
         # larger than the cloned drive size.
         if drive_size > drive.size:
-            pass
-            #drive = self.ex_resize_drive(drive=drive, size=drive_size)
+            drive = self.ex_resize_drive(drive=drive, size=drive_size)
 
         # Wait for drive resize to finish
         drive = self._wait_for_drive_state_transition(drive=drive,
@@ -1151,7 +1150,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             nics.append(nic)
 
         # Need to use IDE for installation CDs
-        if isinstance(image, CloudSigmaDrive) and image.media == 'cdrom':
+        if is_installation_cd:
             device_type = 'ide'
         else:
             device_type = 'virtio'
@@ -1162,8 +1161,6 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             'device': device_type,
             'drive': drive.id
         }
-
-        # ide for cdrom
 
         drives = [drive]
 
@@ -1995,6 +1992,17 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         response = self.connection.request(action=path, method=method,
                                            params=params, data=data)
         return response
+
+    def _is_installation_cd(self, image):
+        """
+        Detect if the provided image is an installation CD.
+
+        :rtype: ``bool``
+        """
+        if isinstance(image, CloudSigmaDrive) and image.media == 'cdrom':
+            return True
+
+        return False
 
     def _extract_values(self, obj, keys):
         """
