@@ -961,11 +961,15 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
 
         self.assertEqual('12065', node.id)
-        self.assertEqual('50.57.94.35', node.public_ips[0])
-        self.assertEqual(
-            '2001:4801:7808:52:16:3eff:fe47:788a', node.public_ips[1])
+        #test public IPv4
+        self.assertTrue('12.16.18.28' in node.public_ips)
+        self.assertTrue('50.57.94.35' in node.public_ips)
+        #test public IPv6
+        self.assertTrue(
+            '2001:4801:7808:52:16:3eff:fe47:788a' in node.public_ips)
+        #test private IPv4
         self.assertTrue('10.182.64.34' in node.private_ips)
-        self.assertTrue('12.16.18.28' in node.private_ips)
+        #test private IPv6
         self.assertTrue(
             'fec0:4801:7808:52:16:3eff:fe60:187d' in node.private_ips)
 
