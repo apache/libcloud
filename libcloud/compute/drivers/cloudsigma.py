@@ -689,7 +689,7 @@ class CloudSigmaSubscription(object):
     """
 
     def __init__(self, id, resource, amount, period, status, price, start_time,
-                 end_time):
+                 end_time, auto_renew):
         """
         :param id: Subscription ID.
         :type id: ``str``
@@ -711,6 +711,9 @@ class CloudSigmaSubscription(object):
 
         :param end_time: End time for this subscription.
         :type end_time: ``datetime.datetime``
+
+        :param auto_renew: True if the subscription is auto renewed.
+        :type auto_renew: ``bool``
         """
         self.id = id
         self.resource = resource
@@ -720,6 +723,7 @@ class CloudSigmaSubscription(object):
         self.price = price
         self.start_time = start_time
         self.end_time = end_time
+        self.auto_renew = auto_renew
 
     def __str__(self):
         return self.__repr__()
@@ -1908,7 +1912,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
                                               status=data['status'],
                                               price=data['price'],
                                               start_time=start_time,
-                                              end_time=end_time)
+                                              end_time=end_time,
+                                              auto_renew=data['auto_renew'])
         return subscription
 
     def _to_firewall_policy(self, data):
