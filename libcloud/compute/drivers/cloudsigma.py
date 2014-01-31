@@ -1065,12 +1065,20 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         Create a new server.
 
-        Server creation consists of 4 separate steps:
+        Server creation consists multiple steps depending on the type of the
+        image used.
 
-        1. Clone provided library drive so we can use it
-        2. Resize cloned drive to the desired size
-        3. Create a server and attach cloned drive
-        4. Start a server.
+        1. Installation CD:
+
+            1. Create a server and attach installation cd
+            2. Start a server
+
+        2. Pre-installed image:
+
+            1. Clone provided library drive so we can use it
+            2. Resize cloned drive to the desired size
+            3. Create a server and attach cloned drive
+            4. Start a server
 
         :param ex_metadata: Key / value pairs to associate with the
                             created node. (optional)
@@ -1101,21 +1109,25 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         drive_size = (size.disk * 1024 * 1024 * 1024)  # size is specified in
                                                        # GB
 
-        # 1. Clone library drive so we can use it
-        drive = self.ex_clone_drive(drive=image, name=drive_name)
+        if not is_installation_cd:
+            # 1. Clone library drive so we can use it
+            drive = self.ex_clone_drive(drive=image, name=drive_name)
 
-        # Wait for drive clone to finish
-        drive = self._wait_for_drive_state_transition(drive=drive,
-                                                      state='unmounted')
+            # Wait for drive clone to finish
+            drive = self._wait_for_drive_state_transition(drive=drive,
+                                                          state='unmounted')
 
-        # 2. Resize drive to the desired disk size if the desired disk size is
-        # larger than the cloned drive size.
-        if drive_size > drive.size:
-            drive = self.ex_resize_drive(drive=drive, size=drive_size)
+            # 2. Resize drive to the desired disk size if the desired disk size
+            # is larger than the cloned drive size.
+            if drive_size > drive.size:
+                drive = self.ex_resize_drive(drive=drive, size=drive_size)
 
-        # Wait for drive resize to finish
-        drive = self._wait_for_drive_state_transition(drive=drive,
-                                                      state='unmounted')
+            # Wait for drive resize to finish
+            drive = self._wait_for_drive_state_transition(drive=drive,
+                                                          state='unmounted')
+        else:
+            # No need to clone installation CDs
+            drive = image
 
         # 3. Create server and attach cloned drive
         # ide 0:0
