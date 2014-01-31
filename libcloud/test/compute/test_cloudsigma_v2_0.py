@@ -347,6 +347,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(subscription.resource, 'vlan')
         self.assertEqual(subscription.price, '10.26666666666666666666666667')
         self.assertEqual(subscription.auto_renew, False)
+        self.assertEqual(subscription.subscribed_object, '2494079f-8376-40bf-9b37-34d633b8a7b7')
 
     def test_ex_list_subscriptions_status_filterting(self):
         CloudSigmaMockHttp.type = 'STATUS_FILTER'

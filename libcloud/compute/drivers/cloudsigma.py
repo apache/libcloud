@@ -689,7 +689,7 @@ class CloudSigmaSubscription(object):
     """
 
     def __init__(self, id, resource, amount, period, status, price, start_time,
-                 end_time, auto_renew):
+                 end_time, auto_renew, subscribed_object=None):
         """
         :param id: Subscription ID.
         :type id: ``str``
@@ -714,6 +714,9 @@ class CloudSigmaSubscription(object):
 
         :param auto_renew: True if the subscription is auto renewed.
         :type auto_renew: ``bool``
+
+        :param subscribed_object: Optional UUID of the subscribed object.
+        :type subscribed_object: ``str``
         """
         self.id = id
         self.resource = resource
@@ -724,13 +727,16 @@ class CloudSigmaSubscription(object):
         self.start_time = start_time
         self.end_time = end_time
         self.auto_renew = auto_renew
+        self.subscribed_object = subscribed_object
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return ('<CloudSigmaSubscription id=%s, resource=%s, amount=%s>' %
-                (self.id, self.resource, self.amount))
+        return ('<CloudSigmaSubscription id=%s, resource=%s, amount=%s, '
+                'period=%s, object_uuid=%s>' %
+                (self.id, self.resource, self.amount, self.period,
+                 self.subscribed_object))
 
 
 class CloudSigmaTag(object):
@@ -1904,6 +1910,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
     def _to_subscription(self, data):
         start_time = parse_date(data['start_time'])
         end_time = parse_date(data['end_time'])
+        obj_uuid = data['subscribed_object']
 
         subscription = CloudSigmaSubscription(id=data['id'],
                                               resource=data['resource'],
@@ -1913,7 +1920,8 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
                                               price=data['price'],
                                               start_time=start_time,
                                               end_time=end_time,
-                                              auto_renew=data['auto_renew'])
+                                              auto_renew=data['auto_renew'],
+                                              subscribed_object=obj_uuid)
         return subscription
 
     def _to_firewall_policy(self, data):
