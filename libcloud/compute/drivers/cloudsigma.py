@@ -1150,10 +1150,16 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             }
             nics.append(nic)
 
+        # Need to use IDE for installation CDs
+        if isinstance(image, CloudSigmaDrive) and image.media == 'cdrom':
+            device_type = 'ide'
+        else:
+            device_type = 'virtio'
+
         drive = {
             'boot_order': 1,
             'dev_channel': '0:0',
-            'device': 'virtio',
+            'device': device_type,
             'drive': drive.id
         }
 
