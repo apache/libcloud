@@ -1,7 +1,7 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-HPCLOUD_AUTH_URL = 'https://region-a.geo-1.identity.hpcloudsvc.com:35357'
+HPCLOUD_AUTH_URL = 'https://region-a.geo-1.identity.hpcloudsvc.com:35357/v2.0/tokens'
 OpenStack = get_driver(Provider.OPENSTACK)
 
 #HP Cloud US West AZ 1
