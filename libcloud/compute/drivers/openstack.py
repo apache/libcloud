@@ -37,6 +37,7 @@ except ImportError:
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.types import MalformedResponseError, ProviderError
+from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
@@ -1987,7 +1988,15 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             if label in public_networks_labels:
                 public_ips.extend(ips)
             else:
-                private_ips.extend(ips)
+                for ip in ips:
+                    #is_private_subnet does not check for ipv6
+                    try:
+                        if is_private_subnet(ip):
+                            private_ips.append(ip)
+                        else:
+                            public_ips.append(ip)
+                    except:
+                        private_ips.append(ip)
 
         # Sometimes 'image' attribute is not present if the node is in an error
         # state
