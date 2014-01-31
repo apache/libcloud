@@ -332,10 +332,20 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(len(subscriptions), 5)
         self.assertEqual(subscription.id, '7272')
         self.assertEqual(subscription.resource, 'vlan')
-        self.assertEqual(subscription.amount, '1')
+        self.assertEqual(subscription.amount, 1)
         self.assertEqual(subscription.period, '345 days, 0:00:00')
         self.assertEqual(subscription.status, 'active')
         self.assertEqual(subscription.price, '0E-20')
+
+    def test_ex_create_subscription(self):
+        CloudSigmaMockHttp.type = 'CREATE_SUBSCRIPTION'
+        subscription = self.driver.ex_create_subscription(amount=1,
+                                                          period='1 month',
+                                                          resource='vlan')
+        self.assertEqual(subscription.amount, 1)
+        self.assertEqual(subscription.period, '1 month')
+        self.assertEqual(subscription.resource, 'vlan')
+        self.assertEqual(subscription.price, '10.26666666666666666666666667')
 
     def test_ex_list_subscriptions_status_filterting(self):
         CloudSigmaMockHttp.type = 'STATUS_FILTER'
@@ -575,6 +585,10 @@ class CloudSigmaMockHttp(MockHttpTestCase):
 
     def _api_2_0_subscriptions_7272_action_auto_renew(self, method, url, body, headers):
         body = ''
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_2_0_subscriptions_CREATE_SUBSCRIPTION(self, method, url, body, headers):
+        body = self.fixtures.load('create_subscription.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_2_0_capabilities(self, method, url, body, headers):

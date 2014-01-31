@@ -1736,6 +1736,40 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
                                         method='POST')
         return response.status == httplib.OK
 
+    def ex_create_subscription(self, amount, period, resource,
+                               auto_renew=False):
+        """
+        Create a new subscription.
+
+        :param amount: Subscription amount. For example, in dssd case this
+                       would be disk size in gigabytes.
+        :type amount: ``int``
+
+        :param period: Subscription period. For example: 30 days, 1 week, 1
+                                            month, ...
+        :type period: ``str``
+
+        :param resource: Resource the purchase the subscription for.
+        :type resource: ``str``
+
+        :param auto_renew: True to automatically renew the subscription.
+        :type auto_renew: ``bool``
+        """
+        data = [
+            {
+                'amount': amount,
+                'period': period,
+                'auto_renew': auto_renew,
+                'resource': resource
+            }
+        ]
+
+        response = self.connection.request(action='/subscriptions/',
+                                           data=data, method='POST')
+        data = response.object['objects'][0]
+        subscription = self._to_subscription(data=data)
+        return subscription
+
     # Misc extension methods
 
     def ex_list_capabilities(self):
@@ -1869,7 +1903,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
 
         subscription = CloudSigmaSubscription(id=data['id'],
                                               resource=data['resource'],
-                                              amount=data['amount'],
+                                              amount=int(data['amount']),
                                               period=data['period'],
                                               status=data['status'],
                                               price=data['price'],
