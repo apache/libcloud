@@ -263,6 +263,9 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
     def get_container_cdn_url(self, container):
         container_name = container.name
+        return self.get_container_cdn_url_from_name(container_name)
+
+    def get_container_cdn_url_from_name(self, container_name):
         response = self.connection.request('/%s' % (container_name),
                                            method='HEAD',
                                            cdn_request=True)
