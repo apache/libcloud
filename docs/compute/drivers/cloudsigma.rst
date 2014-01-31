@@ -26,14 +26,14 @@ Available arguments:
 Examples
 --------
 
-1. Connect to zrh region using new API v2.0
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Connect to zrh region using new API v2.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: /examples/compute/cloudsigma/connect_to_api_2_0.py
    :language: python
 
-2. Connect to zrh region using deprecated API v1.0
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Connect to zrh region using deprecated API v1.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As noted above, API 1.0 has been deprecated and you are strongly encouraged to
 migrate any code which uses API 1.0 to API 2.0. This example is only included
@@ -42,8 +42,8 @@ here for completeness.
 .. literalinclude:: /examples/compute/cloudsigma/connect_to_api_1_0.py
    :language: python
 
-3. Listing available sizes, images and drives
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Listing available sizes, images and drives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In Libcloud, a :class:`libcloud.compute.base.NodeSize` represents a physical
 configuration of a server and a :class:`libcloud.compute.base.NodeImage`
@@ -66,8 +66,8 @@ drives.
 .. literalinclude:: /examples/compute/cloudsigma/list_sizes_images_drives.py
    :language: python
 
-4. Create a server using a custom node size
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a server using a custom node size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Unlike most of the other cloud providers out there, CloudSigma is not limited
 to pre-defined instance sizes and allows you to specify your own custom size
@@ -96,8 +96,26 @@ You can find exact limits and free capacity for your account's location using
 :meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_capabilities`
 method.
 
-5. Associate metadata with a server upon creation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a server with a VLAN
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, each server created with Libcloud has one network interface with a
+public IP assigned.
+
+Besides networks with a public IP, CloudSigma also allows you to create and use
+VLANs.
+
+This example shows how to do that. It first creates a VLAN by purchasing a
+subscription and then assigns the create VLAN to a node upon creation.
+
+Created node will have two network interfaces assigned - one with a public IP
+and one with the provided VLAN.
+
+.. literalinclude:: /examples/compute/cloudsigma/create_server_with_vlan.py
+   :language: python
+
+Associate metadata with a server upon creation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to associate arbitrary key / value pairs with each
 server. This examples shows how to do that upon server creation.
@@ -105,8 +123,8 @@ server. This examples shows how to do that upon server creation.
 .. literalinclude:: /examples/compute/cloudsigma/create_server_with_metadata.py
    :language: python
 
-6. Add a tag to the server
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Add a tag to the server
+~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to ogranize resources such as servers and drivers by
 tagging them. This example shows how to do that.
@@ -114,8 +132,8 @@ tagging them. This example shows how to do that.
 .. literalinclude:: /examples/compute/cloudsigma/tag_server.py
    :language: python
 
-7. Open a VNC tunnel to the server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Open a VNC tunnel to the server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CloudSigma allows you to connect and manage your server using `VNC`_. To
 connect to the server using VNC, you can use clients such as ``vinagre`` or
@@ -183,8 +201,8 @@ method as displayed bellow.
 Both of those methods return a ``list``. Servers and drives which share the same
 physical host will be stored under the same index in the returned list.
 
-10. Retrieving the account balance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieving the account balance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example shows how to retrieve the account balance. The method returns a
 dictionary with two keys - ``balance`` and ``currency``.
