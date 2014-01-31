@@ -14,6 +14,12 @@
 # limitations under the License.
 
 import sys
+
+try:
+    import simplejson as json
+except:
+    import json
+
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
@@ -93,6 +99,19 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(node.name, 'test node')
         self.assertEqual(len(node.extra['nics']), 1)
         self.assertEqual(node.extra['nics'][0]['ip_v4_conf']['conf'], 'dhcp')
+
+    def test_create_node_with_vlan(self):
+        image = self.driver.list_images()[0]
+        size = self.driver.list_sizes()[0]
+
+        vlan_uuid = '39ae851d-433f-4ac2-a803-ffa24cb1fa3e'
+
+        node = self.driver.create_node(name='test node vlan', size=size,
+                                       image=image, ex_vlan=vlan_uuid)
+        self.assertEqual(node.name, 'test node vlan')
+        self.assertEqual(len(node.extra['nics']), 2)
+        self.assertEqual(node.extra['nics'][0]['ip_v4_conf']['conf'], 'dhcp')
+        self.assertEqual(node.extra['nics'][1]['vlan']['uuid'], vlan_uuid)
 
     def test_destroy_node(self):
         status = self.driver.destroy_node(node=self.node)
@@ -436,7 +455,15 @@ class CloudSigmaMockHttp(MockHttpTestCase):
     def _api_2_0_servers(self, method, url, body, headers):
         if method == 'POST':
             # create_node
-            body = self.fixtures.load('servers_create.json')
+
+            parsed = json.loads(body)
+
+            if 'vlan' in parsed['name']:
+                self.assertEqual(len(parsed['nics']), 2)
+                body = self.fixtures.load('servers_create_with_vlan.json')
+            else:
+                body = self.fixtures.load('servers_create.json')
+
             return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
     def _api_2_0_servers_9de75ed6_fd33_45e2_963f_d405f31fd911_action_start(self, method, url, body, headers):
