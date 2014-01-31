@@ -165,8 +165,8 @@ class CloudSigmaAPI20BaseTestCase(object):
         status = self.driver.ex_close_vnc_tunnel(node=node)
         self.assertTrue(status)
 
-    def test_ex_list_drives(self):
-        drives = self.driver.ex_list_drives()
+    def test_ex_list_user_drives(self):
+        drives = self.driver.ex_list_user_drives()
 
         drive = drives[0]
         self.assertEqual(drive.name, 'test node 2-drive')
@@ -185,14 +185,14 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(drive.media, 'disk')
 
     def test_ex_clone_drive(self):
-        drive = self.driver.ex_list_drives()[0]
+        drive = self.driver.ex_list_user_drives()[0]
         cloned_drive = self.driver.ex_clone_drive(drive=drive,
                                                   name='cloned drive')
 
         self.assertEqual(cloned_drive.name, 'cloned drive')
 
     def test_ex_resize_drive(self):
-        drive = self.driver.ex_list_drives()[0]
+        drive = self.driver.ex_list_user_drives()[0]
 
         size = 1111 * 1024 * 1024
 
@@ -399,7 +399,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(len(groups[0]), 11)
 
     def test_wait_for_drive_state_transition_timeout(self):
-        drive = self.driver.ex_list_drives()[0]
+        drive = self.driver.ex_list_user_drives()[0]
         state = 'timeout'
 
         expected_msg = 'Timed out while waiting for drive transition'
@@ -409,7 +409,7 @@ class CloudSigmaAPI20BaseTestCase(object):
                                 timeout=0.5)
 
     def test_wait_for_drive_state_transition_success(self):
-        drive = self.driver.ex_list_drives()[0]
+        drive = self.driver.ex_list_user_drives()[0]
         state = 'unmounted'
 
         drive = self.driver._wait_for_drive_state_transition(drive=drive,
