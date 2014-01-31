@@ -1046,13 +1046,14 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         """
         Return a list of available pre-installed library drives.
 
-        Note: If you want to list all the available library drives, use 
-        :meth:`ex_list_library_drives` method.
+        Note: If you want to list all the available library drives (both
+        pre-installed and installation CDs), use :meth:`ex_list_library_drives`
+        method.
         """
         response = self.connection.request(action='/libdrives/').object
         images = [self._to_image(data=item) for item in response['objects']]
 
-        # We filter out non pre-installed library drives by defafault because
+        # We filter out non pre-installed library drives by default because
         # they can't be used directly following a default Libcloud server
         # creation flow.
         images = [image for image in images if
@@ -1314,6 +1315,17 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         return response.status == httplib.ACCEPTED
 
     # Drive extension methods
+
+    def ex_list_library_drives(self):
+        """
+        Return a list of all the available library drives (pre-installed and
+        installation CDs).
+
+        :rtype: ``list`` of :class:`.CloudSigmaDrive` objects
+        """
+        response = self.connection.request(action='/libdrives/').object
+        drives = [self._to_drive(data=item) for item in response['objects']]
+        return drives
 
     def ex_list_user_drives(self):
         """
