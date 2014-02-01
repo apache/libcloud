@@ -5,6 +5,11 @@ CloudSigma Compute Driver Documentation
 data centers in Zurich, Switzerland, Las Vegas, United States and Washington DC,
 United States.
 
+.. figure:: /_static/images/provider_logos/cloudsigma.png
+    :align: center
+    :width: 300
+    :target: https://www.cloudsigma.com
+
 CloudSigma driver supports working with legacy `API v1.0`_ and a new and
 actively supported `API v2.0`_. API v1.0 has been deprecated and as such,
 you are strongly encouraged to migrate any existing code which uses API v1.0 to
