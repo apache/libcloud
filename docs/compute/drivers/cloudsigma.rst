@@ -277,6 +277,29 @@ method as displayed bellow.
 Both of those methods return a ``list``. Servers and drives which share the same
 physical host will be stored under the same index in the returned list.
 
+Purchasing a subscription
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A lot of resources such as SSDs, VLANs, IPs and others are created by
+purchasing a subscription.
+
+When you purchase a subscription you need to supply the following arguments:
+
+* ``amount`` - Subscription amount. Unit depends on the purchased resource.
+  For example, if you are purchasing a ``vlan`` resource, ``amount`` represents
+  a number of VLAN networks you want to purchase.
+* ``period`` - For how long to purchase the subscription. Example values:
+  ``1 month``, ``30 days``, etc.
+* ``resource`` - Resource to purchase the subscription for. Valid values:
+  ``cpu``, ``mem``, ``tx``, ``ip``, ``vlan``
+* ``auto_renew`` - ``True`` to auto renew the subscription when it expires.
+
+The example bellow shows how to purchase a single VLAN for a duration of
+30 days which will be automatically renewed when it expires.
+
+.. literalinclude:: /examples/compute/cloudsigma/create_vlan_subscription.py
+   :language: python
+
 Retrieving the account balance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
