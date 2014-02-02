@@ -27,6 +27,11 @@ Compute
   (LIBCLOUD-507, GITHUB-240)
   [Chris DeRamus]
 
+- Add "extra" dictionary to the CloudStackNode object and include more
+  attributes in the "extra" dictionary of the network and volume object.
+  (LIBCLOUD-506, GITHUB-239)
+  [Chris DeRamus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
