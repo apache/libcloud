@@ -31,6 +31,167 @@ from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.utils.networking import is_private_subnet
 
 
+"""
+Define the extra dictionary for specific resources
+"""
+RESOURCE_EXTRA_ATTRIBUTES_MAP = {
+    'network': {
+        'broadcast_domain_type': {
+            'key_name': 'broadcastdomaintype',
+            'transform_func': str
+        },
+        'traffic_type': {
+            'key_name': 'traffictype',
+            'transform_func': str
+        },
+        'zone_name': {
+            'key_name': 'zonename',
+            'transform_func': str
+        },
+        'network_offering_name': {
+            'key_name': 'networkofferingname',
+            'transform_func': str
+        },
+        'network_offeringdisplay_text': {
+            'key_name': 'networkofferingdisplaytext',
+            'transform_func': str
+        },
+        'network_offering_availability': {
+            'key_name': 'networkofferingavailability',
+            'transform_func': str
+        },
+        'is_system': {
+            'key_name': 'issystem',
+            'transform_func': str
+        },
+        'state': {
+            'key_name': 'state',
+            'transform_func': str
+        },
+        'dns1': {
+            'key_name': 'dns1',
+            'transform_func': str
+        },
+        'dns2': {
+            'key_name': 'dns2',
+            'transform_func': str
+        },
+        'type': {
+            'key_name': 'type',
+            'transform_func': str
+        },
+        'acl_type': {
+            'key_name': 'acltype',
+            'transform_func': str
+        },
+        'subdomain_access': {
+            'key_name': 'subdomainaccess',
+            'transform_func': str
+        },
+        'network_domain': {
+            'key_name': 'networkdomain',
+            'transform_func': str
+        },
+        'physical_network_id': {
+            'key_name': 'physicalnetworkid',
+            'transform_func': str
+        },
+        'can_use_for_deploy': {
+            'key_name': 'canusefordeploy',
+            'transform_func': str
+        }
+    },
+    'node': {
+        'haenable': {
+            'key_name': 'haenable',
+            'transform_func': str
+        },
+        'zone_id': {
+            'key_name': 'zoneid',
+            'transform_func': str
+        },
+        'zone_name': {
+            'key_name': 'zonename',
+            'transform_func': str
+        },
+        'key_name': {
+            'key_name': 'keypair',
+            'transform_func': str
+        },
+        'password': {
+            'key_name': 'password',
+            'transform_func': str
+        },
+        'image_id': {
+            'key_name': 'templateid',
+            'transform_func': str
+        },
+        'image_name': {
+            'key_name': 'templatename',
+            'transform_func': str
+        },
+        'template_display_text': {
+            'key_name': 'templatdisplaytext',
+            'transform_func': str
+        },
+        'password_enabled': {
+            'key_name': 'passwordenabled',
+            'transform_func': str
+        },
+        'size_id': {
+            'key_name': 'serviceofferingid',
+            'transform_func': str
+        },
+        'size_name': {
+            'key_name': 'serviceofferingname',
+            'transform_func': str
+        },
+        'root_device_id': {
+            'key_name': 'rootdeviceid',
+            'transform_func': str
+        },
+        'root_device_type': {
+            'key_name': 'rootdevicetype',
+            'transform_func': str
+        },
+        'hypervisor': {
+            'key_name': 'hypervisor',
+            'transform_func': str
+        }
+    },
+    'volume': {
+        'created': {
+            'key_name': 'created',
+            'transform_func': str
+        },
+        'device_id': {
+            'key_name': 'deviceid',
+            'transform_func': int
+        },
+        'instance_id': {
+            'key_name': 'serviceofferingid',
+            'transform_func': str
+        },
+        'state': {
+            'key_name': 'state',
+            'transform_func': str
+        },
+        'volume_type': {
+            'key_name': 'type',
+            'transform_func': str
+        },
+        'zone_id': {
+            'key_name': 'zoneid',
+            'transform_func': str
+        },
+        'zone_name': {
+            'key_name': 'zonename',
+            'transform_func': str
+        }
+    }
+}
+
+
 class CloudStackNode(Node):
     """
     Subclass of Node so we can expose our extension methods.
@@ -225,13 +386,14 @@ class CloudStackNetwork(object):
     """
 
     def __init__(self, displaytext, name, networkofferingid, id, zoneid,
-                 driver):
+                 driver, extra=None):
         self.displaytext = displaytext
         self.name = name
         self.networkofferingid = networkofferingid
         self.id = id
         self.zoneid = zoneid
         self.driver = driver
+        self.extra = extra or {}
 
     def __repr__(self):
         return (('<CloudStackNetwork: id=%s, displaytext=%s, name=%s, '
@@ -600,14 +762,21 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         nets = res.get('network', [])
 
         networks = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['network']
         for net in nets:
+            extra = self._get_extra_dict(net, extra_map)
+
+            if 'tags' in net:
+                extra['tags'] = self._get_resource_tags(net['tags'])
+
             networks.append(CloudStackNetwork(
                 net['displaytext'],
                 net['name'],
                 net['networkofferingid'],
                 net['id'],
                 net['zoneid'],
-                self))
+                self,
+                extra=extra))
 
         return networks
 
@@ -695,11 +864,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                          method='GET')
 
         list_volumes = []
+        extra_map = RESOURCE_EXTRA_ATTRIBUTES_MAP['volume']
         for vol in volumes['volume']:
+            extra = self._get_extra_dict(vol, extra_map)
+
+            if 'tags' in vol:
+                extra['tags'] = self._get_resource_tags(vol['tags'])
+
             list_volumes.append(StorageVolume(id=vol['id'],
                                 name=vol['name'],
                                 size=vol['size'],
-                                driver=self))
+                                driver=self,
+                                extra=extra))
         return list_volumes
 
     def list_key_pairs(self, **kwargs):
@@ -1544,10 +1720,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             else:
                 public_ips.append(nic['ipaddress'])
 
-        zone_id = str(data['zoneid'])
-        password = data.get('password', None)
-        keypair = data.get('keypair', None)
-
         security_groups = data.get('securitygroup', [])
 
         if security_groups:
@@ -1555,20 +1727,18 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
 
         created = data.get('created', False)
 
-        extra = {
-            'zone_id': zone_id,
-            'ip_addresses': [],
-            'ip_forwarding_rules': [],
-            'port_forwarding_rules': [],
-            'password': password,
-            'key_name': keypair,
-            'security_group': security_groups,
-            'created': created,
-            'image_id': data.get('templateid', None),
-            'image_name': data.get('templatename', None),
-            'size_id': data.get('serviceofferingid', None),
-            'size_name': data.get('serviceofferingname', None)
-        }
+        extra = self._get_extra_dict(data,
+                                     RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
+
+        # Add additional parameters to extra
+        extra['security_group'] = security_groups
+        extra['ip_addresses'] = []
+        extra['ip_forwarding_rules'] = []
+        extra['port_forwarding_rules'] = []
+        extra['created'] = created
+
+        if 'tags' in data:
+            extra['tags'] = self._get_resource_tags(data['tags'])
 
         node = CloudStackNode(id=id, name=name, state=state,
                               public_ips=public_ips, private_ips=private_ips,
@@ -1586,3 +1756,48 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                            private_key=data.get('privateKey', None),
                            driver=self)
         return key_pair
+
+    def _get_resource_tags(self, tag_set):
+        """
+        Parse tags from the provided element and return a dictionary with
+        key/value pairs.
+
+        :param      tag_set: A list of key/value tag pairs
+        :type       tag_set: ``list```
+
+        :rtype: ``dict``
+        """
+        tags = {}
+
+        for tag in tag_set:
+            for key, value in tag.iteritems():
+                key = tag['key']
+                value = tag['value']
+                tags[key] = value
+
+        return tags
+
+    def _get_extra_dict(self, response, mapping):
+        """
+        Extract attributes from the element based on rules provided in the
+        mapping dictionary.
+
+        :param      response: The JSON response to parse the values from.
+        :type       response: ``dict``
+
+        :param      mapping: Dictionary with the extra layout
+        :type       mapping: ``dict``
+
+        :rtype: ``dict``
+        """
+        extra = {}
+        for attribute, values in mapping.items():
+            transform_func = values['transform_func']
+            value = response.get(values['key_name'], None)
+
+            if value is not None:
+                extra[attribute] = transform_func(value)
+            else:
+                extra[attribute] = None
+
+        return extra
