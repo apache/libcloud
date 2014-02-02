@@ -50,7 +50,7 @@ class Route53Tests(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
-        self.assertEqual(len(records), 4)
+        self.assertEqual(len(records), 8)
 
         record = records[1]
         self.assertEqual(record.name, 'www')
@@ -60,11 +60,8 @@ class Route53Tests(unittest.TestCase):
 
         mx_record = records[3]
         self.assertEqual(mx_record.type, RecordType.MX)
-        self.assertEqual(mx_record.data, '1 ASPMX.L.GOOGLE.COM. '
-                         '5 ALT1.ASPMX.L.GOOGLE.COM. '
-                         '5 ALT2.ASPMX.L.GOOGLE.COM. '
-                         '10 ASPMX2.GOOGLEMAIL.COM. '
-                         '10 ASPMX3.GOOGLEMAIL.COM.')
+        self.assertEqual(mx_record.data, 'ASPMX.L.GOOGLE.COM.')
+        self.assertEqual(mx_record.extra['priority'], 1)
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='47234')
