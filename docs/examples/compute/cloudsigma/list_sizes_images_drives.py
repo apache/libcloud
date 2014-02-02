@@ -10,5 +10,5 @@ print(sizes)
 images = driver.list_images()
 print(images)
 
-drives = driver.ex_list_drives()
+drives = driver.ex_list_library_drives()
 print(drives)
