@@ -28,6 +28,60 @@ Available arguments:
 * ``api_version`` - Which API version to use. Defaults to ``2.0``. All the
   supported values: ``1.0`` (deprecated), ``2.0``
 
+For information on how to use those arguments, see the `Examples`_ section
+bellow.
+
+Basics
+------
+
+Pre-installed library drives vs installation CD drives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CloudSigma has a concept of so called library drives. Library drives exist in
+two forms:
+
+1. Pre-installed library drives
+2. Installation CD drives
+
+Pre-installed library drives already have an existing operating system
+installed on them. They can be cloned and directly used when creating a server.
+
+In Libcloud, pre-installed library drives are exposed as
+:class:`libcloud.compute.base.NodeImage` objects through a standard
+:meth:`libcloud.compute.base.NodeDriver.list_images` method.
+
+Installation CD drives are different and not something which is supported by a
+big chunk of other providers. Unlike pre-installed drives which represent an
+already installed operating system, those drives represent an operating system
+installation medium (CD / DVD).
+
+Those installation CD drives don't fit well into the ``NodeImage`` concept so they
+are represented using
+:class:`libcloud.compute.drivers.cloudsigma.CloudSigmaDrive` objects through the
+:meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_library_drives`
+method.
+
+For more information and examples on how to use the installation CD drives, see
+the `Create a server using an installation CD`_ example bellow.
+
+Server creation work-flow
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Server creation work-flow consists of multiple steps and depends on the type of
+the image you are using.
+
+If you are using a pre-installed image:
+
+1. Provided image is cloned so it can be used
+2. Cloned drive is resized to match the size specified using NodeSize
+3. Server is created and the cloned drive is attached to it
+4. Server is started
+
+If you are using an installation CD:
+
+1. Server is created and selected installation CD is attached to it
+2. Server is started
+
 Examples
 --------
 
@@ -55,14 +109,14 @@ configuration of a server and a :class:`libcloud.compute.base.NodeImage`
 represents an operating system.
 
 To comply with a standard Libcloud API,
-:class:`libcloud.compute.base.NodeDriver.list_images` method only returns
+:meth:`libcloud.compute.base.NodeDriver.list_images` method only returns
 available pre-installed library images. Those images can be passed directly
 to
-:class:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.create_node`
+:meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.create_node`
 method and used to create a server.
 
 If you want to list all the available images and drives, you should use
-:class:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_library_drives`
+:meth:`libcloud.compute.drivers.cloudsigma.CloudSigma_2_0_NodeDriver.ex_list_library_drives`
 method.
 
 The example bellow shows how to list all the available sizes, images and
