@@ -32,6 +32,10 @@ Compute
   (LIBCLOUD-506, GITHUB-239)
   [Chris DeRamus]
 
+- Add ex_register_image method to the EC2 driver.
+  (LIBCLOUD-508, GITHUB-241)
+  [Chris DeRamus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
