@@ -259,7 +259,7 @@ class GCENodeSize(NodeSize):
                  extra=None):
         self.extra = extra
         super(GCENodeSize, self).__init__(id, name, ram, disk, bandwidth,
-                                          price, driver)
+                                          price, driver, extra=extra)
 
 
 class GCEProject(UuidMixin):
