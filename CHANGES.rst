@@ -23,6 +23,10 @@ Compute
   (LIBCLOUD-505, GITHUB-238)
   [Chris DeRamus]
 
+- Add ex_limits method to the CloudStack driver.
+  (LIBCLOUD-507, GITHUB-240)
+  [Chris DeRamus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
