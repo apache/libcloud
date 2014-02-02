@@ -276,28 +276,28 @@ class NodeSize(UuidMixin):
                  driver, extra=None):
         """
         :param id: Size ID.
-        :type id: ``str``
+        :type  id: ``str``
 
         :param name: Size name.
-        :type name: ``str``
+        :type  name: ``str``
 
         :param ram: Amount of memory (in MB) provided by this size.
-        :type ram: ``int``
+        :type  ram: ``int``
 
         :param disk: Amount of disk storage (in GB) provided by this image.
-        :type disk: ``int``
+        :type  disk: ``int``
 
         :param bandwidth: Amount of bandiwdth included with this size.
-        :type bandwidth: ``int``
+        :type  bandwidth: ``int``
 
         :param price: Price (in US dollars) of running this node for an hour.
-        :type price: ``float``
+        :type  price: ``float``
 
-        :param driver: Driver this image belongs to.
-        :type driver: :class:`.NodeDriver`
+        :param driver: Driver this size belongs to.
+        :type  driver: :class:`.NodeDriver`
 
         :param extra: Optional provider specific attributes associated with
-                      this node.
+                      this size.
         :type  extra: ``dict``
         """
         self.id = str(id)
