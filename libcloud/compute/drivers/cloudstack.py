@@ -37,155 +37,155 @@ Define the extra dictionary for specific resources
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
     'network': {
         'broadcast_domain_type': {
-            'xpath': 'broadcastdomaintype',
+            'key_name': 'broadcastdomaintype',
             'transform_func': str
         },
         'traffic_type': {
-            'xpath': 'traffictype',
+            'key_name': 'traffictype',
             'transform_func': str
         },
         'zone_name': {
-            'xpath': 'zonename',
+            'key_name': 'zonename',
             'transform_func': str
         },
         'network_offering_name': {
-            'xpath': 'networkofferingname',
+            'key_name': 'networkofferingname',
             'transform_func': str
         },
         'network_offeringdisplay_text': {
-            'xpath': 'networkofferingdisplaytext',
+            'key_name': 'networkofferingdisplaytext',
             'transform_func': str
         },
         'network_offering_availability': {
-            'xpath': 'networkofferingavailability',
+            'key_name': 'networkofferingavailability',
             'transform_func': str
         },
         'is_system': {
-            'xpath': 'issystem',
+            'key_name': 'issystem',
             'transform_func': str
         },
         'state': {
-            'xpath': 'state',
+            'key_name': 'state',
             'transform_func': str
         },
         'dns1': {
-            'xpath': 'dns1',
+            'key_name': 'dns1',
             'transform_func': str
         },
         'dns2': {
-            'xpath': 'dns2',
+            'key_name': 'dns2',
             'transform_func': str
         },
         'type': {
-            'xpath': 'type',
+            'key_name': 'type',
             'transform_func': str
         },
         'acl_type': {
-            'xpath': 'acltype',
+            'key_name': 'acltype',
             'transform_func': str
         },
         'subdomain_access': {
-            'xpath': 'subdomainaccess',
+            'key_name': 'subdomainaccess',
             'transform_func': str
         },
         'network_domain': {
-            'xpath': 'networkdomain',
+            'key_name': 'networkdomain',
             'transform_func': str
         },
         'physical_network_id': {
-            'xpath': 'physicalnetworkid',
+            'key_name': 'physicalnetworkid',
             'transform_func': str
         },
         'can_use_for_deploy': {
-            'xpath': 'canusefordeploy',
+            'key_name': 'canusefordeploy',
             'transform_func': str
         }
     },
     'node': {
         'haenable': {
-            'xpath': 'haenable',
+            'key_name': 'haenable',
             'transform_func': str
         },
         'zone_id': {
-            'xpath': 'zoneid',
+            'key_name': 'zoneid',
             'transform_func': str
         },
         'zone_name': {
-            'xpath': 'zonename',
+            'key_name': 'zonename',
             'transform_func': str
         },
         'key_name': {
-            'xpath': 'keypair',
+            'key_name': 'keypair',
             'transform_func': str
         },
         'password': {
-            'xpath': 'password',
+            'key_name': 'password',
             'transform_func': str
         },
         'image_id': {
-            'xpath': 'templateid',
+            'key_name': 'templateid',
             'transform_func': str
         },
         'image_name': {
-            'xpath': 'templatename',
+            'key_name': 'templatename',
             'transform_func': str
         },
         'template_display_text': {
-            'xpath': 'templatdisplaytext',
+            'key_name': 'templatdisplaytext',
             'transform_func': str
         },
         'password_enabled': {
-            'xpath': 'passwordenabled',
+            'key_name': 'passwordenabled',
             'transform_func': str
         },
         'size_id': {
-            'xpath': 'serviceofferingid',
+            'key_name': 'serviceofferingid',
             'transform_func': str
         },
         'size_name': {
-            'xpath': 'serviceofferingname',
+            'key_name': 'serviceofferingname',
             'transform_func': str
         },
         'root_device_id': {
-            'xpath': 'rootdeviceid',
+            'key_name': 'rootdeviceid',
             'transform_func': str
         },
         'root_device_type': {
-            'xpath': 'rootdevicetype',
+            'key_name': 'rootdevicetype',
             'transform_func': str
         },
         'hypervisor': {
-            'xpath': 'hypervisor',
+            'key_name': 'hypervisor',
             'transform_func': str
         }
     },
     'volume': {
         'created': {
-            'xpath': 'created',
+            'key_name': 'created',
             'transform_func': str
         },
         'device_id': {
-            'xpath': 'deviceid',
+            'key_name': 'deviceid',
             'transform_func': int
         },
         'instance_id': {
-            'xpath': 'serviceofferingid',
+            'key_name': 'serviceofferingid',
             'transform_func': str
         },
         'state': {
-            'xpath': 'state',
+            'key_name': 'state',
             'transform_func': str
         },
         'volume_type': {
-            'xpath': 'type',
+            'key_name': 'type',
             'transform_func': str
         },
         'zone_id': {
-            'xpath': 'zoneid',
+            'key_name': 'zoneid',
             'transform_func': str
         },
         'zone_name': {
-            'xpath': 'zonename',
+            'key_name': 'zonename',
             'transform_func': str
         }
     }
@@ -766,7 +766,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         for net in nets:
             extra = self._get_extra_dict(net, extra_map)
 
-            if 'tags' in net.keys():
+            if 'tags' in net:
                 extra['tags'] = self._get_resource_tags(net['tags'])
 
             networks.append(CloudStackNetwork(
@@ -868,7 +868,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         for vol in volumes['volume']:
             extra = self._get_extra_dict(vol, extra_map)
 
-            if 'tags' in vol.keys():
+            if 'tags' in vol:
                 extra['tags'] = self._get_resource_tags(vol['tags'])
 
             list_volumes.append(StorageVolume(id=vol['id'],
@@ -1704,7 +1704,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         extra['port_forwarding_rules'] = []
         extra['created'] = created
 
-        if 'tags' in data.keys():
+        if 'tags' in data:
             extra['tags'] = self._get_resource_tags(data['tags'])
 
         node = CloudStackNode(id=id, name=name, state=state,
@@ -1760,7 +1760,7 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         extra = {}
         for attribute, values in mapping.items():
             transform_func = values['transform_func']
-            value = response.get(values['xpath'], None)
+            value = response.get(values['key_name'], None)
 
             if value is not None:
                 extra[attribute] = transform_func(value)
