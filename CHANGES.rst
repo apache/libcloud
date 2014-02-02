@@ -18,6 +18,11 @@ Compute
   object. (LIBCLOUD-501)
   [Oleg Suharev]
 
+- Add the following extension methods to the OpenStack driver: ex_pause_node,
+  ex_unpause_node, ex_suspend_node, ex_resume_node.
+  (LIBCLOUD-505, GITHUB-238)
+  [Chris DeRamus]
+
 Load Balancer
 ~~~~~~~~~~~~~
 
